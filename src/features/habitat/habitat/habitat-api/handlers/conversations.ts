@@ -1,5 +1,6 @@
 import { habitatCtx } from "./runtime.ts";
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { canonicalizeConversationPlatform } from "@freeanima/shared/pg-shapes/jsonb/platform-info";
 import {
   createConversationBodySchema,
   patchTitleBodySchema,
@@ -17,11 +18,7 @@ function requirePlatform(platform: string | undefined): string {
 export async function resolveConversationPlatform(conversationId: string): Promise<string> {
   const meta = await habitatCtx().conversation.loadConversationMeta(conversationId);
   const p = isConversationMeta(meta) ? meta.platform : undefined;
-  const platform = typeof p === "string" ? p.trim() : "";
-  if (!platform) {
-    throw new ApiHandlerError(400, `conversation ${conversationId} has no platform`);
-  }
-  return platform;
+  return canonicalizeConversationPlatform(p);
 }
 
 export async function listConversations(

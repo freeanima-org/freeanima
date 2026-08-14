@@ -28,7 +28,7 @@ FreeAnima Storage Architecture
 - 自我层与记忆层**性质不同**：记忆层「向外记录世界与经历」，自我层「向内定义自我」
 - **五块在数字人类模式下常驻**系统提示（与项目上下文、置顶常驻记忆并列）；**工作模式**省略它们
 - **客观时间线**在时间摘要中，不在自我层
-- 提示模式由 **`conversations.module`**（`chat` | `coding` | NULL）驱动，与 **`platform_info`**（渠道身份）正交
+- 提示模式由 **`conversations.scenario`**（`digital_human` | `coding_agent` | NULL→digital_human）驱动，与 **`platform_info`**（渠道身份：chat / coding / companion / …）正交
 
 ---
 
@@ -73,12 +73,12 @@ FreeAnima Storage Architecture
 
 ## 系统提示注入
 
-提示模式由 `conversations.module` 推导（不是 `platform`）：
+会话两维：`platform`（通道身份）与 **`scenario`（情景行为档）**。系统提示 / 旁注 / 压缩等策略由 `scenario` → profile 派生，**不**由 `platform` 推导：
 
-| `module`       | 提示模式                            | 自我 / 常驻 / env-health / 时间摘要 / 活动 / 通知注入 |
-| -------------- | ----------------------------------- | ----------------------------------------------------- |
-| `chat` 或 NULL | **数字人类模式**（`digital_human`） | 包含                                                  |
-| `coding`       | **工作模式**（`work`）              | 省略                                                  |
+| `scenario`              | 提示装配（profile.prompt）      | 自我 / 常驻 / env-health / 时间摘要 / 活动 / 通知注入 |
+| ----------------------- | ------------------------------- | ----------------------------------------------------- |
+| `digital_human` 或 NULL | **数字人类**（`digital_human`） | 包含                                                  |
+| `coding_agent`          | **工作**（`work`）              | 省略                                                  |
 
 装配顺序（**digital_human**）：
 
@@ -86,7 +86,7 @@ FreeAnima Storage Architecture
 2. World / 渠道 / toolsets（运行时钩子）
 3. 环境 + 健康基线（静态会话副本；见 [`environment-awareness.md`](environment-awareness.md)）
 4. 常驻记忆（置顶事实）
-5. 项目上下文（仅 Coding 模块：前哨同步的 AGENTS.md / `.agents` rules / 厂商兼容 —— 不是任意会话 cwd）
+5. 项目上下文（仅 `coding_agent` 情景：前哨同步的 AGENTS.md / `.agents` rules / 厂商兼容 —— 不是任意会话 cwd）
 
 **工作模式**保留记忆引用/回忆、渠道（带标签）、world/toolsets/skills/subagents，以及已同步的 Coding 项目上下文 —— 不含自我层身份框架。
 

@@ -36,7 +36,7 @@ const META_KNOWN_KEYS = new Set([
   "role", // legacy JSONL field; strip if present
   "model",
   "platform",
-  "module",
+  "scenario",
   "title",
   "cwd",
   "system_prompt",
@@ -55,8 +55,10 @@ const META_KNOWN_KEYS = new Set([
   "gateway_tool_display",
 ]);
 
-function parseConversationModule(raw: string | null | undefined): "chat" | "coding" | undefined {
-  if (raw === "chat" || raw === "coding") return raw;
+function parseConversationScenario(
+  raw: string | null | undefined,
+): "digital_human" | "coding_agent" | undefined {
+  if (raw === "digital_human" || raw === "coding_agent") return raw;
   return undefined;
 }
 
@@ -117,7 +119,7 @@ export function conversationMetaToInsert(
       meta.platform,
       Object.keys(extra).length > 0 ? extra : undefined,
     ),
-    module: meta.module ?? null,
+    scenario: meta.scenario ?? null,
     compression: compressionParsed,
     temporal_day: null,
     todos,
@@ -150,7 +152,7 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
   if (restExtra && "acp_tasks_handled_at" in restExtra) {
     delete restExtra.acp_tasks_handled_at;
   }
-  const module = parseConversationModule(parsed.module);
+  const scenario = parseConversationScenario(parsed.scenario);
   const base = {
     timestamp:
       parsed.created_at instanceof Date
@@ -158,7 +160,7 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
         : String(parsed.created_at ?? ""),
     model: parsed.model,
     platform,
-    ...(module ? { module } : {}),
+    ...(scenario ? { scenario } : {}),
     title: parsed.title ?? undefined,
     cwd: parsed.cwd ?? undefined,
     system_prompt: parsed.system_prompt ?? undefined,

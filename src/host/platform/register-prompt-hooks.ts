@@ -13,21 +13,11 @@ import type { SkillRegistry } from "@freeanima/host/core/skill";
 
 function describePlatform(platform?: string): string {
   if (!platform) return "未知通道";
-  if (platform === "cron") return "定时任务 (Cron)";
   if (platform === "discord") return "Discord";
   if (platform === "weixin") return "微信";
   if (platform === "chat") return "网页聊天 (Chat)";
-  if (platform === "desktop" || platform === "mobile") return platform;
-  if (platform.startsWith("remote:chat:")) {
-    return "网页聊天 (Chat)";
-  }
-  if (platform.startsWith("remote:companion:")) {
-    return "桌面伴侣";
-  }
-  if (platform.startsWith("remote:")) {
-    const app = platform.split(":")[1] ?? "unknown";
-    return `前哨 (${app})`;
-  }
+  if (platform === "coding") return "编码工作台";
+  if (platform === "companion") return "桌面伴侣";
   return platform;
 }
 

@@ -27,10 +27,10 @@ export const conversations = pgTable(
     system_prompt_built_at: pgTimestamptz("system_prompt_built_at"),
     platform_info: jsonb("platform_info").$type<PlatformInfo | null>(),
     /**
-     * Prompt 模式模块（与 platform_info 通道身份正交）。
-     * `chat` = 数字人类模式；`coding` = 工作模式；NULL = 数字人类（兼容旧行）。
+     * 情景行为档（与 platform_info 通道身份正交）。
+     * `digital_human` | `coding_agent`；NULL = digital_human（兼容旧行）。
      */
-    module: text("module"),
+    scenario: text("scenario"),
     compression: jsonb("compression").$type<CompressionJson | null>(),
     /** 当天对话级时间摘要 chunks（操作态，不可引用） */
     temporal_day: jsonb("temporal_day").$type<TemporalDayJson | null>(),

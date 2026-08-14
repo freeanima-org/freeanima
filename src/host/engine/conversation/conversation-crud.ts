@@ -245,7 +245,7 @@ export async function initConversation(
     platform: string;
     functions?: string[];
     platform_extra?: Record<string, unknown>;
-    module?: "chat" | "coding";
+    scenario?: "digital_human" | "coding_agent";
   },
 ): Promise<void> {
   const cwd = allocateConversationCwd(sid);
@@ -260,7 +260,7 @@ export async function initConversation(
     timestamp: formatCstIso(),
     platform: opts.platform,
     cwd,
-    ...(opts.module ? { module: opts.module } : {}),
+    ...(opts.scenario ? { scenario: opts.scenario } : {}),
     platform_extra:
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
   };
@@ -281,7 +281,7 @@ export async function newConversation(
   platform: string,
   model?: string,
   platformExtra?: Record<string, unknown>,
-  module?: "chat" | "coding",
+  scenario?: "digital_human" | "coding_agent",
 ): Promise<string> {
   const cfg = getActiveRuntimeConfig().data;
   const sid = generateConversationId();
@@ -292,7 +292,7 @@ export async function newConversation(
     omitUndefined({
       platform,
       platform_extra: platformExtra,
-      module,
+      scenario,
     }),
   );
   return sid;

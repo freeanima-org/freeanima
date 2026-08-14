@@ -554,13 +554,13 @@ export function registerBuiltins(): void {
     description: "Restart Free Anima service (waits for in-flight conversations to flush)",
     handler: cmdRestart,
     scope: "global",
-    platforms: [CHAT_PLATFORM_PATTERN, "discord", "weixin"],
+    platforms: [CHAT_PLATFORM_PATTERN, "coding", "companion", "discord", "weixin"],
   });
   registerCommand({
     name: "upgrade",
     description: "Show how to upgrade (source / standalone; manual only)",
     handler: cmdUpgrade,
     scope: "global",
-    platforms: [CHAT_PLATFORM_PATTERN, "discord", "weixin"],
+    platforms: [CHAT_PLATFORM_PATTERN, "coding", "companion", "discord", "weixin"],
   });
 }

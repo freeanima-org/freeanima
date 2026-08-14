@@ -31,7 +31,7 @@ describe("pg-shapes generated rows", () => {
     ).toBe(true);
   });
 
-  test("conversation select nullability and module enum", () => {
+  test("conversation select nullability and scenario enum", () => {
     const row = conversationSelectSchema.parse({
       id: "c1",
       model: "m",
@@ -53,8 +53,10 @@ describe("pg-shapes generated rows", () => {
       updated_at: new Date(),
     });
     expect(row.title).toBeNull();
-    expect(conversationSelectSchema.safeParse({ ...row, module: "chat" }).success).toBe(true);
-    expect(conversationSelectSchema.safeParse({ ...row, module: "nope" }).success).toBe(false);
+    expect(conversationSelectSchema.safeParse({ ...row, scenario: "digital_human" }).success).toBe(
+      true,
+    );
+    expect(conversationSelectSchema.safeParse({ ...row, scenario: "nope" }).success).toBe(false);
   });
 
   test("conversation insert optional defaults for debug", () => {

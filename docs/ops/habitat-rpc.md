@@ -31,7 +31,7 @@ title: "栖息地 RPC"
 2. `tool.register` — 发布本地工具
 3. 栖息地随后发送 `tool.call` 事件；应用以 `tool.result` / `tool.error` 回复
 
-路由键是 **`instance_id`**（跟随连接中的应用，不跟随入口壳）。工具名形如 `remote_{app}_{instance}_{local}`（遗留 `remote_*` / `sap:*` 仍为已存会话解析）。
+路由键是 **`instance_id`**（跟随连接中的应用，不跟随入口壳）。工具名形如 `remote_{app}_{instance}_{local}`（会话 `platform_info.platform` 为 flat `coding`/`companion`，与工具名前缀分离）。
 
 **调用路由：** 在 `tool.register` 时，栖息地将每个工具 handler 绑定到该前哨连接（`instance_id`）。调用已注册工具时在该绑定通道发送 `tool.call` — 不做会话 `outpost_*` 检查，也不为路由再解析工具名。断开则注销 toolset。会话 `outpost_app_id` / `outpost_instance_id` 仍为可选元数据（如哪个前哨打开了聊天）。`workspace_root` 仍可仅从对话 meta 取入载荷。
 

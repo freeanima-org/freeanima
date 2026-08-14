@@ -87,7 +87,7 @@ export async function ensureCodingConversation(opts: {
     throw new Error("remote tools 尚未拿到 instance_id，稍后再建会话");
   }
 
-  const platform = `remote:coding:${opts.instanceId.trim()}`;
+  const platform = "coding";
   const existing = opts.existingConversationId?.trim();
   if (existing) {
     const world = await resolveOptionalWorld({
@@ -107,9 +107,12 @@ export async function ensureCodingConversation(opts: {
     ...(opts.stableKey != null ? { stableKey: opts.stableKey } : {}),
     ...(opts.displayName != null ? { displayName: opts.displayName } : {}),
   });
+  const instanceId = opts.instanceId.trim();
   const created = await client.call("conversation.create", {
     platform,
-    module: "coding",
+    scenario: "coding_agent",
+    outpost_app_id: "coding",
+    outpost_instance_id: instanceId,
     ...(opts.workspaceRoot ? { workspace_root: opts.workspaceRoot } : {}),
     ...(world.project_world_id != null ? { project_world_id: world.project_world_id } : {}),
     ...(opts.displayName?.trim() || opts.stableKey

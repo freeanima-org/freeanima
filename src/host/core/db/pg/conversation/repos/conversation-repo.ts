@@ -87,7 +87,7 @@ export async function getConversationMetaLite(
       system_prompt: conversations.system_prompt,
       system_prompt_built_at: conversations.system_prompt_built_at,
       platform_info: conversations.platform_info,
-      module: conversations.module,
+      scenario: conversations.scenario,
       compression: conversations.compression,
       temporal_day: conversations.temporal_day,
       todos: conversations.todos,

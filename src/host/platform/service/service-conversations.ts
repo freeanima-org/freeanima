@@ -1,5 +1,6 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { canonicalizeConversationPlatform } from "@freeanima/shared/pg-shapes/jsonb/platform-info";
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 import { resolveDefaultConversationToolSets } from "@freeanima/host/core/tool";
 import { getProfileHopModel } from "@freeanima/host/platform/config";
@@ -18,11 +19,10 @@ export async function resolveMessagingPlatform(
   platform?: string,
 ): Promise<string> {
   const explicit = platform?.trim();
-  if (explicit) return explicit;
+  if (explicit) return canonicalizeConversationPlatform(explicit);
   const meta = await deps.conversation.loadConversationMeta(conversationId);
-  const fromMeta = isConversationMeta(meta) ? meta.platform?.trim() : undefined;
-  if (fromMeta) return fromMeta;
-  throw new Error(`conversation ${conversationId.slice(0, 16)} has no platform`);
+  const fromMeta = isConversationMeta(meta) ? meta.platform : undefined;
+  return canonicalizeConversationPlatform(fromMeta);
 }
 
 export async function checkPlatform(

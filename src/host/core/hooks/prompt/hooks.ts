@@ -1,13 +1,13 @@
 import type { ConversationMetaMessage } from "@freeanima/host/core/db/domain";
 import { createHook } from "@freeanima/host/kernel/hooks";
-import type { PromptMode } from "./mode.ts";
+import type { PromptMode } from "./scenario.ts";
 import type { PromptXmlAttrs } from "./xml-wrap.ts";
 
 export type SystemPromptBuildContext = {
   functionNames: string[];
   cwd?: string | null;
   meta?: ConversationMetaMessage;
-  /** 由 meta.module 派生；钩子按此门控数字人类相关区块 */
+  /** 由 meta.scenario → resolveScenarioProfile().prompt 派生；钩子按此门控数字人类相关区块 */
   mode: PromptMode;
 };
 

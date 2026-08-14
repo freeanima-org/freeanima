@@ -20,7 +20,7 @@ export {
   type GatewayPlatform,
   isGatewayPlatform,
   isRemotePlatformString,
-  normalizeLegacyRemotePlatformPrefix,
+  parseRemotePlatformString,
   platformInfoSchema,
   type PlatformInfo,
   buildPlatformInfo,
@@ -28,6 +28,8 @@ export {
   splitPlatformInfo,
   stripOriginRoutingMeta,
   ORIGIN_ROUTING_META_KEYS,
+  isCronPlatformInfo,
+  isCronPlatformString,
 } from "./platform-info.ts";
 export * from "./conversation-jsonb.ts";
 export { clarifyItemSchema, type ClarifyItem } from "./clarify-item.ts";

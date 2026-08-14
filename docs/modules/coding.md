@@ -51,7 +51,7 @@ Main Chat / tasks      ── RPC only ─────► same Habitat
 - 读文件 / 跑命令 → 当前会话 `workspace_root`
 - 分开以免「同源、错目录」类 bug。
 
-会话元数据还存 `project_world_id`。编码会话应使用 platform 字符串 `remote:coding:{instanceId}`（不是普通 `chat`）。
+会话元数据还存 `project_world_id`。编码会话 platform = **`coding`**（flat），实例经 `platform_extra.outpost_instance_id`（及 `outpost_app_id: "coding"`）绑定；不是 `remote:coding:…`，也不是普通 `chat`。
 
 ## World 策略
 
@@ -138,7 +138,7 @@ CLAUDE.md                        # Claude Code 兼容
 ### 栏位
 
 - **左栏 Agents**：Repositories 分组 + 会话列表（单行 title；悬停归档 / 删除）；Search（Ctrl/Cmd+K）；New Agent。归档为软隐藏（`archivedAt`），本轮无「已归档」入口。
-- **中栏对话**：空态居中输入；有消息后线程 + 底部 follow-up；流式走 `getBundledRpcStreamClient`（**不**整包 import Chat SPA）；platform = `remote:coding:{instanceId}`。
+- **中栏对话**：空态居中输入；有消息后线程 + 底部 follow-up；流式走 `getBundledRpcStreamClient`（**不**整包 import Chat SPA）；platform = `coding`，`outpost_instance_id` = 当前 attach `instanceId`。
   - **复用聊天室原子（禁止挂载 ChatApp）**：`ConversationTranscript`（**消息列表 + stick-to-bottom + 向上懒加载 SSOT**；新增气泡样式 / display 分支只改该组件，禁止 Coding 平行 `display.map`）、`slash-command-menu` / `conversation-command-api`（slash）、`stream-events` + Markdown（流式 token）、`upsert-tool-block` + `ToolBlockBubble`（经 Transcript）、`LlmDebugPanel` + `useChatLlmDebugEnabled`（LLM 调试；设置页开关与聊天室共用）。compose / 空态 hero / 三栏布局皮肤留在 Coding SPA。
   - 历史分页与聊天室同契约：`conversation.messages` 的 `before_pos` / `has_more_before` / `from_pos`。
 - **右栏 Context**（默认展开）：Files（可展开树）/ Preview（Shiki）/ Terminals（`terminal_run` 输出日志；**非**交互 PTY）。

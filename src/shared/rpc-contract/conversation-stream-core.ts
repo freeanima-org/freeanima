@@ -2,7 +2,7 @@ import type { RpcStreamClient } from "./router.ts";
 import type { StreamApiLikeEvent } from "./frames/message.ts";
 import { mapSapStreamMethodToApi, streamEventMethods } from "./frames/message.ts";
 import type { ConversationCreateInput, ConversationListInput } from "./frames/conversation.ts";
-import { formatRemotePlatform } from "./naming.ts";
+import { resolveDefaultRemotePlatform } from "./naming.ts";
 import { HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
 import { omitUndefined } from "@freeanima/shared/util/omit-undefined.ts";
 
@@ -237,7 +237,7 @@ export async function sapCreateConversation(
 ) {
   return client.request("conversation.create", {
     ...input,
-    platform: input.platform ?? formatRemotePlatform(appId, instanceId),
+    platform: resolveDefaultRemotePlatform(input.platform, appId, instanceId) ?? "chat",
   });
 }
 

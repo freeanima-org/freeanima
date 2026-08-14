@@ -15,7 +15,7 @@ afterEach(() => {
 });
 
 describe("registerCodingProjectContextPromptHook", () => {
-  it("injects project context only for coding module", async () => {
+  it("injects project context only for coding_agent scenario", async () => {
     const snap: ProjectAgentContextSnapshot = {
       rules: [
         {
@@ -52,7 +52,11 @@ describe("registerCodingProjectContextPromptHook", () => {
       {
         functionNames: [],
         mode: "work",
-        meta: { model: "m", module: "coding", conversation_id: "conv-coding-1" } as never,
+        meta: {
+          model: "m",
+          scenario: "coding_agent",
+          conversation_id: "conv-coding-1",
+        } as never,
       },
       { llm_kind: "conversation" },
     );
@@ -65,7 +69,11 @@ describe("registerCodingProjectContextPromptHook", () => {
       {
         functionNames: [],
         mode: "digital_human",
-        meta: { model: "m", module: "chat", conversation_id: "conv-coding-1" } as never,
+        meta: {
+          model: "m",
+          scenario: "digital_human",
+          conversation_id: "conv-coding-1",
+        } as never,
       },
       { llm_kind: "conversation" },
     );

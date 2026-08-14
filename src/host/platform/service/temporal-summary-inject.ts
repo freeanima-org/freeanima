@@ -1,6 +1,6 @@
 import type { BeforeLlmCallContext } from "@freeanima/host/core/hooks/loop";
 import { getActiveRuntimeConfig } from "@freeanima/host/core/config";
-import { resolvePromptMode } from "@freeanima/host/core/hooks/prompt";
+import { resolveScenarioProfile } from "@freeanima/host/core/hooks/prompt";
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
 import { getConversationMeta, isCronSession } from "@freeanima/host/core/db/pg/conversation";
 import { loadSelfLayerPrompt } from "@freeanima/host/capabilities/self";
@@ -24,7 +24,11 @@ export function createTemporalPeerInjectHandler() {
     if (await isCronSession(conversationId)) return;
 
     const meta = await getConversationMeta(conversationId);
-    if (meta != null && isConversationMeta(meta) && resolvePromptMode(meta.module) === "work") {
+    if (
+      meta != null &&
+      isConversationMeta(meta) &&
+      resolveScenarioProfile(meta.scenario).prompt === "work"
+    ) {
       return;
     }
 

@@ -1,5 +1,5 @@
 import type { BeforeLlmCallContext } from "@freeanima/host/core/hooks/loop";
-import { resolvePromptMode } from "@freeanima/host/core/hooks/prompt";
+import { resolveScenarioProfile } from "@freeanima/host/core/hooks/prompt";
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
 import { getConversationMeta } from "@freeanima/host/core/db/pg/conversation";
 
@@ -20,7 +20,11 @@ export function createNotificationInjectHandler() {
     const conversationId = ctx.conversationId.trim();
     if (conversationId) {
       const meta = await getConversationMeta(conversationId);
-      if (meta != null && isConversationMeta(meta) && resolvePromptMode(meta.module) === "work") {
+      if (
+        meta != null &&
+        isConversationMeta(meta) &&
+        resolveScenarioProfile(meta.scenario).prompt === "work"
+      ) {
         return;
       }
     }
