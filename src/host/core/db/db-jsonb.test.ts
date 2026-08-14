@@ -24,35 +24,28 @@ describe("platform_info schema", () => {
     expect(split.platform_extra).toEqual({ channel_id: "c1", guild_id: "123" });
   });
 
-  it("sap platformInfo derives satellite fields from three segments", () => {
-    const info = buildPlatformInfo("remote:chat:k7m");
-    expect(info).toEqual({
-      platform: "remote:chat:k7m",
-      outpost_app_id: "chat",
-      outpost_instance_id: "k7m",
-    });
-    expect(splitPlatformInfo(info)).toEqual({
-      platform: "remote:chat:k7m",
-      platform_extra: { outpost_app_id: "chat", outpost_instance_id: "k7m" },
-    });
+  it("sap / remote platformInfo returns null (migrated to flat coding/companion)", () => {
+    expect(buildPlatformInfo("remote:chat:k7m")).toBeNull();
+    expect(splitPlatformInfo(null)).toEqual({});
   });
 
   it("unknown platform returns null", () => {
     expect(buildPlatformInfo("test")).toBeNull();
   });
 
-  it("cron platformInfo", () => {
-    const info = buildPlatformInfo("cron");
-    expect(info).toEqual({ platform: "cron" });
-    expect(splitPlatformInfo(info)).toEqual({ platform: "cron" });
+  it("cron platformInfo returns null", () => {
+    expect(buildPlatformInfo("cron")).toBeNull();
   });
 
-  it("sap platformInfo preserves arbitrary extras in platform_info", () => {
-    const info = buildPlatformInfo("remote:chat:k7m", {
+  it("flat coding platformInfo preserves outpost extras", () => {
+    const info = buildPlatformInfo("coding", {
+      outpost_app_id: "coding",
+      outpost_instance_id: "k7m",
       note: "hello",
     });
-    expect(info?.platform).toBe("remote:chat:k7m");
+    expect(info?.platform).toBe("coding");
     expect(splitPlatformInfo(info).platform_extra?.note).toBe("hello");
+    expect(splitPlatformInfo(info).platform_extra?.outpost_instance_id).toBe("k7m");
   });
 
   it("discord platformInfo preserves gateway_tool_display in platform_info", () => {

@@ -3,9 +3,9 @@ import { describe, expect, test } from "bun:test";
 import {
   buildOriginIdentityProbe,
   buildPlatformInfo,
+  canonicalizeConversationPlatform,
   isCronPlatformInfo,
   isRemotePlatformString,
-  normalizeLegacyRemotePlatformPrefix,
   parseRemotePlatformString,
   platformInfoSchema,
   splitPlatformInfo,
@@ -13,51 +13,32 @@ import {
 } from "./platform-info.ts";
 
 describe("platform-info", () => {
-  test("parseRemotePlatformString accepts remote:app:instance", () => {
+  test("parseRemotePlatformString accepts remote:app:instance only", () => {
     expect(parseRemotePlatformString("remote:chat:default")).toEqual({
       app_slug: "chat",
       instance_id_norm: "default",
     });
-    expect(parseRemotePlatformString("sap:chat:default")).toEqual({
-      app_slug: "chat",
-      instance_id_norm: "default",
-    });
+    expect(parseRemotePlatformString("sap:chat:default")).toBeNull();
     expect(parseRemotePlatformString("discord:x")).toBeNull();
   });
 
-  test("normalizeLegacyRemotePlatformPrefix rewrites sap: to remote:", () => {
-    expect(normalizeLegacyRemotePlatformPrefix("sap:companion:k7m")).toBe("remote:companion:k7m");
-    expect(normalizeLegacyRemotePlatformPrefix("remote:coding:x")).toBe("remote:coding:x");
-    expect(normalizeLegacyRemotePlatformPrefix("discord")).toBe("discord");
+  test("buildPlatformInfo rejects remote: and sap: platforms", () => {
+    expect(buildPlatformInfo("remote:chat:inst-1", {})).toBeNull();
+    expect(buildPlatformInfo("sap:companion:k7m", {})).toBeNull();
   });
 
-  test("buildPlatformInfo fills outpost fields", () => {
-    const info = buildPlatformInfo("remote:chat:inst-1", {});
-    expect(info).toMatchObject({
-      platform: "remote:chat:inst-1",
-      outpost_app_id: "chat",
-      outpost_instance_id: "inst-1",
-    });
-  });
-
-  test("buildPlatformInfo normalizes legacy sap: platform on write", () => {
-    const info = buildPlatformInfo("sap:companion:k7m", {});
-    expect(info).toMatchObject({
-      platform: "remote:companion:k7m",
-      outpost_app_id: "companion",
-      outpost_instance_id: "k7m",
-    });
-  });
-
-  test("platformInfoSchema accepts and normalizes legacy sap: rows", () => {
-    const parsed = platformInfoSchema.parse({
-      platform: "sap:companion:abc",
-      outpost_app_id: "companion",
-    });
-    expect(parsed).toMatchObject({
-      platform: "remote:companion:abc",
-      outpost_app_id: "companion",
-    });
+  test("platformInfoSchema rejects remote: / sap: rows", () => {
+    expect(() =>
+      platformInfoSchema.parse({
+        platform: "remote:companion:abc",
+        outpost_app_id: "companion",
+      }),
+    ).toThrow();
+    expect(() =>
+      platformInfoSchema.parse({
+        platform: "sap:companion:abc",
+      }),
+    ).toThrow();
   });
 
   test("buildPlatformInfo applies discord defaults", () => {
@@ -74,21 +55,45 @@ describe("platform-info", () => {
     expect(info).toMatchObject({ platform: "chat", note: "x" });
   });
 
-  test("buildPlatformInfo accepts project_world_id on chat and remote", () => {
-    expect(buildPlatformInfo("chat", { project_world_id: 12 })).toMatchObject({
-      platform: "chat",
-      project_world_id: 12,
-    });
+  test("buildPlatformInfo accepts flat coding / companion with outpost fields", () => {
     expect(
-      buildPlatformInfo("remote:coding:inst-1", {
+      buildPlatformInfo("coding", {
+        outpost_app_id: "coding",
+        outpost_instance_id: "inst-1",
         workspace_root: "/repo",
         project_world_id: 99,
       }),
     ).toMatchObject({
-      platform: "remote:coding:inst-1",
+      platform: "coding",
+      outpost_app_id: "coding",
+      outpost_instance_id: "inst-1",
       workspace_root: "/repo",
       project_world_id: 99,
     });
+    expect(
+      buildPlatformInfo("companion", {
+        outpost_app_id: "companion",
+        outpost_instance_id: "k7m",
+      }),
+    ).toMatchObject({
+      platform: "companion",
+      outpost_app_id: "companion",
+      outpost_instance_id: "k7m",
+    });
+  });
+
+  test("buildPlatformInfo accepts project_world_id on chat", () => {
+    expect(buildPlatformInfo("chat", { project_world_id: 12 })).toMatchObject({
+      platform: "chat",
+      project_world_id: 12,
+    });
+  });
+
+  test("buildPlatformInfo returns null for unknown / empty / cron", () => {
+    expect(buildPlatformInfo(undefined)).toBeNull();
+    expect(buildPlatformInfo("")).toBeNull();
+    expect(buildPlatformInfo("cron")).toBeNull();
+    expect(buildPlatformInfo("test")).toBeNull();
   });
 
   test("stripOriginRoutingMeta removes routing keys", () => {
@@ -108,20 +113,38 @@ describe("platform-info", () => {
     expect(probe).not.toHaveProperty("origin_active");
   });
 
-  test("splitPlatformInfo round-trips platform field", () => {
-    const info = buildPlatformInfo("cron", {});
-    expect(splitPlatformInfo(info)).toEqual({ platform: "cron" });
+  test("splitPlatformInfo round-trips coding platform", () => {
+    const info = buildPlatformInfo("coding", { outpost_instance_id: "x" });
+    expect(splitPlatformInfo(info)).toEqual({
+      platform: "coding",
+      platform_extra: { outpost_instance_id: "x" },
+    });
   });
 
-  test("isCronPlatformInfo detects cron", () => {
-    expect(isCronPlatformInfo(buildPlatformInfo("cron", {}))).toBe(true);
-    expect(isCronPlatformInfo(buildPlatformInfo("remote:chat:x", {}))).toBe(false);
+  test("isCronPlatformInfo detects legacy cron objects", () => {
+    expect(isCronPlatformInfo({ platform: "cron" })).toBe(true);
+    expect(isCronPlatformInfo(buildPlatformInfo("coding", {}))).toBe(false);
+    expect(isCronPlatformInfo(null)).toBe(false);
   });
 
   test("isRemotePlatformString", () => {
     expect(isRemotePlatformString("remote:chat:default")).toBe(true);
-    expect(isRemotePlatformString("sap:companion:k7m")).toBe(true);
+    expect(isRemotePlatformString("sap:companion:k7m")).toBe(false);
     expect(isRemotePlatformString("remote:chat")).toBe(false);
-    expect(isRemotePlatformString("sap:chat")).toBe(false);
+    expect(isRemotePlatformString("coding")).toBe(false);
+  });
+
+  test("canonicalizeConversationPlatform soft-defaults", () => {
+    expect(canonicalizeConversationPlatform("chat")).toBe("chat");
+    expect(canonicalizeConversationPlatform("coding")).toBe("coding");
+    expect(canonicalizeConversationPlatform("companion")).toBe("companion");
+    expect(canonicalizeConversationPlatform("weixin")).toBe("weixin");
+    expect(canonicalizeConversationPlatform("discord")).toBe("discord");
+    expect(canonicalizeConversationPlatform(undefined)).toBe("chat");
+    expect(canonicalizeConversationPlatform(null)).toBe("chat");
+    expect(canonicalizeConversationPlatform("")).toBe("chat");
+    expect(canonicalizeConversationPlatform("remote:coding:abc")).toBe("chat");
+    expect(canonicalizeConversationPlatform("cron")).toBe("chat");
+    expect(canonicalizeConversationPlatform("test")).toBe("chat");
   });
 });

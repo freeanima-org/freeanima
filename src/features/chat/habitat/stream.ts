@@ -1,4 +1,5 @@
 import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { canonicalizeConversationPlatform } from "@freeanima/shared/pg-shapes/jsonb/platform-info";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import type { RemoteToolsServerDeps } from "@freeanima/host/capabilities/outpost/transport/types";
 
@@ -15,11 +16,7 @@ export async function resolveConversationPlatform(
 ): Promise<string> {
   const meta = await deps.runtime.conversation.loadConversationMeta(conversationId);
   const p = isConversationMeta(meta) ? meta.platform : undefined;
-  const platform = typeof p === "string" ? p.trim() : "";
-  if (!platform) {
-    throw new Error(`conversation ${conversationId.slice(0, 16)} has no platform`);
-  }
-  return platform;
+  return canonicalizeConversationPlatform(p);
 }
 
 function publishStreamEvent(

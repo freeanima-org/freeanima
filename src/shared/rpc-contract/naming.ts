@@ -30,6 +30,10 @@ export function isValidRemoteInstanceId(instanceId: string): boolean {
   return REMOTE_INSTANCE_ID_PATTERN.test(normalizeInstanceId(instanceId));
 }
 
+/**
+ * 工具名 / outpost status 用的 `remote:{app}:{instance}` 标识。
+ * **不是** conversations.platform_info.platform（会话通道用 flat：chat|coding|companion|…）。
+ */
 export function formatRemotePlatform(appId: string, instanceId: string): string {
   const app_slug = normalizeAppSlug(appId);
   const instance_id_norm = normalizeInstanceId(instanceId);
@@ -37,8 +41,8 @@ export function formatRemotePlatform(appId: string, instanceId: string): string 
 }
 
 /**
- * Resolve list/create platform: explicit input wins; otherwise remote-tool identity.
- * Empty REST ctx (`app_id`/`instance_id` "") must NOT become `"remote::"`.
+ * 会话 list/create 默认 platform：显式 input 优先；否则 flat `normalizeAppSlug(appId)`。
+ * Empty REST ctx（`app_id`/`instance_id` ""）不得合成非法值。
  */
 export function resolveDefaultRemotePlatform(
   platform: string | undefined,
@@ -50,7 +54,7 @@ export function resolveDefaultRemotePlatform(
     return trimmed || undefined;
   }
   if (appId.trim() && instanceId.trim()) {
-    return formatRemotePlatform(appId, instanceId);
+    return normalizeAppSlug(appId);
   }
   return undefined;
 }

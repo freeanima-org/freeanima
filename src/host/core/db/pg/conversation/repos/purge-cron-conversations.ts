@@ -21,8 +21,9 @@ function stripIdsFromArray(values: string[], remove: ReadonlySet<string>): strin
 }
 
 /**
- * 一次性清理历史 cron agent 创建的 sessions（platform_info.platform = cron）。
- * 应在不再产生 cron conversation 且睡眠周期 conversation-cleanup 步骤中调用。
+ * 幂等清理历史 cron agent 会话（platform_info.platform = cron）。
+ * 数据迁移 `conversation_scenario_platform_normalize` 已 DELETE 残留行；
+ * 本函数保留在睡眠周期 conversation-cleanup 作兜底。
  */
 export async function purgeCronConversations(): Promise<PurgeCronConversationsResult> {
   const ids = await listCronSessionIds();

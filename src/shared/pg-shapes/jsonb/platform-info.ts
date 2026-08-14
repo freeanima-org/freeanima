@@ -4,8 +4,8 @@ import { omitUndefined } from "@freeanima/shared/util";
 
 import { normalizePgTimestamp } from "./timestamp.ts";
 
-/** Gateway channels (non-remote-tool) */
-export const GATEWAY_PLATFORMS = ["discord", "weixin", "cron"] as const;
+/** Gateway channels（会话 platform_info 合法通道子集，不含 chat / coding / companion） */
+export const GATEWAY_PLATFORMS = ["discord", "weixin"] as const;
 
 export type GatewayPlatform = (typeof GATEWAY_PLATFORMS)[number];
 
@@ -15,16 +15,13 @@ export function isGatewayPlatform(value: string): value is GatewayPlatform {
   return (GATEWAY_PLATFORMS as readonly string[]).includes(value);
 }
 
-/** 已存会话遗留前缀 `sap:` → canonical `remote:`（协议新连接仍只用 remote） */
-export function normalizeLegacyRemotePlatformPrefix(platform: string): string {
-  return platform.startsWith("sap:") ? `remote:${platform.slice(4)}` : platform;
-}
-
+/**
+ * 工具层仍可识别 `remote:{app}:{instance}` 字符串；
+ * **不是** conversations.platform_info.platform 的合法值（coding/companion 用 flat platform）。
+ */
 export function isRemotePlatformString(platform: string): boolean {
-  const normalized = normalizeLegacyRemotePlatformPrefix(platform);
-  const parts = normalized.split(":");
-  const prefix = parts[0];
-  if (parts.length !== 3 || prefix !== "remote") return false;
+  const parts = platform.split(":");
+  if (parts.length !== 3 || parts[0] !== "remote") return false;
   return !!parts[1]?.trim() && !!parts[2]?.trim();
 }
 
@@ -33,19 +30,15 @@ export function parseRemotePlatformString(platform: string): {
   instance_id_norm: string;
 } | null {
   if (!isRemotePlatformString(platform)) return null;
-  const normalized = normalizeLegacyRemotePlatformPrefix(platform);
-  const parts = normalized.split(":");
+  const parts = platform.split(":");
   const appSlug = parts[1];
   const instanceId = parts[2];
   if (appSlug === undefined || instanceId === undefined) return null;
   return { app_slug: appSlug, instance_id_norm: instanceId };
 }
 
-const remotePlatformInfoSchema = z.looseObject({
-  platform: z
-    .string()
-    .transform(normalizeLegacyRemotePlatformPrefix)
-    .refine((p) => isRemotePlatformString(p), { message: "invalid remote platform" }),
+/** Outpost 类 flat platform（coding / companion）共用字段 */
+const outpostFlatExtraShape = {
   outpost_app_id: z.string().optional(),
   outpost_instance_id: z.string().optional(),
   workspace_root: z.string().optional(),
@@ -53,17 +46,25 @@ const remotePlatformInfoSchema = z.looseObject({
   workspace_show_hidden: z.boolean().optional(),
   /** Coding / 项目会话绑定的 Project World id */
   project_world_id: z.number().int().positive().optional(),
-});
+} as const;
 
-const cronPlatformInfoSchema = z.looseObject({
-  platform: z.literal("cron"),
-});
-
-/** bundled Chat 会话（flat platform，无 SAP instance 段） */
+/** bundled Chat 会话（flat platform） */
 const chatPlatformInfoSchema = z.looseObject({
   platform: z.literal("chat"),
   workspace_root: z.string().optional(),
   project_world_id: z.number().int().positive().optional(),
+});
+
+/** Coding outpost 会话（flat platform，同构 weixin 式绑定） */
+const codingPlatformInfoSchema = z.looseObject({
+  platform: z.literal("coding"),
+  ...outpostFlatExtraShape,
+});
+
+/** Companion outpost 会话（flat platform） */
+const companionPlatformInfoSchema = z.looseObject({
+  platform: z.literal("companion"),
+  ...outpostFlatExtraShape,
 });
 
 /** Keys excluded from origin identity matching / probe construction */
@@ -108,20 +109,22 @@ const weixinPlatformInfoSchema = z.looseObject({
 });
 
 /**
- * conversations.platform_info: platform + per-channel extra merged as discriminated union.
- * Remote-tool hosts use platform `remote:{app_slug}:{instance_id}` (legacy `sap:` accepted).
+ * conversations.platform_info: platform + per-channel extra merged as discriminated union。
+ * 合法 platform：`chat` | `weixin` | `discord` | `coding` | `companion`。
+ * 不再接受 `cron` / `remote:` / `sap:`。
  */
 export const platformInfoSchema = z.union([
   chatPlatformInfoSchema,
-  remotePlatformInfoSchema,
+  codingPlatformInfoSchema,
+  companionPlatformInfoSchema,
   discordPlatformInfoSchema,
   weixinPlatformInfoSchema,
-  cronPlatformInfoSchema,
 ]);
 
 export type PlatformInfo = z.infer<typeof platformInfoSchema>;
-export type SapPlatformInfo = z.infer<typeof remotePlatformInfoSchema>;
-export type RemotePlatformInfo = z.infer<typeof remotePlatformInfoSchema>;
+export type ChatPlatformInfo = z.infer<typeof chatPlatformInfoSchema>;
+export type CodingPlatformInfo = z.infer<typeof codingPlatformInfoSchema>;
+export type CompanionPlatformInfo = z.infer<typeof companionPlatformInfoSchema>;
 export type DiscordPlatformInfo = z.infer<typeof discordPlatformInfoSchema>;
 export type WeixinPlatformInfo = z.infer<typeof weixinPlatformInfoSchema>;
 
@@ -177,33 +180,51 @@ export function isChatPlatformString(platform: string): boolean {
   return platform === "chat";
 }
 
+/** 会话 platform 合法 flat 值 */
+export const CONVERSATION_PLATFORMS = ["chat", "weixin", "discord", "coding", "companion"] as const;
+
+export type ConversationPlatform = (typeof CONVERSATION_PLATFORMS)[number];
+
+/**
+ * Soft-default：合法 flat 原样；空 / 非法 / 遗留 remote:|sap:|cron → `"chat"`。
+ * 供旧会话无 platform 时的 resolve，避免抛 `has no platform`。
+ */
+export function canonicalizeConversationPlatform(raw?: string | null): string {
+  const trimmed = typeof raw === "string" ? raw.trim() : "";
+  if ((CONVERSATION_PLATFORMS as readonly string[]).includes(trimmed)) {
+    return trimmed;
+  }
+  return "chat";
+}
+
+function isOutpostFlatPlatform(platform: string): platform is "coding" | "companion" {
+  return platform === "coding" || platform === "companion";
+}
+
 export function buildPlatformInfo(
   platform?: string,
   platformExtra?: Record<string, unknown>,
 ): PlatformInfo | null {
   if (!platform) return null;
-  const canonical = normalizeLegacyRemotePlatformPrefix(platform);
-  if (isChatPlatformString(canonical)) {
+  if (isChatPlatformString(platform)) {
     const extra = normalizePlatformExtra(platformExtra);
     const merged: Record<string, unknown> = { platform: "chat", ...extra };
     return chatPlatformInfoSchema.parse(merged);
   }
-  if (!isGatewayPlatform(canonical) && !isRemotePlatformString(canonical)) {
+  if (isOutpostFlatPlatform(platform)) {
+    const extra = normalizePlatformExtra(platformExtra);
+    const merged: Record<string, unknown> = { platform, ...extra };
+    return platformInfoSchema.parse(merged);
+  }
+  if (!isGatewayPlatform(platform)) {
     return null;
   }
   const extra = normalizePlatformExtra(platformExtra);
-  const withDefaults = applyPlatformExtraDefaults(canonical, { ...extra });
+  const withDefaults = applyPlatformExtraDefaults(platform, { ...extra });
   const merged: Record<string, unknown> = {
-    platform: canonical,
+    platform,
     ...withDefaults,
   };
-  if (isRemotePlatformString(canonical)) {
-    const parsed = parseRemotePlatformString(canonical);
-    if (parsed) {
-      merged.outpost_app_id ??= parsed.app_slug;
-      merged.outpost_instance_id ??= parsed.instance_id_norm;
-    }
-  }
   return platformInfoSchema.parse(merged);
 }
 
@@ -219,8 +240,11 @@ export function splitPlatformInfo(info: PlatformInfo | null | undefined): {
   });
 }
 
-/** conversations.platform_info 标记为 cron agent 遗留会话（浅睡/梦境应排除） */
-export function isCronPlatformInfo(info: PlatformInfo | null | undefined): boolean {
+/**
+ * 迁移前 purge：检测遗留 cron 会话。
+ * cron 已不是合法 PlatformInfo；仍接受任意带 platform 字段的对象。
+ */
+export function isCronPlatformInfo(info: { platform?: string } | null | undefined): boolean {
   return info?.platform === "cron";
 }
 

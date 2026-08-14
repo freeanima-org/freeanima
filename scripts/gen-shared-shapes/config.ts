@@ -47,8 +47,8 @@ export const TABLE_SPECS: TableGenSpec[] = [
     tableModule: "src/host/core/db/schema/conversations.ts",
     comments: {
       system_prompt_built_at: "CST 02:00 日界刷新用：上次全量构建 system_prompt 的时刻",
-      module:
-        "Prompt 模式模块（与 platform_info 通道身份正交）。chat = 数字人类；coding = 工作模式；NULL = 数字人类（兼容旧行）。",
+      scenario:
+        "情景行为档（与 platform_info 通道身份正交）。digital_human | coding_agent；NULL = digital_human（兼容旧行）。",
       temporal_day: "当天对话级时间摘要 chunks（操作态，不可引用）",
     },
     overrides: {
@@ -56,9 +56,9 @@ export const TABLE_SPECS: TableGenSpec[] = [
         expr: "platformInfoSchema.nullable()",
         imports: [{ from: "../jsonb/platform-info.ts", names: ["platformInfoSchema"] }],
       },
-      module: {
-        expr: "conversationModuleSchema.nullable().optional()",
-        imports: [{ from: "../entity/enums.ts", names: ["conversationModuleSchema"] }],
+      scenario: {
+        expr: "conversationScenarioSchema.nullable().optional()",
+        imports: [{ from: "../entity/enums.ts", names: ["conversationScenarioSchema"] }],
       },
       compression: {
         expr: "compressionJsonSchema.nullable()",

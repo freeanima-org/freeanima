@@ -61,14 +61,18 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     if (input.project_world_id !== undefined) {
       platformExtra.project_world_id = input.project_world_id;
     }
-    const module =
-      input.module ??
-      (platform === "chat" || platform.startsWith("remote:chat:") ? "chat" : undefined);
+    if (platform === "coding" || platform === "companion") {
+      const outpostAppId = input.outpost_app_id?.trim() || platform;
+      const outpostInstanceId = input.outpost_instance_id?.trim();
+      if (outpostAppId) platformExtra.outpost_app_id = outpostAppId;
+      if (outpostInstanceId) platformExtra.outpost_instance_id = outpostInstanceId;
+    }
+    const scenario = input.scenario ?? (platform === "coding" ? "coding_agent" : "digital_human");
     const sid = await depsOf(deps).runtime.conversation.newConversation(
       platform,
       undefined,
-      platformExtra,
-      module,
+      Object.keys(platformExtra).length > 0 ? platformExtra : undefined,
+      scenario,
     );
     if (input.title?.trim()) {
       await depsOf(deps).runtime.setConversationTitle(sid, input.title.trim(), platform);

@@ -6,21 +6,21 @@ import { conversationMetaToInsert } from "./conversation/transform.ts";
 
 describe("db transforms", () => {
   it("conversationMetaToInsert normalizes timestamp", () => {
-    const row = conversationMetaToInsert("cron_test", {
+    const row = conversationMetaToInsert("chat_test", {
       model: "m",
       cached_toolsets: [],
       staged_toolsets: [],
       functions: [],
       timestamp: "2026-05-17T07:15:24.873+00:00",
-      platform: "cron",
+      platform: "chat",
     });
     expect(row.created_at).toEqual(new Date("2026-05-17T07:15:24.873Z"));
-    expect(row.platform_info).toEqual({ platform: "cron" });
+    expect(row.platform_info).toEqual({ platform: "chat" });
     expect(row.staged_toolsets).toEqual([]);
   });
 
-  it("cron ended_at normalized into platform_info", () => {
-    const row = conversationMetaToInsert("cron_test", {
+  it("unknown / cron platform_info becomes null", () => {
+    const row = conversationMetaToInsert("legacy_cron", {
       model: "m",
       cached_toolsets: [],
       staged_toolsets: [],
@@ -29,29 +29,30 @@ describe("db transforms", () => {
       platform: "cron",
       ended_at: "2026-05-11T04:03:34.574+00:00",
     });
-    expect(row.platform_info).toEqual({
-      platform: "cron",
-      ended_at: "2026-05-11T04:03:34.574Z",
-    });
+    expect(row.platform_info).toBeNull();
   });
 
-  it("conversationMetaToInsert stores module on column not platform_info", () => {
+  it("conversationMetaToInsert stores scenario on column not platform_info", () => {
     const row = conversationMetaToInsert("coding_sess", {
       model: "m",
       cached_toolsets: [],
       staged_toolsets: [],
       functions: [],
       timestamp: "2026-05-17T07:15:24.873Z",
-      platform: "remote:coding:inst1",
-      module: "coding",
+      platform: "coding",
+      scenario: "coding_agent",
+      platform_extra: {
+        outpost_app_id: "coding",
+        outpost_instance_id: "inst1",
+      },
     });
-    expect(row.module).toBe("coding");
+    expect(row.scenario).toBe("coding_agent");
     expect(row.platform_info).toEqual({
-      platform: "remote:coding:inst1",
+      platform: "coding",
       outpost_app_id: "coding",
       outpost_instance_id: "inst1",
     });
-    expect(row.platform_info).not.toHaveProperty("module");
+    expect(row.platform_info).not.toHaveProperty("scenario");
   });
 
   it("message payload round-trip user / tool", () => {

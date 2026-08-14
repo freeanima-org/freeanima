@@ -3,12 +3,15 @@ import { z } from "zod";
 export const conversationCreateInputSchema = z.object({
   title: z.string().optional(),
   platform: z.string().optional(),
-  /** Prompt 模式：chat=数字人类；coding=工作；缺省由服务端按 platform 推断 */
-  module: z.enum(["chat", "coding"]).optional(),
+  /** 情景行为档：digital_human | coding_agent；缺省由服务端推断 */
+  scenario: z.enum(["digital_human", "coding_agent"]).optional(),
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
   project_world_id: z.number().int().positive().optional(),
+  /** Coding / Companion outpost：写入 platform_extra */
+  outpost_app_id: z.string().optional(),
+  outpost_instance_id: z.string().optional(),
 });
 
 export type ConversationCreateInput = z.infer<typeof conversationCreateInputSchema>;

@@ -50,7 +50,7 @@ export type CommandDef = {
   hidden?: boolean;
   /** default conversation */
   scope?: CommandScope;
-  /** whitelist; unset means all platforms; entries may use `*` glob (e.g. `remote:chat:*`) */
+  /** whitelist; unset means all platforms; entries may use `*` glob (e.g. `coding*`) */
   platforms?: string[];
   /** Optional discrete subcommands (e.g. `/goal status`); free-text args are not listed. */
   subcommands?: CommandSubcommandDef[];

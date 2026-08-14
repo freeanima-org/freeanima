@@ -39,9 +39,8 @@ describe("remote tools naming", () => {
   it("resolveDefaultRemotePlatform skips empty REST ctx", () => {
     expect(resolveDefaultRemotePlatform(undefined, "", "")).toBeUndefined();
     expect(resolveDefaultRemotePlatform(undefined, "  ", "")).toBeUndefined();
-    expect(resolveDefaultRemotePlatform(undefined, "companion", "k7m")).toBe(
-      "remote:companion:k7m",
-    );
+    expect(resolveDefaultRemotePlatform(undefined, "companion", "k7m")).toBe("companion");
+    expect(resolveDefaultRemotePlatform(undefined, "coding", "abc")).toBe("coding");
     expect(resolveDefaultRemotePlatform("chat", "", "")).toBe("chat");
     expect(resolveDefaultRemotePlatform("  ", "companion", "k7m")).toBeUndefined();
   });

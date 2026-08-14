@@ -53,12 +53,12 @@ export {
   taskItemPrioritySchema,
   vaultItemTypeSchema,
   selfBlockKeySchema,
-  conversationModuleSchema,
+  conversationScenarioSchema,
   type TaskItemStatus,
   type TaskItemPriority,
   type VaultItemType,
   type SelfBlockKey,
-  type ConversationModule,
+  type ConversationScenario,
 } from "./enums.ts";
 export { limbicKindSchema, type LimbicKind } from "./limbic.ts";
 export {

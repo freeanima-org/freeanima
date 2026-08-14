@@ -10,7 +10,7 @@ const baseRow = {
   system_prompt: null,
   system_prompt_built_at: null,
   platform_info: null,
-  module: null,
+  scenario: null,
   compression: null,
   temporal_day: null,
   todos: { items: [], next_id: 1 },
@@ -40,11 +40,27 @@ describe("conversationSelectSchema", () => {
     ).not.toThrow();
   });
 
-  it("normalizes legacy sap: platform_info on select", () => {
+  it("accepts flat companion platform_info on select", () => {
     const parsed = conversationSelectSchema.parse({
       ...baseRow,
-      platform_info: { platform: "sap:companion:k7m" },
+      platform_info: {
+        platform: "companion",
+        outpost_app_id: "companion",
+        outpost_instance_id: "k7m",
+      },
     });
-    expect(parsed.platform_info).toMatchObject({ platform: "remote:companion:k7m" });
+    expect(parsed.platform_info).toMatchObject({
+      platform: "companion",
+      outpost_instance_id: "k7m",
+    });
+  });
+
+  it("rejects legacy sap: platform_info on select", () => {
+    expect(() =>
+      conversationSelectSchema.parse({
+        ...baseRow,
+        platform_info: { platform: "sap:companion:k7m" },
+      }),
+    ).toThrow();
   });
 });

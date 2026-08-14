@@ -18,10 +18,11 @@ describe("platformMatchesCommandPattern", () => {
     expect(platformMatchesCommandPattern("discord", "weixin")).toBe(false);
   });
 
-  it("matches remote:chat:* against any chat instance", () => {
-    expect(platformMatchesCommandPattern("remote:chat:web", "remote:chat:*")).toBe(true);
-    expect(platformMatchesCommandPattern("remote:chat:k7m", "remote:chat:*")).toBe(true);
-    expect(platformMatchesCommandPattern("remote:companion:web", "remote:chat:*")).toBe(false);
+  it("matches flat chat / coding / companion", () => {
+    expect(platformMatchesCommandPattern("chat", "chat")).toBe(true);
+    expect(platformMatchesCommandPattern("coding", "coding")).toBe(true);
+    expect(platformMatchesCommandPattern("companion", "companion")).toBe(true);
+    expect(platformMatchesCommandPattern("companion", "chat")).toBe(false);
   });
 
   it("supports lone * as match-all", () => {
@@ -34,12 +35,13 @@ describe("commandAvailableForPlatform", () => {
     name: "mask",
     description: "mask",
     handler: () => "",
-    platforms: ["remote:chat:*"],
+    platforms: ["chat", "coding", "companion"],
   };
 
-  it("accepts chat SAP instances via glob", () => {
-    expect(commandAvailableForPlatform(cmd, "remote:chat:web")).toBe(true);
-    expect(commandAvailableForPlatform(cmd, "remote:chat:custom")).toBe(true);
+  it("accepts flat chat / coding / companion", () => {
+    expect(commandAvailableForPlatform(cmd, "chat")).toBe(true);
+    expect(commandAvailableForPlatform(cmd, "coding")).toBe(true);
+    expect(commandAvailableForPlatform(cmd, "companion")).toBe(true);
     expect(commandAvailableForPlatform(cmd, "discord")).toBe(false);
   });
 });

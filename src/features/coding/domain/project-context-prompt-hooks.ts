@@ -40,10 +40,10 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
   registry.on(
     systemPromptBuild,
     (ctx) => {
-      if (ctx.mode !== "work" && ctx.meta?.module !== "coding") {
+      if (ctx.mode !== "work" && ctx.meta?.scenario !== "coding_agent") {
         return { status: "ok" };
       }
-      if (ctx.meta?.module !== "coding") {
+      if (ctx.meta?.scenario !== "coding_agent") {
         return { status: "ok" };
       }
 

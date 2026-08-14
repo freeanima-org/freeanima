@@ -1,7 +1,7 @@
 import { omitUndefined } from "@freeanima/host/core/util";
 
 import type { SystemPromptBuildContext } from "./hooks.ts";
-import { resolvePromptMode } from "./mode.ts";
+import { resolveScenarioProfile } from "./scenario.ts";
 
 export type SystemPromptHookRunner = (ctx: SystemPromptBuildContext) => string | Promise<string>;
 
@@ -22,7 +22,7 @@ export async function buildSystemPrompt(
       "SystemPromptHookRunner not registered: call bindEnginePorts() or registerSystemPromptHookRunner",
     );
   }
-  const mode = resolvePromptMode(meta?.module);
+  const mode = resolveScenarioProfile(meta?.scenario).prompt;
   return runner(omitUndefined({ functionNames, cwd, meta, mode }));
 }
 
