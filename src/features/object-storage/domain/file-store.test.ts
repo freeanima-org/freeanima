@@ -1,4 +1,4 @@
-import { afterAll, afterEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, beforeAll, describe, expect, it, mock } from "bun:test";
 
 import { OBJECT_FILE_COMPONENT } from "@freeanima/host/core/db/schema/entity";
 import type { EntityRow } from "@freeanima/host/core/db/pg/entity";
@@ -31,7 +31,17 @@ afterAll(() => {
   mock.module("@freeanima/host/core/db/pg/entity", () => entityOriginal);
 });
 
-const { createObjectFile, updateObjectFile } = await import("./file-store.ts");
+// 顶层从 ./file-store 解构会在 email/message-store mock.module(domain) 写穿 createObjectFile
+// 时绑到 stub；等到本文件 beforeAll（晚于对方 afterAll restore）再从 domain 取真实现。
+type FileStoreApi = typeof import("./file-store.ts");
+let createObjectFile: FileStoreApi["createObjectFile"];
+let updateObjectFile: FileStoreApi["updateObjectFile"];
+
+beforeAll(async () => {
+  const domain = await import("@freeanima/features/object-storage/domain");
+  createObjectFile = domain.createObjectFile;
+  updateObjectFile = domain.updateObjectFile;
+});
 
 const CID_OLD = "1".repeat(32);
 const CID_NEW = "2".repeat(32);
