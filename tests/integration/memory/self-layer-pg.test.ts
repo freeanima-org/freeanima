@@ -5,19 +5,19 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { SELF_BLOCK_KEYS } from "@freeanima/host/core/db/pg/self-layer/types";
-import { buildAutobiographySummary } from "@freeanima/host/capabilities/memory/autobiography/run";
+import { SELF_BLOCK_KEYS } from "@freeanima/habitat/core/db/pg/self-layer/types";
+import { buildAutobiographySummary } from "@freeanima/habitat/capabilities/memory/autobiography/run";
 import {
   createAutobiographicalMemory,
   deprecateAutobiographicalMemory,
   getAutobiographicalMemory,
-} from "@freeanima/host/core/db/pg/autobiographical-memory";
+} from "@freeanima/habitat/core/db/pg/autobiographical-memory";
 import {
   getSelfBlock,
   listSelfBlocks,
   updateSelfBlock,
   upsertSelfBlock,
-} from "@freeanima/host/core/db/pg/self-layer";
+} from "@freeanima/habitat/core/db/pg/self-layer";
 
 describePg("self layer PG", () => {
   const prev = process.env.FREEANIMA_HOME;

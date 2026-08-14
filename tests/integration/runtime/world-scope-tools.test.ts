@@ -6,25 +6,25 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/host/engine/loop";
-import { ToolSetRegistry } from "@freeanima/host/core/tool";
-import { getProfileHopModel } from "@freeanima/host/platform/config";
+import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
+import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
+import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { registerDiaryTools } from "@freeanima/features/diary/domain";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
-import { createDreamEntry } from "@freeanima/host/core/db/pg/dream";
+import { createDreamEntry } from "@freeanima/habitat/core/db/pg/dream";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { createEmailAccount } from "@freeanima/features/email/domain";
 import {
   registerNotificationPort,
   registerNotificationTools,
   resetNotificationPortForTests,
-} from "@freeanima/host/capabilities/tools/notification";
-import { createNotificationPort } from "@freeanima/host/platform/service/notification-helpers";
+} from "@freeanima/habitat/capabilities/tools/notification";
+import { createNotificationPort } from "@freeanima/habitat/platform/service/notification-helpers";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId, testUserWorldId } from "../../helpers/world-context.ts";
-import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
-import type { RuntimeDeps } from "@freeanima/host/platform/service/runtime-deps";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import type { RuntimeDeps } from "@freeanima/habitat/platform/service/runtime-deps";
 
 function testCfg() {
   const ctx = getActivePgTestContext();

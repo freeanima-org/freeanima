@@ -2,30 +2,30 @@ import type { PgTestContext } from "./pg-test.ts";
 import {
   flushCompressionSummaries,
   abandonCompressionSummaries,
-} from "@freeanima/host/engine/turn";
-import { createConversationService } from "@freeanima/host/engine/conversation";
-import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
+} from "@freeanima/habitat/engine/turn";
+import { createConversationService } from "@freeanima/habitat/engine/conversation";
+import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
 import {
   createAppRuntime,
   initRuntimeContext,
   bindServicePorts,
   registerSystemPromptHooks,
-} from "@freeanima/host/platform";
+} from "@freeanima/habitat/platform";
 import {
   registerServiceTools,
   registerServiceStores,
   resetRegisterServiceToolsForTest,
-} from "@freeanima/host/platform";
-import { invalidateSelfLayerPromptCache } from "@freeanima/host/capabilities/self";
-import { upsertSelfBlock } from "@freeanima/host/core/db/pg/self-layer";
+} from "@freeanima/habitat/platform";
+import { invalidateSelfLayerPromptCache } from "@freeanima/habitat/capabilities/self";
+import { upsertSelfBlock } from "@freeanima/habitat/core/db/pg/self-layer";
 
 import { randomUUID } from "node:crypto";
-import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/host/core/util/temp-dir";
-import { conversations } from "@freeanima/host/core/db/schema";
+import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/habitat/core/util/temp-dir";
+import { conversations } from "@freeanima/habitat/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 
-import { bindHomeChannelConfig } from "@freeanima/host/platform/ports/home-channel";
-import { getDb } from "@freeanima/host/core/db/pg";
+import { bindHomeChannelConfig } from "@freeanima/habitat/platform/ports/home-channel";
+import { getDb } from "@freeanima/habitat/core/db/pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
 import { getActivePgTestContext } from "./pg-test.ts";

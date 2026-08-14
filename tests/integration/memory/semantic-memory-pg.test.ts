@@ -17,7 +17,7 @@ import {
   searchSemanticMemory,
   searchSemanticMemoryFts,
   updateSemanticMemory,
-} from "@freeanima/host/core/db/pg/semantic-memory";
+} from "@freeanima/habitat/core/db/pg/semantic-memory";
 
 describePg("semantic_memory PG", () => {
   const prev = process.env.FREEANIMA_HOME;

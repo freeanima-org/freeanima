@@ -28,9 +28,9 @@ collect markers (banded)
   → changed? notify user+agent (source_ref dedupe) → save baseline
 ```
 
-实现：`src/host/platform/service/env-health/`。
+实现：`packages/habitat/platform/service/env-health/`。
 
-**存储：** 基线为 **KV**（无 TTL），经 `@freeanima/host/core/redis` — 已配置则用 Redis；否则 `~/.anima/env-health-baseline.json`。旧文件存在且首次命中 Redis 时迁移一次并删文件。勿与用户活跃统计用的 **Cache**（`anima:cache:*`，有 TTL）混淆。
+**存储：** 基线为 **KV**（无 TTL），经 `@freeanima/habitat/core/redis` — 已配置则用 Redis；否则 `~/.anima/env-health-baseline.json`。旧文件存在且首次命中 Redis 时迁移一次并删文件。勿与用户活跃统计用的 **Cache**（`anima:cache:*`，有 TTL）混淆。
 
 ## v1 标记（分档后）
 
@@ -51,7 +51,7 @@ collect markers (banded)
 
 ### 用户活跃统计面板
 
-仅用户侧对话密度（新开 / 更新会话、用户消息 — 不含 agent/工具流量）。CST 日历窗口：今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 年。排除 `debug` 与 `cron`。随系统提示日界刷新；同一 CST 日复用 Cache（`anima:cache:user-activity-stats`）。实现：`src/host/platform/service/user-activity-stats/`。
+仅用户侧对话密度（新开 / 更新会话、用户消息 — 不含 agent/工具流量）。CST 日历窗口：今天 / 昨天 / 前天 / 近 7·30·90 天 / 近 1 年。排除 `debug` 与 `cron`。随系统提示日界刷新；同一 CST 日复用 Cache（`anima:cache:user-activity-stats`）。实现：`packages/habitat/platform/service/user-activity-stats/`。
 
 ## 通知
 

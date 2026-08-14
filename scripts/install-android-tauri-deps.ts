@@ -24,7 +24,7 @@ const ANDROID_TARGETS = [
 ];
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "src/portal/app/tauri");
+const tauriDir = join(root, "packages/frontend/portal/app/tauri");
 const androidGen = join(tauriDir, "src-tauri/gen/android");
 
 function which(cmd: string): boolean {
@@ -137,7 +137,7 @@ if (!existsSync(androidGen)) {
       "[install-android-tauri] 尚未生成 Android 工程。请执行：\n" +
         "  just install tauri-android -- --init\n" +
         "或：\n" +
-        "  cd src/portal/app/tauri && bun x tauri android init",
+        "  cd packages/frontend/portal/app/tauri && bun x tauri android init",
     );
     process.exit(1);
   }

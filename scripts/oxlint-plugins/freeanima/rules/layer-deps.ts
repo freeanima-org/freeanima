@@ -10,7 +10,7 @@ export const layerDeps: RuleModule = {
   },
   create(context) {
     const rel = relToRepo(context.filename).replaceAll("\\", "/");
-    if (!rel.startsWith("src/")) return {};
+    if (!rel.startsWith("packages/")) return {};
     if (rel.includes(".test.") || rel.includes(".spec.")) return {};
 
     return visitModuleSpecifiers(context, (spec, node) => {

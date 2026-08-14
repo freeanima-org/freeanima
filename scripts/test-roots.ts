@@ -26,13 +26,16 @@ function pushIfHasTests(roots: string[], absPath: string): void {
   }
 }
 
-/** Unit test roots: 产品源码 `src/`（colocated `*.test.ts`） */
+/** Unit test roots: packages/* colocated `*.test.ts` */
 export function discoverUnitTestRoots(): string[] {
-  const srcRoot = join(repoRoot, "src");
-  return existsSync(srcRoot) ? ["src"] : [];
+  const roots: string[] = [];
+  for (const pkg of ["shared", "habitat", "frontend"] as const) {
+    pushIfHasTests(roots, join(repoRoot, "packages", pkg));
+  }
+  return roots.toSorted();
 }
 
-/** Coverage shards: unit (`src`) + `tests/integration` */
+/** Coverage shards: unit packages + `tests/integration` */
 export function discoverTestRoots(): string[] {
   const roots = discoverUnitTestRoots();
   pushIfHasTests(roots, join(repoRoot, "tests/integration"));

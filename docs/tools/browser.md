@@ -67,4 +67,4 @@ title: "Camofox 浏览器 Profile 与 Session"
 
 ## 另见
 
-实现：`src/host/capabilities/tools/browser-camofox.ts`。
+实现：`packages/habitat/capabilities/tools/browser-camofox.ts`。

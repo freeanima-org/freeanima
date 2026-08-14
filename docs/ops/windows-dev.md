@@ -93,7 +93,7 @@ just dev tauri
 # 打包 Dev 安装器（与 Linux 的 just pack tauri 对称）
 $env:FREEANIMA_BUILD_CHANNEL = "local"
 just pack tauri
-# 产物：dist/ 下 NSIS，或 src/portal/app/tauri/src-tauri/target/release/bundle/nsis/
+# 产物：dist/ 下 NSIS，或 packages/frontend/portal/app/tauri/src-tauri/target/release/bundle/nsis/
 ```
 
 打包前若 `link.exe` 不在 PATH，先开 **x64 Native Tools Command Prompt**，或：
@@ -151,7 +151,7 @@ bun install --registry=https://registry.npmjs.org
 若 `just` 找不到 `bash`，用 Bun 跑同一套入口：
 
 ```bash
-bun src/portal/cli/dev-habitat.ts          # Habitat; random port ≥10000
+bun packages/habitat/portal/cli/dev-habitat.ts          # Habitat; random port ≥10000
 bun scripts/dev-web.ts                     # Vite Web; set FREEANIMA_URL to Habitat
 bun scripts/dev.ts                         # Habitat then Web (same as just dev)
 bun scripts/dev-tauri-desktop.ts           # Tauri shell (need Vite :5000)

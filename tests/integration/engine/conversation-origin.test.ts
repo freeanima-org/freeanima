@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation origin", () => {

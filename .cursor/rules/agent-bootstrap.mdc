@@ -9,7 +9,7 @@ alwaysApply: true
 
 ## Global view
 
-**Habitat**（栖息地）= 长驻进程；**Portal**（入口）四形态：application Shell / browser 扩展 / mcp `/mcp` / cli。产品与 Habitat 逻辑 **仅 TypeScript**；Portal Shell = **Tauri**。源码 `just dev`；安装版 `anima service`（`/rpc/v1` + `/mcp`）。布局：`src/{host,client,ui-kit,features,shared,portal}` — [`repository-topology.mdc`](repository-topology.mdc)。命名：[`docs/product/architecture.md`](../../docs/product/architecture.md)、[`i18n/glossary.md`](../../i18n/glossary.md)。
+**Habitat**（栖息地）= 长驻进程；**Portal**（入口）四形态：application Shell / browser 扩展 / mcp `/mcp` / cli。产品与 Habitat 逻辑 **仅 TypeScript**；Portal Shell = **Tauri**。源码 `just dev`；安装版 `anima service`（`/rpc/v1` + `/mcp`）。布局：`packages/{shared,habitat,frontend}` — [`repository-topology.mdc`](repository-topology.mdc)。命名：[`docs/product/architecture.md`](../../docs/product/architecture.md)、[`i18n/glossary.md`](../../i18n/glossary.md)。
 
 **代码是真相**；勿凭 docs 臆造工具名 / 端点 / 协议。专题约束靠 `.cursor/rules/*.mdc` 的 globs 注入（改相关文件时自动带上）。
 

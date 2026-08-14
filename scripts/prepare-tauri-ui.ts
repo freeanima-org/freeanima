@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 打包前：按 target 构建 web → `src/portal/app/tauri/src-tauri/ui/web`。
+ * 打包前：按 target 构建 web → `packages/frontend/portal/app/tauri/src-tauri/ui/web`。
  *
  * FREEANIMA_TAURI_TARGET=desktop|mobile（默认 desktop）
  * - desktop：dist-desktop + ui/companion + ui/coding（frontendDist，非 file:// resources）+ 启动 splash
@@ -15,12 +15,12 @@ import {
   shellWebDistDirName,
   type ShellBuildTarget,
 } from "@freeanima/client/portal-sdk/shell-build-target.ts";
-import { resolveBuildChannelFromEnv } from "@freeanima/host/core/config/build-meta.ts";
-import { resolveBuildVersionFromEnv } from "@freeanima/host/core/config/resolve-build-version.ts";
+import { resolveBuildChannelFromEnv } from "@freeanima/habitat/core/config/build-meta.ts";
+import { resolveBuildVersionFromEnv } from "@freeanima/habitat/core/config/resolve-build-version.ts";
 import {
   resolveDesktopShellIdentity,
   resolveMobileShellIdentity,
-} from "@freeanima/host/core/config/shell-identity.ts";
+} from "@freeanima/habitat/core/config/shell-identity.ts";
 import { resolveNativeBuildMeta } from "@freeanima/portal/app/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
 import { buildCodingApp } from "@freeanima/features/coding/lib/exports/build.ts";
@@ -31,8 +31,8 @@ const target: ShellBuildTarget =
   process.env.FREEANIMA_TAURI_TARGET === "mobile"
     ? "mobile"
     : parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET ?? "desktop");
-const srcTauri = join(root, "src/portal/app/tauri/src-tauri");
-const webDist = join(root, "src/portal/app/web", shellWebDistDirName(target));
+const srcTauri = join(root, "packages/frontend/portal/app/tauri/src-tauri");
+const webDist = join(root, "packages/frontend/portal/app/web", shellWebDistDirName(target));
 const uiRoot = join(srcTauri, "ui");
 const uiWeb = join(uiRoot, "web");
 const companionUi = join(uiRoot, "companion");

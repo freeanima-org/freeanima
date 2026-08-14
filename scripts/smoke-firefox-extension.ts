@@ -13,8 +13,8 @@ import {
   FIREFOX_ADDON_ID,
   FIREFOX_ADDON_UPDATE_URL,
   resolveFirefoxAddonVersion,
-} from "@freeanima/host/core/config/firefox-addon.ts";
-import { resolvePackArtifactMeta } from "@freeanima/host/core/config/pack-artifact-names.ts";
+} from "@freeanima/habitat/core/config/firefox-addon.ts";
+import { resolvePackArtifactMeta } from "@freeanima/habitat/core/config/pack-artifact-names.ts";
 
 const root = join(import.meta.dir, "..");
 const firefoxDir = join(root, "dist/browser-extension/firefox-mv3");

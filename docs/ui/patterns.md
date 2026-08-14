@@ -60,7 +60,7 @@ title: 交互模式
 | 壳     | N/A                                                                                                                                                      |
 | 禁止   | 用 `getShellKind()` 选菜单类型；用视口宽度选 ContextMenu vs ActionSheet；自定义 `fixed` 坐标菜单                                                         |
 
-**实现：** 底盘 — [`ListRow.tsx`](../../src/ui-kit/composite/ListRow.tsx)。任务领域 — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx)（+ 列表包装 `TaskItemListView`）。消费者：项目侧栏、任务列表侧栏、智能清单侧栏、邮件消息/账户行、聊天室对话列表。能力开关：`useActionSheet`、`contextMenuEnabled`、来自父级的拖拽 attrs/listeners。聊天室 touch 常驻主操作为**归档**（无 ⋯），溢出仍靠长按 ActionSheet。
+**实现：** 底盘 — [`ListRow.tsx`](../../packages/frontend/ui-kit/composite/ListRow.tsx)。任务领域 — [`TaskItemRowView.tsx`](../../packages/frontend/ui-kit/composite/TaskItemRowView.tsx)（+ 列表包装 `TaskItemListView`）。消费者：项目侧栏、任务列表侧栏、智能清单侧栏、邮件消息/账户行、聊天室对话列表。能力开关：`useActionSheet`、`contextMenuEnabled`、来自父级的拖拽 attrs/listeners。聊天室 touch 常驻主操作为**归档**（无 ⋯），溢出仍靠长按 ActionSheet。
 
 **合规：** 参考（底盘已抽取）。**待对齐（P2/P3）：** MoveTo*Picker 树行；Vault/日记/番茄选择器；栖息地管理台；扩展弹窗。
 
@@ -172,7 +172,7 @@ title: 交互模式
 | 壳     | N/A                                                                             |
 | 禁止   | touch 上仅靠 Enter；对 touch 主交互隐藏提交控件                                 |
 
-**实现：** [`QuickAddBar.tsx`](../../src/ui-kit/composite/QuickAddBar.tsx)。
+**实现：** [`QuickAddBar.tsx`](../../packages/frontend/ui-kit/composite/QuickAddBar.tsx)。
 
 **合规：** 参考。
 
@@ -194,7 +194,7 @@ title: 交互模式
 | 壳     | N/A                                                                          |
 | 禁止   | 用 `getShellKind()` 启用下拉                                                 |
 
-**实现：** [`PullToRefresh.tsx`](../../src/ui-kit/composite/PullToRefresh.tsx)。产品说明 → [page-refresh.md](../aspects/page-refresh.md)。
+**实现：** [`PullToRefresh.tsx`](../../packages/frontend/ui-kit/composite/PullToRefresh.tsx)。产品说明 → [page-refresh.md](../aspects/page-refresh.md)。
 
 **合规：** 参考。
 
@@ -216,7 +216,7 @@ title: 交互模式
 | 壳     | N/A                                                                       |
 | 禁止   | `getShellKind()` ⇒ drawer 或 tabs                                         |
 
-**实现：** [`ListDetailLayout.tsx`](../../src/ui-kit/layout/ListDetailLayout.tsx)、ThreeColumnLayout；chrome 助手 [`DetailPanelShell.tsx`](../../src/ui-kit/composite/DetailPanelShell.tsx)、[`ModuleScopeBar.tsx`](../../src/ui-kit/composite/ModuleScopeBar.tsx)。
+**实现：** [`ListDetailLayout.tsx`](../../packages/frontend/ui-kit/layout/ListDetailLayout.tsx)、ThreeColumnLayout；chrome 助手 [`DetailPanelShell.tsx`](../../packages/frontend/ui-kit/composite/DetailPanelShell.tsx)、[`ModuleScopeBar.tsx`](../../packages/frontend/ui-kit/composite/ModuleScopeBar.tsx)。
 
 **合规：** 参考。
 
@@ -230,7 +230,7 @@ title: 交互模式
 
 **维度适配：** 文案与位置为不变量；布局可改 padding；交互/壳 N/A。
 
-**实现：** [`EmptyState.tsx`](../../src/ui-kit/composite/EmptyState.tsx)、[`StatusAlert.tsx`](../../src/ui-kit/composite/StatusAlert.tsx)。
+**实现：** [`EmptyState.tsx`](../../packages/frontend/ui-kit/composite/EmptyState.tsx)、[`StatusAlert.tsx`](../../packages/frontend/ui-kit/composite/StatusAlert.tsx)。
 
 **合规：** 参考。
 
@@ -253,7 +253,7 @@ title: 交互模式
 | 长文 | 日记块、任务/项目 `content`、聊天室输入草稿 | 1000ms   | 5000ms  |
 | 短文 | 数字/配置字段（伴侣行为、番茄分钟）         | 400ms    | 2000ms  |
 
-**实现：** [`auto-persist-schedule.ts`](../../src/ui-kit/lib/auto-persist-schedule.ts)；详情面板经 [`useDetailPanelState.ts`](../../src/ui-kit/composite/useDetailPanelState.ts)（默认长文预设）。Toggle/Switch 与栖息地显式保存按钮保持立即——非 AutoPersist。
+**实现：** [`auto-persist-schedule.ts`](../../packages/frontend/ui-kit/lib/auto-persist-schedule.ts)；详情面板经 [`useDetailPanelState.ts`](../../packages/frontend/ui-kit/composite/useDetailPanelState.ts)（默认长文预设）。Toggle/Switch 与栖息地显式保存按钮保持立即——非 AutoPersist。
 
 **禁止：** 文本/数字字段按键写入栖息地；为 UI 自动保存在本模块旁再发明第二套 debounce 助手。
 

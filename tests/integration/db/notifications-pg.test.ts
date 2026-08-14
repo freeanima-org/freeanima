@@ -1,5 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { countNotifications } from "@freeanima/host/core/db/pg/notifications";
+import { countNotifications } from "@freeanima/habitat/core/db/pg/notifications";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -12,7 +12,7 @@ import {
   listNotifications,
   markNotificationRead,
 } from "@freeanima/features/notification/habitat/service";
-import type { RuntimeDeps } from "@freeanima/host/platform/service/runtime-deps";
+import type { RuntimeDeps } from "@freeanima/habitat/platform/service/runtime-deps";
 
 function testRuntimeDeps(): RuntimeDeps {
   return {

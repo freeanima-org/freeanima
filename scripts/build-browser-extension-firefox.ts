@@ -18,8 +18,8 @@ import {
   FIREFOX_ADDON_UPDATES_ASSET_NAME,
   buildFirefoxAddonUpdatesJson,
   resolveFirefoxAddonVersion,
-} from "@freeanima/host/core/config/firefox-addon.ts";
-import { resolvePackArtifactMeta } from "@freeanima/host/core/config/pack-artifact-names.ts";
+} from "@freeanima/habitat/core/config/firefox-addon.ts";
+import { resolvePackArtifactMeta } from "@freeanima/habitat/core/config/pack-artifact-names.ts";
 
 const root = join(import.meta.dir, "..");
 const extOutDir = join(root, "dist/browser-extension");

@@ -72,7 +72,7 @@ Alert 分两档（同一契约，成对）：
 
 上表为目标态；现状 gap 见切面。番茄钟阶段结束**不写 inbox**；会话历史由 `pomodoro_session` entity 承担。
 
-实现：`src/client/portal-sdk/local-reminder.ts` + `portal-sdk/alert/` + 各端
+实现：`packages/frontend/client/portal-sdk/local-reminder.ts` + `portal-sdk/alert/` + 各端
 backend。
 
 | 端          | 即时通道（无伴侣 / 非 desktop）                                                                                      | 预登记                           |

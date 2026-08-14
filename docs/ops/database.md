@@ -24,7 +24,7 @@ database:
 [`security.md`](security.md#credential-responsibilities)。
 
 可选连接池覆盖（见
-[`src/host/core/db/pg/client.ts`](../../src/host/core/db/pg/client.ts)）：
+[`packages/habitat/core/db/pg/client.ts`](../../packages/habitat/core/db/pg/client.ts)）：
 
 | Env                              | Default | 说明                                                                      |
 | -------------------------------- | ------- | ------------------------------------------------------------------------- |

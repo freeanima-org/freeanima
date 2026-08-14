@@ -2,7 +2,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const ROOT = join(import.meta.dir, "..", "src/host/core/db/pg");
+const ROOT = join(import.meta.dir, "..", "packages/habitat/core/db/pg");
 
 const ID_RENAMES: [string, string][] = [
   ["sourceConversationIds", "source_conversation_ids"],

@@ -6,10 +6,10 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/host/core/util/temp-dir";
+import { createTempDir, removeTempDir } from "@freeanima/habitat/core/util/temp-dir";
 import { appendIntegrationConfig, testConv } from "../../helpers/pg-test.ts";
 import {
   findCommand,
@@ -17,10 +17,10 @@ import {
   isRestartResult,
   isUpgradeResult,
   resolveCommand,
-} from "@freeanima/host/capabilities/tools/slash-commands";
-import { getAppRuntime } from "@freeanima/host/platform";
-import { getHomeChannel } from "@freeanima/host/platform/ports/home-channel";
-import { getHabitatRuntimeConfigDocument } from "@freeanima/host/core/db/pg";
+} from "@freeanima/habitat/capabilities/tools/slash-commands";
+import { getAppRuntime } from "@freeanima/habitat/platform";
+import { getHomeChannel } from "@freeanima/habitat/platform/ports/home-channel";
+import { getHabitatRuntimeConfigDocument } from "@freeanima/habitat/core/db/pg";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("slash commands (platform)", () => {

@@ -11,7 +11,7 @@ import {
   packArtifactVersionedName,
   resolvePackArtifactMeta,
   type PackArtifactKind,
-} from "@freeanima/host/core/config/pack-artifact-names.ts";
+} from "@freeanima/habitat/core/config/pack-artifact-names.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 

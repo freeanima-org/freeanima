@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 
-import { getEntity } from "@freeanima/host/core/db/pg/entity";
+import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
 import {
   createEmailAccount,
   deleteEmailAccountRow,

@@ -84,7 +84,7 @@ Then configure `~/.anima/config.yaml` (at least `database.url`) and run `anima s
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git && cd freeanima
 bun install
-bun src/portal/cli/cli.ts -- --help
+bun packages/habitat/portal/cli/cli.ts -- --help
 just dev
 
 # Optional: build a local Linux standalone into ~/.anima/standalone (Linux host)
@@ -93,7 +93,7 @@ just install cli
 
 ## Client UI
 
-聊天室与管理台由 **Portal 壳**（`src/portal/app/tauri`）与 **Web 壳**（`src/portal/app/web`）提供 SPA。Habitat 托管 API；有 dist 时托管 `/web/*`：
+聊天室与管理台由 **Portal 壳**（`packages/frontend/portal/app/tauri`）与 **Web 壳**（`packages/frontend/portal/app/web`）提供 SPA。Habitat 托管 API；有 dist 时托管 `/web/*`：
 
 - API：`http://127.0.0.1:2658/rpc/v1`
 - Dev：`just dev` → `http://127.0.0.1:5000/web/chat`（Habitat：`/web/habitat/dashboard`）

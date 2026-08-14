@@ -20,7 +20,7 @@ if (!androidMain) {
 const manifestPath = join(androidMain, "AndroidManifest.xml");
 const xmlDir = join(androidMain, "res/xml");
 const nscPath = join(xmlDir, "network_security_config.xml");
-const pluginSrcDir = join(root, "src/portal/app/tauri/android-plugins/apk-installer");
+const pluginSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/apk-installer");
 const pluginKtDest = join(androidMain, "java/com/freeanima/portal/apk/ApkInstallerPlugin.kt");
 const filePathsDest = join(xmlDir, "file_paths.xml");
 

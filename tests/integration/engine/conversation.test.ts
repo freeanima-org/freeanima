@@ -7,13 +7,13 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { existsSync } from "node:fs";
-import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/host/core/tool";
-import { registerServiceTools } from "@freeanima/host/platform";
+import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/habitat/core/tool";
+import { registerServiceTools } from "@freeanima/habitat/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import { getConversationTools } from "@freeanima/host/core/db/pg/conversation";
-import * as conversationPg from "@freeanima/host/core/db/pg/conversation";
+import { getConversationTools } from "@freeanima/habitat/core/db/pg/conversation";
+import * as conversationPg from "@freeanima/habitat/core/db/pg/conversation";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation", () => {

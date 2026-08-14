@@ -8,7 +8,7 @@ FreeAnima 入口 UI 的产品设计系统：**视觉基础**、**组件分类**�
 
 覆盖**应用形态 SPA** 与浏览器扩展的 **popup / options**（同一 `@freeanima/ui-kit` 栈）。Content script 不在本设计系统内 — 见 [portal.md](../modules/portal.md)。
 
-本目录是 **UI/UX 规范 SSOT**。Agent 硬禁令、导入规则与 API 入口路径在 [`.cursor/rules/`](../../.cursor/rules/agent-bootstrap.mdc) 并链到此处。Token 值在代码中（`src/ui-kit/styles/globals.css`）。代码与文档冲突时，**以代码为准**。
+本目录是 **UI/UX 规范 SSOT**。Agent 硬禁令、导入规则与 API 入口路径在 [`.cursor/rules/`](../../.cursor/rules/agent-bootstrap.mdc) 并链到此处。Token 值在代码中（`packages/frontend/ui-kit/styles/globals.css`）。代码与文档冲突时，**以代码为准**。
 
 ## 阅读顺序
 
@@ -23,7 +23,7 @@ FreeAnima 入口 UI 的产品设计系统：**视觉基础**、**组件分类**�
 | ------------------------------- | ------------------------------------------ | -------------------- |
 | `docs/ui/`                      | 面向产品的规范、模式契约、维度适配         | IDE 清单、每周工具表 |
 | `.cursor/rules/frontend-ui.mdc` | 三维度 API、栈禁令、导入边界、复合组件清单 | 长篇产品 / 视觉论述  |
-| `src/ui-kit/`                   | 组件 + CSS token（实现 SSOT）              | 产品架构             |
+| `packages/frontend/ui-kit/`     | 组件 + CSS token（实现 SSOT）              | 产品架构             |
 | `docs/aspects/`                 | 横切数据面（同步、刷新、离线）             | 视觉分类             |
 
 功能原型与包触达列表 → [`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)。

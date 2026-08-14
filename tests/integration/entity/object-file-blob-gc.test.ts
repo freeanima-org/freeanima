@@ -4,7 +4,7 @@ import {
   deleteEntity,
   getEntity,
   purgeSoftDeletedEntities,
-} from "@freeanima/host/core/db/pg/entity";
+} from "@freeanima/habitat/core/db/pg/entity";
 import {
   bindObjectStore,
   createObjectFile,

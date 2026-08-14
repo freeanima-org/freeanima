@@ -8,7 +8,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build, type Plugin } from "vite";
 
-import { buildViteAliases } from "@freeanima/client/app-frame/vite/module-aliases.ts";
+import {
+  buildViteAliases,
+  freeanimaResolvePlugin,
+} from "@freeanima/client/app-frame/vite/module-aliases.ts";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -47,7 +50,7 @@ async function main(): Promise<void> {
       configFile: false,
       root: REPO_ROOT,
       logLevel: "error",
-      plugins: [collectModuleIdsPlugin(moduleIds)],
+      plugins: [freeanimaResolvePlugin(REPO_ROOT), collectModuleIdsPlugin(moduleIds)],
       resolve: {
         alias: buildViteAliases({ repoRoot: REPO_ROOT }),
       },

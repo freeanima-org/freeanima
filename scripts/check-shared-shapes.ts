@@ -7,7 +7,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PG_SHAPES = join(REPO_ROOT, "src/shared/pg-shapes");
+const PG_SHAPES = join(REPO_ROOT, "packages/shared/pg-shapes");
 
 const FORBIDDEN = [/drizzle-orm/, /@freeanima\/host\//];
 
@@ -44,7 +44,7 @@ function checkGeneratedFresh(): void {
     console.error(r.stdout, r.stderr);
     process.exit(r.status ?? 1);
   }
-  const fmt = spawnSync("bun", ["x", "oxfmt", "src/shared/pg-shapes/rows"], {
+  const fmt = spawnSync("bun", ["x", "oxfmt", "packages/shared/pg-shapes/rows"], {
     cwd: REPO_ROOT,
     encoding: "utf8",
   });
@@ -52,13 +52,13 @@ function checkGeneratedFresh(): void {
     console.error(fmt.stdout, fmt.stderr);
     process.exit(fmt.status ?? 1);
   }
-  const diff = spawnSync("git", ["diff", "--exit-code", "--", "src/shared/pg-shapes/rows"], {
+  const diff = spawnSync("git", ["diff", "--exit-code", "--", "packages/shared/pg-shapes/rows"], {
     cwd: REPO_ROOT,
     encoding: "utf8",
   });
   if (diff.status !== 0) {
     console.error(
-      "pg-shapes rows drift — run `just db shapes` && bun x oxfmt src/shared/pg-shapes/rows and commit.\n" +
+      "pg-shapes rows drift — run `just db shapes` && bun x oxfmt packages/shared/pg-shapes/rows and commit.\n" +
         (diff.stdout || ""),
     );
     process.exit(1);

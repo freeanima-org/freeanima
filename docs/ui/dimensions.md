@@ -10,10 +10,10 @@ Agent API 表与硬禁令 → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/ru
 
 ## 壳 vs 应用布局
 
-| 概念            | 是什么                                                             | 代码                                                                        |
-| --------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| **壳（Shell）** | 入口运行时宿主（browser / Tauri；构建目标 web / desktop / mobile） | `src/portal/app/*`；`portal-sdk`（`getShellKind`、`ShellApi`、buildTarget） |
-| **应用布局**    | 模块 Rail / 底栏、设置 chrome                                      | `src/client/app-frame`（`AppFrame`）；跟**视口**，不跟壳                    |
+| 概念            | 是什么                                                             | 代码                                                                                      |
+| --------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| **壳（Shell）** | 入口运行时宿主（browser / Tauri；构建目标 web / desktop / mobile） | `packages/frontend/portal/app/*`；`portal-sdk`（`getShellKind`、`ShellApi`、buildTarget） |
+| **应用布局**    | 模块 Rail / 底栏、设置 chrome                                      | `packages/frontend/client/app-frame`（`AppFrame`）；跟**视口**，不跟壳                    |
 
 不要把应用布局叫「壳」。不要从壳种类推导 Rail vs 底栏。
 

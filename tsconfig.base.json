@@ -23,7 +23,14 @@
     "allowImportingTsExtensions": true,
     "types": ["bun"],
     "paths": {
-      "@freeanima/*": ["./src/*"]
+      "@freeanima/shared": ["./packages/shared/index.ts"],
+      "@freeanima/shared/*": ["./packages/shared/*"],
+      "@freeanima/habitat/*": ["./packages/habitat/*"],
+      "@freeanima/client/*": ["./packages/frontend/client/*"],
+      "@freeanima/ui-kit": ["./packages/frontend/ui-kit/index.ts"],
+      "@freeanima/ui-kit/*": ["./packages/frontend/ui-kit/*"],
+      "@freeanima/features/*": ["./packages/frontend/features/*", "./packages/habitat/features/*"],
+      "@freeanima/portal/*": ["./packages/frontend/portal/*", "./packages/habitat/portal/*"]
     }
   }
 }

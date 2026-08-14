@@ -6,14 +6,18 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/host/engine/loop";
-import { ToolSetRegistry } from "@freeanima/host/core/tool";
-import { getProfileHopModel } from "@freeanima/host/platform/config";
+import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
+import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
+import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { registerDiaryTools } from "@freeanima/features/diary/domain";
-import { buildWorldConfigBody, getEntity, updateEntity } from "@freeanima/host/core/db/pg/entity";
-import { worldConfigBodySchema } from "@freeanima/host/core/db/schema";
-import { omitUndefined } from "@freeanima/host/core/util";
-import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
+import {
+  buildWorldConfigBody,
+  getEntity,
+  updateEntity,
+} from "@freeanima/habitat/core/db/pg/entity";
+import { worldConfigBodySchema } from "@freeanima/habitat/core/db/schema";
+import { omitUndefined } from "@freeanima/habitat/core/util";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { testUserWorldId } from "../../helpers/world-context.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";

@@ -15,11 +15,16 @@ import {
   createComponentBuildMeta,
   isShipChannel,
   resolveBuildChannelFromEnv,
-} from "@freeanima/host/core/config/build-meta.ts";
+} from "@freeanima/habitat/core/config/build-meta.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target = parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET);
-const out = join(root, "src/portal/app/web", shellWebDistDirName(target), "build-meta.json");
+const out = join(
+  root,
+  "packages/frontend/portal/app/web",
+  shellWebDistDirName(target),
+  "build-meta.json",
+);
 const channel = resolveBuildChannelFromEnv("local");
 const meta = createComponentBuildMeta({
   component: "web",

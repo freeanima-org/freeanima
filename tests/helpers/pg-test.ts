@@ -7,31 +7,31 @@ import {
   setDbForTest,
   type Db,
   type SqlClient,
-} from "@freeanima/host/core/db/pg";
-import { bindSearchRuntime } from "@freeanima/host/core/db/pg/search";
-import { createEngine } from "@freeanima/host/engine";
+} from "@freeanima/habitat/core/db/pg";
+import { bindSearchRuntime } from "@freeanima/habitat/core/db/pg/search";
+import { createEngine } from "@freeanima/habitat/engine";
 import {
   initLlmRuntime,
   registerLlmStackConfigurator,
   resetLlmRuntimeForTests,
-} from "@freeanima/host/core/llm";
-import { bindLlmStack } from "@freeanima/host/capabilities/llm-openai";
+} from "@freeanima/habitat/core/llm";
+import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import {
   createConversationService,
   type ConversationService,
-} from "@freeanima/host/engine/conversation";
-import { appendMessage, upsertConversationMeta } from "@freeanima/host/core/db/pg/conversation";
-import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
-import { type Config } from "@freeanima/host/platform/config";
-import { bindActiveRuntimeConfig } from "@freeanima/host/core/config";
-import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context";
-import { ensureWorldSubjects } from "@freeanima/host/core/db/pg/entity/subject-world";
-import { createTestLogger } from "@freeanima/host/kernel/logging/testing";
-import type { StoredMessage, ConversationMetaMessage } from "@freeanima/host/core/db/domain";
-import { relations } from "@freeanima/host/core/db/schema";
+} from "@freeanima/habitat/engine/conversation";
+import { appendMessage, upsertConversationMeta } from "@freeanima/habitat/core/db/pg/conversation";
+import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
+import { type Config } from "@freeanima/habitat/platform/config";
+import { bindActiveRuntimeConfig } from "@freeanima/habitat/core/config";
+import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { ensureWorldSubjects } from "@freeanima/habitat/core/db/pg/entity/subject-world";
+import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
+import type { StoredMessage, ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
+import { relations } from "@freeanima/habitat/core/db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
-import type { Engine } from "@freeanima/host/engine";
+import type { Engine } from "@freeanima/habitat/engine";
 
 export type PgTestContext = {
   sql: SqlClient;

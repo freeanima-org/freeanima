@@ -6,15 +6,15 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { normalizeUsage } from "@freeanima/host/core/llm";
-import { estimateTokens, estimateMessagesTokens } from "@freeanima/host/core/compress";
-import { FALLBACK_TOKENIZER_REPO } from "@freeanima/host/core/tokenizer";
+import { normalizeUsage } from "@freeanima/habitat/core/llm";
+import { estimateTokens, estimateMessagesTokens } from "@freeanima/habitat/core/compress";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/habitat/core/tokenizer";
 import {
   ensureFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
-} from "@freeanima/host/core/tokenizer/testing";
-import { computeStats, mergeStats, statsReport, getAppRuntime } from "@freeanima/host/platform";
+} from "@freeanima/habitat/core/tokenizer/testing";
+import { computeStats, mergeStats, statsReport, getAppRuntime } from "@freeanima/habitat/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testConv } from "../../helpers/pg-test.ts";
 

@@ -103,7 +103,7 @@ flowchart LR
 
 ## DX 演进
 
-自有 **PortalQueryClient**（不是 `@tanstack/react-query`）位于 `src/client/portal-sdk/portal-query/`：
+自有 **PortalQueryClient**（不是 `@tanstack/react-query`）位于 `packages/frontend/client/portal-sdk/portal-query/`：
 
 | 能力                                                          | 状态                                       |
 | ------------------------------------------------------------- | ------------------------------------------ |

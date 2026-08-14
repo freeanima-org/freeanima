@@ -18,7 +18,7 @@ import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const LOG = "[pack tauri]";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "src/portal/app/tauri");
+const tauriDir = join(root, "packages/frontend/portal/app/tauri");
 const bundleRoot = join(tauriDir, "src-tauri/target/release/bundle");
 const nsisOut = join(bundleRoot, "nsis");
 

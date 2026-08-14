@@ -14,7 +14,7 @@ import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "src/portal/app/tauri");
+const tauriDir = join(root, "packages/frontend/portal/app/tauri");
 const androidGen = join(tauriDir, "src-tauri/gen/android");
 
 function scoreApkPath(p: string): number {

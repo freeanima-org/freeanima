@@ -18,7 +18,7 @@ import { dirname, join } from "node:path";
 import {
   createComponentBuildMeta,
   resolveBuildChannelFromEnv,
-} from "@freeanima/host/core/config/build-meta";
+} from "@freeanima/habitat/core/config/build-meta";
 import {
   assertStandaloneBinaryHasNoTiktokenBuildPath,
   createTiktokenWasmPlugin,
@@ -29,9 +29,9 @@ import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
-const CLI_ENTRY = join(ROOT, "src/portal/cli/cli.ts");
-const META_MODULE = realpathSync(join(ROOT, "src/portal/cli/standalone-meta.ts"));
-const WEB_DIST_DIR = join(ROOT, "src/portal/app/web/dist");
+const CLI_ENTRY = join(ROOT, "packages/habitat/portal/cli/cli.ts");
+const META_MODULE = realpathSync(join(ROOT, "packages/habitat/portal/cli/standalone-meta.ts"));
+const WEB_DIST_DIR = join(ROOT, "packages/frontend/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 
 async function ensureWebDist(): Promise<void> {
@@ -53,14 +53,14 @@ async function ensureWebDist(): Promise<void> {
   console.log("building Web dist for embed…");
   await $`bun scripts/build-web.ts`.cwd(ROOT);
   if (!existsSync(WEB_DIST_INDEX)) {
-    throw new Error("pack web 完成后仍缺少 src/portal/app/web/dist/index.html");
+    throw new Error("pack web 完成后仍缺少 packages/frontend/portal/app/web/dist/index.html");
   }
 }
 
 function buildStandaloneMetaSource(version: string, buildMeta: unknown): string {
   const metaJson = JSON.stringify({ version, buildMeta });
   return `/** VIRTUAL: injected by scripts/build-cli-executable.ts via Bun.build files */
-import type { ComponentBuildMeta } from "@freeanima/host/core/config/build-meta.parse";
+import type { ComponentBuildMeta } from "@freeanima/habitat/core/config/build-meta.parse";
 
 export type StandaloneRuntimeMetaInject = {
   version: string;

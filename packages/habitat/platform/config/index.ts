@@ -1,0 +1,51 @@
+export * from "./paths.ts";
+export { expandConfigEnv } from "./env-expand.ts";
+export { parseYaml, stringifyYaml } from "./yaml.ts";
+export * from "./config.ts";
+export {
+  RuntimeConfigStore,
+  isPatchableRuntimeConfig,
+  type PatchableRuntimeConfig,
+} from "./runtime-config-store.ts";
+export { withPlatformDb } from "./cli-db.ts";
+export { clearVaultFieldCache, resolveVaultField } from "./vault-io.ts";
+export {
+  Config,
+  bindActiveRuntimeConfig,
+  getActiveRuntimeConfig,
+  resetActiveConfigForTest,
+} from "@freeanima/habitat/core/config";
+export * from "./database.ts";
+export * from "./redis.ts";
+export * from "./repo-root.ts";
+export * from "./version.ts";
+export * from "./config-sanitize.ts";
+export { restoreMaskedSecrets } from "./restore-masked-secrets.ts";
+export * from "./cjk.ts";
+export * from "./fts.ts";
+export * from "./embedding.ts";
+export * from "./llm-config.ts";
+export { resolveValue, resolveCredentialRef } from "./resolve.ts";
+export { loadConfigYamlRecord } from "./yaml-io.ts";
+export { patchRuntimeConfigSection, loadRuntimeConfigSection } from "./runtime-config-patch.ts";
+export { validateBootstrapOnStartup, validateRuntimeConfigOnStartup } from "./validate.ts";
+export { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
+export {
+  bindRuntimeConfigApplyDeps,
+  applyRuntimeConfigSection,
+  resetRuntimeConfigApplyDepsForTest,
+  TRANSFERRED_RUNTIME_SECTIONS,
+} from "./runtime-config-apply.ts";
+export {
+  runtimeConfigSchema,
+  mcpServerSchema,
+  type RuntimeConfig,
+  type LlmConfig,
+  llmConfigSchema,
+  llmProviderSchema,
+  llmProfileSchema,
+  llmRouteHopSchema,
+  type LlmProviderConfig,
+  type LlmProfileConfig,
+  type LlmRouteHopConfig,
+} from "@freeanima/habitat/core/config";

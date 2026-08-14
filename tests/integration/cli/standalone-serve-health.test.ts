@@ -8,7 +8,7 @@ import {
   closeDb,
   initDatabase,
   upsertHabitatRuntimeConfigDocument,
-} from "@freeanima/host/core/db/pg";
+} from "@freeanima/habitat/core/db/pg";
 import { describePg, pgTestUrl } from "../../helpers/pg-test-gate.ts";
 import { beginLogIsolation } from "../../helpers/log-isolation.ts";
 import { restoreIntegrationHome } from "../../helpers/integration-case.ts";

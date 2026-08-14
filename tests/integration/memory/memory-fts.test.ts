@@ -7,13 +7,13 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { filterRecallableMessages } from "@freeanima/host/capabilities/memory";
-import { buildFtsTsQuery, getDb } from "@freeanima/host/core/db/pg";
+import { filterRecallableMessages } from "@freeanima/habitat/capabilities/memory";
+import { buildFtsTsQuery, getDb } from "@freeanima/habitat/core/db/pg";
 import {
   createSemanticMemory,
   searchSemanticMemoryFts,
-} from "@freeanima/host/core/db/pg/semantic-memory";
-import { listMessages, searchMessagesFts } from "@freeanima/host/core/db/pg/conversation";
+} from "@freeanima/habitat/core/db/pg/semantic-memory";
+import { listMessages, searchMessagesFts } from "@freeanima/habitat/core/db/pg/conversation";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 

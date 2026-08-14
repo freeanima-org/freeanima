@@ -18,8 +18,8 @@ function isAllowed(rel: string): boolean {
 
 function isChatFromLlm(spec: string): boolean {
   if (spec === "./llm.ts" || spec.endsWith("/llm.ts")) return true;
-  if (spec === "@freeanima/host/core/llm") return true;
-  if (spec.startsWith("@freeanima/host/core/llm/")) return true;
+  if (spec === "@freeanima/habitat/core/llm") return true;
+  if (spec.startsWith("@freeanima/habitat/core/llm/")) return true;
   return false;
 }
 
@@ -38,7 +38,7 @@ export const noDirectChat: RuleModule = {
   },
   create(context) {
     const rel = relToRepo(context.filename).replaceAll("\\", "/");
-    if (!rel.startsWith("src/")) return {};
+    if (!rel.startsWith("packages/")) return {};
     if (isAllowed(rel)) return {};
 
     return {

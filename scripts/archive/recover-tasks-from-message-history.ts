@@ -10,19 +10,19 @@
 
 import { SQL } from "bun";
 
-import type { BootstrapConfig } from "@freeanima/host/core/config";
-import type { RuntimeConfig } from "@freeanima/host/core/config/schemas/runtime-config.ts";
-import { bindResolvedWorldContext } from "@freeanima/host/core/config/world-context.ts";
-import { ensureWorldSubjects } from "@freeanima/host/core/db/pg/entity/subject-world.ts";
+import type { BootstrapConfig } from "@freeanima/habitat/core/config";
+import type { RuntimeConfig } from "@freeanima/habitat/core/config/schemas/runtime-config.ts";
+import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/world-context.ts";
+import { ensureWorldSubjects } from "@freeanima/habitat/core/db/pg/entity/subject-world.ts";
 import {
   createTaskItem,
   getDefaultTaskList,
   listTaskItems,
   updateTaskItem,
 } from "@freeanima/features/task/domain/index.ts";
-import { initDatabase, closeDb } from "@freeanima/host/core/db/pg/index.ts";
-import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
-import { getConfiguredDatabaseUrlFromBootstrap } from "@freeanima/host/platform/config/database.ts";
+import { initDatabase, closeDb } from "@freeanima/habitat/core/db/pg/index.ts";
+import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
+import { getConfiguredDatabaseUrlFromBootstrap } from "@freeanima/habitat/platform/config/database.ts";
 
 const MINIMAL_CONFIG = {
   llm: { default_profile: "chat", providers: {}, profiles: {} },

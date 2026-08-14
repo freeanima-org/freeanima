@@ -5,9 +5,9 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/host/core/db/pg";
-import { hybridSearchSemanticMemory } from "@freeanima/host/core/db/pg/fts/hybrid-search.ts";
-import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/host/core/db/schema";
+} from "@freeanima/habitat/core/db/pg";
+import { hybridSearchSemanticMemory } from "@freeanima/habitat/core/db/pg/fts/hybrid-search.ts";
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/habitat/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -17,7 +17,7 @@ import {
 import {
   createSemanticMemory,
   searchSemanticMemoryFts,
-} from "@freeanima/host/core/db/pg/semantic-memory";
+} from "@freeanima/habitat/core/db/pg/semantic-memory";
 
 function fixedEmbedding(value = 0.25): number[] {
   return Array.from({ length: SEMANTIC_EMBEDDING_DIMENSIONS }, () => value);

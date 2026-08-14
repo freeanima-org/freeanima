@@ -17,7 +17,7 @@ import {
   FIREFOX_ADDON_ID,
   FIREFOX_ADDON_UPDATE_URL,
   buildFirefoxAddonUpdatesJson,
-} from "@freeanima/host/core/config/firefox-addon.ts";
+} from "@freeanima/habitat/core/config/firefox-addon.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outPath = join(root, "site/public/extension/firefox/updates.json");

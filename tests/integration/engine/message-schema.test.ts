@@ -8,7 +8,7 @@ import {
 
 import { testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import { isConversationMeta } from "@freeanima/host/core/db/domain";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 
 describePg("schemas/message", () => {
   const prev = process.env.FREEANIMA_HOME;

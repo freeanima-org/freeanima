@@ -1,6 +1,6 @@
 ---
 description: 前端硬约束 — 三维度 API、shadcn/ui-kit、Modal/菜单/列表
-globs: src/client/**/*,src/features/**/ui/**/*,src/portal/app/**/*,src/portal/extension/**/*,src/ui-kit/**/*
+globs: packages/frontend/client/**/*,packages/{habitat,frontend}/features/**/ui/**/*,packages/frontend/portal/app/**/*,packages/frontend/portal/extension/**/*,packages/frontend/ui-kit/**/*
 alwaysApply: false
 ---
 
@@ -14,8 +14,8 @@ alwaysApply: false
 
 | 概念 | 是什么 | 代码 |
 | ---- | ------ | ---- |
-| **Shell** | Portal 运行时宿主 | `src/portal/app/*`；`portal-sdk` |
-| **app frame** | Rail / 底栏 / 设置 chrome | `src/client/app-frame` |
+| **Shell** | Portal 运行时宿主 | `packages/frontend/portal/app/*`；`portal-sdk` |
+| **app frame** | Rail / 底栏 / 设置 chrome | `packages/frontend/client/app-frame` |
 
 禁止把 app frame 叫 Shell；禁止用 Shell 类型推导 Rail/底栏。
 
@@ -47,7 +47,7 @@ touch ≥44px、无 hover-only；Pad+外接键盘时交互维仍为 touch。入�
 
 ## 主题与 CSS
 
-- Token SSOT：`src/ui-kit/styles/globals.css`（`:root` / `.dark`；强调色 `.dark[data-color-theme]`）
+- Token SSOT：`packages/frontend/ui-kit/styles/globals.css`（`:root` / `.dark`；强调色 `.dark[data-color-theme]`）
 - **禁止**在 `globals.css` 外裸写主题色 `var(--background)`；用 Tailwind / `@apply`
 - 布局裸 CSS 只放 position / safe-area
 - 暗色用 `.dark`；**禁止** DaisyUI `data-theme`

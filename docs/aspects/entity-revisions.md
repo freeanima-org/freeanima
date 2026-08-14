@@ -11,7 +11,7 @@ title: 实体修订
 按需跟进。
 
 相关：[`entity-model.md`](../product/entity-model.md)、[`security.md`](../ops/security.md)。代码
-SSOT：`src/host/core/db/schema/entity/revisions.ts`、`updateEntity` /
+SSOT：`packages/habitat/core/db/schema/entity/revisions.ts`、`updateEntity` /
 `restoreEntityRevision`。
 
 ## 为何需要

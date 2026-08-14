@@ -3,13 +3,13 @@ import '_common.just'
 
 [no-cd]
 generate: _deps
-  cd src/host/core && {{ bun }} x drizzle-kit generate
+  cd packages/habitat/core && {{ bun }} x drizzle-kit generate
 
 # 从 pgTable + 覆盖映射 codegen 纯 Zod → shared/pg-shapes/rows
 [no-cd]
 shapes: _deps
   {{ bun }} scripts/gen-shared-shapes/main.ts
-  {{ bun }} x oxfmt src/shared/pg-shapes/rows
+  {{ bun }} x oxfmt packages/shared/pg-shapes/rows
 
 [no-cd]
 shapes-check: _deps
@@ -17,4 +17,4 @@ shapes-check: _deps
 
 [no-cd]
 migrate: _deps
-  cd src/host/core && {{ bun }} x drizzle-kit migrate
+  cd packages/habitat/core && {{ bun }} x drizzle-kit migrate

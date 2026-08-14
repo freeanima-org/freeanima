@@ -7,16 +7,16 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { getAppRuntime } from "@freeanima/host/platform";
-import { SELF_BLOCK_KEYS } from "@freeanima/host/core/db/pg/self-layer/types";
-import { createAutobiographicalMemory } from "@freeanima/host/core/db/pg/autobiographical-memory";
-import { createLimbicMemory } from "@freeanima/host/core/db/pg/limbic-memory";
+import { getAppRuntime } from "@freeanima/habitat/platform";
+import { SELF_BLOCK_KEYS } from "@freeanima/habitat/core/db/pg/self-layer/types";
+import { createAutobiographicalMemory } from "@freeanima/habitat/core/db/pg/autobiographical-memory";
+import { createLimbicMemory } from "@freeanima/habitat/core/db/pg/limbic-memory";
 import {
   createSemanticMemory,
   getSemanticMemory,
-} from "@freeanima/host/core/db/pg/semantic-memory";
-import { upsertSelfBlock } from "@freeanima/host/core/db/pg/self-layer";
-import { countSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
+} from "@freeanima/habitat/core/db/pg/semantic-memory";
+import { upsertSelfBlock } from "@freeanima/habitat/core/db/pg/self-layer";
+import { countSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {

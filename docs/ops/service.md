@@ -112,7 +112,7 @@ just dev web              # Vite HMR from :5000 (set FREEANIMA_URL to Habitat); 
 | 源码部署   | 启动前手动 `just pack web` | 有 dist 时栖息地提供 `/web/*`                                                                   |
 | 开发       | 不需要                     | `just dev` / `just dev habitat`（Habitat debounce 硬重启）+ `just dev web` → Web **:5000+** HMR |
 
-存在 Web dist（`src/portal/app/web/dist` 或内嵌）时，栈从栖息地提供浏览器 Web UI：`http://<host>:2658/web/*`（无独立 API 代理）。客户端在 **栖息地设置** 中保存栖息地 URL 与 **Service API Token**（`fa_at_...`）。可选栖息地原生 TLS 在 `http.tls.enabled: true` 时监听 **`https://<host>:2659`**（见 [`remote-access.md`](remote-access.md)）— **仅生产**；源码 `just dev habitat` 跳过栖息地 TLS；Vite 默认 HTTP，仅 `DEV_HTTPS=1` 时终止 HTTPS。
+存在 Web dist（`packages/frontend/portal/app/web/dist` 或内嵌）时，栈从栖息地提供浏览器 Web UI：`http://<host>:2658/web/*`（无独立 API 代理）。客户端在 **栖息地设置** 中保存栖息地 URL 与 **Service API Token**（`fa_at_...`）。可选栖息地原生 TLS 在 `http.tls.enabled: true` 时监听 **`https://<host>:2659`**（见 [`remote-access.md`](remote-access.md)）— **仅生产**；源码 `just dev habitat` 跳过栖息地 TLS；Vite 默认 HTTP，仅 `DEV_HTTPS=1` 时终止 HTTPS。
 
 **启动顺序：** 栖息地必须通过 `GET /rpc/v1/health/probe`（`status: ok`）之后，`serve()` 的 `onReady` 钩子才会跑。`anima service start` 默认最多等 **15 分钟**（`FREEANIMA_HABITAT_READY_TIMEOUT_MS`），因为 schema 迁移在 HTTP listen **之前**执行。远程工具宿主断线由 `@freeanima/shared/rpc-contract` 传输层重试（指数退避）。
 

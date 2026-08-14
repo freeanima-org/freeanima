@@ -13,8 +13,8 @@ alwaysApply: false
 - **Relative import depth**（oxlint `freeanima/import-depth`）：`src/`、`scripts/`、`tests/` 内相对路径最多 `../../`（禁止 `../../../` 及以上）；禁止 `../src/` 形式（跨目录引用 `src/` 须用 `@freeanima/*`）
 - **`dir:` 目录导入**（oxlint `freeanima/dir-import-exists`）：`import … from "dir:…"` 须解析到真实目录（`app/web/dist` 构建产物可缺）
 - **Base compiler flags** ([`tsconfig.base.json`](../../tsconfig.base.json)): `strict`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noImplicitOverride`, `allowUnreachableCode: false`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`
-- **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/shared/util`（host 路径 `@freeanima/host/core/util` 仍为 re-export）或 conditional spread
-- **Standalone 随包资源**：`just pack cli` / Bun `--compile` 后，`import.meta.dir` + `readFileSync` **读不到**未嵌入的旁路文件（表现为 `/$bunfs/root/...` ENOENT）。仓库内随二进制分发的 `.md` / `.json` 等须 `import … with { type: "text" | "json" | "file" }`；**migrations / docs / web dist** 走调用点 `dir:`（[`migrations-dir-import.ts`](../../src/host/core/db/migrations-dir-import.ts)、[`docs-dir-import.ts`](../../src/host/capabilities/tools/docs-dir-import.ts)、[`web-dist-dir-import.ts`](../../src/portal/cli/web/web-dist-dir-import.ts) + [`dir-import-plugin.ts`](../../scripts/dir-import-plugin.ts)，`bunfig` preload / pack 插件）；version / buildMeta 由 pack 经 Bun.build `files` 虚拟覆盖 [`standalone-meta.ts`](../../src/portal/cli/standalone-meta.ts) 注入。用户数据（`~/.anima/`）与运行时路径除外。第三方包若在入口里 `readFileSync(join(__dirname, …))`（如历史 tiktoken wasm），须 Bun 插件改写或改为本仓库静态 `type: "file"` 加载（jieba 默认词典见 `src/host/core/db/pg/fts/segment.ts`）。**潜伏**：`@discordjs/ws` 的 `defaultWorker.js`、`pino`/`thread-stream` 的 worker 同样按 `__dirname` 找旁路 JS 且未嵌入；当前 Discord `Client` 未使用 `WorkerShardingStrategy`、Habitat 未直接开 pino transport，默认路径不触发——若启用 Worker 分片 / pino transport，须 embed 或 `bundlerPathsOverrides`，并加 standalone smoke。
+- **Optional props**: with `exactOptionalPropertyTypes`, do not pass `prop: undefined` — use `omitUndefined()` from `@freeanima/shared/util`（host 路径 `@freeanima/habitat/core/util` 仍为 re-export）或 conditional spread
+- **Standalone 随包资源**：`just pack cli` / Bun `--compile` 后，`import.meta.dir` + `readFileSync` **读不到**未嵌入的旁路文件（表现为 `/$bunfs/root/...` ENOENT）。仓库内随二进制分发的 `.md` / `.json` 等须 `import … with { type: "text" | "json" | "file" }`；**migrations / docs / web dist** 走调用点 `dir:`（[`migrations-dir-import.ts`](../../packages/habitat/core/db/migrations-dir-import.ts)、[`docs-dir-import.ts`](../../packages/habitat/capabilities/tools/docs-dir-import.ts)、[`web-dist-dir-import.ts`](../../packages/habitat/portal/cli/web/web-dist-dir-import.ts) + [`dir-import-plugin.ts`](../../scripts/dir-import-plugin.ts)，`bunfig` preload / pack 插件）；version / buildMeta 由 pack 经 Bun.build `files` 虚拟覆盖 [`standalone-meta.ts`](../../packages/habitat/portal/cli/standalone-meta.ts) 注入。用户数据（`~/.anima/`）与运行时路径除外。第三方包若在入口里 `readFileSync(join(__dirname, …))`（如历史 tiktoken wasm），须 Bun 插件改写或改为本仓库静态 `type: "file"` 加载（jieba 默认词典见 `packages/habitat/core/db/pg/fts/segment.ts`）。**潜伏**：`@discordjs/ws` 的 `defaultWorker.js`、`pino`/`thread-stream` 的 worker 同样按 `__dirname` 找旁路 JS 且未嵌入；当前 Discord `Client` 未使用 `WorkerShardingStrategy`、Habitat 未直接开 pino transport，默认路径不触发——若启用 Worker 分片 / pino transport，须 embed 或 `bundlerPathsOverrides`，并加 standalone smoke。
 
 ## Lint (oxlint)
 
@@ -59,7 +59,7 @@ alwaysApply: false
 - **Disable 纪律**（oxlint + review 把关）:
   - `oxlint-disable` / `eslint-disable` 行须含 `-- reason`
   - 禁止 `ts-ignore` / `ts-nocheck`；`ts-expect-error` 须同行说明
-  - 契约目录（`src/host/platform/ports/`、`habitat-contract/`、`rpc-contract/`）禁止显式 `any`（`oxlint` `no-explicit-any`）
+  - 契约目录（`packages/habitat/platform/ports/`、`habitat-contract/`、`rpc-contract/`）禁止显式 `any`（`oxlint` `no-explicit-any`）
 
 - **Failures**: always `toolError(msg)` → JSON `{"error":"..."}`
 - **Successes**: structured tools use `toolResult(obj)`; LLM-readable tools (`file_read`, `terminal_run`, `code_execute`, etc.) may return plain-text stdout
@@ -81,7 +81,7 @@ alwaysApply: false
 
 **Multi-segment tool names:** `_` is standard (`mcp_{server}_{local}`, `acp_{agent}_{action}`, `remote_{app}_{instance}_{local}`). `.` / `:` aliases for remote tools. `-` only in ToolSet ids (e.g. `fridge-magnet`), not in tool names. `/` forbidden.
 
-**Module files:** one ToolSet per register module — `src/host/capabilities/**/src/{toolset-id}.ts` matching `registerToolSet("…")` (composite ids: `memory_semantic` → `memory-semantic.ts`). Plural filenames allowed only for multi-id config (`default-conversation-toolsets.ts`).
+**Module files:** one ToolSet per register module — `packages/habitat/capabilities/**/src/{toolset-id}.ts` matching `registerToolSet("…")` (composite ids: `memory_semantic` → `memory-semantic.ts`). Plural filenames allowed only for multi-id config (`default-conversation-toolsets.ts`).
 
 **Call intent `_title`:** 本地 / outpost remote 工具在 `registerToolSet` 时自动注入必填 `parameters.properties._title`（一句话调用意图，供 UI；与业务字段 `title` 区分）。MCP/ACP ToolSet（`mcp_*` / `acp_*`）不注入。LLM 填写；`validateToolArgs` 强制；handler 调用前由 loop / MCP server / outpost 剥离（`omitToolCallTitle`）。前端 ToolBlock 优先展示 `args._title`。
 
@@ -89,16 +89,16 @@ alwaysApply: false
 
 When adding or moving types / Zod / ports, decide in this order:
 
-1. **PG storage shape（纯 Zod 出口）** → `@freeanima/shared/pg-shapes`（`just db shapes` codegen 行级；jsonb/entity 手写同包）；DDL 仅 `@freeanima/host/core/db/schema`
-2. **PG 查询 API** → `@freeanima/host/core/db/pg/{domain}`（函数 + `types.ts`）；memory citation marker → `@freeanima/host/core/db/pg/memory-reference/markers` — [`src/host/core/db/pg/`](../../src/host/core/db/pg/)
-3. **Domain types** → owner package (`{layer}-{slug}` or `@freeanima/host/core/*` subpath); hoist to kernel pure-type packages only when shared across domains
+1. **PG storage shape（纯 Zod 出口）** → `@freeanima/shared/pg-shapes`（`just db shapes` codegen 行级；jsonb/entity 手写同包）；DDL 仅 `@freeanima/habitat/core/db/schema`
+2. **PG 查询 API** → `@freeanima/habitat/core/db/pg/{domain}`（函数 + `types.ts`）；memory citation marker → `@freeanima/habitat/core/db/pg/memory-reference/markers` — [`packages/habitat/core/db/pg/`](../../packages/habitat/core/db/pg/)
+3. **Domain types** → owner package (`{layer}-{slug}` or `@freeanima/habitat/core/*` subpath); hoist to kernel pure-type packages only when shared across domains
 
 Additional rules:
 
-- Domain views may `import type` / `z.infer` from `@freeanima/host/core/db`, but **must not duplicate** storage Zod definitions
+- Domain views may `import type` / `z.infer` from `@freeanima/habitat/core/db`, but **must not duplicate** storage Zod definitions
 - **HTTP/Habitat protocol 契约** → `@freeanima/habitat-contract`（类型 + `date-json` / `display-util`）；**Habitat REST 实现** → `@freeanima/habitat-api`；**in-process snapshots/display** → `@freeanima/platform`
 - **Hook notify payloads**（`subscribe` / `emit`）→ publisher's domain package (e.g. conversation updated → `capabilities-memory`)
-- **Repository row shapes** → [`src/host/core/db/schema/rows/`](../../src/host/core/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.mdc)）
+- **Repository row shapes** → [`packages/habitat/core/db/schema/rows/`](../../packages/habitat/core/db/schema/rows/) = `typeof table.$inferSelect`；domain `types.ts` re-export；1:1 CRUD **无 mapper**（非平凡 join/transform 见 [`drizzle-db.md`](drizzle-db.mdc)）
 
 Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
@@ -112,8 +112,8 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 - **Drizzle TS 属性名 = PG 列名 = snake_case**（例：`block_key: text("block_key")`）；禁止 `blockKey: text("block_key")`
 - **Port 方法名**（`searchFts`、`appendMessageReturningId` 等）与 **tool/REST 计算字段** 保持 camelCase
-- **Row 数据字段** 一律 snake_case；时间戳列统一 `created_at` / `updated_at`（以 [`src/host/core/db/schema/`](../../src/host/core/db/schema/) 为准）
-- **PG row 类型**：`src/host/core/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
+- **Row 数据字段** 一律 snake_case；时间戳列统一 `created_at` / `updated_at`（以 [`packages/habitat/core/db/schema/`](../../packages/habitat/core/db/schema/) 为准）
+- **PG row 类型**：`packages/habitat/core/db/schema/rows/*` 或 `typeof table.$inferSelect`；JSON 边界 `Date`↔ISO（见 drizzle-db）；禁止 camelCase→snake_case 字段改名表与 dual-key DbRow
 - **Remote tools / feature protocol**：capabilities 从 `@freeanima/rpc-contract` re-export Payload；Habitat UI 从 `@freeanima/habitat-contract/api` 导入 Row / 响应类型
 
 详情：[`drizzle-db.md`](drizzle-db.mdc) DbRow / FTS 列名约定。
@@ -140,17 +140,17 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 | 领域   | 检查项                                                                                                                          |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | 安全   | 凭证路径不入 log / tool 返回；Habitat REST 输入校验；memory/self-layer 变更对照 [`identity.md`](../../docs/product/identity.md) |
-| 性能   | PG 查询热点（`src/host/core/db/pg`）；流式 merge（`src/host/core/provider/stream-tools.ts`）                                    |
+| 性能   | PG 查询热点（`packages/habitat/core/db/pg`）；流式 merge（`packages/habitat/core/provider/stream-tools.ts`）                                    |
 | 可测性 | colocated 单测 + `tests/integration/` 覆盖 boot / Habitat RPC 路径 gaps                                                         |
 
-**New PG domain**: `src/host/core/db/schema/{domain}` → repos in `src/host/core/db/pg/{domain}/` → barrel `index.ts` + `types.ts` → consumers import `@freeanima/host/core/db/pg/{domain}`。
+**New PG domain**: `packages/habitat/core/db/schema/{domain}` → repos in `packages/habitat/core/db/pg/{domain}/` → barrel `index.ts` + `types.ts` → consumers import `@freeanima/habitat/core/db/pg/{domain}`。
 
-**Flow**: change `src/host/core/db/schema/` → **`drizzle-kit generate`** → **`migrate`**.
+**Flow**: change `packages/habitat/core/db/schema/` → **`drizzle-kit generate`** → **`migrate`**.
 
 | Step | Command / action                                   | Output                                                                     |
 | ---- | -------------------------------------------------- | -------------------------------------------------------------------------- |
-| 1    | Change Drizzle schema (`src/host/core/db/schema/`) | TypeScript SSOT                                                            |
-| 2    | `DATABASE_URL=… just db generate`                  | `src/host/core/migrations/{ts}_{name}/migration.sql` + **`snapshot.json`** |
+| 1    | Change Drizzle schema (`packages/habitat/core/db/schema/`) | TypeScript SSOT                                                            |
+| 2    | `DATABASE_URL=… just db generate`                  | `packages/habitat/core/migrations/{ts}_{name}/migration.sql` + **`snapshot.json`** |
 | 3    | `DATABASE_URL=… just db migrate`                   | PG applies DDL; production may auto-migrate on `anima service` start       |
 
 **Forbidden**:
@@ -162,12 +162,12 @@ Do not maintain a domain-to-package inventory in docs — use source and `grep`.
 
 **Data migration (required when DDL drops or renames a populated table)**:
 
-- **Co-locate with schema migration** — backfill / `INSERT … SELECT` / column moves belong in the **same** `src/host/core/migrations/{ts}_{name}/migration.sql` as the DDL, appended after `db:generate` output.
+- **Co-locate with schema migration** — backfill / `INSERT … SELECT` / column moves belong in the **same** `packages/habitat/core/migrations/{ts}_{name}/migration.sql` as the DDL, appended after `db:generate` output.
 - **Order**: copy/transform data **before** `DROP TABLE` / destructive DDL in that file. Habitat startup runs `runMigrations` only; it does **not** run standalone scripts under `scripts/`.
 - **Forbidden**: a migration that `DROP TABLE` legacy data without an in-file backfill in the same migration; a separate manual script as the **only** migration path (scripts may exist for dry-run / repair, but production path must be the migration SQL).
 - One-off repair scripts (`scripts/*.ts`) are for operator recovery or idempotent re-runs after the fact — not a substitute for the migration chain.
 
-Table shapes SSOT: [`src/host/core/db/schema/`](../../src/host/core/db/schema/). User ops (install, backup): [`docs/ops/database.md`](../../docs/ops/database.md).
+Table shapes SSOT: [`packages/habitat/core/db/schema/`](../../packages/habitat/core/db/schema/). User ops (install, backup): [`docs/ops/database.md`](../../docs/ops/database.md).
 
 Repository query conventions (ORM vs `db.execute`, DbRow typing): [`drizzle-db.md`](drizzle-db.mdc).
 
