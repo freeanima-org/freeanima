@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop";
 import type { CronJobData } from "@freeanima/habitat/capabilities/connectors/cron/schema.ts";
 import type {
   ConversationSummary,
@@ -110,8 +110,11 @@ export type AppRuntimeMemoryPort = {
   regenerateTemporalSummary(opts: Record<string, unknown>): Promise<unknown>;
   backfillMissingTemporalSummaries(opts: Record<string, unknown>): Promise<unknown>;
   rebuildTemporalSummariesInRange(opts: Record<string, unknown>): Promise<unknown>;
+  getTemporalSummaryBatchJobStatus(): unknown;
   listTemporalSystemRolls(): Promise<unknown>;
   regenerateTemporalSystemRoll(opts: Record<string, unknown>): Promise<unknown>;
+  startTemporalSystemRollBatch(opts?: Record<string, unknown>): unknown;
+  getTemporalSystemRollBatchStatus(): unknown;
   countSemanticMemory(): Promise<{ index_rows: number }>;
   listSemanticMemories(opts?: Record<string, unknown>): Promise<unknown>;
   updateSemanticMemoryPinned(

@@ -374,6 +374,10 @@ export async function rebuildTemporalSummariesInRange(input: {
   return hubCall(habitat().call("memory.temporalRebuildRange", input as never));
 }
 
+export async function getTemporalBatchJobStatus() {
+  return hubCall(habitat().call("memory.temporalBatchStatus", {}));
+}
+
 export async function listTemporalSystemRolls() {
   return hubCall(habitat().call("memory.temporalSystemRollList", {}));
 }
@@ -382,6 +386,16 @@ export async function regenerateTemporalSystemRoll(input: {
   kind: "past_days" | "past_months" | "past_years";
 }) {
   return hubCall(habitat().call("memory.temporalSystemRollRegenerate", input as never));
+}
+
+export async function startTemporalSystemRollBatch(input?: {
+  kinds?: Array<"past_days" | "past_months" | "past_years">;
+}) {
+  return hubCall(habitat().call("memory.temporalSystemRollBatchStart", (input ?? {}) as never));
+}
+
+export async function getTemporalSystemRollBatchStatus() {
+  return hubCall(habitat().call("memory.temporalSystemRollBatchStatus", {}));
 }
 
 export async function countSemanticMemory() {

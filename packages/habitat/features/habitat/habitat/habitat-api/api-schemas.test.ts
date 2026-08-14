@@ -56,6 +56,34 @@ describe("api/schemas", () => {
     expect(temporalSystemRollRegenerateBodySchema.safeParse({ kind: "near7" }).success).toBe(false);
   });
 
+  it("validates temporal system roll batch start body", async () => {
+    const { temporalSystemRollBatchStartBodySchema, temporalBatchJobStatusSchema } =
+      await import("./api/schemas.ts");
+    expect(temporalSystemRollBatchStartBodySchema.safeParse({}).success).toBe(true);
+    expect(temporalSystemRollBatchStartBodySchema.safeParse({ kinds: ["past_days"] }).success).toBe(
+      true,
+    );
+    expect(temporalSystemRollBatchStartBodySchema.safeParse({ kinds: [] }).success).toBe(false);
+    expect(
+      temporalBatchJobStatusSchema.safeParse({
+        running: false,
+        mode: null,
+        window: null,
+        period_start_from: null,
+        period_start_to: null,
+        current: 0,
+        total: 0,
+        current_period: null,
+        completed: [],
+        failed: [],
+        started_at: null,
+        finished_at: null,
+        error: null,
+        summary: null,
+      }).success,
+    ).toBe(true);
+  });
+
   it("validates temporal backfill missing body", () => {
     expect(
       temporalSummaryBackfillMissingBodySchema.safeParse({

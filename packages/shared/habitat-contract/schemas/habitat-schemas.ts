@@ -104,10 +104,59 @@ export const temporalSummaryBackfillMissingBodySchema = z.object({
 /** Same shape as backfill; force-rebuilds every expected period in range. */
 export const temporalSummaryRebuildRangeBodySchema = temporalSummaryBackfillMissingBodySchema;
 
+export const temporalBatchModeSchema = z.enum(["backfill_missing", "rebuild_range"]);
+
+export const temporalBatchFailedItemSchema = z.object({
+  period_start: z.string(),
+  summary: z.string(),
+});
+
+/** 实体日/月/年批量补跑 / 重跑进度（进程内单例 job） */
+export const temporalBatchJobStatusSchema = z.object({
+  running: z.boolean(),
+  mode: temporalBatchModeSchema.nullable(),
+  window: temporalSummaryWindowSchema.nullable(),
+  period_start_from: z.string().nullable(),
+  period_start_to: z.string().nullable(),
+  current: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+  current_period: z.string().nullable(),
+  completed: z.array(z.string()),
+  failed: z.array(temporalBatchFailedItemSchema),
+  started_at: z.string().nullable(),
+  finished_at: z.string().nullable(),
+  error: z.string().nullable(),
+  summary: z.string().nullable(),
+});
+
 export const temporalSystemRollKindSchema = z.enum(["past_days", "past_months", "past_years"]);
 
 export const temporalSystemRollRegenerateBodySchema = z.object({
   kind: temporalSystemRollKindSchema,
+});
+
+export const temporalSystemRollBatchStartBodySchema = z.object({
+  kinds: z.array(temporalSystemRollKindSchema).min(1).optional(),
+});
+
+export const temporalSystemRollBatchFailedItemSchema = z.object({
+  kind: temporalSystemRollKindSchema,
+  summary: z.string(),
+});
+
+/** 系统汇总批量重新生成进度 */
+export const temporalSystemRollBatchJobStatusSchema = z.object({
+  running: z.boolean(),
+  kinds: z.array(temporalSystemRollKindSchema).nullable(),
+  current: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+  current_kind: temporalSystemRollKindSchema.nullable(),
+  completed: z.array(temporalSystemRollKindSchema),
+  failed: z.array(temporalSystemRollBatchFailedItemSchema),
+  started_at: z.string().nullable(),
+  finished_at: z.string().nullable(),
+  error: z.string().nullable(),
+  summary: z.string().nullable(),
 });
 
 export type CreateConversationBody = z.infer<typeof createConversationBodySchema>;
@@ -121,8 +170,15 @@ export type TemporalSummaryBackfillMissingBody = z.infer<
   typeof temporalSummaryBackfillMissingBodySchema
 >;
 export type TemporalSummaryRebuildRangeBody = z.infer<typeof temporalSummaryRebuildRangeBodySchema>;
+export type TemporalBatchJobStatus = z.infer<typeof temporalBatchJobStatusSchema>;
 export type TemporalSystemRollRegenerateBody = z.infer<
   typeof temporalSystemRollRegenerateBodySchema
+>;
+export type TemporalSystemRollBatchStartBody = z.infer<
+  typeof temporalSystemRollBatchStartBodySchema
+>;
+export type TemporalSystemRollBatchJobStatus = z.infer<
+  typeof temporalSystemRollBatchJobStatusSchema
 >;
 export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
 export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;

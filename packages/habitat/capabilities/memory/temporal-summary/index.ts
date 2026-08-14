@@ -74,6 +74,24 @@ export {
   type SysRollCacheValue,
 } from "./system-rolls.ts";
 export {
+  startTemporalBatchJob,
+  getTemporalBatchJobStatus,
+  resetTemporalBatchJobForTest,
+  type TemporalBatchJobStatus,
+  type TemporalBatchMode,
+  type TemporalBatchRegenerateOne,
+  type TemporalBatchLock,
+} from "./batch-job.ts";
+export {
+  ALL_SYS_ROLL_KINDS,
+  startTemporalSystemRollBatchJob,
+  getTemporalSystemRollBatchJobStatus,
+  resetTemporalSystemRollBatchJobForTest,
+  type TemporalSystemRollBatchJobStatus,
+  type TemporalSystemRollRegenerateOne,
+  type TemporalSystemRollBatchLock,
+} from "./system-roll-batch-job.ts";
+export {
   TEMPORAL_SUMMARY_SYSTEM_TRUNCATED_SOURCE_PREFIX,
   temporalSummarySystemTruncatedSourceRef,
 } from "./truncate-notify.ts";

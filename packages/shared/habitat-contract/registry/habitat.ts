@@ -13,7 +13,10 @@ import {
   temporalSummaryRegenerateBodySchema,
   temporalSummaryBackfillMissingBodySchema,
   temporalSummaryRebuildRangeBodySchema,
+  temporalBatchJobStatusSchema,
   temporalSystemRollRegenerateBodySchema,
+  temporalSystemRollBatchStartBodySchema,
+  temporalSystemRollBatchJobStatusSchema,
   worldEntityCreateBodySchema,
   worldEntityPatchInputSchema,
 } from "./schemas.ts";
@@ -265,15 +268,22 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: longOpMeta(false),
   }),
+  /** 启动补全缺失后台任务（立刻返回进度；已在跑则返回当前 status） */
   "memory.temporalBackfillMissing": defineHabitatMethod({
     input: temporalSummaryBackfillMissingBodySchema,
-    output: unknownOutputSchema,
-    meta: longOpMeta(false),
+    output: temporalBatchJobStatusSchema,
+    meta: dualTransportMeta(false),
   }),
+  /** 启动强制重跑后台任务（立刻返回进度；已在跑则返回当前 status） */
   "memory.temporalRebuildRange": defineHabitatMethod({
     input: temporalSummaryRebuildRangeBodySchema,
-    output: unknownOutputSchema,
-    meta: longOpMeta(false),
+    output: temporalBatchJobStatusSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "memory.temporalBatchStatus": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: temporalBatchJobStatusSchema,
+    meta: dualTransportMeta(true),
   }),
   "memory.temporalSystemRollList": defineHabitatMethod({
     input: emptyInputSchema,
@@ -284,6 +294,16 @@ export const habitatMethodDefs = {
     input: temporalSystemRollRegenerateBodySchema,
     output: unknownOutputSchema,
     meta: longOpMeta(false),
+  }),
+  "memory.temporalSystemRollBatchStart": defineHabitatMethod({
+    input: temporalSystemRollBatchStartBodySchema,
+    output: temporalSystemRollBatchJobStatusSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "memory.temporalSystemRollBatchStatus": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: temporalSystemRollBatchJobStatusSchema,
+    meta: dualTransportMeta(true),
   }),
   "memory.semanticCount": defineHabitatMethod({
     input: emptyInputSchema,
