@@ -131,6 +131,8 @@ export async function listCalendarRange(
     for (const row of result.results) {
       const project = asProject(row);
       if (!project) continue;
+      // 日程只展示活跃项目：已完成 / 搁置 / 取消不进入 range
+      if (project.status !== "active") continue;
       items.push({
         kind: "project",
         id: project.id,
