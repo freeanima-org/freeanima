@@ -49,6 +49,7 @@ flowchart LR
 | 症状                                           | 常见原因                                                                                                    |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | 键盘挡住聊天输入                               | WebView 未随键盘调整；依赖 `visualViewport` inset（仅 visualViewport）                                      |
+| 输入与键盘间透明空隙（约一截底栏高）           | compose `translateY` 未扣除 compact 底栏；键盘打开时应藏底栏或 `composeKeyboardLift` 扣 chrome              |
 | 聊天输入无响应                                 | 未选对话；或栖息地 RPC 已断连                                                                               |
 | 栖息地加载失败 / Failed to fetch               | 栖息地未 `--host 0.0.0.0`、错误 token、防火墙                                                               |
 | 测试连接「网络错误」、浏览器同地址正常         | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658`           |
