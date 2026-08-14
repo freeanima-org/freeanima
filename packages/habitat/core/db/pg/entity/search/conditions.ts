@@ -400,6 +400,12 @@ function buildContentBlockBodyConditions(
   if (filters.conversation_id) {
     conditions.push(sql`${entities.body}->>'conversation_id' = ${filters.conversation_id}`);
   }
+  if (filters.kind) {
+    conditions.push(sql`${entities.body}->>'kind' = ${filters.kind}`);
+  }
+  if (filters.status != null && filters.status !== "all") {
+    conditions.push(sql`${entities.body}->>'status' = ${filters.status}`);
+  }
   return conditions;
 }
 

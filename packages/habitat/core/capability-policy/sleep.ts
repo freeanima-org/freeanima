@@ -9,8 +9,9 @@ export const SLEEP_ALLOWED_TOOLS = [
   "memory_semantic_update",
   "memory_semantic_deprecate",
   "memory_semantic_merge",
-  "memory_limbic_search",
-  "memory_autobiographical_search",
+  "content_block_search",
+  "content_block_get",
+  "diary_search",
 ] as const;
 
 export function resolveSleepPolicy(toolSetRegistry: ToolSetRegistry): ResolvedCapabilityPolicy {

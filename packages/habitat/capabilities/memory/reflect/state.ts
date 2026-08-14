@@ -1,3 +1,4 @@
+/** Reflect 巩固（原 deep-sleep）状态文件；仍写 runtime/deep_sleep_state.json */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/habitat/core/config/paths";

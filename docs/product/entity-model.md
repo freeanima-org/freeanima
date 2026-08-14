@@ -54,7 +54,7 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 | **deleteComponent**    | 从 entity 去掉某个 component 并清理对应 body 字段；必要时按 `COMPONENT_PRIMARY_PRIORITY` 提升 `primary_component`；删光则空壳（`components=[]`，`primary_component=null`），**不**自动软删 | `entity.deleteComponent` / `deleteEntityComponent`                   |
 | **deleteEntity**       | 软删：写 `deleted_at`；默认 list/search 不可见；进 Entity 模块回收站                                                                                                                       | `entity.delete` / 各模块 `*.delete`（语义为软删）                    |
 | **restore**            | 清除 `deleted_at`；**不**自动恢复原容器 membership                                                                                                                                         | `entity.restore` / `restoreEntity`                                   |
-| **purge**              | 物理 `DELETE`；睡眠 cleanup 清理 `deleted_at` 满 **30 天** 的行；`object_file` 在无其它实体引用同 `(world_id, cid)` 时同步删除对象存储 blob                                                | `purgeSoftDeletedEntities` + `gcObjectBlobsAfterEntityPurge`（内部） |
+| **purge**              | 物理 `DELETE`；记忆维护 cleanup 清理 `deleted_at` 满 **30 天** 的行；`object_file` 在无其它实体引用同 `(world_id, cid)` 时同步删除对象存储 blob                                            | `purgeSoftDeletedEntities` + `gcObjectBlobsAfterEntityPurge`（内部） |
 
 ## Morph 语义（形态变换）
 
@@ -271,12 +271,12 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 | `semantic_ref`    | `entity_id`（指向 `primary_component=semantic_memory` 的 entity）                               |
 | `semantic_memory` | `memory_kind`、`status`、`source_conversations`、`observed_at`、`occurred_at`，可选 `legacy_id` |
 
-**容器终态：** `diary_entry` 是唯一 content-block 容器。梦境 / 感性 / 自传记忆是带匹配语义标签的 `content_block` 行，挂在该 CST 日的日记下（睡眠写入用 agent 默认私有 world）。
+**容器终态：** `diary_entry` 是唯一 content-block 容器。梦境 / 感性 / 自传记忆是带匹配语义标签的 `content_block` 行，挂在该 CST 日的日记下（记忆维护写入用 agent 默认私有 world）。
 
 - **LLM：** ToolSet `content-block`（`@freeanima/features/content-block/domain`）— `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`。`list` 需要容器 `parent_id`；可选 `component=limbic|narrative|semantic_ref|dream` 过滤语义标签；`reorder` 批量更新 `sort_order`。可选 `world_id`；`parent_id` / 块 `id` 可推断 world。
 - **搜索过滤：** `parent_id`、`block_type`、`client_op_id`（`entity_search` / store 共享白名单）。
 
-## 梦境（睡眠流水线）
+## 梦境（记忆维护流水线）
 
 夜间创意叙事（仅追加，每个日记日至多一个梦境块）：
 
@@ -288,7 +288,7 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 
 - **读：** `diary_get` / `content_block_list` / `content_block_search` 带 `component=dream`。
 - **UI：** 壳 `/diary` 以只读「梦境」标签显示梦境块（无独立 `/dream` 模块）。
-- **LLM：** 无专用 `dream` ToolSet；睡眠 `runDream` 仍生成块。
+- **LLM：** 无专用 `dream` ToolSet；dream 写入路径已拆除（存量只读）。
 
 见 [`docs/cognition/dream.md`](../cognition/dream.md)。
 

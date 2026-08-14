@@ -103,7 +103,7 @@ export type AppRuntimeConversationPort = {
   setConversationTitle(conversationId: string, title: string, platform: string): Promise<unknown>;
 };
 
-/** 语义 /  limbic / 自传 / 梦境记忆 */
+/** 语义记忆 / 时间摘要 / FTS / 自我层 */
 export type AppRuntimeMemoryPort = {
   passiveRecallDebug(opts: Record<string, unknown>): Promise<unknown>;
   listTemporalSummaries(opts?: Record<string, unknown>): Promise<unknown>;
@@ -121,41 +121,33 @@ export type AppRuntimeMemoryPort = {
     id: number | string,
     pinned: boolean,
   ): Promise<{ ok: true; id: number; pinned: boolean }>;
-  listLimbicMemories(opts?: Record<string, unknown>): Promise<unknown>;
-  listAutobiographicalMemories(opts?: Record<string, unknown>): Promise<unknown>;
   getFtsStatus(): Promise<unknown>;
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): unknown;
   getRebuildFtsJobStatus(): unknown;
   listSelfBlocks(): Promise<unknown>;
 };
 
-/** 睡眠流水线与 auto-llm 审计 */
+/** 记忆维护与 auto-llm 审计 */
 export type AppRuntimeSleepPort = {
-  getSleepSummary(): Promise<unknown>;
-  listPipelineStepRuns(opts?: {
-    step_id?: string;
-    run_id?: string;
-    limit?: number;
-    offset?: number;
-  }): Promise<unknown>;
+  getMemoryMaintenanceSummary(): Promise<unknown>;
   listCronLogs(opts?: {
     job_id?: string;
     limit?: number;
     offset?: number;
     ok?: boolean;
   }): Promise<unknown>;
-  getSleepPipelineStatus(): unknown;
-  startSleepCycle(opts?: {
+  getMemoryMaintenanceStatus(): unknown;
+  startMemoryMaintenanceCycle(opts?: {
     day?: string;
-    deep_sleep_mode?: "full" | "incremental";
+    reflect_mode?: "full" | "incremental";
   }): Promise<{ ok: true; started: true } | { ok: false; error: string }>;
-  startSleepPipelineStep(opts: {
+  startMemoryMaintenanceStep(opts: {
     stepId: string;
     day?: string;
     force?: boolean;
-    deep_sleep_mode?: "full" | "incremental";
+    reflect_mode?: "full" | "incremental";
   }): Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
-  startSleepCatchUp(): Promise<
+  startMemoryMaintenanceCatchUp(): Promise<
     { ok: true; started: true; plan: unknown } | { ok: false; error: string }
   >;
   listAutoLlmRuns(opts?: {

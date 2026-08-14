@@ -53,6 +53,24 @@ const exampleEntryMeta = {
   blocks: [] as typeof exampleEntry.blocks,
 };
 
+const exampleSearchHitBlock = {
+  id: 101,
+  title: "情绪",
+  content: "感到紧张但可控…",
+  sort_order: 0,
+  parent_id: 42,
+  client_op_id: null,
+  components: ["content_block", "limbic"],
+  tag_ids: [] as number[],
+  created_at: "2026-06-29T20:00:00+08:00",
+  updated_at: "2026-06-29T20:00:00+08:00",
+};
+
+const exampleSearchEntry = {
+  ...exampleEntryMeta,
+  blocks: [exampleSearchHitBlock],
+};
+
 export const DIARY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
   diary_append: defineToolReturn({
     schema: z.object({ ok: z.literal(true), action: z.literal("append"), item: diaryEntrySchema }),
@@ -90,6 +108,6 @@ export const DIARY_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       count: z.number(),
       items: z.array(diaryEntrySchema),
     }),
-    example: { ok: true, action: "search", count: 1, items: [exampleEntryMeta] },
+    example: { ok: true, action: "search", count: 1, items: [exampleSearchEntry] },
   }),
 };

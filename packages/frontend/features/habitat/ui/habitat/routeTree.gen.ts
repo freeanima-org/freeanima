@@ -18,19 +18,14 @@ import { Route as SidebarDataMaintenanceRouteImport } from "./routes/_sidebar/da
 import { Route as SidebarToolsRouteImport } from "./routes/_sidebar/tools";
 import { Route as SidebarSystemPromptRouteImport } from "./routes/_sidebar/system-prompt";
 import { Route as SidebarSubjectsRouteImport } from "./routes/_sidebar/subjects";
-import { Route as SidebarSleepRouteImport } from "./routes/_sidebar/sleep";
 import { Route as SidebarSemanticMemoryRouteImport } from "./routes/_sidebar/semantic-memory";
 import { Route as SidebarSelfLayerRouteImport } from "./routes/_sidebar/self-layer";
 import { Route as SidebarOutpostsRouteImport } from "./routes/_sidebar/outposts";
-import { Route as SidebarPassiveRecallRouteImport } from "./routes/_sidebar/passive-recall";
 import { Route as SidebarTemporalSummaryRouteImport } from "./routes/_sidebar/temporal-summary";
 import { Route as SidebarMcpRouteImport } from "./routes/_sidebar/mcp";
-import { Route as SidebarLimbicMemoryRouteImport } from "./routes/_sidebar/limbic-memory";
-import { Route as SidebarFtsRouteImport } from "./routes/_sidebar/fts";
 import { Route as SidebarDashboardRouteImport } from "./routes/_sidebar/dashboard";
 import { Route as SidebarCronRouteImport } from "./routes/_sidebar/cron";
 import { Route as SidebarCommandsRouteImport } from "./routes/_sidebar/commands";
-import { Route as SidebarAutobiographicalMemoryRouteImport } from "./routes/_sidebar/autobiographical-memory";
 import { Route as SidebarAutoLlmRunsRouteImport } from "./routes/_sidebar/auto-llm-runs";
 import { Route as SidebarSubagentsRouteImport } from "./routes/_sidebar/subagents";
 import { Route as SidebarSkillsRouteRouteImport } from "./routes/_sidebar/skills/route";
@@ -84,11 +79,6 @@ const SidebarSubjectsRoute = SidebarSubjectsRouteImport.update({
   path: "/subjects",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarSleepRoute = SidebarSleepRouteImport.update({
-  id: "/sleep",
-  path: "/sleep",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
 const SidebarSemanticMemoryRoute = SidebarSemanticMemoryRouteImport.update({
   id: "/semantic-memory",
   path: "/semantic-memory",
@@ -104,11 +94,6 @@ const SidebarOutpostsRoute = SidebarOutpostsRouteImport.update({
   path: "/outposts",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarPassiveRecallRoute = SidebarPassiveRecallRouteImport.update({
-  id: "/passive-recall",
-  path: "/passive-recall",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
 const SidebarTemporalSummaryRoute = SidebarTemporalSummaryRouteImport.update({
   id: "/temporal-summary",
   path: "/temporal-summary",
@@ -117,16 +102,6 @@ const SidebarTemporalSummaryRoute = SidebarTemporalSummaryRouteImport.update({
 const SidebarMcpRoute = SidebarMcpRouteImport.update({
   id: "/mcp",
   path: "/mcp",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarLimbicMemoryRoute = SidebarLimbicMemoryRouteImport.update({
-  id: "/limbic-memory",
-  path: "/limbic-memory",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarFtsRoute = SidebarFtsRouteImport.update({
-  id: "/fts",
-  path: "/fts",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarDashboardRoute = SidebarDashboardRouteImport.update({
@@ -142,11 +117,6 @@ const SidebarCronRoute = SidebarCronRouteImport.update({
 const SidebarCommandsRoute = SidebarCommandsRouteImport.update({
   id: "/commands",
   path: "/commands",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarAutobiographicalMemoryRoute = SidebarAutobiographicalMemoryRouteImport.update({
-  id: "/autobiographical-memory",
-  path: "/autobiographical-memory",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarAutoLlmRunsRoute = SidebarAutoLlmRunsRouteImport.update({
@@ -197,19 +167,14 @@ export interface FileRoutesByFullPath {
   "/conversations": typeof SidebarConversationsRouteRouteWithChildren;
   "/subagents": typeof SidebarSubagentsRoute;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
-  "/autobiographical-memory": typeof SidebarAutobiographicalMemoryRoute;
   "/commands": typeof SidebarCommandsRoute;
   "/cron": typeof SidebarCronRoute;
   "/dashboard": typeof SidebarDashboardRoute;
-  "/fts": typeof SidebarFtsRoute;
-  "/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/mcp": typeof SidebarMcpRoute;
-  "/passive-recall": typeof SidebarPassiveRecallRoute;
   "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
-  "/sleep": typeof SidebarSleepRoute;
   "/subjects": typeof SidebarSubjectsRoute;
   "/system-prompt": typeof SidebarSystemPromptRoute;
   "/tools": typeof SidebarToolsRoute;
@@ -227,19 +192,14 @@ export interface FileRoutesByTo {
   "/workshop": typeof WorkshopRouteWithChildren;
   "/subagents": typeof SidebarSubagentsRoute;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
-  "/autobiographical-memory": typeof SidebarAutobiographicalMemoryRoute;
   "/commands": typeof SidebarCommandsRoute;
   "/cron": typeof SidebarCronRoute;
   "/dashboard": typeof SidebarDashboardRoute;
-  "/fts": typeof SidebarFtsRoute;
-  "/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/mcp": typeof SidebarMcpRoute;
-  "/passive-recall": typeof SidebarPassiveRecallRoute;
   "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
-  "/sleep": typeof SidebarSleepRoute;
   "/subjects": typeof SidebarSubjectsRoute;
   "/system-prompt": typeof SidebarSystemPromptRoute;
   "/tools": typeof SidebarToolsRoute;
@@ -259,19 +219,14 @@ export interface FileRoutesById {
   "/_sidebar/conversations": typeof SidebarConversationsRouteRouteWithChildren;
   "/_sidebar/subagents": typeof SidebarSubagentsRoute;
   "/_sidebar/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
-  "/_sidebar/autobiographical-memory": typeof SidebarAutobiographicalMemoryRoute;
   "/_sidebar/commands": typeof SidebarCommandsRoute;
   "/_sidebar/cron": typeof SidebarCronRoute;
   "/_sidebar/dashboard": typeof SidebarDashboardRoute;
-  "/_sidebar/fts": typeof SidebarFtsRoute;
-  "/_sidebar/limbic-memory": typeof SidebarLimbicMemoryRoute;
   "/_sidebar/mcp": typeof SidebarMcpRoute;
-  "/_sidebar/passive-recall": typeof SidebarPassiveRecallRoute;
   "/_sidebar/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/_sidebar/outposts": typeof SidebarOutpostsRoute;
   "/_sidebar/self-layer": typeof SidebarSelfLayerRoute;
   "/_sidebar/semantic-memory": typeof SidebarSemanticMemoryRoute;
-  "/_sidebar/sleep": typeof SidebarSleepRoute;
   "/_sidebar/subjects": typeof SidebarSubjectsRoute;
   "/_sidebar/system-prompt": typeof SidebarSystemPromptRoute;
   "/_sidebar/tools": typeof SidebarToolsRoute;
@@ -292,19 +247,14 @@ export interface FileRouteTypes {
     | "/conversations"
     | "/subagents"
     | "/auto-llm-runs"
-    | "/autobiographical-memory"
     | "/commands"
     | "/cron"
     | "/dashboard"
-    | "/fts"
-    | "/limbic-memory"
     | "/mcp"
-    | "/passive-recall"
     | "/temporal-summary"
     | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
-    | "/sleep"
     | "/subjects"
     | "/system-prompt"
     | "/tools"
@@ -322,19 +272,14 @@ export interface FileRouteTypes {
     | "/workshop"
     | "/subagents"
     | "/auto-llm-runs"
-    | "/autobiographical-memory"
     | "/commands"
     | "/cron"
     | "/dashboard"
-    | "/fts"
-    | "/limbic-memory"
     | "/mcp"
-    | "/passive-recall"
     | "/temporal-summary"
     | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
-    | "/sleep"
     | "/subjects"
     | "/system-prompt"
     | "/tools"
@@ -353,19 +298,14 @@ export interface FileRouteTypes {
     | "/_sidebar/conversations"
     | "/_sidebar/subagents"
     | "/_sidebar/auto-llm-runs"
-    | "/_sidebar/autobiographical-memory"
     | "/_sidebar/commands"
     | "/_sidebar/cron"
     | "/_sidebar/dashboard"
-    | "/_sidebar/fts"
-    | "/_sidebar/limbic-memory"
     | "/_sidebar/mcp"
-    | "/_sidebar/passive-recall"
     | "/_sidebar/temporal-summary"
     | "/_sidebar/outposts"
     | "/_sidebar/self-layer"
     | "/_sidebar/semantic-memory"
-    | "/_sidebar/sleep"
     | "/_sidebar/subjects"
     | "/_sidebar/system-prompt"
     | "/_sidebar/tools"
@@ -471,13 +411,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarSubjectsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
-    "/_sidebar/sleep": {
-      id: "/_sidebar/sleep";
-      path: "/sleep";
-      fullPath: "/sleep";
-      preLoaderRoute: typeof SidebarSleepRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
     "/_sidebar/semantic-memory": {
       id: "/_sidebar/semantic-memory";
       path: "/semantic-memory";
@@ -499,13 +432,6 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarOutpostsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
-    "/_sidebar/passive-recall": {
-      id: "/_sidebar/passive-recall";
-      path: "/passive-recall";
-      fullPath: "/passive-recall";
-      preLoaderRoute: typeof SidebarPassiveRecallRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
     "/_sidebar/temporal-summary": {
       id: "/_sidebar/temporal-summary";
       path: "/temporal-summary";
@@ -518,20 +444,6 @@ declare module "@tanstack/react-router" {
       path: "/mcp";
       fullPath: "/mcp";
       preLoaderRoute: typeof SidebarMcpRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/limbic-memory": {
-      id: "/_sidebar/limbic-memory";
-      path: "/limbic-memory";
-      fullPath: "/limbic-memory";
-      preLoaderRoute: typeof SidebarLimbicMemoryRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/fts": {
-      id: "/_sidebar/fts";
-      path: "/fts";
-      fullPath: "/fts";
-      preLoaderRoute: typeof SidebarFtsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/dashboard": {
@@ -553,13 +465,6 @@ declare module "@tanstack/react-router" {
       path: "/commands";
       fullPath: "/commands";
       preLoaderRoute: typeof SidebarCommandsRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/autobiographical-memory": {
-      id: "/_sidebar/autobiographical-memory";
-      path: "/autobiographical-memory";
-      fullPath: "/autobiographical-memory";
-      preLoaderRoute: typeof SidebarAutobiographicalMemoryRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/auto-llm-runs": {
@@ -632,19 +537,14 @@ interface SidebarRouteRouteChildren {
   SidebarConversationsRouteRoute: typeof SidebarConversationsRouteRouteWithChildren;
   SidebarSubagentsRoute: typeof SidebarSubagentsRoute;
   SidebarAutoLlmRunsRoute: typeof SidebarAutoLlmRunsRoute;
-  SidebarAutobiographicalMemoryRoute: typeof SidebarAutobiographicalMemoryRoute;
   SidebarCommandsRoute: typeof SidebarCommandsRoute;
   SidebarCronRoute: typeof SidebarCronRoute;
   SidebarDashboardRoute: typeof SidebarDashboardRoute;
-  SidebarFtsRoute: typeof SidebarFtsRoute;
-  SidebarLimbicMemoryRoute: typeof SidebarLimbicMemoryRoute;
   SidebarMcpRoute: typeof SidebarMcpRoute;
-  SidebarPassiveRecallRoute: typeof SidebarPassiveRecallRoute;
   SidebarTemporalSummaryRoute: typeof SidebarTemporalSummaryRoute;
   SidebarOutpostsRoute: typeof SidebarOutpostsRoute;
   SidebarSelfLayerRoute: typeof SidebarSelfLayerRoute;
   SidebarSemanticMemoryRoute: typeof SidebarSemanticMemoryRoute;
-  SidebarSleepRoute: typeof SidebarSleepRoute;
   SidebarSubjectsRoute: typeof SidebarSubjectsRoute;
   SidebarSystemPromptRoute: typeof SidebarSystemPromptRoute;
   SidebarToolsRoute: typeof SidebarToolsRoute;
@@ -657,19 +557,14 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarConversationsRouteRoute: SidebarConversationsRouteRouteWithChildren,
   SidebarSubagentsRoute: SidebarSubagentsRoute,
   SidebarAutoLlmRunsRoute: SidebarAutoLlmRunsRoute,
-  SidebarAutobiographicalMemoryRoute: SidebarAutobiographicalMemoryRoute,
   SidebarCommandsRoute: SidebarCommandsRoute,
   SidebarCronRoute: SidebarCronRoute,
   SidebarDashboardRoute: SidebarDashboardRoute,
-  SidebarFtsRoute: SidebarFtsRoute,
-  SidebarLimbicMemoryRoute: SidebarLimbicMemoryRoute,
   SidebarMcpRoute: SidebarMcpRoute,
-  SidebarPassiveRecallRoute: SidebarPassiveRecallRoute,
   SidebarTemporalSummaryRoute: SidebarTemporalSummaryRoute,
   SidebarOutpostsRoute: SidebarOutpostsRoute,
   SidebarSelfLayerRoute: SidebarSelfLayerRoute,
   SidebarSemanticMemoryRoute: SidebarSemanticMemoryRoute,
-  SidebarSleepRoute: SidebarSleepRoute,
   SidebarSubjectsRoute: SidebarSubjectsRoute,
   SidebarSystemPromptRoute: SidebarSystemPromptRoute,
   SidebarToolsRoute: SidebarToolsRoute,

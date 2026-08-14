@@ -17,8 +17,8 @@ export function registerMemoryCoreTools(toolSets: ToolSetRegistry): void {
             "- action=update: update by semantic_memory_id\n" +
             "- action=delete: physical delete by semantic_memory_id\n" +
             "pinned=true memories appear first in resident context.\n" +
-            "Search: memory_semantic_search (facts), memory_limbic_search (emotion), " +
-            "memory_autobiographical_search (narrative), conversation_search (dialogue).",
+            "Search: memory_semantic_search (facts), content_block_search (emotion/narrative via component=limbic|narrative), " +
+            "conversation_search (dialogue).",
           parameters: {
             type: "object",
             properties: {

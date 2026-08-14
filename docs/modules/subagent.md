@@ -9,7 +9,7 @@ title: 子代理
 ## 执行路径
 
 - `subagent_run` → `runAutoLlm({ runKind: "subagent" })`
-- 全新消息上下文；**最终**结果仅为工具返回值（不写入父 `messages`，不进浅睡输入）。父轮次仍等待工具完成后再进行下一跳 LLM。
+- 全新消息上下文；**最终**结果仅为工具返回值（不写入父 `messages`，不进 retain 输入输入）。父轮次仍等待工具完成后再进行下一跳 LLM。
 - 运行中，紧凑 `steps[]`（`name` / `title` / `status`）经 engine `tool_progress` → `tool_round_live` 投影到父聊天室工具条（同一 `tool_call_id`；状态保持 `running`）。子轮次仍不写入父 `messages`。
 - 返回载荷可含相同紧凑 `steps[]`，供父聊天室多级展开
 - `depth=1`：子运行 HARD_DENY 全部 `subagent_*` 工具

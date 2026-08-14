@@ -75,7 +75,7 @@ title: 架构
 | **无设置面板**      | `i18n`、`clarify`、`prompt`               | `i18n` 为 transferred（locale/timezone）；`clarify` live；`prompt.system_prompt_budget_chars` |
 | **遗留 / 重叠**     | `notifications`                           | subject id；优先 `worlds`（boot 仍可能作回退读取）                                            |
 | **可能死码 / 预留** | `push`、`fallback_providers`、`platforms` | 几乎无产品消费者；后续清理候选                                                                |
-| **部分 UI**         | `compression`、`memory`                   | 压缩 UI 省略触发/摘要字段；记忆运维：`passive-recall` 调试 + `temporal-summary` 浏览          |
+| **部分 UI**         | `compression`、`memory`                   | 压缩 UI 省略触发/摘要字段；记忆运维：语义记忆页被动召回调试 + `temporal-summary` 浏览         |
 
 别处已覆盖：`mcp_servers` → 栖息地 `/habitat/mcp`；`companion` → 设置 → 桌面伴侣；多数高级段 → 设置 → 栖息地服务配置。
 
@@ -205,15 +205,15 @@ UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`do
 
 栖息地侧栏按组划分（非扁平存储表）。新功能应映射到这些用户可见概念：
 
-| 分组                 | 认知层         | 路由（代表）                                 |
-| -------------------- | -------------- | -------------------------------------------- |
-| Runtime（运行时）    | 资源层 + 运维  | dashboard、config、cron                      |
-| Memory（记忆）       | 记忆层         | memory 浏览子路由、sleep、auto-llm-runs      |
-| Self（自我）         | 自我层         | self-layer、system-prompt                    |
-| Estate（资源）       | 资源层         | subjects、worlds                             |
-| Capabilities（能力） | 资源层（工具） | tools、commands、mcp、远程工具实例、subagent |
+| 分组                 | 认知层         | 路由（代表）                                                    |
+| -------------------- | -------------- | --------------------------------------------------------------- |
+| Runtime（运行时）    | 资源层 + 运维  | dashboard、config、cron                                         |
+| Memory（记忆）       | 记忆层         | semantic-memory、temporal-summary、conversations、auto-llm-runs |
+| Self（自我）         | 自我层         | self-layer、system-prompt                                       |
+| Estate（资源）       | 资源层         | subjects、worlds、data-maintenance（含会话清理、FTS）           |
+| Capabilities（能力） | 资源层（工具） | tools、commands、mcp、远程工具实例、subagent                    |
 
-FTS 索引维护在 Memory 下（非顶级）。勿新增未映射到上述分组的扁平导航项。
+FTS 索引维护在数据维护（资源组）下。记忆巩固手动入口在语义记忆 / 自我层；夜间 DAG 仍跑。勿新增未映射到上述分组的扁平导航项。
 
 ### 背景
 
@@ -250,10 +250,10 @@ FTS 索引维护在 Memory 下（非顶级）。勿新增未映射到上述分�
 
 **能力策略**是曾以「能力面罩」草拟的**硬**约束层。它**不是**具名预设衣橱（`masks.yaml` / Mask 注册表已退役）。策略由以下组成：
 
-| 层                                 | 角色                   | 典型填充                                       |
-| ---------------------------------- | ---------------------- | ---------------------------------------------- |
-| **技能（Skill）**                  | 声明技法需要什么       | `tools.allowed`（白名单）；`tools.denied` 少见 |
-| **调用方**（cron、睡眠、subagent） | 声明本场景不得触碰什么 | `tools.denied`（可选）；`tools.allowed` 可选   |
+| 层                                     | 角色                   | 典型填充                                       |
+| -------------------------------------- | ---------------------- | ---------------------------------------------- |
+| **技能（Skill）**                      | 声明技法需要什么       | `tools.allowed`（白名单）；`tools.denied` 少见 |
+| **调用方**（cron、记忆维护、subagent） | 声明本场景不得触碰什么 | `tools.denied`（可选）；`tools.allowed` 可选   |
 
 伞状形状（实现可存扁平 `allowed_tools` / `denied_tools`）：
 
@@ -267,10 +267,10 @@ CapabilityPolicy
 
 **可见性：**
 
-| 场景                         | 规则                                                                                       |
-| ---------------------------- | ------------------------------------------------------------------------------------------ |
-| 可见（用户聊天）             | 默认宽 ToolSets；用户可打断                                                                |
-| 不可见（睡眠 / cron / 自主） | 最小权限：默认拒绝；有效工具 ≈ 已加载技能 allow 的并集，减去调用方 deny（无技能 ⇒ 无工具） |
+| 场景                             | 规则                                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| 可见（用户聊天）                 | 默认宽 ToolSets；用户可打断                                                                |
+| 不可见（记忆维护 / cron / 自主） | 最小权限：默认拒绝；有效工具 ≈ 已加载技能 allow 的并集，减去调用方 deny（无技能 ⇒ 无工具） |
 
 技能本身用渐进披露（系统提示中的目录；全文经 `skill_load`）。详情：[`skills.md`](../modules/skills.md)。
 
@@ -304,7 +304,7 @@ Agent 行为
 | Parked   | limbic / dream / narrative — 目标停写只读                   |
 
 **程序入口：** `MemoryService`（`embedded` \| `remote` 同契约）。LLM 工具仍是分范围 search（无统一 `memory_recall`）。  
-**巩固流水线：** turn 后 `retain`；夜间 `memory-maintenance`（cleanup / retain 补跑 / reflect / temporal / self）。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。
+**巩固路径：** turn 后 `retain`；夜间 `memory-maintenance`（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。
 
 ## 保险库与密钥（摘要）
 
@@ -393,7 +393,7 @@ mcp_servers:
 | **Script cron**  | 无       | 仅 `cron_log`                                                             | stdout 文件       | 排除                |
 
 **对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录回合在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
-AutoLlmRun 覆盖：cron agent 分支、睡眠 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；工具循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
+AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；工具循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
 
 **行动主体：** `runAutoLlm` 与 `runAutoLlmChat` 都要求 `subjectId`（持久化为 `auto_llm_runs.subject_id`）。工具 world 授权用 `resolveToolCallerSubjectId()`——MCP token subject，否则 ALS `subjectId`，否则栖息地 `agent_subject_id` 回退。今日调用方传入 boot 绑定的 agent subject；多数字生命时传入 job 绑定的 anima，无需改授权路径。
 
@@ -490,9 +490,9 @@ settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 - **`run` / `emit`**：实时派发——先 await 全部 `on` 处理器，再 fire-and-forget `subscribe` 处理器。`emit` 忽略拦截结果。
 - **`llm_kind`**：每个 `on` / `subscribe`（`conversation` | `auto_llm` | `all`）与每个 `run` / `emit`（`conversation` | `auto_llm`；永不 `all`）必填。处理器按注册范围过滤；运行种类注入处理器上下文为 `llm_kind`。以此避免对话提示段（技能目录、env-health、…）泄漏到 AutoLlm / subagent 运行。
 
-**Pipeline Runner** 仍独立：后台周期（`memory-maintenance`）的显式 DAG。状态在 `~/.anima/runtime/pipeline_*_run.json`。
+**Pipeline Runner** 引擎仍保留于 `engine/pipeline`（测试与潜在复用）；**记忆维护已脱离 DAG**，夜间/手动走顺序编排（`runNightlyMemoryMaintenance`），不再经 `PipelineRunner`。
 
-互补：Pipeline = 调度的多步后台工作；HookRegistry `on` =「可否继续 / 变更」；`subscribe` = 进程内通知。UI 除 `subscribe` 外仍常直接使用 `onConversationUpdated` 回调。
+互补：记忆维护 = 顺序后台编排；HookRegistry `on` =「可否继续 / 变更」；`subscribe` = 进程内通知。UI 除 `subscribe` 外仍常直接使用 `onConversationUpdated` 回调。
 
 ## 桌面伴侣（栖息地 SSOT）
 

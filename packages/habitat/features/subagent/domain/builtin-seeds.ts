@@ -29,8 +29,9 @@ export const BUILTIN_SUBAGENT_SEEDS: ReadonlyArray<SubagentCreateInput & { slug:
     max_turns: 20,
     allowed_tools: [
       "memory_semantic_search",
-      "memory_limbic_search",
-      "memory_autobiographical_search",
+      "content_block_search",
+      "content_block_get",
+      "diary_search",
       "conversation_search",
       "file_read",
       "file_search",

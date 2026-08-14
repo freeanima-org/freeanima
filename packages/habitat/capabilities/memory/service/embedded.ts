@@ -118,7 +118,7 @@ export type CreateEmbeddedMemoryServiceOpts = {
 
 /**
  * embedded MemoryService（#16102）。
- * retain 与 light-sleep 并行；未注册 RetainEngine 时仍前进 watermark。
+ * retain 与 retain 热路径并行；未注册 RetainEngine 时仍前进 watermark。
  */
 export function createEmbeddedMemoryService(
   opts: CreateEmbeddedMemoryServiceOpts = {},

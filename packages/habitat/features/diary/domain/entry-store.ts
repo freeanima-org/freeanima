@@ -19,7 +19,7 @@ import {
   createDiaryTextBlock,
   deleteAllDiaryTextBlocks,
   listDiaryTextBlocks,
-  searchDiaryParentIdsByBlockText,
+  searchDiaryTextBlockHits,
 } from "./text-blocks.ts";
 import type {
   DiaryEntryAppendByDateInput,
@@ -346,8 +346,15 @@ export async function searchDiaryEntries(
   opts: DiaryEntrySearchOpts,
 ): Promise<DiaryEntryRow[]> {
   const limit = Math.max(1, Math.min(50, opts.limit ?? 30));
-  const parentIds = await searchDiaryParentIdsByBlockText(ctx, opts.query, limit);
-  if (parentIds.length === 0) return [];
+  const hitGroups = await searchDiaryTextBlockHits(
+    ctx,
+    omitUndefined({
+      query: opts.query,
+      limit,
+      component: opts.component,
+    }),
+  );
+  if (hitGroups.length === 0) return [];
 
   const filters: DiaryEntrySearchFilters = {};
   if (opts.entry_after) filters.entry_after = opts.entry_after;
@@ -384,12 +391,21 @@ export async function searchDiaryEntries(
     });
   }
 
-  return parentIds
-    .map((id) => byId.get(id))
-    .filter((row): row is NonNullable<typeof row> => row != null)
-    .map(({ parsed, created_at, updated_at, tag_ids }) =>
-      toEntryRow(parsed, { created_at, updated_at, tag_ids }, []),
-    );
+  return hitGroups
+    .map((group) => {
+      const meta = byId.get(group.parentId);
+      if (!meta) return null;
+      return toEntryRow(
+        meta.parsed,
+        {
+          created_at: meta.created_at,
+          updated_at: meta.updated_at,
+          tag_ids: meta.tag_ids,
+        },
+        group.blocks,
+      );
+    })
+    .filter((row): row is DiaryEntryRow => row != null);
 }
 
 export function titleFromEntryAt(entryAt: string): string {

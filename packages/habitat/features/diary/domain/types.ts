@@ -22,7 +22,12 @@ export type DiaryEntryRow = {
   entry_at: string;
   /** 顶层 entities.tag_ids（指向同 World 的 tag entity） */
   tag_ids: number[];
-  /** 正文块；list/search 恒为 []，get/create/append/update 带完整块 */
+  /**
+   * 正文块。
+   * - list：恒为 []
+   * - search：命中块摘要（content 为 snippet；含 id / components / parent_id）
+   * - get/create/append/update：完整块
+   */
   blocks: DiaryTextBlock[];
   created_at: string;
   updated_at: string;
@@ -84,6 +89,8 @@ export type DiaryEntrySearchOpts = {
   entry_before?: string;
   tag_ids?: number[];
   limit?: number;
+  /** 语义 tag：limbic | narrative | dream | semantic_ref（与 content_block 一致） */
+  component?: string;
 };
 
 export type DiaryTextBlockCreateInput = {

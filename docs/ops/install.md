@@ -14,7 +14,7 @@ title: 安装
 | **源码**     | 贡献者、日常开发            | Linux、macOS、Windows | 必需           | 自行安装 PostgreSQL（pgvector）+ 可选 Redis；bootstrap `env()`，运行时 Vault |
 | **独立发行** | 无 checkout 的生产 / 自托管 | **仅 Linux x64**      | 不需要         | 与 `anima service` 同一栖息地运行时；同样的 DB/Redis/密钥预期                |
 
-两条路径跑同一栖息地运行时（REST `/api` + 栖息地 RPC `/rpc/v1` + engine）。独立发行以 `anima service` 暴露；源码用 `just dev` / `just dev habitat`。带 **pgvector** 的 PostgreSQL **必需**。Redis 对缓存/KV 可选，**多栖息地进程共用一个 PostgreSQL 时推荐** —— 后台任务用 `anima:lock:*` 下的分布式锁（sleep-cycle、cron、reminders、FTS rebuild、migrate）；无 Redis 时锁退化为仅进程内。栖息地生命周期通知用进程内 HookRegistry `subscribe`。
+两条路径跑同一栖息地运行时（REST `/api` + 栖息地 RPC `/rpc/v1` + engine）。独立发行以 `anima service` 暴露；源码用 `just dev` / `just dev habitat`。带 **pgvector** 的 PostgreSQL **必需**。Redis 对缓存/KV 可选，**多栖息地进程共用一个 PostgreSQL 时推荐** —— 后台任务用 `anima:lock:*` 下的分布式锁（memory-maintenance、cron、reminders、FTS rebuild、migrate）；无 Redis 时锁退化为仅进程内。栖息地生命周期通知用进程内 HookRegistry `subscribe`。
 
 **Windows：** 无独立栖息地二进制。用[源码开发](windows-dev.md)（Git Bash + Docker），或在 Linux/WSL/远程跑栖息地并连接桌面 NSIS 壳。
 

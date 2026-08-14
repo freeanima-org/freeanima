@@ -1,6 +1,9 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
+import { resolveMemoryCutoverFlags } from "@freeanima/habitat/core/config/schemas/memory-config.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
 
 import {
   createContentBlock,
@@ -12,20 +15,48 @@ import {
   updateContentBlock,
 } from "./block-store.ts";
 import {
+  CONTENT_BLOCK_SEARCH_ORDER_BY,
   CONTENT_BLOCK_TYPES,
+  LIMBIC_KINDS,
   SEMANTIC_COMPONENT_TAGS,
   WORLD_ID_OPTIONAL,
   blockPayload,
   parseBlockType,
   parseLimbic,
+  parseLimbicKind,
   parseNarrative,
+  parseOptionalFloat,
+  parseSearchOrderBy,
   parseSemanticComponent,
   parseSemanticRef,
 } from "./block-tool-helpers.ts";
 import { CONTENT_BLOCK_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveContentBlockToolWorld } from "./tool-world-resolve.ts";
 import type { ContentBlockReorderItem, ContentBlockUpdateInput } from "./types.ts";
-import { coerceString } from "@freeanima/shared/coerce-string";
+
+/** limbic / narrative / dream 写入已废（#16102）；与旧 memory_* 写工具一并停写 */
+const PARKED_SEMANTIC_WRITE_MESSAGE =
+  "该记忆类型已 park（#16102）：limbic / dream / narrative 停写，存量只读";
+
+function parkLimbicDreamNarrativeWrites(): boolean {
+  try {
+    return resolveMemoryCutoverFlags(getActiveRuntimeConfig().data).park_limbic_dream_narrative;
+  } catch {
+    return resolveMemoryCutoverFlags(null).park_limbic_dream_narrative;
+  }
+}
+
+function rejectParkedSemanticWrite(opts: {
+  limbic?: unknown;
+  narrative?: unknown;
+  dream?: unknown;
+}): string | null {
+  if (!parkLimbicDreamNarrativeWrites()) return null;
+  if (opts.limbic != null || opts.narrative != null || opts.dream != null) {
+    return toolError(PARKED_SEMANTIC_WRITE_MESSAGE);
+  }
+  return null;
+}
 
 async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const parentId = Number(args.parent_id);
@@ -49,6 +80,12 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   if (args.semantic_ref !== undefined && semanticRef === null) {
     return toolError("invalid semantic_ref");
   }
+  const parked = rejectParkedSemanticWrite({
+    limbic: limbic ?? undefined,
+    narrative: narrative ?? undefined,
+    dream: args.dream,
+  });
+  if (parked) return parked;
 
   const sortOrder =
     args.sort_order != null && args.sort_order !== "" ? Number(args.sort_order) : undefined;
@@ -138,6 +175,13 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     patch.semantic_ref = semanticRef;
   }
 
+  const parked = rejectParkedSemanticWrite({
+    limbic: patch.limbic ?? undefined,
+    narrative: patch.narrative ?? undefined,
+    dream: (patch as { dream?: unknown }).dream,
+  });
+  if (parked) return parked;
+
   try {
     const item = await updateContentBlock(worldId, patch);
     if (!item) return toolError(`content_block not found: ${id}`);
@@ -218,8 +262,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 }
 
 async function handleSearch(args: Record<string, unknown>): Promise<string> {
-  const query = coerceString(args.query ?? "").trim();
-  if (!query) return toolError("query is required");
+  const query = args.query !== undefined ? coerceString(args.query).trim() : undefined;
 
   const parentIdRaw = args.parent_id;
   const hasParent =
@@ -249,6 +292,57 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
     component = tag;
   }
 
+  let kind: ReturnType<typeof parseLimbicKind> | undefined;
+  if (args.kind != null && args.kind !== "") {
+    kind = parseLimbicKind(args.kind);
+    if (!kind) {
+      return toolError(`kind must be one of: ${LIMBIC_KINDS.join(", ")}`);
+    }
+  }
+
+  const conversationId =
+    args.conversation_id !== undefined
+      ? coerceString(args.conversation_id).trim() || undefined
+      : undefined;
+
+  let status: "active" | "deprecated" | "all" | undefined;
+  if (args.status != null && args.status !== "") {
+    const raw = coerceString(args.status);
+    if (raw !== "active" && raw !== "deprecated" && raw !== "all") {
+      return toolError("status must be active|deprecated|all");
+    }
+    status = raw;
+  }
+
+  const minIntensity = parseOptionalFloat(args.min_intensity);
+  const maxIntensity = parseOptionalFloat(args.max_intensity);
+  const minValence = parseOptionalFloat(args.min_valence);
+  const maxValence = parseOptionalFloat(args.max_valence);
+  if (minIntensity === null) return toolError("invalid min_intensity");
+  if (maxIntensity === null) return toolError("invalid max_intensity");
+  if (minValence === null) return toolError("invalid min_valence");
+  if (maxValence === null) return toolError("invalid max_valence");
+  if (minIntensity != null && (minIntensity < 0 || minIntensity > 1)) {
+    return toolError("min_intensity must be between 0 and 1");
+  }
+  if (maxIntensity != null && (maxIntensity < 0 || maxIntensity > 1)) {
+    return toolError("max_intensity must be between 0 and 1");
+  }
+  if (minValence != null && (minValence < -1 || minValence > 1)) {
+    return toolError("min_valence must be between -1 and 1");
+  }
+  if (maxValence != null && (maxValence < -1 || maxValence > 1)) {
+    return toolError("max_valence must be between -1 and 1");
+  }
+
+  let orderBy: ReturnType<typeof parseSearchOrderBy> | undefined;
+  if (args.order_by != null && args.order_by !== "") {
+    orderBy = parseSearchOrderBy(args.order_by);
+    if (!orderBy) {
+      return toolError(`order_by must be one of: ${CONTENT_BLOCK_SEARCH_ORDER_BY.join(", ")}`);
+    }
+  }
+
   const limit =
     typeof args.limit === "number" && Number.isFinite(args.limit)
       ? Math.max(1, Math.min(50, Math.floor(args.limit)))
@@ -258,10 +352,18 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
     const items = await searchContentBlocks(
       worldId,
       omitUndefined({
-        query,
+        query: query || undefined,
         parent_id: parentId,
         block_type: blockType ?? undefined,
         component,
+        conversation_id: conversationId,
+        kind: kind ?? undefined,
+        status,
+        min_intensity: minIntensity ?? undefined,
+        max_intensity: maxIntensity ?? undefined,
+        min_valence: minValence ?? undefined,
+        max_valence: maxValence ?? undefined,
+        order_by: orderBy ?? undefined,
         limit,
       }),
     );
@@ -331,23 +433,31 @@ const CONTENT_BLOCK_TOOL_NAMES = [
 
 const LIMBIC_PARAM = {
   type: "object",
-  description: "Optional limbic component ({valence, arousal, intensity}); null clears on update",
+  description:
+    "DEPRECATED/parked write: limbic component attach is rejected when park_limbic_dream_narrative is on (default). Do not use for new emotion bricks; search with content_block_search(component=limbic).",
   properties: {
     valence: { type: "number", description: "-1..1" },
     arousal: { type: "number", description: "0..1" },
     intensity: { type: "number", description: "0..1" },
+    kind: { type: "string", enum: [...LIMBIC_KINDS] },
+    conversation_id: { type: "string" },
+    source_segment: { type: "string" },
   },
   required: ["valence", "arousal", "intensity"],
 } as const;
 
 const NARRATIVE_PARAM = {
   type: "object",
-  description: "Optional narrative component; null clears on update",
+  description:
+    "DEPRECATED/parked write: narrative attach is rejected when park is on (default). Search with content_block_search(component=narrative).",
   properties: {
     significance: {
       type: "string",
       enum: ["normal", "milestone", "turning_point"],
     },
+    status: { type: "string", enum: ["active", "deprecated"] },
+    period_start: { type: "string" },
+    period_end: { type: "string" },
   },
 } as const;
 
@@ -369,7 +479,8 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_create",
           description:
-            "Create a content_block under a container (parent_id = diary_entry). Optional limbic/narrative/semantic_ref/dream attach semantic components.",
+            "Create a content_block under a container (parent_id = diary_entry). " +
+            "limbic/narrative/dream attach is parked by default (#16102); use text/semantic_ref only for new writes.",
           parameters: {
             type: "object",
             properties: {
@@ -457,21 +568,66 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_search",
           description:
-            "Hybrid search content_blocks by title/content. Optional parent_id, block_type, component filters.",
+            "Search content_blocks. With query: hybrid FTS; without query: filter_only list. " +
+            "Emotion / autobiographical recall: component=limbic|narrative. " +
+            "Limbic: kind, conversation_id, intensity/valence range, order_by. " +
+            "Narrative: defaults to status=active (override with status).",
           parameters: {
             type: "object",
             properties: {
               ...WORLD_ID_OPTIONAL,
-              query: { type: "string", description: "Search keywords" },
+              query: {
+                type: "string",
+                description:
+                  "Full-text keywords (hybrid). Optional; omit/empty for filter-only list.",
+              },
               parent_id: { type: "integer", description: "Optional container scope" },
               block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
               component: {
                 type: "string",
                 enum: [...SEMANTIC_COMPONENT_TAGS],
+                description: "limbic=emotion bricks; narrative=autobiographical",
+              },
+              conversation_id: {
+                type: "string",
+                description: "Filter limbic bricks by conversation_id",
+              },
+              kind: {
+                type: "string",
+                enum: [...LIMBIC_KINDS],
+                description: "Limbic kind: conversation_mood | turning_point | spike",
+              },
+              status: {
+                type: "string",
+                enum: ["active", "deprecated", "all"],
+                description:
+                  "Narrative status; component=narrative defaults to active; all=no filter",
+              },
+              min_intensity: {
+                type: "number",
+                description: "Minimum limbic intensity (0..1, inclusive)",
+              },
+              max_intensity: {
+                type: "number",
+                description: "Maximum limbic intensity (0..1, inclusive)",
+              },
+              min_valence: {
+                type: "number",
+                description: "Minimum limbic valence (-1..1, inclusive)",
+              },
+              max_valence: {
+                type: "number",
+                description: "Maximum limbic valence (-1..1, inclusive)",
+              },
+              order_by: {
+                type: "string",
+                enum: [...CONTENT_BLOCK_SEARCH_ORDER_BY],
+                description:
+                  "Sort order; default created_desc (filter-only). Hybrid keeps relevance unless set.",
               },
               limit: { type: "integer", description: "Max results, default 30, cap 50" },
             },
-            required: ["subject_kind", "query"],
+            required: ["subject_kind"],
           },
           handler: handleSearch,
         },

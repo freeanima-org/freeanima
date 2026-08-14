@@ -1,6 +1,4 @@
 import {
-  autobiographicalMemoryListBodySchema,
-  limbicMemoryListBodySchema,
   passiveRecallDebugBodySchema,
   semanticMemoryListBodySchema,
   semanticMemoryPinBodySchema,
@@ -10,8 +8,6 @@ import {
   temporalSummaryRebuildRangeBodySchema,
   temporalSystemRollRegenerateBodySchema,
   temporalSystemRollBatchStartBodySchema,
-  type AutobiographicalMemoryListBody,
-  type LimbicMemoryListBody,
   type PassiveRecallDebugBody,
   type SemanticMemoryListBody,
   type SemanticMemoryPinBody,
@@ -113,29 +109,6 @@ export async function listSemanticMemories(body: SemanticMemoryListBody) {
     status: parsed.status,
     source_conversation: parsed.source_conversation?.trim() || undefined,
     sort_by: parsed.sort_by,
-  });
-}
-
-export async function listLimbicMemories(body: LimbicMemoryListBody) {
-  const parsed = limbicMemoryListBodySchema.parse(body);
-  return habitatCtx().listLimbicMemories({
-    query: parsed.query?.trim() || undefined,
-    offset: parsed.offset,
-    limit: parsed.limit,
-    conversation_id: parsed.conversation_id?.trim() || undefined,
-    kind: parsed.kind,
-  });
-}
-
-export async function listAutobiographicalMemories(body: AutobiographicalMemoryListBody) {
-  const parsed = autobiographicalMemoryListBodySchema.parse(body);
-  return habitatCtx().listAutobiographicalMemories({
-    query: parsed.query?.trim() || undefined,
-    offset: parsed.offset,
-    limit: parsed.limit,
-    status: parsed.status,
-    significance: parsed.significance,
-    source_conversation: parsed.source_conversation?.trim() || undefined,
   });
 }
 

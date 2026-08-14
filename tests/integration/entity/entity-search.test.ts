@@ -120,6 +120,10 @@ describePg("entity search PG", () => {
     expect(domain.map((row) => row.id)).toContain(exact.id);
     expect(domain.map((row) => row.id)).toContain(weak.id);
     expect(domain[0]?.id).toBe(exact.id);
+    const exactHit = domain.find((row) => row.id === exact.id);
+    expect(exactHit?.blocks.length).toBeGreaterThan(0);
+    expect(exactHit?.blocks[0]?.parent_id).toBe(exact.id);
+    expect(exactHit?.blocks[0]?.content).toContain("排序测试专用项目");
   });
 
   it("diary_entry filter_only orders by entry_at DESC before limit", async () => {

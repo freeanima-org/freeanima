@@ -1,8 +1,5 @@
 import {
-  autobiographicalSignificanceSchema,
-  autobiographicalStatusSchema,
   clarifyItemSchema,
-  limbicKindSchema,
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,
 } from "@freeanima/shared/db-shapes";
@@ -31,19 +28,6 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
 export const semanticMemoryPinBodySchema = z.object({
   id: z.number().int().positive(),
   pinned: z.boolean(),
-});
-
-export const limbicMemoryListBodySchema = memoryListPaginationSchema.extend({
-  query: z.string().optional(),
-  conversation_id: z.string().optional(),
-  kind: limbicKindSchema.optional(),
-});
-
-export const autobiographicalMemoryListBodySchema = memoryListPaginationSchema.extend({
-  query: z.string().optional(),
-  status: autobiographicalStatusSchema.optional(),
-  significance: autobiographicalSignificanceSchema.optional(),
-  source_conversation: z.string().optional(),
 });
 
 export const createConversationBodySchema = z.object({
@@ -182,8 +166,6 @@ export type TemporalSystemRollBatchJobStatus = z.infer<
 >;
 export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
 export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
-export type LimbicMemoryListBody = z.infer<typeof limbicMemoryListBodySchema>;
-export type AutobiographicalMemoryListBody = z.infer<typeof autobiographicalMemoryListBodySchema>;
 
 export const entityIdParamsSchema = z.object({
   id: z.coerce.number().int().positive(),

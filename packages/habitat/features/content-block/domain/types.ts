@@ -1,5 +1,6 @@
 import type {
   ContentBlockType,
+  LimbicKind,
   NarrativeSignificance,
   NarrativeStatus,
 } from "@freeanima/habitat/core/db/schema/entity";
@@ -8,11 +9,19 @@ export type ContentBlockLimbicInput = {
   valence: number;
   arousal: number;
   intensity: number;
+  kind?: LimbicKind;
+  conversation_id?: string;
+  source_segment?: string | null;
+  semantic_memory_ids?: number[];
 };
 
 export type ContentBlockNarrativeInput = {
   significance?: NarrativeSignificance;
   status?: NarrativeStatus;
+  period_start?: string | null;
+  period_end?: string | null;
+  source_facts?: number[];
+  source_conversations?: string[];
 };
 
 export type ContentBlockSemanticRefInput = {
@@ -83,11 +92,29 @@ export type ContentBlockListOpts = {
   offset?: number;
 };
 
+export type ContentBlockSearchOrderBy =
+  | "created_desc"
+  | "created_asc"
+  | "intensity_desc"
+  | "intensity_asc"
+  | "valence_desc"
+  | "valence_asc";
+
 export type ContentBlockSearchOpts = {
-  query: string;
+  /** 空则 filter_only / 列表过滤 */
+  query?: string;
   parent_id?: number;
   block_type?: ContentBlockType;
   component?: string;
+  conversation_id?: string;
+  kind?: LimbicKind;
+  /** narrative.status；component=narrative 时默认 active；传 all 不过滤 */
+  status?: NarrativeStatus | "all";
+  min_intensity?: number;
+  max_intensity?: number;
+  min_valence?: number;
+  max_valence?: number;
+  order_by?: ContentBlockSearchOrderBy;
   limit?: number;
 };
 

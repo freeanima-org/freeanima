@@ -1,56 +1,52 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import type {
-  PipelineStepRunListOpts,
-  PipelineStepRunRow,
-} from "@freeanima/habitat/core/db/pg/pipeline/types";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
-import { listPipelineStepRuns as listPgPipelineStepRuns } from "@freeanima/habitat/core/db/pg/pipeline";
 import { listCronLogs as listPgCronLogs } from "@freeanima/habitat/core/db/pg/cron";
 import { acquireRedisLock } from "@freeanima/habitat/core/redis";
 import {
   getInprocessBuiltinStatus,
-  SLEEP_PIPELINE_LOCK_KEY,
+  MEMORY_MAINTENANCE_LOCK_KEY,
 } from "@freeanima/habitat/capabilities/connectors/cron";
 import {
   buildSleepSummary,
-  SLEEP_CYCLE_JOB_ID,
+  MEMORY_MAINTENANCE_JOB_ID,
   type SleepSummary,
 } from "@freeanima/habitat/capabilities/memory";
 import type { SleepCatchUpPlan } from "@freeanima/habitat/capabilities/memory/sleep-catch-up-types";
-import type { PipelineRunState } from "@freeanima/habitat/engine/pipeline";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
 
 import {
-  getSleepPipelineStatus as readSleepPipelineStatus,
-  runSleepCycle,
-  runSleepStep,
+  runMemoryMaintenance,
+  runMemoryMaintenanceStep,
+  type MaintenanceCycleResult,
+  type MaintenanceStepResult,
 } from "../boot/pipeline-handlers.ts";
 import {
-  memoryMaintenanceDefinition,
   MEMORY_MAINTENANCE_PIPELINE_ID,
   MAINTENANCE_STEP_IDS,
-} from "../boot/sleep-cycle.ts";
+  MAINTENANCE_STEP_LIST,
+  isKnownMaintenanceStep,
+} from "../boot/memory-maintenance.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
 
-const SLEEP_PIPELINE_LOCK_TTL_MS = 3 * 60 * 60 * 1000;
+const MEMORY_MAINTENANCE_LOCK_TTL_MS = 3 * 60 * 60 * 1000;
 
-async function acquireSleepPipelineLock() {
+async function acquireMemoryMaintenanceLock() {
   return acquireRedisLock({
-    key: SLEEP_PIPELINE_LOCK_KEY,
-    ttlMs: SLEEP_PIPELINE_LOCK_TTL_MS,
+    key: MEMORY_MAINTENANCE_LOCK_KEY,
+    ttlMs: MEMORY_MAINTENANCE_LOCK_TTL_MS,
     renew: true,
     mode: "try",
   });
 }
 
-let sleepCycleRunning = false;
-let lastSleepCycleResult: Awaited<ReturnType<typeof runSleepCycle>> | null = null;
-let sleepStepRunning = false;
-let sleepCatchUpRunning = false;
+let cycleRunning = false;
+let lastCycleResult: MaintenanceCycleResult | null = null;
+let stepRunning = false;
+let catchUpRunning = false;
 
-export type SleepCatchUpStatus = {
+export type MemoryCatchUpStatus = {
   running: boolean;
   plan: SleepCatchUpPlan | null;
   completed_light_days: string[];
@@ -62,7 +58,7 @@ export type SleepCatchUpStatus = {
   finished: boolean;
 };
 
-let catchUpStatus: SleepCatchUpStatus = {
+let catchUpStatus: MemoryCatchUpStatus = {
   running: false,
   plan: null,
   completed_light_days: [],
@@ -74,7 +70,7 @@ let catchUpStatus: SleepCatchUpStatus = {
   finished: false,
 };
 
-export async function getSleepSummary(): Promise<SleepSummary> {
+export async function getMemoryMaintenanceSummary(): Promise<SleepSummary> {
   const { jobs } = await listCronJobs();
   const mapped = jobs.map((j) => ({
     id: j.id,
@@ -83,162 +79,129 @@ export async function getSleepSummary(): Promise<SleepSummary> {
     run_count: j.run_count,
     last_run_at: j.last_run_at > 0 ? new Date(j.last_run_at * 1000).toISOString() : null,
   }));
-  // sleep-cycle 已迁出 cron_jobs，从进程内 Bun.cron 状态注入
-  const sleepInprocess = getInprocessBuiltinStatus(SLEEP_CYCLE_JOB_ID);
-  if (sleepInprocess && !mapped.some((j) => j.id === SLEEP_CYCLE_JOB_ID)) {
+  const inprocess = getInprocessBuiltinStatus(MEMORY_MAINTENANCE_JOB_ID);
+  if (inprocess && !mapped.some((j) => j.id === MEMORY_MAINTENANCE_JOB_ID)) {
     mapped.push({
-      id: sleepInprocess.id,
-      name: sleepInprocess.name,
-      paused: sleepInprocess.paused,
-      run_count: sleepInprocess.run_count,
+      id: inprocess.id,
+      name: inprocess.name,
+      paused: inprocess.paused,
+      run_count: inprocess.run_count,
       last_run_at:
-        sleepInprocess.last_run_at > 0
-          ? new Date(sleepInprocess.last_run_at * 1000).toISOString()
-          : null,
+        inprocess.last_run_at > 0 ? new Date(inprocess.last_run_at * 1000).toISOString() : null,
     });
   }
   return buildSleepSummary(mapped);
 }
 
-export async function listPipelineStepRuns(
-  _deps: RuntimeDeps,
-  opts?: {
-    step_id?: string;
-    run_id?: string;
-    limit?: number;
-    offset?: number;
-  },
-): Promise<{ items: PipelineStepRunRow[]; total: number }> {
-  if (!isPostgresPrimary()) {
-    return { items: [], total: 0 };
-  }
-
-  const listOpts: PipelineStepRunListOpts = {
-    pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
-    limit: opts?.limit ?? 50,
-    offset: opts?.offset ?? 0,
-    ...omitUndefined({
-      step_id: opts?.step_id,
-      run_id: opts?.run_id,
-    }),
-  };
-  const items = await listPgPipelineStepRuns(listOpts);
-  return { items, total: items.length };
-}
-
-export type SleepPipelineStatus = {
+export type MemoryMaintenanceStatus = {
   running: boolean;
   step_running: boolean;
   catch_up_running: boolean;
   pipeline_id: string;
-  definition: typeof memoryMaintenanceDefinition;
-  last_result: Awaited<ReturnType<typeof runSleepCycle>> | null;
-  run_state: PipelineRunState | null;
-  catch_up: SleepCatchUpStatus;
+  steps: readonly string[];
+  last_result: MaintenanceCycleResult | null;
+  catch_up: MemoryCatchUpStatus;
 };
 
-export function getSleepPipelineStatus(): SleepPipelineStatus {
+export function getMemoryMaintenanceStatus(): MemoryMaintenanceStatus {
   return {
-    running: sleepCycleRunning,
-    step_running: sleepStepRunning,
-    catch_up_running: sleepCatchUpRunning,
+    running: cycleRunning,
+    step_running: stepRunning,
+    catch_up_running: catchUpRunning,
     pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
-    definition: memoryMaintenanceDefinition,
-    last_result: lastSleepCycleResult,
-    run_state: readSleepPipelineStatus(),
+    steps: MAINTENANCE_STEP_LIST,
+    last_result: lastCycleResult,
     catch_up: { ...catchUpStatus },
   };
 }
 
-function sleepBusy(): boolean {
-  return sleepCycleRunning || sleepStepRunning || sleepCatchUpRunning;
+function maintenanceBusy(): boolean {
+  return cycleRunning || stepRunning || catchUpRunning;
 }
 
-export async function startSleepCycle(
-  _deps: RuntimeDeps,
-  opts?: { day?: string; deep_sleep_mode?: "full" | "incremental" },
+export async function startMemoryMaintenanceCycle(
+  deps: RuntimeDeps,
+  opts?: { day?: string; reflect_mode?: "full" | "incremental" },
 ): Promise<{ ok: true; started: true } | { ok: false; error: string }> {
-  if (sleepBusy()) {
-    return { ok: false, error: "sleep pipeline already running" };
+  if (maintenanceBusy()) {
+    return { ok: false, error: "memory maintenance already running" };
   }
 
-  const lock = await acquireSleepPipelineLock();
+  const lock = await acquireMemoryMaintenanceLock();
   if (lock.status === "busy") {
-    return { ok: false, error: "sleep pipeline already running" };
+    return { ok: false, error: "memory maintenance already running" };
   }
 
-  sleepCycleRunning = true;
-  lastSleepCycleResult = null;
+  cycleRunning = true;
+  lastCycleResult = null;
 
   void (async () => {
     try {
-      lastSleepCycleResult = await runSleepCycle(opts?.day, {
+      lastCycleResult = await runMemoryMaintenance(deps.engine, opts?.day, {
         trigger: "manual_cycle",
-        ...omitUndefined({ deep_sleep_mode: opts?.deep_sleep_mode }),
+        ...omitUndefined({ reflect_mode: opts?.reflect_mode }),
       });
     } finally {
       await lock.handle.release();
-      sleepCycleRunning = false;
+      cycleRunning = false;
     }
   })();
 
   return { ok: true, started: true };
 }
 
-export async function startSleepPipelineStep(
-  _deps: RuntimeDeps,
+export async function startMemoryMaintenanceStep(
+  deps: RuntimeDeps,
   opts: {
     stepId: string;
     day?: string;
     force?: boolean;
-    deep_sleep_mode?: "full" | "incremental";
+    reflect_mode?: "full" | "incremental";
   },
-): Promise<
-  { ok: true; result: Awaited<ReturnType<typeof runSleepStep>> } | { ok: false; error: string }
-> {
-  if (sleepBusy()) {
-    return { ok: false, error: "sleep pipeline already running" };
+): Promise<{ ok: true; result: MaintenanceStepResult } | { ok: false; error: string }> {
+  if (maintenanceBusy()) {
+    return { ok: false, error: "memory maintenance already running" };
   }
 
-  const known =
-    memoryMaintenanceDefinition.nodes.some((n) => n.id === opts.stepId) ||
-    opts.stepId === "light-sleep" ||
-    opts.stepId === "deep-sleep";
-  if (!known) {
+  if (!isKnownMaintenanceStep(opts.stepId)) {
     return { ok: false, error: `unknown maintenance step: ${opts.stepId}` };
   }
 
-  const lock = await acquireSleepPipelineLock();
+  const lock = await acquireMemoryMaintenanceLock();
   if (lock.status === "busy") {
-    return { ok: false, error: "sleep pipeline already running" };
+    return { ok: false, error: "memory maintenance already running" };
   }
 
-  sleepStepRunning = true;
+  stepRunning = true;
   try {
-    const result = await runSleepStep(opts.stepId, {
+    const result = await runMemoryMaintenanceStep(opts.stepId, {
       ...omitUndefined({
         day: opts.day,
         force: opts.force,
-        deep_sleep_mode: opts.deep_sleep_mode,
+        reflect_mode: opts.reflect_mode,
       }),
       trigger: "manual_step",
+      engine: deps.engine,
     });
+    if (!result.ok) {
+      return { ok: false, error: result.error ?? `step failed: ${opts.stepId}` };
+    }
     return { ok: true, result };
   } finally {
     await lock.handle.release();
-    sleepStepRunning = false;
+    stepRunning = false;
   }
 }
 
-export async function startSleepCatchUp(
-  _deps: RuntimeDeps,
+export async function startMemoryMaintenanceCatchUp(
+  deps: RuntimeDeps,
   opts?: { plan?: SleepCatchUpPlan },
 ): Promise<{ ok: true; started: true; plan: SleepCatchUpPlan } | { ok: false; error: string }> {
-  if (sleepBusy()) {
-    return { ok: false, error: "sleep pipeline already running" };
+  if (maintenanceBusy()) {
+    return { ok: false, error: "memory maintenance already running" };
   }
   if (!isPostgresPrimary()) {
-    return { ok: false, error: "postgres primary required for sleep catch-up" };
+    return { ok: false, error: "postgres primary required for memory catch-up" };
   }
 
   let plan: SleepCatchUpPlan;
@@ -255,12 +218,12 @@ export async function startSleepCatchUp(
     plan = planned.plan;
   }
 
-  const lock = await acquireSleepPipelineLock();
+  const lock = await acquireMemoryMaintenanceLock();
   if (lock.status === "busy") {
-    return { ok: false, error: "sleep pipeline already running" };
+    return { ok: false, error: "memory maintenance already running" };
   }
 
-  sleepCatchUpRunning = true;
+  catchUpRunning = true;
   catchUpStatus = {
     running: true,
     plan,
@@ -284,15 +247,14 @@ export async function startSleepCatchUp(
             current_day: day,
             current_step: MAINTENANCE_STEP_IDS.retainCatchUp,
           };
-          const result = await runSleepStep(MAINTENANCE_STEP_IDS.retainCatchUp, {
+          const result = await runMemoryMaintenanceStep(MAINTENANCE_STEP_IDS.retainCatchUp, {
             day,
             force: true,
             trigger: "catch_up",
+            engine: deps.engine,
           });
           if (!result.ok) {
-            throw new Error(
-              result.error ?? result.dependency_error ?? `retain-catch-up failed for ${day}`,
-            );
+            throw new Error(result.error ?? `retain-catch-up failed for ${day}`);
           }
           catchUpStatus = {
             ...catchUpStatus,
@@ -305,15 +267,14 @@ export async function startSleepCatchUp(
             current_day: day,
             current_step: MAINTENANCE_STEP_IDS.temporalSummaryDay,
           };
-          const result = await runSleepStep(MAINTENANCE_STEP_IDS.temporalSummaryDay, {
+          const result = await runMemoryMaintenanceStep(MAINTENANCE_STEP_IDS.temporalSummaryDay, {
             day,
             force: true,
             trigger: "catch_up",
+            engine: deps.engine,
           });
           if (!result.ok) {
-            throw new Error(
-              result.error ?? result.dependency_error ?? `temporal-summary-day failed for ${day}`,
-            );
+            throw new Error(result.error ?? `temporal-summary-day failed for ${day}`);
           }
           catchUpStatus = {
             ...catchUpStatus,
@@ -328,15 +289,14 @@ export async function startSleepCatchUp(
           current_day: day,
           current_step: MAINTENANCE_STEP_IDS.temporalSummaryCascade,
         };
-        const result = await runSleepStep(MAINTENANCE_STEP_IDS.temporalSummaryCascade, {
+        const result = await runMemoryMaintenanceStep(MAINTENANCE_STEP_IDS.temporalSummaryCascade, {
           day,
           force: true,
           trigger: "catch_up",
+          engine: deps.engine,
         });
         if (!result.ok) {
-          throw new Error(
-            result.error ?? result.dependency_error ?? `temporal-summary-cascade failed for ${day}`,
-          );
+          throw new Error(result.error ?? `temporal-summary-cascade failed for ${day}`);
         }
         catchUpStatus = {
           ...catchUpStatus,
@@ -353,7 +313,7 @@ export async function startSleepCatchUp(
       };
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      logComponent("memory").warn("sleep catch-up failed", { error: message });
+      logComponent("memory").warn("memory catch-up failed", { error: message });
       catchUpStatus = {
         ...catchUpStatus,
         running: false,
@@ -361,15 +321,15 @@ export async function startSleepCatchUp(
         finished: true,
       };
       void notifySoftFailure({
-        sourceRef: cstDaySourceRef("sleep:catch_up_failed"),
-        title: "睡眠补跑失败",
-        body: ["Catch up sleep 中途失败；已记录状态，可稍后重试。", `错误：${message}`].join("\n"),
-        payload: { kind: "sleep_catch_up_failed", error: message },
-        logLabel: "sleep_catch_up",
+        sourceRef: cstDaySourceRef("memory_maintenance:catch_up_failed"),
+        title: "记忆补跑失败",
+        body: ["一键补跑中途失败；已记录状态，可稍后重试。", `错误：${message}`].join("\n"),
+        payload: { kind: "memory_catch_up_failed", error: message },
+        logLabel: "memory_catch_up",
       });
     } finally {
       await lock.handle.release();
-      sleepCatchUpRunning = false;
+      catchUpRunning = false;
     }
   })();
 

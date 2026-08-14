@@ -6,7 +6,7 @@ describe("mapRow", () => {
   test("converts bigint id to number", () => {
     const row = mapRow({
       id: 42,
-      job_id: "builtin-light-sleep",
+      job_id: "builtin-memory-maintenance",
       run_count: 1,
       ok: true,
       finished_at: new Date("2026-06-10T02:08:50.320+08:00"),
@@ -22,7 +22,7 @@ describe("mapRow", () => {
   test("converts Date finished_at to ISO string", () => {
     const row = mapRow({
       id: 1,
-      job_id: "builtin-deep-sleep",
+      job_id: "builtin-memory-maintenance",
       run_count: 2,
       ok: false,
       finished_at: new Date("2026-06-10T02:08:50.320Z"),
@@ -37,7 +37,7 @@ describe("mapRow", () => {
   test("preserves string finished_at", () => {
     const row = mapRow({
       id: 3,
-      job_id: "builtin-light-sleep",
+      job_id: "builtin-memory-maintenance",
       run_count: 3,
       ok: true,
       finished_at: new Date("2026-06-09T18:07:32.000Z"),

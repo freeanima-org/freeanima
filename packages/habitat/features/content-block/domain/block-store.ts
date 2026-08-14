@@ -22,6 +22,10 @@ import {
 } from "@freeanima/habitat/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
+import {
+  applyContentBlockSearchOrder,
+  clampContentBlockLimbicRange,
+} from "./block-tool-helpers.ts";
 import type {
   ContentBlockCreateInput,
   ContentBlockDreamInput,
@@ -52,11 +56,15 @@ async function assertContainer(parentId: number, worldId: number): Promise<void>
 function readLimbic(body: Record<string, unknown>): ContentBlockLimbicInput | null {
   const parsed = limbicBodySchema.safeParse(body);
   if (!parsed.success) return null;
-  return {
+  return omitUndefined({
     valence: parsed.data.valence,
     arousal: parsed.data.arousal,
     intensity: parsed.data.intensity,
-  };
+    kind: parsed.data.kind,
+    conversation_id: parsed.data.conversation_id,
+    source_segment: parsed.data.source_segment,
+    semantic_memory_ids: parsed.data.semantic_memory_ids,
+  });
 }
 
 function readNarrative(body: Record<string, unknown>): ContentBlockNarrativeInput | null {
@@ -65,6 +73,10 @@ function readNarrative(body: Record<string, unknown>): ContentBlockNarrativeInpu
   return omitUndefined({
     significance: parsed.data.significance,
     status: parsed.data.status,
+    period_start: parsed.data.period_start,
+    period_end: parsed.data.period_end,
+    source_facts: parsed.data.source_facts,
+    source_conversations: parsed.data.source_conversations,
   });
 }
 
@@ -177,10 +189,32 @@ function semanticBodyFields(input: {
     out.valence = input.limbic.valence;
     out.arousal = input.limbic.arousal;
     out.intensity = input.limbic.intensity;
+    if (input.limbic.kind !== undefined) out.kind = input.limbic.kind;
+    if (input.limbic.conversation_id !== undefined) {
+      out.conversation_id = input.limbic.conversation_id;
+    }
+    if (input.limbic.source_segment !== undefined) {
+      out.source_segment = input.limbic.source_segment;
+    }
+    if (input.limbic.semantic_memory_ids !== undefined) {
+      out.semantic_memory_ids = input.limbic.semantic_memory_ids;
+    }
   }
   if (input.narrative) {
     out.significance = input.narrative.significance ?? "normal";
-    if (input.narrative.status !== undefined) out.status = input.narrative.status;
+    out.status = input.narrative.status ?? "active";
+    if (input.narrative.period_start !== undefined) {
+      out.period_start = input.narrative.period_start;
+    }
+    if (input.narrative.period_end !== undefined) {
+      out.period_end = input.narrative.period_end;
+    }
+    if (input.narrative.source_facts !== undefined) {
+      out.source_facts = input.narrative.source_facts;
+    }
+    if (input.narrative.source_conversations !== undefined) {
+      out.source_conversations = input.narrative.source_conversations;
+    }
   }
   if (input.semantic_ref) {
     out.entity_id = input.semantic_ref.entity_id;
@@ -402,24 +436,64 @@ export async function searchContentBlocks(
   worldId: number,
   opts: ContentBlockSearchOpts,
 ): Promise<ContentBlockRow[]> {
+  const query = opts.query?.trim() ?? "";
   const filters: Record<string, unknown> = {};
   if (opts.parent_id != null) filters.parent_id = opts.parent_id;
   if (opts.block_type) filters.block_type = opts.block_type;
+  if (opts.conversation_id) filters.conversation_id = opts.conversation_id;
+  if (opts.kind) filters.kind = opts.kind;
+
+  // component=narrative 时默认只返回 status=active（可显式 status / all 覆盖）
+  const isNarrative = opts.component === NARRATIVE_COMPONENT;
+  if (isNarrative) {
+    const status = opts.status ?? "active";
+    if (status !== "all") filters.status = status;
+  } else if (opts.status != null && opts.status !== "all") {
+    filters.status = opts.status;
+  }
+
+  const pageLimit = Math.max(1, Math.min(50, opts.limit ?? 30));
+  const needsPostFilter =
+    opts.min_intensity != null ||
+    opts.max_intensity != null ||
+    opts.min_valence != null ||
+    opts.max_valence != null ||
+    opts.order_by != null ||
+    !query;
+  // 对齐 limbic-search：先拉宽再内存 clamp / 排序，最后截断
+  const fetchLimit = needsPostFilter ? 500 : pageLimit;
 
   const result = await searchEntities({
     world_id: worldId,
     primary_component: CONTENT_BLOCK_COMPONENT,
     ...(opts.component ? { component: opts.component } : {}),
-    query: opts.query,
+    ...(query ? { query } : {}),
     ...(Object.keys(filters).length > 0 ? { filters } : {}),
-    limit: Math.max(1, Math.min(50, opts.limit ?? 30)),
-    mode: "hybrid",
+    limit: fetchLimit,
+    mode: query ? "hybrid" : "filter_only",
     include_count: false,
   });
 
-  return result.results
+  let items = result.results
     .map((row) => mapHit(row))
     .filter((row): row is ContentBlockRow => row != null);
+
+  items = clampContentBlockLimbicRange(
+    items,
+    omitUndefined({
+      minIntensity: opts.min_intensity,
+      maxIntensity: opts.max_intensity,
+      minValence: opts.min_valence,
+      maxValence: opts.max_valence,
+    }),
+  );
+
+  // hybrid 有 query 且未指定 order_by 时保留相关度顺序
+  if (!query || opts.order_by) {
+    items = applyContentBlockSearchOrder(items, opts.order_by);
+  }
+
+  return items.slice(0, pageLimit);
 }
 
 export async function reorderContentBlocks(

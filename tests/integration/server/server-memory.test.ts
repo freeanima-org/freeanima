@@ -9,8 +9,6 @@ import {
 
 import { getAppRuntime } from "@freeanima/habitat/platform";
 import { SELF_BLOCK_KEYS } from "@freeanima/habitat/core/db/pg/self-layer/types";
-import { createAutobiographicalMemory } from "@freeanima/habitat/core/db/pg/autobiographical-memory";
-import { createLimbicMemory } from "@freeanima/habitat/core/db/pg/limbic-memory";
 import {
   createSemanticMemory,
   getSemanticMemory,
@@ -143,61 +141,6 @@ describePg("server memory API", () => {
     if (forcedRank.items.length >= 2) {
       expect(forcedRank.items[0]?.rank).toBeGreaterThanOrEqual(forcedRank.items[1]?.rank ?? 0);
     }
-  });
-
-  it("listLimbicMemories supports conversation and kind filter", async () => {
-    const sid = "20260526_130000_limbic";
-    await createLimbicMemory({
-      conversation_id: sid,
-      kind: "spike",
-      content: "limbic probe spike content",
-    });
-    await createLimbicMemory({
-      conversation_id: sid,
-      kind: "conversation_mood",
-      content: "limbic probe mood content",
-    });
-
-    const spikes = await getAppRuntime().listLimbicMemories({
-      conversation_id: sid,
-      kind: "spike",
-    });
-    expect(spikes.total).toBe(1);
-    expect(spikes.items[0]?.kind).toBe("spike");
-
-    const searched = await getAppRuntime().listLimbicMemories({
-      query: "spike",
-      conversation_id: sid,
-    });
-    expect(searched.total).toBe(1);
-    expect(searched.items[0]?.content).toContain("spike");
-  });
-
-  it("listAutobiographicalMemories supports significance filter", async () => {
-    await createAutobiographicalMemory({
-      title: "Milestone event",
-      content: "autobiography list probe milestone",
-      significance: "milestone",
-    });
-    await createAutobiographicalMemory({
-      title: "Daily record",
-      content: "autobiography list probe normal",
-      significance: "normal",
-    });
-
-    const milestones = await getAppRuntime().listAutobiographicalMemories({
-      significance: "milestone",
-    });
-    expect(milestones.total).toBeGreaterThanOrEqual(1);
-    expect(
-      milestones.items.every((r: { significance: string }) => r.significance === "milestone"),
-    ).toBe(true);
-
-    const searched = await getAppRuntime().listAutobiographicalMemories({
-      query: "milestone",
-    });
-    expect(searched.total).toBeGreaterThanOrEqual(1);
-    expect(searched.items.some((r: { title: string }) => r.title.includes("Milestone"))).toBe(true);
   });
 
   it("updateSemanticMemoryPinned toggles pinned on active memory", async () => {

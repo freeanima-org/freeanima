@@ -98,6 +98,7 @@ export {
 } from "./module.ts";
 export {
   INPROCESS_BUILTIN_DEFS,
+  MEMORY_MAINTENANCE_LOCK_KEY,
   SLEEP_PIPELINE_LOCK_KEY,
   type InprocessBuiltinDef,
   type InprocessBuiltinRuntime,

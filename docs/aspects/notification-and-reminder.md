@@ -86,7 +86,7 @@ loop:
 | 空闲         | 不刷 cron_log；睡到下次真实开火或变更                                                                                                                              |
 | 循环任务     | 存活 `task_item` 保持 `pending`，完成时滚动 `due_at` / `remind_at`（见 [`docs/modules/task.md`](../modules/task.md)）；扫描器仍只看 pending live，滚期后可再次触发 |
 
-其他内置（睡眠周期、env-health、用户 Agent cron）可继续用现有 cron 表机制。本切面只把**任务到期 / 提醒发现**移出该路径。
+其他内置（记忆维护、env-health、用户 Agent cron）可继续用现有 cron 表机制。本切面只把**任务到期 / 提醒发现**移出该路径。
 
 入口**不得**轮询 Inbox 或任务列表来实现注意力。见 [页面刷新](page-refresh.md)「有限自动」。
 
@@ -146,7 +146,7 @@ flowchart LR
 文档化以免 agent 把今日行为当终态：
 
 1. **任务到期 / 提前提醒（已对齐目标态）**：`task-reminder-scheduler` sleep-until-next；到期 → Inbox；advance `reminders[]` → WS `task.advanceReminder` → `TaskAdvanceReminderShellWatcher` → `deliverLocalReminder`。兼容字段 `remind_at` = 最早提醒项。
-2. sleep-cycle / env-health / email-sync-all / temporal-summary-tick 仍用 **进程内 `Bun.cron`**（非 PG `cron_jobs`）。失败时 Inbox 双收件策略不变。
+2. memory-maintenance / env-health / email-sync-all / temporal-summary-tick 仍用 **进程内 `Bun.cron`**（非 PG `cron_jobs`）。失败时 Inbox 双收件策略不变。
 3. 壳 attention 仍是多个独立 watcher（现含 `TaskAdvanceReminderShellWatcher`），尚未收敛为单一 Attention 枢纽。Nav 角标与桌面 app-icon 角标已交付；Android 启动器角标仍是缺口。
 4. 本机打断（WS / OS / 气泡）对 Inbox 新建仍主要服务 **user** 行；agent Inbox 以 inject / list 为主。Advance Alert 同样仅对 user world 发本机打断。
 

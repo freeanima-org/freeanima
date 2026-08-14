@@ -99,8 +99,8 @@ describe("db transforms", () => {
   type CronJobDbRow = typeof cronJobs.$inferSelect;
 
   const baseCronDbRow: CronJobDbRow = {
-    id: "builtin-light-sleep",
-    name: "light-sleep",
+    id: "builtin-memory-maintenance",
+    name: "memory-maintenance",
     schedule: "0 2 * * *",
     prompt: "",
     skills: [],
@@ -126,14 +126,14 @@ describe("db transforms", () => {
 
   it("cron row inferSelect shape (builtin)", () => {
     const result = baseCronDbRow;
-    expect(result.id).toBe("builtin-light-sleep");
+    expect(result.id).toBe("builtin-memory-maintenance");
     expect(result.created_at).toEqual(new Date("2026-06-07T06:00:00.000Z"));
     expect(result.last_run_at).toBeNull();
   });
 
   it("cron row last_output_ref", () => {
-    const row = { ...baseCronDbRow, last_output_ref: "cron/output/light-sleep-0003.txt" };
-    expect(row.last_output_ref).toBe("cron/output/light-sleep-0003.txt");
+    const row = { ...baseCronDbRow, last_output_ref: "cron/output/memory-maintenance-0003.txt" };
+    expect(row.last_output_ref).toBe("cron/output/memory-maintenance-0003.txt");
   });
 
   it("cron row last_run_at as Date", () => {

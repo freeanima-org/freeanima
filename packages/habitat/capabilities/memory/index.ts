@@ -80,28 +80,20 @@ export {
 } from "./autobiography/run.ts";
 export {
   cstDayRange,
-  buildLightSleepUserMessages,
-  buildLimbicUserMessages,
   LIGHT_SLEEP_INSTRUCTION_MESSAGE,
-  LIMBIC_INSTRUCTION,
+  RETAIN_INSTRUCTION_MESSAGE,
   type LightSleepDayRange,
-} from "./light-sleep/build-messages.ts";
-export {
-  readLightSleepState,
-  writeLightSleepState,
-  recordLightSleepRun,
-} from "./light-sleep/state.ts";
-export { readDeepSleepState, writeDeepSleepState, recordDeepSleepRun } from "./deep-sleep/state.ts";
-export { applyDeepSleepToolResult } from "./deep-sleep/apply-tool-result.ts";
-export type { DeepSleepResult } from "./deep-sleep/types.ts";
+  type DayWindowRange,
+} from "./day-window/build-messages.ts";
+export { readDeepSleepState, writeDeepSleepState, recordDeepSleepRun } from "./reflect/state.ts";
+export { applyDeepSleepToolResult } from "./reflect/apply-tool-result.ts";
+export type { DeepSleepResult } from "./reflect/types.ts";
 export {
   buildSleepSummary,
   SLEEP_JOB_IDS,
-  SLEEP_CYCLE_JOB_ID,
   MEMORY_MAINTENANCE_JOB_ID,
   type SleepSummary,
 } from "./sleep-records.ts";
-export { registerMemoryLimbicTools } from "./memory-limbic.ts";
 export {
   resolveTemporalSummaryConfig,
   registerTemporalSummaryEngine,

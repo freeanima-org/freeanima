@@ -8,7 +8,7 @@ import {
   listMessageRowsPage,
 } from "@freeanima/habitat/core/db/pg/conversation";
 
-import { collectConversationBlocks, cstDayRange } from "../light-sleep/build-messages.ts";
+import { collectConversationBlocks, cstDayRange } from "../day-window/build-messages.ts";
 import { createEmbeddedMemoryService } from "./embedded.ts";
 
 export type RetainCatchUpResult = {

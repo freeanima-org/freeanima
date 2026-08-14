@@ -69,37 +69,6 @@ export function listMonthStartsInRange(fromDay: string, toDay: string): string[]
   return out;
 }
 
-/** @deprecated Use listMonthStartsInRange — cascade triggers on month starts. */
-export function listMonthEndsInRange(fromDay: string, toDay: string): string[] {
-  if (fromDay > toDay) return [];
-  const out: string[] = [];
-  let y = Number(fromDay.slice(0, 4));
-  let m = Number(fromDay.slice(5, 7));
-  const endY = Number(toDay.slice(0, 4));
-  const endM = Number(toDay.slice(5, 7));
-  if (
-    !Number.isFinite(y) ||
-    !Number.isFinite(m) ||
-    !Number.isFinite(endY) ||
-    !Number.isFinite(endM)
-  ) {
-    return [];
-  }
-  while (y < endY || (y === endY && m <= endM)) {
-    const last = new Date(Date.UTC(y, m, 0));
-    const monthEnd = `${y}-${pad2(m)}-${pad2(last.getUTCDate())}`;
-    if (monthEnd >= fromDay && monthEnd <= toDay) {
-      out.push(monthEnd);
-    }
-    m += 1;
-    if (m > 12) {
-      m = 1;
-      y += 1;
-    }
-  }
-  return out;
-}
-
 /** Pure gap computation (unit-testable without DB). */
 export function computeSleepCatchUpDays(input: {
   activityDays: readonly string[];

@@ -4,7 +4,7 @@ title: 梦境
 
 # 梦境机制
 
-> **#16102：** **存量只读**。写入路径与 sleep-cycle `dream` 步已拆除；历史记录可浏览。SSOT：[`memory.md`](memory.md)。
+> **#16102：** **存量只读**。写入路径与 memory-maintenance `dream` 步已拆除；历史记录可浏览。SSOT：[`memory.md`](memory.md)。
 > 以语义组件 **`dream`** 的 **`content_block`** 持久化，父级为 Agent World 当日 **`diary_entry`**。
 
 ## 概述

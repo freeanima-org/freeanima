@@ -21,8 +21,6 @@ export const passiveRecallConfigSchema = z.object({
 export const memoryDeploymentSchema = z.enum(["embedded", "remote"]);
 
 export const memoryCutoverConfigSchema = z.object({
-  /** 停 light-sleep / deep-sleep 生产路径；改走 retain/reflect */
-  disable_sleep_consolidation: z.boolean().optional(),
   /** limbic / dream / narrative 停写 */
   park_limbic_dream_narrative: z.boolean().optional(),
 });
@@ -31,7 +29,7 @@ export const memoryConfigSchema = z
   .object({
     /** 默认 embedded；remote 客户端实现同 MemoryService 契约 */
     deployment: memoryDeploymentSchema.optional(),
-    /** #16102 cutover；缺省停写 limbic/dream 且停浅深睡巩固（可显式 false 回滚标志位） */
+    /** #16102 cutover；缺省停写 limbic/dream/narrative（可显式 false 回滚） */
     cutover: memoryCutoverConfigSchema.optional(),
     passive_recall: passiveRecallConfigSchema.optional(),
     temporal_summary: z
@@ -60,15 +58,13 @@ export function resolveMemoryDeployment(cfg: RuntimeConfig): MemoryDeploymentCon
 }
 
 export type MemoryCutoverFlags = {
-  disable_sleep_consolidation: boolean;
   park_limbic_dream_narrative: boolean;
 };
 
-/** #16102：park 与停浅/深睡默认开；可显式 false 回滚到 sleep-cycle 巩固 */
+/** #16102：park limbic/dream/narrative 默认开；可显式 false 回滚 */
 export function resolveMemoryCutoverFlags(cfg?: RuntimeConfig | null): MemoryCutoverFlags {
   const raw = cfg?.memory?.cutover;
   return {
-    disable_sleep_consolidation: raw?.disable_sleep_consolidation ?? true,
     park_limbic_dream_narrative: raw?.park_limbic_dream_narrative ?? true,
   };
 }

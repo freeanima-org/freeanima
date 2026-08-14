@@ -3,17 +3,6 @@ import type { AutobiographicalMemoryRow } from "@freeanima/habitat/core/db/schem
 import type { AutobiographicalSignificance } from "@freeanima/habitat/core/db/pg/autobiographical-memory/types";
 import { autobiographicalSignificanceSchema } from "@freeanima/habitat/core/db/schema/entity";
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
-import { listActiveAutobiographicalMemory } from "@freeanima/habitat/core/db/pg/autobiographical-memory";
-import { searchSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
-
-import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
-import { runAutobiographyEngine } from "../autobiography-port.ts";
-import { buildAutobiographyUserMessages } from "./build-messages.ts";
-
-const AUTOBIOGRAPHY_TOOL_NAMES = [
-  "memory_autobiographical_create",
-  "memory_autobiographical_deprecate",
-] as const;
 
 const LOOKBACK_DAYS = 7;
 
@@ -35,19 +24,6 @@ function daysAgoIso(days: number): string {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() - days);
   return d.toISOString();
-}
-
-async function listRecentExperienceImprint(sinceIso: string) {
-  const rows = await searchSemanticMemory({
-    types: ["experience", "imprint"],
-    status: "active",
-    limit: 100,
-  });
-  const sinceMs = Date.parse(sinceIso);
-  return rows.filter((row) => {
-    const ts = (row.updated_at ?? row.created_at).getTime();
-    return ts >= sinceMs;
-  });
 }
 
 export const AUTOBIOGRAPHY_SUMMARY_SECTION_HEADINGS: Record<AutobiographicalSignificance, string> =
@@ -132,59 +108,25 @@ export async function refreshAutobiographySummaryBlock(): Promise<boolean> {
 
 /**
  * Manual / diagnostic autobiography extraction. Sleep cycle no longer calls this;
- * existing narrative entities remain readable.
+ * narrative write tools removed — always skip (park / deleted tools).
+ * Existing narrative entities remain readable via content_block_search(component=narrative).
  */
 export async function runSelfAutobiography(
   opts: RunSelfAutobiographyOpts,
 ): Promise<SelfAutobiographyResult> {
   const sinceIso = opts.sinceIso ?? daysAgoIso(LOOKBACK_DAYS);
-  const candidates = await listRecentExperienceImprint(sinceIso);
-  const existing = await listActiveAutobiographicalMemory({ limit: 200 });
-
-  let narrativesCreated = 0;
-  let toolCalls = 0;
-
-  if (candidates.length === 0) {
-    logComponent("memory").info("autobiography cron skipped narrative extraction", {
-      reason: "no_recent_experience_imprint",
-      since: sinceIso,
-    });
-    return omitUndefined({
-      ok: true,
-      skipped: "No recent experience/imprint; skipped narrative extraction",
-      narratives_created: 0,
-      tool_calls: 0,
-      summary_refreshed: false,
-    });
-  }
-
-  const parts = await decomposeSystemPromptParts(opts.selfContent, null);
-  const systemPrompt = composeSystemPrompt(parts);
-  const userMessages = buildAutobiographyUserMessages(candidates, existing);
-
-  const engineResult = await runAutobiographyEngine({
-    systemPrompt,
-    userMessages,
-    toolNames: [...AUTOBIOGRAPHY_TOOL_NAMES],
+  void opts.selfContent;
+  logComponent("memory").info("autobiography cron skipped narrative extraction", {
+    reason: "write_tools_removed",
+    since: sinceIso,
   });
-  toolCalls = engineResult.tool_calls;
-
-  const after = await listActiveAutobiographicalMemory({ limit: 200 });
-  narrativesCreated = Math.max(0, after.length - existing.length);
-
-  logComponent("memory").info("autobiography cron narrative stage completed", {
-    candidates: candidates.length,
-    tool_calls: toolCalls,
-    narratives_created: narrativesCreated,
-    summary: engineResult.summary.slice(0, 200),
-  });
-
-  return {
+  return omitUndefined({
     ok: true,
-    narratives_created: narrativesCreated,
-    tool_calls: toolCalls,
+    skipped: "park/已删工具：memory_autobiographical_create|deprecate 已移除，跳过叙事写入",
+    narratives_created: 0,
+    tool_calls: 0,
     summary_refreshed: false,
-  };
+  });
 }
 
 export async function runSelfAutobiographyWithLog(

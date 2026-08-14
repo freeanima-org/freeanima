@@ -16,7 +16,7 @@ import {
   formatLimbicMemoriesMessage,
   type LightSleepConversationBlock,
   type LightSleepDayRange,
-} from "../light-sleep/build-messages.ts";
+} from "../day-window/build-messages.ts";
 
 const AUTOBIOGRAPHY_SEMANTIC_TYPES = new Set(["experience", "imprint"]);
 
@@ -99,35 +99,20 @@ export const AUTOBIOGRAPHY_INSTRUCTION = `# Autobiographical narrative extractio
 From **semantic memories (experience/imprint)**, decide whether there is a narrative worth recording about "what this means to me".
 
 ## Restraint
-- Nothing worth recording → **do not call any tool**; reply "Skipped this round: no narrative worth recording"
+- Narrative **write tools are retired** (\`memory_autobiographical_create\` / \`deprecate\` removed). **Do not call any write tool.**
+- Nothing worth recording, or writes unavailable → reply "Skipped this round: no narrative worth recording"
 - Do not force empty entries or duplicate existing narratives
-
-## Tools
-- memory_autobiographical_create: create new narrative (append only)
-- memory_autobiographical_deprecate: soft-deprecate only when duplicate or clearly outdated
-
-## Requirements
-- Each narrative must link source_semantic_memory (semantic_memory id)
-- significance: turning_point (self turning point) > milestone > normal
-- period_start/period_end may be fuzzy (e.g. "2026-05")`;
+- Read existing bricks via \`content_block_search\` (\`component=narrative\`) if needed; do not invent create/deprecate calls.`;
 
 export const LIGHT_SLEEP_AUTOBIOGRAPHY_INSTRUCTION = `# Autobiographical narrative extraction
 
 Using "Today's dialogue", semantic memories, and limbic memories above, decide whether there is a narrative worth recording about "what this means to me".
 
 ## Restraint
-- Nothing worth recording → **do not call any tool**; reply "Skipped this round: no narrative worth recording"
+- Narrative **write tools are retired** (\`memory_autobiographical_create\` / \`deprecate\` removed). **Do not call any write tool.**
+- Nothing worth recording, or writes unavailable → reply "Skipped this round: no narrative worth recording"
 - Do not force empty entries or duplicate existing narratives
-
-## Tools
-- memory_autobiographical_create: create new narrative (append only)
-- memory_autobiographical_deprecate: soft-deprecate only when duplicate or clearly outdated
-
-## Requirements
-- Prefer experience/imprint semantic memories and turning_point/spike limbic anchors
-- Link source_semantic_memory / source_conversations as needed
-- significance: turning_point (self turning point) > milestone > normal; strong emotional turns may raise significance
-- period_start/period_end may be fuzzy (e.g. "2026-05")`;
+- Read existing bricks via \`content_block_search\` (\`component=narrative\` or \`limbic\`) if needed; do not invent create/deprecate calls.`;
 
 async function mergeSemanticRowsForSessions(
   conversationIds: string[],

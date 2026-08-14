@@ -53,7 +53,8 @@ export const MEMORY_RECALL_STRATEGY_RULE =
   "(1) resident memory already in the system prompt, " +
   "(2) this turn's passive semantic context (`passive_memory_context` assistant message), " +
   "(3) if still insufficient, call `memory_semantic_search`. " +
-  "Do not treat limbic, autobiographical, or conversation search as the default recall path.";
+  "For emotion / autobiographical bricks use `content_block_search` with `component=limbic` or `component=narrative`; " +
+  "do not treat conversation search as the default recall path.";
 
 /** Short hint appended to recall/search tool descriptions */
 export const MEMORY_SEMANTIC_CITATION_TOOL_HINT =

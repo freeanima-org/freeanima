@@ -1,7 +1,7 @@
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { listConversationIdsWithMessagesBetween } from "@freeanima/habitat/core/db/pg/conversation";
 import { upsertTemporalSummary } from "@freeanima/habitat/core/db/pg/temporal-summary";
-import { collectConversationBlocks, cstDayRange } from "../light-sleep/build-messages.ts";
+import { collectConversationBlocks, cstDayRange } from "../day-window/build-messages.ts";
 import { summarizeTemporalText } from "./summarize.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 

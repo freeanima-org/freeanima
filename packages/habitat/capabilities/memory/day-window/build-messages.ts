@@ -1,19 +1,25 @@
+/**
+ * CST 日窗与会话块收集：供 retain / temporal / reflect / autobiography 共用。
+ * （目录原 light-sleep；浅睡生产路径已拆除。）
+ */
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { CST_OFFSET_MS } from "@freeanima/habitat/core/util";
 import type { LimbicMemoryRow, SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 import { getConversationMetaLite, listMessages } from "@freeanima/habitat/core/db/pg/conversation";
 import { listLimbicMemoryBySession } from "@freeanima/habitat/core/db/pg/limbic-memory";
-import { listSemanticMemoryBySourceSessions } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { filterRecallableMessages } from "../message-filter.ts";
 
+/** @deprecated 历史名；语义为 CST 日窗 */
 export type LightSleepDayRange = {
   day: string;
   fromIso: string;
   toIso: string;
 };
 
+export type DayWindowRange = LightSleepDayRange;
+
 /** CST calendar-day boundary [fromIso, toIso) */
-export function cstDayRange(day?: string): LightSleepDayRange {
+export function cstDayRange(day?: string): DayWindowRange {
   const now = new Date(Date.now() + CST_OFFSET_MS);
   let y = now.getUTCFullYear();
   let m = now.getUTCMonth();
@@ -161,7 +167,8 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
   return lines.join("\n").trim();
 }
 
-export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = `# Extraction instructions
+/** retain 语义抽取指令（历史名 LIGHT_SLEEP_INSTRUCTION_MESSAGE） */
+export const RETAIN_INSTRUCTION_MESSAGE = `# Extraction instructions
 
 You are a digital life running in Free Anima. From "Today's dialogue" above, extract facts worth remembering long-term (first person), and decide create / update / deprecate against "Related existing memories".
 
@@ -193,22 +200,8 @@ Soft deprecate (status=deprecated), keep history.
 
 Call tools directly to persist; no JSON summary output needed.`;
 
-export const LIMBIC_INSTRUCTION = `# Affective extraction
-
-You are a digital life running in Free Anima. From "Today's dialogue" above, decide whether any emotional experience is worth recording; check "Existing limbic memories" to avoid duplicates.
-
-## Restraint
-- Mild mood swings, intensity < 0.3 → **do not** call memory_limbic_create
-- No clear emotional signal → reply "Skipped this round: no emotion worth recording"
-- Do not re-record similar feelings for the same session
-
-## Tool: memory_limbic_create
-- kind: conversation_mood (overall mood) | turning_point (emotional turn) | spike (intense moment)
-- content: first person "I feel…"
-- valence: -1.0 (negative) to 1.0 (positive); arousal: 0.0 to 1.0
-- intensity: write only if ≥ 0.3; optional semantic_memory_ids and conversation_id
-
-Call the tool directly; no JSON summary output needed.`;
+/** @deprecated 使用 RETAIN_INSTRUCTION_MESSAGE */
+export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = RETAIN_INSTRUCTION_MESSAGE;
 
 export async function collectLimbicMemoriesForSessions(
   conversationIds: string[],
@@ -238,51 +231,4 @@ export function formatLimbicMemoriesMessage(rows: LimbicMemoryRow[]): string {
     lines.push("");
   }
   return lines.join("\n").trim();
-}
-
-async function resolveConversationBlocks(
-  conversationIds: string[],
-  precomputedBlocks: LightSleepConversationBlock[] | undefined,
-  range: LightSleepDayRange | undefined,
-  caller: string,
-): Promise<LightSleepConversationBlock[]> {
-  if (precomputedBlocks) return precomputedBlocks;
-  if (!range) {
-    throw new Error(`${caller} requires precomputedBlocks or range`);
-  }
-  return collectConversationBlocks(conversationIds, range);
-}
-
-export async function buildLightSleepUserMessages(
-  conversationIds: string[],
-  precomputedBlocks?: LightSleepConversationBlock[],
-  range?: LightSleepDayRange,
-): Promise<string[]> {
-  const blocks = await resolveConversationBlocks(
-    conversationIds,
-    precomputedBlocks,
-    range,
-    "buildLightSleepUserMessages",
-  );
-  const dialogue = formatDialogueMessage(blocks);
-  const related = await listSemanticMemoryBySourceSessions(conversationIds, {
-    status: "active",
-  });
-  return [dialogue.text, formatExistingMemoriesMessage(related), LIGHT_SLEEP_INSTRUCTION_MESSAGE];
-}
-
-export async function buildLimbicUserMessages(
-  conversationIds: string[],
-  precomputedBlocks?: LightSleepConversationBlock[],
-  range?: LightSleepDayRange,
-): Promise<string[]> {
-  const blocks = await resolveConversationBlocks(
-    conversationIds,
-    precomputedBlocks,
-    range,
-    "buildLimbicUserMessages",
-  );
-  const dialogue = formatDialogueMessage(blocks);
-  const related = await collectLimbicMemoriesForSessions(conversationIds);
-  return [dialogue.text, formatLimbicMemoriesMessage(related), LIMBIC_INSTRUCTION];
 }

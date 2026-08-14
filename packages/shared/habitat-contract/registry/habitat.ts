@@ -1,10 +1,8 @@
 import {
-  autobiographicalMemoryListBodySchema,
   createConversationBodySchema,
   entityListQuerySchema,
   entitySearchBodySchema,
   entitySearchQuerySchema,
-  limbicMemoryListBodySchema,
   passiveRecallDebugBodySchema,
   semanticMemoryListBodySchema,
   semanticMemoryPinBodySchema,
@@ -54,12 +52,6 @@ const promptDebugQuerySchema = z.object({
   platform: z.string().optional(),
 });
 const toolsQuerySchema = z.object({ scope: z.enum(["default"]).optional() });
-const pipelineRunsQuerySchema = z.object({
-  step_id: z.string().optional(),
-  run_id: z.string().optional(),
-  limit: z.coerce.number().int().min(1).optional(),
-  offset: z.coerce.number().int().min(0).optional(),
-});
 const cronLogsQuerySchema = z.object({
   job_id: z.string().optional(),
   limit: z.coerce.number().int().min(1).optional(),
@@ -78,7 +70,7 @@ const autoLlmRunIdParamSchema = z.object({
 const ftsRebuildBodySchema = z.object({ only_missing: z.boolean().optional() });
 const sleepCycleBodySchema = z.object({
   day: z.string().optional(),
-  deep_sleep_mode: z.enum(["full", "incremental"]).optional(),
+  reflect_mode: z.enum(["full", "incremental"]).optional(),
 });
 const configSectionParamSchema = z.object({ section: z.string().min(1) });
 const configTestConnectionInputSchema = z.object({
@@ -127,7 +119,7 @@ const sleepRunStepBodySchema = z.object({
   step_id: z.string().min(1),
   day: z.string().optional(),
   force: z.boolean().optional(),
-  deep_sleep_mode: z.enum(["full", "incremental"]).optional(),
+  reflect_mode: z.enum(["full", "incremental"]).optional(),
 });
 const tlsCaQrInputSchema = z.object({
   size: z.coerce.number().int().min(128).max(512).optional(),
@@ -321,16 +313,6 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
-  "memory.limbicList": defineHabitatMethod({
-    input: limbicMemoryListBodySchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "memory.autobiographicalList": defineHabitatMethod({
-    input: autobiographicalMemoryListBodySchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
   "entity.searchGet": defineHabitatMethod({
     input: entitySearchQuerySchema,
     output: unknownOutputSchema,
@@ -411,32 +393,27 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: longOpMeta(false),
   }),
-  "sleep.summary": defineHabitatMethod({
+  "memoryMaintenance.summary": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "sleep.pipelineRuns": defineHabitatMethod({
-    input: pipelineRunsQuerySchema,
-    output: unknownOutputSchema,
-    meta: dualTransportMeta(true),
-  }),
-  "sleep.pipelineStatus": defineHabitatMethod({
+  "memoryMaintenance.status": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
-  "sleep.runPipelineStep": defineHabitatMethod({
+  "memoryMaintenance.runStep": defineHabitatMethod({
     input: sleepRunStepBodySchema,
     output: unknownOutputSchema,
     meta: longOpMeta(false),
   }),
-  "sleep.startCycle": defineHabitatMethod({
+  "memoryMaintenance.startCycle": defineHabitatMethod({
     input: sleepCycleBodySchema,
     output: unknownOutputSchema,
     meta: longOpMeta(false),
   }),
-  "sleep.startCatchUp": defineHabitatMethod({
+  "memoryMaintenance.startCatchUp": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: longOpMeta(false),

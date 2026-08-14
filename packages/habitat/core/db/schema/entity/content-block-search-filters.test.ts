@@ -9,16 +9,25 @@ describe("parseContentBlockSearchFilters", () => {
       block_type: "text",
       client_op_id: "op-1",
       conversation_id: "conv-42",
+      kind: "spike",
+      status: "active",
     });
     expect(parsed.parent_id).toBe(10);
     expect(parsed.block_type).toBe("text");
     expect(parsed.client_op_id).toBe("op-1");
     expect(parsed.conversation_id).toBe("conv-42");
+    expect(parsed.kind).toBe("spike");
+    expect(parsed.status).toBe("active");
   });
 
   it("accepts conversation_id filter", () => {
     const parsed = parseContentBlockSearchFilters({ conversation_id: "sess-legacy" });
     expect(parsed.conversation_id).toBe("sess-legacy");
+  });
+
+  it("accepts status=all", () => {
+    const parsed = parseContentBlockSearchFilters({ status: "all" });
+    expect(parsed.status).toBe("all");
   });
 
   it("rejects unknown fields", () => {
@@ -29,6 +38,12 @@ describe("parseContentBlockSearchFilters", () => {
 
   it("rejects invalid block_type", () => {
     expect(() => parseContentBlockSearchFilters({ block_type: "markdown" })).toThrow(
+      /invalid content_block filters/,
+    );
+  });
+
+  it("rejects invalid kind", () => {
+    expect(() => parseContentBlockSearchFilters({ kind: "mood" })).toThrow(
       /invalid content_block filters/,
     );
   });

@@ -42,10 +42,10 @@ title: 技能
 
 技能参与 **能力策略（Capability Policy）** — 见 [`architecture.md`](../product/architecture.md)。
 
-| 主体                         | `allowed_tools` | `denied_tools` |
-| ---------------------------- | --------------- | -------------- |
-| 技能                         | 主用            | 可选 / 少用    |
-| 调用方（cron、睡眠、子代理） | 可选            | 主用           |
+| 主体                             | `allowed_tools` | `denied_tools` |
+| -------------------------------- | --------------- | -------------- |
+| 技能                             | 主用            | 可选 / 少用    |
+| 调用方（cron、记忆维护、子代理） | 可选            | 主用           |
 
 **可见聊天：** 默认 ToolSet（含 `skill`）；用户在场。  
 **不可见运行：** 最小权限 — 默认拒绝全部工具；有效集合 ≈ 已加载技能的 allow 并集，再减去调用方 deny。无技能（且调用方未 allow）⇒ 无工具。
@@ -58,7 +58,7 @@ title: 技能
 
 ## 自我演化（#46）
 
-学习是一条 **旁路（bypass）**，不是主聊天回合。在门控通过的用户回合之后（或显式命令），栖息地跑一次短时 **`runAutoLlm`**，**仅**开放 `skill_*` 工具。运行记入 `auto_llm_runs`（`run_kind`：`skill-evolve` / `skill-maintain`），**不会**追加对话消息，也**不会**进入浅睡。
+学习是一条 **旁路（bypass）**，不是主聊天回合。在门控通过的用户回合之后（或显式命令），栖息地跑一次短时 **`runAutoLlm`**，**仅**开放 `skill_*` 工具。运行记入 `auto_llm_runs`（`run_kind`：`skill-evolve` / `skill-maintain`），**不会**追加对话消息，也**不会**进入 retain 输入。
 
 ### 元技能 `skill-curation`
 
