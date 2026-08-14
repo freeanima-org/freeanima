@@ -11,8 +11,10 @@ export {
   getHabitatRpcConnectionState,
 } from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 
-export async function reconnectHabitat(): Promise<void> {
-  await reconnectHabitatRpc();
+export async function reconnectHabitat(
+  opts?: Parameters<typeof reconnectHabitatRpc>[0],
+): Promise<void> {
+  await reconnectHabitatRpc(opts);
 }
 
 export function subscribeHabitatConnection(
