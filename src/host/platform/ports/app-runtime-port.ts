@@ -73,6 +73,13 @@ export type AppRuntimeOpsPort = {
   pauseCronJob(id: string): Promise<CronJobData | null>;
   resumeCronJob(id: string): Promise<CronJobData | null>;
   runCronJobNow(id: string): Promise<{ job: CronJobData; message: string } | null>;
+  createCronJob(opts: {
+    name: string;
+    schedule: string;
+    prompt: string;
+    notify_on_success?: boolean;
+  }): Promise<CronJobData>;
+  deleteCronJob(id: string): Promise<boolean>;
   getStatus(): Record<string, unknown>;
   getPromptDebug(conversationId?: string | null): Promise<unknown>;
 };

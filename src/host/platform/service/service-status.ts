@@ -10,10 +10,12 @@ import { formatCstIsoFromEpoch } from "@freeanima/host/core/util";
 import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
 import { PROFILE_CHAT } from "@freeanima/host/core/provider";
 import {
+  createJob,
   ensureBuiltinCronJobs,
   getJob,
   listJobs,
   pauseJob,
+  removeJob,
   resumeJob,
   enqueueRunJob,
 } from "@freeanima/host/capabilities/connectors/cron";
@@ -271,6 +273,25 @@ export async function runCronJobNow(
     job: job.toJSON(),
     message: `Triggered immediate run: ${job.name}`,
   };
+}
+
+export async function createCronJob(opts: {
+  name: string;
+  schedule: string;
+  prompt: string;
+  notify_on_success?: boolean;
+}): Promise<CronJobData> {
+  const job = await createJob({
+    name: opts.name,
+    schedule: opts.schedule,
+    prompt: opts.prompt,
+    notify_on_success: opts.notify_on_success ?? false,
+  });
+  return job.toJSON();
+}
+
+export async function deleteCronJob(jobId: string): Promise<boolean> {
+  return removeJob(jobId);
 }
 
 export async function ensureBuiltinCronJobsRegistered(): Promise<void> {

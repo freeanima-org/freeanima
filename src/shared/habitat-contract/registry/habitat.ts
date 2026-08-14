@@ -38,6 +38,14 @@ const serviceUpdateInputSchema = z
 const idParamInputSchema = z.object({ id: z.string().min(1) });
 const conversationIdParamSchema = z.object({ conversationId: z.string().min(1) });
 const cronJobIdParamSchema = z.object({ id: z.string().min(1) });
+const cronJobCreateInputSchema = z
+  .object({
+    name: z.string().min(1),
+    schedule: z.string().min(1),
+    prompt: z.string().min(1),
+    notify_on_success: z.boolean().optional(),
+  })
+  .strict();
 const promptDebugQuerySchema = z.object({
   conversation_id: z.string().optional(),
   platform: z.string().optional(),
@@ -183,6 +191,16 @@ export const habitatMethodDefs = {
     meta: dualTransportMeta(false),
   }),
   "status.cronJobRun": defineHabitatMethod({
+    input: cronJobIdParamSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "status.cronJobCreate": defineHabitatMethod({
+    input: cronJobCreateInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "status.cronJobDelete": defineHabitatMethod({
     input: cronJobIdParamSchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),

@@ -38,7 +38,12 @@ describe("registerServiceTools", () => {
     expect(names.has("toolset_load")).toBe(true);
     expect(names.has("toolset_unload")).toBe(true);
     expect(names.has("todo")).toBe(false);
-    expect(names.has("cron_job")).toBe(true);
+    expect(names.has("cronjob_list")).toBe(true);
+    expect(names.has("cronjob_create")).toBe(true);
+    expect(names.has("cronjob_remove")).toBe(true);
+    expect(names.has("cron_job")).toBe(false);
+    expect(toolSets.getToolSet("cronjob") != null).toBe(true);
+    expect(toolSets.getToolSet("cron") == null).toBe(true);
     expect(names.has("task_create")).toBe(true);
     expect(names.has("clarify")).toBe(true);
     expect(names.has("email_list_accounts")).toBe(true);

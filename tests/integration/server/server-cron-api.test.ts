@@ -19,6 +19,8 @@ import {
   pauseCronJob,
   resumeCronJob,
   runCronJobNow,
+  createCronJob,
+  deleteCronJob,
   ApiHandlerError,
 } from "@freeanima/features/habitat/habitat/habitat-api/handlers";
 
@@ -80,6 +82,25 @@ describePg("server cron API", () => {
     expect(await svc.runCronJobNow("missing-id")).toBeNull();
   });
 
+  it("AppRuntime create and delete cron job", async () => {
+    const svc = getAppRuntime();
+    const created = await svc.createCronJob({
+      name: "created-via-runtime",
+      schedule: "2h",
+      prompt: "say hello",
+      notify_on_success: false,
+    });
+    expect(created.name).toBe("created-via-runtime");
+    expect(created.id).toBeTruthy();
+
+    const listed = await svc.listCronJobs();
+    expect(listed.jobs.some((j) => j.id === created.id)).toBe(true);
+
+    expect(await svc.deleteCronJob(created.id)).toBe(true);
+    const after = await svc.listCronJobs();
+    expect(after.jobs.some((j) => j.id === created.id)).toBe(false);
+  });
+
   it("handler pause/resume/run and 404", async () => {
     const pauseBody = await pauseCronJob(jobId);
     expect(pauseBody.ok).toBe(true);
@@ -93,6 +114,28 @@ describePg("server cron API", () => {
     expect(runBody.message).toContain("api-test");
 
     await expect(pauseCronJob("no-such-job")).rejects.toThrow(ApiHandlerError);
+  });
+
+  it("handler create/delete and errors", async () => {
+    const created = await createCronJob({
+      name: "handler-create",
+      schedule: "30m",
+      prompt: "ping",
+    });
+    expect(created.ok).toBe(true);
+    expect(created.job.name).toBe("handler-create");
+
+    const listed = await listCronJobs();
+    expect(listed.jobs.some((j) => j.id === created.job.id)).toBe(true);
+
+    const deleted = await deleteCronJob(created.job.id);
+    expect(deleted.ok).toBe(true);
+    expect(deleted.job_id).toBe(created.job.id);
+
+    await expect(deleteCronJob("no-such-job")).rejects.toThrow(ApiHandlerError);
+    await expect(
+      createCronJob({ name: "bad", schedule: "not-a-schedule", prompt: "x" }),
+    ).rejects.toThrow(ApiHandlerError);
   });
 
   it("listCronJobs lists jobs", async () => {

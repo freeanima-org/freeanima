@@ -64,6 +64,46 @@ export async function runCronJobNow(id: string) {
   return { ok: true as const, message: result.message, job: result.job };
 }
 
+export async function createCronJob(payload: {
+  name: string;
+  schedule: string;
+  prompt: string;
+  notify_on_success?: boolean;
+}) {
+  try {
+    const job = await habitatCtx().createCronJob(payload);
+    return { ok: true as const, job };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    throw new ApiHandlerError(400, message, {
+      code: "cron_job_create_failed",
+      params: { name: payload.name },
+    });
+  }
+}
+
+export async function deleteCronJob(id: string) {
+  try {
+    const ok = await habitatCtx().deleteCronJob(id);
+    if (!ok) {
+      throw new ApiHandlerError(404, `Cron job not found: ${id}`, {
+        job_id: id,
+        code: "cron_job_not_found",
+        params: { job_id: id },
+      });
+    }
+    return { ok: true as const, job_id: id };
+  } catch (e) {
+    if (e instanceof ApiHandlerError) throw e;
+    const message = e instanceof Error ? e.message : String(e);
+    throw new ApiHandlerError(400, message, {
+      job_id: id,
+      code: "cron_job_delete_failed",
+      params: { job_id: id },
+    });
+  }
+}
+
 export function restartService() {
   scheduleServiceRestart();
   return { ok: true as const, code: "service_restarting" };

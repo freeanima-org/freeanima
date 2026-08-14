@@ -25,41 +25,23 @@ const cronJobDetailSchema = z.object({
   notify_on_success: z.boolean().optional(),
 });
 
+const cronJobIdResultSchema = z.object({
+  ok: z.literal(true),
+  job_id: z.string(),
+  message: z.string(),
+  name: z.string().optional(),
+});
+
 export const CRON_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
-  cron_job: defineToolReturn({
-    schema: z.discriminatedUnion("action", [
-      z.object({
-        ok: z.literal(true),
-        action: z.literal("list"),
-        count: z.number(),
-        jobs: z.array(cronJobListItemSchema),
-        message: z.string(),
-      }),
-      z.object({
-        ok: z.literal(true),
-        action: z.literal("get"),
-        job: cronJobDetailSchema,
-      }),
-      z.object({
-        ok: z.literal(true),
-        action: z.literal("create"),
-        job_id: z.string(),
-        name: z.string(),
-        schedule: z.string(),
-        next_run: z.string().nullable(),
-        message: z.string(),
-      }),
-      z.object({
-        ok: z.literal(true),
-        action: z.enum(["remove", "pause", "resume", "run"]),
-        job_id: z.string(),
-        message: z.string(),
-        name: z.string().optional(),
-      }),
-    ]),
+  cronjob_list: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      count: z.number(),
+      jobs: z.array(cronJobListItemSchema),
+      message: z.string(),
+    }),
     example: {
       ok: true,
-      action: "list",
       count: 1,
       jobs: [
         {
@@ -73,6 +55,68 @@ export const CRON_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
         },
       ],
       message: "1 scheduled job total",
+    },
+  }),
+  cronjob_get: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      job: cronJobDetailSchema,
+    }),
+    example: {
+      ok: true,
+      job: {
+        id: "job-001",
+        name: "Daily summary",
+        schedule: "0 9 * * *",
+        paused: false,
+        run_count: 3,
+        repeat: null,
+        last_run_at: "06-11 09:00",
+        next_run_at: "06-12 09:00",
+        skills: [],
+        script: null,
+        last_output: null,
+        notify_on_success: false,
+      },
+    },
+  }),
+  cronjob_create: defineToolReturn({
+    schema: z.object({
+      ok: z.literal(true),
+      job_id: z.string(),
+      name: z.string(),
+      schedule: z.string(),
+      next_run: z.string().nullable(),
+      message: z.string(),
+    }),
+    example: {
+      ok: true,
+      job_id: "job-001",
+      name: "Daily summary",
+      schedule: "0 9 * * *",
+      next_run: "06-12 09:00",
+      message: "Created job Daily summary",
+    },
+  }),
+  cronjob_remove: defineToolReturn({
+    schema: cronJobIdResultSchema,
+    example: { ok: true, job_id: "job-001", message: "Deleted job-001" },
+  }),
+  cronjob_pause: defineToolReturn({
+    schema: cronJobIdResultSchema,
+    example: { ok: true, job_id: "job-001", message: "Paused job-001" },
+  }),
+  cronjob_resume: defineToolReturn({
+    schema: cronJobIdResultSchema,
+    example: { ok: true, job_id: "job-001", message: "Resumed job-001" },
+  }),
+  cronjob_run: defineToolReturn({
+    schema: cronJobIdResultSchema,
+    example: {
+      ok: true,
+      job_id: "job-001",
+      name: "Daily summary",
+      message: "Triggered immediate run: Daily summary",
     },
   }),
 };

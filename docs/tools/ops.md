@@ -42,7 +42,7 @@ toolset_load(["ops"])
 | clarify 后补丁非密钥运行时段                 | 补丁 `database` / `http` / `redis`（引导配置；YAML 冷启动） |
 | 某设置需重启时，clarify 后重启               | 经 LLM 工具写入 MCP `env` / `headers` 或密钥键              |
 | standalone 经 clarify 后检查/应用更新        | 对源码 tree 做自动 `git pull`                               |
-| 凭证用栖息地设置 UI / vault                  | 用 `ops` 做 cron（用 ToolSet `cron`）                       |
+| 凭证用栖息地设置 UI / vault                  | 用 `ops` 做 cron（用 ToolSet `cronjob`）                    |
 | 经 `freeanima_docs`（`ops/` 前缀）读产品文档 | 在栖息地 `/mcp` 对外暴露本 ToolSet                          |
 
 `ops` **不在**默认对话 toolsets 中；需要时再加载。

@@ -88,6 +88,8 @@ import {
   restartService,
   resumeCronJob,
   runCronJobNow,
+  createCronJob,
+  deleteCronJob,
   checkServiceUpdateStatus,
   applyServiceUpdateStatus,
 } from "../habitat-api/handlers/status.ts";
@@ -203,6 +205,25 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "status.cronJobRun",
     habitatMethodDefs["status.cronJobRun"],
     wrapConsoleLegacyHandler((payload) => runCronJobNow((payload as { id: string }).id)),
+  ),
+  defineHabitatRouteFromDef(
+    "status.cronJobCreate",
+    habitatMethodDefs["status.cronJobCreate"],
+    wrapConsoleLegacyHandler((payload) =>
+      createCronJob(
+        payload as {
+          name: string;
+          schedule: string;
+          prompt: string;
+          notify_on_success?: boolean;
+        },
+      ),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "status.cronJobDelete",
+    habitatMethodDefs["status.cronJobDelete"],
+    wrapConsoleLegacyHandler((payload) => deleteCronJob((payload as { id: string }).id)),
   ),
   defineHabitatRouteFromDef(
     "status.restart",
