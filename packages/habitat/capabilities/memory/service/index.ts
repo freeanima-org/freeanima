@@ -56,10 +56,4 @@ export {
 export { runBuiltinRetain } from "./builtin-retain.ts";
 export { runBuiltinReflect } from "./builtin-reflect.ts";
 export { runRetainCatchUp, type RetainCatchUpResult } from "./retain-catch-up.ts";
-export {
-  resolveMemoryCutoverFlags,
-  resolveActiveMemoryCutoverFlags,
-  MEMORY_PARKED_WRITE_MESSAGE,
-  type MemoryCutoverFlags,
-} from "./cutover.ts";
 export type * from "./types.ts";

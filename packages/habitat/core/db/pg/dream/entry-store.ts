@@ -1,5 +1,4 @@
 import {
-  createDreamBrick,
   getDreamBrickByDay,
   getLatestDreamBrick,
   getMemoryBrick,
@@ -16,12 +15,7 @@ import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
 
 import { coerceString } from "@freeanima/shared/coerce-string";
 
-import type {
-  DreamEntryCreateInput,
-  DreamEntryListOpts,
-  DreamEntryRow,
-  DreamStoreContext,
-} from "./types.ts";
+import type { DreamEntryListOpts, DreamEntryRow, DreamStoreContext } from "./types.ts";
 
 async function brickToDreamRow(b: MemoryBrickRow): Promise<DreamEntryRow> {
   let dream_day = b.title.slice(0, 10);
@@ -83,20 +77,6 @@ export async function listDreamEntries(
 export async function countDreamEntries(ctx: DreamStoreContext): Promise<number> {
   const bricks = await listBricksByComponent(ctx.worldId, DREAM_COMPONENT, { limit: 500 });
   return bricks.length;
-}
-
-export async function createDreamEntry(
-  ctx: DreamStoreContext,
-  input: DreamEntryCreateInput,
-): Promise<DreamEntryRow> {
-  const brick = await createDreamBrick(ctx.worldId, {
-    day: input.dream_day.trim(),
-    content: input.content.trim(),
-    source_limbic_ids: input.source_limbic_ids ?? [],
-    source_conversation_ids: input.source_conversation_ids ?? [],
-    episodic_snippets: input.episodic_snippets ?? [],
-  });
-  return brickToDreamRow(brick);
 }
 
 export async function getDreamEntry(

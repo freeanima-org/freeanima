@@ -18,10 +18,6 @@ title: 记忆维护（原睡眠机制）
 | `builtin-sleep-cycle` | `builtin-memory-maintenance`                      | cron `0 2 * * *`                       |
 | pipeline DAG          | **顺序编排**（无 PipelineRunner）                 | 见下                                   |
 
-## Cutover
-
-`memory.cutover.park_limbic_dream_narrative` 默认 true（limbic / dream / narrative 停写）。
-
 ## 夜间编排（非 DAG）
 
 见 [`packages/habitat/platform/boot/pipeline-handlers.ts`](../../packages/habitat/platform/boot/pipeline-handlers.ts) 的 `runNightlyMemoryMaintenance`。

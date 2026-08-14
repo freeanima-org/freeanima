@@ -3,18 +3,6 @@ import type { LimbicMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 
 export type { LimbicKind, LimbicMemoryRow };
 
-export type LimbicMemoryCreateInput = {
-  conversation_id: string;
-  kind: LimbicKind;
-  content: string;
-  valence?: number | null;
-  arousal?: number | null;
-  intensity?: number;
-  source_segment?: string | null;
-  semantic_memory_ids?: number[];
-  id?: string;
-};
-
 export type LimbicListOpts = {
   query?: string;
   offset?: number;

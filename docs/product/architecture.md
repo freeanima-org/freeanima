@@ -303,7 +303,7 @@ Agent 行为
 | Semantic | 跨会话事实 / 偏好 / 经历 / procedural；MemoryService 主库存 |
 | Temporal | 日/月/年时间骨架（升格中）                                  |
 | Episodic | raw=messages 归档；slim=syncTurn 切片                       |
-| Parked   | limbic / dream / narrative — 目标停写只读                   |
+| Parked   | limbic / dream / narrative — 存量只读（写入已拆除）         |
 
 **程序入口：** `MemoryService`（`embedded` \| `remote` 同契约）。LLM 工具仍是分范围 search（无统一 `memory_recall`）。  
 **巩固路径：** turn 后 `retain`；夜间 `memory-maintenance`（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。

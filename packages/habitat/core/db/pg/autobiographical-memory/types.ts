@@ -8,17 +8,6 @@ export type AutobiographicalSignificance = NarrativeSignificance;
 export type AutobiographicalStatus = NarrativeStatus;
 export type { AutobiographicalMemoryRow };
 
-export type AutobiographicalMemoryCreateInput = {
-  title: string;
-  content: string;
-  significance?: AutobiographicalSignificance;
-  period_start?: string | null;
-  period_end?: string | null;
-  source_semantic_memory?: number[];
-  source_conversations?: string[];
-  id?: string;
-};
-
 export type AutobiographicalListOrder = "updated_desc" | "significance_desc";
 
 export type AutobiographicalListOpts = {

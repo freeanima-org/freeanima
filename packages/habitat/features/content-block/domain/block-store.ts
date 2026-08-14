@@ -165,17 +165,27 @@ function mapHit(row: {
   });
 }
 
+function assertNoParkedSemanticWrite(input: {
+  limbic?: ContentBlockLimbicInput | null;
+  narrative?: ContentBlockNarrativeInput | null;
+  dream?: ContentBlockDreamInput | null;
+}): void {
+  if (input.limbic != null || input.narrative != null || input.dream != null) {
+    throw new Error(
+      "limbic / dream / narrative 写入已拆除（#16102）；存量只读，新写入仅允许 text / semantic_ref",
+    );
+  }
+}
+
 function buildComponents(input: {
   limbic?: ContentBlockLimbicInput | null;
   narrative?: ContentBlockNarrativeInput | null;
   semantic_ref?: ContentBlockSemanticRefInput | null;
   dream?: ContentBlockDreamInput | null;
 }): string[] {
+  assertNoParkedSemanticWrite(input);
   const tags: string[] = [CONTENT_BLOCK_COMPONENT];
-  if (input.limbic) tags.push(LIMBIC_COMPONENT);
-  if (input.narrative) tags.push(NARRATIVE_COMPONENT);
   if (input.semantic_ref) tags.push(SEMANTIC_REF_COMPONENT);
-  if (input.dream) tags.push(DREAM_COMPONENT);
   return tags;
 }
 
@@ -185,45 +195,10 @@ function semanticBodyFields(input: {
   semantic_ref?: ContentBlockSemanticRefInput | null;
   dream?: ContentBlockDreamInput | null;
 }): Record<string, unknown> {
+  assertNoParkedSemanticWrite(input);
   const out: Record<string, unknown> = {};
-  if (input.limbic) {
-    out.valence = input.limbic.valence;
-    out.arousal = input.limbic.arousal;
-    out.intensity = input.limbic.intensity;
-    if (input.limbic.kind !== undefined) out.kind = input.limbic.kind;
-    if (input.limbic.conversation_id !== undefined) {
-      out.conversation_id = input.limbic.conversation_id;
-    }
-    if (input.limbic.source_segment !== undefined) {
-      out.source_segment = input.limbic.source_segment;
-    }
-    if (input.limbic.semantic_memory_ids !== undefined) {
-      out.semantic_memory_ids = input.limbic.semantic_memory_ids;
-    }
-  }
-  if (input.narrative) {
-    out.significance = input.narrative.significance ?? "normal";
-    out.status = input.narrative.status ?? "active";
-    if (input.narrative.period_start !== undefined) {
-      out.period_start = input.narrative.period_start;
-    }
-    if (input.narrative.period_end !== undefined) {
-      out.period_end = input.narrative.period_end;
-    }
-    if (input.narrative.source_facts !== undefined) {
-      out.source_facts = input.narrative.source_facts;
-    }
-    if (input.narrative.source_conversations !== undefined) {
-      out.source_conversations = input.narrative.source_conversations;
-    }
-  }
   if (input.semantic_ref) {
     out.entity_id = input.semantic_ref.entity_id;
-  }
-  if (input.dream) {
-    out.source_limbic_ids = input.dream.source_limbic_ids ?? [];
-    out.source_conversation_ids = input.dream.source_conversation_ids ?? [];
-    out.episodic_snippets = [];
   }
   return out;
 }
@@ -272,6 +247,11 @@ export async function createContentBlock(
   worldId: number,
   input: ContentBlockCreateInput,
 ): Promise<ContentBlockRow> {
+  if (input.limbic !== undefined || input.narrative !== undefined || input.dream !== undefined) {
+    throw new Error(
+      "limbic / dream / narrative 写入已拆除（#16102）；存量只读，新写入仅允许 text / semantic_ref",
+    );
+  }
   if (input.client_op_id) {
     const existing = await findByClientOpId(worldId, input.client_op_id);
     if (existing) return existing;
@@ -309,6 +289,9 @@ export async function updateContentBlock(
   worldId: number,
   input: ContentBlockUpdateInput,
 ): Promise<ContentBlockRow | null> {
+  if (input.limbic !== undefined || input.narrative !== undefined || input.dream !== undefined) {
+    throw new Error("limbic / dream / narrative 写入已拆除（#16102）；存量只读，不可附加或清除");
+  }
   const existing = await getEntity(input.id);
   if (!existing || existing.primary_component !== CONTENT_BLOCK_COMPONENT) return null;
   await assertEntityInWorld(input.id, worldId);
@@ -321,84 +304,46 @@ export async function updateContentBlock(
     await assertSameWorldReferent(input.id, input.parent_id);
   }
 
-  const nextLimbic =
-    input.limbic === undefined
-      ? existing.components.includes(LIMBIC_COMPONENT)
-        ? readLimbic(existing.body)
-        : null
-      : input.limbic;
-  const nextNarrative =
-    input.narrative === undefined
-      ? existing.components.includes(NARRATIVE_COMPONENT)
-        ? readNarrative(existing.body)
-        : null
-      : input.narrative;
   const nextSemanticRef =
     input.semantic_ref === undefined
       ? existing.components.includes(SEMANTIC_REF_COMPONENT)
         ? readSemanticRef(existing.body)
         : null
       : input.semantic_ref;
-  const nextDream =
-    input.dream === undefined
-      ? existing.components.includes(DREAM_COMPONENT)
-        ? readDream(existing.body)
-        : null
-      : input.dream;
 
-  const componentsChanged =
-    input.limbic !== undefined ||
-    input.narrative !== undefined ||
-    input.semantic_ref !== undefined ||
-    input.dream !== undefined;
-  const nextComponents = componentsChanged
-    ? buildComponents({
-        limbic: nextLimbic,
-        narrative: nextNarrative,
-        semantic_ref: nextSemanticRef,
-        dream: nextDream,
-      })
-    : existing.components;
+  const componentsChanged = input.semantic_ref !== undefined;
+  // 更新时保留存量 limbic/narrative/dream；仅允许改 semantic_ref
+  let nextComponents = existing.components;
+  if (componentsChanged) {
+    const kept = existing.components.filter(
+      (c) => c !== SEMANTIC_REF_COMPONENT && c !== CONTENT_BLOCK_COMPONENT,
+    );
+    nextComponents = [
+      CONTENT_BLOCK_COMPONENT,
+      ...kept,
+      ...(nextSemanticRef ? [SEMANTIC_REF_COMPONENT] : []),
+    ];
+  }
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.block_type !== undefined) bodyPatch.block_type = input.block_type;
   if (input.parent_id !== undefined) bodyPatch.parent_id = input.parent_id;
   if (input.sort_order !== undefined) bodyPatch.sort_order = input.sort_order;
   if (input.url !== undefined) bodyPatch.url = input.url;
-
-  if (input.limbic !== undefined) {
-    if (input.limbic) {
-      bodyPatch.valence = input.limbic.valence;
-      bodyPatch.arousal = input.limbic.arousal;
-      bodyPatch.intensity = input.limbic.intensity;
-    }
-  }
-  if (input.narrative !== undefined) {
-    if (input.narrative) {
-      bodyPatch.significance = input.narrative.significance ?? "normal";
-    }
-  }
-  if (input.semantic_ref !== undefined) {
-    if (input.semantic_ref) {
-      bodyPatch.entity_id = input.semantic_ref.entity_id;
-    }
+  if (input.semantic_ref !== undefined && input.semantic_ref) {
+    bodyPatch.entity_id = input.semantic_ref.entity_id;
   }
 
-  // 组件变更时用完整语义字段重建 body，避免残留字段导致校验失败
   const bodyForWrite = componentsChanged
-    ? {
+    ? omitUndefined({
+        ...existing.body,
         block_type: input.block_type ?? parsedExisting.block_type,
         parent_id: input.parent_id ?? parsedExisting.parent_id,
         sort_order: input.sort_order ?? parsedExisting.sort_order,
         url: input.url !== undefined ? input.url : parsedExisting.url,
         client_op_id: parsedExisting.client_op_id,
-        ...semanticBodyFields({
-          limbic: nextLimbic,
-          narrative: nextNarrative,
-          semantic_ref: nextSemanticRef,
-          dream: nextDream,
-        }),
-      }
+        entity_id: nextSemanticRef?.entity_id,
+      })
     : Object.keys(bodyPatch).length > 0
       ? bodyPatch
       : undefined;

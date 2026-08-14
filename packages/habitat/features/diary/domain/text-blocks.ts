@@ -1,6 +1,9 @@
 import {
   CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  DREAM_COMPONENT,
+  LIMBIC_COMPONENT,
+  NARRATIVE_COMPONENT,
   asContentBlock,
 } from "@freeanima/habitat/core/db/schema/entity";
 import {
@@ -22,8 +25,21 @@ import type {
   DiaryTextBlockUpdateInput,
 } from "./types.ts";
 
+const PARKED_WRITE_COMPONENTS: ReadonlySet<string> = new Set([
+  LIMBIC_COMPONENT,
+  NARRATIVE_COMPONENT,
+  DREAM_COMPONENT,
+]);
+
 function normalizeBlockComponents(components: string[] | undefined): string[] {
   const list = (components ?? [CONTENT_BLOCK_COMPONENT]).map((c) => c.trim()).filter(Boolean);
+  for (const c of list) {
+    if (PARKED_WRITE_COMPONENTS.has(c)) {
+      throw new Error(
+        `component ${c} 写入已拆除（#16102）；存量只读，新日记块不可再挂 limbic/dream/narrative`,
+      );
+    }
+  }
   if (!list.includes(CONTENT_BLOCK_COMPONENT)) {
     list.unshift(CONTENT_BLOCK_COMPONENT);
   }

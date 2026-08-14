@@ -11,7 +11,6 @@ import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { registerDiaryTools } from "@freeanima/features/diary/domain";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
-import { createDreamEntry } from "@freeanima/habitat/core/db/pg/dream";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { createEmailAccount } from "@freeanima/features/email/domain";
 import {
@@ -23,7 +22,6 @@ import { createNotificationPort } from "@freeanima/habitat/platform/service/noti
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId, testUserWorldId } from "../../helpers/world-context.ts";
-import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import type { RuntimeDeps } from "@freeanima/habitat/platform/service/runtime-deps";
 
@@ -158,83 +156,6 @@ describePg("world scope tools", () => {
     };
     expect(userParsed.ok).toBe(true);
     expect(userParsed.item.blocks.map((b) => b.content).join("\n")).toContain("user diary note");
-  });
-
-  it("dream brick under diary scopes by world_id", async () => {
-    const sid = "sess-dream-world";
-    await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
-      platform: TEST_SAP_CHAT_PLATFORM,
-    });
-
-    // 临时关 park，以便种 dream 存量再验 diary_get 的 world 作用域
-    const cfg = getActiveRuntimeConfig();
-    const prevCutover = cfg.data.memory?.cutover;
-    cfg.data.memory = {
-      ...cfg.data.memory,
-      cutover: { ...prevCutover, park_limbic_dream_narrative: false },
-    };
-    try {
-      await createDreamEntry(
-        { worldId: testAgentWorldId() },
-        { dream_day: "2026-07-02", content: "agent dream" },
-      );
-      await createDreamEntry(
-        { worldId: testUserWorldId() },
-        { dream_day: "2026-07-02", content: "user dream" },
-      );
-    } finally {
-      cfg.data.memory = {
-        ...cfg.data.memory,
-        cutover: prevCutover,
-      };
-    }
-
-    let agentOut = "";
-    await runWithToolContext(
-      sid,
-      async () => {
-        const tool = toolSets.getTool("diary_get")!;
-        agentOut = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", date: "2026-07-02" }),
-        );
-      },
-      { tools: toolSets },
-    );
-    const agentParsed = JSON.parse(agentOut) as {
-      ok: boolean;
-      item: { blocks: Array<{ content: string; components: string[] }> };
-    };
-    expect(agentParsed.ok).toBe(true);
-    expect(
-      agentParsed.item.blocks.some(
-        (b) => b.components.includes("dream") && b.content === "agent dream",
-      ),
-    ).toBe(true);
-
-    let userOut = "";
-    await runWithToolContext(
-      sid,
-      async () => {
-        const tool = toolSets.getTool("diary_get")!;
-        userOut = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", date: "2026-07-02", world_id: testUserWorldId() }),
-        );
-      },
-      {
-        tools: toolSets,
-        callerAuth: userCallerAuth(),
-      },
-    );
-    const userParsed = JSON.parse(userOut) as {
-      ok: boolean;
-      item: { blocks: Array<{ content: string; components: string[] }> };
-    };
-    expect(userParsed.ok).toBe(true);
-    expect(
-      userParsed.item.blocks.some(
-        (b) => b.components.includes("dream") && b.content === "user dream",
-      ),
-    ).toBe(true);
   });
 
   it("email_list_accounts scopes by world_id", async () => {
