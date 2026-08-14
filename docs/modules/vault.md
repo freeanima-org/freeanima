@@ -40,7 +40,7 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - Habitat **数据维护**：**解锁 agent 密码库**（本地缓存状态 + 解锁/锁定；根密钥 SSOT = User 库
   `import_refs.agent_root_key=habitat`，于 User 库解锁时自动确保）
 - 编辑表单与扩展共用
-  [`features/vault/ui/shared`](../../src/features/vault/ui/shared/)（多
+  [`features/vault/ui/shared`](../../packages/{habitat,frontend}/features/vault/ui/shared/)（多
   URI、标签、自定义字段等）；数据面仍为 Habitat RPC（与扩展 `sendBg` 不同）
 - **Vault 引用选择器**（`VaultRefField`）：设置里 LLM / Discord / 微信 / 对象存储 / Firecrawl
   密钥，以及邮箱账号密码，可从 **Agent 库** 选条目与字段，写入 `vault("item_id", "field")`（仍可手写明文或
@@ -50,7 +50,7 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 
 安装、打包、gecko id、展示名等入口级约定见 [`portal.md`](portal.md)。本节只写 **Vault 在扩展内** 的行为。
 
-- 模块：`src/portal/extension/features/vault/`（popup / content / background 协作）
+- 模块：`packages/frontend/portal/extension/features/vault/`（popup / content / background 协作）
 - 连接：扩展 **直连 Habitat**（Bearer `fa_at_…`），HTTP REST only；解锁态保存在扩展进程内，并经
   `chrome.storage.session` 跨 service worker 回收恢复（**最多 8
   小时**；**浏览器关闭后清除**，需重输主密码）。hydrate 须导入**可导出**主密钥，否则本地缓存无法用主密钥加解密并会误报

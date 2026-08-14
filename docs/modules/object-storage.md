@@ -109,4 +109,4 @@ Runtime 段 `companion` 存 **`object_file_id`**（非 cid）。上传走
 `createObjectFile`；加载走 `object_storage.file.get`。旧仅磁盘 / 旧 `content_hash`
 条目需重新导入。未配 S3 时字节落本机持久库。
 
-代码：[`src/features/object-storage/`](../../src/features/object-storage/)。
+代码：[`packages/{habitat,frontend}/features/object-storage/`](../../packages/{habitat,frontend}/features/object-storage/)。

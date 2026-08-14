@@ -20,7 +20,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 const root = join(import.meta.dir, "..");
-const habitatEntry = join(root, "src/portal/cli/dev-habitat.ts");
+const habitatEntry = join(root, "packages/habitat/portal/cli/dev-habitat.ts");
 const watchRoot = join(root, "src");
 const habitatArgs = process.argv.slice(2);
 

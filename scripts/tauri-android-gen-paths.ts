@@ -5,7 +5,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-const DEFAULT_ANDROID_GEN = "src/portal/app/tauri/src-tauri/gen/android";
+const DEFAULT_ANDROID_GEN = "packages/frontend/portal/app/tauri/src-tauri/gen/android";
 
 /** `…/gen/android/<app>/src/main`，找不到则 null */
 export function resolveTauriAndroidMain(repoRoot: string): string | null {

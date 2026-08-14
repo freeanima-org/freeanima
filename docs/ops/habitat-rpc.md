@@ -9,7 +9,7 @@ title: "栖息地 RPC"
 - **WebSocket** — 长连接 **`/rpc/v1`**（connect 握手 + 心跳；栖息地 RPC `req`/`res`/`evt` 信封）
 - **HTTP REST** — 无状态 GET/POST **`/rpc/v1/{method/path}`**（纯 JSON body 或 query；`Authorization: Bearer`）
 
-实现于 [`src/shared/habitat-rpc/`](../../src/shared/habitat-rpc/)（WS 信封 + HTTP REST 辅助）与 [`src/host/platform/habitat/http-rest-router.ts`](../../src/host/platform/habitat/http-rest-router.ts)（HTTP 适配器）。功能方法 schema 在 [`src/shared/rpc-contract/`](../../src/shared/rpc-contract/)。
+实现于 [`packages/shared/habitat-rpc/`](../../packages/shared/habitat-rpc/)（WS 信封 + HTTP REST 辅助）与 [`packages/habitat/platform/habitat/http-rest-router.ts`](../../packages/habitat/platform/habitat/http-rest-router.ts)（HTTP 适配器）。功能方法 schema 在 [`packages/shared/rpc-contract/`](../../packages/shared/rpc-contract/)。
 
 二进制 HTTP 方法（如 `tts.synthesize`、伴侣资源、TLS PEM/QR）走栖息地 RPC REST，经注册表 `request` / `response` 编码。公开探针（`health.probe`、`tls.ca.*`）为栖息地 RPC 方法，`auth: optional`。
 
@@ -35,7 +35,7 @@ title: "栖息地 RPC"
 
 **调用路由：** 在 `tool.register` 时，栖息地将每个工具 handler 绑定到该前哨连接（`instance_id`）。调用已注册工具时在该绑定通道发送 `tool.call` — 不做会话 `outpost_*` 检查，也不为路由再解析工具名。断开则注销 toolset。会话 `outpost_app_id` / `outpost_instance_id` 仍为可选元数据（如哪个前哨打开了聊天）。`workspace_root` 仍可仅从对话 meta 取入载荷。
 
-服务端：[`src/host/capabilities/outpost/`](../../src/host/capabilities/outpost/)。  
+服务端：[`packages/habitat/capabilities/outpost/`](../../packages/habitat/capabilities/outpost/)。  
 客户端辅助：`@freeanima/shared/rpc-contract` 中的 `createRemoteToolsHabitatAttach`。
 
 ## 端点

@@ -1,6 +1,6 @@
 ---
 description: Portal 壳 Tauri：工程位置、禁止 Node sidecar、ShellApi、双轨发版
-globs: src/portal/app/tauri/**/*,**/tauri.conf.*,just/pack.just,just/dev.just,just/install.just
+globs: packages/frontend/portal/app/tauri/**/*,**/tauri.conf.*,just/pack.just,just/dev.just,just/install.just
 alwaysApply: false
 ---
 
@@ -12,8 +12,8 @@ alwaysApply: false
 
 | 路径                     | 作用                                              |
 | ------------------------ | ------------------------------------------------- |
-| `src/portal/app/tauri/`  | 统一 Portal：`src-tauri` + bridge + lib/spa       |
-| `src/client/portal-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
+| `packages/frontend/portal/app/tauri/`  | 统一 Portal：`src-tauri` + bridge + lib/spa       |
+| `packages/frontend/client/portal-sdk/` | `ShellApi` / `getShellKind()`（`web` \| `tauri`） |
 
 开发（Win / Linux / mac **同一命令**）：`just dev tauri`（桌面；需 Vite `:5000`）；`just dev tauri-android`（移动）。
 打包：

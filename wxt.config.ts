@@ -3,14 +3,14 @@ import path from "node:path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import type { Plugin } from "vite";
-import { resolveBuildChannelFromEnv } from "./src/host/core/config/build-meta.ts";
+import { resolveBuildChannelFromEnv } from "./packages/habitat/core/config/build-meta.ts";
 import {
   FIREFOX_ADDON_ID,
   FIREFOX_ADDON_UPDATE_URL,
   resolveFirefoxAddonVersion,
-} from "./src/host/core/config/firefox-addon.ts";
-import { resolveBuildVersionFromEnv } from "./src/host/core/config/resolve-build-version.ts";
-import { buildViteAliases } from "./src/client/app-frame/vite/module-aliases.ts";
+} from "./packages/habitat/core/config/firefox-addon.ts";
+import { resolveBuildVersionFromEnv } from "./packages/habitat/core/config/resolve-build-version.ts";
+import { buildViteAliases } from "./packages/frontend/client/app-frame/vite/module-aliases.ts";
 
 const repoRoot = path.resolve(import.meta.dirname);
 
@@ -50,9 +50,9 @@ const extensionName = isLocal ? "FreeAnima Local" : "FreeAnima";
 
 /** 浏览器形态入口（MV3；Chrome 默认，Firefox 另轨） */
 export default defineConfig({
-  srcDir: "src/portal/extension",
+  srcDir: "packages/frontend/portal/extension",
   outDir: "dist/browser-extension",
-  publicDir: "src/portal/extension/public",
+  publicDir: "packages/frontend/portal/extension/public",
   modules: [],
   // Firefox 默认 MV2；强制 MV3（与 Chrome 同轨，且支持 update_url / service worker）
   manifestVersion: 3,

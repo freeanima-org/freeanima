@@ -1,0 +1,33 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "./dist-types",
+    "rootDir": ".",
+    "allowImportingTsExtensions": false
+  },
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./features/companion/shared/**/*.json",
+    "../../types/**/*.d.ts"
+  ],
+  "exclude": [
+    "**/dist/**",
+    "**/dist-types/**",
+    "**/node_modules/**",
+    "**/src-tauri/**",
+    "portal/extension/**"
+  ],
+  "references": [
+    {
+      "path": "../shared"
+    }
+  ]
+}

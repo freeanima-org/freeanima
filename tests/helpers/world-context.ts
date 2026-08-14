@@ -1,4 +1,4 @@
-import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 
 export function testUserWorldId(): number {
   return getResolvedWorldContext().user_world_id;

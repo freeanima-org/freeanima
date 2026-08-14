@@ -1,6 +1,6 @@
 ---
 description: l-point 压缩硬约定与模块入口（算法细节见 docs）
-globs: src/host/core/compress/**/*,src/host/engine/**/*,docs/cognition/compression.md
+globs: packages/habitat/core/compress/**/*,packages/habitat/engine/**/*,docs/cognition/compression.md
 alwaysApply: false
 ---
 
@@ -33,7 +33,7 @@ alwaysApply: false
 
 | 模块 | 职责 |
 | ---- | ---- |
-| `src/host/core/compress/compressor.ts` | l-points、`deriveBoundariesFromL4`、`shouldAdvance`、`slimMessage` |
+| `packages/habitat/core/compress/compressor.ts` | l-points、`deriveBoundariesFromL4`、`shouldAdvance`、`slimMessage` |
 | `compression-config.ts` / `compression-summary.ts` / `compression-tool-loop.ts` | 配置、summary LLM、`isInToolLoop` |
 | engine turn / conversation / loop | `/summarize`、`recompressConversation`；loop 紧急压缩经 `createConversationAfterMessagesPersisted` 注入（非 loop 内硬调） |
 

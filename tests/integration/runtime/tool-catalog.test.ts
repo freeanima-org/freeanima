@@ -1,19 +1,19 @@
 import { expect, it, beforeEach, afterEach, afterAll, spyOn } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import type { StoredMessage } from "@freeanima/host/core/db/domain";
+import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
 import {
   beginIntegrationCase,
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
-import { registerServiceTools } from "@freeanima/host/platform";
-import { isConversationMeta } from "@freeanima/host/core/db/domain";
-import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/host/core/tool";
-import { runWithToolContext } from "@freeanima/host/engine/loop";
-import * as engine from "@freeanima/host/engine/loop";
-import * as llm from "@freeanima/host/core/llm";
-import { resolveExecutableToolNames } from "@freeanima/host/engine/conversation";
+import { registerServiceTools } from "@freeanima/habitat/platform";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
+import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/habitat/core/tool";
+import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
+import * as engine from "@freeanima/habitat/kernel/loop-mechanism";
+import * as llm from "@freeanima/habitat/core/llm";
+import { resolveExecutableToolNames } from "@freeanima/habitat/engine/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("tool catalog lazy load", () => {

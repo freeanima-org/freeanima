@@ -1,0 +1,48 @@
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
+import { createLogger } from "@freeanima/habitat/kernel/logging";
+import { createMemorySink } from "@freeanima/habitat/kernel/logging/sinks/memory.ts";
+import type { MemorySink } from "@freeanima/habitat/kernel/logging/sinks/memory.ts";
+import { logComponent, logStartupError, resetServiceLogger, setServiceLogger } from "./index.ts";
+describe("error-log", () => {
+  let memory: MemorySink;
+
+  beforeEach(() => {
+    memory = createMemorySink();
+    setServiceLogger(createLogger({ sinks: [memory] }));
+  });
+
+  afterEach(() => {
+    resetServiceLogger();
+  });
+
+  it("writes errors to memory sink", () => {
+    logComponent("test").error("test message", { source: "test" });
+
+    const messages = memory.records.map((r) => r.message).join("\n");
+    expect(messages).toContain("test message");
+  });
+
+  it("writes startup failure with source tag", () => {
+    const prevError = console.error;
+    const lines: string[] = [];
+    console.error = (...args: unknown[]) => {
+      lines.push(args.map(String).join(" "));
+    };
+    try {
+      logStartupError("service startup failed", new Error("database.url not configured"));
+    } finally {
+      console.error = prevError;
+    }
+
+    expect(lines.some((line) => line.includes("database.url not configured"))).toBe(true);
+    expect(memory.records.some((r) => r.message.includes("service startup failed"))).toBe(true);
+    expect(
+      memory.records.some((r) => {
+        if (r.attributes.component !== "startup") return false;
+        const err = r.attributes.err;
+        const text = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+        return text.includes("database.url not configured");
+      }),
+    ).toBe(true);
+  });
+});

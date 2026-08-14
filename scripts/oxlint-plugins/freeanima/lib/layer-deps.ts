@@ -1,15 +1,25 @@
 export function layerOf(rel: string): string {
-  if (rel.startsWith("src/ui-kit/")) return "ui-kit";
-  if (rel.startsWith("src/client/") || rel.startsWith("src/frontend/")) return "client";
-  if (rel.startsWith("src/shared/")) return "shared";
-  if (rel.startsWith("src/host/kernel/")) return "host-kernel";
-  if (rel.startsWith("src/host/")) return "host";
-  if (rel.startsWith("src/features/")) {
+  if (rel.startsWith("packages/frontend/ui-kit/")) return "ui-kit";
+  if (
+    rel.startsWith("packages/frontend/client/") ||
+    rel.startsWith("packages/frontend/portal/app/") ||
+    rel.startsWith("packages/frontend/portal/extension/")
+  ) {
+    return "client";
+  }
+  if (rel.startsWith("packages/shared/")) return "shared";
+  if (rel.startsWith("packages/habitat/kernel/loop-mechanism/")) return "habitat";
+  if (rel.startsWith("packages/habitat/kernel/")) return "habitat-kernel";
+  if (rel.startsWith("packages/habitat/portal/cli/")) return "habitat";
+  if (rel.startsWith("packages/habitat/features/")) {
     if (rel.includes("/ui/")) return "feature-ui";
     return "feature-server";
   }
-  if (rel.startsWith("src/portal/app/") || rel.startsWith("src/portal/extension/")) return "client";
-  if (rel.startsWith("src/portal/cli/")) return "host";
+  if (rel.startsWith("packages/frontend/features/")) {
+    if (rel.includes("/ui/") || rel.includes("/lib/")) return "feature-ui";
+    return "client";
+  }
+  if (rel.startsWith("packages/habitat/")) return "habitat";
   return "other";
 }
 
@@ -19,20 +29,27 @@ export function targetLayer(spec: string): string | null {
   if (rest.startsWith("ui-kit") || rest.startsWith("frontend/ui-kit")) return "ui-kit";
   if (rest.startsWith("client/") || rest.startsWith("frontend/")) return "client";
   if (rest.startsWith("shared/")) return "shared";
-  if (rest.startsWith("host/kernel") || rest === "host/kernel") return "host-kernel";
-  if (rest.startsWith("host/")) return "host";
-  if (rest.startsWith("kernel/") || rest === "kernel") return "host-kernel";
+  if (rest.startsWith("habitat/kernel") || rest === "habitat/kernel") return "habitat-kernel";
+  if (rest.startsWith("habitat/")) return "habitat";
+  if (rest.startsWith("host/kernel") || rest === "host/kernel") return "habitat-kernel";
+  if (rest.startsWith("host/")) return "habitat";
+  if (rest.startsWith("kernel/") || rest === "kernel") return "habitat-kernel";
   if (
     rest.startsWith("core") ||
     rest.startsWith("runtime") ||
     rest.startsWith("capabilities") ||
     rest.startsWith("platform")
   ) {
-    return "host";
+    return "habitat";
   }
   if (rest.startsWith("features/")) {
     if (rest.includes("/ui/") || /features\/[^/]+\/ui\b/.test(rest)) return "feature-ui";
+    if (rest.includes("/lib/") || /features\/[^/]+\/lib\b/.test(rest)) return "feature-ui";
     return "feature-server";
+  }
+  if (rest.startsWith("portal/")) {
+    if (rest.startsWith("portal/cli")) return "habitat";
+    return "client";
   }
   return "other";
 }
@@ -40,8 +57,10 @@ export function targetLayer(spec: string): string | null {
 function isFrontendDbImport(spec: string): boolean {
   if (spec === "drizzle-orm" || spec.startsWith("drizzle-orm/")) return true;
   return (
+    spec.includes("@freeanima/habitat/core/db") ||
     spec.includes("@freeanima/host/core/db") ||
     spec.startsWith("@freeanima/core/db") ||
+    spec.includes("/habitat/core/db/") ||
     spec.includes("/host/core/db/")
   );
 }
@@ -52,21 +71,24 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
   const to = targetLayer(spec);
 
   if ((from === "feature-ui" || from === "client") && isFrontendDbImport(spec)) {
-    return "feature-ui/client 不得 import host/core/db 或 drizzle-orm；请用 @freeanima/shared/pg-shapes";
+    return "feature-ui/client 不得 import habitat/core/db 或 drizzle-orm；请用 @freeanima/shared/pg-shapes";
   }
 
   if (!to) return null;
 
-  if (from === "host-kernel" && to !== "host-kernel" && to !== "shared") {
-    return "host/kernel 仅可依赖 kernel 与 shared（无产品 config 段 / 其它 host 层）";
+  if (from === "habitat-kernel" && to !== "habitat-kernel" && to !== "shared") {
+    return "habitat/kernel 仅可依赖 kernel 与 shared（无产品 config 段 / 其它 habitat 层）";
   }
 
-  if (from === "shared" && (to === "host" || to === "host-kernel")) {
-    return "shared 不得 import host（纯工具/Zod 须落在 shared）";
+  if (from === "shared" && (to === "habitat" || to === "habitat-kernel")) {
+    return "shared 不得 import habitat（纯工具/Zod 须落在 shared）";
   }
 
-  if ((from === "feature-ui" || (from === "client" && rel.includes("/spa/"))) && to === "host") {
+  if ((from === "feature-ui" || (from === "client" && rel.includes("/spa/"))) && to === "habitat") {
     if (
+      spec.includes("@freeanima/habitat/platform") ||
+      spec.includes("@freeanima/habitat/engine") ||
+      spec.includes("@freeanima/habitat/capabilities") ||
       spec.includes("@freeanima/host/platform") ||
       spec.includes("@freeanima/host/engine") ||
       spec.includes("@freeanima/host/capabilities") ||
@@ -79,7 +101,15 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
     return null;
   }
 
-  if ((from === "host" || from === "host-kernel") && (to === "client" || to === "ui-kit")) {
+  if ((from === "feature-ui" || from === "client") && to === "feature-server") {
+    // 仅禁止 domain；protocol / method-defs 仍可由 UI / portal-sdk 消费
+    if (spec.includes("/domain/") || /features\/[^/]+\/domain\b/.test(spec)) {
+      return "feature-ui 不得 import features/*/domain（同构逻辑请放 shared）";
+    }
+    return null;
+  }
+
+  if ((from === "habitat" || from === "habitat-kernel") && (to === "client" || to === "ui-kit")) {
     if (
       rel.endsWith("platform/habitat/client.ts") ||
       rel.endsWith("platform/habitat/feature-method-defs.ts") ||
@@ -87,7 +117,7 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
     ) {
       return null;
     }
-    return "host 不得 import client/ui-kit";
+    return "habitat 不得 import client/ui-kit";
   }
 
   if (from === "shared" && (to === "ui-kit" || to === "client")) {
@@ -96,9 +126,9 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
 
   if (
     from === "ui-kit" &&
-    (to === "feature-ui" || to === "feature-server" || to === "host" || to === "host-kernel")
+    (to === "feature-ui" || to === "feature-server" || to === "habitat" || to === "habitat-kernel")
   ) {
-    return "ui-kit 不得 import features/host";
+    return "ui-kit 不得 import features/habitat";
   }
   if (
     from === "ui-kit" &&

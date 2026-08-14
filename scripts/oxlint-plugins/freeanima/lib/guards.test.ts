@@ -44,7 +44,7 @@ describe("dir-import", () => {
       const importer = join(tmp, "ok.ts");
       expect(checkDirImport(importer, "dir:./assets")).toBeNull();
       expect(checkDirImport(importer, "dir:./nope")).toMatch(/目录不存在/);
-      const webImporter = join(REPO_ROOT, "src/portal/cli/web/x.ts");
+      const webImporter = join(REPO_ROOT, "packages/habitat/portal/cli/web/x.ts");
       // 允许缺失的构建产物路径
       expect(checkDirImport(webImporter, "dir:../../app/web/dist")).toBeNull();
     } finally {
@@ -64,52 +64,60 @@ describe("import-depth", () => {
 
 describe("layer-deps", () => {
   test("feature-ui cannot import host capabilities", () => {
-    expect(checkLayerDeps("src/features/task/ui/a.ts", "@freeanima/client/portal-sdk")).toBeNull();
     expect(
-      checkLayerDeps("src/features/task/ui/a.ts", "@freeanima/host/capabilities/tools"),
+      checkLayerDeps("packages/frontend/features/task/ui/a.ts", "@freeanima/client/portal-sdk"),
+    ).toBeNull();
+    expect(
+      checkLayerDeps(
+        "packages/frontend/features/task/ui/a.ts",
+        "@freeanima/habitat/capabilities/tools",
+      ),
     ).toMatch(/不得 import platform\/engine\/capabilities/);
   });
 
   test("shared cannot import host", () => {
-    expect(checkLayerDeps("src/shared/rpc-contract/x.ts", "@freeanima/host/core/util")).toMatch(
-      /shared 不得 import host/,
-    );
     expect(
-      checkLayerDeps("src/shared/util/x.ts", "@freeanima/host/kernel/config-mechanism"),
-    ).toMatch(/shared 不得 import host/);
-    expect(checkLayerDeps("src/shared/util/x.ts", "@freeanima/shared/db-shapes")).toBeNull();
+      checkLayerDeps("packages/shared/rpc-contract/x.ts", "@freeanima/habitat/core/util"),
+    ).toMatch(/shared 不得 import habitat/);
+    expect(
+      checkLayerDeps("packages/shared/util/x.ts", "@freeanima/habitat/kernel/config-mechanism"),
+    ).toMatch(/shared 不得 import habitat/);
+    expect(checkLayerDeps("packages/shared/util/x.ts", "@freeanima/shared/db-shapes")).toBeNull();
   });
 
   test("host-kernel 仅可依赖 kernel 与 shared", () => {
     expect(
       checkLayerDeps(
-        "src/host/kernel/config-mechanism/config-store.ts",
+        "packages/habitat/kernel/config-mechanism/config-store.ts",
         "@freeanima/shared/util/random-uuid.ts",
       ),
     ).toBeNull();
     expect(
       checkLayerDeps(
-        "src/host/kernel/config-mechanism/section-registry.ts",
-        "@freeanima/host/core/config",
+        "packages/habitat/kernel/config-mechanism/section-registry.ts",
+        "@freeanima/habitat/core/config",
       ),
-    ).toMatch(/host\/kernel/);
+    ).toMatch(/habitat\/kernel/);
     expect(
       checkLayerDeps(
-        "src/host/core/config/config-store.ts",
-        "@freeanima/host/kernel/config-mechanism",
+        "packages/habitat/core/config/config-store.ts",
+        "@freeanima/habitat/kernel/config-mechanism",
       ),
     ).toBeNull();
   });
 
   test("feature-ui/client cannot import host/core/db or drizzle-orm", () => {
     expect(
-      checkLayerDeps("src/features/task/ui/a.ts", "@freeanima/host/core/db/schema/entity"),
-    ).toMatch(/不得 import host\/core\/db/);
-    expect(checkLayerDeps("src/client/portal-sdk/a.ts", "drizzle-orm")).toMatch(
-      /不得 import host\/core\/db/,
+      checkLayerDeps(
+        "packages/frontend/features/task/ui/a.ts",
+        "@freeanima/habitat/core/db/schema/entity",
+      ),
+    ).toMatch(/不得 import habitat\/core\/db/);
+    expect(checkLayerDeps("packages/frontend/client/portal-sdk/a.ts", "drizzle-orm")).toMatch(
+      /不得 import habitat\/core\/db/,
     );
     expect(
-      checkLayerDeps("src/features/task/ui/a.ts", "@freeanima/shared/entity-shapes"),
+      checkLayerDeps("packages/frontend/features/task/ui/a.ts", "@freeanima/shared/entity-shapes"),
     ).toBeNull();
   });
 });

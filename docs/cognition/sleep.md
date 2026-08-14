@@ -32,7 +32,7 @@ title: 睡眠机制
 
 ## 编排
 
-睡眠使用由 `PipelineRunner`（`@freeanima/host/engine/pipeline`）编排的**宏观 DAG**（`sleep-cycle` 管线）。单个 cron 任务触发完整周期；步骤顺序与依赖在代码中显式声明（[`src/host/platform/boot/sleep-cycle.ts`](../../src/host/platform/boot/sleep-cycle.ts)）。
+睡眠使用由 `PipelineRunner`（`@freeanima/habitat/engine/pipeline`）编排的**宏观 DAG**（`sleep-cycle` 管线）。单个 cron 任务触发完整周期；步骤顺序与依赖在代码中显式声明（[`packages/habitat/platform/boot/sleep-cycle.ts`](../../packages/habitat/platform/boot/sleep-cycle.ts)）。
 
 **浅睡**与**深睡**在 `runLightSleep()` / `runDeepSleep()` 内部保留**多阶段/多轮**顺序，不提升为宏观 DAG 节点。
 

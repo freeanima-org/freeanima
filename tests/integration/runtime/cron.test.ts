@@ -26,19 +26,19 @@ import {
   stopCronModule,
   computeNextRunAt,
   readOutputRef,
-} from "@freeanima/host/capabilities/connectors/cron";
+} from "@freeanima/habitat/capabilities/connectors/cron";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
-import { listNotifications } from "@freeanima/host/core/db/pg/notifications";
-import { getResolvedWorldContext } from "@freeanima/host/core/config/world-context";
-import { bindServicePorts } from "@freeanima/host/platform";
-import { FileConfig } from "@freeanima/host/platform/config/file-config.ts";
-import { createServiceKernel } from "@freeanima/host/platform/bootstrap";
-import { createConversationService } from "@freeanima/host/engine/conversation";
-import { createAppRuntime } from "@freeanima/host/platform/service/app-runtime";
-import { initRuntimeContext } from "@freeanima/host/platform/service/runtime-context";
-import { registerServiceStores } from "@freeanima/host/platform";
-import { registerCronNotify } from "@freeanima/host/platform/ports/cron-notify";
-import { notifyBothRecipients } from "@freeanima/host/platform/service/notification-helpers";
+import { listNotifications } from "@freeanima/habitat/core/db/pg/notifications";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { bindServicePorts } from "@freeanima/habitat/platform";
+import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
+import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
+import { createConversationService } from "@freeanima/habitat/engine/conversation";
+import { createAppRuntime } from "@freeanima/habitat/platform/service/app-runtime";
+import { initRuntimeContext } from "@freeanima/habitat/platform/service/runtime-context";
+import { registerServiceStores } from "@freeanima/habitat/platform";
+import { registerCronNotify } from "@freeanima/habitat/platform/ports/cron-notify";
+import { notifyBothRecipients } from "@freeanima/habitat/platform/service/notification-helpers";
 
 describePg("cron", () => {
   let home: string;
@@ -120,7 +120,7 @@ describePg("cron", () => {
     });
 
     const { notifyCronResult, shouldNotifyCronJobResult } =
-      await import("@freeanima/host/platform/ports/cron-notify");
+      await import("@freeanima/habitat/platform/ports/cron-notify");
     const quiet = new CronJob({
       id: "t-quiet",
       name: "quiet-job",

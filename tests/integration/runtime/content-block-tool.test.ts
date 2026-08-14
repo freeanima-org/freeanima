@@ -1,12 +1,15 @@
 import { afterAll, afterEach, beforeEach, expect, it } from "bun:test";
 
-import { CONTENT_BLOCK_COMPONENT, LIMBIC_COMPONENT } from "@freeanima/host/core/db/schema/entity";
-import { getEntity } from "@freeanima/host/core/db/pg/entity";
-import { ToolSetRegistry } from "@freeanima/host/core/tool";
+import {
+  CONTENT_BLOCK_COMPONENT,
+  LIMBIC_COMPONENT,
+} from "@freeanima/habitat/core/db/schema/entity";
+import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
+import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { createDiaryEntry } from "@freeanima/features/diary/domain";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
-import { getProfileHopModel } from "@freeanima/host/platform/config";
-import { runWithToolContext } from "@freeanima/host/engine/loop";
+import { getProfileHopModel } from "@freeanima/habitat/platform/config";
+import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
 
 import {
   beginIntegrationCase,

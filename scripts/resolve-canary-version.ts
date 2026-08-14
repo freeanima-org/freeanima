@@ -12,8 +12,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { getRepoRoot } from "@freeanima/host/core/config/repo-root.ts";
-import { formatCanaryVersion } from "@freeanima/host/core/config/canary-version.ts";
+import { getRepoRoot } from "@freeanima/habitat/core/config/repo-root.ts";
+import { formatCanaryVersion } from "@freeanima/habitat/core/config/canary-version.ts";
 
 const ROOT = getRepoRoot();
 

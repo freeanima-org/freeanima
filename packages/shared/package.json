@@ -1,0 +1,28 @@
+{
+  "name": "@freeanima/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./pg-shapes": "./pg-shapes/index.ts",
+    "./pg-shapes/*": "./pg-shapes/*",
+    "./rpc-contract": "./rpc-contract/index.ts",
+    "./rpc-contract/*": "./rpc-contract/*",
+    "./util": "./util/index.ts",
+    "./util/*": "./util/*",
+    "./vault-crypto": "./vault-crypto/index.ts",
+    "./vault-crypto/*": "./vault-crypto/*",
+    "./task/*": "./task/*",
+    "./coding/*": "./coding/*",
+    "./*": "./*",
+    "./companion-app/*": "./companion-app/*"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.3.0",
+    "otpauth": "^9.5.1",
+    "zod": "^4.4.3",
+    "chinese-days": "^1.5.9",
+    "lunar-javascript": "^1.7.7"
+  },
+  "devDependencies": {}
+}

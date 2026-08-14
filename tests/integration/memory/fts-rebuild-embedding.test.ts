@@ -1,8 +1,8 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
-import { bindActiveRuntimeConfig } from "@freeanima/host/platform/config";
-import { parseYaml } from "@freeanima/host/platform/config";
-import { runtimeConfigSchema } from "@freeanima/host/core/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/host/platform/config/test-helpers/minimal-llm-config";
+import { bindActiveRuntimeConfig } from "@freeanima/habitat/platform/config";
+import { parseYaml } from "@freeanima/habitat/platform/config";
+import { runtimeConfigSchema } from "@freeanima/habitat/core/config";
+import { MINIMAL_LLM_YAML } from "@freeanima/habitat/platform/config/test-helpers/minimal-llm-config";
 import {
   awaitPendingEmbeddingsForTest,
   getFtsCoverageStats,
@@ -10,15 +10,15 @@ import {
   registerEmbedTextFn,
   resetEmbedTextFnForTest,
   resetPendingEmbeddingsForTest,
-} from "@freeanima/host/core/db/pg";
-import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/host/core/db/schema";
+} from "@freeanima/habitat/core/db/pg";
+import { SEMANTIC_EMBEDDING_DIMENSIONS } from "@freeanima/habitat/core/db/schema";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { createSemanticMemory } from "@freeanima/host/core/db/pg/semantic-memory";
+import { createSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { createTaskItem, createTaskList } from "@freeanima/features/task/domain";
 import { getActivePgTestContext, getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 import { testUserWorldId } from "../../helpers/world-context.ts";

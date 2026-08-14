@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { registerServiceTools } from "@freeanima/host/platform";
+import { registerServiceTools } from "@freeanima/habitat/platform";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import {
   setAwaitingClarify,
@@ -15,8 +15,8 @@ import {
   resolveUserContent,
   guardAwaitingClarify,
   findAwaitingClarifyInMessages,
-} from "@freeanima/host/capabilities/tools/clarify";
-import { executeCommand, getCommand } from "@freeanima/host/capabilities/tools/slash-commands";
+} from "@freeanima/habitat/capabilities/tools/clarify";
+import { executeCommand, getCommand } from "@freeanima/habitat/capabilities/tools/slash-commands";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 
 describePg("clarify session", () => {

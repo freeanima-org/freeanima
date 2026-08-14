@@ -1,0 +1,38 @@
+import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
+import { PROMPT_XML_TAGS, systemPromptBuild } from "@freeanima/habitat/core/hooks/prompt";
+import type { SkillRegistry } from "@freeanima/habitat/core/skill";
+
+/** Progressive disclosure：系统提示仅注入 name + description 目录 */
+export function registerSkillsCatalogSystemPromptHook(
+  registry: HookRegistry,
+  getSkills: () => SkillRegistry,
+): void {
+  registry.on(
+    systemPromptBuild,
+    () => {
+      const active = getSkills().listActive();
+      if (active.length === 0) return { status: "ok" };
+      const lines = active.map((s) => `- **${s.name}**: ${s.description || "(no description)"}`);
+      const content = [
+        "Available techniques (load full instructions with `skill_load` when needed):",
+        ...lines,
+      ].join("\n");
+      return {
+        status: "ok",
+        data: {
+          sections: [
+            {
+              id: "skills-catalog",
+              content,
+              order: 9,
+              priority: 5,
+              budgetChars: 2_500,
+              xmlTag: PROMPT_XML_TAGS.skills,
+            },
+          ],
+        },
+      };
+    },
+    { llm_kind: "conversation" },
+  );
+}

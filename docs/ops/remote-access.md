@@ -163,7 +163,7 @@ mkcert -install  # trust that CA on the Habitat host itself
 
 ## 2. 客户端配置
 
-**入口**（`src/portal/app/tauri`）与 **浏览器 Web**（`src/portal/app/web`）是远程客户端；它们**不读取**栖息地 `config.yaml` 的 token。
+**入口**（`packages/frontend/portal/app/tauri`）与 **浏览器 Web**（`packages/frontend/portal/app/web`）是远程客户端；它们**不读取**栖息地 `config.yaml` 的 token。
 
 | 客户端         | 存储                                             |
 | -------------- | ------------------------------------------------ |
@@ -208,10 +208,10 @@ mcpServers:
       Authorization: "Bearer <remote_auth.token>"
 ```
 
-- **入站**（栖息地连接外部 MCP 服务器）：runtime `mcp_servers`（`src/host/capabilities/mcp-client`）；在栖息地 UI `/habitat/mcp` 管理
+- **入站**（栖息地连接外部 MCP 服务器）：runtime `mcp_servers`（`packages/habitat/capabilities/mcp-client`）；在栖息地 UI `/habitat/mcp` 管理
   - 优先 `transport: http`（Streamable HTTP）连本机 `/mcp`；`sse` 仍可用但属旧协议，**不会**自动改写
   - Auth：`headers.Authorization: Bearer env("KEY")`（PG 迁移会把遗留 `api_key_env` 写成此形）；连接时展开 `env()`
-- **出站**（外部 agent 调用栖息地工具）：`/mcp` 端点（`src/host/capabilities/mcp-server`）
+- **出站**（外部 agent 调用栖息地工具）：`/mcp` 端点（`packages/habitat/capabilities/mcp-server`）
 
 ## 运维
 

@@ -14,7 +14,7 @@
     "**/dist/**",
     "**/electron-dist/**",
     "**/coverage/**",
-    "src/features/habitat/ui/habitat/routeTree.gen.ts",
+    "packages/features/habitat/ui/habitat/routeTree.gen.ts",
     "CHANGELOG.md",
   ],
   "overrides": [

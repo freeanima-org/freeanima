@@ -182,7 +182,7 @@ bun install
 **不要**把源码 `cli.ts` 符号链接到全局 bin。在 checkout 内：
 
 ```bash
-bun src/portal/cli/cli.ts -- --help
+bun packages/habitat/portal/cli/cli.ts -- --help
 just dev
 ```
 

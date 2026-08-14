@@ -7,16 +7,7 @@ import { join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 
-const WORKSPACE_DIRS = [
-  "src/kernel",
-  "src/core",
-  "src/runtime",
-  "src/capabilities",
-  "src/features",
-  "src/platform",
-  "app",
-  "tests",
-];
+const WORKSPACE_DIRS = ["packages", "site"];
 
 type PkgGraph = Map<string, string[]>;
 
@@ -28,103 +19,76 @@ function collectPackages(): PkgGraph {
     if (!existsSync(base)) continue;
 
     const entries =
-      top === "platform" || top === "app"
-        ? [
-            ...readdirSync(base, { withFileTypes: true }).filter((e) => e.isDirectory()),
-            { name: ".", isDirectory: () => true },
-          ]
-        : top === "tests" || top === "kernel" || top === "core" || top === "runtime"
-          ? [{ name: ".", isDirectory: () => true }]
-          : readdirSync(base, { withFileTypes: true });
+      top === "site"
+        ? [{ name: ".", isDirectory: () => true as const }]
+        : readdirSync(base, { withFileTypes: true }).filter((e) => e.isDirectory());
 
     for (const ent of entries) {
-      if (!ent.isDirectory()) continue;
-      const pkgDir = ent.name === "." ? base : join(base, ent.name);
-      const pjPath = join(pkgDir, "package.json");
-      if (!existsSync(pjPath)) continue;
-
-      const manifest = JSON.parse(readFileSync(pjPath, "utf-8")) as {
+      if (!("isDirectory" in ent) || !ent.isDirectory()) continue;
+      const dir = ent.name === "." ? base : join(base, ent.name);
+      const pkgPath = join(dir, "package.json");
+      if (!existsSync(pkgPath)) continue;
+      const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as {
         name?: string;
         dependencies?: Record<string, string>;
       };
-      if (!manifest.name) continue;
+      if (!pkg.name) continue;
+      const deps = Object.keys(pkg.dependencies ?? {}).filter((d) => d.startsWith("@freeanima/"));
+      graph.set(pkg.name, deps);
+    }
+  }
 
-      const deps = manifest.dependencies ?? {};
-      const workspaceDeps = Object.entries(deps)
-        .filter(([name, spec]) => name.startsWith("@freeanima/") && spec.includes("workspace"))
-        .map(([name]) => name);
-
-      graph.set(manifest.name, workspaceDeps);
-      if (top === "tests" || top === "kernel" || top === "core" || top === "runtime") break;
+  // Root orchestrator
+  const rootPkgPath = join(ROOT, "package.json");
+  if (existsSync(rootPkgPath)) {
+    const pkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
+      name?: string;
+      dependencies?: Record<string, string>;
+    };
+    if (pkg.name) {
+      const deps = Object.keys(pkg.dependencies ?? {}).filter((d) => d.startsWith("@freeanima/"));
+      graph.set(pkg.name, deps);
     }
   }
 
   return graph;
 }
 
-function stronglyConnectedComponents(graph: PkgGraph): string[][] {
-  const index = new Map<string, number>();
-  const lowlink = new Map<string, number>();
-  const onStack = new Set<string>();
+function findCycle(graph: PkgGraph): string[] | null {
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
   const stack: string[] = [];
-  const sccs: string[][] = [];
-  let id = 0;
 
-  function strongconnect(v: string): void {
-    index.set(v, id);
-    lowlink.set(v, id);
-    id += 1;
-    stack.push(v);
-    onStack.add(v);
-
-    for (const w of graph.get(v) ?? []) {
-      if (!graph.has(w)) continue;
-      if (!index.has(w)) {
-        strongconnect(w);
-        const vLow = lowlink.get(v);
-        const wLow = lowlink.get(w);
-        if (vLow !== undefined && wLow !== undefined) {
-          lowlink.set(v, Math.min(vLow, wLow));
-        }
-      } else if (onStack.has(w)) {
-        const vLow = lowlink.get(v);
-        const wIndex = index.get(w);
-        if (vLow !== undefined && wIndex !== undefined) {
-          lowlink.set(v, Math.min(vLow, wIndex));
-        }
-      }
+  function dfs(node: string): string[] | null {
+    if (visiting.has(node)) {
+      const i = stack.indexOf(node);
+      return [...stack.slice(i), node];
     }
-
-    if (lowlink.get(v) === index.get(v)) {
-      const scc: string[] = [];
-      for (;;) {
-        const w = stack.pop();
-        if (w === undefined) break;
-        onStack.delete(w);
-        scc.push(w);
-        if (w === v) break;
-      }
-      if (scc.length > 1) sccs.push(scc.toSorted());
+    if (visited.has(node)) return null;
+    visiting.add(node);
+    stack.push(node);
+    for (const next of graph.get(node) ?? []) {
+      if (!graph.has(next)) continue;
+      const c = dfs(next);
+      if (c) return c;
     }
+    stack.pop();
+    visiting.delete(node);
+    visited.add(node);
+    return null;
   }
 
-  for (const name of graph.keys()) {
-    if (!index.has(name)) strongconnect(name);
+  for (const node of graph.keys()) {
+    const c = dfs(node);
+    if (c) return c;
   }
-
-  return sccs;
+  return null;
 }
 
 const graph = collectPackages();
-const cycles = stronglyConnectedComponents(graph);
-
-if (cycles.length === 0) {
-  console.log("package-cycles: OK");
-  process.exit(0);
+const cycle = findCycle(graph);
+if (cycle) {
+  console.error("workspace dependency cycle:", cycle.join(" → "));
+  process.exit(1);
 }
-
-console.error(`package-cycles: ${cycles.length} cycle(s)`);
-for (const scc of cycles) {
-  console.error(`  ${scc.join(" ↔ ")}`);
-}
-process.exit(1);
+console.log(`check-package-cycles: ok (${graph.size} packages)`);

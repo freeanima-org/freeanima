@@ -4,7 +4,7 @@ title: 视觉基础
 
 # 视觉基础
 
-入口 UI 的视觉语言。Token **取值**仅定义在 [`src/ui-kit/styles/globals.css`](../../src/ui-kit/styles/globals.css)。本页定义**意图、用法与维度适配**。技术栈：Tailwind CSS v4 + shadcn/ui（`@freeanima/ui-kit`）。**不**使用 DaisyUI。
+入口 UI 的视觉语言。Token **取值**仅定义在 [`packages/frontend/ui-kit/styles/globals.css`](../../packages/frontend/ui-kit/styles/globals.css)。本页定义**意图、用法与维度适配**。技术栈：Tailwind CSS v4 + shadcn/ui（`@freeanima/ui-kit`）。**不**使用 DaisyUI。
 
 各节使用[维度适配模板](dimensions.md#dimension-adaptation-template)。
 

@@ -24,7 +24,7 @@ export const pgSqlArrayBind: RuleModule = {
   },
   create(context) {
     const rel = relToRepo(context.filename).replaceAll("\\", "/");
-    if (!rel.startsWith("src/host/core/db/pg/")) return {};
+    if (!rel.startsWith("packages/habitat/core/db/pg/")) return {};
 
     return {
       TaggedTemplateExpression(node: unknown) {

@@ -12,8 +12,8 @@ import {
   createJob,
   initCronModule,
   stopCronModule,
-} from "@freeanima/host/capabilities/connectors/cron";
-import { getAppRuntime } from "@freeanima/host/platform";
+} from "@freeanima/habitat/capabilities/connectors/cron";
+import { getAppRuntime } from "@freeanima/habitat/platform";
 import {
   listCronJobs,
   pauseCronJob,

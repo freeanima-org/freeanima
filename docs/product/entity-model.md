@@ -311,7 +311,7 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 
 - **SAP：** `vault.*` — 壳默认 `subject_kind: user`；ToolSet 默认 agent world。历史：`vault.history.list` / `vault.history.restore`；自动填充 bump：`vault.touch`（不暴露给 LLM ToolSet）。
 - **UI：** 壳 `/vault`（`@freeanima/features/vault`）；Bitwarden 未加密 JSON 导入（`import_refs.bitwarden` 幂等）；内嵌聊天室有独立主密码解锁。User 库解锁时自动确保 Agent 根密钥 SSOT；栖息地「数据维护」可解锁 Agent 库（SSOT → `vault.agentKey.provision`）。
-- **浏览器形态入口：** `src/portal/extension`（展示名 FreeAnima）— 直连栖息地 REST；Vault 主密码会话见 [`docs/modules/vault.md`](../modules/vault.md)；安装与 gecko id 见 [`docs/modules/portal.md`](../modules/portal.md)。
+- **浏览器形态入口：** `packages/frontend/portal/extension`（展示名 FreeAnima）— 直连栖息地 REST；Vault 主密码会话见 [`docs/modules/vault.md`](../modules/vault.md)；安装与 gecko id 见 [`docs/modules/portal.md`](../modules/portal.md)。
 - **LLM：** ToolSet `vault` — 仅栖息地（非 MCP）：元数据 list/search/get；`vault_create` / `vault_update` / `vault_delete`（create/update 密封到 Agent 库）；凭证经 `terminal_run` / `code_execute` `secrets[]`（仅子进程 env）或 `browser_type` `secret`（键入页面；工具结果打码）；工具结果或栖息地 `process.env` 永不明文密钥。
 - **配置：** 运行时 PG 设置可用 `vault("item_id", "field")`（Agent 库）或 `env("KEY")`（遗留 `credential()` 已移除）。引导 `config.yaml` 无法解析 `vault()` — PostgreSQL 起来前用 `env()` 或明文。
 

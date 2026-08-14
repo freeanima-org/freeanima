@@ -1,0 +1,646 @@
+import { asTaskItem } from "@freeanima/habitat/core/db/schema/entity";
+import {
+  taskRecurrenceInputSchema,
+  type TaskRecurrenceInput,
+} from "@freeanima/habitat/core/db/schema/entity/task-recurrence.ts";
+import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
+import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
+import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/habitat/core/util";
+
+import {
+  completeTaskItem,
+  completeTaskItemForever,
+  createTaskItem,
+  deleteTaskItem,
+  listTaskItems,
+  searchTaskItems,
+  skipTaskItem,
+  uncompleteTaskItem,
+  updateTaskItem,
+} from "./item-store.ts";
+import { listTaskOccurrences } from "./occurrence-store.ts";
+import { getDefaultTaskList } from "./list-store.ts";
+import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
+import {
+  itemPayload,
+  parsePriority,
+  parseTagIds,
+  resolveToolTagIds,
+  TASK_PRIORITIES,
+} from "./task-tool-helpers.ts";
+import { resolveTaskToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
+import type { TaskItemUpdateInput } from "./types.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
+
+function parseRecurrenceArg(raw: unknown): TaskRecurrenceInput | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw == null || raw === "") return null;
+  const parsed = taskRecurrenceInputSchema.safeParse(raw);
+  if (!parsed.success) throw new Error(`invalid recurrence: ${parsed.error.message}`);
+  return parsed.data;
+}
+
+async function resolveListId(worldId: number, raw: unknown): Promise<number | null> {
+  if (raw == null || raw === "") {
+    const list = await getDefaultTaskList(worldId);
+    return list.id;
+  }
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+async function handleCreate(args: Record<string, unknown>): Promise<string> {
+  const listIdRaw = args.list_id;
+  const hasListId = listIdRaw != null && listIdRaw !== "";
+  const projectIdRaw = args.project_id;
+  const hasProjectId = projectIdRaw != null && projectIdRaw !== "";
+  const worldId = await resolveTaskToolWorld({
+    args,
+    ...(hasListId ? { listId: Number(listIdRaw) } : {}),
+    access: "write",
+  });
+  if (typeof worldId === "string") return worldId;
+
+  const title = coerceString(args.title ?? "").trim();
+  if (!title) return toolError("title is required");
+
+  // 省略 list_id/project_id → 默认清单（Backlog）；二者都传则互斥错误
+  if (hasListId && hasProjectId) {
+    return toolError("list_id and project_id are mutually exclusive");
+  }
+
+  const listId = hasProjectId
+    ? null
+    : await resolveListId(worldId, hasListId ? args.list_id : null);
+  if (!hasProjectId && listId == null) return toolError("task list not available");
+
+  const priority = parsePriority(args.priority);
+  if (args.priority != null && args.priority !== "" && !priority) {
+    return toolError(`invalid priority: ${coerceString(args.priority)}`);
+  }
+
+  const tagResolved = await resolveToolTagIds(worldId, args);
+  if (!tagResolved.ok) return toolError(tagResolved.error);
+
+  const dueAt = args.due_at != null && args.due_at !== "" ? coerceString(args.due_at).trim() : null;
+  const remindAt =
+    args.remind_at != null && args.remind_at !== "" ? coerceString(args.remind_at).trim() : null;
+  const content = args.content != null ? coerceString(args.content) : "";
+  const project_id = hasProjectId ? Number(projectIdRaw) : undefined;
+  let recurrence: ReturnType<typeof parseRecurrenceArg>;
+  try {
+    recurrence = parseRecurrenceArg(args.recurrence);
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+
+  try {
+    const item = await createTaskItem(
+      worldId,
+      omitUndefined({
+        title,
+        content,
+        tag_ids: tagResolved.value,
+        list_id: listId,
+        priority,
+        due_at: dueAt,
+        remind_at: remindAt,
+        project_id,
+        recurrence: recurrence ?? undefined,
+      }),
+    );
+    return toolResult({ ok: true, action: "create", item: itemPayload(item) });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleUpdate(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+  if (typeof worldId === "string") return worldId;
+
+  const patch: TaskItemUpdateInput = { id };
+  if (args.title !== undefined) patch.title = coerceString(args.title);
+  if (args.content !== undefined) patch.content = coerceString(args.content);
+  if (args.tags !== undefined || args.tag_ids !== undefined) {
+    const tagResolved = await resolveToolTagIds(worldId, args);
+    if (!tagResolved.ok) return toolError(tagResolved.error);
+    if (tagResolved.value !== undefined) patch.tag_ids = tagResolved.value;
+  }
+  if (args.list_id !== undefined) {
+    const listId = Number(args.list_id);
+    if (!Number.isFinite(listId) || listId <= 0) return toolError("invalid list_id");
+    patch.list_id = listId;
+  }
+  if (args.priority !== undefined) {
+    const priority = parsePriority(args.priority);
+    if (!priority) return toolError(`invalid priority: ${coerceString(args.priority)}`);
+    patch.priority = priority;
+  }
+  if (args.due_at !== undefined) {
+    patch.due_at = args.due_at != null && args.due_at !== "" ? coerceString(args.due_at) : null;
+  }
+  if (args.remind_at !== undefined) {
+    patch.remind_at =
+      args.remind_at != null && args.remind_at !== "" ? coerceString(args.remind_at) : null;
+  }
+  if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
+  if (args.project_id !== undefined) {
+    const raw = args.project_id;
+    patch.project_id =
+      raw == null || raw === "" ? null : Number.isFinite(Number(raw)) ? Number(raw) : null;
+  }
+  if (args.recurrence !== undefined) {
+    try {
+      patch.recurrence = parseRecurrenceArg(args.recurrence) ?? null;
+    } catch (e) {
+      return toolError(String(e instanceof Error ? e.message : e));
+    }
+  }
+  if (args.only_this !== undefined) patch.only_this = Boolean(args.only_this);
+
+  try {
+    const item = await updateTaskItem(worldId, patch);
+    if (!item) return toolError(`task not found: ${id}`);
+    return toolResult({ ok: true, action: "update", item: itemPayload(item) });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleComplete(args: Record<string, unknown>, uncomplete: boolean): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+  if (typeof worldId === "string") return worldId;
+
+  try {
+    const item = uncomplete
+      ? await uncompleteTaskItem(worldId, id)
+      : await completeTaskItem(worldId, id);
+    if (!item) return toolError(`task not found: ${id}`);
+    return toolResult({
+      ok: true,
+      action: uncomplete ? "uncomplete" : "complete",
+      item: itemPayload(item),
+    });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleDelete(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+  if (typeof worldId === "string") return worldId;
+
+  try {
+    const ok = await deleteTaskItem(worldId, id);
+    if (!ok) return toolError(`task not found: ${id}`);
+    return toolResult({ ok: true, action: "delete", id });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleConvertToEvent(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+  if (typeof worldId === "string") return worldId;
+
+  try {
+    const { convertTaskItemToCalendarEvent } =
+      await import("@freeanima/features/calendar/domain/convert-task-event.ts");
+    const item = await convertTaskItemToCalendarEvent(worldId, id);
+    return toolResult({ ok: true, action: "convert_to_event", item });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+async function handleGet(args: Record<string, unknown>): Promise<string> {
+  const id = Number(args.id);
+  if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+
+  const worldId = await resolveTaskToolWorld({ args, entityId: id });
+  if (typeof worldId === "string") return worldId;
+
+  const row = await getEntity(id);
+  const parsed = row ? asTaskItem(row) : null;
+  if (!parsed || !row || row.world_id !== worldId) {
+    return toolError(`task not found: ${id}`);
+  }
+  const item = itemPayload({
+    id: parsed.id,
+    title: parsed.title,
+    content: parsed.content,
+    tag_ids: [...(row.tag_ids ?? [])],
+    status: parsed.status,
+    priority: parsed.priority,
+    due_at: parsed.due_at ?? null,
+    remind_at: parsed.remind_at ?? null,
+    list_id: parsed.list_id,
+    project_id: parsed.project_id ?? null,
+    sort_order: parsed.sort_order ?? 0,
+    completed_at: parsed.completed_at ?? null,
+    recurrence: parsed.recurrence ?? null,
+    primary_component: row.primary_component ?? "task_item",
+    created_at: row.created_at.toISOString(),
+    updated_at: row.updated_at.toISOString(),
+  });
+  return toolResult({ ok: true, action: "get", item });
+}
+
+async function handleList(args: Record<string, unknown>): Promise<string> {
+  const listIdRaw = args.list_id;
+  const hasListId = listIdRaw != null && listIdRaw !== "" && Number.isFinite(Number(listIdRaw));
+  const projectIdRaw = args.project_id;
+  const hasProjectId =
+    projectIdRaw != null && projectIdRaw !== "" && Number.isFinite(Number(projectIdRaw));
+  if (hasListId && hasProjectId) {
+    return toolError("project_id and list_id are mutually exclusive");
+  }
+
+  const worldId = await resolveTaskToolWorld({
+    args,
+    ...(hasListId ? { listId: Number(listIdRaw) } : {}),
+    ...(hasProjectId ? { entityId: Number(projectIdRaw) } : {}),
+  });
+  if (typeof worldId === "string") return worldId;
+
+  const listId = hasListId ? Number(listIdRaw) : undefined;
+  const projectId = hasProjectId ? Number(projectIdRaw) : undefined;
+  const status =
+    args.status === "completed" || args.status === "pending" || args.status === "all"
+      ? args.status
+      : "pending";
+  const tagParsed = parseTagIds(args.tag_ids);
+  if (!tagParsed.ok) return toolError(tagParsed.error);
+  const tagIds = tagParsed.value;
+  const limit = typeof args.limit === "number" ? args.limit : 50;
+
+  const items = await listTaskItems(worldId, {
+    ...(listId !== undefined ? { list_id: listId } : {}),
+    ...(projectId !== undefined ? { project_id: projectId } : {}),
+    status,
+    ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
+    limit,
+  });
+  return toolResult({
+    ok: true,
+    action: "list",
+    count: items.length,
+    items: items.map(itemPayload),
+  });
+}
+
+async function handleSearch(args: Record<string, unknown>): Promise<string> {
+  const query = coerceString(args.query ?? "").trim();
+  if (!query) return toolError("query is required");
+
+  const listIdRaw = args.list_id;
+  const hasListId = listIdRaw != null && listIdRaw !== "" && Number.isFinite(Number(listIdRaw));
+  const projectIdRaw = args.project_id;
+  const hasProjectId =
+    projectIdRaw != null && projectIdRaw !== "" && Number.isFinite(Number(projectIdRaw));
+  if (hasListId && hasProjectId) {
+    return toolError("project_id and list_id are mutually exclusive");
+  }
+
+  const worldId = await resolveTaskToolWorld({
+    args,
+    ...(hasListId ? { listId: Number(listIdRaw) } : {}),
+    ...(hasProjectId ? { entityId: Number(projectIdRaw) } : {}),
+  });
+  if (typeof worldId === "string") return worldId;
+
+  const list_id = hasListId ? Number(listIdRaw) : undefined;
+  const project_id = hasProjectId ? Number(projectIdRaw) : undefined;
+  const status =
+    args.status === "completed" || args.status === "pending" || args.status === "all"
+      ? args.status
+      : undefined;
+  const limit =
+    typeof args.limit === "number" && Number.isFinite(args.limit)
+      ? Math.max(1, Math.min(50, Math.floor(args.limit)))
+      : undefined;
+
+  try {
+    const items = await searchTaskItems(
+      worldId,
+      omitUndefined({
+        query,
+        list_id,
+        project_id,
+        status,
+        limit,
+      }),
+    );
+    return toolResult({
+      ok: true,
+      action: "search",
+      count: items.length,
+      items: items.map(itemPayload),
+    });
+  } catch (e) {
+    return toolError(String(e instanceof Error ? e.message : e));
+  }
+}
+
+const TASK_ITEM_TOOL_NAMES = [
+  "task_create",
+  "task_update",
+  "task_complete",
+  "task_uncomplete",
+  "task_delete",
+  "task_convert_to_event",
+  "task_get",
+  "task_list",
+  "task_search",
+] as const;
+
+export function registerTaskItemTools(toolSets: ToolSetRegistry): void {
+  toolSets.registerToolSet(
+    "task",
+    "Task items (CRUD and hybrid search). Load toolset `tasklist` for list management. Pass subject_kind (user|agent); world_id optional; id/list_id/project_id may infer world.",
+    attachToolReturns(
+      [
+        {
+          name: "task_create",
+          description:
+            "Create a task in a list (default inbox when list_id omitted) or in a project (project_id). list_id and project_id are mutually exclusive. Habitat 入口：清单侧 tasklist.item.create；项目侧 project.item.create。",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: {
+              ...WORLD_ID_OPTIONAL,
+              title: { type: "string", description: "Task title" },
+              content: { type: "string", description: "Task body / details" },
+              tag_ids: {
+                type: "array",
+                items: { type: "integer" },
+                description: "Optional tag entity ids (same world)",
+              },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Optional tag titles (same world); find or create (case-insensitive), then attach as tag_ids",
+              },
+              list_id: {
+                type: "integer",
+                description: "Target list id (default inbox); exclusive with project_id",
+              },
+              project_id: {
+                type: "integer",
+                description: "Create in project (clears list affiliation); exclusive with list_id",
+              },
+              priority: { type: "string", enum: TASK_PRIORITIES },
+              due_at: { type: "string", description: "Due time ISO8601" },
+              remind_at: { type: "string", description: "Reminder time ISO8601" },
+              recurrence: {
+                type: "object",
+                description:
+                  "Recurrence rule: {freq, interval?, anchor?, weekdays?, until?, count?, schedule_at?}",
+              },
+            },
+            required: ["subject_kind", "title"],
+          },
+          handler: handleCreate,
+        },
+        {
+          name: "task_update",
+          description: "Update task item fields",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: {
+              id: { type: "integer" },
+              title: { type: "string" },
+              content: { type: "string" },
+              tag_ids: { type: "array", items: { type: "integer" } },
+              tags: {
+                type: "array",
+                items: { type: "string" },
+                description:
+                  "Optional tag titles; find or create (case-insensitive), merged with tag_ids when both set",
+              },
+              list_id: { type: "integer" },
+              project_id: {
+                type: "integer",
+                description: "Move to project; null to return to Backlog",
+              },
+              priority: { type: "string", enum: TASK_PRIORITIES },
+              due_at: { type: "string" },
+              remind_at: { type: "string" },
+              sort_order: { type: "integer" },
+              recurrence: {
+                type: "object",
+                description: "Recurrence rule or null to clear",
+              },
+              only_this: {
+                type: "boolean",
+                description: "When changing due_at with recurrence: true = this occurrence only",
+              },
+            },
+            required: ["subject_kind", "id"],
+          },
+          handler: handleUpdate,
+        },
+        {
+          name: "task_complete",
+          description:
+            "Complete task (recurring: write occurrence and roll due; non-recurring: mark completed)",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: (args) => handleComplete(args, false),
+        },
+        {
+          name: "task_skip",
+          description: "Skip current occurrence of a recurring task (no history row)",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: async (args) => {
+            const id = Number(args.id);
+            if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+            const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+            if (typeof worldId === "string") return worldId;
+            try {
+              const item = await skipTaskItem(worldId, id);
+              if (!item) return toolError(`task not found: ${id}`);
+              return toolResult({ ok: true, action: "skip", item: itemPayload(item) });
+            } catch (e) {
+              return toolError(String(e instanceof Error ? e.message : e));
+            }
+          },
+        },
+        {
+          name: "task_complete_forever",
+          description: "Complete recurring task permanently (clear recurrence)",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: async (args) => {
+            const id = Number(args.id);
+            if (!Number.isFinite(id) || id <= 0) return toolError("id is required");
+            const worldId = await resolveTaskToolWorld({ args, entityId: id, access: "write" });
+            if (typeof worldId === "string") return worldId;
+            try {
+              const item = await completeTaskItemForever(worldId, id);
+              if (!item) return toolError(`task not found: ${id}`);
+              return toolResult({ ok: true, action: "complete_forever", item: itemPayload(item) });
+            } catch (e) {
+              return toolError(String(e instanceof Error ? e.message : e));
+            }
+          },
+        },
+        {
+          name: "task_list_occurrences",
+          description: "List completion history for a recurring task series",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: {
+              series_task_id: { type: "integer", description: "Live task_item id" },
+              limit: { type: "integer" },
+            },
+            required: ["subject_kind", "series_task_id"],
+          },
+          handler: async (args) => {
+            const seriesTaskId = Number(args.series_task_id);
+            if (!Number.isFinite(seriesTaskId) || seriesTaskId <= 0) {
+              return toolError("series_task_id is required");
+            }
+            const worldId = await resolveTaskToolWorld({
+              args,
+              entityId: seriesTaskId,
+              access: "read",
+            });
+            if (typeof worldId === "string") return worldId;
+            const limit = args.limit != null ? Number(args.limit) : undefined;
+            const items = await listTaskOccurrences(
+              worldId,
+              seriesTaskId,
+              omitUndefined({ limit }),
+            );
+            return toolResult({ ok: true, action: "list_occurrences", items });
+          },
+        },
+        {
+          name: "task_uncomplete",
+          description: "Mark completed task as pending",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: (args) => handleComplete(args, true),
+        },
+        {
+          name: "task_delete",
+          description: "Delete a task item",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: handleDelete,
+        },
+        {
+          name: "task_convert_to_event",
+          description:
+            "Retype a pending rooted task with a date into a calendar_event (same entity id; lossy: drops recurrence, list/project, subtasks).",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: handleConvertToEvent,
+        },
+        {
+          name: "task_get",
+          description: "Get a task item by id",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: { id: { type: "integer" } },
+            required: ["subject_kind", "id"],
+          },
+          handler: handleGet,
+        },
+        {
+          name: "task_list",
+          description:
+            "List task items with optional list, project, status, and tag filters. Default (no project_id) is Backlog only. project_id lists in-project tasks; mutually exclusive with list_id. list_id/project_id scopes world; omit for caller default world.",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: {
+              ...WORLD_ID_OPTIONAL,
+              list_id: { type: "integer" },
+              project_id: {
+                type: "integer",
+                description: "Filter by project; mutually exclusive with list_id",
+              },
+              status: { type: "string", enum: ["pending", "completed", "all"] },
+              tag_ids: { type: "array", items: { type: "integer" } },
+              limit: { type: "integer" },
+            },
+            required: ["subject_kind"],
+          },
+          handler: handleList,
+        },
+        {
+          name: "task_search",
+          description:
+            "Hybrid search task items by title/content. Optional list_id or project_id (mutually exclusive) scopes filter and world; omit both to search caller default world.",
+          exposeMcp: true,
+          parameters: {
+            type: "object",
+            properties: {
+              ...WORLD_ID_OPTIONAL,
+              query: { type: "string", description: "Search keywords" },
+              list_id: {
+                type: "integer",
+                description: "Optional list id; scopes world when set",
+              },
+              project_id: {
+                type: "integer",
+                description: "Filter by project; mutually exclusive with list_id",
+              },
+              status: { type: "string", enum: ["pending", "completed", "all"] },
+              limit: { type: "integer", description: "Max results, default 30, cap 50" },
+            },
+            required: ["subject_kind", "query"],
+          },
+          handler: handleSearch,
+        },
+      ],
+      Object.fromEntries(TASK_ITEM_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]])),
+    ),
+    { visibility: "searchable" },
+  );
+}

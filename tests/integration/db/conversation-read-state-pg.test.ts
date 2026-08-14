@@ -5,8 +5,8 @@ import {
   deleteConversation,
   listConversationSummariesPage,
   markConversationRead,
-} from "@freeanima/host/core/db/pg/conversation";
-import { resolveNotificationRecipients } from "@freeanima/host/core/config";
+} from "@freeanima/habitat/core/db/pg/conversation";
+import { resolveNotificationRecipients } from "@freeanima/habitat/core/config";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

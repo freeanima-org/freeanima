@@ -10,8 +10,8 @@ import { existsSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
-import { resolveBuildChannelFromEnv } from "@freeanima/host/core/config/build-meta.ts";
-import { resolveMobileShellIdentity } from "@freeanima/host/core/config/shell-identity.ts";
+import { resolveBuildChannelFromEnv } from "@freeanima/habitat/core/config/build-meta.ts";
+import { resolveMobileShellIdentity } from "@freeanima/habitat/core/config/shell-identity.ts";
 
 export type TryAdbInstallResult =
   | { status: "skipped"; reason: string }

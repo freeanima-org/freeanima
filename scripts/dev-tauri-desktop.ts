@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "src/portal/app/tauri");
+const tauriDir = join(root, "packages/frontend/portal/app/tauri");
 
 process.env.COMPANION_OVERLAY_URL ??= "http://127.0.0.1:4176/?view=overlay";
 process.env.CODING_WINDOW_URL ??= "http://127.0.0.1:4186/";
@@ -18,17 +18,21 @@ process.env.CODING_WINDOW_URL ??= "http://127.0.0.1:4186/";
 const identity = applyTauriShellIdentity({ target: "desktop" });
 process.env.FREEANIMA_BUILD_CHANNEL ??= identity.channel;
 
-const companion = spawn("bun", ["src/features/companion/dev.ts"], {
+const companion = spawn("bun", ["packages/habitat/features/companion/dev.ts"], {
   cwd: root,
   stdio: "inherit",
   env: process.env,
 });
 
-const coding = spawn("bun", ["x", "vite", "--config", "src/features/coding/vite.config.ts"], {
-  cwd: root,
-  stdio: "inherit",
-  env: process.env,
-});
+const coding = spawn(
+  "bun",
+  ["x", "vite", "--config", "packages/frontend/features/coding/vite.config.ts"],
+  {
+    cwd: root,
+    stdio: "inherit",
+    env: process.env,
+  },
+);
 
 const tauri = spawn("bun", ["x", "tauri", "dev", "--config", identity.configArg], {
   cwd: tauriDir,

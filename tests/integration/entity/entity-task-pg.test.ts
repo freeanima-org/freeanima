@@ -5,7 +5,7 @@ import {
   TASK_LIST_COMPONENT,
   asTaskItem,
   asTaskList,
-} from "@freeanima/host/core/db/schema/entity";
+} from "@freeanima/habitat/core/db/schema/entity";
 import {
   createTaskItem,
   createTaskList,
@@ -21,7 +21,7 @@ import {
   updateTaskList,
 } from "@freeanima/features/task/domain";
 import { createProject } from "@freeanima/features/project/domain";
-import { getEntity } from "@freeanima/host/core/db/pg/entity";
+import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

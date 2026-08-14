@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { getAppRuntime, readAppVersion } from "@freeanima/host/platform";
+import { getAppRuntime, readAppVersion } from "@freeanima/habitat/platform";
 
 const ROOT_VERSION = readAppVersion();
 

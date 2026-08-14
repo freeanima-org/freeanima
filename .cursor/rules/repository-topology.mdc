@@ -1,6 +1,6 @@
 ---
 description: 仓库拓扑、包命名 RFC、tsconfig paths、oxlint 护栏
-globs: src/**/*,**/tsconfig*.json,**/package.json
+globs: packages/**/*,**/tsconfig*.json,**/package.json
 alwaysApply: false
 ---
 
@@ -12,45 +12,54 @@ alwaysApply: false
 
 | Package | Path | Role |
 | ------- | ---- | ---- |
-| `freeanima` | 仓库根 | Habitat + CLI + capabilities + features + shells（根 `package.json` + `bun.lock`） |
-| `@freeanima/site` | `site/` | Astro/Starlight（workspace；共用根 lock） |
+| `freeanima` | 仓库根 | 编排（just / scripts / tests / docs）；workspace 根 |
+| `@freeanima/shared` | `packages/shared/` | 前后端共享契约与纯工具（不发布） |
+| `@freeanima/habitat` | `packages/habitat/` | 栖息地进程栈 + CLI + MCP + features 服务端（不发布） |
+| `@freeanima/frontend` | `packages/frontend/` | client / ui-kit / features UI / Web·扩展·Tauri（不发布） |
+| `@freeanima/site` | `site/` | Astro/Starlight 文档站 |
 
-**方向（未落地）：** workspace 三分包 **shared / habitat / frontend**（不发布）；portal 按 form 拆入 habitat（cli、mcp）与 frontend（application、browser）。见 [`docs/product/src-layering.md`](../../docs/product/src-layering.md)。落地前仍以本表「今日」为准。
+分层方向 SSOT：[`docs/product/src-layering.md`](../../docs/product/src-layering.md)。
 
 ## Import prefixes（RFC #1）
 
 | Shape | Pattern | Example |
 | ----- | ------- | ------- |
-| Host layer | `@freeanima/host/{layer}` | `host/kernel` … `host/platform` |
-| Capability | `@freeanima/host/capabilities/{slug}` | `self`, `memory`, `tools`, `outpost` |
-| Feature | `@freeanima/features/{slug}/…` | `features/chat/…` |
-| Shared | `@freeanima/shared/{name}` | `habitat-rpc`, `rpc-contract` |
-| UI kit | `@freeanima/ui-kit` | 设计系统（∥ shared） |
+| Habitat layer | `@freeanima/habitat/{layer}` | `habitat/kernel` … `habitat/platform` |
+| Capability | `@freeanima/habitat/capabilities/{slug}` | `self`, `memory`, `tools`, `outpost` |
+| Feature | `@freeanima/features/{slug}/…` | 解析到 `packages/{frontend,habitat}/features/…` |
+| Shared | `@freeanima/shared/{name}` | `habitat-rpc`, `rpc-contract`, `companion-app` |
+| UI kit | `@freeanima/ui-kit` | 设计系统 |
 | Client | `@freeanima/client/{portal-sdk,app-frame}` | Portal chrome |
-| Entry | `src/portal/{cli,app,extension}` | CLI / Shell / MV3 |
+| Entry | `@freeanima/portal/{cli,app,extension}` | CLI ∈ habitat；app/extension ∈ frontend |
 
-**Deprecated**：`@freeanima/frontend/*`、`@freeanima/runtime`、`@freeanima/capabilities/identity`、`@freeanima/capabilities/remote-tools`、裸 `@freeanima/platform`、`@freeanima/core`。
+**Deprecated**：`@freeanima/host/*`、`@freeanima/frontend/*`（旧逻辑前缀）、`@freeanima/runtime`、裸 `@freeanima/platform`、`@freeanima/core`。
 
-## `src/` map
+## `packages/` map
 
 ```
-src/
-├── host/{kernel,core,engine,capabilities,platform}
-├── client/{portal-sdk,app-frame}
-├── ui-kit/          # 仅 client 消费者；无协议
-├── features/<slug>/ # ui + domain + habitat + protocol + plugin
-├── shared/          # 无 React
-└── portal/{app/{tauri,web},extension,cli}
+packages/
+├── shared/                 # 无 React
+├── habitat/
+│   ├── {kernel,core,engine,capabilities,platform}/
+│   ├── portal/cli/
+│   └── features/<slug>/{domain,habitat,protocol,plugin.ts,…}
+└── frontend/
+    ├── client/{portal-sdk,app-frame}
+    ├── ui-kit/
+    ├── portal/{app/{tauri,web},extension}
+    └── features/<slug>/{ui,lib,…}
 ```
 
-MCP 形态入口在 `host/capabilities/mcp-server`（不在 `portal/`）。Habitat 管理台 = 普通 `features/habitat`。
+MCP 在 `packages/habitat/capabilities/mcp-server`。Habitat 管理台 = `features/habitat`（UI 在 frontend，RPC 在 habitat）。
 
 ## Module resolution
 
-- TS：`tsconfig.base.json` paths `@freeanima/*` → `src/*`
-- Vite：`src/client/app-frame/vite/` 别名对齐 paths
+- TS：`tsconfig.base.json` paths（shared / habitat / client / ui-kit / 双包 features·portal）
+- Vite：`packages/frontend/client/app-frame/vite/module-aliases.ts` + `freeanimaResolvePlugin`
 
 ## 护栏
 
+- 根 `.oxlintrc.json` SSOT + `overrides` 按 `packages/frontend/**` 目录覆写；跨层靠 `layer-deps`
 - oxlint `freeanima/import-depth` / `layer-deps` / `dir-import-exists`
+- `just qa check-package-deps`
 - 文档站：`cd site && bun run build`（先根 `bun install`）

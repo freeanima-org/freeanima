@@ -28,7 +28,7 @@ export const TABLE_SPECS: TableGenSpec[] = [
     fileBase: "messages",
     exportPrefix: "message",
     tableExport: "messages",
-    tableModule: "src/host/core/db/schema/messages.ts",
+    tableModule: "packages/habitat/core/db/schema/messages.ts",
     comments: {
       id: "Globally unique row id (PG PK; compression points to pos, not this column)",
       pos: "Monotonic in-conversation sequence (compression l2/l3 point here; domain Message.pos)",
@@ -44,7 +44,7 @@ export const TABLE_SPECS: TableGenSpec[] = [
     fileBase: "conversations",
     exportPrefix: "conversation",
     tableExport: "conversations",
-    tableModule: "src/host/core/db/schema/conversations.ts",
+    tableModule: "packages/habitat/core/db/schema/conversations.ts",
     comments: {
       system_prompt_built_at: "CST 02:00 日界刷新用：上次全量构建 system_prompt 的时刻",
       scenario:
@@ -136,7 +136,7 @@ export const TABLE_SPECS: TableGenSpec[] = [
     fileBase: "self-blocks",
     exportPrefix: "selfBlocks",
     tableExport: "selfBlocks",
-    tableModule: "src/host/core/db/schema/self-layer.ts",
+    tableModule: "packages/habitat/core/db/schema/self-layer.ts",
     comments: {
       block_key: "Self-layer five blocks (one row per block_key)",
     },

@@ -6,7 +6,7 @@ export default {
     "**/android/**",
     "**/node_modules/**",
     "site/**",
-    "src/portal/app/web/dist*/**",
+    "packages/frontend/portal/app/web/dist*/**",
   ],
   rules: {
     "at-rule-no-unknown": [

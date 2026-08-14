@@ -22,7 +22,7 @@ export const noDirectOfflineCache: RuleModule = {
   },
   create(context) {
     const rel = relToRepo(context.filename).replaceAll("\\", "/");
-    if (!rel.startsWith("src/features/") || !rel.includes("/ui/")) return {};
+    if (!rel.startsWith("packages/frontend/features/") || !rel.includes("/ui/")) return {};
     if (rel.includes(".test.") || rel.includes(".spec.")) return {};
     if (ALLOW_FILE.test(rel)) return {};
 
