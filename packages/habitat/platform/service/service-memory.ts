@@ -33,6 +33,8 @@ import {
 } from "@freeanima/habitat/capabilities/memory/passive-recall/debug-run.ts";
 import {
   clampTemporalBackfillRange,
+  getTemporalBatchJobStatus,
+  getTemporalSystemRollBatchJobStatus,
   listExpectedPeriodStarts,
   listMissingPeriodStarts,
   listTemporalSystemRolls,
@@ -41,7 +43,12 @@ import {
   rebuildYearSummary,
   resolveTemporalSummaryConfig,
   runTemporalSummaryDay,
+  startTemporalBatchJob,
+  startTemporalSystemRollBatchJob,
+  ALL_SYS_ROLL_KINDS,
   type SysRollKind,
+  type TemporalBatchJobStatus,
+  type TemporalSystemRollBatchJobStatus,
 } from "@freeanima/habitat/capabilities/memory/temporal-summary";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
@@ -159,33 +166,38 @@ export async function backfillMissingTemporalSummaries(args: {
   window: TemporalSummaryWindow;
   period_start_from: string;
   period_start_to: string;
-}) {
+}): Promise<TemporalBatchJobStatus> {
   const fromRaw = args.period_start_from;
   const toRaw = args.period_start_to;
   if (fromRaw > toRaw) {
     return {
-      ok: false as const,
+      running: false,
+      mode: "backfill_missing",
       window: args.window,
       period_start_from: fromRaw,
       period_start_to: toRaw,
-      missing: [] as string[],
-      filled: [] as string[],
-      failed: [] as Array<{ period_start: string; summary: string }>,
+      current: 0,
+      total: 0,
+      current_period: null,
+      completed: [],
+      failed: [],
+      started_at: null,
+      finished_at: new Date().toISOString(),
+      error: "period_start_from must be <= period_start_to",
       summary: "period_start_from must be <= period_start_to",
     };
   }
   const clamped = clampTemporalBackfillRange({ from: fromRaw, to: toRaw });
   if (!clamped) {
-    return {
-      ok: true as const,
+    return startTemporalBatchJob({
+      mode: "backfill_missing",
       window: args.window,
       period_start_from: fromRaw,
       period_start_to: toRaw,
-      missing: [] as string[],
-      filled: [] as string[],
-      failed: [] as Array<{ period_start: string; summary: string }>,
-      summary: "range is entirely after CST today; skip future backfill",
-    };
+      periods: [],
+      regenerateOne: regenerateOneTemporalSummary,
+      summaryNote: " (range entirely after CST today; skip)",
+    });
   }
   const { from, to } = clamped;
   const existing = await listTemporalSummariesInRange({
@@ -200,30 +212,16 @@ export async function backfillMissingTemporalSummaries(args: {
     today: clamped.today,
     existing: new Set(existing.map((r) => r.period_start)),
   });
-  const filled: string[] = [];
-  const failed: Array<{ period_start: string; summary: string }> = [];
-  for (const period_start of missing) {
-    const result = await regenerateTemporalSummary({
-      window: args.window,
-      period_start,
-    });
-    if (!result.ok) {
-      failed.push({ period_start, summary: result.summary });
-      continue;
-    }
-    filled.push(period_start);
-  }
   const clampNote = clamped.clamped ? ` (capped to CST today ${clamped.today})` : "";
-  return {
-    ok: failed.length === 0,
+  return startTemporalBatchJob({
+    mode: "backfill_missing",
     window: args.window,
     period_start_from: from,
     period_start_to: to,
-    missing,
-    filled,
-    failed,
-    summary: `missing=${missing.length} filled=${filled.length} failed=${failed.length}${clampNote}`,
-  };
+    periods: missing,
+    regenerateOne: regenerateOneTemporalSummary,
+    summaryNote: clampNote,
+  });
 }
 
 /** Force-regenerate every expected period in [from, to] (including existing empty rows). */
@@ -231,60 +229,63 @@ export async function rebuildTemporalSummariesInRange(args: {
   window: TemporalSummaryWindow;
   period_start_from: string;
   period_start_to: string;
-}) {
+}): Promise<TemporalBatchJobStatus> {
   const fromRaw = args.period_start_from;
   const toRaw = args.period_start_to;
   if (fromRaw > toRaw) {
     return {
-      ok: false as const,
+      running: false,
+      mode: "rebuild_range",
       window: args.window,
       period_start_from: fromRaw,
       period_start_to: toRaw,
-      expected: [] as string[],
-      filled: [] as string[],
-      failed: [] as Array<{ period_start: string; summary: string }>,
+      current: 0,
+      total: 0,
+      current_period: null,
+      completed: [],
+      failed: [],
+      started_at: null,
+      finished_at: new Date().toISOString(),
+      error: "period_start_from must be <= period_start_to",
       summary: "period_start_from must be <= period_start_to",
     };
   }
   const clamped = clampTemporalBackfillRange({ from: fromRaw, to: toRaw });
   if (!clamped) {
-    return {
-      ok: true as const,
+    return startTemporalBatchJob({
+      mode: "rebuild_range",
       window: args.window,
       period_start_from: fromRaw,
       period_start_to: toRaw,
-      expected: [] as string[],
-      filled: [] as string[],
-      failed: [] as Array<{ period_start: string; summary: string }>,
-      summary: "range is entirely after CST today; skip future rebuild",
-    };
+      periods: [],
+      regenerateOne: regenerateOneTemporalSummary,
+      summaryNote: " (range entirely after CST today; skip)",
+    });
   }
   const { from, to } = clamped;
   const expected = listExpectedPeriodStarts(args.window, from, to);
-  const filled: string[] = [];
-  const failed: Array<{ period_start: string; summary: string }> = [];
-  for (const period_start of expected) {
-    const result = await regenerateTemporalSummary({
-      window: args.window,
-      period_start,
-    });
-    if (!result.ok) {
-      failed.push({ period_start, summary: result.summary });
-      continue;
-    }
-    filled.push(period_start);
-  }
   const clampNote = clamped.clamped ? ` (capped to CST today ${clamped.today})` : "";
-  return {
-    ok: failed.length === 0,
+  return startTemporalBatchJob({
+    mode: "rebuild_range",
     window: args.window,
     period_start_from: from,
     period_start_to: to,
-    expected,
-    filled,
-    failed,
-    summary: `expected=${expected.length} filled=${filled.length} failed=${failed.length}${clampNote}`,
-  };
+    periods: expected,
+    regenerateOne: regenerateOneTemporalSummary,
+    summaryNote: clampNote,
+  });
+}
+
+export function getTemporalSummaryBatchJobStatus(): TemporalBatchJobStatus {
+  return getTemporalBatchJobStatus();
+}
+
+async function regenerateOneTemporalSummary(args: {
+  window: TemporalSummaryWindow;
+  period_start: string;
+}): Promise<{ ok: boolean; summary: string }> {
+  const result = await regenerateTemporalSummary(args);
+  return { ok: result.ok, summary: result.summary };
 }
 
 export async function listTemporalSystemRollMemories() {
@@ -302,6 +303,24 @@ export async function regenerateTemporalSystemRollMemory(args: { kind: SysRollKi
     peerCache: peerCache(),
   });
   return { ok: true as const, item };
+}
+
+/** Start async system-roll batch; returns job status immediately. */
+export function startTemporalSystemRollBatch(args?: {
+  kinds?: SysRollKind[];
+}): TemporalSystemRollBatchJobStatus {
+  const kinds = args?.kinds?.length ? args.kinds : ALL_SYS_ROLL_KINDS;
+  return startTemporalSystemRollBatchJob({
+    kinds,
+    regenerateOne: async (kind) => {
+      const result = await regenerateTemporalSystemRollMemory({ kind });
+      return { ok: result.ok, summary: result.item.summary };
+    },
+  });
+}
+
+export function getTemporalSystemRollBatchStatus(): TemporalSystemRollBatchJobStatus {
+  return getTemporalSystemRollBatchJobStatus();
 }
 
 /** PG STORED content_fts auto-maintained; returns semantic_memory row count */

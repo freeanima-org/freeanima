@@ -9,6 +9,7 @@ import {
   temporalSummaryBackfillMissingBodySchema,
   temporalSummaryRebuildRangeBodySchema,
   temporalSystemRollRegenerateBodySchema,
+  temporalSystemRollBatchStartBodySchema,
   type AutobiographicalMemoryListBody,
   type LimbicMemoryListBody,
   type PassiveRecallDebugBody,
@@ -19,6 +20,7 @@ import {
   type TemporalSummaryBackfillMissingBody,
   type TemporalSummaryRebuildRangeBody,
   type TemporalSystemRollRegenerateBody,
+  type TemporalSystemRollBatchStartBody,
 } from "@freeanima/features/habitat/habitat/habitat-api/api";
 import { habitatCtx } from "./runtime.ts";
 
@@ -67,6 +69,10 @@ export async function rebuildTemporalSummariesInRange(body: TemporalSummaryRebui
   });
 }
 
+export function getTemporalBatchJobStatus() {
+  return habitatCtx().getTemporalSummaryBatchJobStatus();
+}
+
 export async function listTemporalSystemRolls() {
   return habitatCtx().listTemporalSystemRolls();
 }
@@ -74,6 +80,17 @@ export async function listTemporalSystemRolls() {
 export async function regenerateTemporalSystemRoll(body: TemporalSystemRollRegenerateBody) {
   const parsed = temporalSystemRollRegenerateBodySchema.parse(body);
   return habitatCtx().regenerateTemporalSystemRoll({ kind: parsed.kind });
+}
+
+export function startTemporalSystemRollBatch(body: TemporalSystemRollBatchStartBody = {}) {
+  const parsed = temporalSystemRollBatchStartBodySchema.parse(body);
+  return habitatCtx().startTemporalSystemRollBatch(
+    parsed.kinds !== undefined ? { kinds: parsed.kinds } : {},
+  );
+}
+
+export function getTemporalSystemRollBatchStatus() {
+  return habitatCtx().getTemporalSystemRollBatchStatus();
 }
 
 export async function countSemanticMemory() {

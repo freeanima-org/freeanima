@@ -61,8 +61,11 @@ import {
   regenerateTemporalSummary,
   backfillMissingTemporalSummaries,
   rebuildTemporalSummariesInRange,
+  getTemporalBatchJobStatus,
   listTemporalSystemRolls,
   regenerateTemporalSystemRoll,
+  startTemporalSystemRollBatch,
+  getTemporalSystemRollBatchStatus,
   passiveRecallDebug,
   updateSemanticMemoryPinned,
 } from "../habitat-api/handlers/memory.ts";
@@ -338,6 +341,11 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     ),
   ),
   defineHabitatRouteFromDef(
+    "memory.temporalBatchStatus",
+    habitatMethodDefs["memory.temporalBatchStatus"],
+    wrapConsoleLegacyHandler(() => getTemporalBatchJobStatus()),
+  ),
+  defineHabitatRouteFromDef(
     "memory.temporalSystemRollList",
     habitatMethodDefs["memory.temporalSystemRollList"],
     wrapConsoleLegacyHandler(() => listTemporalSystemRolls()),
@@ -348,6 +356,20 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     wrapConsoleLegacyHandler((payload) =>
       regenerateTemporalSystemRoll(payload as { kind: "past_days" | "past_months" | "past_years" }),
     ),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.temporalSystemRollBatchStart",
+    habitatMethodDefs["memory.temporalSystemRollBatchStart"],
+    wrapConsoleLegacyHandler((payload) =>
+      startTemporalSystemRollBatch(
+        payload as { kinds?: Array<"past_days" | "past_months" | "past_years"> },
+      ),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.temporalSystemRollBatchStatus",
+    habitatMethodDefs["memory.temporalSystemRollBatchStatus"],
+    wrapConsoleLegacyHandler(() => getTemporalSystemRollBatchStatus()),
   ),
   defineHabitatRouteFromDef(
     "memory.semanticCount",

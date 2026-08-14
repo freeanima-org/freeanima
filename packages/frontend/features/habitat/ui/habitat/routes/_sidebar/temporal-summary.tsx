@@ -22,21 +22,24 @@ import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
 import {
   backfillMissingTemporalSummaries,
+  getTemporalBatchJobStatus,
+  getTemporalSystemRollBatchStatus,
   listTemporalSummaries,
   listTemporalSystemRolls,
   regenerateTemporalSummary,
-  regenerateTemporalSystemRoll,
   rebuildTemporalSummariesInRange,
+  startTemporalSystemRollBatch,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
+const POLL_MS = 2000;
 const ENTITY_TABS = ["day", "month", "year"] as const;
 type EntityWindow = (typeof ENTITY_TABS)[number];
 type PageTab = EntityWindow | "system_rolls";
-type ToolbarOp = "list" | "backfill" | "rebuild" | "regen";
+type ToolbarOp = "list" | "batch" | "regen";
 
 type TemporalRow = {
   id: number;
@@ -61,9 +64,155 @@ type SystemRollRow = {
   redis_key: string;
 };
 
+type TemporalBatchJobStatus = {
+  running: boolean;
+  mode: "backfill_missing" | "rebuild_range" | null;
+  window: EntityWindow | null;
+  period_start_from: string | null;
+  period_start_to: string | null;
+  current: number;
+  total: number;
+  current_period: string | null;
+  completed: string[];
+  failed: Array<{ period_start: string; summary: string }>;
+  started_at: string | null;
+  finished_at: string | null;
+  error: string | null;
+  summary: string | null;
+};
+
+type TemporalSystemRollBatchJobStatus = {
+  running: boolean;
+  kinds: Array<"past_days" | "past_months" | "past_years"> | null;
+  current: number;
+  total: number;
+  current_kind: "past_days" | "past_months" | "past_years" | null;
+  completed: Array<"past_days" | "past_months" | "past_years">;
+  failed: Array<{ kind: string; summary: string }>;
+  started_at: string | null;
+  finished_at: string | null;
+  error: string | null;
+  summary: string | null;
+};
+
 export const Route = createFileRoute("/_sidebar/temporal-summary")({
   component: TemporalSummaryPage,
 });
+
+function formatRatio(current: number, total: number): string {
+  return `${current}/${total}`;
+}
+
+/** 按窗口把区间值规范成后端期望的 period_start（月=YYYY-MM-01，年=YYYY-01-01） */
+function normalizeRangeValue(value: string, window: EntityWindow): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(trimmed);
+  if (!m) return trimmed;
+  const y = m[1] ?? "";
+  const month = m[2] ?? "";
+  if (!y || !month) return trimmed;
+  if (window === "year") return `${y}-01-01`;
+  if (window === "month") return `${y}-${month}-01`;
+  if (m[3]) return `${y}-${month}-${m[3]}`;
+  return `${y}-${month}-01`;
+}
+
+/** 表格 / 进度里按粒度展示 period_start */
+function formatPeriodStartLabel(value: string, window: EntityWindow): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "—";
+  const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(trimmed);
+  if (!m) return trimmed;
+  const y = Number(m[1]);
+  const month = Number(m[2]);
+  const day = m[3] ? Number(m[3]) : null;
+  if (window === "year") return `${y}年`;
+  if (window === "month") return `${y}年${month}月`;
+  if (day != null) return `${y}年${month}月${day}日`;
+  return `${y}年${month}月`;
+}
+
+function periodColumnLabel(window: EntityWindow): string {
+  if (window === "year") return "年份";
+  if (window === "month") return "月份";
+  return "日期";
+}
+
+function EntityBatchProgress({ job }: { job: TemporalBatchJobStatus }) {
+  if (!job.running && !job.error && !job.summary && job.finished_at == null) return null;
+  const pct = job.total > 0 ? Math.min(100, Math.round((job.current / job.total) * 100)) : 0;
+  const modeLabel =
+    job.mode === "backfill_missing"
+      ? "补全缺失"
+      : job.mode === "rebuild_range"
+        ? "强制重跑"
+        : "批量";
+  return (
+    <div className="rounded-md border bg-muted/40 px-4 py-3 space-y-2">
+      <h3 className="font-bold text-sm">{"批量进度"}</h3>
+      {job.running ? (
+        <>
+          <p className="text-sm">
+            {modeLabel}
+            {job.window ? ` · ${job.window}` : ""}
+            {" · "}
+            {formatRatio(job.current, job.total)}
+            {job.current_period && job.window
+              ? ` · 当前 ${formatPeriodStartLabel(job.current_period, job.window)}`
+              : job.current_period
+                ? ` · 当前 ${job.current_period}`
+                : ""}
+          </p>
+          <progress className="w-full h-2 accent-primary" value={pct} max={100} />
+          <p className="text-xs text-muted-foreground">
+            {"后台运行中，可关闭页面；刷新后仍可继续查看进度。"}
+          </p>
+        </>
+      ) : null}
+      {!job.running && job.summary ? (
+        <p className="text-sm">
+          {modeLabel}
+          {"完成："}
+          {job.summary}
+          {job.failed.length > 0 ? `（失败 ${String(job.failed.length)}）` : ""}
+        </p>
+      ) : null}
+      {job.error ? <StatusAlert variant="error">{job.error}</StatusAlert> : null}
+    </div>
+  );
+}
+
+function RollBatchProgress({ job }: { job: TemporalSystemRollBatchJobStatus }) {
+  if (!job.running && !job.error && !job.summary && job.finished_at == null) return null;
+  const pct = job.total > 0 ? Math.min(100, Math.round((job.current / job.total) * 100)) : 0;
+  return (
+    <div className="rounded-md border bg-muted/40 px-4 py-3 space-y-2">
+      <h3 className="font-bold text-sm">{"系统汇总进度"}</h3>
+      {job.running ? (
+        <>
+          <p className="text-sm">
+            {"重新生成 · "}
+            {formatRatio(job.current, job.total)}
+            {job.current_kind ? ` · 当前 ${job.current_kind}` : ""}
+          </p>
+          <progress className="w-full h-2 accent-primary" value={pct} max={100} />
+          <p className="text-xs text-muted-foreground">
+            {"后台运行中，可关闭页面；刷新后仍可继续查看进度。"}
+          </p>
+        </>
+      ) : null}
+      {!job.running && job.summary ? (
+        <p className="text-sm">
+          {"完成："}
+          {job.summary}
+          {job.failed.length > 0 ? `（失败 ${String(job.failed.length)}）` : ""}
+        </p>
+      ) : null}
+      {job.error ? <StatusAlert variant="error">{job.error}</StatusAlert> : null}
+    </div>
+  );
+}
 
 function TemporalSummaryPage() {
   const [tab, setTab] = useState<PageTab>("day");
@@ -71,17 +220,20 @@ function TemporalSummaryPage() {
   const [to, setTo] = useState("");
   const { setOffset, currentPage, offsetForPage } = useHabitatOffsetPagination(PAGE_SIZE);
   const [listLoading, setListLoading] = useState(false);
-  const [backfilling, setBackfilling] = useState(false);
-  const [rebuilding, setRebuilding] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<TemporalRow[]>([]);
   const [rolls, setRolls] = useState<SystemRollRow[]>([]);
   const [regenKey, setRegenKey] = useState<string | null>(null);
-  /** 互斥：查询 / 补跑 / 强制重跑 / 单行重生成同时只允许一个；避免第二个操作清掉第一个的 loading */
+  const [batchJob, setBatchJob] = useState<TemporalBatchJobStatus | null>(null);
+  const [rollBatchJob, setRollBatchJob] = useState<TemporalSystemRollBatchJobStatus | null>(null);
   const opRef = useRef<ToolbarOp | null>(null);
-  const toolbarBusy = listLoading || backfilling || rebuilding || regenKey != null;
+  const batchPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const rollPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const batchRunning = batchJob?.running === true;
+  const rollBatchRunning = rollBatchJob?.running === true;
+  const toolbarBusy = listLoading || batchRunning || rollBatchRunning || regenKey != null;
 
   const fetchEntityList = useCallback(
     async (
@@ -101,8 +253,8 @@ function TemporalSummaryPage() {
         const data = (await listTemporalSummaries(
           omitUndefined({
             window,
-            period_start_from: from.trim() || undefined,
-            period_start_to: to.trim() || undefined,
+            period_start_from: from.trim() ? normalizeRangeValue(from, window) : undefined,
+            period_start_to: to.trim() ? normalizeRangeValue(to, window) : undefined,
             offset: nextOffset,
             limit: PAGE_SIZE,
           }),
@@ -146,6 +298,122 @@ function TemporalSummaryPage() {
     }
   }, []);
 
+  const stopBatchPoll = useCallback(() => {
+    if (batchPollRef.current) {
+      clearInterval(batchPollRef.current);
+      batchPollRef.current = null;
+    }
+  }, []);
+
+  const stopRollPoll = useCallback(() => {
+    if (rollPollRef.current) {
+      clearInterval(rollPollRef.current);
+      rollPollRef.current = null;
+    }
+  }, []);
+
+  const onBatchFinished = useCallback(
+    async (job: TemporalBatchJobStatus) => {
+      if (opRef.current === "batch") opRef.current = null;
+      if (job.error) {
+        setError(job.error);
+        setInfo("");
+      } else {
+        setInfo(
+          `${job.mode === "rebuild_range" ? "强制重跑" : "补全"}完成：${job.summary ?? ""}${
+            job.failed.length > 0 ? `；失败 ${String(job.failed.length)}` : ""
+          }`,
+        );
+      }
+      const window = job.window ?? (tab === "system_rolls" ? "day" : tab);
+      await fetchEntityList(window, 0, { silent: true });
+    },
+    [fetchEntityList, tab],
+  );
+
+  const onRollBatchFinished = useCallback(
+    async (job: TemporalSystemRollBatchJobStatus) => {
+      if (opRef.current === "batch") opRef.current = null;
+      if (job.error) {
+        setError(job.error);
+        setInfo("");
+      } else {
+        setInfo(
+          `系统汇总完成：${job.summary ?? ""}${
+            job.failed.length > 0 ? `；失败 ${String(job.failed.length)}` : ""
+          }`,
+        );
+      }
+      await fetchRolls({ silent: true });
+    },
+    [fetchRolls],
+  );
+
+  const pollBatchJob = useCallback(async () => {
+    try {
+      const next = await getTemporalBatchJobStatus();
+      setBatchJob(next);
+      if (!next.running) {
+        stopBatchPoll();
+        await onBatchFinished(next);
+      }
+    } catch (err) {
+      logCaughtError("routes/_sidebar/temporal-summary/poll-batch", err);
+    }
+  }, [onBatchFinished, stopBatchPoll]);
+
+  const pollRollBatchJob = useCallback(async () => {
+    try {
+      const next = await getTemporalSystemRollBatchStatus();
+      setRollBatchJob(next);
+      if (!next.running) {
+        stopRollPoll();
+        await onRollBatchFinished(next);
+      }
+    } catch (err) {
+      logCaughtError("routes/_sidebar/temporal-summary/poll-roll-batch", err);
+    }
+  }, [onRollBatchFinished, stopRollPoll]);
+  const startBatchPolling = useCallback(() => {
+    if (batchPollRef.current) return;
+    batchPollRef.current = setInterval(() => void pollBatchJob(), POLL_MS);
+  }, [pollBatchJob]);
+
+  const startRollPolling = useCallback(() => {
+    if (rollPollRef.current) return;
+    rollPollRef.current = setInterval(() => void pollRollBatchJob(), POLL_MS);
+  }, [pollRollBatchJob]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [entityStatus, rollStatus] = await Promise.all([
+          getTemporalBatchJobStatus(),
+          getTemporalSystemRollBatchStatus(),
+        ]);
+        if (cancelled) return;
+        setBatchJob(entityStatus);
+        setRollBatchJob(rollStatus);
+        if (entityStatus.running) {
+          opRef.current = "batch";
+          startBatchPolling();
+        }
+        if (rollStatus.running) {
+          opRef.current = "batch";
+          startRollPolling();
+        }
+      } catch (err) {
+        logCaughtError("routes/_sidebar/temporal-summary/resume-jobs", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      stopBatchPoll();
+      stopRollPoll();
+    };
+  }, [startBatchPolling, startRollPolling, stopBatchPoll, stopRollPoll]);
+
   useEffect(() => {
     if (tab === "system_rolls") {
       void fetchRolls();
@@ -184,35 +452,35 @@ function TemporalSummaryPage() {
     const period_start_from = from.trim();
     const period_start_to = to.trim();
     if (!period_start_from || !period_start_to) {
-      setError("补全缺失周期前请同时设置起止日期（YYYY-MM-DD）。");
+      setError(
+        window === "year"
+          ? "补全缺失周期前请同时设置起止年份。"
+          : window === "month"
+            ? "补全缺失周期前请同时设置起止月份。"
+            : "补全缺失周期前请同时设置起止日期（YYYY-MM-DD）。",
+      );
       return;
     }
     if (opRef.current) return;
-    opRef.current = "backfill";
-    setBackfilling(true);
+    opRef.current = "batch";
     setError("");
     setInfo("");
     try {
-      const result = (await backfillMissingTemporalSummaries({
+      const started = await backfillMissingTemporalSummaries({
         window,
-        period_start_from,
-        period_start_to,
-      })) as {
-        missing?: string[];
-        filled?: string[];
-        failed?: unknown[];
-        summary?: string;
-      };
-      setInfo(
-        `补全完成：缺失 ${String(result.missing?.length ?? 0)}，已填 ${String(result.filled?.length ?? 0)}，失败 ${String(result.failed?.length ?? 0)}`,
-      );
-      await fetchEntityList(window, 0, { silent: true });
+        period_start_from: normalizeRangeValue(period_start_from, window),
+        period_start_to: normalizeRangeValue(period_start_to, window),
+      });
+      setBatchJob(started);
+      if (started.running) {
+        startBatchPolling();
+      } else {
+        await onBatchFinished(started);
+      }
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/backfill", e);
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setBackfilling(false);
-      if (opRef.current === "backfill") opRef.current = null;
+      if (opRef.current === "batch") opRef.current = null;
     }
   };
 
@@ -220,84 +488,84 @@ function TemporalSummaryPage() {
     const period_start_from = from.trim();
     const period_start_to = to.trim();
     if (!period_start_from || !period_start_to) {
-      setError("强制重跑前请同时设置起止日期（YYYY-MM-DD）。");
+      setError(
+        window === "year"
+          ? "强制重跑前请同时设置起止年份。"
+          : window === "month"
+            ? "强制重跑前请同时设置起止月份。"
+            : "强制重跑前请同时设置起止日期（YYYY-MM-DD）。",
+      );
       return;
     }
     if (opRef.current) return;
-    opRef.current = "rebuild";
-    setRebuilding(true);
+    opRef.current = "batch";
     setError("");
     setInfo("");
     try {
-      const result = (await rebuildTemporalSummariesInRange({
+      const started = await rebuildTemporalSummariesInRange({
         window,
-        period_start_from,
-        period_start_to,
-      })) as {
-        expected?: string[];
-        filled?: string[];
-        failed?: unknown[];
-        summary?: string;
-      };
-      setInfo(
-        `强制重跑完成：期望 ${String(result.expected?.length ?? 0)}，已填 ${String(result.filled?.length ?? 0)}，失败 ${String(result.failed?.length ?? 0)}`,
-      );
-      await fetchEntityList(window, 0, { silent: true });
+        period_start_from: normalizeRangeValue(period_start_from, window),
+        period_start_to: normalizeRangeValue(period_start_to, window),
+      });
+      setBatchJob(started);
+      if (started.running) {
+        startBatchPolling();
+      } else {
+        await onBatchFinished(started);
+      }
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/rebuild", e);
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setRebuilding(false);
-      if (opRef.current === "rebuild") opRef.current = null;
+      if (opRef.current === "batch") opRef.current = null;
     }
   };
 
   const onRegenerateRoll = async (kind: SystemRollRow["kind"]) => {
     if (opRef.current) return;
-    opRef.current = "regen";
-    setRegenKey(kind);
+    opRef.current = "batch";
     setError("");
     setInfo("");
     try {
-      await regenerateTemporalSystemRoll({ kind });
-      await fetchRolls({ silent: true });
+      const started = await startTemporalSystemRollBatch({
+        kinds: [kind],
+      });
+      setRollBatchJob(started);
+      if (started.running) {
+        startRollPolling();
+      } else {
+        await onRollBatchFinished(started);
+      }
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/roll-regen", e);
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setRegenKey(null);
-      if (opRef.current === "regen") opRef.current = null;
+      if (opRef.current === "batch") opRef.current = null;
     }
   };
 
   const onBackfillMissingRolls = async () => {
     if (opRef.current) return;
-    opRef.current = "backfill";
-    setBackfilling(true);
+    const missing = rolls.filter((r) => !r.cache_hit || !r.summary.trim()).map((r) => r.kind);
+    if (missing.length === 0) {
+      setInfo("没有缺失的系统汇总。");
+      return;
+    }
+    opRef.current = "batch";
     setError("");
     setInfo("");
     try {
-      const missing = rolls.filter((r) => !r.cache_hit || !r.summary.trim());
-      let filled = 0;
-      let failed = 0;
-      for (const row of missing) {
-        try {
-          await regenerateTemporalSystemRoll({ kind: row.kind });
-          filled += 1;
-        } catch {
-          failed += 1;
-        }
+      const started = await startTemporalSystemRollBatch({
+        kinds: missing,
+      });
+      setRollBatchJob(started);
+      if (started.running) {
+        startRollPolling();
+      } else {
+        await onRollBatchFinished(started);
       }
-      setInfo(
-        `补全完成：缺失 ${String(missing.length)}，已填 ${String(filled)}，失败 ${String(failed)}`,
-      );
-      await fetchRolls({ silent: true });
     } catch (e) {
       logCaughtError("routes/_sidebar/temporal-summary/roll-backfill", e);
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      setBackfilling(false);
-      if (opRef.current === "backfill") opRef.current = null;
+      if (opRef.current === "batch") opRef.current = null;
     }
   };
 
@@ -307,15 +575,24 @@ function TemporalSummaryPage() {
         <h2 className="text-lg font-bold">{"⏳ 时间摘要"}</h2>
         <p className="text-sm text-muted-foreground mt-1">
           {
-            "全局日/月/年实体（各周期结束后写入），以及三条反向系统汇总（过往日/月/年），经 Redis 缓存。计入所有非 debug、非 cron 会话（含 remote）；全局日按消息时间选源。「补全缺失」只填没有行的周期；「强制重跑」覆盖区间内全部期望周期（含空占位）。"
+            "全局日/月/年实体（各周期结束后写入），以及三条反向系统汇总（过往日/月/年），经 Redis 缓存。计入所有非 debug、非 cron 会话（含 remote）；全局日按消息时间选源。「补全缺失」只填没有行的周期；「强制重跑」覆盖区间内全部期望周期（含空占位）。批量任务在后台执行，页面轮询进度。"
           }
         </p>
       </div>
 
+      {batchJob ? <EntityBatchProgress job={batchJob} /> : null}
+      {rollBatchJob ? <RollBatchProgress job={rollBatchJob} /> : null}
+
       <Tabs
         selectedKey={tab}
         onSelectionChange={(key: Key) => {
-          if (key != null) setTab(String(key) as PageTab);
+          if (key == null) return;
+          const next = String(key) as PageTab;
+          if (next === "month" || next === "year" || next === "day") {
+            setFrom((prev) => normalizeRangeValue(prev, next));
+            setTo((prev) => normalizeRangeValue(prev, next));
+          }
+          setTab(next);
         }}
         className="space-y-4"
       >
@@ -332,11 +609,27 @@ function TemporalSummaryPage() {
           <TabsContent key={w} id={w} className="space-y-4">
             <FormFieldset className="space-y-0">
               <div className="flex flex-wrap items-end gap-3">
-                <FormField label="From" className="min-w-40">
-                  <DatePickerInput value={from} aria-label="From" onChange={setFrom} />
+                <FormField
+                  label={w === "day" ? "From" : w === "month" ? "起始月" : "起始年"}
+                  className="min-w-40"
+                >
+                  <DatePickerInput
+                    value={from}
+                    aria-label={w === "day" ? "From" : w === "month" ? "起始月" : "起始年"}
+                    granularity={w}
+                    onChange={setFrom}
+                  />
                 </FormField>
-                <FormField label="To" className="min-w-40">
-                  <DatePickerInput value={to} aria-label="To" onChange={setTo} />
+                <FormField
+                  label={w === "day" ? "To" : w === "month" ? "结束月" : "结束年"}
+                  className="min-w-40"
+                >
+                  <DatePickerInput
+                    value={to}
+                    aria-label={w === "day" ? "To" : w === "month" ? "结束月" : "结束年"}
+                    granularity={w}
+                    onChange={setTo}
+                  />
                 </FormField>
                 <div className="flex items-center gap-2">
                   <Button
@@ -353,7 +646,9 @@ function TemporalSummaryPage() {
                     onClick={() => void onBackfillMissing(w)}
                     isDisabled={toolbarBusy}
                   >
-                    {backfilling ? <Spinner className="size-4" /> : null}
+                    {batchRunning && batchJob?.mode === "backfill_missing" ? (
+                      <Spinner className="size-4" />
+                    ) : null}
                     {"补全缺失"}
                   </Button>
                   <Button
@@ -362,7 +657,9 @@ function TemporalSummaryPage() {
                     onClick={() => void onRebuildRange(w)}
                     isDisabled={toolbarBusy}
                   >
-                    {rebuilding ? <Spinner className="size-4" /> : null}
+                    {batchRunning && batchJob?.mode === "rebuild_range" ? (
+                      <Spinner className="size-4" />
+                    ) : null}
                     {"强制重跑"}
                   </Button>
                 </div>
@@ -376,7 +673,7 @@ function TemporalSummaryPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-20">ID</TableHead>
-                  <TableHead className="w-32">period_start</TableHead>
+                  <TableHead className="w-32">{periodColumnLabel(w)}</TableHead>
                   <TableHead className="w-20">{"字符数"}</TableHead>
                   <TableHead className="w-20">{"来源"}</TableHead>
                   <TableHead className="w-28">{"为空原因"}</TableHead>
@@ -398,7 +695,9 @@ function TemporalSummaryPage() {
                     return (
                       <TableRow key={row.id}>
                         <TableCell className="font-mono text-xs">{row.id}</TableCell>
-                        <TableCell className="font-mono text-xs">{row.period_start}</TableCell>
+                        <TableCell className="text-xs">
+                          {formatPeriodStartLabel(row.period_start, row.window)}
+                        </TableCell>
                         <TableCell className="font-mono text-xs">{row.content_chars}</TableCell>
                         <TableCell className="font-mono text-xs">
                           {row.source_count ?? "—"}
@@ -466,7 +765,7 @@ function TemporalSummaryPage() {
               onClick={() => void onBackfillMissingRolls()}
               isDisabled={toolbarBusy}
             >
-              {backfilling ? <Spinner className="size-4" /> : null}
+              {rollBatchRunning ? <Spinner className="size-4" /> : null}
               {"补全缺失"}
             </Button>
           </div>
@@ -510,7 +809,9 @@ function TemporalSummaryPage() {
                         isDisabled={toolbarBusy}
                         onClick={() => void onRegenerateRoll(row.kind)}
                       >
-                        {regenKey === row.kind ? <Spinner className="size-3" /> : null}
+                        {rollBatchRunning && rollBatchJob?.current_kind === row.kind ? (
+                          <Spinner className="size-3" />
+                        ) : null}
                         {"重新生成"}
                       </Button>
                     </TableCell>

@@ -7,6 +7,10 @@ import { Sheet } from "../components/ui/sheet.tsx";
 import { useCompactLayout } from "../layout/index.ts";
 import { cn } from "../lib/utils.ts";
 import { DatePickerPanel } from "./DatePickerPanel.tsx";
+import { MonthPickerPanel } from "./MonthPickerPanel.tsx";
+import { YearPickerPanel } from "./YearPickerPanel.tsx";
+
+export type DatePickerGranularity = "day" | "month" | "year";
 
 type DatePickerInputProps = {
   value: string;
@@ -15,17 +19,39 @@ type DatePickerInputProps = {
   className?: string;
   "aria-label"?: string;
   /**
+   * `day`：选日（YYYY-MM-DD）
+   * `month`：选月（规范为 YYYY-MM-01）
+   * `year`：选年（规范为 YYYY-01-01）
+   */
+  granularity?: DatePickerGranularity;
+  /**
    * `trigger`：按钮打开 Popover（expanded）或底部 Sheet（compact）。
    * `inline`：直接渲染面板（已在 Popover 内时避免嵌套）。
    */
   presentation?: "trigger" | "inline";
 };
 
-function formatTriggerLabel(value: string, fallback: string): string {
+function formatTriggerLabel(
+  value: string,
+  fallback: string,
+  granularity: DatePickerGranularity,
+): string {
   if (!value) return fallback;
   const [y, m, d] = value.split("-").map(Number);
-  if (!y || !m || !d) return value;
+  if (!y) return value;
+  if (granularity === "year") return `${y}年`;
+  if (granularity === "month") {
+    if (!m) return value;
+    return `${y}年${m}月`;
+  }
+  if (!m || !d) return value;
   return `${y}年${m}月${d}日`;
+}
+
+function defaultAriaLabel(granularity: DatePickerGranularity): string {
+  if (granularity === "year") return "选择年份";
+  if (granularity === "month") return "选择月份";
+  return "选择日期";
 }
 
 export function DatePickerInput({
@@ -34,13 +60,30 @@ export function DatePickerInput({
   disabled = false,
   className,
   "aria-label": ariaLabel,
+  granularity = "day",
   presentation = "trigger",
 }: DatePickerInputProps) {
   const compact = useCompactLayout();
   const [open, setOpen] = useState(false);
-  const label = ariaLabel ?? "选择日期";
+  const label = ariaLabel ?? defaultAriaLabel(granularity);
+
+  const panelProps = {
+    value,
+    disabled,
+    onChange,
+  };
 
   if (presentation === "inline") {
+    if (granularity === "month") {
+      return (
+        <MonthPickerPanel {...panelProps} {...(className !== undefined ? { className } : {})} />
+      );
+    }
+    if (granularity === "year") {
+      return (
+        <YearPickerPanel {...panelProps} {...(className !== undefined ? { className } : {})} />
+      );
+    }
     return (
       <DatePickerPanel
         {...(className !== undefined ? { className } : {})}
@@ -71,13 +114,18 @@ export function DatePickerInput({
         : {})}
     >
       <CalendarIcon className="text-muted-foreground size-4 shrink-0" />
-      <span className="truncate">{formatTriggerLabel(value, label)}</span>
+      <span className="truncate">{formatTriggerLabel(value, label, granularity)}</span>
     </Button>
   );
 
-  const panel = (
-    <DatePickerPanel value={value} disabled={disabled} onChange={onChange} onSelect={close} />
-  );
+  const panel =
+    granularity === "month" ? (
+      <MonthPickerPanel {...panelProps} onSelect={close} />
+    ) : granularity === "year" ? (
+      <YearPickerPanel {...panelProps} onSelect={close} />
+    ) : (
+      <DatePickerPanel {...panelProps} onSelect={close} />
+    );
 
   if (compact) {
     return (

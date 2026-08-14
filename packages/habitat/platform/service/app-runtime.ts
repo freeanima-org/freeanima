@@ -408,6 +408,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.rebuildTemporalSummariesInRange(args);
   }
 
+  getTemporalSummaryBatchJobStatus() {
+    return memory.getTemporalSummaryBatchJobStatus();
+  }
+
   listTemporalSystemRolls() {
     return memory.listTemporalSystemRollMemories();
   }
@@ -416,6 +420,14 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     args: Parameters<typeof memory.regenerateTemporalSystemRollMemory>[0],
   ) {
     return memory.regenerateTemporalSystemRollMemory(args);
+  }
+
+  startTemporalSystemRollBatch(args?: Parameters<typeof memory.startTemporalSystemRollBatch>[0]) {
+    return memory.startTemporalSystemRollBatch(args);
+  }
+
+  getTemporalSystemRollBatchStatus() {
+    return memory.getTemporalSystemRollBatchStatus();
   }
 
   countSemanticMemory(): Promise<{ index_rows: number }> {
