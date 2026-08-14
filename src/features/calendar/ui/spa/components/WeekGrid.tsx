@@ -2,14 +2,23 @@ import { useMemo } from "react";
 import { cn } from "@freeanima/ui-kit";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
-import { dayKeyFromIso } from "../lib/format-calendar.ts";
+import {
+  MAX_VISIBLE_BAR_LANES,
+  barItemKey,
+  dayOverflowCount,
+  kindBarClass,
+  packBarsForWeek,
+  type PackedBar,
+} from "../lib/event-bars.ts";
 
 export type WeekGridProps = {
   weekStartDay: string;
   today: string;
   items: CalendarRangeItem[];
   onSelectDay: (day: string) => void;
+  onOpenEvent: (id: number) => void;
   onOpenTask: (id: number) => void;
+  onOpenProject: () => void;
   onDropTaskDue: (taskId: number, day: string) => void;
 };
 
@@ -35,12 +44,23 @@ export function weekStartMonday(day: string): string {
 
 const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"];
 
+function openBar(
+  bar: PackedBar,
+  handlers: Pick<WeekGridProps, "onOpenEvent" | "onOpenTask" | "onOpenProject">,
+): void {
+  if (bar.item.kind === "event") handlers.onOpenEvent(bar.item.id);
+  else if (bar.item.kind === "task") handlers.onOpenTask(bar.item.id);
+  else handlers.onOpenProject();
+}
+
 export function WeekGrid({
   weekStartDay,
   today,
   items,
   onSelectDay,
+  onOpenEvent,
   onOpenTask,
+  onOpenProject,
   onDropTaskDue,
 }: WeekGridProps) {
   const days = useMemo(
@@ -48,104 +68,126 @@ export function WeekGrid({
     [weekStartDay],
   );
 
-  const byDay = useMemo(() => {
-    const map = new Map<string, CalendarRangeItem[]>();
-    for (const day of days) map.set(day, []);
-    for (const item of items) {
-      if (item.kind === "task") {
-        const start = dayKeyFromIso(item.start_at ?? item.due_at);
-        const end = dayKeyFromIso(item.due_at);
-        for (const day of days) {
-          if (start <= day && day <= end) map.get(day)?.push(item);
-        }
-        continue;
-      }
-      if (item.kind === "event") {
-        const day = dayKeyFromIso(item.start_at);
-        map.get(day)?.push(item);
-        continue;
-      }
-      const start = dayKeyFromIso(item.start_at ?? "");
-      if (start) map.get(start)?.push(item);
-    }
-    return map;
-  }, [days, items]);
+  const packed = useMemo(() => packBarsForWeek(items, days), [days, items]);
+  const visible = useMemo(() => packed.filter((b) => b.lane < MAX_VISIBLE_BAR_LANES), [packed]);
+  const laneCount = Math.max(
+    3,
+    Math.min(
+      MAX_VISIBLE_BAR_LANES,
+      visible.reduce((m, b) => Math.max(m, b.lane + 1), 0),
+    ),
+  );
+  const hasOverflow = days.some(
+    (_, col) => dayOverflowCount(packed, col, MAX_VISIBLE_BAR_LANES) > 0,
+  );
+  const handlers = { onOpenEvent, onOpenTask, onOpenProject };
 
   return (
-    <div className="grid min-h-[16rem] grid-cols-7 gap-1">
-      {days.map((day, idx) => {
-        const col = byDay.get(day) ?? [];
-        const isToday = day === today;
-        return (
-          <div
-            key={day}
-            className={cn(
-              "flex min-h-0 flex-col rounded-md border border-border/50 p-1",
-              isToday && "ring-1 ring-primary/40",
-            )}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.dataTransfer.dropEffect = "move";
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              const raw = e.dataTransfer.getData("application/x-freeanima-task-id");
-              const id = Number(raw);
-              if (Number.isFinite(id) && id > 0) onDropTaskDue(id, day);
-            }}
-          >
+    <div className="flex min-h-[16rem] flex-col gap-1">
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((day, idx) => {
+          const isToday = day === today;
+          return (
             <button
+              key={`head-${day}`}
               type="button"
-              className="mb-1 flex items-baseline justify-between px-0.5 text-left text-xs"
+              className={cn(
+                "flex items-baseline justify-between rounded-md border border-border/50 px-1 py-1 text-left text-xs",
+                isToday && "ring-1 ring-primary/40",
+              )}
               onClick={() => onSelectDay(day)}
             >
               <span className="text-muted-foreground">{WEEKDAY_LABELS[idx]}</span>
               <span className={cn("font-medium", isToday && "text-primary")}>{day.slice(8)}</span>
             </button>
-            <ul className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-auto">
-              {col.map((item) => {
-                if (item.kind === "task") {
-                  return (
-                    <li key={`${item.id}:${item.due_at}:${item.virtual ? "v" : "l"}`}>
-                      <button
-                        type="button"
-                        draggable={!item.virtual && item.status === "pending"}
-                        onDragStart={(e) => {
-                          if (item.virtual) return;
-                          e.dataTransfer.setData(
-                            "application/x-freeanima-task-id",
-                            String(item.id),
-                          );
-                          e.dataTransfer.effectAllowed = "move";
-                        }}
-                        className={cn(
-                          "w-full truncate rounded px-1 py-0.5 text-left text-[11px]",
-                          item.virtual
-                            ? "bg-muted/60 text-muted-foreground italic"
-                            : "bg-primary/10 text-foreground",
-                        )}
-                        onClick={() => onOpenTask(item.id)}
-                        title={item.virtual ? `${item.title}（重复实例）` : item.title}
-                      >
-                        {item.title}
-                      </button>
-                    </li>
-                  );
+          );
+        })}
+      </div>
+
+      <div className="relative min-h-0 flex-1 rounded-md border border-border/40 p-1">
+        {/* 列级拖放目标 */}
+        <div className="absolute inset-1 z-0 grid grid-cols-7 gap-1">
+          {days.map((day) => (
+            <div
+              key={`drop-${day}`}
+              className="min-h-full rounded-sm"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const raw = e.dataTransfer.getData("application/x-freeanima-task-id");
+                const id = Number(raw);
+                if (Number.isFinite(id) && id > 0) onDropTaskDue(id, day);
+              }}
+            />
+          ))}
+        </div>
+
+        <div
+          className="relative z-[1] grid grid-cols-7 gap-x-1"
+          style={{
+            gridTemplateRows: `repeat(${laneCount}, 1.35rem)${hasOverflow ? " 1rem" : ""}`,
+          }}
+        >
+          {visible.map((bar) => {
+            const item = bar.item;
+            const canDrag = item.kind === "task" && !item.virtual && item.status === "pending";
+            return (
+              <button
+                key={barItemKey(item)}
+                type="button"
+                title={
+                  item.kind === "task" && item.virtual ? `${item.title}（重复实例）` : item.title
                 }
-                return (
-                  <li
-                    key={`${item.kind}:${item.id}`}
-                    className="truncate rounded bg-muted/50 px-1 py-0.5 text-[11px]"
-                    title={item.title}
-                  >
-                    {item.title}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        );
-      })}
+                draggable={canDrag}
+                onDragStart={(e) => {
+                  if (!canDrag) return;
+                  e.dataTransfer.setData("application/x-freeanima-task-id", String(item.id));
+                  e.dataTransfer.effectAllowed = "move";
+                }}
+                className={cn(
+                  "truncate rounded px-1 text-left text-[11px] leading-[1.35rem]",
+                  kindBarClass(
+                    item.kind,
+                    item.kind === "task" && item.virtual ? { virtual: true } : undefined,
+                  ),
+                )}
+                style={{
+                  gridColumn: `${bar.colStart + 1} / span ${bar.colSpan}`,
+                  gridRow: bar.lane + 1,
+                }}
+                onClick={() => {
+                  const day = days[bar.colStart];
+                  if (day) onSelectDay(day);
+                  openBar(bar, handlers);
+                }}
+              >
+                {item.title}
+              </button>
+            );
+          })}
+          {days.map((day, col) => {
+            const overflow = dayOverflowCount(packed, col, MAX_VISIBLE_BAR_LANES);
+            if (overflow <= 0) return null;
+            return (
+              <button
+                key={`more-${day}`}
+                type="button"
+                className="text-left text-[10px] text-muted-foreground"
+                style={{
+                  gridColumn: col + 1,
+                  gridRow: laneCount + 1,
+                }}
+                onClick={() => onSelectDay(day)}
+              >
+                {`+${overflow}`}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

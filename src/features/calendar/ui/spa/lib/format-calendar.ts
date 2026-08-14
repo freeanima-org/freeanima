@@ -33,6 +33,18 @@ export function dayKeyFromIso(iso: string): string {
   return cstDayKey(new Date(ms));
 }
 
+/** CST 日键加一天；非法输入返回 null */
+export function nextDayKey(day: string): string | null {
+  const parts = day.split("-").map(Number);
+  const y = parts[0];
+  const mo = parts[1];
+  const d = parts[2];
+  if (y == null || mo == null || d == null) return null;
+  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) return null;
+  const next = new Date(Date.UTC(y, mo - 1, d + 1));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`;
+}
+
 export function monthLabel(year: number, monthIndex: number): string {
   return `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
 }
