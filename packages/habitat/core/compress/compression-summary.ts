@@ -55,8 +55,9 @@ export async function generateConversationSummary(
   prevState: CompressionState | null,
   newState: CompressionState,
   systemPromptSnapshot: string,
-  model: string,
   opts?: {
+    /** Optional hop0 override; omit to use PROFILE_SUMMARY hop (never meta.model). */
+    model?: string;
     preSliced?: boolean;
     parentConversationId?: string;
     runKind?:
@@ -86,7 +87,7 @@ export async function generateConversationSummary(
         runKind,
         subjectId: getResolvedWorldContext().agent_subject_id,
         messages: chatMessages,
-        model,
+        model: opts?.model,
         profileId: PROFILE_SUMMARY,
         requestParams: COMPRESSION_SUMMARY_REQUEST_PARAMS,
         parentConversationId: opts?.parentConversationId,

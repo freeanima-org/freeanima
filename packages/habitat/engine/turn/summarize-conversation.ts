@@ -103,14 +103,13 @@ export async function summarizeConversation(
   };
 
   const systemSnapshot = meta.system_prompt ?? "";
-  const model = meta.model ?? defaultChatModel();
   const toolSchemas = await loadConversationTools(registry, conversationId, meta);
   const compressOpts = await buildCompressOptionsResolved(meta, newState, defaultChatModel(), {
     tools: toolSchemas,
   });
 
   await updateConversationMetaField(conversationId, { compression: newState });
-  scheduleCompressionSummary(conversationId, prevState, newState, systemSnapshot, model);
+  scheduleCompressionSummary(conversationId, prevState, newState, systemSnapshot);
   const job = await flushCompressionSummaries(conversationId);
 
   const metaAfter = await loadConversationMeta(conversationId);

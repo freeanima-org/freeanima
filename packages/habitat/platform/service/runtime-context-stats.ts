@@ -40,9 +40,7 @@ export async function computeRuntimeContextBreakdown(
   const cwd = isConversationMeta(meta) ? meta.cwd : undefined;
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
   const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
-  const model = isConversationMeta(meta)
-    ? meta.model
-    : getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
+  const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
 
   let summary = 0;
   const messageRows: StoredMessage[] = [];

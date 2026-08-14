@@ -20,14 +20,15 @@ export type ConversationCompressionFields = {
   systemPrompt: string;
 };
 
-/** Parse compression/analysis shared fields from conversation meta (or defaults) */
+/** Parse compression/analysis shared fields from conversation meta (or defaults).
+ * Model always comes from `fallbackModel` (PROFILE_CHAT hop); meta.model is write-only.
+ */
 export function resolveConversationCompressionFields(
   meta: ConversationMetaLoadResult,
   fallbackModel: string,
 ): ConversationCompressionFields {
-  const model = isConversationMeta(meta) ? meta.model : fallbackModel;
   const systemPrompt = isConversationMeta(meta) ? (meta.system_prompt ?? "") : "";
-  return { model, systemPrompt };
+  return { model: fallbackModel, systemPrompt };
 }
 
 /** Build shared options for compress / analyzeCompression */
