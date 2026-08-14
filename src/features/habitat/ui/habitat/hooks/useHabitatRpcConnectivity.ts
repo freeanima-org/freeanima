@@ -1,20 +1,22 @@
-import { omitUndefined } from "../lib/omit-undefined.ts";
 import { useCallback, useEffect, useState } from "react";
 
 import {
   isHabitatHealthConnected,
   HABITAT_HEALTH_PROBE_TIMEOUT_MS,
-  probeHabitatHealthUrl,
 } from "@freeanima/client/portal-sdk/habitat-health-probe";
+import {
+  getHabitatRpcConnectionState,
+  reconnectHabitat,
+  subscribeHabitatConnection,
+  type HabitatConnectionState,
+} from "@freeanima/client/portal-sdk/habitat-connection.ts";
 import { hubApiFetch } from "@freeanima/features/habitat/ui/habitat/lib/habitat-fetch.ts";
 import { resetApiClientCache } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
-import { resolveApiOrigin } from "@freeanima/features/habitat/ui/habitat/lib/habitat-origin.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
-export type HabitatRpcConnectionState = "connecting" | "connected" | "disconnected";
+export type HabitatRpcConnectionState = HabitatConnectionState;
 
-const POLL_MS = 30_000;
-
+/** 供单测：经 WebView fetch 探 health（与业务 REST 同路径）。 */
 export async function probeHabitatHealth(
   fetchFn: (path: string, init?: RequestInit) => Promise<Response> = hubApiFetch,
   timeoutMs = HABITAT_HEALTH_PROBE_TIMEOUT_MS,
@@ -32,60 +34,28 @@ export async function probeHabitatHealth(
   }
 }
 
-async function probeHabitatHealthDefault(): Promise<boolean> {
-  try {
-    const origin = resolveApiOrigin();
-    const token = typeof window !== "undefined" ? window.portalShell?.remoteAuth?.token : undefined;
-    const body = await probeHabitatHealthUrl(
-      origin,
-      omitUndefined({
-        token,
-        timeoutMs: HABITAT_HEALTH_PROBE_TIMEOUT_MS,
-      }),
-    );
-    return isHabitatHealthConnected(body);
-  } catch (err) {
-    logCaughtError("habitat-rpc/probeHabitatHealthDefault", err);
-    return false;
-  }
-}
-
 export function useHabitatRpcConnectivity(enabled: boolean): {
   state: HabitatRpcConnectionState;
   retry: () => Promise<void>;
 } {
-  const [state, setState] = useState<HabitatRpcConnectionState>("connecting");
-
-  const runProbe = useCallback(async (): Promise<void> => {
-    setState("connecting");
-    const ok = await probeHabitatHealthDefault();
-    setState(ok ? "connected" : "disconnected");
-  }, []);
+  const [state, setState] = useState<HabitatRpcConnectionState>(() =>
+    enabled && typeof window !== "undefined" ? getHabitatRpcConnectionState() : "connecting",
+  );
 
   const retry = useCallback(async (): Promise<void> => {
     resetApiClientCache();
-    await runProbe();
-  }, [runProbe]);
-
-  useEffect(() => {
-    if (!enabled) return;
-    void runProbe();
-  }, [enabled, runProbe]);
-
-  useEffect(() => {
-    if (!enabled) return () => {};
-    const onVisible = (): void => {
-      if (document.visibilityState === "visible") void runProbe();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [enabled, runProbe]);
+    try {
+      await reconnectHabitat({ force: true });
+    } catch (err) {
+      logCaughtError("habitat-rpc/useHabitatRpcConnectivity.retry", err);
+    }
+  }, []);
 
   useEffect(() => {
     if (!enabled) return () => {};
-    const timer = setInterval(() => void runProbe(), POLL_MS);
-    return () => clearInterval(timer);
-  }, [enabled, runProbe]);
+    setState(getHabitatRpcConnectionState());
+    return subscribeHabitatConnection(setState);
+  }, [enabled]);
 
   return { state, retry };
 }

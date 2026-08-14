@@ -47,6 +47,12 @@ function isTouchNativeShellRuntime(): boolean {
   return shell.primaryInput === "touch";
 }
 
+/** 原生探测 DNS/hosts 失败：勿回退 WebView（AsyncDns 仍会失败，掩盖真实错误） */
+export function isHabitatHealthDnsOrHostsError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  return msg.includes("无法解析主机名") || msg.includes("无地址");
+}
+
 /** 供单测；将 fetch/网络失败映射为设置页可读文案 */
 export function formatHabitatHealthProbeFetchError(err: unknown, habitatUrl?: string): string {
   if (err instanceof DOMException && err.name === "TimeoutError") {
@@ -74,6 +80,22 @@ export function formatHabitatHealthProbeFetchError(err: unknown, habitatUrl?: st
   return "连接失败";
 }
 
+async function probeHabitatHealthViaWebViewFetch(
+  healthUrl: string,
+  headers: Record<string, string>,
+  timeoutMs: number,
+  signal?: AbortSignal,
+): Promise<HabitatHealthBody> {
+  const res = await fetch(healthUrl, {
+    headers,
+    signal: probeAbortSignal(timeoutMs, signal),
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return (await res.json()) as HabitatHealthBody;
+}
+
 export async function probeHabitatHealthUrl(
   habitatUrl: string,
   options?: { token?: string; timeoutMs?: number; signal?: AbortSignal },
@@ -90,17 +112,22 @@ export async function probeHabitatHealthUrl(
     const { probeHabitatHealthViaNativeHttp, shouldProbeHabitatHealthViaNativeHttp } =
       await import("./native-habitat-health-probe.ts");
     if (await shouldProbeHabitatHealthViaNativeHttp(base)) {
-      // Tauri 原生探测失败时不要回退 WebView fetch（hosts / AsyncDns 仍会失败，掩盖真实错误）
-      return await probeHabitatHealthViaNativeHttp(healthUrl, headers, timeoutMs);
+      try {
+        return await probeHabitatHealthViaNativeHttp(healthUrl, headers, timeoutMs);
+      } catch (nativeErr) {
+        // DNS/hosts：不回退。TLS/网络：回退 WebView（与对话同信任链，避免 Android 原生不认用户 CA）
+        if (isHabitatHealthDnsOrHostsError(nativeErr)) {
+          throw nativeErr;
+        }
+        return await probeHabitatHealthViaWebViewFetch(
+          healthUrl,
+          headers,
+          timeoutMs,
+          options?.signal,
+        );
+      }
     }
-    const res = await fetch(healthUrl, {
-      headers,
-      signal: probeAbortSignal(timeoutMs, options?.signal),
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-    return (await res.json()) as HabitatHealthBody;
+    return await probeHabitatHealthViaWebViewFetch(healthUrl, headers, timeoutMs, options?.signal);
   } catch (err) {
     throw new Error(formatHabitatHealthProbeFetchError(err, habitatUrl), { cause: err });
   }

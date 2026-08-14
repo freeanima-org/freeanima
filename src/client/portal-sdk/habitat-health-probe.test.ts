@@ -1,13 +1,17 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, mock, test } from "bun:test";
+
 import {
   formatHabitatHealthProbeFetchError,
   habitatHealthFailureReason,
   isHabitatHealthConnected,
+  isHabitatHealthDnsOrHostsError,
+  probeHabitatHealthUrl,
 } from "./habitat-health-probe.ts";
 
 describe("habitat-health-probe", () => {
   afterEach(() => {
     delete (globalThis as { portalShell?: unknown }).portalShell;
+    mock.restore();
   });
 
   test("isHabitatHealthConnected", () => {
@@ -23,6 +27,16 @@ describe("habitat-health-probe", () => {
       "栖息地可达，但认证失败：请检查 Service API Token",
     );
     expect(habitatHealthFailureReason({ status: "down" })).toBe("栖息地可达，但服务状态异常");
+  });
+
+  test("isHabitatHealthDnsOrHostsError", () => {
+    expect(isHabitatHealthDnsOrHostsError(new Error("无法解析主机名 `x`：…"))).toBe(true);
+    expect(isHabitatHealthDnsOrHostsError(new Error("无法解析主机名 `x`（无地址）"))).toBe(true);
+    expect(
+      isHabitatHealthDnsOrHostsError(
+        new Error("网络错误（TLS 证书未被壳原生 HTTP 信任）：UnknownIssuer"),
+      ),
+    ).toBe(false);
   });
 
   test("formatHabitatHealthProbeFetchError：桌面壳 HTTPS 提示安装 mkcert CA", () => {
@@ -52,5 +66,48 @@ describe("habitat-health-probe", () => {
     expect(
       formatHabitatHealthProbeFetchError(new TypeError("fetch failed"), "https://habitat.lan:2659"),
     ).toContain("手机");
+  });
+
+  test("probeHabitatHealthUrl：原生 TLS 失败时回退 WebView fetch", async () => {
+    (globalThis as { portalShell?: { isTauri: boolean } }).portalShell = { isTauri: true };
+    mock.module("./native-habitat-health-probe.ts", () => ({
+      shouldProbeHabitatHealthViaNativeHttp: async () => true,
+      probeHabitatHealthViaNativeHttp: async () => {
+        throw new Error("网络错误（TLS 证书未被壳原生 HTTP 信任）：UnknownIssuer");
+      },
+    }));
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      Response.json({ status: "ok", authed: true })) as unknown as typeof fetch;
+    try {
+      const body = await probeHabitatHealthUrl("https://habitat.lan:2659", { token: "t" });
+      expect(body).toEqual({ status: "ok", authed: true });
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("probeHabitatHealthUrl：原生 DNS 失败不回退 WebView", async () => {
+    (globalThis as { portalShell?: { isTauri: boolean } }).portalShell = { isTauri: true };
+    mock.module("./native-habitat-health-probe.ts", () => ({
+      shouldProbeHabitatHealthViaNativeHttp: async () => true,
+      probeHabitatHealthViaNativeHttp: async () => {
+        throw new Error("无法解析主机名 `habitat.lan`：Name or service not known");
+      },
+    }));
+    let fetchCalled = false;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () => {
+      fetchCalled = true;
+      return Response.json({ status: "ok", authed: true });
+    }) as unknown as typeof fetch;
+    try {
+      await expect(probeHabitatHealthUrl("https://habitat.lan:2659")).rejects.toThrow(
+        "无法解析主机名",
+      );
+      expect(fetchCalled).toBe(false);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });

@@ -53,7 +53,8 @@ flowchart LR
 | 聊天输入无响应                                 | 未选对话；或栖息地 RPC 已断连                                                                               |
 | 栖息地加载失败 / Failed to fetch               | 栖息地未 `--host 0.0.0.0`、错误 token、防火墙                                                               |
 | 测试连接「网络错误」、浏览器同地址正常         | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658`           |
-| 测试连接成功，实际「连接已断开」               | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                                     |
+| 对话正常但顶栏「连接已断开」/ 测试失败         | 顶栏已跟 Habitat RPC WS；若仍断则查 token / WS。测试连接：原生 TLS 失败会回退 WebView；DNS/hosts 失败不回退 |
+| 测试连接成功，实际「连接已断开」               | 测试含 HTTP health + WebSocket；仍断连则查 token / WS 代理                                                  |
 | 保存时 `Read-only file system`                 | 已修：prefs 写入 app 私有 config 目录                                                                       |
 | ZeroTier / 虚拟网卡 IP                         | 手机 ZeroTier 在线；栖息地 `http.host: 0.0.0.0`；壳 URL 无尾斜杠                                            |
 | 安装 `NO_CERTIFICATES` / 版本降级              | 打包签名 APK；卸载旧 canary 后再装                                                                          |
