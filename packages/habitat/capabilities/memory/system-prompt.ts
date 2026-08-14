@@ -1,4 +1,7 @@
-import { RESIDENT_TOP_N } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
+import {
+  peekActiveRuntimeConfig,
+  resolveMemoryResidentConfig,
+} from "@freeanima/habitat/core/config";
 import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/habitat/core/hooks/prompt";
 
@@ -15,7 +18,8 @@ function readAgents(_cwd: string | null | undefined): string {
 
 /** Inner resident-memory body (no XML wrap); fold wraps via xmlTag. */
 export async function renderResidentMemoryBody(): Promise<string> {
-  const facts = await listResidentSemanticMemory(RESIDENT_TOP_N);
+  const { top_n } = resolveMemoryResidentConfig(peekActiveRuntimeConfig()?.data);
+  const facts = await listResidentSemanticMemory(top_n);
   if (facts.length === 0) return "";
   return facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned)).join("\n");
 }

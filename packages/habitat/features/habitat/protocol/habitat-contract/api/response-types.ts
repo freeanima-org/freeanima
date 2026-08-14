@@ -32,6 +32,22 @@ export type ToolsStatusResponse = {
   }>;
 };
 
+export type PromptDebugFoldSection = {
+  id: string;
+  order: number;
+  chars_used: number;
+  budget_chars?: number;
+  priority?: number;
+};
+
+export type PromptDebugFold = {
+  global_budget_chars: number;
+  total_chars: number;
+  truncated_section_ids: string[];
+  dropped_section_ids: string[];
+  sections: PromptDebugFoldSection[];
+};
+
 export type PromptDebugResponse = {
   mode: "global" | "conversation";
   conversation_id?: string;
@@ -55,6 +71,7 @@ export type PromptDebugResponse = {
       tools: number;
       total: number;
     };
+    fold?: PromptDebugFold;
   };
   tools: {
     mode: "registry" | "conversation";
@@ -70,5 +87,6 @@ export type PromptDebugResponse = {
   meta?: {
     cwd?: string | null;
     tool_names?: string[];
+    staged_toolsets?: string[];
   };
 };

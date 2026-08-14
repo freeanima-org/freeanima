@@ -1,6 +1,5 @@
 import { getActiveRuntimeConfig, resolvePassiveRecallConfig } from "@freeanima/habitat/core/config";
 import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
-import { RESIDENT_TOP_N } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
 import { isFtsQueryError } from "@freeanima/habitat/core/util";
 import type { PassiveRecallDebugTrace } from "@freeanima/shared/rpc-contract/frames/message";
 
@@ -99,7 +98,7 @@ export async function runPassiveRecallDebug(opts: {
 
   let excludedResidentIds: number[] = [];
   if (config.exclude_resident && hits.length > 0) {
-    const resident = await listResidentSemanticMemory(RESIDENT_TOP_N);
+    const resident = await listResidentSemanticMemory();
     const residentIds = new Set(resident.map((row) => row.id));
     const before = hits;
     hits = hits.filter((hit) => !residentIds.has(hit.semantic_memory_id));

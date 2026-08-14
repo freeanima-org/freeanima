@@ -9,6 +9,7 @@ import { isInToolLoop } from "./compression-tool-loop.ts";
 import { estimateMessagesTokens, estimateTokens, estimateToolsTokens } from "./token-estimate.ts";
 import type { OpenAiToolSchema, StoredMessage } from "@freeanima/habitat/core/db/domain";
 import { type CompressionState, parseCompressionState } from "@freeanima/habitat/core/db/domain";
+import { parseMemoryReferenceMarkers } from "@freeanima/habitat/core/db/pg/memory-reference";
 
 export type { CompressionState };
 export { parseCompressionState };
@@ -47,7 +48,9 @@ export function findLastUserIndex(rest: StoredMessage[]): number {
   return -1;
 }
 
-/** Single slim-segment message; tool dropped, returns null */
+/** Single slim-segment message; tool dropped, returns null.
+ *  Messages containing `[[anima:id]]` keep fuller content (importance heuristic).
+ */
 export function slimMessage(msg: StoredMessage): StoredMessage | null {
   const role = msg.role;
   if (role === "tool") return null;
@@ -63,8 +66,14 @@ export function slimMessage(msg: StoredMessage): StoredMessage | null {
     const hasCalls = Array.isArray(calls) && calls.length > 0;
     const content = (msg.content ?? "").trim();
     const reasoning = (msg.reasoning ?? "").trim();
+    const hasCite =
+      parseMemoryReferenceMarkers(content).length > 0 ||
+      parseMemoryReferenceMarkers(reasoning).length > 0;
     let text = content || reasoning;
-    if (!text && hasCalls) {
+    // 含记忆引用时优先保留正文，避免只剩 tool 占位而丢掉 [[anima:id]]
+    if (hasCite && content) {
+      text = content;
+    } else if (!text && hasCalls) {
       const names = calls
         .map((c) => c.function?.name?.trim())
         .filter((n): n is string => Boolean(n));

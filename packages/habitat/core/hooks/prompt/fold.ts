@@ -15,6 +15,8 @@ export type FoldSystemPromptResult = {
   sections: SystemPromptSection[];
   truncatedSectionIds: string[];
   droppedSectionIds: string[];
+  /** Final folded prompt length (`text.length`). */
+  total_chars: number;
 };
 
 const DEFAULT_HARD_KEEP = [
@@ -200,7 +202,13 @@ export function foldSystemPromptSectionsDetailed(
 
   const finalized = finalizeSections(sections);
   const text = finalized.map((s) => s.content).join("\n\n");
-  return { text, sections: finalized, truncatedSectionIds, droppedSectionIds };
+  return {
+    text,
+    sections: finalized,
+    truncatedSectionIds,
+    droppedSectionIds,
+    total_chars: text.length,
+  };
 }
 
 export function foldSystemPromptSections(

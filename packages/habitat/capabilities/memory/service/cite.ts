@@ -3,10 +3,14 @@ import { and, inArray, isNull, sql as drizzleSql } from "drizzle-orm";
 import { entities } from "@freeanima/habitat/core/db/schema";
 import { getDb } from "@freeanima/habitat/core/db/pg/client";
 import {
+  peekActiveRuntimeConfig,
+  resolveMemoryReferenceConfig,
+} from "@freeanima/habitat/core/config";
+import { formatCstIso } from "@freeanima/habitat/core/util";
+import {
   memoryReferenceWeight,
   parseMemoryReferenceMarkers,
 } from "@freeanima/habitat/core/db/pg/memory-reference/markers";
-import { formatCstIso } from "@freeanima/habitat/core/util";
 
 /**
  * syncTurn 内建 cite：只 bump entities.reference_count，不写 memory_references 边表。
@@ -27,7 +31,12 @@ export async function bumpReferenceCountsFromTexts(
   if (existingIds.length === 0) return [];
 
   const created_at = opts?.created_at ?? new Date(formatCstIso());
-  const weight = memoryReferenceWeight(created_at);
+  const ref = resolveMemoryReferenceConfig(peekActiveRuntimeConfig()?.data);
+  const weight = memoryReferenceWeight(created_at, new Date(), {
+    decayDays: ref.decay_days,
+    recentWeight: ref.recent_weight,
+    staleWeight: ref.stale_weight,
+  });
   const now = new Date(formatCstIso());
   await db
     .update(entities)

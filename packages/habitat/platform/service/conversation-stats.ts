@@ -18,6 +18,9 @@ import {
 } from "./runtime-context-stats.ts";
 import { estimateTokens, messageTextForEstimate } from "@freeanima/habitat/core/compress";
 import { normalizeUsage } from "@freeanima/habitat/core/llm";
+import { findMessagePos } from "@freeanima/habitat/core/db/pg/conversation";
+import { getRetainWatermark } from "@freeanima/habitat/capabilities/memory/service";
+import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 
 export type ConversationStats = {
   conversation: string;
@@ -55,6 +58,11 @@ export type ConversationStats = {
   compression_window_raw: number;
   compression_messages_until_recompress: number | null;
   compression_rounds_until_recompress: number | null;
+  /** Retain watermark vs compression l2（会话级缺口可见性） */
+  retain_watermark_message_id: string | null;
+  retain_watermark_pos: number | null;
+  /** true：已压缩且（无 watermark，或 l2 越过 tip pos） */
+  retain_gap: boolean;
   /** Runtime view (post-compression) breakdown */
   context_breakdown: RuntimeContextBreakdown;
   context_tokens_est: number;
@@ -121,6 +129,9 @@ async function readCompressionAndContextFields(
     | "compression_window_raw"
     | "compression_messages_until_recompress"
     | "compression_rounds_until_recompress"
+    | "retain_watermark_message_id"
+    | "retain_watermark_pos"
+    | "retain_gap"
     | "context_breakdown"
     | "context_tokens_est"
   >
@@ -148,6 +159,36 @@ async function readCompressionAndContextFields(
     }
   }
 
+  let retain_watermark_message_id: string | null = null;
+  let retain_watermark_pos: number | null = null;
+  try {
+    const wm = await getRetainWatermark(conversationId);
+    if (wm?.message_id) {
+      retain_watermark_message_id = wm.message_id;
+      retain_watermark_pos = await findMessagePos(conversationId, wm.message_id);
+    }
+  } catch (err: unknown) {
+    logComponent("memory").warn("read retain watermark for stats failed", {
+      conversation_id: conversationId,
+      err: String(err instanceof Error ? err.message : err),
+    });
+  }
+
+  const compressed = l2 != null && l2 > 0;
+  const retain_gap =
+    compressed &&
+    (retain_watermark_message_id == null ||
+      (retain_watermark_pos != null && l2 > retain_watermark_pos));
+
+  if (retain_gap) {
+    logComponent("memory").warn("compression l2 ahead of retain watermark", {
+      conversation_id: conversationId,
+      compression_l2: l2,
+      retain_watermark_message_id,
+      retain_watermark_pos,
+    });
+  }
+
   return {
     compression_enabled: cfg.enabled,
     compression_mode: analysis.mode,
@@ -171,6 +212,9 @@ async function readCompressionAndContextFields(
       analysis.mode === "messages" ? analysis.messages_until_recompress : null,
     compression_rounds_until_recompress:
       analysis.mode === "messages" ? analysis.rounds_until_recompress : null,
+    retain_watermark_message_id,
+    retain_watermark_pos,
+    retain_gap,
     context_breakdown: breakdown,
     context_tokens_est: breakdown.total,
   };
@@ -331,6 +375,9 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
       compression_window_raw: 0,
       compression_messages_until_recompress: null,
       compression_rounds_until_recompress: null,
+      retain_watermark_message_id: null,
+      retain_watermark_pos: null,
+      retain_gap: false,
       context_breakdown: emptyBreakdown(),
       context_tokens_est: 0,
     };
@@ -419,6 +466,9 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
     compression_window_raw: 0,
     compression_messages_until_recompress: null,
     compression_rounds_until_recompress: null,
+    retain_watermark_message_id: null,
+    retain_watermark_pos: null,
+    retain_gap: items.some((s) => s.retain_gap),
     context_breakdown: bd,
     context_tokens_est: bd.total,
   };
@@ -494,6 +544,17 @@ function formatCompression(stats: ConversationStats): string {
   lines.push(
     `Runtime visible ${stats.compression_visible_messages} messages (hidden vs full archive ${stats.compression_hidden})`,
   );
+  if (stats.retain_watermark_message_id) {
+    lines.push(
+      `Retain watermark: ${stats.retain_watermark_message_id}` +
+        (stats.retain_watermark_pos != null ? ` (pos=${stats.retain_watermark_pos})` : ""),
+    );
+  } else if (stats.compression_l2 != null && stats.compression_l2 > 0) {
+    lines.push("Retain watermark: not established");
+  }
+  if (stats.retain_gap) {
+    lines.push("Retain gap: compression l2 ahead of retain tip (manual catch-up may be needed)");
+  }
   if (stats.compression_has_summary) {
     lines.push(
       `Session summary: injected (~${formatTokenK(stats.context_breakdown.summary)} tokens)`,

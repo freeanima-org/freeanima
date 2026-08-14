@@ -5,7 +5,7 @@ title: 压缩
 # 上下文压缩
 
 > 运行时上下文压缩：对话在数据库中**全量保留**；仅裁切发给 LLM 的**四段视图**。
-> 关联：[`sleep.md`](sleep.md)、[`memory.md`](memory.md)。
+> 关联：[`context-management.md`](context-management.md)、[`sleep.md`](sleep.md)、[`memory.md`](memory.md)。
 
 ## 设计原则
 
@@ -84,4 +84,4 @@ compression:
 
 ## 与记忆管道的关系
 
-压缩与 retain/reflect **独立运行**：压缩管理当前 conversation 的 LLM 窗口；记忆提取每晚从完整对话存档运行。
+压缩与 retain/reflect **独立运行**：压缩管理当前 conversation 的 LLM 窗口；语义抽取走热路径 `syncTurn` → retain。夜间 **memory-maintenance** 仅做 Retain **缺口检查**（Inbox 通知），补跑仅手动——见 [`sleep.md`](sleep.md)。

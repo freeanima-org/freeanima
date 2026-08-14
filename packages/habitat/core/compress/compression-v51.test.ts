@@ -62,6 +62,23 @@ describe("compression v5.1", () => {
     expect(slim?.content).toBe("[tools executed: file_read, grep]");
   });
 
+  it("slimMessage keeps [[anima:id]] content over tool placeholder", () => {
+    const slim = slimMessage({
+      role: "assistant",
+      content: "Used memory [[anima:42]]",
+      tool_calls: [
+        {
+          id: "1",
+          type: "function",
+          function: { name: "memory_semantic_search", arguments: "{}" },
+        },
+      ],
+      pos: 3,
+    });
+    expect(slim?.content).toContain("[[anima:42]]");
+    expect(slim?.content).not.toContain("[tools executed:");
+  });
+
   it("slimMessage drops completely empty assistant", () => {
     expect(slimMessage({ role: "assistant", content: null, pos: 2 })).toBeNull();
   });

@@ -37,6 +37,19 @@ export const memoryClusteringConfigSchema = z.object({
   max_calibrate_n: z.number().int().positive().optional(),
 });
 
+export const memoryResidentConfigSchema = z.object({
+  /** 常驻注入条数上限（含非置顶热度槽） */
+  top_n: z.number().int().positive().max(100).optional(),
+  /** 置顶常驻硬上限；超限截断列表并 warn，不写库 unpin */
+  pinned_max: z.number().int().positive().max(200).optional(),
+});
+
+export const memoryReferenceConfigSchema = z.object({
+  decay_days: z.number().int().positive().max(3650).optional(),
+  recent_weight: z.number().int().positive().max(100).optional(),
+  stale_weight: z.number().int().positive().max(100).optional(),
+});
+
 export const memoryConfigSchema = z
   .object({
     /** 默认 embedded；remote 客户端实现同 MemoryService 契约 */
@@ -45,6 +58,8 @@ export const memoryConfigSchema = z
     cutover: memoryCutoverConfigSchema.optional(),
     passive_recall: passiveRecallConfigSchema.optional(),
     clustering: memoryClusteringConfigSchema.optional(),
+    resident: memoryResidentConfigSchema.optional(),
+    reference: memoryReferenceConfigSchema.optional(),
     temporal_summary: z
       .object({
         enabled: z.boolean().optional(),
@@ -66,6 +81,8 @@ export type MemoryConfigInput = z.infer<typeof memoryConfigSchema>;
 export type MemoryDeploymentConfig = z.infer<typeof memoryDeploymentSchema>;
 export type MemoryCutoverConfigInput = z.infer<typeof memoryCutoverConfigSchema>;
 export type MemoryClusteringConfigInput = z.infer<typeof memoryClusteringConfigSchema>;
+export type MemoryResidentConfigInput = z.infer<typeof memoryResidentConfigSchema>;
+export type MemoryReferenceConfigInput = z.infer<typeof memoryReferenceConfigSchema>;
 
 export function resolveMemoryDeployment(cfg: RuntimeConfig): MemoryDeploymentConfig {
   return cfg.memory?.deployment ?? "embedded";
@@ -124,6 +141,44 @@ export function resolveMemoryClusteringConfig(cfg: RuntimeConfig): ResolvedMemor
     min_points: raw?.min_points ?? DEFAULT_CLUSTERING_MIN_POINTS,
     max_batch_bytes: raw?.max_batch_bytes ?? DEFAULT_CLUSTERING_MAX_BATCH_BYTES,
     max_calibrate_n: raw?.max_calibrate_n ?? DEFAULT_CLUSTERING_MAX_CALIBRATE_N,
+  };
+}
+
+export const DEFAULT_RESIDENT_TOP_N = 20;
+export const DEFAULT_RESIDENT_PINNED_MAX = 40;
+export const DEFAULT_REFERENCE_DECAY_DAYS = 30;
+export const DEFAULT_REFERENCE_RECENT_WEIGHT = 2;
+export const DEFAULT_REFERENCE_STALE_WEIGHT = 1;
+
+export type ResolvedMemoryResidentConfig = {
+  top_n: number;
+  pinned_max: number;
+};
+
+export type ResolvedMemoryReferenceConfig = {
+  decay_days: number;
+  recent_weight: number;
+  stale_weight: number;
+};
+
+export function resolveMemoryResidentConfig(
+  cfg?: RuntimeConfig | null,
+): ResolvedMemoryResidentConfig {
+  const raw = cfg?.memory?.resident;
+  return {
+    top_n: raw?.top_n ?? DEFAULT_RESIDENT_TOP_N,
+    pinned_max: raw?.pinned_max ?? DEFAULT_RESIDENT_PINNED_MAX,
+  };
+}
+
+export function resolveMemoryReferenceConfig(
+  cfg?: RuntimeConfig | null,
+): ResolvedMemoryReferenceConfig {
+  const raw = cfg?.memory?.reference;
+  return {
+    decay_days: raw?.decay_days ?? DEFAULT_REFERENCE_DECAY_DAYS,
+    recent_weight: raw?.recent_weight ?? DEFAULT_REFERENCE_RECENT_WEIGHT,
+    stale_weight: raw?.stale_weight ?? DEFAULT_REFERENCE_STALE_WEIGHT,
   };
 }
 
