@@ -20,6 +20,7 @@ export {
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
   temporalSummaryBackfillMissingBodySchema,
+  temporalSummaryRebuildRangeBodySchema,
   temporalSystemRollRegenerateBodySchema,
   toolsStatusResponseSchema,
   worldEntityCreateBodySchema,

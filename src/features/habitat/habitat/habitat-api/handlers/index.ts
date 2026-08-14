@@ -23,6 +23,7 @@ export {
   listTemporalSummaries,
   regenerateTemporalSummary,
   backfillMissingTemporalSummaries,
+  rebuildTemporalSummariesInRange,
   listTemporalSystemRolls,
   regenerateTemporalSystemRoll,
   countSemanticMemory,

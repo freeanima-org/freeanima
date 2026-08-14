@@ -12,6 +12,7 @@ import {
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
   temporalSummaryBackfillMissingBodySchema,
+  temporalSummaryRebuildRangeBodySchema,
   temporalSystemRollRegenerateBodySchema,
   worldEntityCreateBodySchema,
   worldEntityPatchInputSchema,
@@ -248,6 +249,11 @@ export const habitatMethodDefs = {
   }),
   "memory.temporalBackfillMissing": defineHabitatMethod({
     input: temporalSummaryBackfillMissingBodySchema,
+    output: unknownOutputSchema,
+    meta: longOpMeta(false),
+  }),
+  "memory.temporalRebuildRange": defineHabitatMethod({
+    input: temporalSummaryRebuildRangeBodySchema,
     output: unknownOutputSchema,
     meta: longOpMeta(false),
   }),

@@ -1,5 +1,5 @@
 import { logCapability as logComponent } from "@freeanima/host/core/config/capability-injection";
-import { listConversationIdsUpdatedBetween } from "@freeanima/host/core/db/pg/conversation";
+import { listConversationIdsWithMessagesBetween } from "@freeanima/host/core/db/pg/conversation";
 import { upsertTemporalSummary } from "@freeanima/host/core/db/pg/temporal-summary";
 import { collectConversationBlocks, cstDayRange } from "../light-sleep/build-messages.ts";
 import { summarizeTemporalText } from "./summarize.ts";
@@ -44,7 +44,8 @@ export async function runTemporalSummaryDay(opts: {
     return { ok: true, day: cstDayRange(opts.day).day, summary: "disabled", skipped: "disabled" };
   }
   const range = cstDayRange(opts.day);
-  const conversationIds = await listConversationIdsUpdatedBetween(range.fromIso, range.toIso);
+  // Align with tick: message payload.timestamp activity, not conversations.updated_at.
+  const conversationIds = await listConversationIdsWithMessagesBetween(range.fromIso, range.toIso);
   if (conversationIds.length === 0) {
     return upsertEmptyDay({
       day: range.day,

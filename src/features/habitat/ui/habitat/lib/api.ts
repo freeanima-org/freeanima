@@ -350,6 +350,14 @@ export async function backfillMissingTemporalSummaries(input: {
   return hubCall(habitat().call("memory.temporalBackfillMissing", input as never));
 }
 
+export async function rebuildTemporalSummariesInRange(input: {
+  window: "day" | "month" | "year";
+  period_start_from: string;
+  period_start_to: string;
+}) {
+  return hubCall(habitat().call("memory.temporalRebuildRange", input as never));
+}
+
 export async function listTemporalSystemRolls() {
   return hubCall(habitat().call("memory.temporalSystemRollList", {}));
 }

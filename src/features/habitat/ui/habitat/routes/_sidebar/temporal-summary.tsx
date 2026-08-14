@@ -26,6 +26,7 @@ import {
   listTemporalSystemRolls,
   regenerateTemporalSummary,
   regenerateTemporalSystemRoll,
+  rebuildTemporalSummariesInRange,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
@@ -35,7 +36,7 @@ const PAGE_SIZE = 20;
 const ENTITY_TABS = ["day", "month", "year"] as const;
 type EntityWindow = (typeof ENTITY_TABS)[number];
 type PageTab = EntityWindow | "system_rolls";
-type ToolbarOp = "list" | "backfill" | "regen";
+type ToolbarOp = "list" | "backfill" | "rebuild" | "regen";
 
 type TemporalRow = {
   id: number;
@@ -71,15 +72,16 @@ function TemporalSummaryPage() {
   const { setOffset, currentPage, offsetForPage } = useHabitatOffsetPagination(PAGE_SIZE);
   const [listLoading, setListLoading] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
+  const [rebuilding, setRebuilding] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<TemporalRow[]>([]);
   const [rolls, setRolls] = useState<SystemRollRow[]>([]);
   const [regenKey, setRegenKey] = useState<string | null>(null);
-  /** 互斥：查询 / 补跑 / 单行重生成同时只允许一个；避免第二个操作清掉第一个的 loading */
+  /** 互斥：查询 / 补跑 / 强制重跑 / 单行重生成同时只允许一个；避免第二个操作清掉第一个的 loading */
   const opRef = useRef<ToolbarOp | null>(null);
-  const toolbarBusy = listLoading || backfilling || regenKey != null;
+  const toolbarBusy = listLoading || backfilling || rebuilding || regenKey != null;
 
   const fetchEntityList = useCallback(
     async (
@@ -214,6 +216,42 @@ function TemporalSummaryPage() {
     }
   };
 
+  const onRebuildRange = async (window: EntityWindow) => {
+    const period_start_from = from.trim();
+    const period_start_to = to.trim();
+    if (!period_start_from || !period_start_to) {
+      setError("强制重跑前请同时设置起止日期（YYYY-MM-DD）。");
+      return;
+    }
+    if (opRef.current) return;
+    opRef.current = "rebuild";
+    setRebuilding(true);
+    setError("");
+    setInfo("");
+    try {
+      const result = (await rebuildTemporalSummariesInRange({
+        window,
+        period_start_from,
+        period_start_to,
+      })) as {
+        expected?: string[];
+        filled?: string[];
+        failed?: unknown[];
+        summary?: string;
+      };
+      setInfo(
+        `强制重跑完成：期望 ${String(result.expected?.length ?? 0)}，已填 ${String(result.filled?.length ?? 0)}，失败 ${String(result.failed?.length ?? 0)}`,
+      );
+      await fetchEntityList(window, 0, { silent: true });
+    } catch (e) {
+      logCaughtError("routes/_sidebar/temporal-summary/rebuild", e);
+      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setRebuilding(false);
+      if (opRef.current === "rebuild") opRef.current = null;
+    }
+  };
+
   const onRegenerateRoll = async (kind: SystemRollRow["kind"]) => {
     if (opRef.current) return;
     opRef.current = "regen";
@@ -269,7 +307,7 @@ function TemporalSummaryPage() {
         <h2 className="text-lg font-bold">{"⏳ 时间摘要"}</h2>
         <p className="text-sm text-muted-foreground mt-1">
           {
-            "全局日/月/年实体（各周期结束后写入），以及三条反向系统汇总（过往日/月/年），经 Redis 缓存。"
+            "全局日/月/年实体（各周期结束后写入），以及三条反向系统汇总（过往日/月/年），经 Redis 缓存。计入所有非 debug、非 cron 会话（含 remote）；全局日按消息时间选源。「补全缺失」只填没有行的周期；「强制重跑」覆盖区间内全部期望周期（含空占位）。"
           }
         </p>
       </div>
@@ -317,6 +355,15 @@ function TemporalSummaryPage() {
                   >
                     {backfilling ? <Spinner className="size-4" /> : null}
                     {"补全缺失"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => void onRebuildRange(w)}
+                    isDisabled={toolbarBusy}
+                  >
+                    {rebuilding ? <Spinner className="size-4" /> : null}
+                    {"强制重跑"}
                   </Button>
                 </div>
               </div>

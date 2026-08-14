@@ -6,6 +6,7 @@ import {
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
   temporalSummaryBackfillMissingBodySchema,
+  temporalSummaryRebuildRangeBodySchema,
   temporalSystemRollRegenerateBodySchema,
   worldEntityCreateBodySchema,
   subjectEntityCreateBodySchema,
@@ -70,6 +71,16 @@ describe("api/schemas", () => {
         period_start_to: "2026-01-31",
       }).success,
     ).toBe(false);
+  });
+
+  it("validates temporal rebuild range body", () => {
+    expect(
+      temporalSummaryRebuildRangeBodySchema.safeParse({
+        window: "month",
+        period_start_from: "2026-01-01",
+        period_start_to: "2026-03-01",
+      }).success,
+    ).toBe(true);
   });
 
   it("requires platform on create conversation", () => {
