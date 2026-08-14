@@ -5,6 +5,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
+import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { SELF_BLOCK_KEYS } from "@freeanima/habitat/core/db/pg/self-layer/types";
 import { buildAutobiographySummary } from "@freeanima/habitat/capabilities/memory/autobiography/run";
 import {
@@ -64,25 +65,40 @@ describePg("self layer PG", () => {
   });
 
   it("autobiographical_memory append-only (historical narrative retained read-only)", async () => {
-    const id = await createAutobiographicalMemory({
-      title: "First boundary test",
-      content: "I realized that saying no is also a choice.",
-      significance: "turning_point",
-      source_semantic_memory: [1001],
-    });
-    expect(id.length).toBeGreaterThan(0);
+    // 临时关 park，以便用 brick API 验证 append-only / deprecate 契约（默认 park 停写 narrative）
+    const cfg = getActiveRuntimeConfig();
+    const prevCutover = cfg.data.memory?.cutover;
+    cfg.data.memory = {
+      ...cfg.data.memory,
+      cutover: { ...prevCutover, park_limbic_dream_narrative: false },
+    };
 
-    const row = await getAutobiographicalMemory(id);
-    expect(row?.status).toBe("active");
-    expect(row?.significance).toBe("turning_point");
+    try {
+      const id = await createAutobiographicalMemory({
+        title: "First boundary test",
+        content: "I realized that saying no is also a choice.",
+        significance: "turning_point",
+        source_semantic_memory: [1001],
+      });
+      expect(id.length).toBeGreaterThan(0);
 
-    const summary = buildAutobiographySummary([row!]);
-    expect(summary).toContain("First boundary test");
-    expect(summary).toContain("## Turning points");
+      const row = await getAutobiographicalMemory(id);
+      expect(row?.status).toBe("active");
+      expect(row?.significance).toBe("turning_point");
 
-    const deprecated = await deprecateAutobiographicalMemory(id);
-    expect(deprecated).toBe(true);
-    expect((await getAutobiographicalMemory(id))?.status).toBe("deprecated");
+      const summary = buildAutobiographySummary([row!]);
+      expect(summary).toContain("First boundary test");
+      expect(summary).toContain("## Turning points");
+
+      const deprecated = await deprecateAutobiographicalMemory(id);
+      expect(deprecated).toBe(true);
+      expect((await getAutobiographicalMemory(id))?.status).toBe("deprecated");
+    } finally {
+      cfg.data.memory = {
+        ...cfg.data.memory,
+        cutover: prevCutover,
+      };
+    }
   });
 
   afterAll(async () => {
