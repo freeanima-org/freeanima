@@ -1,8 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  composeKeyboardLift,
   computeLayoutShrink,
   computeVisualViewportInset,
+  measureAppBottomNavChromePx,
   mergeKeyboardInset,
 } from "./keyboard-inset.ts";
 
@@ -56,5 +58,42 @@ describe("mergeKeyboardInset", () => {
 
   test("两者均为 0 时返回 0", () => {
     expect(mergeKeyboardInset(0, 0, 0)).toBe(0);
+  });
+});
+
+describe("composeKeyboardLift", () => {
+  test("无键盘时为 0", () => {
+    expect(composeKeyboardLift(0, 56)).toBe(0);
+  });
+
+  test("扣除 compact 底栏占位，避免多抬透明空隙", () => {
+    expect(composeKeyboardLift(300, 56)).toBe(244);
+  });
+
+  test("底栏已隐藏时用全量 inset", () => {
+    expect(composeKeyboardLift(300, 0)).toBe(300);
+  });
+
+  test("底栏高于 inset 时不负向平移", () => {
+    expect(composeKeyboardLift(40, 56)).toBe(0);
+  });
+});
+
+describe("measureAppBottomNavChromePx", () => {
+  test("无底栏节点时为 0", () => {
+    const root = {
+      querySelector: () => null,
+    } as unknown as ParentNode;
+    expect(measureAppBottomNavChromePx(root)).toBe(0);
+  });
+
+  test("按底栏 getBoundingClientRect().height", () => {
+    const nav = {
+      getBoundingClientRect: () => ({ height: 64 }),
+    };
+    const root = {
+      querySelector: (sel: string) => (sel === ".app-bottom-nav" ? nav : null),
+    } as unknown as ParentNode;
+    expect(measureAppBottomNavChromePx(root)).toBe(64);
   });
 });

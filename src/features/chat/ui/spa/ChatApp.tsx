@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   AlertDescription,
@@ -23,6 +23,10 @@ import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-res
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
 import { useKeyboardInset } from "@freeanima/features/chat/ui/spa/hooks/useKeyboardInset.ts";
+import {
+  composeKeyboardLift,
+  measureAppBottomNavChromePx,
+} from "@freeanima/features/chat/ui/spa/lib/keyboard-inset.ts";
 import { formatConversationIdDateTime } from "@freeanima/features/chat/ui/spa/lib/format-datetime.ts";
 import {
   displayAwaitingReply,
@@ -47,10 +51,12 @@ import {
   reconnectHabitat,
   useActionSheetCapability,
   useChatLlmDebugEnabled,
+  useCompactImmersive,
   useContextMenuCapability,
   useHabitatConnection,
   useNetworkOnline,
   useOpenHabitatSettingsCapability,
+  useSetCompactImmersive,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   getChatRpcStreamClient,
@@ -253,6 +259,40 @@ export function ChatApp() {
     onOpen: openSidebar,
   });
   const keyboardInset = useKeyboardInset();
+  const compactImmersive = useCompactImmersive();
+  const setCompactImmersive = useSetCompactImmersive();
+  const keyboardOwnedImmersiveRef = useRef(false);
+  /** 键盘打开时藏 compact 底栏，避免占位与 translateY 错位；与任务沉浸编辑共用 store，仅清理本方占用 */
+  useLayoutEffect(() => {
+    if (!mobileLayout) {
+      if (keyboardOwnedImmersiveRef.current) {
+        setCompactImmersive(false);
+        keyboardOwnedImmersiveRef.current = false;
+      }
+      return;
+    }
+    if (keyboardInset > 0) {
+      if (!keyboardOwnedImmersiveRef.current) {
+        setCompactImmersive(true);
+        keyboardOwnedImmersiveRef.current = true;
+      }
+      return;
+    }
+    if (keyboardOwnedImmersiveRef.current) {
+      setCompactImmersive(false);
+      keyboardOwnedImmersiveRef.current = false;
+    }
+  }, [mobileLayout, keyboardInset, setCompactImmersive]);
+  useEffect(
+    () => () => {
+      if (!keyboardOwnedImmersiveRef.current) return;
+      setCompactImmersive(false);
+      keyboardOwnedImmersiveRef.current = false;
+    },
+    [setCompactImmersive],
+  );
+  const bottomChromePx = mobileLayout && !compactImmersive ? measureAppBottomNavChromePx() : 0;
+  const composeLift = composeKeyboardLift(keyboardInset, bottomChromePx);
   const {
     toggle: toggleSpeech,
     enqueue: enqueueSpeech,
@@ -1662,9 +1702,7 @@ export function ChatApp() {
                 "border-t border bg-background relative chat-compose",
                 mobileLayout ? "px-3 py-2" : "p-4",
               ].join(" ")}
-              style={
-                keyboardInset > 0 ? { transform: `translateY(-${keyboardInset}px)` } : undefined
-              }
+              style={composeLift > 0 ? { transform: `translateY(-${composeLift}px)` } : undefined}
             >
               {speechPlaybackError ? (
                 <p className="mb-2 text-xs text-destructive">{speechPlaybackError}</p>
