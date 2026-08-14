@@ -60,7 +60,7 @@ title: 交互模式
 | 壳     | N/A                                                                                                                                                      |
 | 禁止   | 用 `getShellKind()` 选菜单类型；用视口宽度选 ContextMenu vs ActionSheet；自定义 `fixed` 坐标菜单                                                         |
 
-**实现：** 底盘 — [`ListRow.tsx`](../../src/ui-kit/composite/ListRow.tsx)。任务领域 — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx)（+ 列表包装 `TaskItemListView`）。消费者：项目侧栏、任务列表侧栏、智能清单侧栏、邮件消息/账户行、聊天室对话列表。能力开关：`useActionSheet`、`contextMenuEnabled`、来自父级的拖拽 attrs/listeners。
+**实现：** 底盘 — [`ListRow.tsx`](../../src/ui-kit/composite/ListRow.tsx)。任务领域 — [`TaskItemRowView.tsx`](../../src/ui-kit/composite/TaskItemRowView.tsx)（+ 列表包装 `TaskItemListView`）。消费者：项目侧栏、任务列表侧栏、智能清单侧栏、邮件消息/账户行、聊天室对话列表。能力开关：`useActionSheet`、`contextMenuEnabled`、来自父级的拖拽 attrs/listeners。聊天室 touch 常驻主操作为**归档**（无 ⋯），溢出仍靠长按 ActionSheet。
 
 **合规：** 参考（底盘已抽取）。**待对齐（P2/P3）：** MoveTo*Picker 树行；Vault/日记/番茄选择器；栖息地管理台；扩展弹窗。
 
@@ -76,13 +76,13 @@ title: 交互模式
 
 **维度适配：**
 
-| 透镜   | 适配                                                                                                          |
-| ------ | ------------------------------------------------------------------------------------------------------------- |
-| 不变量 | 一套条目构建器；两套表面消费同一数组                                                                          |
-| 布局   | ActionSheet 可呈底栏 sheet；ContextMenu 锚定——呈现细节跟基元                                                  |
-| 交互   | **pointer：** `ContextMenu`。**touch：** `ActionSheet` + 长按和/或 ⋯。状态机分开；会话数据共享（目标 + 条目） |
-| 壳     | N/A                                                                                                           |
-| 禁止   | 并行手写菜单；菜单动作内用 `window.confirm` 做不可逆删除（用 ConfirmDestructive）                             |
+| 透镜   | 适配                                                                                                                                    |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 不变量 | 一套条目构建器；两套表面消费同一数组                                                                                                    |
+| 布局   | ActionSheet 可呈底栏 sheet；ContextMenu 锚定——呈现细节跟基元                                                                            |
+| 交互   | **pointer：** `ContextMenu`。**touch：** `ActionSheet` + 长按和/或 ⋯（聊天室用常驻归档代替 ⋯）。状态机分开；会话数据共享（目标 + 条目） |
+| 壳     | N/A                                                                                                                                     |
+| 禁止   | 并行手写菜单；菜单动作内用 `window.confirm` 做不可逆删除（用 ConfirmDestructive）                                                       |
 
 **实现：** `@freeanima/ui-kit/composite` — `ContextMenu`、`ActionSheet`、`useLongPress`。
 

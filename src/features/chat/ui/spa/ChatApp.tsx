@@ -856,6 +856,8 @@ export function ChatApp() {
       contextMenuItems={conversationMenuItemsFor(s.id)}
       onNavigate={(id) => void navigateToConversation(id)}
       onOpenMenu={openConversationMenu}
+      onArchive={(id) => void handleArchive(id)}
+      onUnarchive={(id) => void handleUnarchive(id)}
     />
   );
 
