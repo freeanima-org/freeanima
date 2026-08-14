@@ -21,6 +21,7 @@ import { chatMethodDefs } from "@freeanima/features/chat/habitat/method-defs.ts"
 import { codingMethodDefs } from "@freeanima/features/coding/habitat/method-defs.ts";
 import { companionMethodDefs } from "@freeanima/features/companion/habitat/method-defs.ts";
 import { diaryMethodDefs } from "@freeanima/features/diary/habitat/method-defs.ts";
+import { noteMethodDefs } from "@freeanima/features/note/habitat/method-defs.ts";
 import { calendarMethodDefs } from "@freeanima/features/calendar/habitat/method-defs.ts";
 import { emailMethodDefs } from "@freeanima/features/email/habitat/method-defs.ts";
 import { mcpMethodDefs } from "@freeanima/features/mcp/habitat/method-defs.ts";
@@ -48,6 +49,7 @@ export const FEATURE_METHOD_DEFS = {
   ...bookmarkMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,
+  ...noteMethodDefs,
   ...calendarMethodDefs,
   ...pomodoroMethodDefs,
   ...notificationMethodDefs,

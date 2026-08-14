@@ -256,7 +256,7 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 | Body / 列         | 作用                                                             |
 | ----------------- | ---------------------------------------------------------------- |
 | `body.block_type` | `text` \| `image` \| `audio` \| `video` \| `link_card` \| `file` |
-| `body.parent_id`  | 容器实体 id（`diary_entry`；日后：note）                         |
+| `body.parent_id`  | 容器实体 id（`diary_entry` \| `note`）                           |
 | `body.sort_order` | 视图顺序；块无语义优先级                                         |
 | `body.url`        | 非文本类型的资源定位；文本为 null                                |
 | `content` 列      | 文本正文或媒体说明                                               |
@@ -271,10 +271,28 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 | `semantic_ref`    | `entity_id`（指向 `primary_component=semantic_memory` 的 entity）                               |
 | `semantic_memory` | `memory_kind`、`status`、`source_conversations`、`observed_at`、`occurred_at`，可选 `legacy_id` |
 
-**容器终态：** `diary_entry` 是唯一 content-block 容器。梦境 / 感性 / 自传记忆是带匹配语义标签的 `content_block` 行，挂在该 CST 日的日记下（记忆维护写入用 agent 默认私有 world）。
+**容器终态：** `diary_entry` 与 `note` 均为 content-block 容器。梦境 / 感性 / 自传记忆是带匹配语义标签的 `content_block` 行，挂在该 CST 日的日记下（记忆维护写入用 agent 默认私有 world）。
 
 - **LLM：** ToolSet `content-block`（`@freeanima/features/content-block/domain`）— `content_block_create` / `update` / `delete` / `get` / `list` / `search` / `reorder`。`list` 需要容器 `parent_id`；可选 `component=limbic|narrative|semantic_ref|dream` 过滤语义标签；`reorder` 批量更新 `sort_order`。可选 `world_id`；`parent_id` / 块 `id` 可推断 world。
 - **搜索过滤：** `parent_id`、`block_type`、`client_op_id`（`entity_search` / store 共享白名单）。
+
+## 笔记本模块
+
+**user** 与 **agent** 主体的主题向笔记：
+
+| 概念 | 实体           | 组件   |
+| ---- | -------------- | ------ |
+| 笔记 | `type=content` | `note` |
+
+笔记位于各 subject 的 **`default_private_world_id`**。组织维度是 **标题 / 标签 / 搜索**（无按日唯一键）。可选顶层 **`tag_ids`**。**正文在子 `content_block` 行**（`block_type: text`，`parent_id` → 笔记）；容器实体 `content` 列空置。
+
+同一实体可同时挂 `diary_entry` 与 `note`（attach）；模块列表按 **`primary_component`** 归属（笔记本列表仅 `primary_component=note`）。
+
+- **SAP：** `note.*` + `note.block*` — 均接受 `subject_kind: user | agent`。
+- **UI：** 壳 `/note` — 列表 + Markdown 源码编辑与预览；跨笔记引用用 `[[anima:id]]`。
+- **LLM：** ToolSet `note` — 按实体 id；可选 `world_id`。块级编辑亦可经 ToolSet `content-block`。
+
+见 [`docs/modules/note.md`](../modules/note.md)。
 
 ## 梦境（记忆维护流水线）
 

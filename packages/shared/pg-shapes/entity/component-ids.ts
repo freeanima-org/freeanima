@@ -11,6 +11,7 @@ export const PROJECT_FOLDER_COMPONENT = "project_folder" as const;
 export const PROJECT_COMPONENT = "project" as const;
 export const TAG_COMPONENT = "tag" as const;
 export const DIARY_ENTRY_COMPONENT = "diary_entry" as const;
+export const NOTE_COMPONENT = "note" as const;
 export const CALENDAR_EVENT_COMPONENT = "calendar_event" as const;
 export const DIARY_BLOCK_TEMPLATE_COMPONENT = "diary_block_template" as const;
 export const CODING_NOTE_COMPONENT = "coding_note" as const;
@@ -50,6 +51,7 @@ export const COMPONENT_IDS = [
   PROJECT_COMPONENT,
   TAG_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  NOTE_COMPONENT,
   CALENDAR_EVENT_COMPONENT,
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   CODING_NOTE_COMPONENT,

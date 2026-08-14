@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 
 import {
+  NOTE_COMPONENT,
   PROJECT_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   TAG_COMPONENT,
@@ -41,6 +42,14 @@ test("buildComponentFilterConditions accepts client_op_id for tag", () => {
   const conditions = buildComponentFilterConditions({
     component: TAG_COMPONENT,
     filters: { client_op_id: "op-tag" },
+  });
+  expect(conditions).toHaveLength(1);
+});
+
+test("buildComponentFilterConditions accepts client_op_id for note", () => {
+  const conditions = buildComponentFilterConditions({
+    component: NOTE_COMPONENT,
+    filters: { client_op_id: "op-note" },
   });
   expect(conditions).toHaveLength(1);
 });
