@@ -22,11 +22,14 @@ export {
   listObjectFiles,
   updateObjectFile,
   type ObjectFileRow,
+  type ObjectFileStoreDeps,
 } from "./file-store.ts";
 export {
   gcObjectBlobsAfterEntityPurge,
+  releaseObjectBlobIfUnreferenced,
   type GcObjectBlobsDeps,
   type GcObjectBlobsResult,
+  type ReleaseObjectBlobResult,
 } from "./gc.ts";
 export {
   addFileToObjectFolder,

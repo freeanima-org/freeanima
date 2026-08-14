@@ -1,6 +1,10 @@
 import { describe, expect, it, mock } from "bun:test";
 
-import { gcObjectBlobsAfterEntityPurge, type GcObjectBlobsDeps } from "./gc.ts";
+import {
+  releaseObjectBlobIfUnreferenced,
+  gcObjectBlobsAfterEntityPurge,
+  type GcObjectBlobsDeps,
+} from "./gc.ts";
 
 type PurgeRow = {
   id: number;
@@ -20,6 +24,47 @@ function objectFileRow(id: number, worldId: number, cid: string): PurgeRow {
     body: { cid, size: 1, mime_type: "application/octet-stream" },
   };
 }
+
+describe("releaseObjectBlobIfUnreferenced", () => {
+  it("releases when refs are zero", async () => {
+    const deleted: Array<{ worldId: number; cid: string }> = [];
+    const outcome = await releaseObjectBlobIfUnreferenced(10, CID_A, {
+      countRefs: async () => 0,
+      deleteBlob: async (worldId, cid) => {
+        deleted.push({ worldId, cid });
+      },
+    });
+    expect(outcome).toBe("released");
+    expect(deleted).toEqual([{ worldId: 10, cid: CID_A }]);
+  });
+
+  it("skips when still referenced", async () => {
+    const deleted: string[] = [];
+    const outcome = await releaseObjectBlobIfUnreferenced(10, CID_A, {
+      countRefs: async () => 2,
+      deleteBlob: async (_w, cid) => {
+        deleted.push(cid);
+      },
+    });
+    expect(outcome).toBe("skipped_referenced");
+    expect(deleted).toEqual([]);
+  });
+
+  it("returns skipped_error and calls onError", async () => {
+    const errors: string[] = [];
+    const outcome = await releaseObjectBlobIfUnreferenced(10, CID_A, {
+      countRefs: async () => 0,
+      deleteBlob: async () => {
+        throw new Error("s3 down");
+      },
+      onError: (_w, cid) => {
+        errors.push(cid);
+      },
+    });
+    expect(outcome).toBe("skipped_error");
+    expect(errors).toEqual([CID_A]);
+  });
+});
 
 describe("gcObjectBlobsAfterEntityPurge", () => {
   it("deletes blob when no remaining refs", async () => {

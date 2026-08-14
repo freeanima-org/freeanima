@@ -13,6 +13,7 @@ import {
 } from "@freeanima/host/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/host/core/util";
 
+import { releaseObjectBlobIfUnreferenced, type GcObjectBlobsDeps } from "./gc.ts";
 import { getObjectStore } from "./object-store.ts";
 
 export type ObjectFileRow = ObjectFileBody & {
@@ -21,6 +22,11 @@ export type ObjectFileRow = ObjectFileBody & {
   world_id: number;
   created_at: string;
   updated_at: string;
+};
+
+/** 单测注入：覆盖默认的 COUNT + ObjectStore.delete 释放路径 */
+export type ObjectFileStoreDeps = {
+  releaseBlob?: (worldId: number, cid: string, deps?: GcObjectBlobsDeps) => Promise<unknown>;
 };
 
 function toRow(
@@ -39,12 +45,15 @@ function toRow(
   };
 }
 
-export async function createObjectFile(input: {
-  world_id: number;
-  title: string;
-  bytes: Uint8Array;
-  mime_type?: string;
-}): Promise<ObjectFileRow> {
+export async function createObjectFile(
+  input: {
+    world_id: number;
+    title: string;
+    bytes: Uint8Array;
+    mime_type?: string;
+  },
+  deps?: ObjectFileStoreDeps,
+): Promise<ObjectFileRow> {
   const title = input.title.trim();
   if (!title) throw new Error("title is required");
   const put = await getObjectStore().put(input.world_id, input.bytes);
@@ -53,17 +62,23 @@ export async function createObjectFile(input: {
     size: put.size,
     mime_type: input.mime_type?.trim() || "application/octet-stream",
   });
-  const row = await createEntity({
-    type: "content",
-    world_id: input.world_id,
-    components: [OBJECT_FILE_COMPONENT],
-    primary_component: OBJECT_FILE_COMPONENT,
-    title,
-    body,
-  });
-  const parsed = asObjectFile(row);
-  if (!parsed) throw new Error("object_file create failed");
-  return toRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  const release = deps?.releaseBlob ?? releaseObjectBlobIfUnreferenced;
+  try {
+    const row = await createEntity({
+      type: "content",
+      world_id: input.world_id,
+      components: [OBJECT_FILE_COMPONENT],
+      primary_component: OBJECT_FILE_COMPONENT,
+      title,
+      body,
+    });
+    const parsed = asObjectFile(row);
+    if (!parsed) throw new Error("object_file create failed");
+    return toRow(parsed, { created_at: row.created_at, updated_at: row.updated_at });
+  } catch (err) {
+    await release(input.world_id, put.cid);
+    throw err;
+  }
 }
 
 export async function getObjectFile(id: number): Promise<ObjectFileRow | null> {
@@ -93,15 +108,19 @@ export async function listObjectFiles(opts: {
   return out;
 }
 
-export async function updateObjectFile(input: {
-  id: number;
-  title?: string;
-  bytes?: Uint8Array;
-  mime_type?: string;
-}): Promise<ObjectFileRow> {
+export async function updateObjectFile(
+  input: {
+    id: number;
+    title?: string;
+    bytes?: Uint8Array;
+    mime_type?: string;
+  },
+  deps?: ObjectFileStoreDeps,
+): Promise<ObjectFileRow> {
   const existing = await getObjectFile(input.id);
   if (!existing) throw new Error("object_file not found");
 
+  const previousCid = existing.cid;
   let body: ObjectFileBody = {
     cid: existing.cid,
     size: existing.size,
@@ -131,6 +150,12 @@ export async function updateObjectFile(input: {
   if (!updated) throw new Error("object_file update failed");
   const parsed = asObjectFile(updated);
   if (!parsed) throw new Error("object_file parse failed");
+
+  if (input.bytes && parsed.cid !== previousCid) {
+    const release = deps?.releaseBlob ?? releaseObjectBlobIfUnreferenced;
+    await release(existing.world_id, previousCid);
+  }
+
   return toRow(parsed, { created_at: updated.created_at, updated_at: updated.updated_at });
 }
 
