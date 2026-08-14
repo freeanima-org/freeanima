@@ -1,3 +1,6 @@
+import { NARRATIVE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { NARRATIVE_COMPONENT };
+
 import { z } from "zod";
 
 import {
@@ -17,8 +20,6 @@ export {
   type NarrativeSignificance,
   type NarrativeStatus,
 };
-
-export const NARRATIVE_COMPONENT = "narrative" as const;
 
 export const narrativeBodySchema = z.object({
   significance: narrativeSignificanceSchema.default("normal"),

@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { CODING_NOTE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { CODING_NOTE_COMPONENT };
 
-export const CODING_NOTE_COMPONENT = "coding_note" as const;
+import { z } from "zod";
 
 /** 项目 World 内探索/理解笔记；展示字段走 entities.title / summary / content */
 export const codingNoteBodySchema = z.object({

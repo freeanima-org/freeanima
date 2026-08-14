@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { OBJECT_FOLDER_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { OBJECT_FOLDER_COMPONENT };
 
-export const OBJECT_FOLDER_COMPONENT = "object_folder" as const;
+import { z } from "zod";
 
 export const objectFolderBodySchema = z.object({
   parent_id: z.number().int().positive().nullable().optional(),

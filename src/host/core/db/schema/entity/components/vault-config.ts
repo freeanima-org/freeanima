@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { VAULT_CONFIG_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { VAULT_CONFIG_COMPONENT };
 
-export const VAULT_CONFIG_COMPONENT = "vault_config" as const;
+import { z } from "zod";
 
 export const vaultConfigModeSchema = z.enum(["master_password", "machine"]);
 export type VaultConfigMode = z.infer<typeof vaultConfigModeSchema>;

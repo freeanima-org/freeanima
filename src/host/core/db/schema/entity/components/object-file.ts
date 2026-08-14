@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { OBJECT_FILE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { OBJECT_FILE_COMPONENT };
 
-export const OBJECT_FILE_COMPONENT = "object_file" as const;
+import { z } from "zod";
 
 /** BLAKE3-128 → 32 小写 hex */
 export const objectCidSchema = z

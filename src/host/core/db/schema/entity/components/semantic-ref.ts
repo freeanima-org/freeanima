@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { SEMANTIC_REF_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { SEMANTIC_REF_COMPONENT };
 
-export const SEMANTIC_REF_COMPONENT = "semantic_ref" as const;
+import { z } from "zod";
 
 export const semanticRefBodySchema = z.object({
   /** entities.id of primary_component=semantic_memory */

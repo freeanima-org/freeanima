@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { SUBAGENT_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { SUBAGENT_COMPONENT };
 
-export const SUBAGENT_COMPONENT = "subagent" as const;
+import { z } from "zod";
 
 /** slug：小写字母数字与连字符，≤64 */
 export const SUBAGENT_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;

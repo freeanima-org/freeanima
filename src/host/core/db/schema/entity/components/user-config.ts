@@ -1,8 +1,9 @@
+import { USER_CONFIG_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { USER_CONFIG_COMPONENT };
+
 import { z } from "zod";
 
 import { subjectConfigBodySchema } from "./subject-config.ts";
-
-export const USER_CONFIG_COMPONENT = "user_config" as const;
 
 /** 展示字段在 entities.title / summary / content */
 export const userConfigBodySchema = subjectConfigBodySchema;

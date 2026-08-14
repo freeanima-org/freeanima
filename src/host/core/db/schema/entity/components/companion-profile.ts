@@ -1,3 +1,6 @@
+import { COMPANION_PROFILE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { COMPANION_PROFILE_COMPONENT };
+
 import {
   companionBehaviorSchema,
   companionConfigSchema,
@@ -11,7 +14,6 @@ import {
  * @deprecated 伴侣配置已迁至 habitat_runtime_config.companion。
  * 组件 id 仅保留以便软删历史行；勿再 create。
  */
-export const COMPANION_PROFILE_COMPONENT = "companion_profile" as const;
 
 export const companionProfileBodySchema = companionConfigSchema;
 export type CompanionProfileBody = CompanionRuntimeConfig;

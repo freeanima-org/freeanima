@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { TAG_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { TAG_COMPONENT };
 
-export const TAG_COMPONENT = "tag" as const;
+import { z } from "zod";
 
 export const tagBodySchema = z.object({
   sort_order: z.number().int().optional(),

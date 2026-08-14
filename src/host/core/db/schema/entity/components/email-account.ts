@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { EMAIL_ACCOUNT_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { EMAIL_ACCOUNT_COMPONENT };
 
-export const EMAIL_ACCOUNT_COMPONENT = "email_account" as const;
+import { z } from "zod";
 
 export const emailMailboxSpecialUseSchema = z.enum([
   "inbox",

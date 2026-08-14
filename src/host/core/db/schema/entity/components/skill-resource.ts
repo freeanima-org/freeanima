@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { SKILL_RESOURCE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { SKILL_RESOURCE_COMPONENT };
 
-export const SKILL_RESOURCE_COMPONENT = "skill_resource" as const;
+import { z } from "zod";
 
 /** 技能配套文本资源（references / scripts）；二进制走 object_file */
 export const skillResourceBodySchema = z.object({

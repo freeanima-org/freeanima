@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { SKILL_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { SKILL_COMPONENT };
 
-export const SKILL_COMPONENT = "skill" as const;
+import { z } from "zod";
 
 export const skillOriginSchema = z.enum(["builtin", "user", "imported", "evolved"]);
 export type SkillOrigin = z.infer<typeof skillOriginSchema>;

@@ -1,6 +1,7 @@
-import { z } from "zod";
+import { POMODORO_CONFIG_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { POMODORO_CONFIG_COMPONENT };
 
-export const POMODORO_CONFIG_COMPONENT = "pomodoro_config" as const;
+import { z } from "zod";
 
 export const pomodoroConfigBodySchema = z.object({
   work_minutes: z.number().int().min(1).max(120).default(25),

@@ -13,8 +13,8 @@ export function hubConfigVaultField(
       label={label}
       value={value}
       onChange={onChange}
-      type={opts?.type ?? "password"}
-      {...(opts?.placeholder !== undefined ? { placeholder: opts.placeholder } : {})}
+      type={opts?.type ?? "text"}
+      placeholder={opts?.placeholder ?? "未设置"}
       hint={
         opts?.hint ??
         '明文、vault("id","field") 或 env("KEY")；可点「从 Vault 选择」写入 Agent 库引用'

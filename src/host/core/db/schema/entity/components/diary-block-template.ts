@@ -1,8 +1,9 @@
+import { DIARY_BLOCK_TEMPLATE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+export { DIARY_BLOCK_TEMPLATE_COMPONENT };
+
 import { z } from "zod";
 
 import { CONTENT_BLOCK_COMPONENT } from "./content-block.ts";
-
-export const DIARY_BLOCK_TEMPLATE_COMPONENT = "diary_block_template" as const;
 
 /** 插入 content_block 时使用的预设（与模板实体 title/content/tag_ids 列分离） */
 export const diaryBlockTemplatePresetSchema = z.object({
