@@ -77,12 +77,21 @@ title: 时间摘要
 
 Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至少有一条消息的 `payload.timestamp` 落在当前 CST 日历日的会话。写入 `temporal_day` **不得** bump `updated_at`。
 
+**全局日选源与 tick 一致**：按该 CST 日是否有消息 timestamp 选会话，**不是** `conversations.updated_at`。浅睡 / 梦境仍可按 `updated_at`，与时间摘要无关。
+
+### 计入范围
+
+- **计入**：所有 `debug = false` 且 `platform ≠ cron` 的会话——本地 chat、`remote:*`（含 companion / coding）、discord、weixin 等。
+- **不计入**：debug 会话、cron 平台会话。
+- **素材**：可回忆的 user / assistant 非空正文（排除纯 tool / 空 assistant+tool_calls）。
+
 身份上下文（自我层 + 常驻记忆）须随 LLM 摘要调用一起带上。
 
 栖息地 UI `/web/habitat/temporal-summary`：
 
 - **重新生成**任意日 / 月 / 年行（`memory.temporalRegenerate`）——跳过路径仍会 upsert 占位。
-- **补缺（Backfill missing）**（`memory.temporalBackfillMissing`）针对当前 From/To 范围：枚举期望的 `period_start`（日历日 / 月初-01 / 年-01-01），仅对缺失行跑 regenerate。**To 以 CST 今日为上限**——永不填未来日期。系统合摘要页签对缓存未命中 / 空槽经 `memory.temporalSystemRollRegenerate` 回填。
+- **补缺（Backfill missing）**（`memory.temporalBackfillMissing`）针对当前 From/To 范围：枚举期望的 `period_start`（日历日 / 月初-01 / 年-01-01），**仅对缺失行**跑 regenerate。已有空占位（`empty_reason`）**不会**被补缺重跑。**To 以 CST 今日为上限**——永不填未来日期。
+- **强制重跑**（`memory.temporalRebuildRange`）同一 From/To：对区间内**全部**期望周期 regenerate（覆盖已有空/非空行）。系统合摘要页签对缓存未命中 / 空槽经 `memory.temporalSystemRollRegenerate` 回填。
 
 ### Redis 同伴合摘要 key
 

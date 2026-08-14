@@ -7,6 +7,7 @@ import {
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
   temporalSummaryBackfillMissingBodySchema,
+  temporalSummaryRebuildRangeBodySchema,
   temporalSystemRollRegenerateBodySchema,
   type AutobiographicalMemoryListBody,
   type LimbicMemoryListBody,
@@ -16,6 +17,7 @@ import {
   type TemporalSummaryListBody,
   type TemporalSummaryRegenerateBody,
   type TemporalSummaryBackfillMissingBody,
+  type TemporalSummaryRebuildRangeBody,
   type TemporalSystemRollRegenerateBody,
 } from "@freeanima/features/habitat/habitat/habitat-api/api";
 import { habitatCtx } from "./runtime.ts";
@@ -50,6 +52,15 @@ export async function regenerateTemporalSummary(body: TemporalSummaryRegenerateB
 export async function backfillMissingTemporalSummaries(body: TemporalSummaryBackfillMissingBody) {
   const parsed = temporalSummaryBackfillMissingBodySchema.parse(body);
   return habitatCtx().backfillMissingTemporalSummaries({
+    window: parsed.window,
+    period_start_from: parsed.period_start_from,
+    period_start_to: parsed.period_start_to,
+  });
+}
+
+export async function rebuildTemporalSummariesInRange(body: TemporalSummaryRebuildRangeBody) {
+  const parsed = temporalSummaryRebuildRangeBodySchema.parse(body);
+  return habitatCtx().rebuildTemporalSummariesInRange({
     window: parsed.window,
     period_start_from: parsed.period_start_from,
     period_start_to: parsed.period_start_to,

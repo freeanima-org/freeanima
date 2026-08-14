@@ -101,6 +101,9 @@ export const temporalSummaryBackfillMissingBodySchema = z.object({
   period_start_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
+/** Same shape as backfill; force-rebuilds every expected period in range. */
+export const temporalSummaryRebuildRangeBodySchema = temporalSummaryBackfillMissingBodySchema;
+
 export const temporalSystemRollKindSchema = z.enum(["past_days", "past_months", "past_years"]);
 
 export const temporalSystemRollRegenerateBodySchema = z.object({
@@ -117,6 +120,7 @@ export type TemporalSummaryRegenerateBody = z.infer<typeof temporalSummaryRegene
 export type TemporalSummaryBackfillMissingBody = z.infer<
   typeof temporalSummaryBackfillMissingBodySchema
 >;
+export type TemporalSummaryRebuildRangeBody = z.infer<typeof temporalSummaryRebuildRangeBodySchema>;
 export type TemporalSystemRollRegenerateBody = z.infer<
   typeof temporalSystemRollRegenerateBodySchema
 >;

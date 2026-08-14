@@ -33,6 +33,7 @@ import {
 } from "@freeanima/host/capabilities/memory/passive-recall/debug-run.ts";
 import {
   clampTemporalBackfillRange,
+  listExpectedPeriodStarts,
   listMissingPeriodStarts,
   listTemporalSystemRolls,
   regenerateTemporalSystemRoll,
@@ -222,6 +223,67 @@ export async function backfillMissingTemporalSummaries(args: {
     filled,
     failed,
     summary: `missing=${missing.length} filled=${filled.length} failed=${failed.length}${clampNote}`,
+  };
+}
+
+/** Force-regenerate every expected period in [from, to] (including existing empty rows). */
+export async function rebuildTemporalSummariesInRange(args: {
+  window: TemporalSummaryWindow;
+  period_start_from: string;
+  period_start_to: string;
+}) {
+  const fromRaw = args.period_start_from;
+  const toRaw = args.period_start_to;
+  if (fromRaw > toRaw) {
+    return {
+      ok: false as const,
+      window: args.window,
+      period_start_from: fromRaw,
+      period_start_to: toRaw,
+      expected: [] as string[],
+      filled: [] as string[],
+      failed: [] as Array<{ period_start: string; summary: string }>,
+      summary: "period_start_from must be <= period_start_to",
+    };
+  }
+  const clamped = clampTemporalBackfillRange({ from: fromRaw, to: toRaw });
+  if (!clamped) {
+    return {
+      ok: true as const,
+      window: args.window,
+      period_start_from: fromRaw,
+      period_start_to: toRaw,
+      expected: [] as string[],
+      filled: [] as string[],
+      failed: [] as Array<{ period_start: string; summary: string }>,
+      summary: "range is entirely after CST today; skip future rebuild",
+    };
+  }
+  const { from, to } = clamped;
+  const expected = listExpectedPeriodStarts(args.window, from, to);
+  const filled: string[] = [];
+  const failed: Array<{ period_start: string; summary: string }> = [];
+  for (const period_start of expected) {
+    const result = await regenerateTemporalSummary({
+      window: args.window,
+      period_start,
+    });
+    if (!result.ok) {
+      failed.push({ period_start, summary: result.summary });
+      continue;
+    }
+    filled.push(period_start);
+  }
+  const clampNote = clamped.clamped ? ` (capped to CST today ${clamped.today})` : "";
+  return {
+    ok: failed.length === 0,
+    window: args.window,
+    period_start_from: from,
+    period_start_to: to,
+    expected,
+    filled,
+    failed,
+    summary: `expected=${expected.length} filled=${filled.length} failed=${failed.length}${clampNote}`,
   };
 }
 
