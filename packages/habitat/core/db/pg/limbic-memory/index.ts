@@ -1,6 +1,5 @@
 export * from "./types.ts";
 export {
-  createLimbicMemory,
   getLimbicMemory,
   listLimbicMemoryBySession,
   listLimbicMemoryBySessions,

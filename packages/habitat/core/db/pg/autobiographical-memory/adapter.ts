@@ -3,11 +3,7 @@ import {
   type NarrativeSignificance,
   type NarrativeStatus,
 } from "@freeanima/habitat/core/db/schema/entity";
-import { cstCalendarDay } from "@freeanima/habitat/core/db/pg/diary";
-import { omitUndefined } from "@freeanima/habitat/core/util";
 import {
-  createNarrativeBrick,
-  deprecateNarrativeBrick,
   getMemoryBrick,
   listBricksByComponent,
   resolveMemoryBrickWorldId,
@@ -21,24 +17,8 @@ import type {
   AutobiographicalFtsHit,
   AutobiographicalListOpts,
   AutobiographicalListOrder,
-  AutobiographicalMemoryCreateInput,
   AutobiographicalMemoryRow,
 } from "./types.ts";
-
-function narrativeDay(input: { period_end?: string | null; created_at?: Date }): string {
-  const pe = input.period_end?.trim() ?? "";
-  if (/^\d{4}-\d{2}-\d{2}/.test(pe)) return pe.slice(0, 10);
-  if (/^\d{4}-\d{2}$/.test(pe)) {
-    const [y, m] = pe.split("-").map(Number);
-    if (y && m) {
-      const last = new Date(Date.UTC(y, m, 0));
-      const mm = String(last.getUTCMonth() + 1).padStart(2, "0");
-      const dd = String(last.getUTCDate()).padStart(2, "0");
-      return `${y}-${mm}-${dd}`;
-    }
-  }
-  return cstCalendarDay(input.created_at ?? new Date());
-}
 
 function brickToRow(b: MemoryBrickRow): AutobiographicalMemoryRow {
   const significance = (b.body.significance as NarrativeSignificance | undefined) ?? "normal";
@@ -64,29 +44,6 @@ function brickToRow(b: MemoryBrickRow): AutobiographicalMemoryRow {
   };
 }
 
-export async function createAutobiographicalMemory(
-  input: AutobiographicalMemoryCreateInput,
-): Promise<string> {
-  const worldId = await resolveMemoryBrickWorldId();
-  const day = narrativeDay({ period_end: input.period_end ?? null });
-  const brick = await createNarrativeBrick(
-    worldId,
-    omitUndefined({
-      title: input.title,
-      content: input.content,
-      significance: input.significance,
-      period_start: input.period_start ?? null,
-      period_end: input.period_end ?? null,
-      source_facts: input.source_semantic_memory ?? [],
-      source_conversations: input.source_conversations ?? [],
-      status: "active" as const,
-      day,
-      legacy_id: input.id,
-    }),
-  );
-  return String(brick.id);
-}
-
 export async function getAutobiographicalMemory(
   id: string,
 ): Promise<AutobiographicalMemoryRow | null> {
@@ -96,13 +53,6 @@ export async function getAutobiographicalMemory(
   const brick = await getMemoryBrick(worldId, numId);
   if (!brick || !brick.components.includes(NARRATIVE_COMPONENT)) return null;
   return brickToRow(brick);
-}
-
-export async function deprecateAutobiographicalMemory(id: string): Promise<boolean> {
-  const worldId = await resolveMemoryBrickWorldId();
-  const numId = Number(id);
-  if (!Number.isFinite(numId) || numId <= 0) return false;
-  return deprecateNarrativeBrick(worldId, numId);
 }
 
 async function listAllNarrative(limit = 500): Promise<AutobiographicalMemoryRow[]> {

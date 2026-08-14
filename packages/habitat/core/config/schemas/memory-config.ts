@@ -20,11 +20,6 @@ export const passiveRecallConfigSchema = z.object({
 /** embedded = 同进程；remote = 同契约外置（#16102）；非多 Provider 插件 */
 export const memoryDeploymentSchema = z.enum(["embedded", "remote"]);
 
-export const memoryCutoverConfigSchema = z.object({
-  /** limbic / dream / narrative 停写 */
-  park_limbic_dream_narrative: z.boolean().optional(),
-});
-
 /** 语义记忆向量聚类（reflect 分批）；默认在 embedding 开启时启用 */
 export const memoryClusteringConfigSchema = z.object({
   enabled: z.boolean().optional(),
@@ -54,8 +49,6 @@ export const memoryConfigSchema = z
   .object({
     /** 默认 embedded；remote 客户端实现同 MemoryService 契约 */
     deployment: memoryDeploymentSchema.optional(),
-    /** #16102 cutover；缺省停写 limbic/dream/narrative（可显式 false 回滚） */
-    cutover: memoryCutoverConfigSchema.optional(),
     passive_recall: passiveRecallConfigSchema.optional(),
     clustering: memoryClusteringConfigSchema.optional(),
     resident: memoryResidentConfigSchema.optional(),
@@ -79,25 +72,12 @@ export const memoryConfigSchema = z
 export type PassiveRecallConfigInput = z.infer<typeof passiveRecallConfigSchema>;
 export type MemoryConfigInput = z.infer<typeof memoryConfigSchema>;
 export type MemoryDeploymentConfig = z.infer<typeof memoryDeploymentSchema>;
-export type MemoryCutoverConfigInput = z.infer<typeof memoryCutoverConfigSchema>;
 export type MemoryClusteringConfigInput = z.infer<typeof memoryClusteringConfigSchema>;
 export type MemoryResidentConfigInput = z.infer<typeof memoryResidentConfigSchema>;
 export type MemoryReferenceConfigInput = z.infer<typeof memoryReferenceConfigSchema>;
 
 export function resolveMemoryDeployment(cfg: RuntimeConfig): MemoryDeploymentConfig {
   return cfg.memory?.deployment ?? "embedded";
-}
-
-export type MemoryCutoverFlags = {
-  park_limbic_dream_narrative: boolean;
-};
-
-/** #16102：park limbic/dream/narrative 默认开；可显式 false 回滚 */
-export function resolveMemoryCutoverFlags(cfg?: RuntimeConfig | null): MemoryCutoverFlags {
-  const raw = cfg?.memory?.cutover;
-  return {
-    park_limbic_dream_narrative: raw?.park_limbic_dream_narrative ?? true,
-  };
 }
 
 export type ResolvedPassiveRecallConfig = {

@@ -150,7 +150,7 @@ Letta / LangChain / LlamaIndex 与 Working 上下文策略对照见 [`context-ma
 
 1. Spec + MemoryService 外壳（本页 + `createEmbeddedMemoryService`）
 2. retain（热路径 `syncTurn`）
-3. reflect + temporal；**cutover** park limbic/dream/narrative 写入
+3. reflect + temporal；limbic/dream/narrative **写入拆除**（存量只读）
 4. MCP / embedded|remote / standalone harness
 5. 删 `memory_references`；cite 收尾；文档与门禁
 

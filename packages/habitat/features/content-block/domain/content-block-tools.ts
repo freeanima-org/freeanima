@@ -1,8 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
-import { resolveMemoryCutoverFlags } from "@freeanima/habitat/core/config/schemas/memory-config.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 import {
@@ -22,9 +20,7 @@ import {
   WORLD_ID_OPTIONAL,
   blockPayload,
   parseBlockType,
-  parseLimbic,
   parseLimbicKind,
-  parseNarrative,
   parseOptionalFloat,
   parseSearchOrderBy,
   parseSemanticComponent,
@@ -33,30 +29,6 @@ import {
 import { CONTENT_BLOCK_TOOL_RETURNS } from "./return-schemas.ts";
 import { resolveContentBlockToolWorld } from "./tool-world-resolve.ts";
 import type { ContentBlockReorderItem, ContentBlockUpdateInput } from "./types.ts";
-
-/** limbic / narrative / dream 写入已废（#16102）；与旧 memory_* 写工具一并停写 */
-const PARKED_SEMANTIC_WRITE_MESSAGE =
-  "该记忆类型已 park（#16102）：limbic / dream / narrative 停写，存量只读";
-
-function parkLimbicDreamNarrativeWrites(): boolean {
-  try {
-    return resolveMemoryCutoverFlags(getActiveRuntimeConfig().data).park_limbic_dream_narrative;
-  } catch {
-    return resolveMemoryCutoverFlags(null).park_limbic_dream_narrative;
-  }
-}
-
-function rejectParkedSemanticWrite(opts: {
-  limbic?: unknown;
-  narrative?: unknown;
-  dream?: unknown;
-}): string | null {
-  if (!parkLimbicDreamNarrativeWrites()) return null;
-  if (opts.limbic != null || opts.narrative != null || opts.dream != null) {
-    return toolError(PARKED_SEMANTIC_WRITE_MESSAGE);
-  }
-  return null;
-}
 
 async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const parentId = Number(args.parent_id);
@@ -72,20 +44,16 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const blockType = parseBlockType(args.block_type);
   if (!blockType) return toolError("block_type is required and must be a known type");
 
-  const limbic = parseLimbic(args.limbic);
-  if (args.limbic !== undefined && limbic === null) return toolError("invalid limbic");
-  const narrative = parseNarrative(args.narrative);
-  if (args.narrative !== undefined && narrative === null) return toolError("invalid narrative");
+  if (args.limbic !== undefined || args.narrative !== undefined || args.dream !== undefined) {
+    return toolError(
+      "limbic / dream / narrative 写入已拆除（#16102）；存量只读，请用 text / semantic_ref",
+    );
+  }
+
   const semanticRef = parseSemanticRef(args.semantic_ref);
   if (args.semantic_ref !== undefined && semanticRef === null) {
     return toolError("invalid semantic_ref");
   }
-  const parked = rejectParkedSemanticWrite({
-    limbic: limbic ?? undefined,
-    narrative: narrative ?? undefined,
-    dream: args.dream,
-  });
-  if (parked) return parked;
 
   const sortOrder =
     args.sort_order != null && args.sort_order !== "" ? Number(args.sort_order) : undefined;
@@ -113,8 +81,6 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
           args.client_op_id != null && args.client_op_id !== ""
             ? coerceString(args.client_op_id)
             : undefined,
-        limbic: limbic ?? undefined,
-        narrative: narrative ?? undefined,
         semantic_ref: semanticRef ?? undefined,
       }),
     );
@@ -130,6 +96,10 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
 
   const worldId = await resolveContentBlockToolWorld({ args, entityId: id, access: "write" });
   if (typeof worldId === "string") return worldId;
+
+  if (args.limbic !== undefined || args.narrative !== undefined || args.dream !== undefined) {
+    return toolError("limbic / dream / narrative 写入已拆除（#16102）；存量只读，不可附加或清除");
+  }
 
   const patch: ContentBlockUpdateInput = { id };
   if (args.content !== undefined) patch.content = coerceString(args.content);
@@ -153,20 +123,6 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   if (args.url !== undefined) {
     patch.url = args.url == null || args.url === "" ? null : coerceString(args.url);
   }
-  if (args.limbic !== undefined) {
-    const limbic = parseLimbic(args.limbic);
-    if (limbic === undefined || (limbic === null && args.limbic !== null)) {
-      return toolError("invalid limbic");
-    }
-    patch.limbic = limbic;
-  }
-  if (args.narrative !== undefined) {
-    const narrative = parseNarrative(args.narrative);
-    if (narrative === undefined || (narrative === null && args.narrative !== null)) {
-      return toolError("invalid narrative");
-    }
-    patch.narrative = narrative;
-  }
   if (args.semantic_ref !== undefined) {
     const semanticRef = parseSemanticRef(args.semantic_ref);
     if (semanticRef === undefined || (semanticRef === null && args.semantic_ref !== null)) {
@@ -174,13 +130,6 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     }
     patch.semantic_ref = semanticRef;
   }
-
-  const parked = rejectParkedSemanticWrite({
-    limbic: patch.limbic ?? undefined,
-    narrative: patch.narrative ?? undefined,
-    dream: (patch as { dream?: unknown }).dream,
-  });
-  if (parked) return parked;
 
   try {
     const item = await updateContentBlock(worldId, patch);
@@ -431,36 +380,6 @@ const CONTENT_BLOCK_TOOL_NAMES = [
   "content_block_reorder",
 ] as const;
 
-const LIMBIC_PARAM = {
-  type: "object",
-  description:
-    "DEPRECATED/parked write: limbic component attach is rejected when park_limbic_dream_narrative is on (default). Do not use for new emotion bricks; search with content_block_search(component=limbic).",
-  properties: {
-    valence: { type: "number", description: "-1..1" },
-    arousal: { type: "number", description: "0..1" },
-    intensity: { type: "number", description: "0..1" },
-    kind: { type: "string", enum: [...LIMBIC_KINDS] },
-    conversation_id: { type: "string" },
-    source_segment: { type: "string" },
-  },
-  required: ["valence", "arousal", "intensity"],
-} as const;
-
-const NARRATIVE_PARAM = {
-  type: "object",
-  description:
-    "DEPRECATED/parked write: narrative attach is rejected when park is on (default). Search with content_block_search(component=narrative).",
-  properties: {
-    significance: {
-      type: "string",
-      enum: ["normal", "milestone", "turning_point"],
-    },
-    status: { type: "string", enum: ["active", "deprecated"] },
-    period_start: { type: "string" },
-    period_end: { type: "string" },
-  },
-} as const;
-
 const SEMANTIC_REF_PARAM = {
   type: "object",
   description: "Optional semantic_ref component; null clears on update",
@@ -480,7 +399,7 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
           name: "content_block_create",
           description:
             "Create a content_block under a container (parent_id = diary_entry or note). " +
-            "limbic/narrative/dream attach is parked by default (#16102); use text/semantic_ref only for new writes.",
+            "Only text / semantic_ref writes; limbic/narrative/dream are historical read-only (#16102).",
           parameters: {
             type: "object",
             properties: {
@@ -493,8 +412,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
               sort_order: { type: "integer" },
               url: { type: "string", description: "Resource locator for non-text types" },
               client_op_id: { type: "string", description: "Idempotent create key" },
-              limbic: LIMBIC_PARAM,
-              narrative: NARRATIVE_PARAM,
               semantic_ref: SEMANTIC_REF_PARAM,
             },
             required: ["subject_kind", "parent_id", "block_type"],
@@ -504,7 +421,7 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_update",
           description:
-            "Update content_block fields / semantic components. Pass limbic/narrative/semantic_ref null to clear that component.",
+            "Update content_block fields / semantic_ref. limbic/narrative/dream cannot be attached or cleared (#16102).",
           parameters: {
             type: "object",
             properties: {
@@ -516,8 +433,6 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
               parent_id: { type: "integer" },
               sort_order: { type: "integer" },
               url: { type: "string" },
-              limbic: LIMBIC_PARAM,
-              narrative: NARRATIVE_PARAM,
               semantic_ref: SEMANTIC_REF_PARAM,
             },
             required: ["id"],
@@ -547,7 +462,7 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
         {
           name: "content_block_list",
           description:
-            "List content_blocks under a container (parent_id required), ordered by sort_order. Optional block_type / component (limbic|narrative|semantic_ref|dream) filters.",
+            "List content_blocks under a container (parent_id required), ordered by sort_order. Optional block_type / component (limbic|narrative|semantic_ref|dream) filters for historical reads.",
           parameters: {
             type: "object",
             properties: {
@@ -557,7 +472,7 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
               component: {
                 type: "string",
                 enum: [...SEMANTIC_COMPONENT_TAGS],
-                description: "Filter by semantic component tag",
+                description: "Filter by semantic component tag (read-only for parked tags)",
               },
               limit: { type: "integer" },
             },
@@ -569,8 +484,8 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
           name: "content_block_search",
           description:
             "Search content_blocks. With query: hybrid FTS; without query: filter_only list. " +
-            "Emotion / autobiographical recall: component=limbic|narrative. " +
-            "Limbic: kind, conversation_id, intensity/valence range, order_by. " +
+            "Historical emotion / autobiographical: component=limbic|narrative (read-only). " +
+            "Limbic filters: kind, conversation_id, intensity/valence range, order_by. " +
             "Narrative: defaults to status=active (override with status).",
           parameters: {
             type: "object",
@@ -586,7 +501,7 @@ export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
               component: {
                 type: "string",
                 enum: [...SEMANTIC_COMPONENT_TAGS],
-                description: "limbic=emotion bricks; narrative=autobiographical",
+                description: "limbic=emotion bricks; narrative=autobiographical (historical)",
               },
               conversation_id: {
                 type: "string",

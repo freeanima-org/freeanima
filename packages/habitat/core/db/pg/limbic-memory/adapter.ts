@@ -1,6 +1,5 @@
 import { LIMBIC_COMPONENT, type LimbicKind } from "@freeanima/habitat/core/db/schema/entity";
 import {
-  createLimbicBrick,
   getMemoryBrick,
   listBricksByComponent,
   listLimbicBricksByCreatedBetween,
@@ -16,7 +15,6 @@ import type {
   LimbicListByConversationsOpts,
   LimbicListByCreatedOpts,
   LimbicListOpts,
-  LimbicMemoryCreateInput,
   LimbicMemoryRow,
 } from "./types.ts";
 
@@ -39,22 +37,6 @@ function brickToRow(b: MemoryBrickRow): LimbicMemoryRow {
     fts_segmented: null,
     content_embedding: null,
   };
-}
-
-export async function createLimbicMemory(input: LimbicMemoryCreateInput): Promise<string> {
-  const worldId = await resolveMemoryBrickWorldId();
-  const brick = await createLimbicBrick(worldId, {
-    content: input.content,
-    valence: input.valence ?? 0,
-    arousal: input.arousal ?? 0,
-    intensity: input.intensity ?? 0.5,
-    kind: input.kind,
-    conversation_id: input.conversation_id,
-    source_segment: input.source_segment ?? null,
-    semantic_memory_ids: input.semantic_memory_ids ?? [],
-    ...(input.id !== undefined ? { legacy_id: input.id } : {}),
-  });
-  return String(brick.id);
 }
 
 export async function getLimbicMemory(id: string): Promise<LimbicMemoryRow | null> {

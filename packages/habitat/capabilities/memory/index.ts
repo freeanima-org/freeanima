@@ -9,8 +9,6 @@ export {
   semanticRowToMemoryRecord,
   registerRetainEngine,
   resetRetainEngineForTests,
-  resolveMemoryCutoverFlags,
-  MEMORY_PARKED_WRITE_MESSAGE,
   type CreateEmbeddedMemoryServiceOpts,
   type RemoteMemoryServiceOpts,
   type CreateMemoryServiceOpts,
