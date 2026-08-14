@@ -5,6 +5,7 @@ title: 回忆流程
 # 分范围记忆检索
 
 > **当前：** 主动检索按**范围拆分**。没有跨类型统一的 `memory_recall` 工具，也没有面向 LLM 的跨类型 RRF 合并。
+> **程序侧：** `MemoryService.recall({ scope: "semantic"|"temporal" })` 为统一门面（委托 SearchBackend）；与 LLM 工具名分离。目标 SSOT：[`memory.md`](memory.md)。
 
 ## 按范围的主动工具
 

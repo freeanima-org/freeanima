@@ -26,6 +26,7 @@ import {
 } from "@freeanima/habitat/engine/goal";
 import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
 import { ConversationManager } from "./conversation-manager.ts";
+import { scheduleMemorySyncAfterTurn } from "./memory-sync-turn.ts";
 import { scheduleSkillEvolveAfterTurn } from "./skill-review-run.ts";
 
 /** beginTurn / retryTurn return value: [runtimeMsgs, functions, effectiveUserText] */
@@ -190,6 +191,7 @@ export async function runSimpleTurn(
     await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 
     scheduleSkillEvolveAfterTurn(deps, conversationId, msgs);
+    scheduleMemorySyncAfterTurn(conversationId, msgs);
 
     if (await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs)) {
       break goalLoop;
@@ -394,6 +396,7 @@ export async function* runExclusiveStreamTurn(
           await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 
           scheduleSkillEvolveAfterTurn(deps, conversationId, msgs);
+          scheduleMemorySyncAfterTurn(conversationId, msgs);
 
           let evalResult: Awaited<ReturnType<typeof evaluateGoalAfterTurn>> | undefined;
           if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {

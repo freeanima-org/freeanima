@@ -3,7 +3,7 @@ import { isCstMonday } from "@freeanima/habitat/core/util";
 import type { PipelineContext } from "@freeanima/habitat/engine/pipeline";
 
 /**
- * 定时 sleep-cycle：仅 CST 周一跑深睡；其余日跳过。
+ * 定时 memory-maintenance：仅 CST 周一跑 reflect / self-refresh；其余日跳过。
  * 手动 / catch_up / 显式 step 不跳过。
  */
 export function shouldSkipScheduledDeepSleep(ctx: PipelineContext): boolean {

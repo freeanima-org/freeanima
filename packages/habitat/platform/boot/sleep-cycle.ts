@@ -2,77 +2,76 @@ import type { PipelineDefinition } from "@freeanima/habitat/engine/pipeline";
 
 import { shouldSkipScheduledDeepSleep } from "./deep-sleep-mode.ts";
 
-/** 睡眠周期 pipeline id */
-export const SLEEP_CYCLE_PIPELINE_ID = "sleep-cycle";
+/** 记忆维护 pipeline id（原 sleep-cycle） */
+export const MEMORY_MAINTENANCE_PIPELINE_ID = "memory-maintenance";
 
-/** 睡眠 DAG 节点 id */
-export const SLEEP_STEP_IDS = {
+/** @deprecated 历史 pipeline_step_run / catch-up 仍可能读到旧 id */
+export const SLEEP_CYCLE_PIPELINE_ID = MEMORY_MAINTENANCE_PIPELINE_ID;
+
+/** 记忆维护 DAG 节点 id */
+export const MAINTENANCE_STEP_IDS = {
   conversationCleanup: "conversation-cleanup",
-  lightSleep: "light-sleep",
-  deepSleep: "deep-sleep",
-  dream: "dream",
-  memoryRefSync: "memory-ref-sync",
+  retainCatchUp: "retain-catch-up",
+  reflect: "reflect",
   selfLayerRefresh: "self-layer-refresh",
   temporalSummaryDay: "temporal-summary-day",
   temporalSummaryCascade: "temporal-summary-cascade",
 } as const;
 
+/** @deprecated 兼容旧符号名 */
+export const SLEEP_STEP_IDS = {
+  conversationCleanup: MAINTENANCE_STEP_IDS.conversationCleanup,
+  lightSleep: MAINTENANCE_STEP_IDS.retainCatchUp,
+  deepSleep: MAINTENANCE_STEP_IDS.reflect,
+  memoryRefSync: "memory-ref-sync-removed",
+  selfLayerRefresh: MAINTENANCE_STEP_IDS.selfLayerRefresh,
+  temporalSummaryDay: MAINTENANCE_STEP_IDS.temporalSummaryDay,
+  temporalSummaryCascade: MAINTENANCE_STEP_IDS.temporalSummaryCascade,
+} as const;
+
 /**
- * 睡眠周期 DAG（宏观层）。
- * 浅睡/深睡内部多阶段仍由各自 run* 函数顺序编排，不提升到本 DAG。
- * 定时深睡与自我层慢维护仅 CST 周一（见 shouldSkipScheduledDeepSleep）。
+ * 记忆维护 DAG：cleanup + retain 补跑 + reflect + temporal + self-refresh。
+ * 不再含 light/deep sleep 或 memory-ref-sync（热路径已 bump reference_count）。
  */
-export const sleepCycleDefinition: PipelineDefinition = {
-  id: SLEEP_CYCLE_PIPELINE_ID,
+export const memoryMaintenanceDefinition: PipelineDefinition = {
+  id: MEMORY_MAINTENANCE_PIPELINE_ID,
   nodes: [
     {
-      id: SLEEP_STEP_IDS.conversationCleanup,
-      handler: SLEEP_STEP_IDS.conversationCleanup,
+      id: MAINTENANCE_STEP_IDS.conversationCleanup,
+      handler: MAINTENANCE_STEP_IDS.conversationCleanup,
     },
     {
-      id: SLEEP_STEP_IDS.lightSleep,
-      handler: SLEEP_STEP_IDS.lightSleep,
-      dependsOn: [SLEEP_STEP_IDS.conversationCleanup],
+      id: MAINTENANCE_STEP_IDS.retainCatchUp,
+      handler: MAINTENANCE_STEP_IDS.retainCatchUp,
+      dependsOn: [MAINTENANCE_STEP_IDS.conversationCleanup],
     },
     {
-      id: SLEEP_STEP_IDS.deepSleep,
-      handler: SLEEP_STEP_IDS.deepSleep,
-      dependsOn: [SLEEP_STEP_IDS.lightSleep],
+      id: MAINTENANCE_STEP_IDS.reflect,
+      handler: MAINTENANCE_STEP_IDS.reflect,
+      dependsOn: [MAINTENANCE_STEP_IDS.retainCatchUp],
       skipIf: shouldSkipScheduledDeepSleep,
     },
     {
-      id: SLEEP_STEP_IDS.dream,
-      handler: SLEEP_STEP_IDS.dream,
-      dependsOn: [SLEEP_STEP_IDS.lightSleep],
+      id: MAINTENANCE_STEP_IDS.temporalSummaryDay,
+      handler: MAINTENANCE_STEP_IDS.temporalSummaryDay,
+      dependsOn: [MAINTENANCE_STEP_IDS.retainCatchUp],
       optional: true,
     },
     {
-      id: SLEEP_STEP_IDS.temporalSummaryDay,
-      handler: SLEEP_STEP_IDS.temporalSummaryDay,
-      dependsOn: [SLEEP_STEP_IDS.lightSleep],
+      id: MAINTENANCE_STEP_IDS.temporalSummaryCascade,
+      handler: MAINTENANCE_STEP_IDS.temporalSummaryCascade,
+      dependsOn: [MAINTENANCE_STEP_IDS.temporalSummaryDay],
       optional: true,
     },
     {
-      id: SLEEP_STEP_IDS.temporalSummaryCascade,
-      handler: SLEEP_STEP_IDS.temporalSummaryCascade,
-      // 读全局 day 摘要，不依赖深睡；避免深睡 LLM 超时误伤月末/年末 cascade
-      dependsOn: [SLEEP_STEP_IDS.temporalSummaryDay],
-      optional: true,
-    },
-    {
-      id: SLEEP_STEP_IDS.memoryRefSync,
-      handler: SLEEP_STEP_IDS.memoryRefSync,
-      // 浅睡写入后即可校准引用计数；深睡失败时仍应跑，勿挂在 deep-sleep 上
-      dependsOn: [SLEEP_STEP_IDS.lightSleep],
-      optional: true,
-    },
-    {
-      id: SLEEP_STEP_IDS.selfLayerRefresh,
-      handler: SLEEP_STEP_IDS.selfLayerRefresh,
-      // 需深睡清理库存 + 引用校准后再慢反思；定时与深睡同频（CST 周一）
-      dependsOn: [SLEEP_STEP_IDS.deepSleep, SLEEP_STEP_IDS.memoryRefSync],
+      id: MAINTENANCE_STEP_IDS.selfLayerRefresh,
+      handler: MAINTENANCE_STEP_IDS.selfLayerRefresh,
+      dependsOn: [MAINTENANCE_STEP_IDS.reflect],
       skipIf: shouldSkipScheduledDeepSleep,
       optional: true,
     },
   ],
 };
+
+/** @deprecated */
+export const sleepCycleDefinition = memoryMaintenanceDefinition;

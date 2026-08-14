@@ -10,6 +10,13 @@ export const RESIDENT_PINNED_MAX = 40;
 
 export type { SemanticFtsHit, SemanticMemoryRow };
 
+import type {
+  SemanticMemoryLink,
+  SemanticMemoryProvenance,
+} from "@freeanima/shared/pg-shapes/rows/memory-rows.ts";
+
+export type { SemanticMemoryLink, SemanticMemoryProvenance };
+
 export type SemanticMemoryCreateInput = {
   content: string;
   type?: string;
@@ -18,6 +25,9 @@ export type SemanticMemoryCreateInput = {
   id?: string | number;
   world_id?: number;
   source_conversations?: string[];
+  /** #16102 真源 provenance；写入 body.source，并回填 source_conversations */
+  source?: SemanticMemoryProvenance;
+  links?: SemanticMemoryLink[];
   observed_at?: string | Date | null;
   occurred_at?: string | null;
   status?: string;
@@ -32,6 +42,8 @@ export type SemanticMemoryUpdateInput = {
   type?: string;
   pinned?: boolean;
   source_conversations?: string[];
+  source?: SemanticMemoryProvenance;
+  links?: SemanticMemoryLink[];
   observed_at?: string | Date | null;
   occurred_at?: string | null;
   status?: string;

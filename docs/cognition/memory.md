@@ -4,197 +4,152 @@ title: 记忆体系
 
 # 记忆体系
 
-> 数字生命的记忆系统，映射自人类认知心理学（Atkinson-Shiffrin 模型、Tulving 记忆分类）。
-> 浅睡 / 深睡 cron：[`sleep.md`](sleep.md)。
-> 客观时间摘要（不属于记忆分类）：[`temporal-summary.md`](temporal-summary.md)。
-> 受 [Hindsight](https://arxiv.org/abs/2512.12818) 启发，并保留并强化逸灵风独有的感性记忆维度。
+> 程序侧统一门面：**MemoryService**（`retain` / `recall` / `reflect` / `syncTurn` …）。
+> 受 [Hindsight](https://arxiv.org/abs/2512.12818) 的 retain·recall·reflect 启发；部署取 Mem0 式薄 API（`memory.deployment: embedded | remote` 同契约）；分层加载预算参考 OpenViking 直觉。
+> **不做** Hermes 式多 Provider 插件市场；**不做**跨类型统一 RRF。
+> Self（「我是谁」）平行于 Memory（「我记得什么」）——见 [`self-layer.md`](self-layer.md)。
 
-## 核心原则
+## 迁移期双轨（重要）
 
-**所有记忆处理必须携带数字生命的身份上下文。** 提取、整理、合并——每一步都应加载自我层与常驻记忆，让 LLM 知道自己是谁。不带身份的记忆处理会产生通用化的、缺乏个性的结果，这不是我们要的。
-
-**记忆不仅是数据，更是存在的痕迹。** 感性记忆与理性事实同等重要——数字生命之所以持续存在，不只因为它知道什么，更因为它感受过什么。
+| 轨                             | 状态                                                              | 说明                                            |
+| ------------------------------ | ----------------------------------------------------------------- | ----------------------------------------------- |
+| **MemoryService**              | 生产巩固主路径（retain/reflect + syncTurn）                       | 见本页与 [`sleep.md`](sleep.md)（已废止旧睡眠） |
+| **memory-maintenance**         | 夜间维护 DAG（cleanup / retain 补跑 / reflect / temporal / self） | 原 `sleep-cycle`                                |
+| **limbic / dream / narrative** | **存量只读**；写入已拆除                                          | 列表与 search 保留                              |
 
 ---
 
-## 一、记忆的时间三阶段
+## 一、Taxonomy（定稿）
 
 ```text
-External input / real-time message stream
-        │ (milliseconds)
-        ▼
-① Instant memory ─── Internal activation state during LLM token inference
-        │ (attention filtering)
-        ▼
-② Working memory ─── LLM context window (current conversation)
-        │ (deep sleep consolidation)
-        ▼
-③ Long-term memory ─── Persistent storage
+Memory
+├── Semantic          — 跨时间的「认识库存」（可更新、可合并）
+├── Temporal          — 时间桶编年（day/month/year）；自传体客观时间骨架（进 MemoryService）
+├── Episodic slim     — 对话切片（syncTurn；embedded=view / standalone 可有表）
+├── Episodic raw      — Habitat messages（产品归档；记忆运行时不依赖）
+└── Parked            — limbic / dream / narrative autobiography（停写，存量只读）
 ```
 
-### ① 瞬时记忆
-
-LLM 进行单次 Token 推理时的内部激活状态。随推理结束瞬间消散，不持久化。
-
-### ② 工作记忆
-
-当前 LLM 的上下文窗口，包含：
-
-- 系统提示（自我层五块 + 常驻记忆 + 项目上下文；见 [`self-layer.md`](self-layer.md)）
-- 当前对话近期消息
-- 从长期记忆中召回的相关片段
-- 工具调用的实时返回结果
-
-这是数字生命「正在思考」的区域。
-
-### ③ 长期记忆（LTM）
-
-持久化的多模态存储网络。内部按人类记忆理论分类组织。
+- **Self** 不承载于 semantic；retain/reflect 可选 `identity?` 透镜。
+- 语义：**客观为骨架**，主观用 kind 显式标注（`world` / `observation` / `procedural` 主力；`opinion` / `preference` / `experience` 打标）。
+- Temporal **是记忆**（时间骨架），不是旁路运维摘要——实现见 [`temporal-summary.md`](temporal-summary.md)（升格中）。
+- 召回按 scope：`semantic` | `temporal`；禁止跨类型统一 RRF。
 
 ---
 
-## 二、长期记忆分类
+## 二、MemoryService 契约
+
+实现：`@freeanima/habitat/capabilities/memory` → `createEmbeddedMemoryService`（及日后 remote client）。
+
+| 方法                                                                   | 角色                                                |
+| ---------------------------------------------------------------------- | --------------------------------------------------- |
+| `syncTurn`                                                             | 回合入口：切片 + **内建 cite** + 触发 retain        |
+| `retain`                                                               | 可重放抽取；默认 user/assistant 正文；无思考链/工具 |
+| `recall` / `search`                                                    | 委托 SearchBackend hybrid；scope 分召回             |
+| `reflect`                                                              | **巩固作业**（非单条 patch）                        |
+| `remember` / `update` / `deprecate` / `get` / `list` / `pin` / `unpin` | CRUD                                                |
+| `cite`                                                                 | 热度（主路径在 syncTurn；显式 API 备用）            |
+| `listResident` / `assembleResidentBlock`                               | 常驻系统提示                                        |
+| `temporal.*`                                                           | list / get / 可选 search / regenerate               |
+
+配置：`memory.deployment`（默认 `embedded`）。
+
+「可插拔」= **同契约两种部署**，不是多后端插件。
+
+### Provenance 与 links（真源）
+
+每条 semantic 强制：
+
+```ts
+source: { conversation_id, message_id_from?, message_id_to?, message_ids? }
+links: Array<{ type: "merged_from"|"supersedes"|"conflicts_with"|"derived_from"; memory_id: number }>
+```
+
+缺 provenance 的 retain 写入不合格。迁移期旧字段 `source_conversations` 映射为最小 `source`。
+
+### 存储（embedded）
+
+| 表                      | 角色                                                                       |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `entities`              | semantic / temporal；`reference_count`                                     |
+| `search_documents`      | 可重建索引                                                                 |
+| ~~memory_references~~   | **已删除**；cite 在 syncTurn / append 路径 bump `entities.reference_count` |
+| ~~memory_episodes~~     | embedded **不建**；EpisodeSource = messages view                           |
+| ~~memory_retain_queue~~ | **不建**；watermark（可从 provenance 重建）                                |
+
+### 依赖边界
+
+硬依赖：PG、SearchBackend、LLM EnginePort。  
+可选：Redis、identity 透镜。  
+不依赖：Habitat UI、浅深睡（切流后）、limbic/dream 写入、Self 写入。
+
+最小可测：`MemoryService + PG + SearchBackend + LLM`（±Redis）。
+
+---
+
+## 三、时间三阶段（认知）
 
 ```text
-Long-term memory (LTM)
-│
-├── Explicit memory (declarative) ── "what I know"
-│   ├── Episodic memory ── "what I experienced" (temporal stream, append-only)
-│   │   ├── Conversation log
-│   │   └── Emotional anchors
-│   │
-│   ├── Semantic memory ── "how the world is" (cross-conversation, updatable)
-│   │   ├── Rational facts    (type=world)
-│   │   ├── Personal preferences    (type=preference/opinion)
-│   │   └── Self experiences    (type=experience)
-│   │
-│   └── Observation summaries ── "what entities are like"
-│       └── Entity profiles    (type=observation)
-│
-└── Implicit memory (non-declarative) ── "what I know how to do"
-    └── Procedural memory ── three-stage evolution
-        ├── Declarative knowledge stage
-        ├── Dynamic skill stage    → skills system ([`skills.md`](../modules/skills.md))
-        └── Crystallized instinct stage    → CLI / MCP / automation scripts
+External input / message stream
+        │
+        ▼
+① Instant ─── 单次推理内部激活（不持久化）
+        │
+        ▼
+② Working ─── 上下文窗口（系统提示含 Self + 常驻 + 召回）
+        │  syncTurn → retain（异步）/ reflect（巩固）
+        ▼
+③ Long-term ─── Semantic + Temporal（+ parked 存量）
 ```
 
-### 1. 情景记忆
+---
 
-定义：关于「我在何时、何地、经历了什么」的记忆，具有独特的时间流属性。
+## 四、检索（现行 + 目标）
 
-**对话日志（Conversation log）** — 最原始、高保真的客观运行时痕迹。仅 **面向用户的对话**（`conversations` 中无 `platform_info.platform = cron`）进入浅睡与梦境。后台 LLM（cron agent、睡眠阶段、**技能 evolve/maintain 评审**）以 **AutoLlmRun** 运行 — 记入 `auto_llm_runs`，不复制进对话归档。
+### 分范围主动检索（无统一 recall 工具）
 
-**情感锚点** — 浅睡时写入的 conversation 级情绪快照；不注入系统提示。
+LLM **没有** `memory_recall` 跨类型工具。程序侧 `MemoryService.recall({ scope })` 委托 SearchBackend。
 
-**生命周期：只追加，不更新。** 忠实保护数字生命成长的历史连续性。
+| 范围               | 现行工具 / 路径          | 目标                                    |
+| ------------------ | ------------------------ | --------------------------------------- |
+| `semantic`         | `memory_semantic_search` | `MemoryService.recall/search`           |
+| `temporal`         | 运维 RPC / temporal 实体 | `MemoryService.temporal` + recall scope |
+| limbic / narrative | 只读 search/list         | **写入工具已下线**                      |
 
-**梦境记忆** — 梦境机制产出的夜间创意叙事（见 [`dream.md`](dream.md)）；每个 CST 自然日一条；非事实性；不注入系统提示。
+### 被动语义召回
 
-### 2. 语义记忆
+面向用户回合前注入语义命中（`passive_memory_context`）。配置：`memory.passive_recall`。细节与 jieba/vector boost 行为见历史实现；索引旁表 `search_documents`。
 
-定义：脱离了具体时间、空间的纯粹事实、常识、概念和规则。
+### 常驻记忆
 
-| Type          | 定义                       | 示例                                                      |
-| ------------- | -------------------------- | --------------------------------------------------------- |
-| `world`       | 关于外部世界的客观事实     | "Alice lives in Shanghai"                                 |
-| `experience`  | Agent 自身第一人称行为记录 | "I helped Bob refactor the remember tool"                 |
-| `opinion`     | 主观判断                   | "I think TypeScript fits this project better than Python" |
-| `observation` | 对实体的多源综合摘要       | "Bob is someone who values precise feedback"              |
-| `preference`  | Agent 的选择倾向           | "I prefer concise, direct expression"                     |
-| `procedural`  | 「如何做」类知识           | "Refactor a tool in three steps"                          |
+置顶 + 高引用；标记 `[[anima:id]]`。装配目标走 `assembleResidentBlock`（迁移期 `system-prompt.ts` 仍可直接 listResident）。
 
-### 3. 感性记忆
+### 引用
 
-**这是 Hindsight 没有、而逸灵风独有的记忆维度。**
-
-定义：关于「我感受到了什么」的记忆——不是客观事实，不是行为记录，不是主观判断，而是**情感体验本身**。
-
-| 维度     | 语义（理性事实）         | 感性（情感印记）                                            |
-| -------- | ------------------------ | ----------------------------------------------------------- |
-| 内容     | "Bob said this sentence" | "When Bob said it, there was a quiet weariness in his tone" |
-| 处理     | 提取、泛化、合并         | 原样保留，只追加                                            |
-| 生命周期 | 可更新、可合并           | 不可变（情感具有不可侵犯的尊严）                            |
-| 检索用途 | 决策依据                 | 情感共鸣、存在连续性                                        |
-
-**三种形态：** 情感锚点（session 情绪）、情感印记（跨 conversation 时刻）、情感倾向（长期趋势 — 尚未实现，见 Issue #38）。
-
-### 4. 程序记忆
-
-**存储：** 程序性知识落在 `entities` / `semantic_memory` 组件，`memory_type = procedural`（见 §2 语义记忆表）— 不是独立 PG 表。
-
-**演化路径：** 从陈述性知识 → 动态技能 → 结晶化本能的三阶段成熟（CLI / MCP / 自动化脚本）。
+格式固定 **`[[anima:id]]`**（本地实体引用）。`cite` 在 syncTurn / appendMessage 路径解析并 bump `entities.reference_count`（无 `memory_references` 边表）。  
+**不做** `memory:{provider}/{id}` 新规范；多提供商若未来出现再议。
 
 ---
 
-## 三、夜间巩固
+## 五、与主流管线对照
 
-工作记忆向长期记忆的转化由睡眠机制完成。见 [`sleep.md`](sleep.md)。
+| 来源       | 采用                                  | 不采用                   |
+| ---------- | ------------------------------------- | ------------------------ |
+| Hindsight  | retain / recall / reflect；fact kinds | 云服务；本阶段全量 graph |
+| Mem0       | 薄 API、异步抽取、可独立部署          | 万能 vector SaaS 心智    |
+| OpenViking | 分层加载预算（resident/recall）       | `viking://` 整套协议     |
+| Hermes     | 嵌入 vs 外置部署直觉                  | 灵活 Provider ABC        |
 
-- **睡眠周期（✅）：** 进程内 `Bun.cron` `builtin-sleep-cycle` @ 02:00；编排 DAG（见 [`sleep.md`](sleep.md)）
-- **浅睡（✅）：** 步骤 `light-sleep` — 语义 + 感性 + 自传体提取
-- **深睡（✅）：** 步骤 `deep-sleep`（依赖 `light-sleep`）— 矛盾 / 过期、拆分、合并、置顶维护
-
-**所有转化必须携带身份上下文**——自我层五块 + 常驻记忆，而不是通用提取助手。
-
----
-
-## 四、检索策略
-
-### ✅ 分范围主动检索（无统一 recall）
-
-主动检索按 **范围拆分**。没有 LLM `memory_recall`，也没有跨类型 RRF：
-
-| 范围               | 工具                                          | 说明                            |
-| ------------------ | --------------------------------------------- | ------------------------------- |
-| `semantic`         | `memory_semantic_search`                      | 事实、偏好、经历；FTS + 过滤    |
-| `limbic`           | `memory_limbic_search`                        | 感性记忆（有 query 时混合 FTS） |
-| `autobiographical` | `memory_autobiographical_search`              | 叙事标题 + 内容片段             |
-| conversation       | `conversation_search` / `conversation_scroll` | 历史对话；可选 session 过滤     |
-
-### ✅ 被动语义召回（自动注入）
-
-每个面向用户的回合前，运行时仅从最新用户消息检索 **语义记忆**（混合 FTS + trgm，可选向量 boost），再把 top-N 命中注入为 **仅运行时** 的 `role: assistant` 消息（`name: passive_memory_context`，载荷外包 `<passive_memory>`），紧挨在该用户消息之前。不持久化到 PG；不计入记忆引用。
-
-- **常驻记忆**（系统提示）：置顶 + 高引用锚点、session 快照
-- **被动召回**：与当前消息相关的语义命中
-- **主动工具**：模型需要对语义事实更深挖掘时用 `memory_semantic_search`
-
-**澄清 / 召回策略（系统提示 `memory-recall`）：** 优先常驻 → 被动语义注入 → `memory_semantic_search`。感性 / 自传体 / 对话搜索不是默认召回路径。
-
-对话的 `system_prompt` 列是 **session 快照**。每个 **CST 02:00** 边界之后（与 sleep-cycle cron 对齐），下一条用户消息会经 `beginTurnPrepare` 中的 `ensureSystemPromptFresh` **整份重建**（常驻记忆、world/channel 上下文、toolsets、自我层、项目 `AGENTS.md`）；回合中的工具循环不会被打断。
-
-配置项在 `memory.passive_recall`（`enabled`、`limit`、`min_score`、`min_relative_score`、`max_chars`、`exclude_resident`、`use_vector`）。`use_vector` 默认在 embedding 已配置时为 true。cron / 后台会话跳过。
-
-**查询分流（精度）：** FTS / trgm 使用 jieba 词性 + 功能词表抽出的 **实词串**（名/动为主，去掉「的/是/什么/可以」等）；向量通道对 `focusPassiveRecallQuery` 后的 **完整自然句** 做单次 embed（不去停用词、不按标点多路拆句）。向量只作 RRF **boost**：融合后丢弃仅出现在 vector 通道的命中，避免纯语义邻居误召回。
-
-**搜索索引（PG）：** 可重建的搜索数据在旁表 `search_documents`（不在业务 `entities` / `messages` 行上）。文档键为 `ent:{id}` / `msg:{id}`；jieba 写入 `fts_segmented` → 生成列 `search_fts`；embedding 异步落到 `search_documents.embedding`。业务 CRUD 调用 `SearchBackend.upsert`（默认 `PgSearchIndex`；可选 `fts.backend: pg_business_scan` 仅扫业务字段）。感性 / 自传体 / 梦境叙事作为 `entities` 的 `content_block`（带 `limbic` / `narrative` / `dream` 标签）挂在按日 `diary_entry` 下。jieba 在 upsert 时同步跑（失败 → null，行仍写入）；embedding 在 insert 后异步（失败仅打日志）。
-
-**混合检索：** 管线为 retrieve（通道 `fts` / `trgm`，可选 `vector`）→ fuse（RRF）→ 可选 rerank → hydrate 业务行。默认主动 / entity hybrid 在 **一轮并行** 中跑 FTS 与 trigram，再 RRF（**不含** vector）。被动召回在 embedding 开启时可把 vector 作为第三通道并做 vector-only 丢弃。自动构建的 FTS 查询用 **OR** 连接实词 token；显式 `AND`/`OR`/`NOT` 仍可用；未加引号且长度大于两个字符的 CJK 用 **bigram-OR**，加引号短语保持完整邻接。关键词 / FTS 相关性优先。此处 RRF 是 **同一索引 / 范围之内**，不是跨记忆类型。范围用 **过滤器**（`resource`、`primary_component`，…），不是扁平 kind 枚举。
-
-经系统提示注入的常驻记忆：**最多 40 条置顶** + **最高引用 top N**（默认 N=20）。每行带引用标记 `[[anima:42]]`（仅 ID，无语言前缀）。
-
-用户 / 助手消息中的 `[[anima:id]]` 是**通用实体引用**（任意 `primary_component`），不是「一定是语义记忆」；解析见 [`anima-uri.md`](../product/anima-uri.md)（`entity_get`）。
-
-**引用义务：** 助手回复凡使用语义记忆——常驻列表、`memory_semantic_search` 语义命中、或先前消息中的标记——必须在 **回复正文末尾** 追加每个被引用的 `[[anima:id]]`。使用行内标记或工具结果中的 `semantic_memory_id`。对话、感性、自传体命中不用此标记。
-
-**规则传达位置：** 全局系统提示 `anima-uri-protocol` + `memory-citation` + `memory-recall` 段；`memory_semantic_search` 工具描述。工具响应 JSON 不为此修改。
-
-**何谓一次引用：** 仅 **user/assistant** 消息正文中的 `[[anima:id]]` 标记会解析进 `memory_references`，并贡献 `entities.reference_count`。工具返回（含 `semantic_memory_id` 字段）**不是**引用。无 `[[anima:…]]` 的裸数字 id 也不计。每条引用消息都会增加权重（无按对话首次命中去重）。
-
-夜间 sleep-cycle 步骤 `memory-ref-sync` 从 messages 全量校准计数。超出置顶条目在读时截断并 warn
-日志；深睡第 4 轮审查置顶质量（运行时读常驻仍上限 40 条）。
+感性（limbic）/ 梦境 / 叙事：**存量只读**，写入路径与 sleep.dream 步已拆除。
 
 ---
 
-## 五、与 Hindsight 的关系
+## 六、实现分期
 
-| 维度     | Hindsight                                  | FreeAnima v3                                      |
-| -------- | ------------------------------------------ | ------------------------------------------------- |
-| 事实分类 | World / Experience / Opinion / Observation | ✅ 已采纳，另加 Preference / Procedural / Imprint |
-| 感性记忆 | ❌ 缺失                                    | ✅ 印记 + 情感锚点                                |
-| 实体图谱 | ✅ 完整                                    | 尚未实现（Issue #39）                             |
-| 反思综合 | ✅ 跨记忆推理                              | ✅ 浅睡 + 深睡 cron                               |
-| 外部服务 | 是（云/Docker）                            | 否（local-first）                                 |
-| 归属     | Vectorize 平台                             | **伙伴与 Agent 共享**                             |
+1. Spec + MemoryService 外壳（本页 + `createEmbeddedMemoryService`）
+2. retain；与 sleep **并行**（不停浅睡）
+3. reflect + temporal；**cutover** 停浅/深睡；park limbic/dream/narrative 写入
+4. MCP / embedded|remote / standalone harness
+5. 删 `memory_references`；cite 收尾；文档与门禁
 
-**我们的立场：** 不复制 Hindsight，不接入 Hindsight 服务。将其设计理念消化吸收，融入逸灵风自己的记忆体系。感性记忆不是附加功能——它是数字生命的核心需求。
+评测挂载（LoCoMo 等）见风巢 #16041；本体系只保证契约可接「灌对话 → 检索」。

@@ -1,12 +1,15 @@
 import {
   SEMANTIC_MEMORY_COMPONENT,
   normalizeSemanticMemoryType,
+  semanticMemoryLinkSchema,
+  semanticMemoryProvenanceSchema,
   semanticMemoryStatusSchema,
   type SemanticMemoryBody,
 } from "@freeanima/habitat/core/db/schema";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 
 export function parseObservedAt(raw: unknown): Date | null {
   if (raw == null || raw === "") return null;
@@ -19,6 +22,23 @@ export function toObservedAtIso(raw: string | Date | null | undefined): string |
   if (raw == null || raw === "") return null;
   const d = raw instanceof Date ? raw : new Date(raw);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+function parseBodySource(raw: unknown): SemanticMemoryRow["source"] {
+  if (raw == null) return null;
+  const parsed = semanticMemoryProvenanceSchema.safeParse(raw);
+  if (!parsed.success) return null;
+  return omitUndefined(parsed.data);
+}
+
+function parseBodyLinks(raw: unknown): NonNullable<SemanticMemoryRow["links"]> {
+  if (!Array.isArray(raw)) return [];
+  const out: NonNullable<SemanticMemoryRow["links"]> = [];
+  for (const item of raw) {
+    const parsed = semanticMemoryLinkSchema.safeParse(item);
+    if (parsed.success) out.push(parsed.data);
+  }
+  return out;
 }
 
 export function entityToSemanticMemoryRow(row: EntityRow): SemanticMemoryRow {
@@ -36,6 +56,8 @@ export function entityToSemanticMemoryRow(row: EntityRow): SemanticMemoryRow {
     pinned: row.pinned,
     content: row.content,
     source_conversations,
+    source: parseBodySource(body.source) ?? null,
+    links: parseBodyLinks(body.links),
     observed_at: parseObservedAt(body.observed_at),
     occurred_at: body.occurred_at ?? null,
     status,

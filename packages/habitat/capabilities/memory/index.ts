@@ -1,6 +1,23 @@
 export { createSemanticMemory, type SemanticMemory } from "./fact.ts";
 export { conversationUpdated, type ConversationUpdatedPayload } from "./events.ts";
 export {
+  createEmbeddedMemoryService,
+  createRemoteMemoryService,
+  createMemoryService,
+  MemoryMethodNotImplementedError,
+  provenanceFromSourceConversations,
+  semanticRowToMemoryRecord,
+  registerRetainEngine,
+  resetRetainEngineForTests,
+  resolveMemoryCutoverFlags,
+  MEMORY_PARKED_WRITE_MESSAGE,
+  type CreateEmbeddedMemoryServiceOpts,
+  type RemoteMemoryServiceOpts,
+  type CreateMemoryServiceOpts,
+  type MemoryService,
+} from "./service/index.ts";
+export type * from "./service/types.ts";
+export {
   formatMemoryReferenceMarker,
   formatResidentMemoryLine,
   parseMemoryReferenceMarkers,
@@ -46,25 +63,6 @@ export {
   type SystemPromptParts,
 } from "./system-prompt.ts";
 export {
-  registerLightSleepEngine,
-  resetLightSleepEngineForTests,
-  runLightSleepEngine,
-  type LightSleepEngineFn,
-  type LightSleepEngineInput,
-  type LightSleepEngineResult,
-  type LightSleepEngineStage,
-} from "./light-sleep-port.ts";
-export {
-  registerDeepSleepEngine,
-  resetDeepSleepEngineForTests,
-  runDeepSleepEngine,
-  type DeepSleepEngineFn,
-  type DeepSleepEngineInput,
-  type DeepSleepEngineResult,
-} from "./deep-sleep-port.ts";
-export { runLightSleep, type LightSleepResult, type RunLightSleepOpts } from "./light-sleep/run.ts";
-export { runDeepSleep, type DeepSleepResult, type RunDeepSleepOpts } from "./deep-sleep/run.ts";
-export {
   registerAutobiographyEngine,
   resetAutobiographyEngineForTests,
   runAutobiographyEngine,
@@ -95,29 +93,14 @@ export {
 } from "./light-sleep/state.ts";
 export { readDeepSleepState, writeDeepSleepState, recordDeepSleepRun } from "./deep-sleep/state.ts";
 export { applyDeepSleepToolResult } from "./deep-sleep/apply-tool-result.ts";
+export type { DeepSleepResult } from "./deep-sleep/types.ts";
 export {
   buildSleepSummary,
   SLEEP_JOB_IDS,
   SLEEP_CYCLE_JOB_ID,
+  MEMORY_MAINTENANCE_JOB_ID,
   type SleepSummary,
 } from "./sleep-records.ts";
-export {
-  registerDreamEngine,
-  resetDreamEngineForTests,
-  runDreamEngine,
-  type DreamEngineFn,
-  type DreamEngineInput,
-  type DreamEngineResult,
-} from "./dream-engine-port.ts";
-export { runDream, type DreamResult, type RunDreamOpts } from "./dream/run.ts";
-export {
-  gatherDreamInput,
-  hasDreamFuel,
-  DREAM_MIN_INTENSITY,
-  DREAM_LLM_TEMPERATURE,
-  type DreamGatherInput,
-} from "./dream/gather-input.ts";
-export { readDreamState, recordDreamRun, type DreamState } from "./dream/state.ts";
 export { registerMemoryLimbicTools } from "./memory-limbic.ts";
 export {
   resolveTemporalSummaryConfig,

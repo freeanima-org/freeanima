@@ -1,19 +1,15 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { runLightSleep } from "@freeanima/habitat/capabilities/memory/light-sleep/run";
-import { runDeepSleep } from "@freeanima/habitat/capabilities/memory/deep-sleep/run";
-import { runDream } from "@freeanima/habitat/capabilities/memory/dream/run";
 import {
   resolveTemporalSummaryConfig,
   runTemporalSummaryCascade,
   runTemporalSummaryDay,
 } from "@freeanima/habitat/capabilities/memory/temporal-summary";
-import {
-  cstDayRange,
-  syncSemanticMemoryReferenceCounts,
-} from "@freeanima/habitat/capabilities/memory";
-import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
-import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
+import { cstDayRange } from "@freeanima/habitat/capabilities/memory";
+import { createEmbeddedMemoryService } from "@freeanima/habitat/capabilities/memory/service";
+import { runRetainCatchUp } from "@freeanima/habitat/capabilities/memory/service/retain-catch-up";
 import { runSelfLayerRefresh } from "@freeanima/habitat/capabilities/self/refresh/run";
+import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
+import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { purgeStaleAutoLlmRuns } from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import {
@@ -24,17 +20,29 @@ import { getPipelineRunner, type PipelineStepTrigger } from "@freeanima/habitat/
 import { cleanupStaleConversations } from "@freeanima/habitat/engine/conversation";
 import type { Engine } from "@freeanima/habitat/engine";
 import { gcObjectBlobsAfterEntityPurge } from "@freeanima/features/object-storage/domain";
-
 import { purgeCronConversations } from "@freeanima/habitat/core/db/pg/conversation";
-import { resolveDeepSleepMode } from "./deep-sleep-mode.ts";
-import { sleepCycleDefinition, SLEEP_CYCLE_PIPELINE_ID, SLEEP_STEP_IDS } from "./sleep-cycle.ts";
 
-/** 注册睡眠周期 pipeline 定义与各 step handler */
+import {
+  memoryMaintenanceDefinition,
+  MEMORY_MAINTENANCE_PIPELINE_ID,
+  MAINTENANCE_STEP_IDS,
+  SLEEP_CYCLE_PIPELINE_ID,
+  SLEEP_STEP_IDS,
+} from "./sleep-cycle.ts";
+
+export {
+  MEMORY_MAINTENANCE_PIPELINE_ID,
+  SLEEP_CYCLE_PIPELINE_ID,
+  MAINTENANCE_STEP_IDS,
+  SLEEP_STEP_IDS,
+};
+
+/** 注册记忆维护 pipeline 定义与各 step handler */
 export function registerSleepPipeline(engine: Engine): void {
   const runner = getPipelineRunner();
-  runner.registerDefinition(sleepCycleDefinition);
+  runner.registerDefinition(memoryMaintenanceDefinition);
 
-  runner.registerStep(SLEEP_STEP_IDS.conversationCleanup, async () => {
+  runner.registerStep(MAINTENANCE_STEP_IDS.conversationCleanup, async () => {
     const result = await cleanupStaleConversations();
     const cronPurge = await purgeCronConversations();
 
@@ -74,51 +82,36 @@ export function registerSleepPipeline(engine: Engine): void {
     };
   });
 
-  runner.registerStep(SLEEP_STEP_IDS.lightSleep, async (ctx) => {
-    const selfContent = await loadSelfLayerPrompt();
-    const result = await runLightSleep(
-      omitUndefined({
-        day: ctx.day,
-        selfContent,
-      }),
+  runner.registerStep(MAINTENANCE_STEP_IDS.retainCatchUp, async (ctx) => {
+    const result = await runRetainCatchUp(
+      omitUndefined({ day: typeof ctx.day === "string" ? ctx.day : undefined }),
     );
-    if (result.skipped) {
-      return { ok: true, skipped: result.skipped, output: result };
+    if (result.skipped_reason) {
+      return { ok: true, skipped: result.skipped_reason, output: result };
     }
     return result.ok
       ? { ok: true, output: result }
       : { ok: false, output: result, error: result.summary };
   });
 
-  runner.registerStep(SLEEP_STEP_IDS.deepSleep, async (ctx) => {
-    const selfContent = await loadSelfLayerPrompt();
+  runner.registerStep(MAINTENANCE_STEP_IDS.reflect, async (ctx) => {
+    const { resolveDeepSleepMode } = await import("./deep-sleep-mode.ts");
     const mode = resolveDeepSleepMode(ctx);
-    const result = await runDeepSleep(omitUndefined({ day: ctx.day, selfContent, mode }));
-    if (result.skipped) {
-      return { ok: true, skipped: result.skipped, output: result };
-    }
-    return result.ok
-      ? { ok: true, output: result }
-      : { ok: false, output: result, error: result.skipped ?? "deep sleep failed" };
-  });
-
-  runner.registerStep(SLEEP_STEP_IDS.dream, async (ctx) => {
-    const selfContent = await loadSelfLayerPrompt();
-    const result = await runDream(
-      omitUndefined({
+    const reflectResult = await createEmbeddedMemoryService().reflect({
+      force: mode === "full",
+    });
+    return {
+      ok: true,
+      output: {
         day: ctx.day,
-        selfContent,
-      }),
-    );
-    if (result.skipped) {
-      return { ok: true, skipped: result.skipped, output: result };
-    }
-    return result.ok
-      ? { ok: true, output: result }
-      : { ok: false, output: result, error: result.summary };
+        mode,
+        ...reflectResult,
+        summary: "MemoryService.reflect",
+      },
+    };
   });
 
-  runner.registerStep(SLEEP_STEP_IDS.selfLayerRefresh, async () => {
+  runner.registerStep(MAINTENANCE_STEP_IDS.selfLayerRefresh, async () => {
     const selfContent = await loadSelfLayerPrompt();
     const result = await runSelfLayerRefresh(omitUndefined({ selfContent }));
     if (result.skipped) {
@@ -129,7 +122,7 @@ export function registerSleepPipeline(engine: Engine): void {
       : { ok: false, output: result, error: result.summary };
   });
 
-  runner.registerStep(SLEEP_STEP_IDS.temporalSummaryDay, async (ctx) => {
+  runner.registerStep(MAINTENANCE_STEP_IDS.temporalSummaryDay, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();
     const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
     const result = await runTemporalSummaryDay(
@@ -143,7 +136,7 @@ export function registerSleepPipeline(engine: Engine): void {
       : { ok: false, output: result, error: result.summary };
   });
 
-  runner.registerStep(SLEEP_STEP_IDS.temporalSummaryCascade, async (ctx) => {
+  runner.registerStep(MAINTENANCE_STEP_IDS.temporalSummaryCascade, async (ctx) => {
     const selfContent = await loadSelfLayerPrompt();
     const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
     const result = await runTemporalSummaryCascade(
@@ -155,11 +148,6 @@ export function registerSleepPipeline(engine: Engine): void {
     return result.ok
       ? { ok: true, output: result }
       : { ok: false, output: result, error: result.summary };
-  });
-
-  runner.registerStep(SLEEP_STEP_IDS.memoryRefSync, async () => {
-    const result = await syncSemanticMemoryReferenceCounts();
-    return { ok: true, output: result };
   });
 }
 
@@ -173,7 +161,7 @@ export async function runSleepCycle(
 ) {
   const runner = getPipelineRunner();
   const resolvedDay = resolveSleepCycleDay(day);
-  return runner.run(SLEEP_CYCLE_PIPELINE_ID, {
+  return runner.run(MEMORY_MAINTENANCE_PIPELINE_ID, {
     day: resolvedDay,
     trigger: opts?.trigger ?? "manual_cycle",
     ...omitUndefined({ deep_sleep_mode: opts?.deep_sleep_mode }),
@@ -191,8 +179,15 @@ export async function runSleepStep(
 ) {
   const runner = getPipelineRunner();
   const resolvedDay = opts?.day ? resolveSleepCycleDay(opts.day) : resolveSleepCycleDay();
+  // 旧 step id 映射
+  const mapped =
+    stepId === "light-sleep"
+      ? MAINTENANCE_STEP_IDS.retainCatchUp
+      : stepId === "deep-sleep"
+        ? MAINTENANCE_STEP_IDS.reflect
+        : stepId;
   return runner.runStep(
-    stepId,
+    mapped,
     omitUndefined({
       day: resolvedDay,
       force: opts?.force,
@@ -204,5 +199,5 @@ export async function runSleepStep(
 
 export function getSleepPipelineStatus() {
   const runner = getPipelineRunner();
-  return runner.getRunState(SLEEP_CYCLE_PIPELINE_ID);
+  return runner.getRunState(MEMORY_MAINTENANCE_PIPELINE_ID);
 }

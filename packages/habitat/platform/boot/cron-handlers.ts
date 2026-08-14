@@ -6,12 +6,28 @@ import type { Engine } from "@freeanima/habitat/engine";
 export function registerBootCronHandlers(engine: Engine): void {
   registerSleepPipeline(engine);
 
+  registerCronBuiltinHandler("builtin-memory-maintenance", async () => {
+    const result = await runSleepCycle(resolveSleepCycleDay(), { trigger: "scheduled" });
+    return JSON.stringify({
+      ok: result.ok,
+      day: result.day,
+      status: result.status,
+      steps: Object.fromEntries(
+        Object.entries(result.steps).map(([id, s]) => [
+          id,
+          { status: s.status, error: s.error, skipped_reason: s.skipped_reason },
+        ]),
+      ),
+    });
+  });
+  // 兼容旧 id 触发
   registerCronBuiltinHandler("builtin-sleep-cycle", async () => {
     const result = await runSleepCycle(resolveSleepCycleDay(), { trigger: "scheduled" });
     return JSON.stringify({
       ok: result.ok,
       day: result.day,
       status: result.status,
+      legacy_alias: "builtin-memory-maintenance",
       steps: Object.fromEntries(
         Object.entries(result.steps).map(([id, s]) => [
           id,

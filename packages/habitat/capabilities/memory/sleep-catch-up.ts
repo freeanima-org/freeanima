@@ -11,9 +11,11 @@ import type { SleepCatchUpPlan } from "./sleep-catch-up-types.ts";
 
 export type { SleepCatchUpPlan } from "./sleep-catch-up-types.ts";
 
-/** Align with sleep-cycle pipeline ids (avoid importing platform from capabilities). */
-const SLEEP_CYCLE_PIPELINE_ID = "sleep-cycle";
-const LIGHT_SLEEP_STEP_ID = "light-sleep";
+/** Align with memory-maintenance pipeline ids (avoid importing platform from capabilities). */
+const MEMORY_MAINTENANCE_PIPELINE_ID = "memory-maintenance";
+const LEGACY_SLEEP_CYCLE_PIPELINE_ID = "sleep-cycle";
+const RETAIN_CATCH_UP_STEP_ID = "retain-catch-up";
+const LEGACY_LIGHT_SLEEP_STEP_ID = "light-sleep";
 
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
@@ -135,12 +137,21 @@ export async function planSleepCatchUp(opts?: {
   }
 
   const activityDays = await listConversationActivityDays(start, end);
-  const completedLight = await listCompletedStepDays({
-    pipeline_id: SLEEP_CYCLE_PIPELINE_ID,
-    step_id: LIGHT_SLEEP_STEP_ID,
-    from_day: start,
-    to_day: end,
-  });
+  const [completedRetain, completedLegacyLight] = await Promise.all([
+    listCompletedStepDays({
+      pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
+      step_id: RETAIN_CATCH_UP_STEP_ID,
+      from_day: start,
+      to_day: end,
+    }),
+    listCompletedStepDays({
+      pipeline_id: LEGACY_SLEEP_CYCLE_PIPELINE_ID,
+      step_id: LEGACY_LIGHT_SLEEP_STEP_ID,
+      from_day: start,
+      to_day: end,
+    }),
+  ]);
+  const completedLight = new Set([...completedRetain, ...completedLegacyLight]);
   const temporalRows = await listTemporalSummariesInRange({
     window: "day",
     period_start_from: start,
@@ -149,7 +160,7 @@ export async function planSleepCatchUp(opts?: {
 
   const computed = computeSleepCatchUpDays({
     activityDays,
-    completedLightDays: new Set(completedLight),
+    completedLightDays: completedLight,
     existingTemporalDays: new Set(temporalRows.map((r) => r.period_start)),
     from: start,
     to: end,

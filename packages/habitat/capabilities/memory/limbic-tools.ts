@@ -7,6 +7,7 @@ import type {
 } from "@freeanima/habitat/core/db/pg/limbic-memory/types";
 import { createLimbicMemory } from "@freeanima/habitat/core/db/pg/limbic-memory";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { MEMORY_PARKED_WRITE_MESSAGE, resolveActiveMemoryCutoverFlags } from "./service/cutover.ts";
 
 const LIMBIC_KINDS = ["conversation_mood", "turning_point", "spike"] as const;
 
@@ -66,6 +67,9 @@ export const limbicMemoryToolDefs: ToolDef[] = [
       required: ["conversation_id", "kind", "content"],
     },
     handler: async (args: Record<string, unknown>) => {
+      if (resolveActiveMemoryCutoverFlags().park_limbic_dream_narrative) {
+        return toolError(MEMORY_PARKED_WRITE_MESSAGE);
+      }
       const conversationId = coerceString(args.conversation_id).trim();
       const content = coerceString(args.content).trim();
       const kindRaw = coerceString(args.kind).trim();

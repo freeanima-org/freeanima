@@ -1,6 +1,25 @@
 import type { LimbicKind } from "../entity/limbic.ts";
 import type { NarrativeSignificance, NarrativeStatus } from "../entity/narrative.ts";
 
+/** 语义记忆 provenance（与 habitat MemoryProvenance / body.source 同形） */
+export type SemanticMemoryProvenance = {
+  conversation_id: string;
+  message_id_from?: string;
+  message_id_to?: string;
+  message_ids?: string[];
+};
+
+export type SemanticMemoryLinkType =
+  | "merged_from"
+  | "supersedes"
+  | "conflicts_with"
+  | "derived_from";
+
+export type SemanticMemoryLink = {
+  type: SemanticMemoryLinkType;
+  memory_id: number;
+};
+
 /** Semantic memory as entities row view (primary_component=semantic_memory). */
 export type SemanticMemoryRow = {
   id: number;
@@ -8,6 +27,9 @@ export type SemanticMemoryRow = {
   pinned: boolean;
   content: string;
   source_conversations: string[];
+  /** body.source；缺省时由 source_conversations 在 MemoryService 层映射 */
+  source?: SemanticMemoryProvenance | null;
+  links?: SemanticMemoryLink[];
   observed_at: Date | null;
   occurred_at: string | null;
   status: string;

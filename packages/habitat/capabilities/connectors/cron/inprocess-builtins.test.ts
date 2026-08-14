@@ -38,7 +38,8 @@ describe("inprocess-builtins", () => {
   });
 
   test("四类 builtin id 识别（task-reminders 已迁 scheduler）", () => {
-    expect(isInprocessBuiltinId("builtin-sleep-cycle")).toBe(true);
+    expect(isInprocessBuiltinId("builtin-memory-maintenance")).toBe(true);
+    expect(isInprocessBuiltinId("builtin-sleep-cycle")).toBe(false);
     expect(isInprocessBuiltinId("builtin-task-reminders")).toBe(false);
     expect(isInprocessBuiltinId("builtin-env-health")).toBe(true);
     expect(isInprocessBuiltinId("builtin-email-sync-all")).toBe(true);
@@ -48,7 +49,7 @@ describe("inprocess-builtins", () => {
   test("start 后可查询状态；stop 后可再次 start", () => {
     startInprocessBuiltins();
     expect(listInprocessBuiltinStatuses()).toHaveLength(INPROCESS_BUILTIN_DEFS.length);
-    const sleep = getInprocessBuiltinStatus("builtin-sleep-cycle");
+    const sleep = getInprocessBuiltinStatus("builtin-memory-maintenance");
     expect(sleep?.schedule).toBe("0 2 * * *");
     expect(sleep?.run_count).toBe(0);
 

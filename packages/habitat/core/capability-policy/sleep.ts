@@ -10,10 +10,7 @@ export const SLEEP_ALLOWED_TOOLS = [
   "memory_semantic_deprecate",
   "memory_semantic_merge",
   "memory_limbic_search",
-  "memory_limbic_create",
   "memory_autobiographical_search",
-  "memory_autobiographical_create",
-  "memory_autobiographical_deprecate",
 ] as const;
 
 export function resolveSleepPolicy(toolSetRegistry: ToolSetRegistry): ResolvedCapabilityPolicy {

@@ -29,6 +29,8 @@ const PAGE_SIZE = 20;
 const RUN_KIND_OPTIONS = [
   "",
   "cron",
+  "memory-retain",
+  "memory-reflect",
   "light-sleep",
   "deep-sleep",
   "dream",

@@ -18,7 +18,7 @@ alwaysApply: false
 5. 非压缩路径只读 meta；仅成功压缩更新 `l2`/`l3`/`summary`
 6. **无 `l2l`**：summary = `pos ≤ l2`
 7. Token 估算只用 LLM 可见 `content`（勿把大体量藏在并行字段）
-8. 压缩 **不**触发语义记忆抽取；浅睡 cron 独立（[`sleep.md`](../../docs/cognition/sleep.md)）
+8. 压缩 **不**触发语义记忆抽取；记忆抽取走 MemoryService.retain（见 [`memory.md`](../../docs/cognition/memory.md)）
 
 ## Trigger 摘要
 
