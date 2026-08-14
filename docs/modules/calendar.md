@@ -75,7 +75,9 @@ true`，不写库）
 
 - **月视图**：月网格 + 选中日议程
 - **周视图**：周一至周日列；pending 任务可拖拽改 `due_at`（`task.patch` + `only_this: true`）
+- **工具栏开关本机持久化**（`freeanima.calendar.uiPrefs`）：重复展开、月/周、事件/任务/项目；**窄布局（手机）与宽布局（桌面）共用**同一偏好，再次进入保留上次选择
 - **重复展开**开关：控制是否显示虚拟重复实例（月点计数、选中日议程、周列共用同一过滤；关闭时隐藏 `virtual: true`）
+- 窄布局工具栏开关使用更大触控尺寸；宽布局保持紧凑 `sm`
 - 创建/编辑事件 Dialog。点击任务走 entity overlay；项目进 `/projects`。清单管理回 `/tasks`
 
 ## LLM ToolSet `calendar`

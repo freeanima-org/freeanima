@@ -29,6 +29,7 @@ import {
   shiftMonth,
 } from "./lib/format-calendar.ts";
 import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
+import { readCalendarUiPrefs, writeCalendarUiPrefs } from "./lib/calendar-prefs.ts";
 import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 
 registerCalendarOfflineModule();
@@ -105,12 +106,17 @@ export function CalendarApp() {
     return { year: y, monthIndex: mo - 1 };
   });
   const [selectedDay, setSelectedDay] = useState(today);
-  const [kinds, setKinds] = useState<CalendarRangeKind[]>([...KIND_OPTIONS]);
+  const [prefs, setPrefs] = useState(() => readCalendarUiPrefs());
+  const kinds = prefs.kinds as CalendarRangeKind[];
+  const viewMode = prefs.viewMode;
+  const expandRecurrence = prefs.expandRecurrence;
   const [editor, setEditor] = useState<EventEditorTarget | null>(null);
-  const [viewMode, setViewMode] = useState<"month" | "week">("month");
-  const [expandRecurrence, setExpandRecurrence] = useState(true);
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
   const [refreshing, setRefreshing] = useState(false);
+
+  const patchPrefs = useCallback((patch: Parameters<typeof writeCalendarUiPrefs>[0]) => {
+    setPrefs(writeCalendarUiPrefs(patch));
+  }, []);
 
   const range = useMemo(() => {
     if (viewMode === "week") {
@@ -166,15 +172,18 @@ export function CalendarApp() {
     return map;
   }, [items]);
 
-  const toggleKind = useCallback((kind: CalendarRangeKind) => {
-    setKinds((prev) => {
-      if (prev.includes(kind)) {
-        const next = prev.filter((k) => k !== kind);
-        return next.length > 0 ? next : prev;
-      }
-      return [...prev, kind];
-    });
-  }, []);
+  const toggleKind = useCallback(
+    (kind: CalendarRangeKind) => {
+      const prev = prefs.kinds;
+      const next = prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind];
+      if (next.length === 0) return;
+      patchPrefs({ kinds: next });
+    },
+    [patchPrefs, prefs.kinds],
+  );
+
+  /** 窄布局（手机）工具栏开关加大触控命中；宽布局保持 sm */
+  const toggleSize = compact ? "default" : "sm";
 
   const refresh = useCallback(async () => {
     await query.reload();
@@ -220,18 +229,18 @@ export function CalendarApp() {
         </Button>
         <Button
           type="button"
-          size="sm"
+          size={toggleSize}
           variant={viewMode === "month" ? "default" : "outline"}
-          onPress={() => setViewMode("month")}
+          onPress={() => patchPrefs({ viewMode: "month" })}
         >
           月
         </Button>
         <Button
           type="button"
-          size="sm"
+          size={toggleSize}
           variant={viewMode === "week" ? "default" : "outline"}
           onPress={() => {
-            setViewMode("week");
+            patchPrefs({ viewMode: "week" });
             setWeekAnchor(weekStartMonday(selectedDay));
           }}
         >
@@ -239,9 +248,9 @@ export function CalendarApp() {
         </Button>
         <Button
           type="button"
-          size="sm"
+          size={toggleSize}
           variant={expandRecurrence ? "default" : "outline"}
-          onPress={() => setExpandRecurrence((v) => !v)}
+          onPress={() => patchPrefs({ expandRecurrence: !expandRecurrence })}
         >
           重复展开
         </Button>
@@ -290,7 +299,7 @@ export function CalendarApp() {
             <Button
               key={kind}
               type="button"
-              size="sm"
+              size={toggleSize}
               variant={kinds.includes(kind) ? "default" : "outline"}
               onPress={() => toggleKind(kind)}
             >
