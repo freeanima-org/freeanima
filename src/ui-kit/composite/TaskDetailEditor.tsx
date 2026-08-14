@@ -280,6 +280,7 @@ function DateTimePopoverFields({
   return (
     <div className="flex flex-col gap-2">
       <DatePickerInput
+        presentation="inline"
         className="w-full"
         value={datePart}
         aria-label={dateLabel}
@@ -676,6 +677,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                     <div className="flex flex-col gap-1">
                       <span className="text-muted-foreground text-xs">结束于</span>
                       <DatePickerInput
+                        presentation="inline"
                         className="w-full"
                         value={recurrenceUntilDate}
                         aria-label="重复结束日期"
