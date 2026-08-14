@@ -9,6 +9,7 @@ import {
   useCompactImmersive,
   useShellModuleVisibility,
   useShellModuleOrder,
+  useShellModulePrimaryCount,
 } from "@freeanima/client/portal-sdk/react.tsx";
 
 import { isCompactLayout, useLayoutMode } from "../layout-mode.ts";
@@ -91,7 +92,7 @@ function MoreNavMenu({ items }: { items: AppNavItem[] }) {
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="leading-none">More</span>
+        <span className="leading-none">更多</span>
       </button>
       {open ? (
         <>
@@ -156,9 +157,10 @@ function ExpandedAppFrame() {
 function CompactAppFrame() {
   const visible = useShellModuleVisibility();
   const order = useShellModuleOrder();
+  const primaryCount = useShellModulePrimaryCount();
   const immersive = useCompactImmersive();
   const navItems = useMemo(() => orderedVisibleAppNavItems(visible, order), [order, visible]);
-  const { bar, more, density } = useAppBottomNavLayout(navItems);
+  const { bar, more, density } = useAppBottomNavLayout(navItems, primaryCount);
 
   return (
     <div className="app-module-layout app-layout-compact h-full flex flex-col bg-background text-foreground">
