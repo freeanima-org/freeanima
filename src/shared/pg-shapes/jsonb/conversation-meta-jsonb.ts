@@ -69,7 +69,39 @@ export const acpTaskEntrySchema = z.object({
   progress_message_id: z.string().optional(),
 });
 
-export const acpTasksSchema = z.record(z.string(), acpTaskEntrySchema);
+const LEGACY_ACP_TASK_UPDATED_AT = "1970-01-01T00:00:00.000Z";
+
+/**
+ * 读路径兼容：存量 acp_tasks 可能仍按 agent 名键控、值为 ACP session id 字符串
+ *（如 `{ cursor: "acp-uuid" }`）。归一化为以 ACP session id 为键的 entry。
+ */
+export function normalizeAcpTasks(raw: unknown): unknown {
+  if (raw === null || raw === undefined) return raw;
+  if (typeof raw !== "object" || Array.isArray(raw)) return raw;
+
+  const obj = raw as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      out[key] = value;
+      continue;
+    }
+    if (typeof value === "string" && value.length > 0) {
+      out[value] = {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: key,
+        updated_at: LEGACY_ACP_TASK_UPDATED_AT,
+      };
+    }
+  }
+  return out;
+}
+
+export const acpTasksSchema = z.preprocess(
+  normalizeAcpTasks,
+  z.record(z.string(), acpTaskEntrySchema),
+);
 export type AcpTaskStatusJson = z.infer<typeof acpTaskStatusSchema>;
 export type AcpTaskEntryJson = z.infer<typeof acpTaskEntrySchema>;
 export type AcpTasksJson = z.infer<typeof acpTasksSchema>;

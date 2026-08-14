@@ -9,6 +9,7 @@ export {
   acpTasksSchema,
   acpTaskEntrySchema,
   acpTaskStatusSchema,
+  normalizeAcpTasks,
   conversationCachedToolsetsSchema,
   conversationStagedToolsetsSchema,
   conversationFunctionsSchema,

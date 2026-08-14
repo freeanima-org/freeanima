@@ -4,6 +4,7 @@ import {
   acpTasksSchema,
   acpTaskEntrySchema,
   conversationCachedToolsetsSchema,
+  normalizeAcpTasks,
   normalizeConversationToolNames,
 } from "./schema/jsonb/conversation-meta-jsonb.ts";
 
@@ -104,6 +105,51 @@ describe("conversation tools jsonb", () => {
 });
 
 describe("acp_tasks jsonb", () => {
+  it("normalizeAcpTasks converts legacy agent-keyed string bindings", () => {
+    expect(normalizeAcpTasks({ cursor: "acp-uuid-1" })).toEqual({
+      "acp-uuid-1": {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: "cursor",
+        updated_at: "1970-01-01T00:00:00.000Z",
+      },
+    });
+    expect(acpTasksSchema.parse({ cursor: "acp-uuid-1" })).toEqual({
+      "acp-uuid-1": {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: "cursor",
+        updated_at: "1970-01-01T00:00:00.000Z",
+      },
+    });
+  });
+
+  it("normalizeAcpTasks keeps new-format entries and mixed legacy", () => {
+    const mixed = {
+      cursor: "legacy-session-id",
+      "acp-uuid-2": {
+        status: "running",
+        task_id: "task-2",
+        agent_name: "cursor",
+        updated_at: "2026-06-12T10:00:00.000Z",
+      },
+    };
+    expect(acpTasksSchema.parse(mixed)).toEqual({
+      "legacy-session-id": {
+        status: "completed",
+        task_id: "legacy",
+        agent_name: "cursor",
+        updated_at: "1970-01-01T00:00:00.000Z",
+      },
+      "acp-uuid-2": {
+        status: "running",
+        task_id: "task-2",
+        agent_name: "cursor",
+        updated_at: "2026-06-12T10:00:00.000Z",
+      },
+    });
+  });
+
   it("acpTasksSchema accepts standard entries keyed by ACP conversation id", () => {
     const entry = {
       status: "running" as const,
