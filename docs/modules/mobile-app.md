@@ -46,19 +46,20 @@ flowchart LR
 
 ## 故障排查
 
-| 症状                                        | 常见原因                                                                                                    |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| 键盘挡住聊天输入                            | WebView 未随键盘调整；依赖 `visualViewport` inset（仅 visualViewport）                                      |
-| 聊天输入无响应                              | 未选对话；或栖息地 RPC 已断连                                                                               |
-| 栖息地加载失败 / Failed to fetch            | 栖息地未 `--host 0.0.0.0`、错误 token、防火墙                                                               |
-| 测试连接「网络错误」、浏览器同地址正常      | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658`           |
-| 测试连接成功，实际「连接已断开」            | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                                     |
-| 保存时 `Read-only file system`              | 已修：prefs 写入 app 私有 config 目录                                                                       |
-| ZeroTier / 虚拟网卡 IP                      | 手机 ZeroTier 在线；栖息地 `http.host: 0.0.0.0`；壳 URL 无尾斜杠                                            |
-| 安装 `NO_CERTIFICATES` / 版本降级           | 打包签名 APK；卸载旧 canary 后再装                                                                          |
-| 安装失败「签名冲突」                        | 卸载 `com.freeanima.portal`（或旧包 `org.freeanima.app`）再装                                               |
-| 关于页 / 系统设置版本像正式版、检测不到更新 | 须带 `FREEANIMA_BUILD_VERSION` 打包；identity overlay 写入 versionName + versionCode（迁 Tauri 后曾漏同步） |
-| 更新下载无百分比                            | APK 插件进度须主线程 `trigger`；无 Content-Length 时用 Release `assetSize` 估百分比                         |
+| 症状                                           | 常见原因                                                                                                    |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 键盘挡住聊天输入                               | WebView 未随键盘调整；依赖 `visualViewport` inset（仅 visualViewport）                                      |
+| 聊天输入无响应                                 | 未选对话；或栖息地 RPC 已断连                                                                               |
+| 栖息地加载失败 / Failed to fetch               | 栖息地未 `--host 0.0.0.0`、错误 token、防火墙                                                               |
+| 测试连接「网络错误」、浏览器同地址正常         | 壳内 HTTPS 需信任 mkcert 根 CA（`network_security_config` 已信任用户 CA）；或暂用 `http://…:2658`           |
+| 测试连接成功，实际「连接已断开」               | 测试含原生 HTTP + WebSocket；仍断连则查 token / WS 代理                                                     |
+| 保存时 `Read-only file system`                 | 已修：prefs 写入 app 私有 config 目录                                                                       |
+| ZeroTier / 虚拟网卡 IP                         | 手机 ZeroTier 在线；栖息地 `http.host: 0.0.0.0`；壳 URL 无尾斜杠                                            |
+| 安装 `NO_CERTIFICATES` / 版本降级              | 打包签名 APK；卸载旧 canary 后再装                                                                          |
+| 安装失败「签名冲突」                           | 卸载 `com.freeanima.portal`（或旧包 `org.freeanima.app`）再装                                               |
+| 关于页 / 系统设置版本像正式版、检测不到更新    | 须带 `FREEANIMA_BUILD_VERSION` 打包；identity overlay 写入 versionName + versionCode（迁 Tauri 后曾漏同步） |
+| 更新下载无百分比                               | APK 插件进度须主线程 `trigger`；无 Content-Length 时用 Release `assetSize` 估百分比                         |
+| 更新失败 `registerListener not allowed by ACL` | 内联插件须 `InlinedPlugin` + capability `apk-installer:default`；改后需重编 APK（热更前端无效）             |
 
 ## 调试
 

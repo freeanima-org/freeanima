@@ -8,6 +8,7 @@ import {
 import type { BuildChannel } from "@freeanima/client/portal-sdk/build-meta";
 import { readGithubReleaseProxyPref } from "@freeanima/client/portal-sdk/github-release-proxy-prefs";
 import { resolveAboutNativeBuildMeta } from "@freeanima/client/portal-sdk/native-build-meta.resolve";
+import { getShellBuildTarget } from "@freeanima/client/portal-sdk/shell-build-target";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef, useState } from "react";
 
@@ -38,7 +39,10 @@ function writeDismissedKey(key: string): void {
 function formatUpdateErrorMessage(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
   const detail = `更新失败：${message}`;
-  if (typeof window.portalShell?.applyPackagedUpdate === "function") {
+  if (
+    getShellBuildTarget() === "desktop" &&
+    typeof window.portalShell?.applyPackagedUpdate === "function"
+  ) {
     return `${detail} 详情见 ~/.anima/desktop-shell/shell.log。`;
   }
   return detail;
