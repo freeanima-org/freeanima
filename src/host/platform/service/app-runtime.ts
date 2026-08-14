@@ -14,7 +14,10 @@ import type { AppRuntimePort } from "@freeanima/host/platform/ports/app-runtime-
 import type { McpManagerPort } from "@freeanima/host/platform/ports/mcp-manager";
 import type { RemoteToolsManagerPort } from "@freeanima/host/platform/ports/remote-tools-manager";
 import type { ServiceEnginePort } from "@freeanima/host/platform/ports/service-engine";
-import { collectStreamReply } from "@freeanima/host/engine/loop";
+import {
+  collectStreamReply,
+  createConversationAfterMessagesPersisted,
+} from "@freeanima/host/engine/loop";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
 import { ConversationManager } from "./conversation-manager.ts";
@@ -115,6 +118,9 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return {
       hookRegistry: this.kernel.hookRegistry,
       llm_kind: "conversation" as const,
+      conversationId,
+      toolProgress: true as const,
+      onAfterMessagesPersisted: createConversationAfterMessagesPersisted(conversationId),
       ...createTurnMessageCallbacks(this.fullDeps(), conversationId),
       signal,
       shouldStop: () => this.runControl.isShuttingDown(),

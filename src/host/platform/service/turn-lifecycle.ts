@@ -10,6 +10,7 @@ import {
 import type { StoredMessage as Message } from "@freeanima/host/core/db/domain";
 import type { StoredMessage } from "@freeanima/host/core/db/domain";
 import * as loopEngine from "@freeanima/host/engine/loop";
+import { createConversationAfterMessagesPersisted } from "@freeanima/host/engine/loop";
 import { runWithToolContext } from "@freeanima/host/core/tool";
 import type { StreamEvent } from "@freeanima/host/engine/loop";
 import { applyClarifyStreamAwaiting } from "@freeanima/host/capabilities/tools/clarify";
@@ -43,9 +44,14 @@ export type StreamTurnHost = {
     llmDebug?: boolean,
   ): {
     hookRegistry: HookRegistry;
+    llm_kind: "conversation";
+    conversationId: string;
+    toolProgress: true;
+    onAfterMessagesPersisted: ReturnType<typeof createConversationAfterMessagesPersisted>;
     onMessageAppended: (msg: StoredMessage) => Promise<void>;
     onToolRoundComplete: (batch: StoredMessage[]) => Promise<void>;
     signal: AbortSignal;
+    shouldStop?: () => boolean;
     llm_debug?: boolean;
   };
   reloadRuntimeAfterRepair(conversationId: string): Promise<[Message[], string[]]>;
@@ -161,11 +167,13 @@ export async function runSimpleTurn(
         conversationId,
         () =>
           loopEngine.run(msgs, {
-            config: deps.engine.config.data,
             logger: deps.engine.logger,
             model,
             tools,
             llm: deps.engine.llm,
+            conversationId,
+            toolProgress: true,
+            onAfterMessagesPersisted: createConversationAfterMessagesPersisted(conversationId),
             ...omitUndefined({ executableTools }),
             hookRegistry: deps.kernel.hookRegistry,
             llm_kind: "conversation",
@@ -228,7 +236,6 @@ export async function* yieldEngineStream(
           loopEngine.runStream(msgs, {
             model,
             tools,
-            config: deps.engine.config.data,
             logger: deps.engine.logger,
             llm: deps.engine.llm,
             ...omitUndefined({ executableTools, llm_debug: llmDebug ? true : undefined }),

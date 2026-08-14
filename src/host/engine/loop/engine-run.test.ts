@@ -21,7 +21,7 @@ describe("engine.run", () => {
       for (const ev of events) yield ev;
     });
     const msgs: StoredMessage[] = [{ role: "user", content: "hi", pos: 1 }];
-    await expect(engine.run(msgs)).resolves.toBe("hello world");
+    await expect(engine.run(msgs, { model: "test" })).resolves.toBe("hello world");
   });
 
   it("content_replace overwrites prior tokens", async () => {
@@ -33,13 +33,13 @@ describe("engine.run", () => {
       ];
       for (const ev of events) yield ev;
     });
-    await expect(engine.run([])).resolves.toBe("final");
+    await expect(engine.run([], { model: "test" })).resolves.toBe("final");
   });
 
   it("maps Tool loop exceeded to MaxTurnsExceeded", async () => {
     streamSpy = spyOn(engine, "runStream").mockImplementation(async function* () {
       yield { event: "error", data: { error: "Tool loop exceeded max turns" } };
     });
-    await expect(engine.run([])).rejects.toBeInstanceOf(engine.MaxTurnsExceeded);
+    await expect(engine.run([], { model: "test" })).rejects.toBeInstanceOf(engine.MaxTurnsExceeded);
   });
 });
