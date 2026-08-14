@@ -163,6 +163,11 @@ describe("service-prompt-debug", () => {
     const out = await getPromptDebug(testDeps);
     expect(out.mode).toBe("global");
     expect(out.system.composed.length).toBeGreaterThan(0);
+    expect(out.system.fold).toBeDefined();
+    expect(out.system.fold!.global_budget_chars).toBeGreaterThan(0);
+    expect(out.system.fold!.total_chars).toBe(out.system.composed.length);
+    expect(out.system.fold!.sections.length).toBeGreaterThan(0);
+    expect(out.system.fold!.sections.every((s) => s.chars_used >= 0 && s.id)).toBe(true);
     expect(out.tools.mode).toBe("registry");
     expect(out.tools.count).toBeGreaterThan(0);
     expect(out.tools.items.every((t) => t.parameters && t.name)).toBe(true);

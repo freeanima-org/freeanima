@@ -6,13 +6,16 @@ import {
   semanticMemoryStatusSchema,
 } from "@freeanima/habitat/core/db/schema";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import {
+  peekActiveRuntimeConfig,
+  resolveMemoryResidentConfig,
+} from "@freeanima/habitat/core/config";
 import type {
   SemanticMemoryCreateInput,
   SemanticMemoryUpdateInput,
 } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
-import { RESIDENT_PINNED_MAX } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
 import { logPgComponent } from "../../log.ts";
 
 const log = logPgComponent("memory");
@@ -229,8 +232,10 @@ export async function countSemanticMemory(): Promise<number> {
   return rows[0]?.n ?? 0;
 }
 
-export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMemoryRow[]> {
-  const limit = Math.max(1, Math.min(100, topN));
+export async function listResidentSemanticMemory(topN?: number): Promise<SemanticMemoryRow[]> {
+  const resident = resolveMemoryResidentConfig(peekActiveRuntimeConfig()?.data);
+  const limit = Math.max(1, Math.min(100, topN ?? resident.top_n));
+  const pinnedMax = Math.max(1, Math.min(200, resident.pinned_max));
   const db = getDb();
 
   const pinnedRows = await db
@@ -244,18 +249,18 @@ export async function listResidentSemanticMemory(topN = 20): Promise<SemanticMem
       ),
     )
     .orderBy(desc(entities.updated_at))
-    .limit(RESIDENT_PINNED_MAX + 1);
+    .limit(pinnedMax + 1);
 
-  if (pinnedRows.length > RESIDENT_PINNED_MAX) {
-    const omitted = pinnedRows.slice(RESIDENT_PINNED_MAX);
+  if (pinnedRows.length > pinnedMax) {
+    const omitted = pinnedRows.slice(pinnedMax);
     log.warn("resident pinned count exceeds max; truncating", {
       pinned_count: pinnedRows.length,
-      pinned_max: RESIDENT_PINNED_MAX,
+      pinned_max: pinnedMax,
       omitted_ids: omitted.map((r) => r.id),
     });
   }
 
-  const pinnedLimited = pinnedRows.slice(0, RESIDENT_PINNED_MAX).map(mapDbRow);
+  const pinnedLimited = pinnedRows.slice(0, pinnedMax).map(mapDbRow);
   const pinnedIds = new Set(pinnedLimited.map((r) => r.id));
   const remaining = Math.max(0, limit - pinnedLimited.length);
 

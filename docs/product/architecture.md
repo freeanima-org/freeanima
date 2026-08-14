@@ -115,6 +115,8 @@ ToolSet 发现可见度分三级：`catalog`（进系统提示 `<toolsets>` 目�
 
 机器注入的结构（系统提示各段、旁注、user 时间戳、技能正文）用 **XML 外壳**划界。系统提示中：除段首**命令式 / 第二人称 frame**（如自我层、常驻记忆说明）外，其余段落一律 XML 包裹；自我层五块为嵌套标签（`<existence_anchor>` …）。预算裁剪作用于 **标签内正文**，再包裹开闭标签，避免截断闭合标签。传输层 `role` 不再包一层 `<system>`/`<user>`。
 
+Working 组装（fold / 压缩四段 / 被动召回）与业界对照见 [`../cognition/context-management.md`](../cognition/context-management.md)。
+
 ## 四层认知模型
 
 数字生命由内而外分层。每一层回答一个不同的核心问题：

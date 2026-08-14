@@ -5,14 +5,24 @@ import type { RecordMessageReferencesInput } from "../types.ts";
 import {
   parseMemoryReferenceMarkers,
   memoryReferenceWeight,
-  MEMORY_REFERENCE_DECAY_DAYS,
-  MEMORY_REFERENCE_RECENT_WEIGHT,
-  MEMORY_REFERENCE_STALE_WEIGHT,
 } from "@freeanima/habitat/core/db/pg/memory-reference/markers";
+import {
+  peekActiveRuntimeConfig,
+  resolveMemoryReferenceConfig,
+} from "@freeanima/habitat/core/config";
 
 import { getDb } from "../../client.ts";
 
 const SCAN_CHUNK = 100;
+
+function referenceWeightOpts() {
+  const ref = resolveMemoryReferenceConfig(peekActiveRuntimeConfig()?.data);
+  return {
+    decayDays: ref.decay_days,
+    recentWeight: ref.recent_weight,
+    staleWeight: ref.stale_weight,
+  };
+}
 
 /**
  * #16102：不再写 memory_references 边表；仅 bump entities.reference_count。
@@ -35,7 +45,7 @@ export async function recordMessageReferences(
   const existingIds = existingRows.map((r) => r.id);
   if (existingIds.length === 0) return [];
 
-  const weight = memoryReferenceWeight(created_at);
+  const weight = memoryReferenceWeight(created_at, new Date(), referenceWeightOpts());
   const now = new Date(formatCstIso());
   await db
     .update(entities)
@@ -110,12 +120,13 @@ export async function rebuildMemoryReferencesFromMessages(): Promise<number> {
 async function applyReferenceCountsFromHits(hits: MarkerHit[]): Promise<void> {
   const db = getDb();
   const now = new Date(formatCstIso());
-  const windowMs = MEMORY_REFERENCE_DECAY_DAYS * 24 * 60 * 60 * 1000;
+  const ref = resolveMemoryReferenceConfig(peekActiveRuntimeConfig()?.data);
+  const windowMs = ref.decay_days * 24 * 60 * 60 * 1000;
   const weights = new Map<number, number>();
 
   for (const hit of hits) {
     const ageMs = now.getTime() - hit.created_at.getTime();
-    const w = ageMs <= windowMs ? MEMORY_REFERENCE_RECENT_WEIGHT : MEMORY_REFERENCE_STALE_WEIGHT;
+    const w = ageMs <= windowMs ? ref.recent_weight : ref.stale_weight;
     weights.set(hit.entity_id, (weights.get(hit.entity_id) ?? 0) + w);
   }
 

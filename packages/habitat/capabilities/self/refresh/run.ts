@@ -1,6 +1,5 @@
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
-import { RESIDENT_TOP_N } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
 import { purgeOrphanSelfBlocks } from "@freeanima/habitat/core/db/pg/self-layer";
 import { getNotificationPort } from "@freeanima/habitat/capabilities/tools/notification";
 import { omitUndefined } from "@freeanima/habitat/core/util";
@@ -69,7 +68,7 @@ export async function runSelfLayerRefresh(
     return result;
   }
 
-  const evidence = await listResidentSemanticMemory(RESIDENT_TOP_N);
+  const evidence = await listResidentSemanticMemory();
   if (evidence.length === 0) {
     const result: SelfLayerRefreshResult = {
       ok: true,

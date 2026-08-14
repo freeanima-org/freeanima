@@ -446,6 +446,22 @@ const promptDebugToolItemSchema = z.object({
   parameters: z.record(z.string(), z.unknown()),
 });
 
+const promptDebugFoldSectionSchema = z.object({
+  id: z.string(),
+  order: z.number(),
+  chars_used: z.number(),
+  budget_chars: z.number().optional(),
+  priority: z.number().optional(),
+});
+
+const promptDebugFoldSchema = z.object({
+  global_budget_chars: z.number(),
+  total_chars: z.number(),
+  truncated_section_ids: z.array(z.string()),
+  dropped_section_ids: z.array(z.string()),
+  sections: z.array(promptDebugFoldSectionSchema),
+});
+
 export const promptDebugResponseSchema = z.object({
   mode: z.enum(["global", "conversation"]),
   conversation_id: z.string().optional(),
@@ -460,6 +476,7 @@ export const promptDebugResponseSchema = z.object({
     stored: z.string().nullable().optional(),
     in_sync: z.boolean().optional(),
     breakdown: runtimeContextBreakdownSchema,
+    fold: promptDebugFoldSchema.optional(),
   }),
   tools: z.object({
     mode: z.enum(["registry", "conversation"]),
@@ -471,6 +488,7 @@ export const promptDebugResponseSchema = z.object({
     .object({
       cwd: z.string().nullable().optional(),
       tool_names: z.array(z.string()).optional(),
+      staged_toolsets: z.array(z.string()).optional(),
     })
     .optional(),
 });

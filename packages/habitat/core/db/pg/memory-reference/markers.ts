@@ -60,15 +60,28 @@ export const MEMORY_RECALL_STRATEGY_RULE =
 export const MEMORY_SEMANTIC_CITATION_TOOL_HINT =
   "If your reply uses semantic memory results, append each cited `[[anima:{id}]]` (from `semantic_memory_id`) at the end of your reply.";
 
-/** Weight multiplier for references within 30 days */
+/** Weight multiplier for references within decay window (default; override via memory.reference) */
 export const MEMORY_REFERENCE_RECENT_WEIGHT = 2;
-/** Weight multiplier for references older than 30 days */
+/** Weight multiplier for references older than decay window */
 export const MEMORY_REFERENCE_STALE_WEIGHT = 1;
-/** Decay window in days */
+/** Decay window in days (default; override via memory.reference.decay_days) */
 export const MEMORY_REFERENCE_DECAY_DAYS = 30;
 
-export function memoryReferenceWeight(createdAt: Date, now = new Date()): number {
+export type MemoryReferenceWeightOpts = {
+  decayDays?: number;
+  recentWeight?: number;
+  staleWeight?: number;
+};
+
+export function memoryReferenceWeight(
+  createdAt: Date,
+  now = new Date(),
+  opts?: MemoryReferenceWeightOpts,
+): number {
+  const decayDays = opts?.decayDays ?? MEMORY_REFERENCE_DECAY_DAYS;
+  const recent = opts?.recentWeight ?? MEMORY_REFERENCE_RECENT_WEIGHT;
+  const stale = opts?.staleWeight ?? MEMORY_REFERENCE_STALE_WEIGHT;
   const ageMs = now.getTime() - createdAt.getTime();
-  const windowMs = MEMORY_REFERENCE_DECAY_DAYS * 24 * 60 * 60 * 1000;
-  return ageMs <= windowMs ? MEMORY_REFERENCE_RECENT_WEIGHT : MEMORY_REFERENCE_STALE_WEIGHT;
+  const windowMs = decayDays * 24 * 60 * 60 * 1000;
+  return ageMs <= windowMs ? recent : stale;
 }

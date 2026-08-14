@@ -4,7 +4,16 @@ import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import type { JsonSchemaObject } from "@freeanima/habitat/core/tool";
 import { descriptionWithReturnSchema } from "@freeanima/habitat/core/tool";
-import { buildSystemPrompt } from "@freeanima/habitat/core/hooks/prompt";
+import {
+  buildSystemPrompt,
+  foldSystemPromptSectionsDetailed,
+  resolveScenarioProfile,
+  systemPromptBuild,
+} from "@freeanima/habitat/core/hooks/prompt";
+import {
+  DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
+  peekActiveRuntimeConfig,
+} from "@freeanima/habitat/core/config";
 import { renderToolsetsSection } from "@freeanima/habitat/capabilities/tools/toolset-prompt";
 import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 import {
@@ -26,6 +35,22 @@ export type PromptDebugToolItem = {
   return_schema?: JsonSchemaObject;
 };
 
+export type PromptDebugFoldSection = {
+  id: string;
+  order: number;
+  chars_used: number;
+  budget_chars?: number;
+  priority?: number;
+};
+
+export type PromptDebugFold = {
+  global_budget_chars: number;
+  total_chars: number;
+  truncated_section_ids: string[];
+  dropped_section_ids: string[];
+  sections: PromptDebugFoldSection[];
+};
+
 export type PromptDebugResponse = {
   mode: "global" | "conversation";
   conversation_id?: string;
@@ -35,6 +60,7 @@ export type PromptDebugResponse = {
     stored?: string | null;
     in_sync?: boolean;
     breakdown: RuntimeContextBreakdown;
+    fold?: PromptDebugFold;
   };
   tools: {
     mode: "registry" | "conversation";
@@ -133,16 +159,46 @@ async function buildSystemView(
   deps: RuntimeDeps,
   cwd?: string | null,
   meta?: import("@freeanima/habitat/core/db/domain").ConversationMetaMessage,
+  functionNames: string[] = [],
 ): Promise<{
   parts: SystemPromptParts;
   composed: string;
+  fold: PromptDebugFold;
 }> {
   const selfContent = await loadSelfLayerPrompt();
   const memoryParts = await decomposeSystemPromptParts(selfContent, cwd ?? undefined);
   const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
   const parts: SystemPromptParts = { ...memoryParts, toolsets };
-  const composed = await buildSystemPrompt([], cwd ?? undefined, meta);
-  return { parts, composed };
+  const composed = await buildSystemPrompt(functionNames, cwd ?? undefined, meta);
+
+  const globalBudget =
+    peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
+    DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
+  const mode = resolveScenarioProfile(meta?.scenario).prompt;
+  const run = await deps.kernel.hookRegistry.run(
+    systemPromptBuild,
+    omitUndefined({ functionNames, cwd, meta, mode }),
+    { llm_kind: "conversation" },
+  );
+  const folded = foldSystemPromptSectionsDetailed(run.chain, {
+    globalBudgetChars: globalBudget,
+  });
+  const fold: PromptDebugFold = {
+    global_budget_chars: globalBudget,
+    total_chars: folded.total_chars,
+    truncated_section_ids: folded.truncatedSectionIds,
+    dropped_section_ids: folded.droppedSectionIds,
+    sections: folded.sections.map((s) =>
+      omitUndefined({
+        id: s.id,
+        order: s.order,
+        chars_used: s.content.length,
+        budget_chars: s.budgetChars,
+        priority: s.priority,
+      }),
+    ),
+  };
+  return { parts, composed, fold };
 }
 
 /** Habitat system prompt debug view (read-only) */
@@ -153,7 +209,7 @@ export async function getPromptDebug(
   const id = conversationId?.trim() || null;
 
   if (!id) {
-    const { parts, composed } = await buildSystemView(deps, null);
+    const { parts, composed, fold } = await buildSystemView(deps, null);
     const items = registryToolItems(deps);
     const breakdown = computeGlobalBreakdown(deps, parts, items);
     return {
@@ -162,6 +218,7 @@ export async function getPromptDebug(
         parts,
         composed,
         breakdown,
+        fold,
       },
       tools: {
         mode: "registry",
@@ -182,7 +239,8 @@ export async function getPromptDebug(
   }
 
   const cwd = meta.cwd;
-  const { parts, composed } = await buildSystemView(deps, cwd, meta);
+  const toolNames = [...(meta.cached_toolsets ?? [])];
+  const { parts, composed, fold } = await buildSystemView(deps, cwd, meta, toolNames);
   const stored = meta.system_prompt ?? null;
   const in_sync = stored === composed;
 
@@ -215,6 +273,7 @@ export async function getPromptDebug(
       stored,
       in_sync,
       breakdown,
+      fold,
     },
     tools: {
       mode: "conversation",
@@ -224,7 +283,7 @@ export async function getPromptDebug(
     },
     meta: omitUndefined({
       cwd: cwd ?? null,
-      tool_names: [...(meta.cached_toolsets ?? [])],
+      tool_names: toolNames,
       staged_toolsets: [...(meta.staged_toolsets ?? [])],
     }),
   };

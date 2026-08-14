@@ -1,12 +1,16 @@
 import { z } from "zod";
 
 import type { SemanticFtsHit, SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
+import {
+  DEFAULT_RESIDENT_PINNED_MAX,
+  DEFAULT_RESIDENT_TOP_N,
+} from "@freeanima/habitat/core/config/schemas/memory-config";
 
-/** Default resident memory slot count injected into system prompt */
-export const RESIDENT_TOP_N = 20;
+/** @deprecated 使用 resolveMemoryResidentConfig().top_n；常量保留兼容默认值 */
+export const RESIDENT_TOP_N = DEFAULT_RESIDENT_TOP_N;
 
-/** Max pinned memories included in resident context (excess triggers warn log) */
-export const RESIDENT_PINNED_MAX = 40;
+/** @deprecated 使用 resolveMemoryResidentConfig().pinned_max */
+export const RESIDENT_PINNED_MAX = DEFAULT_RESIDENT_PINNED_MAX;
 
 export type { SemanticFtsHit, SemanticMemoryRow };
 

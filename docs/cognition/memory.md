@@ -122,7 +122,7 @@ LLM **没有** `memory_recall` 跨类型工具。程序侧 `MemoryService.recall
 
 ### 常驻记忆
 
-置顶 + 高引用；标记 `[[anima:id]]`。装配目标走 `assembleResidentBlock`（迁移期 `system-prompt.ts` 仍可直接 listResident）。
+置顶 + 高引用；标记 `[[anima:id]]`。装配目标走 `assembleResidentBlock`（迁移期 `system-prompt.ts` 仍可直接 listResident）。条数 / 置顶上限：`memory.resident.top_n` / `pinned_max`（默认 20 / 40）；cite 权重窗口：`memory.reference.*`。详见 [`context-management.md`](context-management.md)。
 
 ### 引用
 
@@ -139,6 +139,8 @@ LLM **没有** `memory_recall` 跨类型工具。程序侧 `MemoryService.recall
 | Mem0       | 薄 API、异步抽取、可独立部署          | 万能 vector SaaS 心智    |
 | OpenViking | 分层加载预算（resident/recall）       | `viking://` 整套协议     |
 | Hermes     | 嵌入 vs 外置部署直觉                  | 灵活 Provider ABC        |
+
+Letta / LangChain / LlamaIndex 与 Working 上下文策略对照见 [`context-management.md`](context-management.md)。
 
 感性（limbic）/ 梦境 / 叙事：**存量只读**，写入路径与 sleep.dream 步已拆除。
 

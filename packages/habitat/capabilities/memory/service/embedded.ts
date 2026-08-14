@@ -6,10 +6,7 @@ import {
   listResidentSemanticMemory,
   updateSemanticMemory,
 } from "@freeanima/habitat/core/db/pg/semantic-memory";
-import {
-  RESIDENT_TOP_N,
-  type SemanticMemoryRow,
-} from "@freeanima/habitat/core/db/pg/semantic-memory/types";
+import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
 import { getMessageContentsByIds } from "@freeanima/habitat/core/db/pg/conversation";
 import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/habitat/core/hooks/prompt";
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
@@ -398,7 +395,7 @@ export function createEmbeddedMemoryService(
     },
 
     async listResident(residentOpts?: { topN?: number }): Promise<MemoryRecord[]> {
-      const rows = await deps.listResidentSemanticMemory(residentOpts?.topN ?? RESIDENT_TOP_N);
+      const rows = await deps.listResidentSemanticMemory(residentOpts?.topN);
       return rows.map(semanticRowToMemoryRecord);
     },
 
