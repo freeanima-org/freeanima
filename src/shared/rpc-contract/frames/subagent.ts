@@ -4,6 +4,8 @@ import { notificationRecipientKindSchema } from "./notification.ts";
 
 const subjectKindSchema = notificationRecipientKindSchema;
 
+const temperatureTierSchema = z.enum(["focused", "balanced", "creative"]);
+
 export const subagentRowSchema = z.object({
   id: z.number().int().positive(),
   slug: z.string(),
@@ -12,6 +14,7 @@ export const subagentRowSchema = z.object({
   content: z.string(),
   skills: z.array(z.string()),
   max_turns: z.number().int().positive().nullable(),
+  temperature_tier: temperatureTierSchema.nullable(),
   allowed_tools: z.array(z.string()),
   denied_tools: z.array(z.string()),
   prompt_includes: z.array(z.enum(["self", "world", "time"])).default([]),
@@ -46,6 +49,7 @@ export const subagentCreateInputSchema = z.object({
   content: z.string().optional(),
   skills: z.array(z.string()).optional(),
   max_turns: z.number().int().positive().nullable().optional(),
+  temperature_tier: temperatureTierSchema.nullable().optional(),
   allowed_tools: z.array(z.string()).optional(),
   denied_tools: z.array(z.string()).optional(),
   prompt_includes: z.array(z.enum(["self", "world", "time"])).optional(),
@@ -63,6 +67,7 @@ export const subagentPatchInputSchema = z.object({
   content: z.string().optional(),
   skills: z.array(z.string()).optional(),
   max_turns: z.number().int().positive().nullable().optional(),
+  temperature_tier: temperatureTierSchema.nullable().optional(),
   allowed_tools: z.array(z.string()).optional(),
   denied_tools: z.array(z.string()).optional(),
   prompt_includes: z.array(z.enum(["self", "world", "time"])).optional(),

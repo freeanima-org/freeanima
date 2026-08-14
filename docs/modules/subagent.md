@@ -36,6 +36,19 @@ title: 子代理
 
 - 单任务语法糖或 `tasks[]`（并行，`auto_llm.subagent.max_parallel`，默认 4）
 - `max_turns`：调用 > 配置 > `auto_llm.subagent.max_turns`（默认 20）
+- `temperature_tier`：调用 > 档案 > `auto_llm.subagent.temperature_tier` > `balanced`
+
+## 采样档位（`temperature_tier`）
+
+产品枚举三档（不暴露裸温度数值）：
+
+| 枚举       | UI           | 相对比例（temperature / topP） |
+| ---------- | ------------ | ------------------------------ |
+| `focused`  | 专注         | 0.2 / 0.8                      |
+| `balanced` | 平衡（默认） | 0.6 / 0.9                      |
+| `creative` | 发散         | 1.0 / 0.95                     |
+
+绝对值 = 比例落在模型采样区间。**默认区间** temperature/topP 皆 `[0, 1]`；模型族可微调（例如原生 OpenAI 族 temperature → `[0, 2]`；Claude / `anthropic_messages` 保持默认）。经 compatible 转发的 Claude 仍按 Claude 处理，不扩到 2。
 
 ## 子 system prompt 路径（非对话）
 
@@ -63,7 +76,7 @@ title: 子代理
 
 ## 栖息地 UI
 
-`/subagents`：列表 / 创建 / 编辑 allow-deny、技能、`prompt_includes`。审计：AutoLlmRuns（`run_kind=subagent`）；`run_name` 来自调用 `title`。
+`/subagents`：列表 / 创建 / 编辑 allow-deny、技能、`prompt_includes`、采样档位。审计：AutoLlmRuns（`run_kind=subagent`）；`run_name` 来自调用 `title`。
 
 ## 与 ACP 对比
 

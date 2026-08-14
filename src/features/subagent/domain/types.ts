@@ -1,5 +1,10 @@
 import type { SubagentBody } from "@freeanima/host/core/db/schema/entity";
-import type { SubagentPromptInclude } from "@freeanima/host/core/db/schema/entity/components/subagent.ts";
+import type {
+  SubagentPromptInclude,
+  SubagentTemperatureTier,
+} from "@freeanima/host/core/db/schema/entity/components/subagent.ts";
+
+export type { SubagentTemperatureTier };
 
 export type SubagentRow = SubagentBody & {
   id: number;
@@ -18,6 +23,7 @@ export type SubagentCreateInput = {
   content?: string;
   skills?: string[];
   max_turns?: number | null;
+  temperature_tier?: SubagentTemperatureTier | null;
   allowed_tools?: string[];
   denied_tools?: string[];
   prompt_includes?: SubagentPromptInclude[];
@@ -31,6 +37,7 @@ export type SubagentUpdateInput = {
   content?: string;
   skills?: string[];
   max_turns?: number | null;
+  temperature_tier?: SubagentTemperatureTier | null;
   allowed_tools?: string[];
   denied_tools?: string[];
   prompt_includes?: SubagentPromptInclude[];
@@ -53,6 +60,7 @@ export type SubagentTaskInput = {
   context?: string;
   skills?: string[];
   max_turns?: number;
+  temperature_tier?: SubagentTemperatureTier;
   denied_tools?: string[];
   /** 与档案 prompt_includes 并集；仅 opt-in */
   prompt_includes?: SubagentPromptInclude[];
@@ -68,6 +76,7 @@ export type ResolvedSubagentProfile = {
   content: string;
   skills: string[];
   max_turns: number | null;
+  temperature_tier: SubagentTemperatureTier | null;
   allowed_tools: string[];
   denied_tools: string[];
   prompt_includes: SubagentPromptInclude[];

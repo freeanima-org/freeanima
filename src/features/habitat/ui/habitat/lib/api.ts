@@ -164,6 +164,7 @@ export type HabitatSubagentRow = {
   content: string;
   skills: string[];
   max_turns: number | null;
+  temperature_tier: "focused" | "balanced" | "creative" | null;
   allowed_tools: string[];
   denied_tools: string[];
   prompt_includes: Array<"self" | "world" | "time">;
@@ -186,6 +187,7 @@ export async function createHabitatSubagent(input: {
   content?: string;
   skills?: string[];
   max_turns?: number | null;
+  temperature_tier?: "focused" | "balanced" | "creative" | null;
   allowed_tools?: string[];
   denied_tools?: string[];
   prompt_includes?: Array<"self" | "world" | "time">;
@@ -204,6 +206,7 @@ export async function patchHabitatSubagent(input: {
   content?: string;
   skills?: string[];
   max_turns?: number | null;
+  temperature_tier?: "focused" | "balanced" | "creative" | null;
   allowed_tools?: string[];
   denied_tools?: string[];
   prompt_includes?: Array<"self" | "world" | "time">;

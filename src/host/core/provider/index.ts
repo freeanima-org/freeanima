@@ -16,6 +16,23 @@ export {
   modelSupports,
 } from "./model.ts";
 
+export type {
+  ParamRange,
+  SamplingRanges,
+  TemperatureTier,
+  TemperatureTierToParamsOpts,
+} from "./temperature-tier.ts";
+export {
+  DEFAULT_SAMPLING_RANGES,
+  TEMPERATURE_TIERS,
+  TEMPERATURE_TIER_LABELS_ZH,
+  TEMPERATURE_TIER_RATIOS,
+  isClaudeModelId,
+  resolveSamplingRanges,
+  temperatureTierSchema,
+  temperatureTierToCallParams,
+} from "./temperature-tier.ts";
+
 export {
   ProviderError,
   classifyProviderError,

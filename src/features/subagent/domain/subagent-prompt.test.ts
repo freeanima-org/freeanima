@@ -17,6 +17,7 @@ function profile(
     summary: partial.summary ?? "",
     skills: [],
     max_turns: null,
+    temperature_tier: null,
     allowed_tools: [],
     denied_tools: [],
     prompt_includes: [],
