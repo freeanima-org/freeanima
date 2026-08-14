@@ -65,6 +65,8 @@ type ChatState = {
       clientOpId?: string;
       expectedTailPos?: number;
       forceTail?: boolean;
+      attachmentTempIds?: string[];
+      attachments?: Array<{ filename: string; mime_type: string; size: number }>;
       onStreamDone?: () => void;
       onTailConflict?: () => void;
     },
@@ -373,6 +375,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
               clientOpId: sendOpts.clientOpId,
               expectedTailPos: sendOpts.expectedTailPos,
               forceTail: sendOpts.forceTail,
+              attachmentTempIds: sendOpts.attachmentTempIds,
+              attachments: sendOpts.attachments,
             }),
             { onData, onError, onComplete, onStreamId },
           );

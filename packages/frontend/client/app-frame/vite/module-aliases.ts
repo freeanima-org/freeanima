@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Alias, Plugin } from "vite";
 
@@ -24,17 +24,21 @@ export type BuildViteAliasesOptions = {
   repoRoot: string;
 };
 
+/**
+ * 解析候选路径为可加载文件。
+ * 不可用 `path.includes(".")` 判断扩展名：worktree 常在 `~/.cursor/...` 下，整路径含点会误判目录。
+ */
 function tryFile(base: string): string | null {
-  if (existsSync(base) && !base.endsWith("/")) {
-    // directory or file
+  if (existsSync(base)) {
+    if (statSync(base).isDirectory()) {
+      const asDirIndex = join(base, "index.ts");
+      if (existsSync(asDirIndex)) return asDirIndex;
+      const asDirIndexTsx = join(base, "index.tsx");
+      if (existsSync(asDirIndexTsx)) return asDirIndexTsx;
+      return null;
+    }
+    return base;
   }
-  if (existsSync(base) && !base.includes(".")) {
-    const asDirIndex = join(base, "index.ts");
-    if (existsSync(asDirIndex)) return asDirIndex;
-    const asDirIndexTsx = join(base, "index.tsx");
-    if (existsSync(asDirIndexTsx)) return asDirIndexTsx;
-  }
-  if (existsSync(base)) return base;
   if (existsSync(`${base}.ts`)) return `${base}.ts`;
   if (existsSync(`${base}.tsx`)) return `${base}.tsx`;
   if (existsSync(join(base, "index.ts"))) return join(base, "index.ts");

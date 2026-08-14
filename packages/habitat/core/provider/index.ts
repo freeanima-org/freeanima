@@ -6,11 +6,13 @@ export type {
   LlmParamKey,
   ModelCostInfo,
   ModelInfo,
+  ModelInputModality,
   SupportedParam,
 } from "./model.ts";
 export {
   EXTENDED_PARAM_KEYS,
   LLM_PARAM_KEYS,
+  MODEL_INPUT_MODALITIES,
   clampCallParams,
   mergeCallParams,
   modelSupports,

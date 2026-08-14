@@ -67,4 +67,23 @@ describe("messagesForApi", () => {
     });
     expect(api[3]).toMatchObject({ role: "user", content: "follow up" });
   });
+
+  it("expands user content_media to image_url parts", () => {
+    const api = messagesForApi([
+      {
+        role: "user",
+        content: "看图",
+        content_media: [{ type: "image", mime_type: "image/png", data_base64: "AAAA" }],
+      },
+    ]);
+    const user = api[0] as {
+      role: string;
+      content: Array<{ type: string; text?: string; image_url?: { url: string } }>;
+    };
+    expect(user.role).toBe("user");
+    expect(Array.isArray(user.content)).toBe(true);
+    expect(user.content[0]).toEqual({ type: "text", text: "看图" });
+    expect(user.content[1]?.type).toBe("image_url");
+    expect(user.content[1]?.image_url?.url).toBe("data:image/png;base64,AAAA");
+  });
 });

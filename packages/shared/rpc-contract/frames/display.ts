@@ -11,10 +11,19 @@ export type DisplayToolCall = {
   result?: string;
 };
 
+export type DisplayAttachment = {
+  filename: string;
+  mime_type: string;
+  size: number;
+  /** 仅当次发送乐观预览（blob:）；历史重载无此字段 */
+  previewUrl?: string;
+};
+
 export type DisplayMessageItem = {
   type: "message";
   role: "user" | "assistant";
   content: string;
+  attachments?: DisplayAttachment[];
 };
 
 export type DisplayToolBlockItem = {

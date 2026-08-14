@@ -5,6 +5,7 @@ import {
   createAutoPersistScheduler,
 } from "@freeanima/ui-kit/lib/auto-persist-schedule.ts";
 import { useEnterToSendCapability } from "@freeanima/client/portal-sdk/react.tsx";
+import { toast } from "@freeanima/ui-kit/composite";
 
 import { loadInputDraft, saveInputDraft } from "../lib/input-draft.ts";
 import {
@@ -18,9 +19,23 @@ import {
   type SlashCommandItem,
   type SlashMenuEntry,
 } from "../lib/slash-command-menu.ts";
+import {
+  CHAT_ATTACHMENT_MAX_BYTES,
+  createAttachmentDraft,
+  filesFromClipboard,
+  revokeAttachmentDraft,
+  revokeAttachmentDrafts,
+  type ChatAttachmentDraft,
+} from "../lib/attachments.ts";
+import { ComposeAttachmentStrip } from "./ComposeAttachmentStrip.tsx";
 
 const INPUT_MIN_HEIGHT_PX = 36;
 const INPUT_MAX_HEIGHT_PX = 192;
+
+export type ChatComposeSendPayload = {
+  text: string;
+  drafts: ChatAttachmentDraft[];
+};
 
 export type ChatComposeFormProps = {
   conversationId: string | null;
@@ -29,7 +44,7 @@ export type ChatComposeFormProps = {
   menuInFlow: boolean;
   streamVisible: boolean;
   canSendOnline: boolean;
-  onSend: (text: string) => void | Promise<void>;
+  onSend: (payload: ChatComposeSendPayload) => void | Promise<void>;
   onStopStreaming: () => void;
 };
 
@@ -55,6 +70,9 @@ export function ChatComposeForm({
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [animaEntries, setAnimaEntries] = useState<AnimaMentionMenuEntry[]>([]);
   const [animaLoading, setAnimaLoading] = useState(false);
+  const [attachmentDrafts, setAttachmentDrafts] = useState<ChatAttachmentDraft[]>([]);
+  const attachmentDraftsRef = useRef(attachmentDrafts);
+  attachmentDraftsRef.current = attachmentDrafts;
 
   const draftConversationIdRef = useRef(conversationId);
   draftConversationIdRef.current = conversationId;
@@ -88,10 +106,32 @@ export function ChatComposeForm({
       caretRef.current = 0;
       setCaret(0);
       setAnimaEntries([]);
+      revokeAttachmentDrafts(attachmentDraftsRef.current);
+      setAttachmentDrafts([]);
       saveInputDraft(id, "");
       requestAnimationFrame(resizeInput);
     },
     [inputDraftScheduler, resizeInput],
+  );
+
+  const addFiles = useCallback((fileList: FileList | File[]) => {
+    const next: ChatAttachmentDraft[] = [];
+    for (const file of Array.from(fileList)) {
+      if (file.size > CHAT_ATTACHMENT_MAX_BYTES) {
+        toast(`附件过大：${file.name}`, { duration: 4000 });
+        continue;
+      }
+      next.push(createAttachmentDraft(file));
+    }
+    if (next.length === 0) return;
+    setAttachmentDrafts((prev) => [...prev, ...next]);
+  }, []);
+
+  useEffect(
+    () => () => {
+      revokeAttachmentDrafts(attachmentDraftsRef.current);
+    },
+    [],
   );
 
   useEffect(() => {
@@ -257,9 +297,15 @@ export function ChatComposeForm({
     if (e.key !== "Enter" || e.shiftKey || e.nativeEvent.isComposing) return;
     e.preventDefault();
     const text = inputTextRef.current.trim();
-    if (!text) return;
+    const drafts = attachmentDraftsRef.current;
+    if (!text && drafts.length === 0) return;
+    if (drafts.length > 0 && !canSendOnline) {
+      toast("离线时无法发送附件", { duration: 4000 });
+      return;
+    }
+    const payload = { text, drafts: drafts.slice() };
     clearInputAndDraft(conversationId);
-    void onSend(text);
+    void onSend(payload);
   };
 
   const menuClass = [
@@ -273,9 +319,15 @@ export function ChatComposeForm({
       onSubmit={(e) => {
         e.preventDefault();
         const text = inputTextRef.current.trim();
-        if (!text) return;
+        const drafts = attachmentDraftsRef.current;
+        if (!text && drafts.length === 0) return;
+        if (drafts.length > 0 && !canSendOnline) {
+          toast("离线时无法发送附件", { duration: 4000 });
+          return;
+        }
+        const payload = { text, drafts: drafts.slice() };
         clearInputAndDraft(conversationId);
-        void onSend(text);
+        void onSend(payload);
       }}
     >
       <div className={menuInFlow ? "flex min-w-0 flex-1 flex-col" : "relative min-w-0 flex-1"}>
@@ -325,6 +377,18 @@ export function ChatComposeForm({
             ))}
           </ul>
         ) : null}
+        <ComposeAttachmentStrip
+          drafts={attachmentDrafts}
+          disabled={!canSendOnline && attachmentDrafts.length === 0 ? false : !canSendOnline}
+          onAddFiles={addFiles}
+          onRemove={(localId) => {
+            setAttachmentDrafts((prev) => {
+              const hit = prev.find((d) => d.localId === localId);
+              if (hit) revokeAttachmentDraft(hit);
+              return prev.filter((d) => d.localId !== localId);
+            });
+          }}
+        />
         <Textarea
           ref={msgInputRef}
           value={inputText}
@@ -341,9 +405,15 @@ export function ChatComposeForm({
           }}
           onSelect={(e) => syncCaretFromEl(e.currentTarget)}
           onClick={(e) => syncCaretFromEl(e.currentTarget)}
+          onPaste={(e) => {
+            const files = filesFromClipboard(e.nativeEvent);
+            if (files.length === 0) return;
+            e.preventDefault();
+            addFiles(files);
+          }}
           rows={1}
           className="!min-h-9 h-9 max-h-48 w-full resize-none overflow-y-auto py-1.5 leading-5 [field-sizing:fixed]"
-          placeholder={"输入消息（Enter 发送；/ 命令；[[ 引用实体）"}
+          placeholder={"输入消息（Enter 发送；/ 命令；[[ 引用；可粘贴图片/附件）"}
           onFocus={() => {
             requestAnimationFrame(() => {
               msgInputRef.current?.scrollIntoView({
@@ -355,7 +425,7 @@ export function ChatComposeForm({
           onKeyDown={onKeyDown}
         />
       </div>
-      <Button type="submit" isDisabled={!inputText.trim()}>
+      <Button type="submit" isDisabled={!inputText.trim() && attachmentDrafts.length === 0}>
         {"发送"}
       </Button>
       {streamVisible ? (

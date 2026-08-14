@@ -28,6 +28,8 @@ export type SapSessionStreamClient = {
       clientOpId?: string;
       expectedTailPos?: number;
       forceTail?: boolean;
+      attachmentTempIds?: string[];
+      attachments?: Array<{ filename: string; mime_type: string; size: number }>;
     },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
@@ -168,6 +170,8 @@ export function createSapConversationStreamClient(
               client_op_id: input.clientOpId,
               expected_tail_pos: input.expectedTailPos,
               force_tail: input.forceTail ? true : undefined,
+              attachment_temp_ids: input.attachmentTempIds,
+              attachments: input.attachments,
             }),
             { timeoutMs: HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS },
           );

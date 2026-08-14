@@ -210,8 +210,11 @@ export async function loadForRuntime(
 }
 
 export async function appendMessage(msg: StoredMessage, conversationId: string): Promise<void> {
+  const { content_media: _dropMedia, ...rest } = msg as StoredMessage & {
+    content_media?: unknown;
+  };
   const out: StoredMessage & { timestamp?: string; id?: number } = omitUndefined({
-    ...msg,
+    ...rest,
   });
   if (!out.timestamp) out.timestamp = formatCstIso();
   if (out.pos === undefined) {
@@ -507,7 +510,10 @@ export async function assertConversationPlatform(
 export async function appendUserTurn(
   conversationId: string,
   userText: string,
-  opts?: { client_op_id?: string },
+  opts?: {
+    client_op_id?: string;
+    attachments?: Array<{ filename: string; mime_type: string; size: number }>;
+  },
 ): Promise<string> {
   const content = userText;
   if (opts?.client_op_id) {
@@ -524,6 +530,7 @@ export async function appendUserTurn(
       role: "user",
       content,
       client_op_id: opts?.client_op_id,
+      attachments: opts?.attachments?.length ? opts.attachments : undefined,
     }) as StoredMessage,
     conversationId,
   );

@@ -23,6 +23,8 @@ import {
   conversationCommandOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/conversation";
 import {
+  chatAttachmentUploadInputSchema,
+  chatAttachmentUploadOutputSchema,
   llmDebugGetInputSchema,
   llmDebugGetOutputSchema,
   messageInterruptInputSchema,
@@ -41,7 +43,9 @@ import {
   dualTransportMeta,
   longOpMeta,
   wsOnlyMeta,
+  binaryHttpMeta,
 } from "@freeanima/shared/habitat-contract";
+import { HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
 
 const conversationMessagesOutputSchema = z.record(z.string(), z.unknown());
 const conversationPatchTitleOutputSchema = z.object({ ok: z.literal(true) });
@@ -128,6 +132,16 @@ export const chatMethodDefs = {
     input: messageSendInputSchema,
     output: messageSendOutputSchema,
     meta: wsOnlyMeta(),
+  }),
+  "chat.attachment.upload": defineHabitatMethod({
+    input: chatAttachmentUploadInputSchema,
+    output: chatAttachmentUploadOutputSchema,
+    meta: binaryHttpMeta({
+      verb: "POST",
+      path: "chat/attachment/upload",
+      request: "multipart",
+      timeoutMs: HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS,
+    }),
   }),
   "message.interrupt": defineHabitatMethod({
     input: messageInterruptInputSchema,

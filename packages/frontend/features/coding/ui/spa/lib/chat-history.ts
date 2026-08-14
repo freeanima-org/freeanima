@@ -20,12 +20,17 @@ function normalizeDisplay(raw: unknown): DisplayItem[] {
     if (!item || typeof item !== "object") continue;
     const row = item as { type?: string };
     if (row.type === "message") {
-      const m = item as { role?: string; content?: unknown };
+      const m = item as {
+        role?: string;
+        content?: unknown;
+        attachments?: Array<{ filename: string; mime_type: string; size: number }>;
+      };
       if (m.role !== "user" && m.role !== "assistant") continue;
       out.push({
         type: "message",
         role: m.role,
         content: typeof m.content === "string" ? m.content : coerceString(m.content),
+        ...(m.attachments?.length ? { attachments: m.attachments } : {}),
       });
       continue;
     }

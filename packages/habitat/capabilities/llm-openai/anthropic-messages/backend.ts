@@ -56,9 +56,49 @@ function toAnthropicMessages(messages: LlmTurnMessage[]): MessageParam[] {
   const out: MessageParam[] = [];
   for (const msg of messages) {
     switch (msg.role) {
-      case "user":
-        out.push({ role: "user", content: msg.content });
+      case "user": {
+        const media = msg.content_media?.filter((m) => m.type === "image") ?? [];
+        if (media.length === 0) {
+          out.push({ role: "user", content: msg.content });
+          break;
+        }
+        const blocks: Array<
+          | { type: "text"; text: string }
+          | {
+              type: "image";
+              source: {
+                type: "base64";
+                media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+                data: string;
+              };
+            }
+        > = [];
+        if (msg.content.trim()) {
+          blocks.push({ type: "text", text: msg.content });
+        }
+        for (const m of media) {
+          const mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp" =
+            m.mime_type === "image/jpeg" ||
+            m.mime_type === "image/png" ||
+            m.mime_type === "image/gif" ||
+            m.mime_type === "image/webp"
+              ? m.mime_type
+              : "image/png";
+          blocks.push({
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: mediaType,
+              data: m.data_base64,
+            },
+          });
+        }
+        if (blocks.length === 0) {
+          blocks.push({ type: "text", text: msg.content || "(附件)" });
+        }
+        out.push({ role: "user", content: blocks });
         break;
+      }
       case "system":
         // system handled separately
         break;

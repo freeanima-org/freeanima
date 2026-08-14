@@ -1,6 +1,6 @@
 import { llmProviderSchema } from "@freeanima/habitat/core/config/schemas/llm-config.ts";
 import { getLlmRuntime } from "@freeanima/habitat/core/llm";
-import type { ModelInfo } from "@freeanima/habitat/core/provider";
+import type { ModelInfo, ModelInputModality } from "@freeanima/habitat/core/provider";
 import { listModelInfoFromModelsDev } from "@freeanima/habitat/capabilities/llm-openai/models-dev";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -19,6 +19,7 @@ export type ListProviderModelsEntry = {
   contextWindow: number;
   maxOutputTokens: number;
   cost?: { input?: number; output?: number };
+  inputModalities?: ModelInputModality[];
 };
 
 export type ListProviderModelsResult = {
@@ -40,6 +41,7 @@ function serializeModel(info: ModelInfo): ListProviderModelsEntry {
     contextWindow: info.contextWindow,
     maxOutputTokens: info.maxOutputTokens,
     cost: info.cost,
+    inputModalities: info.inputModalities,
   });
 }
 

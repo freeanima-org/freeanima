@@ -147,7 +147,10 @@ async function prepareTurnMessages(
 export async function beginTurnFast(
   conversationId: string,
   userText: string,
-  opts?: { client_op_id?: string },
+  opts?: {
+    client_op_id?: string;
+    attachments?: Array<{ filename: string; mime_type: string; size: number }>;
+  },
 ): Promise<string> {
   clearToolLoopSuppression(conversationId);
   return appendUserTurn(conversationId, userText, opts);

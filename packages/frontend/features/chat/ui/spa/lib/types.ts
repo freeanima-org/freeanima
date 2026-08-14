@@ -13,6 +13,12 @@ export type DisplayMessageItem = {
   content: string;
   clientOpId?: string;
   sendStatus?: "pending" | "sending" | "failed" | "stale";
+  attachments?: Array<{
+    filename: string;
+    mime_type: string;
+    size: number;
+    previewUrl?: string;
+  }>;
 };
 
 export type DisplayToolBlockItem = {

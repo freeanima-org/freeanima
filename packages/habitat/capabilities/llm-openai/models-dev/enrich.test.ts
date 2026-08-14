@@ -147,4 +147,39 @@ describe("mergeModelInfoWithModelsDev", () => {
     expect(merged.supportedParams).not.toContain("temperature");
     expect(merged.supportedParams).not.toContain("tools");
   });
+
+  it("maps modalities.input to inputModalities and supportsVision", () => {
+    const withImage = mergeModelInfoWithModelsDev(
+      {
+        model: "vision",
+        contextWindow: CATALOG_DEFAULT_CONTEXT_WINDOW,
+        maxOutputTokens: CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+      },
+      stubModel({
+        id: "vision",
+        name: "Vision",
+        modalities: {
+          input: ["text", "image", "audio", "video"],
+          output: ["text"],
+        },
+      }),
+    );
+    expect(withImage.supportsVision).toBe(true);
+    expect(withImage.inputModalities).toEqual(["text", "image", "audio", "video"]);
+
+    const textOnly = mergeModelInfoWithModelsDev(
+      {
+        model: "text",
+        contextWindow: CATALOG_DEFAULT_CONTEXT_WINDOW,
+        maxOutputTokens: CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+      },
+      stubModel({
+        id: "text",
+        name: "Text",
+        modalities: { input: ["text"], output: ["text"] },
+      }),
+    );
+    expect(textOnly.supportsVision).toBe(false);
+    expect(textOnly.inputModalities).toEqual(["text"]);
+  });
 });

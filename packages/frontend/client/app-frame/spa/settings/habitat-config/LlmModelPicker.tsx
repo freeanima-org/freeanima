@@ -12,6 +12,14 @@ import {
 } from "@freeanima/client/portal-sdk/habitat-config-api";
 import { ChevronDownIcon } from "lucide-react";
 
+const INPUT_MODALITY_LABEL_ZH = {
+  text: "文字",
+  image: "图片",
+  audio: "音频",
+  video: "视频",
+  pdf: "PDF",
+} as const;
+
 function formatContext(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
   if (n >= 1000) return `${Math.round(n / 1000)}k`;
@@ -25,10 +33,21 @@ function formatCost(cost: HabitatProviderModelEntry["cost"]): string | null {
   return `${inP}/${outP}/1M`;
 }
 
-function modelSubtitle(entry: HabitatProviderModelEntry): string {
+function formatInputModalities(modalities: HabitatProviderModelEntry["inputModalities"]): string[] {
+  if (!modalities?.length) return [];
+  const labels: string[] = [];
+  for (const key of ["text", "image", "audio", "video", "pdf"] as const) {
+    if (modalities.includes(key)) labels.push(INPUT_MODALITY_LABEL_ZH[key]);
+  }
+  return labels;
+}
+
+/** 列表行 / 已选提示副标题（ctx · 价格 · 输入模态）。 */
+export function modelSubtitle(entry: HabitatProviderModelEntry): string {
   const parts = [`ctx ${formatContext(entry.contextWindow)}`];
   const cost = formatCost(entry.cost);
   if (cost) parts.push(cost);
+  parts.push(...formatInputModalities(entry.inputModalities));
   return parts.join(" · ");
 }
 

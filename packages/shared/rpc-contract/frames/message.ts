@@ -2,16 +2,48 @@ import { z } from "zod";
 import { omitUndefined } from "@freeanima/shared/util/omit-undefined.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
-export const messageSendInputSchema = z.object({
-  conversation_id: z.string().min(1),
-  message: z.string().min(1),
-  client_op_id: z.string().min(1).optional(),
-  expected_tail_pos: z.number().int().min(0).optional(),
-  force_tail: z.boolean().optional(),
-  llm_debug: z.boolean().optional(),
-});
+import { messageAttachmentMetaSchema } from "@freeanima/shared/pg-shapes/jsonb/message-payload.ts";
+
+export const messageAttachmentMetaRpcSchema = messageAttachmentMetaSchema;
+
+export const messageSendInputSchema = z
+  .object({
+    conversation_id: z.string().min(1),
+    /** 可空：仅附件时允许空串 */
+    message: z.string(),
+    client_op_id: z.string().min(1).optional(),
+    expected_tail_pos: z.number().int().min(0).optional(),
+    force_tail: z.boolean().optional(),
+    llm_debug: z.boolean().optional(),
+    /** 请求期临时附件 id（不入 messages.payload） */
+    attachment_temp_ids: z.array(z.string().min(1)).max(20).optional(),
+    /** 与 temp 对应的展示元数据；缺省时由 Habitat 从 temp 记录补齐 */
+    attachments: z.array(messageAttachmentMetaSchema).max(20).optional(),
+  })
+  .superRefine((val, ctx) => {
+    const hasText = val.message.trim().length > 0;
+    const hasAtt = (val.attachment_temp_ids?.length ?? 0) > 0 || (val.attachments?.length ?? 0) > 0;
+    if (!hasText && !hasAtt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "message 或 attachments 至少提供一个",
+        path: ["message"],
+      });
+    }
+  });
 
 export type MessageSendInput = z.infer<typeof messageSendInputSchema>;
+
+export const chatAttachmentUploadInputSchema = z.object({});
+export type ChatAttachmentUploadInput = z.infer<typeof chatAttachmentUploadInputSchema>;
+
+export const chatAttachmentUploadOutputSchema = z.object({
+  temp_id: z.string().min(1),
+  filename: z.string().min(1),
+  content_type: z.string().min(1),
+  size: z.number().int().nonnegative(),
+});
+export type ChatAttachmentUploadOutput = z.infer<typeof chatAttachmentUploadOutputSchema>;
 
 export const messageSendOutputSchema = z.object({
   stream_id: z.string(),
@@ -135,8 +167,19 @@ export type SapDisplayToolCall = {
   result?: string;
 };
 
+export type SapDisplayAttachment = {
+  filename: string;
+  mime_type: string;
+  size: number;
+};
+
 export type SapDisplayItem =
-  | { type: "message"; role: "user" | "assistant"; content: string }
+  | {
+      type: "message";
+      role: "user" | "assistant";
+      content: string;
+      attachments?: SapDisplayAttachment[];
+    }
   | { type: "tool_block"; calls: SapDisplayToolCall[] };
 
 export type LlmDebugTurnPreview = {

@@ -15,6 +15,7 @@ import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/rou
 import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "../method-defs.ts";
+import { handleChatAttachmentUpload } from "../binary.ts";
 import { chatSessionPumps } from "../session-pumps.ts";
 import {
   attachStreamSession,
@@ -24,6 +25,9 @@ import {
   resolveConversationPlatform,
 } from "../stream.ts";
 import { streamSessionRegistry } from "../stream-session-registry.ts";
+import { sweepExpiredChatAttachmentTemps } from "../../domain/attachment-temp.ts";
+
+sweepExpiredChatAttachmentTemps();
 
 type ChatHubDeps = RemoteToolsServerDeps;
 
@@ -267,10 +271,14 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         client_op_id: input.client_op_id,
         expected_tail_pos: input.expected_tail_pos,
         force_tail: input.force_tail,
+        attachment_temp_ids: input.attachment_temp_ids,
+        attachments: input.attachments,
       }),
     );
     return { stream_id: streamId };
   },
+  "chat.attachment.upload": async (_deps, input, ctx) =>
+    handleChatAttachmentUpload(_deps, input, ctxOf(ctx)),
   "message.interrupt": async (deps, input) => {
     depsOf(deps).runtime.interruptSessionStream(input.conversation_id);
     return { ok: true as const };

@@ -32,12 +32,52 @@ import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.t
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import { runSkillReview } from "./skill-review-run.ts";
+import {
+  attachContentMediaToLastUser,
+  cleanupTurnAttachmentTemps,
+  resolveTurnAttachments,
+} from "@freeanima/features/chat/domain/turn-attachments.ts";
+import {
+  getActiveRuntimeConfig,
+  getLlmConfig,
+  getProfileHopModel,
+  getProfileHopProviderId,
+  LLM_PRESET_CUSTOM,
+} from "@freeanima/habitat/core/config";
+import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
+import { defaultModelInfo } from "@freeanima/habitat/capabilities/llm-openai/catalog.ts";
+import { enrichModelInfoFromModelsDev } from "@freeanima/habitat/capabilities/llm-openai/models-dev/enrich.ts";
+
+/**
+ * 与 `runExclusiveStreamTurn` 一致：实际请求用的是 chat profile hop，不是会话 meta.model。
+ * 会话创建时写入的旧 model 若仍优先，会导致设置里已换成支持图的模型却仍被拒。
+ */
+async function chatProfileModelSupportsVision(): Promise<boolean | null> {
+  try {
+    const cfg = getActiveRuntimeConfig().data;
+    const model = getProfileHopModel(cfg, PROFILE_CHAT);
+    const providerId = getProfileHopProviderId(cfg, PROFILE_CHAT);
+    const preset = getLlmConfig(cfg).providers[providerId]?.preset;
+    const info = await enrichModelInfoFromModelsDev(
+      defaultModelInfo(model),
+      omitUndefined({
+        preferModelsDevLimits: true as const,
+        preset: preset === LLM_PRESET_CUSTOM ? null : preset,
+      }),
+    );
+    return info.supportsVision ?? null;
+  } catch {
+    return null;
+  }
+}
 
 export type MessageSendOriginExtra = {
   llm_debug?: boolean;
   client_op_id?: string;
   expected_tail_pos?: number;
   force_tail?: boolean;
+  attachment_temp_ids?: string[];
+  attachments?: Array<{ filename: string; mime_type: string; size: number }>;
 };
 
 export type MessagingDeps = {
@@ -129,6 +169,27 @@ function parseMessageSendOriginExtra(
   origin_extra?: Record<string, unknown>,
 ): MessageSendOriginExtra | undefined {
   if (!origin_extra) return undefined;
+  const tempIds = Array.isArray(origin_extra.attachment_temp_ids)
+    ? origin_extra.attachment_temp_ids.filter(
+        (x): x is string => typeof x === "string" && x.length > 0,
+      )
+    : undefined;
+  const attachments = Array.isArray(origin_extra.attachments)
+    ? origin_extra.attachments
+        .map((row) => {
+          if (!row || typeof row !== "object") return null;
+          const r = row as Record<string, unknown>;
+          if (
+            typeof r.filename !== "string" ||
+            typeof r.mime_type !== "string" ||
+            typeof r.size !== "number"
+          ) {
+            return null;
+          }
+          return { filename: r.filename, mime_type: r.mime_type, size: r.size };
+        })
+        .filter((x): x is { filename: string; mime_type: string; size: number } => x != null)
+    : undefined;
   return omitUndefined({
     llm_debug: origin_extra.llm_debug === true ? true : undefined,
     client_op_id:
@@ -138,6 +199,8 @@ function parseMessageSendOriginExtra(
         ? origin_extra.expected_tail_pos
         : undefined,
     force_tail: origin_extra.force_tail === true ? true : undefined,
+    attachment_temp_ids: tempIds?.length ? tempIds : undefined,
+    attachments: attachments?.length ? attachments : undefined,
   });
 }
 
@@ -376,7 +439,11 @@ export async function* sendMessageStream(
     yield streamErrorEvent(deps, conversationId, `Conversation not found: ${conversationId}`);
     return;
   }
-  if (!message) {
+  const sendOptsEarly = parseMessageSendOriginExtra(origin_extra);
+  const hasAttachments =
+    (sendOptsEarly?.attachment_temp_ids?.length ?? 0) > 0 ||
+    (sendOptsEarly?.attachments?.length ?? 0) > 0;
+  if (!message && !hasAttachments) {
     yield streamErrorEvent(deps, conversationId, "message is required");
     return;
   }
@@ -620,30 +687,82 @@ function runTurnStream(
 ): AsyncGenerator<StreamEvent> {
   msgDeps.runControl.preemptSessionEngine(conversationId);
   let effectiveUserText = "";
-  return runExclusiveStreamTurn(
-    deps,
-    conversationId,
-    {
-      llmDebug,
-      fast: async () => {
-        effectiveUserText = await deps.conversation.beginTurnFast(
+  const tempIds = sendOpts?.attachment_temp_ids ?? [];
+
+  async function* body(): AsyncGenerator<StreamEvent> {
+    let resolved: ReturnType<typeof resolveTurnAttachments> | null = null;
+    try {
+      if (tempIds.length > 0) {
+        resolved = resolveTurnAttachments(tempIds);
+      }
+    } catch (e) {
+      yield streamErrorEvent(deps, conversationId, e instanceof Error ? e.message : String(e));
+      return;
+    }
+
+    const metas =
+      resolved?.metas ?? (sendOpts?.attachments?.length ? sendOpts.attachments : undefined);
+
+    if (resolved?.has_images) {
+      const visionOk = await chatProfileModelSupportsVision();
+      if (visionOk === false) {
+        yield streamErrorEvent(
+          deps,
           conversationId,
-          message,
-          omitUndefined({ client_op_id: sendOpts?.client_op_id }),
+          "当前模型不支持视觉输入，请切换到支持图片的模型后再发送",
         );
-        await triggerConversationTitleIfFirstTurn(deps, conversationId, effectiveUserText, {
-          kernel: deps.kernel,
-          onConversationUpdated: msgDeps.onConversationUpdated,
-          emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
-        });
-        return effectiveUserText;
-      },
-      prepare: async () => {
-        const [runtimeMsgs, functions] = await deps.conversation.beginTurnPrepare(conversationId);
-        return [runtimeMsgs, functions, effectiveUserText];
-      },
-    },
-    msgDeps.streamHost,
-    msgDeps.conversationManager,
-  );
+        return;
+      }
+    }
+
+    try {
+      yield* runExclusiveStreamTurn(
+        deps,
+        conversationId,
+        {
+          llmDebug,
+          fast: async () => {
+            effectiveUserText = await deps.conversation.beginTurnFast(
+              conversationId,
+              message,
+              omitUndefined({
+                client_op_id: sendOpts?.client_op_id,
+                attachments: metas,
+              }),
+            );
+            await triggerConversationTitleIfFirstTurn(deps, conversationId, effectiveUserText, {
+              kernel: deps.kernel,
+              onConversationUpdated: msgDeps.onConversationUpdated,
+              emitSessionUpdated: (sid) => msgDeps.streamHost.emitSessionUpdated(sid),
+            });
+            return effectiveUserText;
+          },
+          prepare: async () => {
+            const [runtimeMsgs, functions] =
+              await deps.conversation.beginTurnPrepare(conversationId);
+            if (!resolved) {
+              return [runtimeMsgs, functions, effectiveUserText];
+            }
+            const withSuffix = runtimeMsgs.map((m) => {
+              if (m.role !== "user" || m.content !== effectiveUserText) return m;
+              if (!resolved.content_suffix) return m;
+              return { ...m, content: `${m.content}${resolved.content_suffix}` };
+            });
+            const enriched = attachContentMediaToLastUser(
+              withSuffix,
+              effectiveUserText,
+              resolved.content_media,
+            );
+            return [enriched, functions, effectiveUserText];
+          },
+        },
+        msgDeps.streamHost,
+        msgDeps.conversationManager,
+      );
+    } finally {
+      cleanupTurnAttachmentTemps(tempIds);
+    }
+  }
+
+  return body();
 }

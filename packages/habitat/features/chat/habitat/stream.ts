@@ -41,6 +41,8 @@ export async function pumpMessageStream(
     client_op_id?: string;
     expected_tail_pos?: number;
     force_tail?: boolean;
+    attachment_temp_ids?: string[];
+    attachments?: Array<{ filename: string; mime_type: string; size: number }>;
   },
 ): Promise<void> {
   const { bridgeMessageStream } = await loadStreamBridge();

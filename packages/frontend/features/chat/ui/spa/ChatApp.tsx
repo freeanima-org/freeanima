@@ -18,6 +18,8 @@ import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
 import { ConversationTranscript } from "@freeanima/features/chat/ui/spa/components/ConversationTranscript.tsx";
 import { ChatComposeForm } from "@freeanima/features/chat/ui/spa/components/ChatComposeForm.tsx";
+import type { ChatComposeSendPayload } from "@freeanima/features/chat/ui/spa/components/ChatComposeForm.tsx";
+import { uploadChatAttachmentDrafts } from "@freeanima/features/chat/ui/spa/lib/attachments.ts";
 import type { TranscriptScrollApi } from "@freeanima/features/chat/ui/spa/hooks/useStickToBottomScroll.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
@@ -153,6 +155,8 @@ function buildSendOpts(
     clientOpId: sendMeta?.clientOpId,
     expectedTailPos: sendMeta?.expectedTailPos,
     forceTail: sendMeta?.forceTail,
+    attachmentTempIds: sendMeta?.attachmentTempIds,
+    attachments: sendMeta?.attachments,
     onTailConflict: sendMeta?.clientOpId ? onTailConflict : undefined,
   });
 }
@@ -163,6 +167,8 @@ type SendDispatchOpts = {
   forceTail?: boolean;
   /** false = 在线直发未入 IDB；缺省 true = 已在 outbox */
   persisted?: boolean;
+  attachmentTempIds?: string[];
+  attachments?: Array<{ filename: string; mime_type: string; size: number }>;
 };
 
 export function ChatApp() {
@@ -1176,9 +1182,10 @@ export function ChatApp() {
   const showOfflineCachedHint =
     shellWritesDisabled && (conversations.length > 0 || display.length > 0);
 
-  const sendMessage = async (raw: string) => {
-    const text = raw.trim();
-    if (!text || sendingRef.current) return;
+  const sendMessage = async (payload: ChatComposeSendPayload) => {
+    const text = payload.text.trim();
+    const drafts = payload.drafts;
+    if ((!text && drafts.length === 0) || sendingRef.current) return;
 
     let conversationId = currentId;
     if (!conversationId) {
@@ -1188,6 +1195,10 @@ export function ChatApp() {
     }
 
     if (streamVisible) {
+      if (drafts.length > 0) {
+        toast("流式回复中无法排队附件，请稍后再发", { duration: 4000 });
+        return;
+      }
       useChatStore.getState().enqueue(conversationId, text);
       return;
     }
@@ -1197,7 +1208,7 @@ export function ChatApp() {
     const originConversationId = conversationId;
     let claimedOpId: string | null = null;
     try {
-      if (text.startsWith("/") && canSendOnline) {
+      if (text.startsWith("/") && canSendOnline && drafts.length === 0) {
         const cmdName = text.slice(1).split(/\s+/).filter(Boolean)[0] ?? "";
         setSlashResult({ command: cmdName, text: "", loading: true });
         try {
@@ -1227,6 +1238,37 @@ export function ChatApp() {
         }
       }
 
+      let attachmentTempIds: string[] | undefined;
+      let attachments: Array<{ filename: string; mime_type: string; size: number }> | undefined;
+      let previewAttachments:
+        | Array<{
+            filename: string;
+            mime_type: string;
+            size: number;
+            previewUrl?: string;
+          }>
+        | undefined;
+      if (drafts.length > 0) {
+        if (!canSendOnline) {
+          toast("离线时无法发送附件", { duration: 4000 });
+          return;
+        }
+        try {
+          const uploaded = await uploadChatAttachmentDrafts(drafts);
+          attachmentTempIds = uploaded.tempIds;
+          attachments = uploaded.attachments;
+          previewAttachments = drafts.map((d, i) => ({
+            filename: uploaded.attachments[i]?.filename ?? d.filename,
+            mime_type: uploaded.attachments[i]?.mime_type ?? d.mime_type,
+            size: uploaded.attachments[i]?.size ?? d.size,
+            ...(d.previewUrl ? { previewUrl: d.previewUrl } : {}),
+          }));
+        } catch (e) {
+          toast(e instanceof Error ? e.message : String(e), { duration: 5000 });
+          return;
+        }
+      }
+
       const expectedTailPos = await resolveExpectedTailPos(originConversationId, canSendOnline);
 
       if (canSendOnline) {
@@ -1239,11 +1281,14 @@ export function ChatApp() {
           content: text,
           clientOpId: entry.clientOpId,
           sendStatus: "pending",
+          ...(previewAttachments?.length ? { attachments: previewAttachments } : {}),
         });
         await dispatchSend(text, originConversationId, {
           clientOpId: entry.clientOpId,
           expectedTailPos: entry.expectedTailPos,
           persisted: false,
+          ...(attachmentTempIds?.length ? { attachmentTempIds } : {}),
+          ...(attachments?.length ? { attachments } : {}),
         });
       } else {
         const entry = await useOutboxStore

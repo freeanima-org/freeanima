@@ -220,6 +220,30 @@ export const ConversationTranscript = memo(function ConversationTranscript({
                   dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
                   onClick={(e) => onMdClick(e, onAnimaUriClick)}
                 />
+                {item.attachments && item.attachments.length > 0 ? (
+                  <ul className="mt-2 flex flex-wrap gap-2" aria-label="附件">
+                    {item.attachments.map((att, ai) => (
+                      <li
+                        key={`${att.filename}-${ai}`}
+                        className="max-w-[10rem] overflow-hidden rounded-md border border bg-background/50"
+                      >
+                        {att.previewUrl && att.mime_type.startsWith("image/") ? (
+                          <img
+                            src={att.previewUrl}
+                            alt={att.filename}
+                            className="max-h-32 w-full object-cover"
+                          />
+                        ) : null}
+                        <div
+                          className="truncate px-2 py-1 text-[11px] opacity-80"
+                          title={`${att.filename} (${att.size} 字节)`}
+                        >
+                          {att.filename}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
                 {item.sendStatus === "pending" ? (
                   <p className="mt-1 text-xs opacity-70">{"待发送"}</p>
                 ) : null}

@@ -19,6 +19,10 @@ import {
 } from "./conversation-meta.ts";
 export { openAiToolSchema, toolCallSchema, messagePayloadSchema, type MessagePayload };
 export type { LlmTurnMessage, OpenAiToolSchema, ToolCall } from "../schema/index.ts";
+export type {
+  MessageAttachmentMeta,
+  MessageContentMedia,
+} from "@freeanima/shared/pg-shapes/jsonb/message-payload.ts";
 
 const posField = { pos: z.number().optional() };
 

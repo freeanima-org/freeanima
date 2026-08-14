@@ -45,7 +45,28 @@ function turnsToResponseInput(
   }
   for (const msg of messages) {
     switch (msg.role) {
-      case "user":
+      case "user": {
+        const media = msg.content_media?.filter((m) => m.type === "image") ?? [];
+        if (media.length === 0) {
+          items.push({ role: "user", content: msg.content });
+          break;
+        }
+        const parts: Array<Record<string, unknown>> = [];
+        if (msg.content.trim()) {
+          parts.push({ type: "input_text", text: msg.content });
+        }
+        for (const m of media) {
+          parts.push({
+            type: "input_image",
+            image_url: `data:${m.mime_type};base64,${m.data_base64}`,
+          });
+        }
+        if (parts.length === 0) {
+          parts.push({ type: "input_text", text: msg.content || "(附件)" });
+        }
+        items.push({ role: "user", content: parts });
+        break;
+      }
       case "system":
         items.push({ role: msg.role, content: msg.content });
         break;

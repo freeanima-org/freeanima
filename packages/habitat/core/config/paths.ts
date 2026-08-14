@@ -61,4 +61,8 @@ export const PATHS = {
   get devWebTokenFile() {
     return homePath("dev-web.token");
   },
+  /** 聊天附件临时目录（本 turn / TTL；不进 object_storage） */
+  get chatAttachmentsTmpDir() {
+    return homePath("tmp", "chat-attachments");
+  },
 } as const;
