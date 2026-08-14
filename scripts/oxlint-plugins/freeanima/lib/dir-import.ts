@@ -4,15 +4,7 @@ import { resolveFromImporter } from "../lib/repo-path.ts";
 
 const DIR_PREFIX = "dir:";
 
-/** 运行时对缺失目录返回空 map；web dist 构建产物可缺。 */
-export const ALLOW_MISSING_SUFFIXES = ["/app/web/dist", "/web/dist"] as const;
-
-export function allowMissingDir(resolvedAbs: string): boolean {
-  const norm = resolvedAbs.replaceAll("\\", "/");
-  return ALLOW_MISSING_SUFFIXES.some((s) => norm.endsWith(s));
-}
-
-/** 返回错误信息；合法则 null。 */
+/** 返回错误信息；合法则 null。目录必须存在（web dist 用 git 占位 `.gitignore` / `.gitkeep`）。 */
 export function checkDirImport(importerFile: string, spec: string): string | null {
   if (!spec.startsWith(DIR_PREFIX)) return null;
   const raw = spec.slice(DIR_PREFIX.length);
@@ -28,6 +20,5 @@ export function checkDirImport(importerFile: string, spec: string): string | nul
     }
     return null;
   }
-  if (allowMissingDir(abs)) return null;
   return `\`dir:${raw}\` 目录不存在: ${abs}`;
 }

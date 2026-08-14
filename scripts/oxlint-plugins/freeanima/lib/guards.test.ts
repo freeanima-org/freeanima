@@ -35,7 +35,7 @@ describe("repo-path", () => {
 });
 
 describe("dir-import", () => {
-  test("missing dir errors; existing ok; web dist allow missing", () => {
+  test("missing dir errors; existing ok; web dist must exist", () => {
     const tmp = mkdtempSync(join(tmpdir(), "fa-dir-"));
     try {
       const assets = join(tmp, "assets");
@@ -45,8 +45,11 @@ describe("dir-import", () => {
       expect(checkDirImport(importer, "dir:./assets")).toBeNull();
       expect(checkDirImport(importer, "dir:./nope")).toMatch(/目录不存在/);
       const webImporter = join(REPO_ROOT, "packages/habitat/portal/cli/web/x.ts");
-      // 允许缺失的构建产物路径
-      expect(checkDirImport(webImporter, "dir:../../app/web/dist")).toBeNull();
+      // 仓内占位 dist（可仅有 .gitignore）；错误相对路径（落到 habitat）须报错
+      expect(
+        checkDirImport(webImporter, "dir:../../../../frontend/portal/app/web/dist"),
+      ).toBeNull();
+      expect(checkDirImport(webImporter, "dir:../../app/web/dist")).toMatch(/目录不存在/);
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }

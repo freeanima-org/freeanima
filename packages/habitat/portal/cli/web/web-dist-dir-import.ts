@@ -2,15 +2,17 @@
  * Standalone Web dist 嵌入：调用点 `dir:` 声明依赖整个 web/dist 树，
  * 由 `scripts/dir-import-plugin.ts` 展开为逐文件 `type: "file"`。
  *
- * 源码运行需 bunfig preload；目录缺失时为空 map。
- * 仅 standalone-boot（runtimeMeta 非 null）时 dynamic import；非空才注册。
+ * 源码运行需 bunfig preload；仓内目录须存在（可仅有 `.gitignore` / `.gitkeep`），
+ * 无构建产物时为空 map。仅 standalone-boot（runtimeMeta 非 null）时 dynamic import；非空才注册。
  */
-import webDistFiles from "dir:../../app/web/dist";
+import webDistFiles from "dir:../../../../frontend/portal/app/web/dist";
 
 import type { EmbeddedWebDistFile } from "./web-dist-embedded.ts";
 
+/** git 占位或本地标记，不嵌入 standalone */
 function isStandaloneWebRel(rel: string): boolean {
-  if (rel === ".ok" || rel.endsWith("/.ok")) return false;
+  const base = rel.includes("/") ? rel.slice(rel.lastIndexOf("/") + 1) : rel;
+  if (base === ".ok" || base === ".gitignore" || base === ".gitkeep") return false;
   return true;
 }
 

@@ -6,7 +6,8 @@ export const dirImportExists: RuleModule = {
   meta: {
     type: "problem",
     docs: {
-      description: "Bun `dir:` import 必须解析到存在的目录（web dist 构建产物可缺）",
+      description:
+        "Bun `dir:` import 必须解析到存在的目录（web dist 可仅含 .gitignore/.gitkeep 占位）",
     },
   },
   create(context) {

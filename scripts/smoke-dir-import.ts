@@ -111,7 +111,10 @@ async function smokeWebRuntime(): Promise<void> {
   const fromDisk: string[] = [];
   for (const rel of new Glob("**/*").scanSync({ cwd: WEB_DIST_DIR, onlyFiles: true })) {
     const normalized = rel.split("\\").join("/");
-    if (normalized === ".ok" || normalized.endsWith("/.ok")) continue;
+    const base = normalized.includes("/")
+      ? normalized.slice(normalized.lastIndexOf("/") + 1)
+      : normalized;
+    if (base === ".ok" || base === ".gitignore" || base === ".gitkeep") continue;
     fromDisk.push(normalized);
   }
   fromDisk.sort((a, b) => a.localeCompare(b));
