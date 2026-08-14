@@ -24,12 +24,12 @@ FreeAnima Portal (packages/frontend/portal/app/tauri)
 
 ### 栖息地 vs 本机边界
 
-| 层              | 位置                                              | 职责                                                                                                               |
-| --------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **栖息地 SSOT** | `packages/{habitat,frontend}/features/companion/` | runtime 段 `companion`（behavior / slots / 模型与动作注册表 + `object_file_id`）；字节在对象存储；设置经栖息地 RPC |
-| **设置 UI**     | 桌面设置 → 伴侣                                   | 栖息地 RPC（`companion.config.*`、model/motion CRUD）；二进制经 `object_storage.file.get`                          |
-| **伴侣宿主**    | overlay SPA（`spa/`）                             | `remote_tools.attach`、本机 runtime；桌面经 `companion.sync.pull` 把缺文件落到本机缓存                             |
-| **Tauri 宿主**  | `packages/frontend/portal/app/tauri/`             | 透明窗、点击穿透、托盘、显隐 + FS / prefs IPC                                                                      |
+| 层              | 位置                                   | 职责                                                                                                               |
+| --------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **栖息地 SSOT** | `packages/habitat/features/companion/` | runtime 段 `companion`（behavior / slots / 模型与动作注册表 + `object_file_id`）；字节在对象存储；设置经栖息地 RPC |
+| **设置 UI**     | 桌面设置 → 伴侣                        | 栖息地 RPC（`companion.config.*`、model/motion CRUD）；二进制经 `object_storage.file.get`                          |
+| **伴侣宿主**    | overlay SPA（`spa/`）                  | `remote_tools.attach`、本机 runtime；桌面经 `companion.sync.pull` 把缺文件落到本机缓存                             |
+| **Tauri 宿主**  | `packages/frontend/portal/app/tauri/`  | 透明窗、点击穿透、托盘、显隐 + FS / prefs IPC                                                                      |
 
 管理**仅在设置**——栖息地没有伴侣管理页。
 
@@ -43,7 +43,7 @@ Tauri   ◄──IPC──────────► Settings         (show/hid
 Agent    ──Habitat RPC tool.call─► Overlay
 ```
 
-内容包在 [`packages/{habitat,frontend}/features/companion/`](../../packages/{habitat,frontend}/features/companion/)（`ui/spa/` + `server/` + `shared/`）。栖息地域逻辑：[`packages/{habitat,frontend}/features/companion/`](../../packages/{habitat,frontend}/features/companion/)。
+内容包在 [`packages/frontend/features/companion/`](../../packages/frontend/features/companion/)（`ui/spa/` 等）。栖息地域逻辑：[`packages/habitat/features/companion/`](../../packages/habitat/features/companion/)（`server/` / `domain` / `plugin.ts`）。
 
 |         | 聊天室 / 其他产品模块     | 桌面伴侣                                       |
 | ------- | ------------------------- | ---------------------------------------------- |
@@ -82,7 +82,7 @@ Agent    ──Habitat RPC tool.call─► Overlay
 
 设置 → **模型**标签页：列表、导入、删除、重命名、**排序**（上移/下移 → `companion.model.reorder`）、切换当前模型。上传到栖息地（`companion.model.upload` → `createObjectFile`）；加载走 `object_storage.file.get`。
 
-开发时，`packages/{habitat,frontend}/features/companion/public/models/` 中的文件作回退。
+开发时，`packages/frontend/features/companion/public/models/` 中的文件作回退。
 
 ### VRMA 库与槽位
 
@@ -95,7 +95,7 @@ Agent    ──Habitat RPC tool.call─► Overlay
 ### 浏览器 /dev 伴侣宿主
 
 ```bash
-bun packages/{habitat,frontend}/features/companion/dev.ts
+bun packages/habitat/features/companion/dev.ts
 ```
 
 使用进程内 HTTP 服务做静态/HMR + localhost WebSocket（`/api/runtime/ws`）。**配置始终来自栖息地 RPC**（`companion.config.get`）——没有本机 `GET /api/config`。

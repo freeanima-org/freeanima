@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 源码 Habitat 开发监督器：监视 `src/`，debounce 后硬重启子进程。
+ * 源码 Habitat 开发监督器：监视 `packages/{habitat,shared}`，debounce 后硬重启子进程。
  *
  *   just dev habitat
  *   just dev / scripts/dev.ts（默认走本入口）
@@ -21,7 +21,7 @@ import { join } from "node:path";
 
 const root = join(import.meta.dir, "..");
 const habitatEntry = join(root, "packages/habitat/portal/cli/dev-habitat.ts");
-const watchRoot = join(root, "src");
+const watchRoots = [join(root, "packages/habitat"), join(root, "packages/shared")];
 const habitatArgs = process.argv.slice(2);
 
 function animaHome(): string {
@@ -64,16 +64,14 @@ function parsePortArg(args: string[]): number | null {
   return null;
 }
 
-/** `filename` 相对 watchRoot（`src/`） */
+/** `filename` 相对某一 watchRoot（packages/habitat 或 packages/shared） */
 function shouldRestartForPath(filename: string): boolean {
   const n = filename.replaceAll("\\", "/");
   if (n.includes("node_modules/")) return false;
   if (n.includes("/__tests__/") || n.startsWith("__tests__/")) return false;
   if (/\.(test|spec)\.(ts|tsx|js|jsx)$/.test(n)) return false;
   if (n.endsWith("routeTree.gen.ts")) return false;
-  // 纯 Vite / 壳 UI：改这些不应拖 Habitat
-  if (n.startsWith("portal/app/web/") || n.startsWith("portal/app/tauri/")) return false;
-  if (n.startsWith("ui-kit/")) return false;
+  // feature UI 在 frontend 包；habitat 包内若仍有 /ui/ 资源亦不拖重启
   if (n.includes("/ui/") && /\.(tsx|css|scss|module\.css)$/.test(n)) return false;
   if (!/\.(ts|tsx|js|jsx|mjs|cjs|json)$/.test(n)) return false;
   return true;
@@ -283,13 +281,19 @@ function startReadyProbe(portArg: number | null): void {
 
 function startWatching(): void {
   console.log(
-    `dev-habitat-watch · watching ${watchRoot} · debounce ${DEBOUNCE_MS}ms · FREEANIMA_HABITAT_WATCH=0 可关`,
+    `dev-habitat-watch · watching ${watchRoots.join(", ")} · debounce ${DEBOUNCE_MS}ms · FREEANIMA_HABITAT_WATCH=0 可关`,
   );
-  watch(watchRoot, { recursive: true }, (_event, filename) => {
-    if (shuttingDown || filename == null) return;
-    if (!shouldRestartForPath(filename)) return;
-    scheduleRestart(filename);
-  });
+  for (const watchRoot of watchRoots) {
+    if (!existsSync(watchRoot)) {
+      console.warn(`dev-habitat-watch · skip missing watch root: ${watchRoot}`);
+      continue;
+    }
+    watch(watchRoot, { recursive: true }, (_event, filename) => {
+      if (shuttingDown || filename == null) return;
+      if (!shouldRestartForPath(filename)) return;
+      scheduleRestart(filename);
+    });
+  }
 
   startReadyProbe(parsePortArg(habitatArgs));
 

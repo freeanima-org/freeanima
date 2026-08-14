@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "@freeanima/ui-kit/styles/globals.css";
-/* 扫整个 src：壳 + ui-kit + 各 feature SPA；避免按 feature 漏登 @source */
-@source "../../../../src/**/*.{tsx,ts}";
+/* 扫整个 frontend 包：壳 + ui-kit + 各 feature SPA；避免按 feature 漏登 @source */
+@source "../../../**/*.{tsx,ts}";
 @import "@freeanima/ui-kit/styles.css";
 
 :root {

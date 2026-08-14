@@ -26,12 +26,13 @@ SSOT：[`i18n/glossary.md`](../../i18n/glossary.md)、[`docs/product/architectur
 ## 目录约定
 
 ```
-src/portal/
-  app/           # 应用形态（Shell）
+packages/frontend/portal/
+  app/           # 应用形态（Shell）：web / tauri
   extension/     # 浏览器形态
     entrypoints/
     runtime/     # settings、Habitat HTTP client、消息信封
     features/    # 按能力：vault / bookmarks；规划 clipper
+packages/habitat/portal/
   cli/           # CLI 形态
 ```
 

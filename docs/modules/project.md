@@ -326,6 +326,6 @@ FreeAnima (product tag or top folder name)
 | `task.search`                             | 跨归属搜索；结果含 project/list 归属             |
 | `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                   |
 
-实现目标：`packages/{habitat,frontend}/features/project/`（domain + habitat + `ui/spa` + `plugin.ts`）；schema 在 `packages/habitat/core/db/schema/entity/components/`；SAP frames 在 `packages/shared/rpc-contract/frames/`。
+实现目标：`packages/habitat/features/project/`（domain + habitat + `plugin.ts`）与 `packages/frontend/features/project/`（`ui/spa`）；schema 在 `packages/habitat/core/db/schema/entity/components/`；SAP frames 在 `packages/shared/rpc-contract/frames/`。
 
 另见[实体模型 — 项目模块](../product/entity-model.md#project-module-v1-spec)。

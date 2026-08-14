@@ -1,6 +1,7 @@
-src/frontend/**/spa/**/*.css
-src/frontend/**/lib/**/*.css
-src/features/**/ui/**/*.css
-src/features/companion/**/spa/**/*.css
-src/portal/app/tauri/**/spa/**/*.css
-src/portal/app/web/**/spa/**/*.css
+packages/frontend/**/spa/**/*.css
+packages/frontend/**/lib/**/*.css
+packages/frontend/features/**/ui/**/*.css
+packages/frontend/features/companion/**/spa/**/*.css
+packages/frontend/portal/app/tauri/**/spa/**/*.css
+packages/frontend/portal/app/web/**/spa/**/*.css
+packages/frontend/portal/extension/**/*.css

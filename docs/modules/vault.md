@@ -40,7 +40,7 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - Habitat **数据维护**：**解锁 agent 密码库**（本地缓存状态 + 解锁/锁定；根密钥 SSOT = User 库
   `import_refs.agent_root_key=habitat`，于 User 库解锁时自动确保）
 - 编辑表单与扩展共用
-  [`features/vault/ui/shared`](../../packages/{habitat,frontend}/features/vault/ui/shared/)（多
+  [`features/vault/ui/shared`](../../packages/frontend/features/vault/ui/shared/)（多
   URI、标签、自定义字段等）；数据面仍为 Habitat RPC（与扩展 `sendBg` 不同）
 - **Vault 引用选择器**（`VaultRefField`）：设置里 LLM / Discord / 微信 / 对象存储 / Firecrawl
   密钥，以及邮箱账号密码，可从 **Agent 库** 选条目与字段，写入 `vault("item_id", "field")`（仍可手写明文或

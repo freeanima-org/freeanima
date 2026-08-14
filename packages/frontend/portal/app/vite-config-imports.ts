@@ -2,9 +2,9 @@
 export {
   createComponentBuildMeta,
   isShipChannel,
-} from "../../../habitat/core/config/build-meta.ts";
-export type { BuildChannel, ComponentBuildMeta } from "../../../habitat/core/config/build-meta.ts";
-export { resolveHabitatRpcWsUrl } from "../../../shared/habitat-rpc/urls.ts";
+  resolveHabitatRpcWsUrl,
+} from "../vite-config-cross-pkg.ts";
+export type { BuildChannel, ComponentBuildMeta } from "../vite-config-cross-pkg.ts";
 export { nativeBuildMetaDefine } from "../../client/portal-sdk/native-build-meta.ts";
 export {
   parseShellBuildTarget,

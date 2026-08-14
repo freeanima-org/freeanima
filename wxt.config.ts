@@ -15,7 +15,7 @@ import { buildViteAliases } from "./packages/frontend/client/app-frame/vite/modu
 const repoRoot = path.resolve(import.meta.dirname);
 
 /**
- * WXT/Vite 依赖扫描会经 `@freeanima/* → src/*` 扫到 Web 的 PwaNotices，
+ * WXT/Vite 依赖扫描会经 `@freeanima/* → packages/*` 扫到 Web 的 PwaNotices，
  * 而扩展构建不挂 vite-plugin-pwa。提供空 stub，避免 scan 失败警告。
  */
 function stubVirtualPwaRegisterPlugin(): Plugin {

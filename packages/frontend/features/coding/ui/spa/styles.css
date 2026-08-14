@@ -1,8 +1,8 @@
 @import "tailwindcss";
 @import "@freeanima/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
-@source "../../../../../src/ui-kit/**/*.{tsx,ts}";
-@source "../../../../../src/features/chat/ui/spa/components/**/*.{tsx,ts}";
+@source "../../../../ui-kit/**/*.{tsx,ts}";
+@source "../../../../features/chat/ui/spa/components/**/*.{tsx,ts}";
 
 @import "@freeanima/features/chat/ui/spa/styles/transcript-bubbles.css";
 

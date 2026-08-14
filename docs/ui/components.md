@@ -4,7 +4,7 @@ title: UI 组件
 
 # UI 组件
 
-入口 UI 的分层与落点规则。实现位于 `packages/frontend/ui-kit/` 与 `packages/{habitat,frontend}/features/*/ui/`。Agent 导入禁令 →
+入口 UI 的分层与落点规则。实现位于 `packages/frontend/ui-kit/` 与 `packages/frontend/features/*/ui/`。Agent 导入禁令 →
 [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc) 与
 [`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)。
 
@@ -12,14 +12,14 @@ title: UI 组件
 
 ## 口语术语 → 仓库术语
 
-| 口语（产品 / 设计）  | 仓库术语                                                            | 典型位置                                         |
-| -------------------- | ------------------------------------------------------------------- | ------------------------------------------------ |
-| 非业务 / 设计系统 UI | **基元（Primitive）**、**结构（structure）**、**复合（composite）** | `@freeanima/ui-kit`                              |
-| 业务 / 产品 UI       | **领域（Domain）** UI                                               | `packages/{habitat,frontend}/features/<slug>/ui` |
-| UI 组件              | 上述某一层的 React 构建块                                           | —                                                |
-| UI 元素 / 槽位碎片   | 模式内部的展示部件（标题文案、徽章、图标）— 不是独立包              | 组件或模式内部                                   |
-| 应用 chrome          | **应用布局（app frame）**（不是壳）                                 | `packages/frontend/client/app-frame`             |
-| 宿主                 | **壳（Shell）**                                                     | `packages/frontend/portal/app/*`                 |
+| 口语（产品 / 设计）  | 仓库术语                                                            | 典型位置                               |
+| -------------------- | ------------------------------------------------------------------- | -------------------------------------- |
+| 非业务 / 设计系统 UI | **基元（Primitive）**、**结构（structure）**、**复合（composite）** | `@freeanima/ui-kit`                    |
+| 业务 / 产品 UI       | **领域（Domain）** UI                                               | `packages/frontend/features/<slug>/ui` |
+| UI 组件              | 上述某一层的 React 构建块                                           | —                                      |
+| UI 元素 / 槽位碎片   | 模式内部的展示部件（标题文案、徽章、图标）— 不是独立包              | 组件或模式内部                         |
+| 应用 chrome          | **应用布局（app frame）**（不是壳）                                 | `packages/frontend/client/app-frame`   |
+| 宿主                 | **壳（Shell）**                                                     | `packages/frontend/portal/app/*`       |
 
 ## 分层
 

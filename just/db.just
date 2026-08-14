@@ -1,4 +1,4 @@
-# just db …（需 DATABASE_URL；cwd 进 host/core，使 drizzle.config 相对路径生效）
+# just db …（需 DATABASE_URL；cwd 进 packages/habitat/core，使 drizzle.config 相对路径生效）
 import '_common.just'
 
 [no-cd]

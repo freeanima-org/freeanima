@@ -10,7 +10,7 @@ alwaysApply: false
 
 | Tier                          | Location                                                                | Allowed                                                  | Forbidden                                                                               |
 | ----------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **Unit**                      | `src/**/*.test.ts` (**colocated**)                                      | `mock` / `spyOn` / same-package Tier 1–2 exports (below) | PG, real Redis, file I/O, `FREEANIMA_HOME` isolation, `tests/helpers/`, Docker, network |
+| **Unit**                      | `packages/**/*.test.ts` (**colocated**)                                 | `mock` / `spyOn` / same-package Tier 1–2 exports (below) | PG, real Redis, file I/O, `FREEANIMA_HOME` isolation, `tests/helpers/`, Docker, network |
 | **Cross-package integration** | `tests/integration/`                                                    | PG, Redis, temp dirs, `beginIntegrationCase`             | —                                                                                       |
 | **Black-box E2E**             | [freeanima-testing](https://github.com/freeanima-org/freeanima-testing) | Compose + Playwright; PR dispatch async                  | —                                                                                       |
 
@@ -27,7 +27,7 @@ bun:test **无原生 tags**。用文件约定 + 路径清单：
 
 清单 SSOT：
 
-- Unit CORE 默认目录 / 文件：[`tests/tiers/unit-core-globs.txt`](../../tests/tiers/unit-core-globs.txt)（另自动纳入任意 `src/**/*.core.test.ts`）
+- Unit CORE 默认目录 / 文件：[`tests/tiers/unit-core-globs.txt`](../../tests/tiers/unit-core-globs.txt)（另自动纳入任意 `packages/**/*.core.test.ts`）
 - Integration CORE 显式路径：[`tests/tiers/integration-core.txt`](../../tests/tiers/integration-core.txt)
 
 ### 门禁矩阵
@@ -54,7 +54,7 @@ bun:test **无原生 tags**。用文件约定 + 路径清单：
 | Tier 1 in-memory adapters  | `@freeanima/habitat/kernel/logging/null`、`/memory`、`/testing`；`@freeanima/habitat/kernel/hooks/testing` | `createNullSink`, `createTestLogger`, `createTestHookRegistry`                                                     |
 | Tier 2 singleton injection | `@freeanima/habitat/core/redis`；`@freeanima/habitat/core/db/pg`（`setDbForTest`）                         | `setXForTest` / `resetXForTest`; `afterEach` must reset；PG 域函数用 `mock.module("@freeanima/habitat/core/db/pg/…")` |
 | Tier 3 composite factories | optional `@freeanima/{pkg}/testing`                                                                  | Tier 1 only, e.g. `createTestLogger`                                                                               |
-| Domain mocks               | `{pkg}/src/test-helpers/`                                                                            | when package has no port (e.g. `MockBackend`)                                                                      |
+| Domain mocks               | `{pkg}/test-helpers/`                                                                                    | when package has no port (e.g. `MockBackend`)                                                                      |
 
 Unit tests **must not** `import` `tests/helpers/log-isolation.ts` or write `config.yaml`; inject `Config.fromSnapshot()` (or bind package-specific config) and use `createNullSink` / `createMemorySink` for logging.
 

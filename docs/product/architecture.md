@@ -29,7 +29,7 @@ title: 架构
 
 动词：**连接栖息地**（URL + token）；**打开栖息地**（管理 UI）；**经入口到达**（壳 / 浏览器扩展 / MCP / CLI）。
 
-代码布局：`src/portal/{app,extension,cli}`；MCP 形态实现仍在 `packages/habitat/capabilities/mcp-server`。见 [`docs/modules/portal.md`](../modules/portal.md)。
+代码布局：`packages/frontend/portal/{app,extension}` + `packages/habitat/portal/cli`；MCP 形态实现仍在 `packages/habitat/capabilities/mcp-server`。见 [`docs/modules/portal.md`](../modules/portal.md)。
 
 资源层 **躯体（Body）**（四层模型下的 VM / OS / 网络）是 subject 认知上的「我跑在什么上」— **不是**栖息地进程名。
 
@@ -173,7 +173,7 @@ ToolSet 发现可见度分三级：`catalog`（进系统提示 `<toolsets>` 目�
 
 ### 仓库布局（Phase 1 — host/client）
 
-目标布局是 `packages/{habitat,frontend}/features/<slug>/` 下的**功能模块**（UI + 协议 + 栖息地适配器 + domain + `plugin.ts`）。栖息地管理台使用与聊天室/任务**相同的模块形态**——不是单独的 admin-\* 栈。`packages/{habitat,frontend}/features/companion/` 为遗留命名；勿在此新增产品。
+目标布局是 `packages/habitat/features/<slug>/`（domain / habitat / plugin）与 `packages/frontend/features/<slug>/`（UI）下的**功能模块**。栖息地管理台使用与聊天室/任务**相同的模块形态**——不是单独的 admin-\* 栈。`packages/*/features/companion/` 为遗留命名；勿在此新增产品。
 
 **终态：** 每功能一份栖息地 RPC；业务方法走 `POST|WS /rpc/v1`（同一信封）。公开 health/TLS 探测与二进制方法（如 `tts.synthesize`）为栖息地 RPC REST，按注册表声明 `auth: optional` 或 Bearer。
 
@@ -185,17 +185,17 @@ Host 栈：`packages/habitat/{kernel,core,engine,capabilities,platform}`。Clien
 
 UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`docs/ui/`](../ui/overview.md)。Agent 硬禁令 / API → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)。
 
-| 层           | 是否平台原生？                   | 位置                                                                         | 数据路径                               |
-| ------------ | -------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------- |
-| 壳（壳子维） | 是                               | `packages/frontend/portal/app/tauri`、伴侣、栖息地绑定                       | Tauri IPC / commands                   |
-| 应用布局     | 布局跟视口；设置 chrome 跟布局档 | `packages/frontend/client/app-frame`（`AppFrame`）                           | 栖息地 RPC（Feature RPC）              |
-| 栖息地 UI    | 壳内嵌（普通功能）               | `packages/{habitat,frontend}/features/habitat`（UI + `plugin.habitat.rpc`）  | 栖息地 RPC（WS + HTTP POST `/rpc/v1`） |
-| 伴侣宿主     | 浮层 WebView-host（第一方）      | `packages/{habitat,frontend}/features/companion/`（spa attach；薄壳 IPC/FS） | 栖息地 RPC + `remote_tools.attach`     |
-| Coding 宿主  | 独立前哨窗（第一方）             | `packages/{habitat,frontend}/features/coding/`（spa attach；开发机 FS/终端） | 栖息地 RPC + `remote_tools.attach`     |
+| 层           | 是否平台原生？                   | 位置                                                                                                    | 数据路径                               |
+| ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| 壳（壳子维） | 是                               | `packages/frontend/portal/app/tauri`、伴侣、栖息地绑定                                                  | Tauri IPC / commands                   |
+| 应用布局     | 布局跟视口；设置 chrome 跟布局档 | `packages/frontend/client/app-frame`（`AppFrame`）                                                      | 栖息地 RPC（Feature RPC）              |
+| 栖息地 UI    | 壳内嵌（普通功能）               | `packages/frontend/features/habitat` + `packages/habitat/features/habitat`（UI + `plugin.habitat.rpc`） | 栖息地 RPC（WS + HTTP POST `/rpc/v1`） |
+| 伴侣宿主     | 浮层 WebView-host（第一方）      | `packages/frontend/features/companion/`（spa attach；薄壳 IPC/FS）                                      | 栖息地 RPC + `remote_tools.attach`     |
+| Coding 宿主  | 独立前哨窗（第一方）             | `packages/frontend/features/coding/`（spa attach；开发机 FS/终端）                                      | 栖息地 RPC + `remote_tools.attach`     |
 
 导航与主布局**必须**使用 `useLayoutMode()` / 视口断点（布局维）。**禁止**用 `getShellKind()` 锁定应用布局。交互（右键菜单 / 长按 / Enter 发送）使用 `portal-sdk` 交互 API。视觉、组件、模式规范均经同一三维度适配。
 
-**边界：** `app-frame` 与主壳 `packages/{habitat,frontend}/features/*/ui` 经 `portal-sdk` + Feature RPC 到达栖息地。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于栖息地无法拨号的本地应用（今日：伴侣浮层 + **Coding 前哨窗**；壳只提供窗口/IPC/FS；**无** Node sidecar）。**主壳产品模块**（聊天室、任务、设置、…）**不** attach；**前哨窗可以既是 UI 又是手**。可拨号对等方用 **MCP**。见 [`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)、[`coding.md`](../modules/coding.md)。
+**边界：** `app-frame` 与主壳 `packages/frontend/features/*/ui` 经 `portal-sdk` + Feature RPC 到达栖息地。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于栖息地无法拨号的本地应用（今日：伴侣浮层 + **Coding 前哨窗**；壳只提供窗口/IPC/FS；**无** Node sidecar）。**主壳产品模块**（聊天室、任务、设置、…）**不** attach；**前哨窗可以既是 UI 又是手**。可拨号对等方用 **MCP**。见 [`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)、[`coding.md`](../modules/coding.md)。
 
 ### 编码工作台（跨机前哨）
 
@@ -497,7 +497,7 @@ settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
 桌面伴侣是**不可达本地应用**，**主动连接**栖息地并在**第一方伴侣浮层**（`embedded-overlay`；壳只提供窗口/IPC/FS——**不是** Node sidecar）注册远程工具，边界拆分如下：
 
-| 关切                                | 栖息地（`packages/{habitat,frontend}/features/companion/`）             | 本机安装                                          |
+| 关切                                | 栖息地（`packages/habitat/features/companion/`）                        | 本机安装                                          |
 | ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------- |
 | 行为、槽位、活跃模型                | 运行时 `companion` 段（模块配置）+ 栖息地 RPC                           | 缓存在 `~/.anima/companion/config.json`           |
 | VRM / VRMA 库                       | `object_file_id` → 对象存储（运行时 `object_storage`）；非本机磁盘 SSOT | 经 `object_storage.file.get` / `sync.pull` 懒下载 |
