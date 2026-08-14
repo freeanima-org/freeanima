@@ -8,7 +8,10 @@ import {
   type AppBottomNavDensity,
 } from "./app-bottom-nav-layout.ts";
 
-export function useAppBottomNavLayout(items: AppNavItem[]): {
+export function useAppBottomNavLayout(
+  items: AppNavItem[],
+  maxBarCount?: number | null,
+): {
   bar: AppNavItem[];
   more: AppNavItem[];
   density: AppBottomNavDensity;
@@ -29,7 +32,13 @@ export function useAppBottomNavLayout(items: AppNavItem[]): {
   }, []);
 
   return useMemo(
-    () => layoutAppBottomNav(items, viewportWidth, safeAreaHorizontal),
-    [items, safeAreaHorizontal, viewportWidth],
+    () =>
+      layoutAppBottomNav(
+        items,
+        viewportWidth,
+        safeAreaHorizontal,
+        maxBarCount == null ? undefined : { maxBarCount },
+      ),
+    [items, maxBarCount, safeAreaHorizontal, viewportWidth],
   );
 }

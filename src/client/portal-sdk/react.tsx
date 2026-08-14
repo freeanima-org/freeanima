@@ -29,6 +29,10 @@ export {
   useShellModuleVisibility,
 } from "./shell-module-visibility-react.tsx";
 export { useSetShellModuleOrder, useShellModuleOrder } from "./shell-module-order-react.tsx";
+export {
+  useSetShellModulePrimaryCount,
+  useShellModulePrimaryCount,
+} from "./shell-module-primary-count-react.tsx";
 export { useColorTheme, useSetColorTheme } from "./color-theme-react.tsx";
 export { useChatLlmDebugEnabled, useSetChatLlmDebugEnabled } from "./chat-prefs-react.tsx";
 export { useNetworkOnline } from "./use-network-status.ts";

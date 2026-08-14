@@ -4,6 +4,7 @@ import type { AppNavItem } from "./app-nav-i18n.ts";
 import {
   layoutAppBottomNav,
   layoutAppBottomNavItems,
+  resolveAppBottomNavMaxBarCount,
   APP_BOTTOM_NAV_MIN_ICON_PER_ITEM_PX,
   APP_BOTTOM_NAV_MIN_LABEL_PER_ITEM_PX,
 } from "./app-bottom-nav-layout.ts";
@@ -88,6 +89,38 @@ describe("layoutAppBottomNavItems", () => {
     expect(result.more.length).toBeGreaterThan(0);
     expect(result.bar.length).toBeGreaterThanOrEqual(1);
     expect(result.bar.length + result.more.length).toBe(11);
+  });
+
+  it("maxBarCount 可强制把后缀收进 More（即使宽度可满铺）", () => {
+    const result = layoutAppBottomNavItems(elevenItems, 390, { maxBarCount: 5 });
+    expect(result.bar).toEqual(elevenItems.slice(0, 5));
+    expect(result.more).toEqual(elevenItems.slice(5));
+    expect(result.density).toBe("label");
+  });
+
+  it("maxBarCount 不大于宽度结果时不改变布局", () => {
+    const without = layoutAppBottomNavItems(elevenItems, 320);
+    const withCap = layoutAppBottomNavItems(elevenItems, 320, {
+      maxBarCount: without.bar.length + 2,
+    });
+    expect(withCap).toEqual(without);
+  });
+});
+
+describe("resolveAppBottomNavMaxBarCount", () => {
+  it("可满铺时等于项数", () => {
+    expect(resolveAppBottomNavMaxBarCount(390, 11)).toBe(11);
+  });
+
+  it("需 More 时与 split 算法一致且至少 1", () => {
+    const max = resolveAppBottomNavMaxBarCount(320, 11);
+    const layout = layoutAppBottomNavItems(elevenItems, 320);
+    expect(max).toBe(layout.bar.length);
+    expect(max).toBeGreaterThanOrEqual(1);
+  });
+
+  it("极窄时至少 1", () => {
+    expect(resolveAppBottomNavMaxBarCount(50, 11)).toBe(1);
   });
 });
 
