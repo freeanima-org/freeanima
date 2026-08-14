@@ -1,6 +1,14 @@
 import { describe, expect, test } from "bun:test";
 
-import { formatDateTime, formatDueChip, formatRemindChip } from "./datetime-local.ts";
+import {
+  addDaysToDateLocal,
+  addMonthsToDateLocal,
+  dateLocalPresets,
+  formatDateTime,
+  formatDueChip,
+  formatRemindChip,
+  parseDateLocalValue,
+} from "./datetime-local.ts";
 
 describe("formatDateTime", () => {
   test("empty shows em dash", () => {
@@ -51,5 +59,39 @@ describe("formatRemindChip", () => {
     expect(formatRemindChip(at.toISOString())).toBe(
       `${at.getMonth() + 1}月${at.getDate()}日 09:30`,
     );
+  });
+});
+
+describe("parseDateLocalValue / addDays / addMonths", () => {
+  test("parse valid and reject invalid", () => {
+    const d = parseDateLocalValue("2026-01-31");
+    expect(d?.getFullYear()).toBe(2026);
+    expect(d?.getMonth()).toBe(0);
+    expect(d?.getDate()).toBe(31);
+    expect(parseDateLocalValue("2026-02-30")).toBeNull();
+    expect(parseDateLocalValue("nope")).toBeNull();
+  });
+
+  test("addDaysToDateLocal", () => {
+    expect(addDaysToDateLocal("2026-01-31", 1)).toBe("2026-02-01");
+    expect(addDaysToDateLocal("2026-01-01", 7)).toBe("2026-01-08");
+  });
+
+  test("addMonthsToDateLocal clamps overflow", () => {
+    expect(addMonthsToDateLocal("2026-01-31", 1)).toBe("2026-02-28");
+    expect(addMonthsToDateLocal("2024-01-31", 1)).toBe("2024-02-29");
+    expect(addMonthsToDateLocal("2026-03-31", 1)).toBe("2026-04-30");
+  });
+});
+
+describe("dateLocalPresets", () => {
+  test("labels and relative offsets from today", () => {
+    const presets = dateLocalPresets();
+    expect(presets.map((p) => p.id)).toEqual(["today", "tomorrow", "next_week", "next_month"]);
+    expect(presets.map((p) => p.label)).toEqual(["今天", "明天", "下周", "下个月"]);
+    const today = presets[0]!.value;
+    expect(presets[1]!.value).toBe(addDaysToDateLocal(today, 1));
+    expect(presets[2]!.value).toBe(addDaysToDateLocal(today, 7));
+    expect(presets[3]!.value).toBe(addMonthsToDateLocal(today, 1));
   });
 });
