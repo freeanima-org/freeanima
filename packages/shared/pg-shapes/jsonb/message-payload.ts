@@ -26,12 +26,35 @@ const messageBaseSchema = z.object({
   timestamp: z.string().optional(),
 });
 
+/** 用户消息附件元数据（字节在 Habitat 临时目录，不进 JSONB） */
+export const messageAttachmentMetaSchema = z.object({
+  filename: z.string().min(1),
+  mime_type: z.string().min(1),
+  size: z.number().int().nonnegative(),
+});
+
+export type MessageAttachmentMeta = z.infer<typeof messageAttachmentMetaSchema>;
+
+/**
+ * 仅 runtime 喂 vision：勿持久化进 PG（appendMessage 会剥掉）。
+ * OpenAI/Anthropic adapter 读此字段展开为 image parts。
+ */
+export const messageContentMediaSchema = z.object({
+  type: z.literal("image"),
+  mime_type: z.string().min(1),
+  data_base64: z.string().min(1),
+});
+
+export type MessageContentMedia = z.infer<typeof messageContentMediaSchema>;
+
 export const userPayloadSchema = messageBaseSchema.extend({
   role: z.literal("user"),
   content: z.string(),
   name: z.string().optional(),
   /** 客户端 outbox 幂等键（Habitat 写 RPC / Stream outbox 约定 client_op_id） */
   client_op_id: z.string().optional(),
+  attachments: z.array(messageAttachmentMetaSchema).optional(),
+  content_media: z.array(messageContentMediaSchema).optional(),
 });
 
 export const systemPayloadSchema = messageBaseSchema.extend({

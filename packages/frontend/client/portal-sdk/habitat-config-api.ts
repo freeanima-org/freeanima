@@ -122,6 +122,7 @@ export type HabitatProviderModelEntry = {
   contextWindow: number;
   maxOutputTokens: number;
   cost?: { input?: number; output?: number };
+  inputModalities?: Array<"text" | "image" | "audio" | "video" | "pdf">;
 };
 
 export type HabitatListProviderModelsResult = {

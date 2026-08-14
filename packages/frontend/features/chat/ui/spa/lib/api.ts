@@ -228,6 +228,8 @@ export function subscribeMessageStream(
     clientOpId?: string;
     expectedTailPos?: number;
     forceTail?: boolean;
+    attachmentTempIds?: string[];
+    attachments?: Array<{ filename: string; mime_type: string; size: number }>;
   },
   callbacks: SubscribeCallbacks<StreamApiEvent>,
 ): { unsubscribe: () => void } {

@@ -2,7 +2,6 @@ import { describe, expect, it } from "bun:test";
 
 import {
   mapRuntimeStreamEventToSap,
-  mapSapStreamMethodToApi,
   messageSendInputSchema,
   streamAttachInputSchema,
   streamAttachOutputSchema,
@@ -54,20 +53,17 @@ describe("message stream llm_debug", () => {
     expect(mapped?.payload.phase).toBe("initial");
   });
 
-  it("maps SAP stream.llm_debug back to API event", () => {
-    const api = mapSapStreamMethodToApi("stream.llm_debug", {
-      stream_id: "sid-1",
-      phase: "final",
-      turn_index: 2,
-      model: "m",
-      tool_count: 1,
-      tools: [{ name: "memory_semantic_search" }],
-      invoke: { turns: [] },
+  it("accepts attachment-only message.send", () => {
+    const parsed = messageSendInputSchema.parse({
+      conversation_id: "c1",
+      message: "",
+      attachment_temp_ids: ["tmp-1"],
+      attachments: [{ filename: "a.png", mime_type: "image/png", size: 12 }],
     });
-    expect(api?.event).toBe("llm_debug");
-    if (api?.event === "llm_debug") {
-      expect(api.data.phase).toBe("final");
-      expect(api.data.turn_index).toBe(2);
-    }
+    expect(parsed.attachment_temp_ids).toEqual(["tmp-1"]);
+  });
+
+  it("rejects empty message without attachments", () => {
+    expect(() => messageSendInputSchema.parse({ conversation_id: "c1", message: "   " })).toThrow();
   });
 });

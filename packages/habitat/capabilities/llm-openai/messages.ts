@@ -32,7 +32,28 @@ function sanitizeTurnForApi(
 ): ChatCompletionMessageParam {
   switch (msg.role) {
     case "user": {
-      const out: ChatCompletionMessageParam = { role: "user", content: msg.content };
+      const media = msg.content_media?.filter((m) => m.type === "image") ?? [];
+      if (media.length === 0) {
+        const out: ChatCompletionMessageParam = { role: "user", content: msg.content };
+        if (msg.name) (out as { name?: string }).name = msg.name;
+        return out;
+      }
+      const parts: Array<
+        { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+      > = [];
+      if (msg.content.trim()) {
+        parts.push({ type: "text", text: msg.content });
+      }
+      for (const m of media) {
+        parts.push({
+          type: "image_url",
+          image_url: { url: `data:${m.mime_type};base64,${m.data_base64}` },
+        });
+      }
+      if (parts.length === 0) {
+        parts.push({ type: "text", text: msg.content || "(附件)" });
+      }
+      const out: ChatCompletionMessageParam = { role: "user", content: parts };
       if (msg.name) (out as { name?: string }).name = msg.name;
       return out;
     }

@@ -1,7 +1,12 @@
 import type { Model } from "@opencode-ai/models";
 import type { LlmPresetId } from "@freeanima/habitat/core/config/schemas/llm-config";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import type { ModelInfo, SupportedParam } from "@freeanima/habitat/core/provider";
+import {
+  MODEL_INPUT_MODALITIES,
+  type ModelInfo,
+  type ModelInputModality,
+  type SupportedParam,
+} from "@freeanima/habitat/core/provider";
 
 import { loadModelsDevProviders } from "./client.ts";
 import {
@@ -68,6 +73,19 @@ export function mergeModelInfoWithModelsDev(
   const fromMdParams = supportedParamsFromModelsDev(entry);
   const supportedParams = fromMdParams ?? base.supportedParams;
 
+  const modalitiesIn = entry.modalities?.input;
+  const supportsVision =
+    Array.isArray(modalitiesIn) && modalitiesIn.includes("image")
+      ? true
+      : Array.isArray(modalitiesIn)
+        ? false
+        : base.supportsVision;
+
+  const known = new Set<string>(Array.isArray(modalitiesIn) ? modalitiesIn : []);
+  const inputModalities: ModelInputModality[] | undefined = Array.isArray(modalitiesIn)
+    ? MODEL_INPUT_MODALITIES.filter((m) => known.has(m))
+    : base.inputModalities;
+
   return omitUndefined({
     model: base.model,
     contextWindow,
@@ -75,6 +93,8 @@ export function mergeModelInfoWithModelsDev(
     label: entry.name || base.label || undefined,
     cost: cost && (cost.input != null || cost.output != null) ? cost : undefined,
     supportedParams,
+    supportsVision,
+    inputModalities: inputModalities?.length ? inputModalities : undefined,
   });
 }
 

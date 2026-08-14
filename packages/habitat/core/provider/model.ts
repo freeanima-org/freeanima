@@ -33,6 +33,10 @@ export type ModelCostInfo = {
   output?: number;
 };
 
+/** models.dev `modalities.input` 子集（固定展示顺序）。 */
+export const MODEL_INPUT_MODALITIES = ["text", "image", "audio", "video", "pdf"] as const;
+export type ModelInputModality = (typeof MODEL_INPUT_MODALITIES)[number];
+
 export type ModelInfo = {
   model: string;
   contextWindow: number;
@@ -41,6 +45,13 @@ export type ModelInfo = {
   label?: string;
   /** USD per 1M tokens when known (e.g. models.dev enrich). */
   cost?: ModelCostInfo;
+  /**
+   * 是否支持图像输入。undefined = 未知（允许尝试，由上游报错）。
+   * false = 明确不支持（发送图片时应拒绝）。
+   */
+  supportsVision?: boolean;
+  /** 已知输入模态；缺省 = 未知（勿臆造「仅文字」）。 */
+  inputModalities?: ModelInputModality[];
 };
 
 export function modelSupports(info: ModelInfo, key: SupportedParam): boolean {

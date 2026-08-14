@@ -118,6 +118,7 @@ const configListProviderModelsOutputSchema = z.object({
           output: z.number().optional(),
         })
         .optional(),
+      inputModalities: z.array(z.enum(["text", "image", "audio", "video", "pdf"])).optional(),
     }),
   ),
   source: z.enum(["provider", "models_dev"]),

@@ -1,5 +1,7 @@
 export {
   assistantPayloadSchema,
+  messageAttachmentMetaSchema,
+  messageContentMediaSchema,
   messagePayloadSchema,
   messageUsageSchema,
   openAiFunctionSchema,
@@ -10,6 +12,8 @@ export {
   userPayloadSchema,
   type ConversationPayload,
   type LlmTurnMessage,
+  type MessageAttachmentMeta,
+  type MessageContentMedia,
   type MessagePayload,
   type OpenAiToolSchema,
   type ToolCall,

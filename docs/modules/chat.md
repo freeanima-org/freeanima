@@ -37,11 +37,22 @@ pending`）。
 
 `message.send` 可选字段：
 
-| 字段                | 说明                                 |
-| ------------------- | ------------------------------------ |
-| `client_op_id`      | 幂等键；重复请求不重复写入 user 消息 |
-| `expected_tail_pos` | 发送时观测的 `max(pos)`，空会话为 0  |
-| `force_tail`        | 跳过 CAS，追加到当前末尾             |
+| 字段                  | 说明                                 |
+| --------------------- | ------------------------------------ |
+| `client_op_id`        | 幂等键；重复请求不重复写入 user 消息 |
+| `expected_tail_pos`   | 发送时观测的 `max(pos)`，空会话为 0  |
+| `force_tail`          | 跳过 CAS，追加到当前末尾             |
+| `attachment_temp_ids` | 本 turn 临时附件 id（不入 payload）  |
+| `attachments`         | 附件元数据（filename / mime / size） |
+
+## 多模态附件（临时文件）
+
+- 上传：`chat.attachment.upload`（multipart）→ `FREEANIMA_HOME/tmp/chat-attachments/`
+- 字节**不**进 object_storage / messages JSONB；payload 只存元数据
+- 本 turn：图片以 provider 原生 vision parts 注入；后续用户 turn **不**重传像素
+- 无 vision 模型且含图：中文错误提示
+- Coding 与 Chat 共用 `ComposeAttachmentStrip` / `ConversationTranscript` 与同一条 `message.send`
+- stream 结束后清理临时文件；未消费 temp 有 TTL
 
 `conversation.tail` 返回 `{ tail_pos, tail_role?, updated_at? }`。
 

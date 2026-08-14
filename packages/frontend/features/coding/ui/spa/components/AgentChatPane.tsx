@@ -23,6 +23,16 @@ import { toast } from "@freeanima/ui-kit/composite";
 import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { Button } from "@freeanima/ui-kit";
 
+import { ComposeAttachmentStrip } from "@freeanima/features/chat/ui/spa/components/ComposeAttachmentStrip.tsx";
+import {
+  CHAT_ATTACHMENT_MAX_BYTES,
+  createAttachmentDraft,
+  filesFromClipboard,
+  revokeAttachmentDraft,
+  revokeAttachmentDrafts,
+  uploadChatAttachmentDrafts,
+  type ChatAttachmentDraft,
+} from "@freeanima/features/chat/ui/spa/lib/attachments.ts";
 import { fetchCodingConversationHistory, fetchCodingOlderMessages } from "../lib/chat-history.ts";
 import {
   appendUserMessage,
@@ -57,6 +67,9 @@ export function AgentChatPane({
 }: Props) {
   const [thread, setThread] = useState<CodingThreadState>(() => emptyCodingThread());
   const [draft, setDraft] = useState("");
+  const [attachmentDrafts, setAttachmentDrafts] = useState<ChatAttachmentDraft[]>([]);
+  const attachmentDraftsRef = useRef(attachmentDrafts);
+  attachmentDraftsRef.current = attachmentDrafts;
   const [busy, setBusy] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
@@ -114,6 +127,8 @@ export function AgentChatPane({
     setLoadingOlder(false);
     loadingOlderRef.current = false;
     setThread(emptyCodingThread());
+    revokeAttachmentDrafts(attachmentDraftsRef.current);
+    setAttachmentDrafts([]);
     setSlashResult(null);
     setDebugViewerOpen(false);
     setLlmDebugSnapshots(null);
@@ -254,43 +269,83 @@ export function AgentChatPane({
     }
   };
 
-  const send = async (text: string) => {
+  const addFiles = (fileList: FileList | File[]) => {
+    const next: ChatAttachmentDraft[] = [];
+    for (const file of Array.from(fileList)) {
+      if (file.size > CHAT_ATTACHMENT_MAX_BYTES) {
+        toast(`附件过大：${file.name}`, { duration: 4000 });
+        continue;
+      }
+      next.push(createAttachmentDraft(file));
+    }
+    if (next.length > 0) setAttachmentDrafts((prev) => [...prev, ...next]);
+  };
+
+  const send = async (text: string, drafts: ChatAttachmentDraft[] = []) => {
     const message = text.trim();
-    if (!message || busy || disabled || historyLoading) return;
+    if ((!message && drafts.length === 0) || busy || disabled || historyLoading) return;
     setDraft("");
+    const pendingDrafts = drafts.slice();
+    setAttachmentDrafts([]);
     setError(null);
     setSelectedCmdIdx(0);
-    onTitleHint?.(message);
+    if (message) onTitleHint?.(message);
 
     let cid = conversationIdRef.current;
     if (!cid) {
       setBusy(true);
       try {
-        cid = await onNeedConversation(message);
+        cid = await onNeedConversation(message || "(附件)");
       } catch (e) {
         setBusy(false);
         setError(e instanceof Error ? e.message : String(e));
         setDraft(message);
+        setAttachmentDrafts(pendingDrafts);
         return;
       }
       if (!cid) {
         setBusy(false);
         setError("无法创建 Habitat 对话（检查 Outpost / Token）");
         setDraft(message);
+        setAttachmentDrafts(pendingDrafts);
         return;
       }
       setBusy(false);
     }
 
-    if (message.startsWith("/")) {
+    if (message.startsWith("/") && pendingDrafts.length === 0) {
       setBusy(true);
       const done = await runSlashThenMaybeSend(cid, message);
       setBusy(false);
       if (done) return;
     }
 
+    let attachmentTempIds: string[] | undefined;
+    let attachments: Array<{ filename: string; mime_type: string; size: number }> | undefined;
+    let previewAttachments:
+      | Array<{ filename: string; mime_type: string; size: number; previewUrl?: string }>
+      | undefined;
+    if (pendingDrafts.length > 0) {
+      try {
+        const uploaded = await uploadChatAttachmentDrafts(pendingDrafts);
+        attachmentTempIds = uploaded.tempIds;
+        attachments = uploaded.attachments;
+        previewAttachments = pendingDrafts.map((d, i) => ({
+          filename: uploaded.attachments[i]?.filename ?? d.filename,
+          mime_type: uploaded.attachments[i]?.mime_type ?? d.mime_type,
+          size: uploaded.attachments[i]?.size ?? d.size,
+          ...(d.previewUrl ? { previewUrl: d.previewUrl } : {}),
+        }));
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+        setDraft(message);
+        setAttachmentDrafts(pendingDrafts);
+        return;
+      }
+    }
+
     setBusy(true);
-    setThread((prev) => appendUserMessage(prev, message));
+    setThread((prev) => appendUserMessage(prev, message, previewAttachments));
 
     unsubRef.current?.();
     const client = getCodingStreamClient();
@@ -299,6 +354,8 @@ export function AgentChatPane({
         conversationId: cid,
         message,
         ...(llmDebugEnabled ? { llmDebug: true } : {}),
+        ...(attachmentTempIds?.length ? { attachmentTempIds } : {}),
+        ...(attachments?.length ? { attachments } : {}),
       },
       {
         onData: (ev: StreamApiLikeEvent) => {
@@ -363,7 +420,7 @@ export function AgentChatPane({
     }
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      void send(draft);
+      void send(draft, attachmentDraftsRef.current.slice());
     }
   };
 
@@ -396,11 +453,25 @@ export function AgentChatPane({
           ))}
         </ul>
       ) : null}
+      <ComposeAttachmentStrip
+        drafts={attachmentDrafts}
+        disabled={disabled || busy}
+        onAddFiles={addFiles}
+        onRemove={(localId) => {
+          setAttachmentDrafts((prev) => {
+            const hit = prev.find((d) => d.localId === localId);
+            if (hit) revokeAttachmentDraft(hit);
+            return prev.filter((d) => d.localId !== localId);
+          });
+        }}
+        className="coding-attach-strip mb-2"
+        buttonClassName="coding-btn coding-btn-ghost h-7 px-2"
+      />
       <form
         className="coding-chat-compose"
         onSubmit={(e) => {
           e.preventDefault();
-          void send(draft);
+          void send(draft, attachmentDraftsRef.current.slice());
         }}
       >
         <textarea
@@ -408,17 +479,25 @@ export function AgentChatPane({
           rows={hero ? 3 : 2}
           value={draft}
           disabled={disabled || busy}
-          placeholder={placeholder ?? (hero ? "交给 Agent…（/ 打开命令）" : "继续对话…")}
+          placeholder={
+            placeholder ?? (hero ? "交给 Agent…（/ 打开命令；可粘贴图片）" : "继续对话…")
+          }
           onChange={(e) => {
             setDraft(e.target.value);
             setSelectedCmdIdx(0);
+          }}
+          onPaste={(e) => {
+            const files = filesFromClipboard(e.nativeEvent);
+            if (files.length === 0) return;
+            e.preventDefault();
+            addFiles(files);
           }}
           onKeyDown={onInputKeydown}
         />
         <button
           type="submit"
           className="coding-btn coding-btn-primary"
-          disabled={disabled || busy || !draft.trim()}
+          disabled={disabled || busy || (!draft.trim() && attachmentDrafts.length === 0)}
         >
           发送
         </button>

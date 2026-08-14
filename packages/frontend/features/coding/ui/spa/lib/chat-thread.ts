@@ -36,12 +36,17 @@ function asDisplayItem(raw: unknown): DisplayItem | null {
   if (!raw || typeof raw !== "object") return null;
   const item = raw as { type?: string };
   if (item.type === "message") {
-    const m = raw as { role?: string; content?: unknown };
+    const m = raw as {
+      role?: string;
+      content?: unknown;
+      attachments?: Array<{ filename: string; mime_type: string; size: number }>;
+    };
     if (m.role !== "user" && m.role !== "assistant") return null;
     return {
       type: "message",
       role: m.role,
       content: typeof m.content === "string" ? m.content : coerceString(m.content),
+      ...(m.attachments?.length ? { attachments: m.attachments } : {}),
     };
   }
   if (item.type === "tool_block") {
@@ -148,13 +153,23 @@ export function applyCodingStreamEvent(
   }
 }
 
-export function appendUserMessage(state: CodingThreadState, content: string): CodingThreadState {
+export function appendUserMessage(
+  state: CodingThreadState,
+  content: string,
+  attachments?: Array<{
+    filename: string;
+    mime_type: string;
+    size: number;
+    previewUrl?: string;
+  }>,
+): CodingThreadState {
   return {
     ...state,
     display: upsertDisplayItem(state.display, {
       type: "message",
       role: "user",
       content,
+      ...(attachments?.length ? { attachments } : {}),
     }),
     streamText: "",
     streaming: true,

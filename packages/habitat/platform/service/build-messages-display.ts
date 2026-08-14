@@ -5,6 +5,7 @@ import type {
   DisplayToolBlockItem,
 } from "@freeanima/habitat/platform/schemas/display";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 
 function parseArgs(raw: string): Record<string, unknown> {
   try {
@@ -40,9 +41,22 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
   for (const msg of all) {
     const role = msg.role;
 
-    if (role === "user" && msg.content) {
+    if ((role === "user" && msg.content) || (role === "user" && msg.attachments?.length)) {
       flushPendingBlock();
-      display.push({ type: "message", role: "user", content: msg.content });
+      display.push(
+        omitUndefined({
+          type: "message" as const,
+          role: "user" as const,
+          content: msg.content ?? "",
+          attachments: msg.attachments?.length
+            ? msg.attachments.map((a) => ({
+                filename: a.filename,
+                mime_type: a.mime_type,
+                size: a.size,
+              }))
+            : undefined,
+        }),
+      );
       continue;
     }
 
