@@ -2,6 +2,7 @@ export function layerOf(rel: string): string {
   if (rel.startsWith("src/ui-kit/")) return "ui-kit";
   if (rel.startsWith("src/client/") || rel.startsWith("src/frontend/")) return "client";
   if (rel.startsWith("src/shared/")) return "shared";
+  if (rel.startsWith("src/host/kernel/")) return "host-kernel";
   if (rel.startsWith("src/host/")) return "host";
   if (rel.startsWith("src/features/")) {
     if (rel.includes("/ui/")) return "feature-ui";
@@ -18,9 +19,10 @@ export function targetLayer(spec: string): string | null {
   if (rest.startsWith("ui-kit") || rest.startsWith("frontend/ui-kit")) return "ui-kit";
   if (rest.startsWith("client/") || rest.startsWith("frontend/")) return "client";
   if (rest.startsWith("shared/")) return "shared";
+  if (rest.startsWith("host/kernel") || rest === "host/kernel") return "host-kernel";
   if (rest.startsWith("host/")) return "host";
+  if (rest.startsWith("kernel/") || rest === "kernel") return "host-kernel";
   if (
-    rest.startsWith("kernel") ||
     rest.startsWith("core") ||
     rest.startsWith("runtime") ||
     rest.startsWith("capabilities") ||
@@ -55,7 +57,11 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
 
   if (!to) return null;
 
-  if (from === "shared" && to === "host") {
+  if (from === "host-kernel" && to !== "host-kernel" && to !== "shared") {
+    return "host/kernel 仅可依赖 kernel 与 shared（无产品 config 段 / 其它 host 层）";
+  }
+
+  if (from === "shared" && (to === "host" || to === "host-kernel")) {
     return "shared 不得 import host（纯工具/Zod 须落在 shared）";
   }
 
@@ -73,7 +79,7 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
     return null;
   }
 
-  if (from === "host" && (to === "client" || to === "ui-kit")) {
+  if ((from === "host" || from === "host-kernel") && (to === "client" || to === "ui-kit")) {
     if (
       rel.endsWith("platform/habitat/client.ts") ||
       rel.endsWith("platform/habitat/feature-method-defs.ts") ||
@@ -88,7 +94,10 @@ export function checkLayerDeps(rel: string, spec: string): string | null {
     return "shared 不得 import ui-kit/client（须无 React）";
   }
 
-  if (from === "ui-kit" && (to === "feature-ui" || to === "feature-server" || to === "host")) {
+  if (
+    from === "ui-kit" &&
+    (to === "feature-ui" || to === "feature-server" || to === "host" || to === "host-kernel")
+  ) {
     return "ui-kit 不得 import features/host";
   }
   if (

@@ -90,20 +90,21 @@ portal = 形态薄入口（拆入两包）；client = portal-sdk + app-frame（f
 ## 现状张力（落地前）
 
 1. 根单包混装前后端 dependencies
-2. oxlint 仍把整棵 `host/` 当一层（P1 已拦 `shared→host` 与 frontend→`host/core/db`）
+2. oxlint：`host/kernel` 已拆为 `host-kernel` 叶层（仅可依赖 kernel + shared）；其余 `host/*` 仍整棵为一层
 3. ~~部分 UI 值导入 `host/core/db/schema` barrel~~（P1 已剪；纯 Zod/常量在 `shared/{db-shapes,entity-shapes}`）
 4. ~~`shared` 内混有 DOM 与 `node:fs` 入口~~（P1：默认无 DOM；`*-browser` / `*-node` 分入口）
 5. ~~存储 Zod 与 rpc-contract 平行手写易漂移~~（P2：`just db shapes` codegen + rpc-contract 组合 `pg-shapes`）
+6. ~~config 机制混在 core/platform~~（P3：`host/kernel/config-mechanism` + `registerSection`）
 
 ## 分阶段任务（风巢 17683）
 
-| 阶段 | 任务   | 要点                                                                                 |
-| ---- | ------ | ------------------------------------------------------------------------------------ |
-| P0   | #17722 | 本文档 + 死链/rules 方向对齐；收束 #17713                                            |
-| P1   | #17723 | **已落地**：剪 shared→host、frontend→db；oxlint；`just qa check-frontend-no-drizzle` |
-| P2   | #17724 | **已落地**：`createSelectSchema` → `just db shapes` 纯 Zod → `shared/pg-shapes`      |
-| P3   | #17725 | config 机制进 kernel                                                                 |
-| P4   | #17726 | 纯 loop 进 kernel                                                                    |
-| P5   | #17727 | 三 workspace 包 + portal 拆入                                                        |
+| 阶段 | 任务   | 要点                                                                                            |
+| ---- | ------ | ----------------------------------------------------------------------------------------------- |
+| P0   | #17722 | 本文档 + 死链/rules 方向对齐；收束 #17713                                                       |
+| P1   | #17723 | **已落地**：剪 shared→host、frontend→db；oxlint；`just qa check-frontend-no-drizzle`            |
+| P2   | #17724 | **已落地**：`createSelectSchema` → `just db shapes` 纯 Zod → `shared/pg-shapes`                 |
+| P3   | #17725 | **已落地**：config 机制进 `host/kernel/config-mechanism`；产品段 Zod/apply 经 `registerSection` |
+| P4   | #17726 | 纯 loop 进 kernel                                                                               |
+| P5   | #17727 | 三 workspace 包 + portal 拆入                                                                   |
 
 依赖：P0→P1→P2→P5；P3/P4 可在 P0 后并行，再汇入 P5。
