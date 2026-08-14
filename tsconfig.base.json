@@ -21,7 +21,7 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "types": ["bun"],
+    "types": ["bun", "bun-plugin-dir-import"],
     "paths": {
       "@freeanima/shared": ["./packages/shared/index.ts"],
       "@freeanima/shared/*": ["./packages/shared/*"],

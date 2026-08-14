@@ -1,5 +1,5 @@
 # `dir:` namespace（migrations-dir-import 等）
-preload = ["./scripts/preload-dir-import.ts"]
+preload = ["bun-plugin-dir-import/preload"]
 
 [install]
 linker = "isolated"
@@ -12,7 +12,7 @@ globalStore = true
 coverageReporter = ["lcov"]
 coverageDir = "coverage"
 coverageThreshold = 0
-preload = ["./scripts/preload-dir-import.ts"]
+preload = ["bun-plugin-dir-import/preload"]
 
 coveragePathIgnorePatterns = [
   "**/node_modules/**",

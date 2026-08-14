@@ -26,6 +26,7 @@
         "drizzle-kit": "^1.0.0-rc.4",
         "drizzle-orm": "^1.0.0-rc.4",
         "esbuild": "^0.28.1",
+        "bun-plugin-dir-import": "github:running-grass/bun-plugin-dir-import#v0.1.5",
         "husky": "^9.1.7",
         "jszip": "^3.10.1",
         "oxfmt": "^0.62.0",
@@ -1438,6 +1439,8 @@
     "buffer": ["buffer@6.0.3", "https://registry.npmmirror.com/buffer/-/buffer-6.0.3.tgz", { "dependencies": { "base64-js": "^1.3.1", "ieee754": "^1.2.1" } }, "sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA=="],
 
     "buffer-from": ["buffer-from@1.1.2", "https://registry.npmmirror.com/buffer-from/-/buffer-from-1.1.2.tgz", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
+
+    "bun-plugin-dir-import": ["bun-plugin-dir-import@github:running-grass/bun-plugin-dir-import#78b6cad", { "peerDependencies": { "oxlint": ">=1" }, "optionalPeers": ["oxlint"] }, "running-grass-bun-plugin-dir-import-78b6cad", "sha512-kuUfCvKRD8oBKcjen/Qe+ED394NUJCb/xhkFEoPmhZ1DVEazCc2T4XEcXfl8KK1DHg1WofLovVx7sZfxpAJPnw=="],
 
     "bun-types": ["bun-types@1.3.14", "https://registry.npmmirror.com/bun-types/-/bun-types-1.3.14.tgz", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 

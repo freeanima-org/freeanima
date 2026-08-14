@@ -60,6 +60,6 @@ MCP 在 `packages/habitat/capabilities/mcp-server`。Habitat 管理台 = `featur
 ## 护栏
 
 - 根 `.oxlintrc.json` SSOT + `overrides` 按 `packages/frontend/**` 目录覆写；跨层靠 `layer-deps`
-- oxlint `freeanima/import-depth` / `layer-deps` / `dir-import-exists`
+- oxlint `freeanima/import-depth` / `layer-deps`；`dir-import/dir-import-exists`（`bun-plugin-dir-import`）
 - `just qa check-package-deps`
 - 文档站：`cd site && bun run build`（先根 `bun install`）
