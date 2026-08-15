@@ -4,17 +4,27 @@ export const TOOL_SET_LOAD_TOOL_NAME = "toolset_load";
 export const TOOL_SET_UNLOAD_TOOL_NAME = "toolset_unload";
 export const TOOL_SET_SEARCH_TOOL_NAME = "toolset_search";
 
-/** Monolithic ToolSet names from before task/email split — expand when resolving cached meta */
-const LEGACY_TOOLSET_EXPANSION: Record<string, readonly string[]> = {
-  task: ["task", "tasklist"],
-  email: ["email", "email-account"],
+/** Legacy ToolSet names → canonical set after consolidation */
+const LEGACY_TOOLSET_ALIASES: Record<string, string> = {
+  task: "agenda",
+  tasklist: "agenda",
+  project: "agenda",
+  calendar: "agenda",
+  "email-account": "email",
+  note: "content",
+  diary: "content",
+  "content-block": "content",
+  memory_semantic: "memory",
+  code: "shell",
+  terminal: "shell",
+  tag: "entity",
 };
 
-function expandLegacyToolSetNames(registry: ToolSetRegistry, toolset: string): string[] {
-  const siblings = LEGACY_TOOLSET_EXPANSION[toolset];
-  if (!siblings) return [toolset];
-  const expanded = siblings.filter((name) => registry.getToolSet(name) != null);
-  return expanded.length > 0 ? expanded : [toolset];
+function canonicalizeToolSetName(registry: ToolSetRegistry, toolset: string): string {
+  const aliased = LEGACY_TOOLSET_ALIASES[toolset] ?? toolset;
+  if (registry.getToolSet(aliased) != null) return aliased;
+  if (registry.getToolSet(toolset) != null) return toolset;
+  return aliased;
 }
 
 /** Resolve a registry tool name to its owning ToolSet */
@@ -58,15 +68,18 @@ export function resolveToolSetNames(registry: ToolSetRegistry, names: readonly s
     if (!item) continue;
     let toolset = registry.getToolSet(item)?.name ?? null;
     if (!toolset) {
+      const aliased = canonicalizeToolSetName(registry, item);
+      toolset = registry.getToolSet(aliased)?.name ?? null;
+    }
+    if (!toolset) {
       toolset = toolSetForTool(registry, item);
     }
-    if (!toolset || seen.has(toolset)) continue;
-    const expanded = expandLegacyToolSetNames(registry, toolset);
-    for (const name of expanded) {
-      if (seen.has(name)) continue;
-      seen.add(name);
-      out.push(name);
-    }
+    if (!toolset) continue;
+    toolset = canonicalizeToolSetName(registry, toolset);
+    if (seen.has(toolset)) continue;
+    if (registry.getToolSet(toolset) == null) continue;
+    seen.add(toolset);
+    out.push(toolset);
   }
   return out;
 }
@@ -79,7 +92,7 @@ export function toolNamesForToolSets(
   const out: string[] = [];
   const seen = new Set<string>();
   for (const raw of toolsetNames) {
-    const name = raw.trim();
+    const name = canonicalizeToolSetName(registry, raw.trim());
     const set = registry.getToolSet(name);
     if (!set) continue;
     for (const def of set.tools) {

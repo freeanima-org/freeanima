@@ -87,8 +87,6 @@ export function registerMemoryServiceMcpTools(toolSets: ToolSetRegistry): void {
     "memory_service",
     "MemoryService MCP surface (#16102)",
     memoryServiceMcpToolDefs,
-    {
-      visibility: "searchable",
-    },
+    { visibility: "searchable" },
   );
 }

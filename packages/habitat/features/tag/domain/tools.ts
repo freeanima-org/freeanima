@@ -1,9 +1,10 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 
-import { registerTagTools as registerTagToolSet } from "./tag-tools.ts";
+export { buildTagToolDefs } from "./tag-tools.ts";
 
-export function registerTagTools(toolSets: ToolSetRegistry): void {
-  registerTagToolSet(toolSets);
+/** @deprecated Prefer platform `registerEntityAndTagTools` which registers the `entity` ToolSet. */
+export function registerTagTools(_toolSets: ToolSetRegistry): void {
+  // Tag tools are registered as part of the `entity` ToolSet.
 }
 
 /** 供测试重置 */

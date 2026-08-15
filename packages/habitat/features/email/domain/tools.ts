@@ -1,10 +1,12 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 
-import { registerEmailAccountTools } from "./email-account-tools.ts";
+import { buildEmailAccountToolDefs } from "./email-account-tools.ts";
 import type { EmailToolIo } from "./email-tool-helpers.ts";
-import { registerEmailMailboxTools } from "./email-mailbox-tools.ts";
+import { buildEmailMailboxToolDefs } from "./email-mailbox-tools.ts";
 
 export function registerEmailTools(toolSets: ToolSetRegistry, io: EmailToolIo): void {
-  registerEmailAccountTools(toolSets, io);
-  registerEmailMailboxTools(toolSets, io);
+  toolSets.registerToolSet("email", "Email accounts, sync, and mailbox operations", [
+    ...buildEmailAccountToolDefs(io),
+    ...buildEmailMailboxToolDefs(io),
+  ]);
 }

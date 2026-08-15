@@ -1,4 +1,3 @@
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
@@ -197,107 +196,102 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
   }
 }
 
-export function registerNoteTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet(
-    "note",
-    "Notebook notes (theme-organized containers with text content_blocks). Locate by entity id.",
-    attachToolReturns(
-      [
-        {
-          name: "note_create",
-          description:
-            "Create a note; optional first text block via content; optional tags / tag_ids.",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              title: { type: "string" },
-              content: { type: "string", description: "Optional first Markdown text block" },
-              summary: { type: "string" },
-              tags: { type: "array", items: { type: "string" } },
-              tag_ids: { type: "array", items: { type: "integer" } },
-            },
-            required: ["subject_kind", "title"],
+export function buildNoteToolDefs() {
+  return attachToolReturns(
+    [
+      {
+        name: "note_create",
+        description:
+          "Create a note; optional first text block via content; optional tags / tag_ids.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            title: { type: "string" },
+            content: { type: "string", description: "Optional first Markdown text block" },
+            summary: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+            tag_ids: { type: "array", items: { type: "integer" } },
           },
-          handler: handleCreate,
+          required: ["subject_kind", "title"],
         },
-        {
-          name: "note_update",
-          description: "Update note metadata (title/summary/tags). Does not edit body blocks.",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              id: { type: "integer" },
-              title: { type: "string" },
-              summary: { type: "string" },
-              tags: { type: "array", items: { type: "string" } },
-              tag_ids: { type: "array", items: { type: "integer" } },
-            },
-            required: ["subject_kind", "id"],
+        handler: handleCreate,
+      },
+      {
+        name: "note_update",
+        description: "Update note metadata (title/summary/tags). Does not edit body blocks.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
+            title: { type: "string" },
+            summary: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+            tag_ids: { type: "array", items: { type: "integer" } },
           },
-          handler: handleUpdate,
+          required: ["subject_kind", "id"],
         },
-        {
-          name: "note_get",
-          description: "Get a note by id including text blocks.",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              id: { type: "integer" },
-            },
-            required: ["subject_kind", "id"],
+        handler: handleUpdate,
+      },
+      {
+        name: "note_get",
+        description: "Get a note by id including text blocks.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
           },
-          handler: handleGet,
+          required: ["subject_kind", "id"],
         },
-        {
-          name: "note_delete",
-          description: "Soft-delete a note and cascade its text blocks.",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              id: { type: "integer" },
-            },
-            required: ["subject_kind", "id"],
+        handler: handleGet,
+      },
+      {
+        name: "note_delete",
+        description: "Soft-delete a note and cascade its text blocks.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
           },
-          handler: handleDelete,
+          required: ["subject_kind", "id"],
         },
-        {
-          name: "note_list",
-          description: "List notes ordered by updated_at desc. Optional tag_ids filter.",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              tag_ids: { type: "array", items: { type: "integer" } },
-              limit: { type: "integer" },
-              offset: { type: "integer" },
-            },
-            required: ["subject_kind"],
+        handler: handleDelete,
+      },
+      {
+        name: "note_list",
+        description: "List notes ordered by updated_at desc. Optional tag_ids filter.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            tag_ids: { type: "array", items: { type: "integer" } },
+            limit: { type: "integer" },
+            offset: { type: "integer" },
           },
-          handler: handleList,
+          required: ["subject_kind"],
         },
-        {
-          name: "note_search",
-          description:
-            "Hybrid search over note text blocks; returns matching notes (relevance order).",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              query: { type: "string" },
-              tag_ids: { type: "array", items: { type: "integer" } },
-              limit: { type: "integer" },
-            },
-            required: ["subject_kind", "query"],
+        handler: handleList,
+      },
+      {
+        name: "note_search",
+        description:
+          "Hybrid search over note text blocks; returns matching notes (relevance order).",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            query: { type: "string" },
+            tag_ids: { type: "array", items: { type: "integer" } },
+            limit: { type: "integer" },
           },
-          handler: handleSearch,
+          required: ["subject_kind", "query"],
         },
-      ],
-      NOTE_TOOL_RETURNS,
-    ),
-    { visibility: "searchable" },
+        handler: handleSearch,
+      },
+    ],
+    NOTE_TOOL_RETURNS,
   );
 }

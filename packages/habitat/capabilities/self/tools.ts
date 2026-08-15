@@ -96,5 +96,6 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
       ],
       SELF_TOOL_RETURNS,
     ),
+    { visibility: "searchable" },
   );
 }

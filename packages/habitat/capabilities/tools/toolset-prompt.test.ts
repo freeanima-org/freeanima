@@ -1,9 +1,23 @@
 import { describe, expect, it } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
-import { renderToolsetsSection } from "./toolset-prompt.ts";
+import { formatToolNamesForCatalog, renderToolsetsSection } from "./toolset-prompt.ts";
+
+describe("formatToolNamesForCatalog", () => {
+  it("collapses first-segment prefixes with 2+ tools", () => {
+    expect(
+      formatToolNamesForCatalog([
+        "task_create",
+        "task_get",
+        "task_list",
+        "tasklist_list",
+        "tasklist_create",
+      ]),
+    ).toBe("task_*, tasklist_*");
+  });
+});
 
 describe("renderToolsetsSection", () => {
-  it("lists catalog toolsets sorted by name and points to toolset_search", () => {
+  it("lists catalog toolsets with tool names and points to toolset_search", () => {
     const registry = new ToolSetRegistry();
     registry.registerToolSet("memory", "Semantic memory tools", [
       {
@@ -52,9 +66,9 @@ describe("renderToolsetsSection", () => {
     expect(section).toContain("</toolsets>");
     expect(section).toContain("toolset_search");
     expect(section).toContain("toolset_load");
-    expect(section).toContain("not the full inventory");
-    expect(section).toContain("- file — Read and write workspace files");
-    expect(section).toContain("- memory — Semantic memory tools");
+    expect(section).toContain("Built-in ToolSets");
+    expect(section).toContain("- file — Read and write workspace files · file_read");
+    expect(section).toContain("- memory — Semantic memory tools · memory_semantic_search");
     expect(section).not.toContain("- ops —");
     expect(section).not.toContain("- secret —");
     expect(section.indexOf("- file")).toBeLessThan(section.indexOf("- memory"));

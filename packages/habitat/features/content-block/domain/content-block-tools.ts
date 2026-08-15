@@ -1,4 +1,3 @@
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
@@ -389,190 +388,185 @@ const SEMANTIC_REF_PARAM = {
   required: ["entity_id"],
 } as const;
 
-export function registerContentBlockToolSet(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet(
-    "content-block",
-    "Content blocks (CRUD, container list, semantic-component filter, reorder). parent_id scopes to diary_entry or note container.",
-    attachToolReturns(
-      [
-        {
-          name: "content_block_create",
-          description:
-            "Create a content_block under a container (parent_id = diary_entry or note). " +
-            "Only text / semantic_ref writes; limbic/narrative/dream are historical read-only (#16102).",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              parent_id: { type: "integer", description: "Container entity id" },
-              block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
-              content: { type: "string", description: "Text body or media caption" },
-              title: { type: "string" },
-              summary: { type: "string" },
-              sort_order: { type: "integer" },
-              url: { type: "string", description: "Resource locator for non-text types" },
-              client_op_id: { type: "string", description: "Idempotent create key" },
-              semantic_ref: SEMANTIC_REF_PARAM,
+export function buildContentBlockToolDefs() {
+  return attachToolReturns(
+    [
+      {
+        name: "content_block_create",
+        description:
+          "Create a content_block under a container (parent_id = diary_entry or note). " +
+          "Only text / semantic_ref writes; limbic/narrative/dream are historical read-only (#16102).",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            parent_id: { type: "integer", description: "Container entity id" },
+            block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
+            content: { type: "string", description: "Text body or media caption" },
+            title: { type: "string" },
+            summary: { type: "string" },
+            sort_order: { type: "integer" },
+            url: { type: "string", description: "Resource locator for non-text types" },
+            client_op_id: { type: "string", description: "Idempotent create key" },
+            semantic_ref: SEMANTIC_REF_PARAM,
+          },
+          required: ["subject_kind", "parent_id", "block_type"],
+        },
+        handler: handleCreate,
+      },
+      {
+        name: "content_block_update",
+        description:
+          "Update content_block fields / semantic_ref. limbic/narrative/dream cannot be attached or cleared (#16102).",
+        parameters: {
+          type: "object",
+          properties: {
+            id: { type: "integer" },
+            content: { type: "string" },
+            title: { type: "string" },
+            summary: { type: "string" },
+            block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
+            parent_id: { type: "integer" },
+            sort_order: { type: "integer" },
+            url: { type: "string" },
+            semantic_ref: SEMANTIC_REF_PARAM,
+          },
+          required: ["id"],
+        },
+        handler: handleUpdate,
+      },
+      {
+        name: "content_block_delete",
+        description: "Delete a content_block by id",
+        parameters: {
+          type: "object",
+          properties: { id: { type: "integer" } },
+          required: ["id"],
+        },
+        handler: handleDelete,
+      },
+      {
+        name: "content_block_get",
+        description: "Get a content_block by id",
+        parameters: {
+          type: "object",
+          properties: { id: { type: "integer" } },
+          required: ["id"],
+        },
+        handler: handleGet,
+      },
+      {
+        name: "content_block_list",
+        description:
+          "List content_blocks under a container (parent_id required), ordered by sort_order. Optional block_type / component (limbic|narrative|semantic_ref|dream) filters for historical reads.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            parent_id: { type: "integer", description: "Container entity id" },
+            block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
+            component: {
+              type: "string",
+              enum: [...SEMANTIC_COMPONENT_TAGS],
+              description: "Filter by semantic component tag (read-only for parked tags)",
             },
-            required: ["subject_kind", "parent_id", "block_type"],
+            limit: { type: "integer" },
           },
-          handler: handleCreate,
+          required: ["subject_kind", "parent_id"],
         },
-        {
-          name: "content_block_update",
-          description:
-            "Update content_block fields / semantic_ref. limbic/narrative/dream cannot be attached or cleared (#16102).",
-          parameters: {
-            type: "object",
-            properties: {
-              id: { type: "integer" },
-              content: { type: "string" },
-              title: { type: "string" },
-              summary: { type: "string" },
-              block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
-              parent_id: { type: "integer" },
-              sort_order: { type: "integer" },
-              url: { type: "string" },
-              semantic_ref: SEMANTIC_REF_PARAM,
+        handler: handleList,
+      },
+      {
+        name: "content_block_search",
+        description:
+          "Search content_blocks. With query: hybrid FTS; without query: filter_only list. " +
+          "Historical emotion / autobiographical: component=limbic|narrative (read-only). " +
+          "Limbic filters: kind, conversation_id, intensity/valence range, order_by. " +
+          "Narrative: defaults to status=active (override with status).",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            query: {
+              type: "string",
+              description:
+                "Full-text keywords (hybrid). Optional; omit/empty for filter-only list.",
             },
-            required: ["id"],
-          },
-          handler: handleUpdate,
-        },
-        {
-          name: "content_block_delete",
-          description: "Delete a content_block by id",
-          parameters: {
-            type: "object",
-            properties: { id: { type: "integer" } },
-            required: ["id"],
-          },
-          handler: handleDelete,
-        },
-        {
-          name: "content_block_get",
-          description: "Get a content_block by id",
-          parameters: {
-            type: "object",
-            properties: { id: { type: "integer" } },
-            required: ["id"],
-          },
-          handler: handleGet,
-        },
-        {
-          name: "content_block_list",
-          description:
-            "List content_blocks under a container (parent_id required), ordered by sort_order. Optional block_type / component (limbic|narrative|semantic_ref|dream) filters for historical reads.",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              parent_id: { type: "integer", description: "Container entity id" },
-              block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
-              component: {
-                type: "string",
-                enum: [...SEMANTIC_COMPONENT_TAGS],
-                description: "Filter by semantic component tag (read-only for parked tags)",
-              },
-              limit: { type: "integer" },
+            parent_id: { type: "integer", description: "Optional container scope" },
+            block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
+            component: {
+              type: "string",
+              enum: [...SEMANTIC_COMPONENT_TAGS],
+              description: "limbic=emotion bricks; narrative=autobiographical (historical)",
             },
-            required: ["subject_kind", "parent_id"],
-          },
-          handler: handleList,
-        },
-        {
-          name: "content_block_search",
-          description:
-            "Search content_blocks. With query: hybrid FTS; without query: filter_only list. " +
-            "Historical emotion / autobiographical: component=limbic|narrative (read-only). " +
-            "Limbic filters: kind, conversation_id, intensity/valence range, order_by. " +
-            "Narrative: defaults to status=active (override with status).",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              query: {
-                type: "string",
-                description:
-                  "Full-text keywords (hybrid). Optional; omit/empty for filter-only list.",
-              },
-              parent_id: { type: "integer", description: "Optional container scope" },
-              block_type: { type: "string", enum: [...CONTENT_BLOCK_TYPES] },
-              component: {
-                type: "string",
-                enum: [...SEMANTIC_COMPONENT_TAGS],
-                description: "limbic=emotion bricks; narrative=autobiographical (historical)",
-              },
-              conversation_id: {
-                type: "string",
-                description: "Filter limbic bricks by conversation_id",
-              },
-              kind: {
-                type: "string",
-                enum: [...LIMBIC_KINDS],
-                description: "Limbic kind: conversation_mood | turning_point | spike",
-              },
-              status: {
-                type: "string",
-                enum: ["active", "deprecated", "all"],
-                description:
-                  "Narrative status; component=narrative defaults to active; all=no filter",
-              },
-              min_intensity: {
-                type: "number",
-                description: "Minimum limbic intensity (0..1, inclusive)",
-              },
-              max_intensity: {
-                type: "number",
-                description: "Maximum limbic intensity (0..1, inclusive)",
-              },
-              min_valence: {
-                type: "number",
-                description: "Minimum limbic valence (-1..1, inclusive)",
-              },
-              max_valence: {
-                type: "number",
-                description: "Maximum limbic valence (-1..1, inclusive)",
-              },
-              order_by: {
-                type: "string",
-                enum: [...CONTENT_BLOCK_SEARCH_ORDER_BY],
-                description:
-                  "Sort order; default created_desc (filter-only). Hybrid keeps relevance unless set.",
-              },
-              limit: { type: "integer", description: "Max results, default 30, cap 50" },
+            conversation_id: {
+              type: "string",
+              description: "Filter limbic bricks by conversation_id",
             },
-            required: ["subject_kind"],
+            kind: {
+              type: "string",
+              enum: [...LIMBIC_KINDS],
+              description: "Limbic kind: conversation_mood | turning_point | spike",
+            },
+            status: {
+              type: "string",
+              enum: ["active", "deprecated", "all"],
+              description:
+                "Narrative status; component=narrative defaults to active; all=no filter",
+            },
+            min_intensity: {
+              type: "number",
+              description: "Minimum limbic intensity (0..1, inclusive)",
+            },
+            max_intensity: {
+              type: "number",
+              description: "Maximum limbic intensity (0..1, inclusive)",
+            },
+            min_valence: {
+              type: "number",
+              description: "Minimum limbic valence (-1..1, inclusive)",
+            },
+            max_valence: {
+              type: "number",
+              description: "Maximum limbic valence (-1..1, inclusive)",
+            },
+            order_by: {
+              type: "string",
+              enum: [...CONTENT_BLOCK_SEARCH_ORDER_BY],
+              description:
+                "Sort order; default created_desc (filter-only). Hybrid keeps relevance unless set.",
+            },
+            limit: { type: "integer", description: "Max results, default 30, cap 50" },
           },
-          handler: handleSearch,
+          required: ["subject_kind"],
         },
-        {
-          name: "content_block_reorder",
-          description: "Batch update sort_order for content_blocks: items=[{id, sort_order}, …]",
-          parameters: {
-            type: "object",
-            properties: {
+        handler: handleSearch,
+      },
+      {
+        name: "content_block_reorder",
+        description: "Batch update sort_order for content_blocks: items=[{id, sort_order}, …]",
+        parameters: {
+          type: "object",
+          properties: {
+            items: {
+              type: "array",
               items: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    id: { type: "integer" },
-                    sort_order: { type: "integer" },
-                  },
-                  required: ["id", "sort_order"],
+                type: "object",
+                properties: {
+                  id: { type: "integer" },
+                  sort_order: { type: "integer" },
                 },
+                required: ["id", "sort_order"],
               },
             },
-            required: ["items"],
           },
-          handler: handleReorder,
+          required: ["items"],
         },
-      ],
-      Object.fromEntries(
-        CONTENT_BLOCK_TOOL_NAMES.map((name) => [name, CONTENT_BLOCK_TOOL_RETURNS[name]]),
-      ),
+        handler: handleReorder,
+      },
+    ],
+    Object.fromEntries(
+      CONTENT_BLOCK_TOOL_NAMES.map((name) => [name, CONTENT_BLOCK_TOOL_RETURNS[name]]),
     ),
-    { visibility: "searchable" },
   );
 }

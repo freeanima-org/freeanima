@@ -21,7 +21,7 @@ export function registerToolsetSystemPromptHooks(
               content,
               order: 10,
               priority: 5,
-              budgetChars: 3_000,
+              budgetChars: 4_500,
               xmlTag: PROMPT_XML_TAGS.toolsets,
             },
           ],

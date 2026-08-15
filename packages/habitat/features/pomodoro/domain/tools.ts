@@ -200,7 +200,6 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
       ],
       POMODORO_TOOL_RETURNS,
     ),
-    { visibility: "searchable" },
   );
 }
 

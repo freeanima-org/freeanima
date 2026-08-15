@@ -1,9 +1,9 @@
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import {
   attachToolReturns,
   toolError,
   toolResult,
   resolveToolCallerSubjectId,
+  type ToolSetRegistry,
 } from "@freeanima/habitat/core/tool";
 import {
   assertSubjectCanAccessWorld,
@@ -106,138 +106,141 @@ export async function handleEntityGet(args: Record<string, unknown>): Promise<st
   }
 }
 
+export function buildEntitySearchToolDefs() {
+  return attachToolReturns(
+    [
+      {
+        name: "entity_get",
+        description:
+          "Get one entity by id (`entities.id` / `[[anima:id]]`). Returns primary_component, title, summary, body. " +
+          "Use this first to resolve entity refs, then call the domain tool for that component (e.g. task_get).",
+        parameters: {
+          type: "object",
+          properties: {
+            id: { type: "integer", description: "entities.id from [[anima:id]]" },
+          },
+          required: ["id"],
+        },
+        handler: handleEntityGet,
+      },
+      {
+        name: "entity_search",
+        description:
+          "Search entities by text (FTS + trigram) with structured filters.\n" +
+          "Default scope: caller subject private world. Use global=true for cross-world search within caller permissions.\n" +
+          "Component filters (e.g. task_item.status) require primary_component.\n\n" +
+          FTS_SYNTAX,
+        parameters: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "Search keywords; omit for filter-only browse",
+            },
+            world_id: {
+              type: "number",
+              description: "Optional world override; defaults to caller subject private world",
+            },
+            global: { type: "boolean", description: "Cross-world search (caller permissions)" },
+            type: { type: "string", enum: ["content", "world", "agent", "user"] },
+            primary_component: {
+              type: "string",
+              description: "e.g. task_item, task_list",
+            },
+            component: { type: "string", description: "Must include component tag" },
+            filters: {
+              type: "object",
+              description: "Component-specific filters (task_item: status, list_id, tags, …)",
+            },
+            limit: { type: "number", description: "Max results, default 10, cap 50" },
+            offset: { type: "number" },
+            mode: { type: "string", enum: ["hybrid", "filter_only"] },
+          },
+        },
+        handler: async (args) => {
+          const query = coerceString(args.query ?? "").trim();
+          const global = args.global === true;
+          const explicitWorldId = parseExplicitWorldId(args.world_id);
+          const filters = parseFilters(args.filters);
+          const filterListId =
+            filters?.list_id != null && Number.isFinite(Number(filters.list_id))
+              ? Number(filters.list_id)
+              : undefined;
+          const limit = Math.max(1, Math.min(50, asFloat(args.limit, 10)));
+          const offset = Math.max(0, asFloat(args.offset, 0));
+          const mode: EntitySearchMode = args.mode === "filter_only" ? "filter_only" : "hybrid";
+
+          try {
+            if (query) validateFtsQueryInput(query);
+
+            let accessible_world_ids: number[] | undefined;
+            if (global) {
+              accessible_world_ids = await resolveWorldsAccessibleBySubject(
+                { list: listEntities },
+                resolveToolCallerSubjectId(),
+              );
+            }
+
+            let world_id: number | undefined;
+            if (!global) {
+              world_id = await resolveToolWorld({
+                ...(explicitWorldId != null ? { explicitWorldId } : {}),
+                ...(filterListId != null ? { listId: filterListId } : {}),
+              });
+            }
+
+            const result = await searchEntities(
+              omitUndefined({
+                query: query || undefined,
+                world_id: global ? undefined : world_id,
+                global,
+                accessible_world_ids,
+                type: args.type as EntityType | undefined,
+                primary_component:
+                  args.primary_component != null ? coerceString(args.primary_component) : undefined,
+                component: args.component != null ? coerceString(args.component) : undefined,
+                filters,
+                limit,
+                offset,
+                mode: query ? mode : "filter_only",
+              }),
+            );
+
+            return toolResult({
+              query: result.query,
+              limit: result.limit,
+              offset: result.offset,
+              count: result.count,
+              truncated: result.count >= limit,
+              ...(result.count >= limit
+                ? {
+                    next_hint:
+                      "Page full for this limit; raise offset or refine filters/query and call entity_search again.",
+                  }
+                : {}),
+              results: result.results.map(hitPayload),
+            });
+          } catch (e) {
+            if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));
+            if (e instanceof ToolWorldAccessError) return toolError(e.message);
+            const msg = e instanceof Error ? e.message : String(e);
+            if (msg.includes("accessible_world_ids") || msg.includes("world_id is required")) {
+              return toolError(msg);
+            }
+            throw e;
+          }
+        },
+      },
+    ],
+    {},
+  );
+}
+
+/** Test/compat helper — production registers entity+tag via platform `registerEntityAndTagTools`. */
 export function registerEntitySearchTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "entity",
-    "Entity lookup and composite search (resolve [[anima:id]] via entity_get)",
-    attachToolReturns(
-      [
-        {
-          name: "entity_get",
-          description:
-            "Get one entity by id (`entities.id` / `[[anima:id]]`). Returns primary_component, title, summary, body. " +
-            "Use this first to resolve entity refs, then call the domain tool for that component (e.g. task_get).",
-          parameters: {
-            type: "object",
-            properties: {
-              id: { type: "integer", description: "entities.id from [[anima:id]]" },
-            },
-            required: ["id"],
-          },
-          handler: handleEntityGet,
-        },
-        {
-          name: "entity_search",
-          description:
-            "Search entities by text (FTS + trigram) with structured filters.\n" +
-            "Default scope: caller subject private world. Use global=true for cross-world search within caller permissions.\n" +
-            "Component filters (e.g. task_item.status) require primary_component.\n\n" +
-            FTS_SYNTAX,
-          parameters: {
-            type: "object",
-            properties: {
-              query: {
-                type: "string",
-                description: "Search keywords; omit for filter-only browse",
-              },
-              world_id: {
-                type: "number",
-                description: "Optional world override; defaults to caller subject private world",
-              },
-              global: { type: "boolean", description: "Cross-world search (caller permissions)" },
-              type: { type: "string", enum: ["content", "world", "agent", "user"] },
-              primary_component: {
-                type: "string",
-                description: "e.g. task_item, task_list",
-              },
-              component: { type: "string", description: "Must include component tag" },
-              filters: {
-                type: "object",
-                description: "Component-specific filters (task_item: status, list_id, tags, …)",
-              },
-              limit: { type: "number", description: "Max results, default 10, cap 50" },
-              offset: { type: "number" },
-              mode: { type: "string", enum: ["hybrid", "filter_only"] },
-            },
-          },
-          handler: async (args) => {
-            const query = coerceString(args.query ?? "").trim();
-            const global = args.global === true;
-            const explicitWorldId = parseExplicitWorldId(args.world_id);
-            const filters = parseFilters(args.filters);
-            const filterListId =
-              filters?.list_id != null && Number.isFinite(Number(filters.list_id))
-                ? Number(filters.list_id)
-                : undefined;
-            const limit = Math.max(1, Math.min(50, asFloat(args.limit, 10)));
-            const offset = Math.max(0, asFloat(args.offset, 0));
-            const mode: EntitySearchMode = args.mode === "filter_only" ? "filter_only" : "hybrid";
-
-            try {
-              if (query) validateFtsQueryInput(query);
-
-              let accessible_world_ids: number[] | undefined;
-              if (global) {
-                accessible_world_ids = await resolveWorldsAccessibleBySubject(
-                  { list: listEntities },
-                  resolveToolCallerSubjectId(),
-                );
-              }
-
-              let world_id: number | undefined;
-              if (!global) {
-                world_id = await resolveToolWorld({
-                  ...(explicitWorldId != null ? { explicitWorldId } : {}),
-                  ...(filterListId != null ? { listId: filterListId } : {}),
-                });
-              }
-
-              const result = await searchEntities(
-                omitUndefined({
-                  query: query || undefined,
-                  world_id: global ? undefined : world_id,
-                  global,
-                  accessible_world_ids,
-                  type: args.type as EntityType | undefined,
-                  primary_component:
-                    args.primary_component != null
-                      ? coerceString(args.primary_component)
-                      : undefined,
-                  component: args.component != null ? coerceString(args.component) : undefined,
-                  filters,
-                  limit,
-                  offset,
-                  mode: query ? mode : "filter_only",
-                }),
-              );
-
-              return toolResult({
-                query: result.query,
-                limit: result.limit,
-                offset: result.offset,
-                count: result.count,
-                truncated: result.count >= limit,
-                ...(result.count >= limit
-                  ? {
-                      next_hint:
-                        "Page full for this limit; raise offset or refine filters/query and call entity_search again.",
-                    }
-                  : {}),
-                results: result.results.map(hitPayload),
-              });
-            } catch (e) {
-              if (isFtsQueryError(e)) return toolError(formatFtsToolError(e));
-              if (e instanceof ToolWorldAccessError) return toolError(e.message);
-              const msg = e instanceof Error ? e.message : String(e);
-              if (msg.includes("accessible_world_ids") || msg.includes("world_id is required")) {
-                return toolError(msg);
-              }
-              throw e;
-            }
-          },
-        },
-      ],
-      {},
-    ),
+    "Entity lookup/search and per-world tags (resolve [[anima:id]] via entity_get)",
+    buildEntitySearchToolDefs(),
   );
 }

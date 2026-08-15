@@ -301,6 +301,5 @@ export function registerOpsTools(toolSets: ToolSetRegistry): void {
       ],
       OPS_TOOL_RETURNS,
     ),
-    { visibility: "searchable" },
   );
 }
