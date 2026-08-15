@@ -10,6 +10,11 @@ import {
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { existsSync } from "node:fs";
 import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/habitat/core/tool";
+import {
+  registerCatalogContextWindowLookup,
+  resetCatalogContextWindowLookupForTest,
+} from "@freeanima/habitat/core/config";
+import { bindContextWindowLookup } from "@freeanima/habitat/platform/bind-context-window.ts";
 import { registerServiceTools } from "@freeanima/habitat/platform";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { getConversationTools } from "@freeanima/habitat/core/db/pg/conversation";
@@ -96,9 +101,13 @@ describePg("conversation compression", () => {
       "anima-conv-compress-",
       "compression:\n  enabled: true\n  max_rounds: 50\n",
     );
+    // 强制消息数模式：避免假 Provider catalog 窗口把触发切到 token 路径
+    registerCatalogContextWindowLookup(async () => null);
   });
 
   afterEach(async () => {
+    resetCatalogContextWindowLookupForTest();
+    bindContextWindowLookup();
     await restoreIntegrationHome(prev);
   });
 

@@ -9,7 +9,7 @@ import {
 import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
 import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
-import { registerDiaryTools } from "@freeanima/features/diary/domain";
+import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
 import {
   buildWorldConfigBody,
   getEntity,
@@ -53,7 +53,7 @@ describePg("world grants tools", () => {
   beforeEach(async () => {
     toolSets = new ToolSetRegistry();
     await beginIntegrationCase("anima-world-grants-");
-    registerDiaryTools(toolSets);
+    registerContentBlockTools(toolSets);
   });
 
   afterEach(async () => {
