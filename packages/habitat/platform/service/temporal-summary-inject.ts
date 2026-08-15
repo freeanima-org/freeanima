@@ -3,7 +3,6 @@ import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { resolveScenarioProfile } from "@freeanima/habitat/core/hooks/prompt";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { getConversationMeta, isCronSession } from "@freeanima/habitat/core/db/pg/conversation";
-import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 import {
   injectTemporalPeerRollups,
   resolvePeerTimelineInjects,
@@ -32,10 +31,8 @@ export function createTemporalPeerInjectHandler() {
       return;
     }
 
-    const selfContent = await loadSelfLayerPrompt();
     const injects = await resolvePeerTimelineInjects({
       viewerConversationId: conversationId,
-      selfContent,
       config,
       peerCache: {
         getJson: cacheGetJson,

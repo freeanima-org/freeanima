@@ -6,18 +6,18 @@
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { resolveMemoryClusteringConfig } from "@freeanima/habitat/core/config/schemas/memory-config.ts";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
+import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 import { listActiveSemanticMemoryClusterIds } from "@freeanima/habitat/core/db/pg/search/clustering-repo.ts";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 
-import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
 import { cstDayRange } from "../day-window/build-messages.ts";
 import {
   fetchAllActiveMemories,
   buildDeepSleepMessages,
   checkJsonSize,
   DEEP_SLEEP_TOOL_NAMES,
+  REFLECT_TASK_SPEC,
   filterSplitCandidates,
   hasRecentMemoryUpdates,
   formatAllMemoriesMessage,
@@ -45,6 +45,7 @@ export type BuiltinReflectInput = {
   conversation_ids?: string[];
   force?: boolean;
   day?: string;
+  /** @deprecated 忽略；reflect 不再注入自我层 / 常驻 */
   selfContent?: string;
   /** force → full；否则 incremental（对齐原定时深睡） */
   mode?: DeepSleepMode;
@@ -53,10 +54,9 @@ export type BuiltinReflectInput = {
 async function runReflectRoundsOnBatch(opts: {
   batchRows: SemanticMemoryRow[];
   mode: DeepSleepMode;
-  systemPrompt: string;
   changeLog: DeepSleepChangeLog;
 }): Promise<{ roundsExecuted: number; toolCalls: number }> {
-  const { batchRows, mode, systemPrompt, changeLog } = opts;
+  const { batchRows, mode, changeLog } = opts;
   let roundsExecuted = 0;
   let toolCalls = 0;
 
@@ -92,14 +92,20 @@ async function runReflectRoundsOnBatch(opts: {
       }),
     );
 
+    const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+      kind: "memory-reflect",
+      taskSpec: REFLECT_TASK_SPEC,
+      dataParts: [
+        { body: messages.allMemoriesText },
+        { body: messages.changeLogText },
+        { body: messages.preScreenText },
+        { body: messages.instructionText },
+      ],
+    });
+
     const llm = await runReflectLlm({
       systemPrompt,
-      userMessages: [
-        messages.allMemoriesText,
-        messages.changeLogText,
-        messages.preScreenText,
-        messages.instructionText,
-      ],
+      userMessages,
       toolNames: [...DEEP_SLEEP_TOOL_NAMES],
       round,
       changeLog,
@@ -128,7 +134,7 @@ export async function runBuiltinReflect(
   const range = cstDayRange(input.day);
   const day = range.day;
   const mode: DeepSleepMode = input.mode ?? (input.force ? "full" : "incremental");
-  const selfContent = input.selfContent ?? (await loadSelfLayerPrompt());
+  void input.selfContent;
 
   const allRows = await fetchAllActiveMemories();
   if (allRows.length === 0) {
@@ -178,8 +184,6 @@ export async function runBuiltinReflect(
     }
   }
 
-  const parts = await decomposeSystemPromptParts(selfContent, null);
-  const systemPrompt = composeSystemPrompt(parts);
   const changeLog = createEmptyChangeLog();
   let totalToolCalls = 0;
   let roundsExecuted = 0;
@@ -198,7 +202,6 @@ export async function runBuiltinReflect(
     const result = await runReflectRoundsOnBatch({
       batchRows: batch.rows,
       mode,
-      systemPrompt,
       changeLog,
     });
     roundsExecuted += result.roundsExecuted;
@@ -225,12 +228,13 @@ export async function runBuiltinReflect(
     totalToolCalls,
     merged,
     deprecated,
+    conflicts,
   });
 
   return {
     merged,
     deprecated,
     conflicts,
-    summary: `reflect:${mode}:batches=${batches.length}:rounds=${roundsExecuted}:tools=${totalToolCalls}`,
+    summary: `reflect ${mode} batches=${batches.length} rounds=${roundsExecuted} tools=${totalToolCalls}`,
   };
 }

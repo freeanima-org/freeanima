@@ -6,7 +6,6 @@ import {
   SKILL_REVIEW_RUN_KIND_MAINTAIN,
   SKILL_REVIEW_TOOL_NAMES,
   PROFILE_SKILL_REVIEW,
-  buildSkillReviewSystemPrompt,
   buildSkillReviewUserPrompt,
   evaluateSkillEvolveGate,
   type SkillReviewMode,
@@ -14,10 +13,16 @@ import {
 import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
 import { getProfileHopModel } from "@freeanima/habitat/core/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { PROMPT_XML_TAGS, wrapPromptXml } from "@freeanima/habitat/core/hooks/prompt";
+import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { resolveInvisibleCapabilityPolicy } from "./capability-policy-bind.ts";
 import { toolNamesForInvisiblePolicy } from "./use-cases/cron-runner.ts";
-import { runAutoLlm, type AutoLlmRunResult } from "./auto-llm-run.ts";
+import {
+  AUTO_LLM_DEFAULT_MAX_DURATION_MS,
+  runAutoLlm,
+  type AutoLlmRunResult,
+} from "./auto-llm-run.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type RunSkillReviewInput = {
@@ -37,6 +42,14 @@ export type SkillReviewOutcome =
 
 function curationBody(deps: FullRuntimeDeps): string {
   return deps.engine.skills.get(SKILL_CURATION_NAME)?.content.trim() ?? "";
+}
+
+function skillReviewTaskSpec(): string {
+  return `你是 FreeAnima 的技能策展（mode={{mode}}）。
+遵循技能层中的 skill-curation 说明。
+无明显值得固化的改动时优先 noop。
+仅使用提供的 skill_* 工具。
+结束后简要说明 create/patch/delete 或 noop。`;
 }
 
 /**
@@ -63,7 +76,10 @@ export async function runSkillReview(
     gateReason = gate.reason;
   }
 
-  const systemPrompt = buildSkillReviewSystemPrompt(input.mode, curationBody(deps));
+  const curation = curationBody(deps) || "(skill-curation body missing)";
+  const skillsText = wrapPromptXml(PROMPT_XML_TAGS.skill, curation, {
+    attrs: { name: SKILL_CURATION_NAME },
+  });
   const userPrompt = buildSkillReviewUserPrompt({
     mode: input.mode,
     skills: deps.engine.skills,
@@ -71,6 +87,15 @@ export async function runSkillReview(
       msgs: input.msgs,
       note: input.note,
     }),
+  });
+  const runKind =
+    input.mode === "evolve" ? SKILL_REVIEW_RUN_KIND_EVOLVE : SKILL_REVIEW_RUN_KIND_MAINTAIN;
+  const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+    kind: runKind,
+    taskSpec: skillReviewTaskSpec(),
+    taskParams: { mode: input.mode },
+    skillsText,
+    dataParts: [{ body: userPrompt }],
   });
 
   const policy = resolveInvisibleCapabilityPolicy(deps.engine.catalog.toolSets, {
@@ -82,8 +107,6 @@ export async function runSkillReview(
   const toolNames = toolNamesForInvisiblePolicy([...SKILL_REVIEW_TOOL_NAMES], policy);
 
   const model = getProfileHopModel(deps.engine.config.data, PROFILE_SKILL_REVIEW);
-  const runKind =
-    input.mode === "evolve" ? SKILL_REVIEW_RUN_KIND_EVOLVE : SKILL_REVIEW_RUN_KIND_MAINTAIN;
   const runName =
     input.mode === "evolve"
       ? `skill-evolve:${input.conversationId ?? "anon"}`
@@ -103,10 +126,11 @@ export async function runSkillReview(
       runKind,
       subjectId: getResolvedWorldContext().agent_subject_id,
       systemPrompt,
-      userMessages: [userPrompt],
+      userMessages,
       model,
       toolNames,
       maxTurns: input.maxTurns ?? SKILL_REVIEW_MAX_TURNS,
+      maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       toolPolicy: policy,
       parentConversationId: input.conversationId,
       metadata: {

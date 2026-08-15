@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 
 import {
+  buildSelfLayerRefreshDataMessage,
   buildSelfLayerRefreshUserMessage,
   formatProposalNotificationBody,
   parseSelfLayerRefreshResponse,
@@ -69,6 +70,34 @@ describe("parseSelfLayerRefreshResponse", () => {
   });
 });
 
+describe("buildSelfLayerRefreshDataMessage", () => {
+  it("includes evidence and blocks without task instruction", () => {
+    const msg = buildSelfLayerRefreshDataMessage(
+      [
+        fact({
+          id: 9,
+          content: "Partner prefers direct answers",
+          pinned: true,
+          reference_count: 5,
+        }),
+      ],
+      [
+        {
+          block_key: "self_model",
+          heading: "Self model",
+          content: "I am a helper.",
+          locked: false,
+          version: 1,
+        },
+      ],
+    );
+    expect(msg).toContain("[[anima:9]]");
+    expect(msg).toContain("Partner prefers direct answers");
+    expect(msg).toContain("I am a helper.");
+    expect(msg).not.toContain(SELF_LAYER_REFRESH_INSTRUCTION);
+  });
+});
+
 describe("buildSelfLayerRefreshUserMessage", () => {
   it("includes evidence markers and instruction", () => {
     const msg = buildSelfLayerRefreshUserMessage(
@@ -91,8 +120,6 @@ describe("buildSelfLayerRefreshUserMessage", () => {
       ],
     );
     expect(msg).toContain("[[anima:9]]");
-    expect(msg).toContain("Partner prefers direct answers");
-    expect(msg).toContain("I am a helper.");
     expect(msg).toContain(SELF_LAYER_REFRESH_INSTRUCTION);
   });
 });

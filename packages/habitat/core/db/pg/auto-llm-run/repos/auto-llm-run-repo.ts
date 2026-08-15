@@ -11,7 +11,6 @@ import type {
 } from "../types.ts";
 import { getDb } from "../../client.ts";
 
-const INPUT_SUMMARY_MAX = 2000;
 const OUTPUT_MAX = 10_000;
 const ERROR_MAX = 2000;
 
@@ -23,10 +22,11 @@ export function mapAutoLlmRunRow(raw: AutoLlmRunDbRow): AutoLlmRunRow {
     run_name: raw.run_name,
     run_kind: raw.run_kind,
     subject_id: raw.subject_id ?? null,
-    input_summary: raw.input_summary,
     output: raw.output,
     status: raw.status,
     duration_ms: raw.duration_ms,
+    max_turns: raw.max_turns,
+    max_duration_ms: raw.max_duration_ms ?? null,
     error: raw.error,
     metadata: raw.metadata,
     created_at: String(raw.created_at),
@@ -104,10 +104,11 @@ export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void
       run_name: row.run_name,
       run_kind: row.run_kind,
       subject_id: row.subject_id ?? null,
-      input_summary: row.input_summary.slice(0, INPUT_SUMMARY_MAX),
       output: row.output.slice(0, OUTPUT_MAX),
       status: row.status,
       duration_ms: row.duration_ms,
+      max_turns: row.max_turns,
+      max_duration_ms: row.max_duration_ms ?? null,
       error: row.error != null ? row.error.slice(0, ERROR_MAX) : null,
       metadata: row.metadata ?? null,
       created_at,

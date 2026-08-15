@@ -1,5 +1,4 @@
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
-import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 import {
   peerRollRedisKey,
   resolveTemporalSummaryConfig,
@@ -13,9 +12,7 @@ export async function runTemporalSummaryTickHandler(): Promise<string> {
   if (!config.enabled) {
     return JSON.stringify({ ok: true, skipped: "disabled" });
   }
-  const selfContent = await loadSelfLayerPrompt();
   const result = await runTemporalSummaryTick({
-    selfContent,
     config,
     peerCache: {
       getJson: cacheGetJson,

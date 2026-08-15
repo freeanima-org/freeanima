@@ -467,9 +467,9 @@ export function createEmbeddedMemoryService(
         const { getActiveRuntimeConfig } = await import("@freeanima/habitat/core/config");
         const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
         if (input.bucket === "month") {
-          await rebuildMonthSummary({ period_start: input.key, selfContent: "", config });
+          await rebuildMonthSummary({ period_start: input.key, config });
         } else if (input.bucket === "year") {
-          await rebuildYearSummary({ period_start: input.key, selfContent: "", config });
+          await rebuildYearSummary({ period_start: input.key, config });
         }
         return (
           (await service.temporal.get({ bucket: input.bucket, key: input.key })) ?? {

@@ -39,7 +39,6 @@ describe("regenerateTemporalSystemRoll TTL", () => {
         redis_key_prefix: "anima:temporal",
         peer_roll_ttl_seconds: 36 * 60 * 60,
       },
-      selfContent: "<self>x</self>",
       peerCache,
       nowMs: Date.parse("2026-08-15T04:00:00.000Z"),
     });

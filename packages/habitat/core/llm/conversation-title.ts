@@ -2,6 +2,12 @@ import { omitUndefined } from "@freeanima/habitat/core/util";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_SUMMARY } from "@freeanima/habitat/core/provider";
 import type { ChatCompletion } from "@freeanima/habitat/core/provider";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
+import {
+  AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
+  composeAutoLlmPrompt,
+  composedAutoLlmPromptToChatMessages,
+} from "./auto-llm-prompt.ts";
 import { runAutoLlmChat } from "./auto-llm-chat.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
 
@@ -23,22 +29,9 @@ export const SESSION_TITLE_REQUEST_PARAMS = {
   },
 } as const;
 
-const SESSION_TITLE_INSTRUCTION = `You label chat threads in a sidebar (like ChatGPT or WeChat). Read ONLY the user's first message.
-
-Write a short TOPIC label (at most 50 characters) in the same language as the user.
-The label names what the conversation is about — it is NOT a reply to the user.
-
-Rules:
-- Output ONLY the title text: no quotes, prefix, markdown, or explanation.
-- NEVER write in assistant voice: no greetings, no addressing the user (你/主人/亲爱的), no roleplay lines, no filler like "喵".
-- NEVER continue the scene or paraphrase dialogue; use a concise noun phrase or situation name.
-- For stage-direction or roleplay openers, name the scene/topic, not the line itself.
-
-Examples (Chinese):
-- User: "（轻轻点头）马上了，这就到小区门口" → 小区门口碰面
-- User: "我有些育儿问题，帮帮我吧" → 育儿问题
-- Bad title (reply, not a label): "好，到家了。懂了，去洗澡。"
-- Good title: "回家洗澡"`;
+const SESSION_TITLE_TASK_SPEC = `为侧栏会话生成短主题标签（最多 50 字），语言与用户首条消息一致。
+标签是话题名，不是对用户的回复。
+规则：只输出标题正文；无引号/前缀/markdown；禁止助手口吻与角色扮演续写；用简洁名词短语。`;
 
 export const SESSION_TITLE_MAX_LEN = 50;
 
@@ -103,10 +96,11 @@ export async function generateConversationTitle(
   }
 
   try {
-    const chatMessages = [
-      { role: "system" as const, content: SESSION_TITLE_INSTRUCTION },
-      { role: "user" as const, content: trimmed },
-    ];
+    const composed = composeAutoLlmPrompt({
+      kind: AUTO_LLM_RUN_KIND_CONVERSATION_TITLE,
+      taskSpec: SESSION_TITLE_TASK_SPEC,
+      dataParts: [{ tag: PROMPT_XML_TAGS.sourceData, body: trimmed }],
+    });
     const recorded = await runAutoLlmChat(
       omitUndefined({
         runName: opts?.parentConversationId
@@ -114,12 +108,14 @@ export async function generateConversationTitle(
           : "conversation-title",
         runKind: AUTO_LLM_RUN_KIND_CONVERSATION_TITLE,
         subjectId: getResolvedWorldContext().agent_subject_id,
-        messages: chatMessages,
+        messages: composedAutoLlmPromptToChatMessages(composed),
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,
         model: opts?.model,
         requestParams: SESSION_TITLE_REQUEST_PARAMS,
         parentConversationId: opts?.parentConversationId,
+        maxTurns: 1,
+        maxDurationMs: AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
       }),
     );
     if (recorded.status === "error" || !recorded.completion) {

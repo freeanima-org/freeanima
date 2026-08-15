@@ -1,7 +1,14 @@
 import { getCompressionConfig } from "./compression-config.ts";
 import { type CompressionState, formatMessagesForSummary, sliceForSummary } from "./compressor.ts";
-import { PROFILE_SUMMARY, runAutoLlmChat } from "@freeanima/habitat/core/llm";
+import {
+  AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
+  composeAutoLlmPrompt,
+  composedAutoLlmPromptToChatMessages,
+  runAutoLlmChat,
+} from "@freeanima/habitat/core/llm";
+import { PROFILE_SUMMARY } from "@freeanima/habitat/core/provider";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
 
@@ -18,29 +25,25 @@ export const COMPRESSION_SUMMARY_REQUEST_PARAMS = {
   },
 } as const;
 
-const SUMMARY_INSTRUCTION = `You are a digital life running in FreeAnima. Compress the following conversation history into a concise conversation summary (first person "I"), keeping:
-- Partner intent and decisions made
-- Open items and agreements
-- Key entities, paths, and error conclusions
-Do not invent content that did not appear. Output only the summary body—no title or prefix.`;
+const COMPRESSION_SUMMARY_TASK_SPEC = `将给定会话片段压缩为简洁摘要（第一人称「我」），保留：
+- 对方意图与已做决定
+- 未决事项与约定
+- 关键实体、路径与错误结论
+不要捏造未出现的内容。只输出摘要正文——无标题或前缀。
+摘要篇幅约 {{summary_max_tokens}} tokens。`;
 
-function buildSummaryUserContent(
-  sliceText: string,
-  previousSummary: string | undefined,
-  summaryMaxTokens: number,
-): string {
-  const parts = [SUMMARY_INSTRUCTION, `Keep the summary to about ${summaryMaxTokens} tokens.`];
+function buildSummaryDataBody(sliceText: string, previousSummary: string | undefined): string {
+  const parts: string[] = [];
   if (previousSummary?.trim()) {
     parts.push(
-      "",
-      "## Existing summary (merge new content on top of this)",
+      "## 已有摘要（在此基础上合并新内容）",
       previousSummary.trim(),
       "",
-      "## New conversation slice",
+      "## 新会话片段",
       sliceText,
     );
   } else {
-    parts.push("", "## Conversation slice", sliceText);
+    parts.push("## 会话片段", sliceText);
   }
   return parts.join("\n");
 }
@@ -49,12 +52,15 @@ export type GenerateSummaryResult =
   | { ok: true; summary: string; runId?: string }
   | { ok: false; error: string; runId?: string };
 
-/** Generate/merge summary from pre-compression system_prompt snapshot (no IO) */
+/**
+ * 生成/合并压缩摘要。
+ * `@deprecatedParam systemPromptSnapshot` 保留签名兼容，**不得**再作为 AutoLlm system。
+ */
 export async function generateConversationSummary(
   messages: StoredMessage[],
   prevState: CompressionState | null,
   newState: CompressionState,
-  systemPromptSnapshot: string,
+  _systemPromptSnapshot: string,
   opts?: {
     /** Optional hop0 override; omit to use PROFILE_SUMMARY hop (never meta.model). */
     model?: string;
@@ -73,12 +79,18 @@ export async function generateConversationSummary(
 
   const { summaryMaxTokens } = getCompressionConfig();
   const sliceText = formatMessagesForSummary(slice);
-  const userContent = buildSummaryUserContent(sliceText, prevState?.summary, summaryMaxTokens);
   const runKind = opts?.runKind ?? AUTO_LLM_RUN_KIND_COMPRESSION_SUMMARY;
-  const chatMessages = [
-    { role: "system" as const, content: systemPromptSnapshot },
-    { role: "user" as const, content: userContent },
-  ];
+  const composed = composeAutoLlmPrompt({
+    kind: runKind,
+    taskSpec: COMPRESSION_SUMMARY_TASK_SPEC,
+    taskParams: { summary_max_tokens: summaryMaxTokens },
+    dataParts: [
+      {
+        tag: PROMPT_XML_TAGS.sourceData,
+        body: buildSummaryDataBody(sliceText, prevState?.summary),
+      },
+    ],
+  });
 
   try {
     const recorded = await runAutoLlmChat(
@@ -86,11 +98,13 @@ export async function generateConversationSummary(
         runName: opts?.parentConversationId ? `${runKind}:${opts.parentConversationId}` : runKind,
         runKind,
         subjectId: getResolvedWorldContext().agent_subject_id,
-        messages: chatMessages,
+        messages: composedAutoLlmPromptToChatMessages(composed),
         model: opts?.model,
         profileId: PROFILE_SUMMARY,
         requestParams: COMPRESSION_SUMMARY_REQUEST_PARAMS,
         parentConversationId: opts?.parentConversationId,
+        maxTurns: 1,
+        maxDurationMs: AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
       }),
     );
     if (recorded.status === "error") {

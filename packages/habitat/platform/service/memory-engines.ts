@@ -28,10 +28,12 @@ import {
   type ReflectLlmResult,
 } from "@freeanima/habitat/capabilities/memory/service/reflect-llm-port";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import { filterToolNamesByPolicy, resolveSleepCapabilityPolicy } from "./capability-policy-bind.ts";
-import { runAutoLlm } from "./auto-llm-run.ts";
+import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "./auto-llm-run.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 const RETAIN_MAX_TURNS = 50;
@@ -80,17 +82,28 @@ async function runReflectStream(
   const sleepPolicy = resolveSleepCapabilityPolicy(deps);
   const toolNames = filterToolNamesByPolicy(input.toolNames, sleepPolicy);
 
+  // retain 等调用方若已 compose，system 已含 protocol；再包一层会重复——仅当尚未含 protocol 时包装
+  const alreadyComposed = input.systemPrompt.includes(`<${PROMPT_XML_TAGS.autoLlmProtocol}>`);
+  const prompt = alreadyComposed
+    ? { systemPrompt: input.systemPrompt, userMessages: input.userMessages }
+    : composeAutoLlmPrompt({
+        kind: opts.runKind,
+        taskSpec: input.systemPrompt,
+        dataParts: input.userMessages.map((body) => ({ body })),
+      });
+
   const result = await runAutoLlm(
     deps,
     omitUndefined({
       runName: opts.runName,
       runKind: opts.runKind,
       subjectId: getResolvedWorldContext().agent_subject_id,
-      systemPrompt: input.systemPrompt,
-      userMessages: input.userMessages,
+      systemPrompt: prompt.systemPrompt,
+      userMessages: prompt.userMessages,
       model,
       toolNames,
       maxTurns: opts.maxTurns,
+      maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       toolPolicy: sleepPolicy,
       metadata: opts.metadata,
       onToolResult: opts.onToolResult,
@@ -119,15 +132,17 @@ async function runTemporalSummaryTurn(
   deps: FullRuntimeDeps,
   input: TemporalSummaryEngineInput,
 ): Promise<TemporalSummaryEngineResult> {
+  // summarizeTemporalText 已 composeAutoLlmPrompt（含 protocol / task_params）
   const result = await runAutoLlm(deps, {
     runName: "temporal-summary",
     runKind: "temporal-summary",
     subjectId: getResolvedWorldContext().agent_subject_id,
     systemPrompt: input.systemPrompt,
-    userMessages: [input.userMessage],
+    userMessages: input.userMessages,
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
     toolNames: [],
     maxTurns: 1,
+    maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
     metadata: { temporal_summary: true },
   });
   if (result.status === "error") {
@@ -140,15 +155,22 @@ async function runSelfLayerRefreshTurn(
   deps: FullRuntimeDeps,
   input: SelfLayerRefreshEngineInput,
 ): Promise<SelfLayerRefreshEngineResult> {
+  // input.systemPrompt = 维护任务规格；userMessage = 证据 + 当前可维护块
+  const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+    kind: "self-layer-refresh",
+    taskSpec: input.systemPrompt,
+    dataParts: [{ body: input.userMessage }],
+  });
   const result = await runAutoLlm(deps, {
     runName: "self-layer-refresh",
     runKind: "self-layer-refresh",
     subjectId: getResolvedWorldContext().agent_subject_id,
-    systemPrompt: input.systemPrompt,
-    userMessages: [input.userMessage],
+    systemPrompt,
+    userMessages,
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
     toolNames: [],
     maxTurns: 1,
+    maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
     metadata: { self_layer_refresh: true },
   });
   if (result.status === "error") {

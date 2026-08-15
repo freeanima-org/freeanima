@@ -6,6 +6,10 @@ import { conversationGoalSchema } from "@freeanima/habitat/core/db/domain";
 import type { MessagePayload } from "@freeanima/habitat/core/db/schema";
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
 import { generateAutoLlmRunId, judgeGoal } from "@freeanima/habitat/core/llm";
+import {
+  AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
+  AUTO_LLM_DEFAULT_MAX_DURATION_MS,
+} from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { getProfileHopModel } from "@freeanima/habitat/core/config";
 import { PROFILE_CHAT, PROFILE_GOAL_JUDGE } from "@freeanima/habitat/core/provider";
 import type { LlmCallParams } from "@freeanima/habitat/core/provider";
@@ -20,10 +24,11 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import type { ResolvedCapabilityPolicy } from "@freeanima/habitat/core/capability-policy";
 import { runtimeToolPolicyFromResolved } from "./capability-policy-bind.ts";
 
+export { AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS, AUTO_LLM_DEFAULT_MAX_DURATION_MS };
+
 const AUTO_LLM_MAX_ATTEMPTS = 3;
 const AUTO_LLM_RETRY_BASE_MS = 500;
 const OUTPUT_MAX = 10_000;
-const INPUT_SUMMARY_MAX = 2000;
 
 /** UI 用紧凑步骤（不含完整 args/result） */
 export type AutoLlmToolStep = {
@@ -42,6 +47,8 @@ export type AutoLlmRunInput = {
   model?: string;
   toolNames: string[];
   maxTurns: number;
+  /** 墙钟上限 ms；省略则不限 */
+  maxDurationMs?: number;
   goal?: ConversationGoal;
   metadata?: Record<string, unknown>;
   toolPolicy?: ResolvedCapabilityPolicy;
@@ -84,12 +91,6 @@ function buildAutoLlmMessages(input: AutoLlmRunInput): StoredMessage[] {
     messages.push({ role: "user", content, timestamp: now });
   }
   return messages;
-}
-
-function summarizeInput(input: AutoLlmRunInput): string {
-  const parts = input.userMessages.map((m) => m.trim()).filter(Boolean);
-  const joined = parts.join("\n---\n");
-  return joined.slice(0, INPUT_SUMMARY_MAX);
 }
 
 function lastAssistantText(msgs: StoredMessage[]): string {
@@ -209,6 +210,7 @@ async function runEngineOnce(
   input: AutoLlmRunInput,
   messages: StoredMessage[],
   model: string,
+  signal?: AbortSignal,
 ): Promise<{ output: string; toolCalls: number; steps: AutoLlmToolStep[] }> {
   const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(input.toolNames);
   const toolPolicy = runtimeToolPolicyFromResolved(input.toolPolicy ?? null);
@@ -226,7 +228,7 @@ async function runEngineOnce(
         llm: deps.engine.llm,
         executableTools: input.toolNames,
         conversationId: "",
-        ...omitUndefined({ toolPolicy, requestParams: input.requestParams }),
+        ...omitUndefined({ toolPolicy, requestParams: input.requestParams, signal }),
         max_turns: input.maxTurns,
         hookRegistry: deps.kernel.hookRegistry,
         llm_kind: "auto_llm",
@@ -340,7 +342,6 @@ async function persistAutoLlmRun(
   row: {
     id: string;
     input: AutoLlmRunInput;
-    inputSummary: string;
     output: string;
     status: "ok" | "error";
     durationMs: number;
@@ -358,10 +359,11 @@ async function persistAutoLlmRun(
     run_name: row.input.runName,
     run_kind: row.input.runKind,
     subject_id: row.input.subjectId,
-    input_summary: row.inputSummary,
     output: row.output.slice(0, OUTPUT_MAX),
     status: row.status,
     duration_ms: row.durationMs,
+    max_turns: row.input.maxTurns,
+    max_duration_ms: row.input.maxDurationMs ?? null,
     error: row.error ?? null,
     metadata: {
       ...row.input.metadata,
@@ -375,6 +377,22 @@ async function persistAutoLlmRun(
   });
 }
 
+function withWallClockSignal<T>(
+  maxDurationMs: number | undefined,
+  run: (signal?: AbortSignal) => Promise<T>,
+): Promise<T> {
+  if (maxDurationMs == null || maxDurationMs <= 0) {
+    return run(undefined);
+  }
+  const ac = new AbortController();
+  const timer = setTimeout(() => {
+    ac.abort(new Error(`AutoLlm wall-clock timeout after ${maxDurationMs}ms`));
+  }, maxDurationMs);
+  return run(ac.signal).finally(() => {
+    clearTimeout(timer);
+  });
+}
+
 /** 无用户回合 LLM：不写 conversations/messages，过程写入 auto_llm_runs + auto_llm_messages */
 export async function runAutoLlm(
   deps: FullRuntimeDeps,
@@ -385,7 +403,6 @@ export async function runAutoLlm(
   const startMs = Date.now();
   const model = input.model ?? getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
 
-  const inputSummary = summarizeInput(input);
   let messages = buildAutoLlmMessages(input);
   let goal = input.goal ? conversationGoalSchema.parse(input.goal) : undefined;
   let output = "";
@@ -399,26 +416,35 @@ export async function runAutoLlm(
       toolCalls = 0;
       steps = [];
       try {
-        goalLoop: while (true) {
-          const round = await runEngineOnce(deps, runId, input, messages, model);
-          output = round.output;
-          toolCalls += round.toolCalls;
-          steps = [...steps, ...round.steps];
+        await withWallClockSignal(input.maxDurationMs, async (signal) => {
+          goalLoop: while (true) {
+            if (signal?.aborted) {
+              const reason =
+                signal.reason instanceof Error
+                  ? signal.reason.message
+                  : `AutoLlm wall-clock timeout after ${input.maxDurationMs}ms`;
+              throw new Error(reason);
+            }
+            const round = await runEngineOnce(deps, runId, input, messages, model, signal);
+            output = round.output;
+            toolCalls += round.toolCalls;
+            steps = [...steps, ...round.steps];
 
-          if (!goal) break goalLoop;
-          const evalResult = await evaluateGoalForAutoLlm(
-            deps,
-            goal,
-            messages,
-            input.parentConversationId,
-          );
-          goal = evalResult.goal;
-          if (evalResult.action !== "continue") break goalLoop;
-          messages = [
-            ...messages,
-            { role: "user", content: evalResult.continuePrompt, timestamp: formatCstIso() },
-          ];
-        }
+            if (!goal) break goalLoop;
+            const evalResult = await evaluateGoalForAutoLlm(
+              deps,
+              goal,
+              messages,
+              input.parentConversationId,
+            );
+            goal = evalResult.goal;
+            if (evalResult.action !== "continue") break goalLoop;
+            messages = [
+              ...messages,
+              { role: "user", content: evalResult.continuePrompt, timestamp: formatCstIso() },
+            ];
+          }
+        });
         lastErr = undefined;
         break;
       } catch (err) {
@@ -434,7 +460,6 @@ export async function runAutoLlm(
     await persistAutoLlmRun(deps, {
       id: runId,
       input,
-      inputSummary,
       output,
       status: "ok",
       durationMs,
@@ -451,7 +476,6 @@ export async function runAutoLlm(
     await persistAutoLlmRun(deps, {
       id: runId,
       input,
-      inputSummary,
       output: output || message,
       status: "error",
       durationMs,

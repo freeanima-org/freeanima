@@ -14,7 +14,6 @@ export type TemporalSystemRollWarmRegenerate = typeof regenerateTemporalSystemRo
 export function scheduleTemporalSystemRollWarm(opts: {
   kinds: readonly SysRollKind[];
   config: ResolvedTemporalSummaryConfig;
-  selfContent: string;
   peerCache?: PeerRollCache;
   nowMs?: number;
   /** 测试注入 */
@@ -29,7 +28,6 @@ export function scheduleTemporalSystemRollWarm(opts: {
         await regenerate({
           kind,
           config: opts.config,
-          selfContent: opts.selfContent,
           ...(opts.peerCache ? { peerCache: opts.peerCache } : {}),
           ...(opts.nowMs !== undefined ? { nowMs: opts.nowMs } : {}),
         });

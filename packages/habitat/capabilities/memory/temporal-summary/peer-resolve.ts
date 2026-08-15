@@ -8,14 +8,17 @@ import {
   type PeerRollSource,
 } from "./buckets.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
-import { summarizeTemporalText, temporalSummaryHardCap } from "./summarize.ts";
+import {
+  summarizeTemporalText,
+  temporalSummaryHardCap,
+  TEMPORAL_SUMMARY_INSTRUCTIONS,
+} from "./summarize.ts";
 import type { PeerRollCache } from "./tick.ts";
 import type { TimelinePeerInject } from "./timeline-inject.ts";
 
 /** Resolve closed-bucket peer rollups for viewer conversation (one inject per bucket). */
 export async function resolvePeerTimelineInjects(opts: {
   viewerConversationId: string;
-  selfContent: string;
   config: ResolvedTemporalSummaryConfig;
   peerCache: PeerRollCache;
   nowMs?: number;
@@ -53,8 +56,7 @@ export async function resolvePeerTimelineInjects(opts: {
     if (!summary) {
       try {
         summary = await summarizeTemporalText({
-          selfContent: opts.selfContent,
-          instruction: "将多段他会话客观摘要合并为一条时段合摘要：一句级高度压缩，只留主题与结果。",
+          instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.peerRoll,
           material: sources
             .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
             .map((s) => `[${s.conversation_id}]\n${s.summary}`)

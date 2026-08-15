@@ -6,13 +6,14 @@
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { listSemanticMemoryBySourceSessions } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { updateSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
+import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
+import { getActiveRuntimeConfig, resolvePassiveRecallConfig } from "@freeanima/habitat/core/config";
 
-import { composeSystemPrompt, decomposeSystemPromptParts } from "../system-prompt.ts";
-import {
-  RETAIN_INSTRUCTION_MESSAGE,
-  formatExistingMemoriesMessage,
-} from "../day-window/build-messages.ts";
-import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
+import { RETAIN_TASK_SPEC, formatExistingMemoriesMessage } from "../day-window/build-messages.ts";
+import { formatPassiveMemoryBlock } from "../passive-recall/inject.ts";
+import { focusPassiveRecallQuery } from "../passive-recall/query.ts";
+import { semanticPassiveRecallSearch } from "../passive-recall/search.ts";
 
 import { withRetainProvenance } from "./retain-context.ts";
 import { isRetainLlmRegistered, runRetainLlm } from "./retain-llm-port.ts";
@@ -22,11 +23,12 @@ const RETAIN_TOOL_NAMES = [
   "memory_semantic_create",
   "memory_semantic_update",
   "memory_semantic_deprecate",
+  "memory_semantic_search",
 ] as const;
 
 function formatDialogueFromTexts(texts: string[]): string {
   const lines = texts.map((t, i) => `### turn ${i + 1}\n${t.trim()}`).filter((l) => l.length > 10);
-  return `# Dialogue to extract from\n\n${lines.join("\n\n")}`;
+  return lines.join("\n\n");
 }
 
 export type BuiltinRetainInput = {
@@ -34,6 +36,7 @@ export type BuiltinRetainInput = {
   message_ids: string[];
   texts: string[];
   source: MemoryProvenance;
+  /** @deprecated 忽略；retain 不再注入自我层 */
   selfContent?: string;
 };
 
@@ -57,16 +60,51 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
     return { created: [], updated: [], skipped: true, summary: "no_texts" };
   }
 
-  const selfContent = input.selfContent ?? (await loadSelfLayerPrompt());
-  const parts = await decomposeSystemPromptParts(selfContent, null);
-  const systemPrompt = composeSystemPrompt(parts);
-
   const related = await listSemanticMemoryBySourceSessions([input.conversation_id]);
-  const userMessages = [
-    formatDialogueFromTexts(texts),
-    formatExistingMemoriesMessage(related),
-    RETAIN_INSTRUCTION_MESSAGE,
-  ];
+  const relatedIds = new Set(related.map((r) => r.id));
+
+  const dataParts: { tag?: string; body: string }[] = [];
+  if (related.length > 0) {
+    dataParts.push({
+      tag: PROMPT_XML_TAGS.relatedMemories,
+      body: formatExistingMemoriesMessage(related),
+    });
+  }
+
+  const query = focusPassiveRecallQuery(texts.join("\n"));
+  if (query) {
+    try {
+      const config = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
+      if (config.enabled) {
+        const hits = await semanticPassiveRecallSearch(query, {
+          limit: config.limit,
+          min_score: config.min_score,
+          min_relative_score: config.min_relative_score,
+        });
+        const filtered = hits.filter((h) => !relatedIds.has(h.semantic_memory_id));
+        const block = formatPassiveMemoryBlock(filtered, 6_000);
+        if (block) {
+          // formatPassiveMemoryBlock 已含 <passive_memory>，直接作为 user 段
+          dataParts.push({ body: block, tag: "" });
+        }
+      }
+    } catch (e) {
+      logComponent("memory").warn("retain passive-style recall failed", {
+        error: e instanceof Error ? e.message : String(e),
+      });
+    }
+  }
+
+  dataParts.push({
+    tag: PROMPT_XML_TAGS.sourceData,
+    body: formatDialogueFromTexts(texts),
+  });
+
+  const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+    kind: "memory-retain",
+    taskSpec: RETAIN_TASK_SPEC,
+    dataParts,
+  });
 
   return withRetainProvenance(input.source, async () => {
     const llm = await runRetainLlm({
@@ -75,7 +113,6 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
       toolNames: [...RETAIN_TOOL_NAMES],
     });
 
-    // 工具可能未带 source；补写 provenance
     for (const id of llm.semantic_memory_ids) {
       try {
         await updateSemanticMemory({

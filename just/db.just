@@ -3,7 +3,8 @@ import '_common.just'
 
 [no-cd]
 generate: _deps
-  cd packages/habitat/core && {{ bun }} x drizzle-kit generate
+  # --bun：用 Bun 解析 workspace paths（裸 drizzle-kit 会把 @freeanima/shared 解析错）
+  cd packages/habitat/core && {{ bun }} x --bun drizzle-kit generate
 
 # 从 pgTable + 覆盖映射 codegen 纯 Zod → shared/pg-shapes/rows
 [no-cd]

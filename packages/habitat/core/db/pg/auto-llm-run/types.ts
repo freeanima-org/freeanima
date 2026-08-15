@@ -5,10 +5,11 @@ export type AutoLlmRunRow = {
   run_name: string;
   run_kind: string;
   subject_id: number | null;
-  input_summary: string;
   output: string;
   status: string;
   duration_ms: number;
+  max_turns: number;
+  max_duration_ms: number | null;
   error: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
@@ -33,10 +34,11 @@ export type AutoLlmRunAppendInput = {
   run_name: string;
   run_kind: string;
   subject_id?: number | null;
-  input_summary: string;
   output: string;
   status: "ok" | "error";
   duration_ms: number;
+  max_turns: number;
+  max_duration_ms?: number | null;
   error?: string | null;
   metadata?: Record<string, unknown> | null;
   created_at?: string;

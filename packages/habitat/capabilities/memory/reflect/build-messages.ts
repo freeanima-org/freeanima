@@ -306,3 +306,8 @@ export const DEEP_SLEEP_TOOL_NAMES = [
   "memory_semantic_create",
   "memory_semantic_merge",
 ] as const;
+
+/** reflect 任务规格（层 2）；本轮细则在数据层 instruction */
+export const REFLECT_TASK_SPEC = `你正在执行语义记忆深睡巩固。
+在有限工具环内，按本轮指令对数据层中的语义记忆调用记忆工具（create / update / deprecate / merge）。
+只依据给出的记忆清单、变更日志与本轮指令操作；完成后停止。`;

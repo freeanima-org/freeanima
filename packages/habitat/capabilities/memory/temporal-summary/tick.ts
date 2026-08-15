@@ -23,7 +23,7 @@ import {
   temporalMaterialAfterAt,
   type PeerRollSource,
 } from "./buckets.ts";
-import { summarizeTemporalText } from "./summarize.ts";
+import { summarizeTemporalText, TEMPORAL_SUMMARY_INSTRUCTIONS } from "./summarize.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 
 export type PeerRollCache = {
@@ -71,7 +71,6 @@ export function formatMessagesForSummary(
 }
 
 export async function runTemporalSummaryTick(opts: {
-  selfContent: string;
   config: ResolvedTemporalSummaryConfig;
   peerCache?: PeerRollCache;
   nowMs?: number;
@@ -130,9 +129,7 @@ export async function runTemporalSummaryTick(opts: {
     let summary: string;
     try {
       summary = await summarizeTemporalText({
-        selfContent: opts.selfContent,
-        instruction:
-          "请对本段会话新增消息做客观、无差别的一句级增量摘要：只写主题与结果，禁止细节与内部 ID。",
+        instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.chunk,
         material:
           day.chunks.length > 0
             ? `【已有摘要】\n${day.chunks.map((c) => c.summary).join("\n---\n")}\n\n【新增消息】\n${material}`
@@ -163,7 +160,6 @@ export async function runTemporalSummaryTick(opts: {
 
   if (opts.peerCache) {
     await warmClosedPeerRolls({
-      selfContent: opts.selfContent,
       config: opts.config,
       peerCache: opts.peerCache,
       nowMs,
@@ -181,7 +177,6 @@ export async function runTemporalSummaryTick(opts: {
 }
 
 async function warmClosedPeerRolls(opts: {
-  selfContent: string;
   config: ResolvedTemporalSummaryConfig;
   peerCache: PeerRollCache;
   nowMs: number;
@@ -218,8 +213,7 @@ async function warmClosedPeerRolls(opts: {
       if (hit?.summary) continue;
       try {
         const summary = await summarizeTemporalText({
-          selfContent: opts.selfContent,
-          instruction: "将多段他会话客观摘要合并为一条时段合摘要：一句级高度压缩，只留主题与结果。",
+          instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.peerRoll,
           material: peerSources
             .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
             .map((s) => `[${s.conversation_id}]\n${s.summary}`)

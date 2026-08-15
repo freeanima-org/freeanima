@@ -80,9 +80,11 @@ describe("generateConversationTitle", () => {
     expect(chatSpy).toHaveBeenCalledTimes(1);
     const [messages, opts] = chatSpy.mock.calls[0]!;
     expect(messages[0]).toMatchObject({ role: "system" });
-    expect(String(messages[0]?.content)).toContain("NOT a reply");
-    expect(String(messages[0]?.content)).toContain("sidebar");
-    expect(messages[1]).toEqual({ role: "user", content: "The login page throws 500" });
+    expect(String(messages[0]?.content)).toContain("auto_llm_protocol");
+    expect(String(messages[0]?.content)).toContain("conversation-title");
+    expect(String(messages[0]?.content)).toContain("不是对用户的回复");
+    expect(messages[1]?.role).toBe("user");
+    expect(String(messages[1]?.content)).toContain("The login page throws 500");
     expect(opts?.profileId).toBe(PROFILE_SUMMARY);
     expect(opts?.requestParams).toEqual(SESSION_TITLE_REQUEST_PARAMS);
     expect(SESSION_TITLE_REQUEST_PARAMS.extra.thinking).toEqual({ type: "disabled" });
