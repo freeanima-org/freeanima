@@ -40,6 +40,8 @@ describePg("tool catalog lazy load", () => {
   it("new conversation system_prompt lists ToolSets compactly", async () => {
     const c = testConv();
     const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
+    // 新建会话延后拼装；显式 ensure 后再断言目录
+    await c.ensureSystemPromptFresh(sid);
     const meta = await c.loadConversationMeta(sid);
     expect(isConversationMeta(meta)).toBe(true);
     if (!isConversationMeta(meta)) return;
