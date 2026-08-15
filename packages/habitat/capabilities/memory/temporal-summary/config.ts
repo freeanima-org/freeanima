@@ -1,4 +1,16 @@
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
+import type { SysRollKind } from "./buckets.ts";
+
+/** sys_roll TTL：与时间粒度对齐（不复用 peer_roll_ttl） */
+export const SYS_ROLL_TTL_SECONDS: Record<SysRollKind, number> = {
+  past_days: 24 * 60 * 60,
+  past_months: 31 * 24 * 60 * 60,
+  past_years: 366 * 24 * 60 * 60,
+};
+
+export function sysRollTtlSeconds(kind: SysRollKind): number {
+  return SYS_ROLL_TTL_SECONDS[kind];
+}
 
 export type ResolvedTemporalSummaryConfig = {
   enabled: boolean;

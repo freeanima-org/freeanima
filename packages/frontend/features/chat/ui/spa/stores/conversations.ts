@@ -27,6 +27,7 @@ import { getConversationTail } from "@freeanima/features/chat/ui/spa/lib/api.ts"
 import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/lib/sort-conversations.ts";
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
+import { toast } from "@freeanima/ui-kit/composite";
 
 /** Chat 首屏 / 向上加载每页原始消息条数 */
 export const CHAT_MESSAGES_PAGE_SIZE = 100;
@@ -195,6 +196,7 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       return conversationId;
     } catch (e) {
       console.error("newConversation:", e);
+      toast("新建对话失败，请检查栖息地连接后重试", { duration: 4000 });
       return null;
     }
   },

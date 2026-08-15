@@ -111,19 +111,24 @@ Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至�
 稳定 key（路径中无指纹），便于栖息地列出缓存槽：
 
 ```text
-{prefix}:sys_roll:past_days:{today}
-{prefix}:sys_roll:past_months:{yyyy-mm}
-{prefix}:sys_roll:past_years:{yyyy}
+{prefix}:sys_roll:past_days:{today}       # 覆盖：本月且 < 今日 的 day 实体
+{prefix}:sys_roll:past_months:{yyyy-mm}   # 覆盖：本年且 < 本月 的 month 实体
+{prefix}:sys_roll:past_years:{yyyy}       # 覆盖：< 本年 的 year 实体
 ```
 
 - 值：`{ summary, sources_fp, created_at }` —— 当 `sources_fp` 与当前源行一致时复用
 - 上限：提示目标 `global_day_max_chars`（默认 **100**）；硬截断在 **1.5×**（见下）
-- TTL：`peer_roll_ttl_seconds`
+- **TTL（按时间粒度，不复用 `peer_roll_ttl_seconds`）**：
+  - `past_days` → **1 天**
+  - `past_months` → **约 1 月**（31 天）
+  - `past_years` → **1 年**（366 天）
+- **写入时机**：记忆维护写完全局日实体后后台 regenerate `past_days`；cascade 写完月/年实体后分别 regenerate `past_months` / `past_years`。Habitat UI 手动 `memory.temporalSystemRollRegenerate` / batch 仍可用。
+- **系统提示注入**：只读上述 Redis；cache miss 则跳过该块，**不在** `buildSystemPrompt` / 新建对话路径懒打 LLM。
 - 栖息地页签 **系统合摘要**：`memory.temporalSystemRollList` / `memory.temporalSystemRollRegenerate`
 
-## 注入（LLM 前缀 / KV 缓存）
+## 注入（系统提示 / KV 缓存）
 
-系统提示段 `temporal-summary` 最多注入 **三段**逆向合摘要（近 → 远），每段目标 ≤100 字（硬上限 1.5×）；整段外包 `<temporal_summary>`：
+系统提示段 `temporal-summary` 最多注入 **三段**逆向合摘要（近 → 远），每段目标 ≤100 字（硬上限 1.5×）；整段外包 `<temporal_summary>`。注入时**只读 Redis sys_roll**；未命中则跳过该块（不在拼装路径打 LLM）。
 
 | 块     | 来源                                             | 为空时示例           |
 | ------ | ------------------------------------------------ | -------------------- |

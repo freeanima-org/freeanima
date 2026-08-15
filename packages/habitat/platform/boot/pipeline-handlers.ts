@@ -3,6 +3,8 @@ import {
   resolveTemporalSummaryConfig,
   runTemporalSummaryCascade,
   runTemporalSummaryDay,
+  scheduleTemporalSystemRollWarm,
+  type SysRollKind,
 } from "@freeanima/habitat/capabilities/memory/temporal-summary";
 import { cstDayRange } from "@freeanima/habitat/capabilities/memory";
 import { createEmbeddedMemoryService } from "@freeanima/habitat/capabilities/memory/service";
@@ -25,6 +27,7 @@ import { purgeCronConversations } from "@freeanima/habitat/core/db/pg/conversati
 import { formatCstIso } from "@freeanima/habitat/core/util";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
+import { cacheGetJson, cacheSetJson } from "@freeanima/habitat/core/redis";
 
 import {
   MEMORY_MAINTENANCE_PIPELINE_ID,
@@ -247,6 +250,14 @@ async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> 
       output: result,
     };
   }
+  if (result.ok) {
+    scheduleTemporalSystemRollWarm({
+      kinds: ["past_days"] satisfies SysRollKind[],
+      config,
+      selfContent,
+      peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
+    });
+  }
   return {
     ok: result.ok,
     step_id: MAINTENANCE_STEP_IDS.temporalSummaryDay,
@@ -270,6 +281,20 @@ async function runTemporalCascadeStep(ctx: StepCtx): Promise<MaintenanceStepResu
       skipped_reason: result.skipped,
       output: result,
     };
+  }
+  if (result.ok) {
+    const kinds: SysRollKind[] = [];
+    if (result.month_id != null) kinds.push("past_months");
+    if (result.year_id != null) kinds.push("past_years");
+    // cascade 未写实体时（非月初/年初）不必预热；写了则按粒度刷新
+    if (kinds.length > 0) {
+      scheduleTemporalSystemRollWarm({
+        kinds,
+        config,
+        selfContent,
+        peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
+      });
+    }
   }
   return {
     ok: result.ok,

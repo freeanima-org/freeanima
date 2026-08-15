@@ -7,7 +7,7 @@ import {
   yearPeriodStart,
   type SysRollKind,
 } from "./buckets.ts";
-import type { ResolvedTemporalSummaryConfig } from "./config.ts";
+import { type ResolvedTemporalSummaryConfig, sysRollTtlSeconds } from "./config.ts";
 import { summarizeTemporalText, temporalSummaryHardCap } from "./summarize.ts";
 import type { PeerRollCache } from "./tick.ts";
 
@@ -195,7 +195,7 @@ async function resolveRollup(opts: {
     await opts.peerCache.setJson(
       redis_key,
       { summary, sources_fp: fp, created_at } satisfies SysRollCacheValue,
-      opts.config.peer_roll_ttl_seconds,
+      sysRollTtlSeconds(opts.kind),
     );
   }
   return {
@@ -275,27 +275,4 @@ export async function regenerateTemporalSystemRoll(opts: {
     source_count: result.source_count,
     redis_key: result.redis_key,
   };
-}
-
-export async function resolveAllSystemRolls(opts: {
-  config: ResolvedTemporalSummaryConfig;
-  peerCache?: PeerRollCache;
-  selfContent?: string;
-  nowMs?: number;
-}): Promise<Array<{ label: string; summary: string }>> {
-  const today = cstDateString(opts.nowMs ?? Date.now());
-  const out: Array<{ label: string; summary: string }> = [];
-  for (const kind of SYS_ROLL_KINDS) {
-    const result = await resolveRollup({
-      kind,
-      today,
-      config: opts.config,
-      ...(opts.peerCache ? { peerCache: opts.peerCache } : {}),
-      ...(opts.selfContent !== undefined ? { selfContent: opts.selfContent } : {}),
-    });
-    if (result.summary) {
-      out.push({ label: result.label, summary: result.summary });
-    }
-  }
-  return out;
 }
