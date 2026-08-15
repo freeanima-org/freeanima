@@ -401,6 +401,7 @@ export async function listSemanticMemories(input: {
   status?: string;
   source_conversation?: string;
   sort_by?: "created_at" | "updated_at" | "reference_count" | "rank";
+  cluster_id?: number | null;
 }) {
   const scope = resolveCacheScope(resolveApiOrigin());
   const cacheId = JSON.stringify(input);
@@ -412,6 +413,12 @@ export async function listSemanticMemories(input: {
     reconcile: (result) => reviveDates(result),
     offlineError: "memory.semanticList unavailable offline",
   });
+}
+
+export async function listSemanticMemoryClusters() {
+  return hubCall(habitat().call("memory.semanticClusters", {})) as Promise<{
+    items: Array<{ cluster_id: number | null; count: number }>;
+  }>;
 }
 
 export async function updateSemanticMemoryPinned(input: { id: number; pinned: boolean }) {

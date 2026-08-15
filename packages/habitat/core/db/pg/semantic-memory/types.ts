@@ -63,6 +63,8 @@ export type SemanticMemorySearchOpts = {
   status?: "active" | "deprecated" | "all";
   source_conversations?: string[];
   sort_by?: SemanticMemorySortBy;
+  /** 省略=不筛；null=仅未分组；非负整数=该聚类族 */
+  cluster_id?: number | null;
 };
 
 /** HTTP / tool validation for semantic memory rows (subset of table columns). */
@@ -85,6 +87,7 @@ export type SemanticMemoryRowSchema = z.infer<typeof semanticMemoryRowSchema>;
 
 export const semanticFtsHitSchema = semanticMemoryRowSchema.extend({
   rank: z.number(),
+  cluster_id: z.number().int().nullable(),
 });
 
 export type SemanticFtsHitSchema = z.infer<typeof semanticFtsHitSchema>;

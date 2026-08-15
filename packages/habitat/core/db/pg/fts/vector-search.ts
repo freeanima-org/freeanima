@@ -2,7 +2,7 @@ import type { SemanticFtsHit } from "@freeanima/habitat/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
 import { and, asc, sql } from "drizzle-orm";
 import { entities, searchDocuments } from "@freeanima/habitat/core/db/schema";
-import { semanticMemoryDocKey } from "@freeanima/habitat/core/util";
+import { omitUndefined, semanticMemoryDocKey } from "@freeanima/habitat/core/util";
 
 import { getDb } from "../client.ts";
 import { embedQueryText } from "../embedding/query.ts";
@@ -27,6 +27,7 @@ const semanticSelect = {
   reference_count: entities.reference_count,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
+  cluster_id: searchDocuments.cluster_id,
 } as const;
 
 /**
@@ -41,6 +42,7 @@ export async function searchSemanticMemoryVector(
     types?: string[];
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
+    cluster_id?: number | null;
   },
 ): Promise<VectorSemanticHit[]> {
   const q = query.trim();
@@ -64,7 +66,14 @@ export async function searchSemanticMemoryVector(
   );
   const conditions = [
     sql`${searchDocuments.embedding} IS NOT NULL`,
-    ...buildSemanticConditions({ types, status, source_conversations }),
+    ...buildSemanticConditions(
+      omitUndefined({
+        types,
+        status,
+        source_conversations,
+        cluster_id: opts?.cluster_id,
+      }),
+    ),
   ];
 
   const rows = await db
@@ -102,6 +111,7 @@ export async function searchSemanticMemoryVector(
       ...mapped,
       docKey: semanticMemoryDocKey(mapped.id),
       rank: r.rank,
+      cluster_id: r.cluster_id ?? null,
     };
   });
 }

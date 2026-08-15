@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SemanticMemoryRow } from "@freeanima/shared/db-shapes";
 import {
   Badge,
@@ -34,12 +34,16 @@ import { PassiveRecallDebugPanel } from "@freeanima/features/habitat/ui/habitat/
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import {
   listSemanticMemories,
+  listSemanticMemoryClusters,
   updateSemanticMemoryPinned,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { useMemoryPipeline } from "@freeanima/features/habitat/ui/habitat/lib/use-memory-pipeline.ts";
 
 const PAGE_SIZE = 20;
 const ALL_VALUE = "__all__";
+const UNGROUPED_VALUE = "__ungrouped__";
+const CLUSTER_CALIBRATE_STEP = "semantic-cluster-calibrate";
 
 const SEMANTIC_TYPES = [
   "world",
@@ -54,7 +58,27 @@ const SEMANTIC_TYPES = [
 const BROWSE_SORT_OPTIONS = ["updated_at", "created_at", "reference_count"] as const;
 type BrowseSortBy = (typeof BROWSE_SORT_OPTIONS)[number];
 
-type SemanticRow = SemanticMemoryRow & { rank?: number };
+type SemanticRow = SemanticMemoryRow & { rank?: number; cluster_id?: number | null };
+
+type ClusterStat = { cluster_id: number | null; count: number };
+
+function clusterFilterKey(clusterFilter: number | null | undefined): string {
+  if (clusterFilter === undefined) return ALL_VALUE;
+  if (clusterFilter === null) return UNGROUPED_VALUE;
+  return String(clusterFilter);
+}
+
+function parseClusterFilterKey(key: string): number | null | undefined {
+  if (key === ALL_VALUE) return undefined;
+  if (key === UNGROUPED_VALUE) return null;
+  const n = Number(key);
+  return Number.isInteger(n) && n >= 0 ? n : undefined;
+}
+
+function formatClusterLabel(clusterId: number | null | undefined): string {
+  if (clusterId == null) return "未分组";
+  return `族 ${clusterId}`;
+}
 
 export const Route = createFileRoute("/_sidebar/semantic-memory")({
   validateSearch: (search: Record<string, unknown>): { passive?: "1" } =>
@@ -81,6 +105,7 @@ function SemanticMemoryPage() {
   const [typeFilter, setTypeFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
   const [sourceConversation, setSourceConversation] = useState("");
+  const [clusterFilter, setClusterFilter] = useState<number | null | undefined>(undefined);
   const [sortBy, setSortBy] = useState<BrowseSortBy>("updated_at");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -90,8 +115,27 @@ function SemanticMemoryPage() {
   const [loaded, setLoaded] = useState(false);
   const [hasSearchQuery, setHasSearchQuery] = useState(false);
   const [toggling, setToggling] = useState<Record<string, boolean>>({});
+  const [clusterStats, setClusterStats] = useState<ClusterStat[]>([]);
+
+  const loadedRef = useRef(false);
+  const offsetRef = useRef(0);
+  const fetchListRef = useRef<
+    (nextOffset: number, clusterOverride?: number | null) => Promise<void>
+  >(async () => {});
+  const refreshClusterStatsRef = useRef<() => Promise<void>>(async () => {});
+
+  const { pipelineError, pipelineBusy, runningStepId, startStep, setPipelineError } =
+    useMemoryPipeline({
+      logScope: "semantic-memory/cluster-calibrate",
+      onSettled: () => {
+        void refreshClusterStatsRef.current();
+        if (loadedRef.current) void fetchListRef.current(offsetRef.current);
+      },
+    });
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+  const calibrating = runningStepId === CLUSTER_CALIBRATE_STEP;
+  const ungroupedCount = clusterStats.find((s) => s.cluster_id == null)?.count;
 
   const setPassiveSheetOpen = (open: boolean) => {
     setPassiveOpen(open);
@@ -101,12 +145,30 @@ function SemanticMemoryPage() {
     });
   };
 
+  const refreshClusterStats = useCallback(async () => {
+    try {
+      const data = await listSemanticMemoryClusters();
+      setClusterStats(data.items ?? []);
+    } catch (e) {
+      logCaughtError("routes/_sidebar/semantic-memory/clusters", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshClusterStatsRef.current = refreshClusterStats;
+  }, [refreshClusterStats]);
+
+  useEffect(() => {
+    void refreshClusterStats();
+  }, [refreshClusterStats]);
+
   const fetchList = useCallback(
-    async (nextOffset: number) => {
+    async (nextOffset: number, clusterOverride?: number | null) => {
       setLoading(true);
       setError("");
       const trimmedQuery = query.trim();
       const effectiveSortBy = trimmedQuery ? "rank" : sortBy;
+      const effectiveCluster = clusterOverride !== undefined ? clusterOverride : clusterFilter;
       try {
         const data = (await listSemanticMemories({
           offset: nextOffset,
@@ -117,13 +179,16 @@ function SemanticMemoryPage() {
             query: trimmedQuery || undefined,
             types: typeFilter ? [typeFilter] : undefined,
             source_conversation: sourceConversation.trim() || undefined,
+            cluster_id: effectiveCluster,
           }),
         })) as { items: SemanticRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);
         setOffset(nextOffset);
+        offsetRef.current = nextOffset;
         setHasSearchQuery(Boolean(trimmedQuery));
         setLoaded(true);
+        loadedRef.current = true;
       } catch (e) {
         logCaughtError("routes/_sidebar/semantic-memory", e);
         setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
@@ -131,8 +196,12 @@ function SemanticMemoryPage() {
         setLoading(false);
       }
     },
-    [query, typeFilter, statusFilter, sourceConversation, sortBy],
+    [query, typeFilter, statusFilter, sourceConversation, clusterFilter, sortBy],
   );
+
+  useEffect(() => {
+    fetchListRef.current = fetchList;
+  }, [fetchList]);
 
   const runSearch = () => {
     void fetchList(0);
@@ -140,6 +209,11 @@ function SemanticMemoryPage() {
 
   const onPageChange = (page: number) => {
     void fetchList((page - 1) * PAGE_SIZE);
+  };
+
+  const filterByCluster = (next: number | null) => {
+    setClusterFilter(next);
+    void fetchList(0, next);
   };
 
   const onTogglePinned = async (row: SemanticRow, nextPinned: boolean) => {
@@ -163,16 +237,36 @@ function SemanticMemoryPage() {
     }
   };
 
+  const onCalibrateClusters = () => {
+    setPipelineError("");
+    void startStep(CLUSTER_CALIBRATE_STEP);
+  };
+
+  const displayError = error || pipelineError;
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold mb-1">{"📝 语义记忆"}</h2>
           <p className="text-sm text-muted-foreground">
-            {"浏览 PG semantic_memory 表，支持 FTS 搜索与过滤。"}
+            {"浏览 PG semantic_memory 表，支持 FTS 搜索、聚类族过滤与全量聚类校准。"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            title={
+              "对语义记忆 embedding 做 DBSCAN 全量校准（可能耗时；超 max_calibrate_n 会 skip）"
+            }
+            isDisabled={pipelineBusy}
+            onClick={onCalibrateClusters}
+          >
+            {calibrating ? <Spinner /> : null}
+            {calibrating ? "聚类中…" : "全量聚类"}
+          </Button>
           <Button
             type="button"
             size="sm"
@@ -213,7 +307,7 @@ function SemanticMemoryPage() {
                   placeholder={"关键词…"}
                 />
               </FormField>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div>
                   <FormFieldLabel className="text-xs py-0">{"类型"}</FormFieldLabel>
                   <Select
@@ -256,6 +350,33 @@ function SemanticMemoryPage() {
                   </Select>
                 </div>
                 <div>
+                  <FormFieldLabel className="text-xs py-0">{"聚类族"}</FormFieldLabel>
+                  <Select
+                    selectedKey={clusterFilterKey(clusterFilter)}
+                    onSelectionChange={(key) => {
+                      if (key == null) return;
+                      setClusterFilter(parseClusterFilterKey(String(key)));
+                    }}
+                  >
+                    <SelectTrigger size="sm" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
+                      <SelectItem id={UNGROUPED_VALUE}>
+                        {ungroupedCount != null ? `未分组（${ungroupedCount}）` : "未分组"}
+                      </SelectItem>
+                      {clusterStats
+                        .filter((s) => s.cluster_id != null)
+                        .map((s) => (
+                          <SelectItem key={String(s.cluster_id)} id={String(s.cluster_id)}>
+                            {`族 ${s.cluster_id}（${s.count}）`}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
                   <FormFieldLabel className="text-xs py-0">{"来源对话（可选）"}</FormFieldLabel>
                   <Input
                     value={sourceConversation}
@@ -293,9 +414,9 @@ function SemanticMemoryPage() {
         </Card>
       </form>
 
-      {error ? (
+      {displayError ? (
         <StatusAlert variant="error" className="mb-4">
-          {error}
+          {displayError}
         </StatusAlert>
       ) : null}
 
@@ -314,6 +435,7 @@ function SemanticMemoryPage() {
                   <TableRow>
                     <TableHead>id</TableHead>
                     <TableHead>{"类型"}</TableHead>
+                    <TableHead>{"聚类族"}</TableHead>
                     <TableHead>{"状态"}</TableHead>
                     <TableHead>{"置顶"}</TableHead>
                     <TableHead>{"创建时间"}</TableHead>
@@ -331,6 +453,18 @@ function SemanticMemoryPage() {
                         {row.id}
                       </TableCell>
                       <TableCell className="text-xs">{row.type}</TableCell>
+                      <TableCell className="text-xs">
+                        <button
+                          type="button"
+                          className="inline-flex"
+                          title={"按此聚类族筛选"}
+                          onClick={() => filterByCluster(row.cluster_id ?? null)}
+                        >
+                          <Badge variant="ghost" className="text-xs">
+                            {formatClusterLabel(row.cluster_id)}
+                          </Badge>
+                        </button>
+                      </TableCell>
                       <TableCell className="text-xs">{row.status}</TableCell>
                       <TableCell className="text-xs">
                         {row.status === "active" ? (

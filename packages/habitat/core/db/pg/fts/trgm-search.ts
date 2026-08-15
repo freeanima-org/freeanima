@@ -2,13 +2,16 @@ import type { SemanticFtsHit } from "@freeanima/habitat/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
 import { and, desc, eq, notLike, sql } from "drizzle-orm";
 import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/habitat/core/config";
-import { messageDocKey, semanticMemoryDocKey } from "@freeanima/habitat/core/util";
+import { messageDocKey, omitUndefined, semanticMemoryDocKey } from "@freeanima/habitat/core/util";
 import { entities, messages, searchDocuments } from "@freeanima/habitat/core/db/schema";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
 import { entityToSemanticMemoryRow } from "../semantic-memory/map-row.ts";
-import { messageSearchDocumentsJoin } from "../search/pg-search-index/channel-fts.ts";
+import {
+  entitySearchDocumentsJoin,
+  messageSearchDocumentsJoin,
+} from "../search/pg-search-index/channel-fts.ts";
 
 export type TrgmSemanticHit = SemanticFtsHit & { docKey: string };
 
@@ -26,6 +29,7 @@ const semanticSelect = {
   reference_count: entities.reference_count,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
+  cluster_id: searchDocuments.cluster_id,
 } as const;
 
 export async function searchSemanticMemoryTrgm(
@@ -35,6 +39,7 @@ export async function searchSemanticMemoryTrgm(
     types?: string[];
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
+    cluster_id?: number | null;
   },
 ): Promise<TrgmSemanticHit[]> {
   const q = query.trim();
@@ -51,7 +56,14 @@ export async function searchSemanticMemoryTrgm(
   const rankExpr = sql<number>`similarity(${entities.content}, ${q})`.as("rank");
   const conditions = [
     sql`word_similarity(${entities.content}, ${q}) >= ${minSim}`,
-    ...buildSemanticConditions({ types, status, source_conversations }),
+    ...buildSemanticConditions(
+      omitUndefined({
+        types,
+        status,
+        source_conversations,
+        cluster_id: opts?.cluster_id,
+      }),
+    ),
   ];
 
   const rows = await db
@@ -60,6 +72,7 @@ export async function searchSemanticMemoryTrgm(
       rank: rankExpr,
     })
     .from(entities)
+    .leftJoin(searchDocuments, entitySearchDocumentsJoin())
     .where(and(...conditions))
     .orderBy(desc(rankExpr))
     .limit(limit);
@@ -88,6 +101,7 @@ export async function searchSemanticMemoryTrgm(
       ...mapped,
       docKey: semanticMemoryDocKey(mapped.id),
       rank: r.rank,
+      cluster_id: r.cluster_id ?? null,
     };
   });
 }

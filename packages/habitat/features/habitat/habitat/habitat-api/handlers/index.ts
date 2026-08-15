@@ -33,6 +33,7 @@ export {
   getTemporalSystemRollBatchStatus,
   countSemanticMemory,
   listSemanticMemories,
+  listSemanticMemoryClusters,
   updateSemanticMemoryPinned,
 } from "./memory.ts";
 export { getPromptDebug } from "./prompt.ts";

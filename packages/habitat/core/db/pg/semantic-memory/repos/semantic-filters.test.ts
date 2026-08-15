@@ -1,8 +1,13 @@
 import { expect, test } from "bun:test";
-import { and, eq, sql } from "drizzle-orm";
-import { entities, SEMANTIC_MEMORY_COMPONENT } from "@freeanima/habitat/core/db/schema";
+import { and, eq, isNull, sql } from "drizzle-orm";
+import {
+  entities,
+  searchDocuments,
+  SEMANTIC_MEMORY_COMPONENT,
+} from "@freeanima/habitat/core/db/schema";
 
 import {
+  buildSemanticClusterCondition,
   buildSemanticConditions,
   buildSemanticSourceConversationsCondition,
   buildSemanticStatusCondition,
@@ -48,13 +53,20 @@ test("buildSemanticSourceConversationsCondition requires non-empty conversations
   );
 });
 
+test("buildSemanticClusterCondition undefined / null / id", () => {
+  expect(buildSemanticClusterCondition(undefined)).toBeUndefined();
+  expect(buildSemanticClusterCondition(null)).toEqual(isNull(searchDocuments.cluster_id));
+  expect(buildSemanticClusterCondition(3)).toEqual(eq(searchDocuments.cluster_id, 3));
+});
+
 test("buildSemanticConditions composes filters", () => {
   const conditions = buildSemanticConditions({
     types: ["world"],
     status: "active",
     source_conversations: ["sess-a"],
+    cluster_id: 2,
   });
-  expect(conditions).toHaveLength(4);
+  expect(conditions).toHaveLength(5);
   expect(conditions[0]).toEqual(eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT));
   expect(and(...conditions)).toBeDefined();
 });

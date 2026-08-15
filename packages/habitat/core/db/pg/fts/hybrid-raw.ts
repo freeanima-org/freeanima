@@ -2,6 +2,7 @@ import type { SemanticFtsHit } from "@freeanima/habitat/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
 import { and, desc, eq, notLike, sql } from "drizzle-orm";
 import { entities, messages, searchDocuments } from "@freeanima/habitat/core/db/schema";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import { getDb } from "../client.ts";
 import { buildSemanticConditions } from "../semantic-memory/repos/semantic-filters.ts";
@@ -26,6 +27,7 @@ const semanticSelect = {
   reference_count: entities.reference_count,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
+  cluster_id: searchDocuments.cluster_id,
 } as const;
 
 function mapHit(row: {
@@ -43,6 +45,7 @@ function mapHit(row: {
   created_at: Date;
   updated_at: Date;
   rank: number;
+  cluster_id: number | null;
 }): SemanticFtsHit {
   const entityRow: EntityRow = {
     id: row.id,
@@ -62,7 +65,11 @@ function mapHit(row: {
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
-  return { ...entityToSemanticMemoryRow(entityRow), rank: row.rank };
+  return {
+    ...entityToSemanticMemoryRow(entityRow),
+    rank: row.rank,
+    cluster_id: row.cluster_id ?? null,
+  };
 }
 
 export async function searchSemanticMemoryFtsRaw(
@@ -72,6 +79,7 @@ export async function searchSemanticMemoryFtsRaw(
     types?: string[];
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
+    cluster_id?: number | null;
   },
 ): Promise<SemanticFtsHit[]> {
   const q = query.trim();
@@ -93,7 +101,14 @@ export async function searchSemanticMemoryFtsRaw(
   );
   const conditions = [
     sql`${searchDocuments.search_fts} @@ ${tsqueryExpr}`,
-    ...buildSemanticConditions({ types, status, source_conversations }),
+    ...buildSemanticConditions(
+      omitUndefined({
+        types,
+        status,
+        source_conversations,
+        cluster_id: opts?.cluster_id,
+      }),
+    ),
   ];
 
   const rows = await db

@@ -55,6 +55,7 @@ import {
 import {
   countSemanticMemory,
   listSemanticMemories,
+  listSemanticMemoryClusters,
   listTemporalSummaries,
   regenerateTemporalSummary,
   backfillMissingTemporalSummaries,
@@ -377,6 +378,11 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "memory.semanticList",
     habitatMethodDefs["memory.semanticList"],
     wrapConsoleLegacyHandler((payload) => listSemanticMemories(payload as Record<string, unknown>)),
+  ),
+  defineHabitatRouteFromDef(
+    "memory.semanticClusters",
+    habitatMethodDefs["memory.semanticClusters"],
+    wrapConsoleLegacyHandler(() => listSemanticMemoryClusters()),
   ),
   defineHabitatRouteFromDef(
     "memory.semanticPin",

@@ -5,6 +5,7 @@ import {
   entitySearchQuerySchema,
   passiveRecallDebugBodySchema,
   semanticMemoryListBodySchema,
+  semanticMemoryClustersBodySchema,
   semanticMemoryPinBodySchema,
   subjectEntityCreateBodySchema,
   temporalSummaryListBodySchema,
@@ -305,6 +306,11 @@ export const habitatMethodDefs = {
   }),
   "memory.semanticList": defineHabitatMethod({
     input: semanticMemoryListBodySchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "memory.semanticClusters": defineHabitatMethod({
+    input: semanticMemoryClustersBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),

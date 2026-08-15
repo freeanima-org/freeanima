@@ -40,7 +40,11 @@ export type SemanticMemoryRow = {
   legacy_id?: string;
 };
 
-export type SemanticFtsHit = SemanticMemoryRow & { rank: number };
+export type SemanticFtsHit = SemanticMemoryRow & {
+  rank: number;
+  /** search_documents.cluster_id；无索引行或噪声为 null */
+  cluster_id: number | null;
+};
 
 export type LimbicMemoryRow = {
   id: string;

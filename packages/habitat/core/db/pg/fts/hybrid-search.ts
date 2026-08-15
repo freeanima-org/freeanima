@@ -54,6 +54,7 @@ export async function hybridSearchSemanticMemory(
     status?: "active" | "deprecated" | "all";
     offset?: number;
     source_conversations?: string[];
+    cluster_id?: number | null;
     /**
      * When true, run vector channel on the **full** query sentence and RRF-merge,
      * then drop vector-only hits (boost lexical matches only).
@@ -73,6 +74,7 @@ export async function hybridSearchSemanticMemory(
     types: opts?.types,
     status: opts?.status,
     source_conversations: opts?.source_conversations,
+    cluster_id: opts?.cluster_id,
   });
 
   const content = await extractContentWords(q);
@@ -159,6 +161,7 @@ export async function hybridCountSemanticMemory(
     types?: string[];
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
+    cluster_id?: number | null;
   },
 ): Promise<number> {
   const q = query.trim();
@@ -176,7 +179,14 @@ export async function hybridCountSemanticMemory(
   const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
 
   const db = getDb();
-  const semanticConditions = buildSemanticConditions({ types, status, source_conversations });
+  const semanticConditions = buildSemanticConditions(
+    omitUndefined({
+      types,
+      status,
+      source_conversations,
+      cluster_id: opts?.cluster_id,
+    }),
+  );
 
   const tsqueryExpr = sql`to_tsquery('simple', ${tsquery})`;
   const ftsBranch = db
@@ -192,6 +202,7 @@ export async function hybridCountSemanticMemory(
   const trgmBranch = db
     .select({ id: entities.id })
     .from(entities)
+    .leftJoin(searchDocuments, entitySearchDocumentsJoin())
     .where(
       and(
         sql`word_similarity(${entities.content}, ${lexicalQuery}) >= ${minSim}`,
