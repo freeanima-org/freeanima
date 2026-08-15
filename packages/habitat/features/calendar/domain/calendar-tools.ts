@@ -1,4 +1,3 @@
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -205,122 +204,117 @@ async function handleConvertToTask(args: Record<string, unknown>): Promise<strin
   }
 }
 
-export function registerCalendarToolSet(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet(
-    "calendar",
-    "Calendar events and unified range (events + task dues + projects) in subject private world.",
-    [
-      {
-        name: "calendar_list",
-        description: "List calendar events, optionally filtered by range_start/range_end.",
-        parameters: {
-          type: "object",
-          properties: {
-            ...WORLD_ID_OPTIONAL,
-            range_start: { type: "string", description: "ISO8601 range start" },
-            range_end: { type: "string", description: "ISO8601 range end" },
-            limit: { type: "integer" },
+export function buildCalendarToolDefs() {
+  return [
+    {
+      name: "calendar_list",
+      description: "List calendar events, optionally filtered by range_start/range_end.",
+      parameters: {
+        type: "object",
+        properties: {
+          ...WORLD_ID_OPTIONAL,
+          range_start: { type: "string", description: "ISO8601 range start" },
+          range_end: { type: "string", description: "ISO8601 range end" },
+          limit: { type: "integer" },
+        },
+      },
+      handler: handleList,
+    },
+    {
+      name: "calendar_create",
+      description: "Create a calendar event.",
+      parameters: {
+        type: "object",
+        properties: {
+          ...WORLD_ID_OPTIONAL,
+          title: { type: "string" },
+          content: { type: "string" },
+          start_at: { type: "string", description: "ISO8601 start" },
+          end_at: { type: "string", description: "ISO8601 end or null" },
+          all_day: { type: "boolean" },
+          remind_at: { type: "string", description: "ISO8601 remind time" },
+        },
+        required: ["title", "start_at"],
+      },
+      handler: handleCreate,
+    },
+    {
+      name: "calendar_update",
+      description: "Update a calendar event by id.",
+      parameters: {
+        type: "object",
+        properties: {
+          ...WORLD_ID_OPTIONAL,
+          id: { type: "integer" },
+          title: { type: "string" },
+          content: { type: "string" },
+          start_at: { type: "string" },
+          end_at: { type: "string" },
+          all_day: { type: "boolean" },
+          remind_at: { type: "string" },
+        },
+        required: ["id"],
+      },
+      handler: handleUpdate,
+    },
+    {
+      name: "calendar_delete",
+      description: "Delete a calendar event by id.",
+      parameters: {
+        type: "object",
+        properties: {
+          ...WORLD_ID_OPTIONAL,
+          id: { type: "integer" },
+        },
+        required: ["id"],
+      },
+      handler: handleDelete,
+    },
+    {
+      name: "calendar_get",
+      description: "Get a calendar event by id.",
+      parameters: {
+        type: "object",
+        properties: {
+          ...WORLD_ID_OPTIONAL,
+          id: { type: "integer" },
+        },
+        required: ["id"],
+      },
+      handler: handleGet,
+    },
+    {
+      name: "calendar_convert_to_task",
+      description:
+        "Retype a calendar event into a task_item in the default Inbox (same entity id; lossy: drops all_day).",
+      parameters: {
+        type: "object",
+        properties: {
+          ...WORLD_ID_OPTIONAL,
+          id: { type: "integer" },
+        },
+        required: ["id"],
+      },
+      handler: handleConvertToTask,
+    },
+    {
+      name: "calendar_range",
+      description:
+        "Unified calendar range: events, pending tasks with due_at, and projects overlapping [from, to].",
+      parameters: {
+        type: "object",
+        properties: {
+          ...WORLD_ID_OPTIONAL,
+          from: { type: "string", description: "ISO8601 range start" },
+          to: { type: "string", description: "ISO8601 range end" },
+          kinds: {
+            type: "array",
+            items: { type: "string", enum: ["event", "task", "project"] },
           },
         },
-        handler: handleList,
+        required: ["from", "to"],
       },
-      {
-        name: "calendar_create",
-        description: "Create a calendar event.",
-        parameters: {
-          type: "object",
-          properties: {
-            ...WORLD_ID_OPTIONAL,
-            title: { type: "string" },
-            content: { type: "string" },
-            start_at: { type: "string", description: "ISO8601 start" },
-            end_at: { type: "string", description: "ISO8601 end or null" },
-            all_day: { type: "boolean" },
-            remind_at: { type: "string", description: "ISO8601 remind time" },
-          },
-          required: ["title", "start_at"],
-        },
-        handler: handleCreate,
-      },
-      {
-        name: "calendar_update",
-        description: "Update a calendar event by id.",
-        parameters: {
-          type: "object",
-          properties: {
-            ...WORLD_ID_OPTIONAL,
-            id: { type: "integer" },
-            title: { type: "string" },
-            content: { type: "string" },
-            start_at: { type: "string" },
-            end_at: { type: "string" },
-            all_day: { type: "boolean" },
-            remind_at: { type: "string" },
-          },
-          required: ["id"],
-        },
-        handler: handleUpdate,
-      },
-      {
-        name: "calendar_delete",
-        description: "Delete a calendar event by id.",
-        parameters: {
-          type: "object",
-          properties: {
-            ...WORLD_ID_OPTIONAL,
-            id: { type: "integer" },
-          },
-          required: ["id"],
-        },
-        handler: handleDelete,
-      },
-      {
-        name: "calendar_get",
-        description: "Get a calendar event by id.",
-        parameters: {
-          type: "object",
-          properties: {
-            ...WORLD_ID_OPTIONAL,
-            id: { type: "integer" },
-          },
-          required: ["id"],
-        },
-        handler: handleGet,
-      },
-      {
-        name: "calendar_convert_to_task",
-        description:
-          "Retype a calendar event into a task_item in the default Inbox (same entity id; lossy: drops all_day).",
-        parameters: {
-          type: "object",
-          properties: {
-            ...WORLD_ID_OPTIONAL,
-            id: { type: "integer" },
-          },
-          required: ["id"],
-        },
-        handler: handleConvertToTask,
-      },
-      {
-        name: "calendar_range",
-        description:
-          "Unified calendar range: events, pending tasks with due_at, and projects overlapping [from, to].",
-        parameters: {
-          type: "object",
-          properties: {
-            ...WORLD_ID_OPTIONAL,
-            from: { type: "string", description: "ISO8601 range start" },
-            to: { type: "string", description: "ISO8601 range end" },
-            kinds: {
-              type: "array",
-              items: { type: "string", enum: ["event", "task", "project"] },
-            },
-          },
-          required: ["from", "to"],
-        },
-        handler: handleRange,
-      },
-    ],
-    { visibility: "searchable" },
-  );
+      handler: handleRange,
+    },
+  ];
 }

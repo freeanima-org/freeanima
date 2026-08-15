@@ -2,7 +2,6 @@ import type { SubjectKind } from "@freeanima/habitat/core/config";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 
 import {
   createTag,
@@ -78,189 +77,184 @@ function parseTagIds(raw: unknown): number[] | undefined {
   return out;
 }
 
-export function registerTagTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet(
-    "tag",
-    "Per-world flat tags: create/edit/delete tags; set tag_ids on any entity.",
-    attachToolReturns(
-      [
-        {
-          name: "tag_list",
-          description: "List tags in the world (sorted)",
-          parameters: {
-            type: "object",
-            properties: { ...WORLD_ID_OPTIONAL },
-            required: ["subject_kind"],
-          },
-          handler: async (args) => {
-            const worldId = await resolveTagToolWorld({ args });
-            if (typeof worldId === "string") return worldId;
-            const tags = await listTags(worldId);
-            return toolResult({
-              ok: true,
-              action: "list",
-              count: tags.length,
-              tags: tags.map(tagPayload),
-            });
-          },
+export function buildTagToolDefs() {
+  return attachToolReturns(
+    [
+      {
+        name: "tag_list",
+        description: "List tags in the world (sorted)",
+        parameters: {
+          type: "object",
+          properties: { ...WORLD_ID_OPTIONAL },
+          required: ["subject_kind"],
         },
-        {
-          name: "tag_search",
-          description: "Search tags by title text",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              query: { type: "string" },
-              limit: { type: "integer" },
-              offset: { type: "integer" },
-            },
-            required: ["subject_kind"],
+        handler: async (args) => {
+          const worldId = await resolveTagToolWorld({ args });
+          if (typeof worldId === "string") return worldId;
+          const tags = await listTags(worldId);
+          return toolResult({
+            ok: true,
+            action: "list",
+            count: tags.length,
+            tags: tags.map(tagPayload),
+          });
+        },
+      },
+      {
+        name: "tag_search",
+        description: "Search tags by title text",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            query: { type: "string" },
+            limit: { type: "integer" },
+            offset: { type: "integer" },
           },
-          handler: async (args) => {
-            const worldId = await resolveTagToolWorld({ args });
-            if (typeof worldId === "string") return worldId;
-            const result = await searchTags(
+          required: ["subject_kind"],
+        },
+        handler: async (args) => {
+          const worldId = await resolveTagToolWorld({ args });
+          if (typeof worldId === "string") return worldId;
+          const result = await searchTags(
+            worldId,
+            omitUndefined({
+              query: args.query != null ? coerceString(args.query) : undefined,
+              limit: args.limit != null ? Number(args.limit) : undefined,
+              offset: args.offset != null ? Number(args.offset) : undefined,
+            }),
+          );
+          return toolResult({
+            ok: true,
+            action: "search",
+            count: result.count,
+            tags: result.tags.map(tagPayload),
+          });
+        },
+      },
+      {
+        name: "tag_create",
+        description: "Create a tag in the world (title unique per world)",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            title: { type: "string" },
+            sort_order: { type: "integer" },
+          },
+          required: ["subject_kind", "title"],
+        },
+        handler: async (args) => {
+          const worldId = await resolveTagToolWorld({ args, access: "write" });
+          if (typeof worldId === "string") return worldId;
+          try {
+            const item = await createTag(
               worldId,
               omitUndefined({
-                query: args.query != null ? coerceString(args.query) : undefined,
-                limit: args.limit != null ? Number(args.limit) : undefined,
-                offset: args.offset != null ? Number(args.offset) : undefined,
+                title: coerceString(args.title ?? ""),
+                sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
               }),
             );
+            return toolResult({ ok: true, action: "create", item: tagPayload(item) });
+          } catch (e) {
+            return toolError(e instanceof Error ? e.message : String(e));
+          }
+        },
+      },
+      {
+        name: "tag_update",
+        description: "Update tag title or sort_order",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            id: { type: "integer" },
+            title: { type: "string" },
+            sort_order: { type: "integer" },
+          },
+          required: ["subject_kind", "id"],
+        },
+        handler: async (args) => {
+          const id = Number(args.id);
+          const worldId = await resolveTagToolWorld({
+            args,
+            entityId: id,
+            access: "write",
+          });
+          if (typeof worldId === "string") return worldId;
+          try {
+            const item = await updateTag(
+              worldId,
+              omitUndefined({
+                id,
+                title: args.title != null ? coerceString(args.title) : undefined,
+                sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
+              }),
+            );
+            if (!item) return toolError(`tag not found: ${id}`);
+            return toolResult({ ok: true, action: "update", item: tagPayload(item) });
+          } catch (e) {
+            return toolError(e instanceof Error ? e.message : String(e));
+          }
+        },
+      },
+      {
+        name: "tag_delete",
+        description: "Delete a tag and remove it from all entities in the world",
+        parameters: {
+          type: "object",
+          properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
+          required: ["subject_kind", "id"],
+        },
+        handler: async (args) => {
+          const id = Number(args.id);
+          const worldId = await resolveTagToolWorld({
+            args,
+            entityId: id,
+            access: "write",
+          });
+          if (typeof worldId === "string") return worldId;
+          const ok = await deleteTag(worldId, id);
+          if (!ok) return toolError(`tag not found: ${id}`);
+          return toolResult({ ok: true, action: "delete", id });
+        },
+      },
+      {
+        name: "tag_set_on_entity",
+        description: "Replace tag_ids on an entity (same world; empty array clears)",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            entity_id: { type: "integer" },
+            tag_ids: { type: "array", items: { type: "integer" } },
+          },
+          required: ["entity_id", "tag_ids"],
+        },
+        handler: async (args) => {
+          const entityId = Number(args.entity_id);
+          const tagIds = parseTagIds(args.tag_ids);
+          if (tagIds == null) return toolError("tag_ids must be an array of integers");
+          const worldId = await resolveTagToolWorld({
+            args,
+            entityId,
+            access: "write",
+          });
+          if (typeof worldId === "string") return worldId;
+          try {
+            const result = await setEntityTagIds(worldId, entityId, tagIds);
             return toolResult({
               ok: true,
-              action: "search",
-              count: result.count,
-              tags: result.tags.map(tagPayload),
+              action: "set_on_entity",
+              entity_id: result.entity_id,
+              tag_ids: result.tag_ids,
             });
-          },
+          } catch (e) {
+            return toolError(e instanceof Error ? e.message : String(e));
+          }
         },
-        {
-          name: "tag_create",
-          description: "Create a tag in the world (title unique per world)",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              title: { type: "string" },
-              sort_order: { type: "integer" },
-            },
-            required: ["subject_kind", "title"],
-          },
-          handler: async (args) => {
-            const worldId = await resolveTagToolWorld({ args, access: "write" });
-            if (typeof worldId === "string") return worldId;
-            try {
-              const item = await createTag(
-                worldId,
-                omitUndefined({
-                  title: coerceString(args.title ?? ""),
-                  sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
-                }),
-              );
-              return toolResult({ ok: true, action: "create", item: tagPayload(item) });
-            } catch (e) {
-              return toolError(e instanceof Error ? e.message : String(e));
-            }
-          },
-        },
-        {
-          name: "tag_update",
-          description: "Update tag title or sort_order",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              id: { type: "integer" },
-              title: { type: "string" },
-              sort_order: { type: "integer" },
-            },
-            required: ["subject_kind", "id"],
-          },
-          handler: async (args) => {
-            const id = Number(args.id);
-            const worldId = await resolveTagToolWorld({
-              args,
-              entityId: id,
-              access: "write",
-            });
-            if (typeof worldId === "string") return worldId;
-            try {
-              const item = await updateTag(
-                worldId,
-                omitUndefined({
-                  id,
-                  title: args.title != null ? coerceString(args.title) : undefined,
-                  sort_order: args.sort_order != null ? Number(args.sort_order) : undefined,
-                }),
-              );
-              if (!item) return toolError(`tag not found: ${id}`);
-              return toolResult({ ok: true, action: "update", item: tagPayload(item) });
-            } catch (e) {
-              return toolError(e instanceof Error ? e.message : String(e));
-            }
-          },
-        },
-        {
-          name: "tag_delete",
-          description: "Delete a tag and remove it from all entities in the world",
-          parameters: {
-            type: "object",
-            properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
-            required: ["subject_kind", "id"],
-          },
-          handler: async (args) => {
-            const id = Number(args.id);
-            const worldId = await resolveTagToolWorld({
-              args,
-              entityId: id,
-              access: "write",
-            });
-            if (typeof worldId === "string") return worldId;
-            const ok = await deleteTag(worldId, id);
-            if (!ok) return toolError(`tag not found: ${id}`);
-            return toolResult({ ok: true, action: "delete", id });
-          },
-        },
-        {
-          name: "tag_set_on_entity",
-          description: "Replace tag_ids on an entity (same world; empty array clears)",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              entity_id: { type: "integer" },
-              tag_ids: { type: "array", items: { type: "integer" } },
-            },
-            required: ["entity_id", "tag_ids"],
-          },
-          handler: async (args) => {
-            const entityId = Number(args.entity_id);
-            const tagIds = parseTagIds(args.tag_ids);
-            if (tagIds == null) return toolError("tag_ids must be an array of integers");
-            const worldId = await resolveTagToolWorld({
-              args,
-              entityId,
-              access: "write",
-            });
-            if (typeof worldId === "string") return worldId;
-            try {
-              const result = await setEntityTagIds(worldId, entityId, tagIds);
-              return toolResult({
-                ok: true,
-                action: "set_on_entity",
-                entity_id: result.entity_id,
-                tag_ids: result.tag_ids,
-              });
-            } catch (e) {
-              return toolError(e instanceof Error ? e.message : String(e));
-            }
-          },
-        },
-      ],
-      TAG_TOOL_RETURNS,
-    ),
-    { visibility: "searchable" },
+      },
+    ],
+    TAG_TOOL_RETURNS,
   );
 }

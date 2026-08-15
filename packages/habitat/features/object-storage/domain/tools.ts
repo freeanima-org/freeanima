@@ -351,6 +351,5 @@ export function registerObjectStorageTools(toolSets: ToolSetRegistry): void {
       ],
       OBJECT_STORAGE_TOOL_RETURNS,
     ),
-    { visibility: "searchable" },
   );
 }

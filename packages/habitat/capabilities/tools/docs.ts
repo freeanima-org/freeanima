@@ -90,6 +90,5 @@ export function registerDocsTools(toolSets: ToolSetRegistry): void {
       ],
       CAPABILITIES_TOOLS_RETURNS,
     ),
-    { visibility: "searchable" },
   );
 }

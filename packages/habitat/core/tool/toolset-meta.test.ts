@@ -63,19 +63,48 @@ describe("toolset-meta", () => {
     expect(loadCallFullyCached([], ["a"])).toBe(false);
   });
 
-  it("resolveToolSetNames expands legacy monolithic task/email cached names", () => {
-    const splitRegistry = new ToolSetRegistry();
-    splitRegistry.registerToolSet("task", "Task items", [sampleTool("task_create")]);
-    splitRegistry.registerToolSet("tasklist", "Task lists", [sampleTool("tasklist_list")]);
-    splitRegistry.registerToolSet("email", "Email mailbox", [sampleTool("email_sync")]);
-    splitRegistry.registerToolSet("email-account", "Email accounts", [
+  it("resolveToolSetNames maps legacy split names onto consolidated sets", () => {
+    const consolidated = new ToolSetRegistry();
+    consolidated.registerToolSet("agenda", "Agenda", [
+      sampleTool("task_create"),
+      sampleTool("tasklist_list"),
+      sampleTool("project_list"),
+      sampleTool("calendar_list"),
+    ]);
+    consolidated.registerToolSet("email", "Email", [
+      sampleTool("email_sync"),
       sampleTool("email_list_accounts"),
     ]);
+    consolidated.registerToolSet("content", "Content", [
+      sampleTool("note_create"),
+      sampleTool("diary_get"),
+      sampleTool("content_block_list"),
+    ]);
+    consolidated.registerToolSet("memory", "Memory", [
+      sampleTool("memory_remember"),
+      sampleTool("memory_semantic_search"),
+    ]);
+    consolidated.registerToolSet("shell", "Shell", [
+      sampleTool("terminal_run"),
+      sampleTool("code_execute"),
+    ]);
+    consolidated.registerToolSet("entity", "Entity", [
+      sampleTool("entity_get"),
+      sampleTool("tag_list"),
+    ]);
 
-    expect(resolveToolSetNames(splitRegistry, ["task"])).toEqual(["task", "tasklist"]);
-    expect(resolveToolSetNames(splitRegistry, ["email"])).toEqual(["email", "email-account"]);
+    expect(resolveToolSetNames(consolidated, ["task", "tasklist", "project", "calendar"])).toEqual([
+      "agenda",
+    ]);
+    expect(resolveToolSetNames(consolidated, ["email-account"])).toEqual(["email"]);
+    expect(resolveToolSetNames(consolidated, ["note", "diary", "content-block"])).toEqual([
+      "content",
+    ]);
+    expect(resolveToolSetNames(consolidated, ["memory_semantic"])).toEqual(["memory"]);
+    expect(resolveToolSetNames(consolidated, ["code", "terminal"])).toEqual(["shell"]);
+    expect(resolveToolSetNames(consolidated, ["tag"])).toEqual(["entity"]);
     expect(
-      toolNamesForToolSets(splitRegistry, resolveToolSetNames(splitRegistry, ["task"])),
-    ).toEqual(["task_create", "tasklist_list"]);
+      toolNamesForToolSets(consolidated, resolveToolSetNames(consolidated, ["tasklist"])),
+    ).toEqual(["task_create", "tasklist_list", "project_list", "calendar_list"]);
   });
 });

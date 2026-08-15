@@ -1,9 +1,10 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 
-import { registerNoteTools as registerNoteToolSet } from "./note-tools.ts";
+export { buildNoteToolDefs } from "./note-tools.ts";
 
-export function registerNoteTools(toolSets: ToolSetRegistry): void {
-  registerNoteToolSet(toolSets);
+/** @deprecated Prefer registerContentBlockTools which registers the `content` ToolSet. */
+export function registerNoteTools(_toolSets: ToolSetRegistry): void {
+  // Note tools are registered as part of the `content` ToolSet.
 }
 
 /** 供测试重置 */

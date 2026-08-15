@@ -5,11 +5,13 @@ export { registerDocsTools } from "./docs.ts";
 export { registerTodoTool } from "./todo.ts";
 export { registerFileTools } from "./file.ts";
 export { registerConversationTools } from "./conversation.ts";
-export { registerTerminalTools } from "./terminal.ts";
+export { registerTerminalTools, registerShellTools } from "./shell.ts";
 export { registerWebTools } from "./web.ts";
-export { registerExecuteCodeTool } from "./execute-code.ts";
-export { registerEntitySearchTools } from "./entity-search.ts";
+export { registerExecuteCodeTool } from "./shell.ts";
 export { clampTimeout, parseRuntime, runExecuteCode } from "./execute-code-runtimes.ts";
+export { buildExecuteCodeToolDefs } from "./execute-code.ts";
+export { buildTerminalToolDefs } from "./terminal.ts";
+export { buildEntitySearchToolDefs } from "./entity-search.ts";
 
 import type { Config } from "@freeanima/habitat/core/config";
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
@@ -18,25 +20,21 @@ import { bindBrowserToolsConfig } from "./browser-camofox.ts";
 import { bindWebToolsConfig } from "./web.ts";
 import { registerBrowserTools } from "./browser.ts";
 import { registerToolsetTools } from "./toolset.ts";
-import { registerExecuteCodeTool } from "./execute-code.ts";
 import { registerFileTools } from "./file.ts";
 import { registerConversationTools } from "./conversation.ts";
 import { registerSkillsTools } from "./skill.ts";
 import { registerDocsTools } from "./docs.ts";
-import { registerTerminalTools } from "./terminal.ts";
+import { registerShellTools } from "./shell.ts";
 import { registerWebTools } from "./web.ts";
-import { registerEntitySearchTools } from "./entity-search.ts";
 
-/** Core tool sets */
+/** Core tool sets (entity+tag merged at platform composition root) */
 export function registerCoreTools(toolSets: ToolSetRegistry, config: Config): void {
   bindWebToolsConfig(config);
   registerToolsetTools(toolSets);
   registerConversationTools(toolSets);
   registerFileTools(toolSets);
-  registerExecuteCodeTool(toolSets);
-  registerTerminalTools(toolSets);
+  registerShellTools(toolSets);
   registerWebTools(toolSets);
-  registerEntitySearchTools(toolSets);
 }
 
 /** skills + docs + browser */

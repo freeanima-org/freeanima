@@ -1,9 +1,10 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 
-import { registerProjectTools as registerProjectToolSet } from "./project-tools.ts";
+export { buildProjectToolDefs } from "./project-tools.ts";
 
-export function registerProjectTools(toolSets: ToolSetRegistry): void {
-  registerProjectToolSet(toolSets);
+/** @deprecated Prefer registerTaskTools which includes project tools. */
+export function registerProjectTools(_toolSets: ToolSetRegistry): void {
+  // Project tools are registered as part of the `task` ToolSet.
 }
 
 /** 供测试重置 */

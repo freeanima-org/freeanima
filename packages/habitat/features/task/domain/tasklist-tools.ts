@@ -1,4 +1,3 @@
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -147,113 +146,108 @@ const TASKLIST_TOOL_NAMES = [
   "tasklist_search",
 ] as const;
 
-export function registerTaskListTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet(
-    "tasklist",
-    "Task lists (CRUD and name search). Load toolset `task` for task items. world_id optional; id scopes infer world.",
-    attachToolReturns(
-      [
-        {
-          name: "tasklist_list",
-          description: "List all task lists in caller default world",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              include_closed: {
-                type: "boolean",
-                description: "Include archived (closed) lists when true",
-              },
+export function buildTaskListToolDefs() {
+  return attachToolReturns(
+    [
+      {
+        name: "tasklist_list",
+        description: "List all task lists in caller default world",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            include_closed: {
+              type: "boolean",
+              description: "Include archived (closed) lists when true",
             },
-            required: ["subject_kind"],
           },
-          handler: handleListLists,
+          required: ["subject_kind"],
         },
-        {
-          name: "tasklist_create",
-          description: "Create a new task list",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              name: { type: "string", description: "List or folder name" },
-              sort_order: { type: "integer" },
-              color: { type: "string" },
-              is_folder: {
-                type: "boolean",
-                description: "true to create a folder container (cannot hold tasks directly)",
-              },
-              parent_id: {
-                type: "integer",
-                description: "Parent folder entity id; omit for root level",
-              },
+        handler: handleListLists,
+      },
+      {
+        name: "tasklist_create",
+        description: "Create a new task list",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            name: { type: "string", description: "List or folder name" },
+            sort_order: { type: "integer" },
+            color: { type: "string" },
+            is_folder: {
+              type: "boolean",
+              description: "true to create a folder container (cannot hold tasks directly)",
             },
-            required: ["subject_kind", "name"],
-          },
-          handler: handleListCreate,
-        },
-        {
-          name: "tasklist_update",
-          description: "Update task list name or settings",
-          parameters: {
-            type: "object",
-            properties: {
-              id: { type: "integer", description: "Task list id" },
-              name: { type: "string", description: "New list name" },
-              sort_order: { type: "integer" },
-              closed: {
-                type: "boolean",
-                description:
-                  "true to archive (close) the list; false to unarchive. Folders cannot be archived.",
-              },
-              color: { type: "string" },
-              is_folder: {
-                type: "boolean",
-                description: "true for folder container; false to convert empty folder to list",
-              },
-              parent_id: {
-                type: ["integer", "null"],
-                description: "Parent folder id; null to move to root",
-              },
+            parent_id: {
+              type: "integer",
+              description: "Parent folder entity id; omit for root level",
             },
-            required: ["subject_kind", "id"],
           },
-          handler: handleListUpdate,
+          required: ["subject_kind", "name"],
         },
-        {
-          name: "tasklist_delete",
-          description:
-            "Delete a task list (default inbox cannot be deleted). Deleting a folder removes all sub-folders and moves contained lists to root.",
-          parameters: {
-            type: "object",
-            properties: {
-              id: { type: "integer" },
-              cascade: {
-                type: "boolean",
-                description: "Delete contained task items when true",
-              },
+        handler: handleListCreate,
+      },
+      {
+        name: "tasklist_update",
+        description: "Update task list name or settings",
+        parameters: {
+          type: "object",
+          properties: {
+            id: { type: "integer", description: "Task list id" },
+            name: { type: "string", description: "New list name" },
+            sort_order: { type: "integer" },
+            closed: {
+              type: "boolean",
+              description:
+                "true to archive (close) the list; false to unarchive. Folders cannot be archived.",
             },
-            required: ["subject_kind", "id"],
-          },
-          handler: handleListDelete,
-        },
-        {
-          name: "tasklist_search",
-          description: "Hybrid search task lists by name in caller default world",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              query: { type: "string", description: "Search keywords" },
-              limit: { type: "integer", description: "Max results, default 30, cap 50" },
+            color: { type: "string" },
+            is_folder: {
+              type: "boolean",
+              description: "true for folder container; false to convert empty folder to list",
             },
-            required: ["subject_kind", "query"],
+            parent_id: {
+              type: ["integer", "null"],
+              description: "Parent folder id; null to move to root",
+            },
           },
-          handler: handleListSearch,
+          required: ["subject_kind", "id"],
         },
-      ],
-      Object.fromEntries(TASKLIST_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]])),
-    ),
-    { visibility: "searchable" },
+        handler: handleListUpdate,
+      },
+      {
+        name: "tasklist_delete",
+        description:
+          "Delete a task list (default inbox cannot be deleted). Deleting a folder removes all sub-folders and moves contained lists to root.",
+        parameters: {
+          type: "object",
+          properties: {
+            id: { type: "integer" },
+            cascade: {
+              type: "boolean",
+              description: "Delete contained task items when true",
+            },
+          },
+          required: ["subject_kind", "id"],
+        },
+        handler: handleListDelete,
+      },
+      {
+        name: "tasklist_search",
+        description: "Hybrid search task lists by name in caller default world",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            query: { type: "string", description: "Search keywords" },
+            limit: { type: "integer", description: "Max results, default 30, cap 50" },
+          },
+          required: ["subject_kind", "query"],
+        },
+        handler: handleListSearch,
+      },
+    ],
+    Object.fromEntries(TASKLIST_TOOL_NAMES.map((name) => [name, TASK_TOOL_RETURNS[name]])),
   );
 }

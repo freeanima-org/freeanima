@@ -1,4 +1,3 @@
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import {
   appendToolOutputArtifact,
   attachToolReturns,
@@ -298,76 +297,72 @@ async function handleTerminal(
   return runForegroundArgv(parts, timeout, cwd, env);
 }
 
-export function registerTerminalTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet(
-    "terminal",
-    "Terminal commands and background processes",
-    attachToolReturns(
-      [
-        {
-          name: "terminal_run",
-          description:
-            "Run a command in a subprocess and return output. Default shell=false (argv spawn, no pipes). " +
-            "Optional secrets[] injects vault fields into this subprocess env only (not Habitat process.env); " +
-            "use argv form e.g. printenv GH_TOKEN or gh … — do not rely on echo $VAR unless shell=true. " +
-            "Pass shell=true only when pipes/redirection are needed. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked. " +
-            "Oversized stdout/stderr spills to ~/.anima/tool-artifacts (artifact_path); continue with file_read — do not re-run the command.",
-          parameters: {
-            type: "object",
-            properties: {
-              command: { type: "string" },
-              timeout: {
-                type: "integer",
-                default: 180,
-                minimum: 1,
-                maximum: MAX_FOREGROUND_TIMEOUT,
-              },
-              workdir: { type: "string" },
-              background: { type: "boolean", default: false },
-              shell: {
-                type: "boolean",
-                default: false,
-                description: "Use a shell (pipes/redirection). Default false (argv spawn).",
-              },
-              pty: { type: "boolean", default: false },
-              secrets: SECRETS_TOOL_PROPERTY,
+export function buildTerminalToolDefs() {
+  return attachToolReturns(
+    [
+      {
+        name: "terminal_run",
+        description:
+          "Run a command in a subprocess and return output. Default shell=false (argv spawn, no pipes). " +
+          "Optional secrets[] injects vault fields into this subprocess env only (not Habitat process.env); " +
+          "use argv form e.g. printenv GH_TOKEN or gh … — do not rely on echo $VAR unless shell=true. " +
+          "Pass shell=true only when pipes/redirection are needed. Catastrophic targets (rm -rf /, ~, $HOME, system roots) are always blocked. " +
+          "Oversized stdout/stderr spills to ~/.anima/tool-artifacts (artifact_path); continue with file_read — do not re-run the command.",
+        parameters: {
+          type: "object",
+          properties: {
+            command: { type: "string" },
+            timeout: {
+              type: "integer",
+              default: 180,
+              minimum: 1,
+              maximum: MAX_FOREGROUND_TIMEOUT,
             },
-            required: ["command"],
-          },
-          handler: (a) =>
-            handleTerminal(
-              String(a.command),
-              Number(a.timeout ?? 180),
-              a.workdir != null ? coerceString(a.workdir) : null,
-              Boolean(a.background),
-              Boolean(a.shell),
-              a.secrets,
-            ),
-        },
-        {
-          name: "terminal_process",
-          description: "Manage background processes started with terminal_run(background=true)",
-          parameters: {
-            type: "object",
-            properties: {
-              action: {
-                type: "string",
-                enum: ["list", "poll", "log", "wait", "kill"],
-              },
-              conversation_id: { type: "string" },
-              timeout: { type: "integer", default: 30 },
+            workdir: { type: "string" },
+            background: { type: "boolean", default: false },
+            shell: {
+              type: "boolean",
+              default: false,
+              description: "Use a shell (pipes/redirection). Default false (argv spawn).",
             },
-            required: ["action"],
+            pty: { type: "boolean", default: false },
+            secrets: SECRETS_TOOL_PROPERTY,
           },
-          handler: (a) =>
-            handleProcess(
-              String(a.action),
-              a.conversation_id != null ? coerceString(a.conversation_id) : null,
-              Number(a.timeout ?? 30),
-            ),
+          required: ["command"],
         },
-      ],
-      CAPABILITIES_TOOLS_RETURNS,
-    ),
+        handler: (a) =>
+          handleTerminal(
+            String(a.command),
+            Number(a.timeout ?? 180),
+            a.workdir != null ? coerceString(a.workdir) : null,
+            Boolean(a.background),
+            Boolean(a.shell),
+            a.secrets,
+          ),
+      },
+      {
+        name: "terminal_process",
+        description: "Manage background processes started with terminal_run(background=true)",
+        parameters: {
+          type: "object",
+          properties: {
+            action: {
+              type: "string",
+              enum: ["list", "poll", "log", "wait", "kill"],
+            },
+            conversation_id: { type: "string" },
+            timeout: { type: "integer", default: 30 },
+          },
+          required: ["action"],
+        },
+        handler: (a) =>
+          handleProcess(
+            String(a.action),
+            a.conversation_id != null ? coerceString(a.conversation_id) : null,
+            Number(a.timeout ?? 30),
+          ),
+      },
+    ],
+    CAPABILITIES_TOOLS_RETURNS,
   );
 }

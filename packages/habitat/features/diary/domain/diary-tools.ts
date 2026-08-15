@@ -1,4 +1,3 @@
-import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -230,140 +229,134 @@ async function handleSearch(args: Record<string, unknown>): Promise<string> {
   }
 }
 
-export function registerDiaryTools(toolSets: ToolSetRegistry): void {
-  toolSets.registerToolSet(
-    "diary",
-    "Diary by date in caller subject private world; world_id optional.",
-    attachToolReturns(
-      [
-        {
-          name: "diary_append",
-          description:
-            "Append a new text block to a diary entry for date (creates empty entry if missing; default date is today)",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
-              content: { type: "string", description: "Text for the new block" },
-              tags: {
-                type: "array",
-                items: { type: "string" },
-                description: "Tags when creating a new entry for this date",
-              },
-            },
-            required: ["subject_kind", "content"],
-          },
-          handler: handleAppend,
-        },
-        {
-          name: "diary_update",
-          description:
-            "Update diary entry metadata for a date (title/summary/tags/tag_ids; default today). Body text: use diary_append or content-block tools",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
-              title: { type: "string" },
-              summary: { type: "string" },
-              tags: { type: "array", items: { type: "string" } },
-              tag_ids: { type: "array", items: { type: "integer" } },
+export function buildDiaryToolDefs() {
+  return attachToolReturns(
+    [
+      {
+        name: "diary_append",
+        description:
+          "Append a new text block to a diary entry for date (creates empty entry if missing; default date is today)",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
+            content: { type: "string", description: "Text for the new block" },
+            tags: {
+              type: "array",
+              items: { type: "string" },
+              description: "Tags when creating a new entry for this date",
             },
           },
-          handler: handleUpdate,
+          required: ["subject_kind", "content"],
         },
-        {
-          name: "diary_delete",
-          description: "Delete diary entry for a date (default today)",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
-            },
-            required: ["subject_kind"],
+        handler: handleAppend,
+      },
+      {
+        name: "diary_update",
+        description:
+          "Update diary entry metadata for a date (title/summary/tags/tag_ids; default today). Body text: use diary_append or content-block tools",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
+            title: { type: "string" },
+            summary: { type: "string" },
+            tags: { type: "array", items: { type: "string" } },
+            tag_ids: { type: "array", items: { type: "integer" } },
           },
-          handler: handleDelete,
         },
-        {
-          name: "diary_get",
-          description: "Get diary entry for a date (default today)",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
-            },
-            required: ["subject_kind"],
+        handler: handleUpdate,
+      },
+      {
+        name: "diary_delete",
+        description: "Delete diary entry for a date (default today)",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
           },
-          handler: handleGet,
+          required: ["subject_kind"],
         },
-        {
-          name: "diary_list",
-          description:
-            "List diary entries (default entry_at DESC, limit 20) with optional date/tag filters and offset pagination. items.blocks is always []; use diary_get for body text",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              entry_after: { type: "string", description: "ISO8601 lower bound on entry_at" },
-              entry_before: { type: "string", description: "ISO8601 upper bound on entry_at" },
-              tags: {
-                type: "array",
-                items: { type: "string" },
-                description: "Filter by tag titles (AND)",
-              },
-              tag_ids: {
-                type: "array",
-                items: { type: "integer" },
-                description: "Filter by tag entity ids (AND)",
-              },
-              limit: { type: "integer", description: "Page size; default 20, max 500" },
-              offset: { type: "integer", description: "Skip N rows; default 0" },
-            },
+        handler: handleDelete,
+      },
+      {
+        name: "diary_get",
+        description: "Get diary entry for a date (default today)",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            date: { type: "string", description: "YYYY-MM-DD; defaults to today" },
           },
-          handler: handleList,
+          required: ["subject_kind"],
         },
-        {
-          name: "diary_search",
-          description:
-            "Discover diary days with related emotion/autobiography via hybrid text search. " +
-            "Returns diary shells plus hit block summaries in items.blocks (id, components, title, snippet, parent_id). " +
-            "Optional component=limbic|narrative|dream|semantic_ref narrows semantic tags. " +
-            "For fine-grained block retrieval use content_block_search.",
-          parameters: {
-            type: "object",
-            properties: {
-              ...WORLD_ID_OPTIONAL,
-              query: { type: "string" },
-              component: {
-                type: "string",
-                enum: ["limbic", "narrative", "semantic_ref", "dream"],
-                description:
-                  "Optional semantic tag on content_block (same as content_block_search)",
-              },
-              entry_after: { type: "string" },
-              entry_before: { type: "string" },
-              tags: {
-                type: "array",
-                items: { type: "string" },
-                description: "Filter by tag titles (AND)",
-              },
-              tag_ids: {
-                type: "array",
-                items: { type: "integer" },
-                description: "Filter by tag entity ids (AND)",
-              },
-              limit: { type: "integer" },
+        handler: handleGet,
+      },
+      {
+        name: "diary_list",
+        description:
+          "List diary entries (default entry_at DESC, limit 20) with optional date/tag filters and offset pagination. items.blocks is always []; use diary_get for body text",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            entry_after: { type: "string", description: "ISO8601 lower bound on entry_at" },
+            entry_before: { type: "string", description: "ISO8601 upper bound on entry_at" },
+            tags: {
+              type: "array",
+              items: { type: "string" },
+              description: "Filter by tag titles (AND)",
             },
-            required: ["subject_kind", "query"],
+            tag_ids: {
+              type: "array",
+              items: { type: "integer" },
+              description: "Filter by tag entity ids (AND)",
+            },
+            limit: { type: "integer", description: "Page size; default 20, max 500" },
+            offset: { type: "integer", description: "Skip N rows; default 0" },
           },
-          handler: handleSearch,
         },
-      ],
-      DIARY_TOOL_RETURNS,
-    ),
-    { visibility: "searchable" },
+        handler: handleList,
+      },
+      {
+        name: "diary_search",
+        description:
+          "Discover diary days with related emotion/autobiography via hybrid text search. " +
+          "Returns diary shells plus hit block summaries in items.blocks (id, components, title, snippet, parent_id). " +
+          "Optional component=limbic|narrative|dream|semantic_ref narrows semantic tags. " +
+          "For fine-grained block retrieval use content_block_search.",
+        parameters: {
+          type: "object",
+          properties: {
+            ...WORLD_ID_OPTIONAL,
+            query: { type: "string" },
+            component: {
+              type: "string",
+              enum: ["limbic", "narrative", "semantic_ref", "dream"],
+              description: "Optional semantic tag on content_block (same as content_block_search)",
+            },
+            entry_after: { type: "string" },
+            entry_before: { type: "string" },
+            tags: {
+              type: "array",
+              items: { type: "string" },
+              description: "Filter by tag titles (AND)",
+            },
+            tag_ids: {
+              type: "array",
+              items: { type: "integer" },
+              description: "Filter by tag entity ids (AND)",
+            },
+            limit: { type: "integer" },
+          },
+          required: ["subject_kind", "query"],
+        },
+        handler: handleSearch,
+      },
+    ],
+    DIARY_TOOL_RETURNS,
   );
 }
