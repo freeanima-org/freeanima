@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Checkbox, Input, Label } from "@freeanima/ui-kit";
+import { Checkbox, Label, Slider } from "@freeanima/ui-kit";
 import {
   SHELL_MODULE_LOCKED,
   type ShellModuleId,
@@ -174,23 +174,25 @@ export default function ModuleVisibilityPanel(_props: SettingsPanelProps) {
   return (
     <div className="space-y-4">
       {compact ? (
-        <div className="space-y-1">
-          <Label htmlFor="shell-module-primary-count" className="text-sm">
-            常用模块个数
-          </Label>
-          <Input
-            id="shell-module-primary-count"
-            type="number"
-            className="w-full"
-            min={1}
-            max={maxBarCount}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <Label id="shell-module-primary-count-label" className="text-sm">
+              常用模块个数
+            </Label>
+            <span className="text-sm tabular-nums text-muted-foreground">
+              {displayPrimaryCount}
+            </span>
+          </div>
+          <Slider
+            aria-labelledby="shell-module-primary-count-label"
+            minValue={1}
+            maxValue={maxBarCount}
+            step={1}
             value={displayPrimaryCount}
-            onChange={(e) => {
-              const raw = e.target.value;
-              if (raw === "") return;
-              const n = Number(raw);
-              if (!Number.isFinite(n)) return;
-              const clamped = Math.min(maxBarCount, Math.max(1, Math.floor(n)));
+            onChange={(n) => {
+              const next = typeof n === "number" ? n : n[0];
+              if (next == null || !Number.isFinite(next)) return;
+              const clamped = Math.min(maxBarCount, Math.max(1, Math.floor(next)));
               setPrimaryCount(clamped);
             }}
           />
