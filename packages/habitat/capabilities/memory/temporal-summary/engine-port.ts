@@ -1,8 +1,10 @@
 import { createEnginePort } from "../engine-port-registry.ts";
 
 export type TemporalSummaryEngineInput = {
+  /** 已含 protocol + task_spec 的 system */
   systemPrompt: string;
-  userMessage: string;
+  /** 已含 task_params / source_data 等 user 段 */
+  userMessages: string[];
 };
 
 export type TemporalSummaryEngineResult = {

@@ -51,7 +51,8 @@ export function formatMaintainableBlocks(views: SelfBlockView[]): string {
   return lines.join("\n").trim();
 }
 
-export function buildSelfLayerRefreshUserMessage(
+/** 数据层：常驻证据 + 当前可维护自我块（不含任务指令） */
+export function buildSelfLayerRefreshDataMessage(
   evidence: SemanticMemoryRow[],
   blocks: SelfBlockView[],
 ): string {
@@ -61,6 +62,16 @@ export function buildSelfLayerRefreshUserMessage(
     "",
     "# Current maintainable self-layer blocks",
     formatMaintainableBlocks(blocks),
+  ].join("\n");
+}
+
+/** @deprecated 使用 SELF_LAYER_REFRESH_INSTRUCTION + buildSelfLayerRefreshDataMessage */
+export function buildSelfLayerRefreshUserMessage(
+  evidence: SemanticMemoryRow[],
+  blocks: SelfBlockView[],
+): string {
+  return [
+    buildSelfLayerRefreshDataMessage(evidence, blocks),
     "",
     SELF_LAYER_REFRESH_INSTRUCTION,
   ].join("\n");

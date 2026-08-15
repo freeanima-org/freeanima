@@ -8,7 +8,11 @@ import {
   type SysRollKind,
 } from "./buckets.ts";
 import { type ResolvedTemporalSummaryConfig, sysRollTtlSeconds } from "./config.ts";
-import { summarizeTemporalText, temporalSummaryHardCap } from "./summarize.ts";
+import {
+  summarizeTemporalText,
+  temporalSummaryHardCap,
+  TEMPORAL_SUMMARY_INSTRUCTIONS,
+} from "./summarize.ts";
 import type { PeerRollCache } from "./tick.ts";
 
 export type SysRollCacheValue = {
@@ -74,7 +78,7 @@ async function loadSourceRows(
       anchor: today,
       label: `过往日（${from} … ${to < from ? "—" : to}）`,
       rows: rows.map((r) => ({ period_start: r.period_start, content: r.content })),
-      instruction: `请将本月今天之前的全局天摘要合并为一条客观「过往日」合摘要：倒叙优先近期主题，一句级高度压缩。`,
+      instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.pastDays,
     };
   }
   if (kind === "past_months") {
@@ -93,7 +97,7 @@ async function loadSourceRows(
       anchor: today.slice(0, 7),
       label: `过往月（${from.slice(0, 7)} … ${to < from ? "—" : toMonth.slice(0, 7)}）`,
       rows: rows.map((r) => ({ period_start: r.period_start, content: r.content })),
-      instruction: `请将今年本月以前的月摘要合并为一条客观「过往月」合摘要：倒叙优先近期主题，一句级高度压缩。`,
+      instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.pastMonths,
     };
   }
   const earlierYear = `${Number(yearStart.slice(0, 4)) - 1}-01-01`;
@@ -106,7 +110,7 @@ async function loadSourceRows(
     anchor: today.slice(0, 4),
     label: `过往年（… ${earlierYear.slice(0, 4)}）`,
     rows: rows.map((r) => ({ period_start: r.period_start, content: r.content })),
-    instruction: `请将今年以前的年摘要合并为一条客观「过往年」合摘要：倒叙优先近期主题，一句级高度压缩。`,
+    instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.pastYears,
   };
 }
 
@@ -115,7 +119,6 @@ async function resolveRollup(opts: {
   today: string;
   config: ResolvedTemporalSummaryConfig;
   peerCache?: PeerRollCache;
-  selfContent?: string;
   force?: boolean;
 }): Promise<{
   kind: SysRollKind;
@@ -173,11 +176,7 @@ async function resolveRollup(opts: {
   const material = rows.map((r) => `- ${r.period_start}: ${r.content}`).join("\n");
   let summary = "";
   try {
-    if (!opts.selfContent?.trim()) {
-      throw new Error("selfContent required for system rollup");
-    }
     summary = await summarizeTemporalText({
-      selfContent: opts.selfContent,
       instruction: loaded.instruction,
       material,
       maxChars,
@@ -251,7 +250,6 @@ export async function listTemporalSystemRolls(opts: {
 export async function regenerateTemporalSystemRoll(opts: {
   kind: SysRollKind;
   config: ResolvedTemporalSummaryConfig;
-  selfContent: string;
   peerCache?: PeerRollCache;
   nowMs?: number;
 }): Promise<SysRollSlot> {
@@ -260,7 +258,6 @@ export async function regenerateTemporalSystemRoll(opts: {
     kind: opts.kind,
     today,
     config: opts.config,
-    selfContent: opts.selfContent,
     force: true,
     ...(opts.peerCache ? { peerCache: opts.peerCache } : {}),
   });

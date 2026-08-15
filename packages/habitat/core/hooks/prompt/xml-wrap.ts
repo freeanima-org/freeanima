@@ -32,6 +32,11 @@ export const PROMPT_XML_TAGS = {
   projectSkills: "project_skills",
   projectAgents: "project_agents",
   projectMcp: "project_mcp",
+  autoLlmProtocol: "auto_llm_protocol",
+  autoLlmTaskSpec: "auto_llm_task_spec",
+  autoLlmTaskParams: "auto_llm_task_params",
+  relatedMemories: "related_memories",
+  sourceData: "source_data",
 } as const;
 
 export type PromptXmlTag = (typeof PROMPT_XML_TAGS)[keyof typeof PROMPT_XML_TAGS];

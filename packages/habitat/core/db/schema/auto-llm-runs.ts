@@ -10,10 +10,13 @@ export const autoLlmRuns = pgTable(
     run_kind: text("run_kind").notNull(),
     /** Acting subject (agent / future anima); null for legacy rows */
     subject_id: integer("subject_id"),
-    input_summary: text("input_summary").notNull().default(""),
     output: text("output").notNull().default(""),
     status: text("status").notNull(),
     duration_ms: integer("duration_ms").notNull(),
+    /** 轮数预算（引擎 maxTurns） */
+    max_turns: integer("max_turns").notNull().default(50),
+    /** 墙钟上限 ms；null = 未设超时 */
+    max_duration_ms: integer("max_duration_ms"),
     error: text("error"),
     metadata: jsonb("metadata").$type<Record<string, unknown> | null>(),
     created_at: pgTimestamptz("created_at").notNull(),

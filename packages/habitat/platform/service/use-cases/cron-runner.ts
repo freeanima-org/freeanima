@@ -1,4 +1,4 @@
-import { prependSkillsToPrompt, skillPolicyFragments } from "@freeanima/habitat/core/skill";
+import { formatSkillsPrefix, skillPolicyFragments } from "@freeanima/habitat/core/skill";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
@@ -10,11 +10,8 @@ import {
 import { materializeFromFragments } from "../capability-policy-bind.ts";
 
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
-import {
-  buildAutoLlmSystemPrompt,
-  formatCronAutoLlmTaskSection,
-} from "../build-auto-llm-prompt.ts";
-import { runAutoLlm } from "../auto-llm-run.ts";
+import { composeAutoLlmPrompt, formatCronAutoLlmTaskSpec } from "../build-auto-llm-prompt.ts";
+import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "../auto-llm-run.ts";
 
 export type CronEngineJobInput = {
   id?: string;
@@ -44,10 +41,13 @@ export async function runCronEngineTurn(
 ): Promise<string> {
   const cfg = deps.engine.config.data;
   const model = job.model_name ?? getProfileHopModel(cfg, PROFILE_CHAT);
-  const fullPrompt = prependSkillsToPrompt(deps.engine.skills, prompt, job.skills);
   const runName = job.name?.trim() || job.id?.trim() || "cron";
-  const systemPrompt = await buildAutoLlmSystemPrompt({
-    taskSection: formatCronAutoLlmTaskSection(runName),
+  const skillsText = formatSkillsPrefix(deps.engine.skills, job.skills);
+  const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+    kind: "cron",
+    taskSpec: formatCronAutoLlmTaskSpec(),
+    skillsText: skillsText || null,
+    dataParts: [{ body: prompt }],
   });
 
   const skillFrags = skillPolicyFragments(deps.engine.skills, job.skills);
@@ -71,10 +71,11 @@ export async function runCronEngineTurn(
       runKind: "cron",
       subjectId: getResolvedWorldContext().agent_subject_id,
       systemPrompt,
-      userMessages: [fullPrompt],
+      userMessages,
       model,
       toolNames,
       maxTurns,
+      maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       // 始终传执行闸（含空 allow = 全禁）
       toolPolicy: policy,
       metadata: job.id ? { job_id: job.id } : undefined,

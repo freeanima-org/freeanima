@@ -2,7 +2,7 @@ import { logCapability as logComponent } from "@freeanima/habitat/core/config/ca
 import { listConversationIdsWithMessagesBetween } from "@freeanima/habitat/core/db/pg/conversation";
 import { upsertTemporalSummary } from "@freeanima/habitat/core/db/pg/temporal-summary";
 import { collectConversationBlocks, cstDayRange } from "../day-window/build-messages.ts";
-import { summarizeTemporalText } from "./summarize.ts";
+import { summarizeTemporalText, TEMPORAL_SUMMARY_INSTRUCTIONS } from "./summarize.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 
 export type TemporalSummaryDayResult = {
@@ -36,7 +36,6 @@ async function upsertEmptyDay(opts: {
 }
 
 export async function runTemporalSummaryDay(opts: {
-  selfContent: string;
   config: ResolvedTemporalSummaryConfig;
   day?: string;
 }): Promise<TemporalSummaryDayResult> {
@@ -69,8 +68,8 @@ export async function runTemporalSummaryDay(opts: {
   let content: string;
   try {
     content = await summarizeTemporalText({
-      selfContent: opts.selfContent,
-      instruction: `请为 ${range.day}（CST）生成全局客观天摘要：一句级高度压缩，只保留当日主题与结果；无差别、不抒情，禁止细节与流水账。`,
+      instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.globalDay,
+      params: { day: range.day },
       material,
       maxChars: opts.config.global_day_max_chars,
     });

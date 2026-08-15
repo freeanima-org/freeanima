@@ -5,14 +5,15 @@ import { getNotificationPort } from "@freeanima/habitat/capabilities/tools/notif
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import { invalidateSelfLayerPromptCache } from "../cache.ts";
-import { loadSelfBlocks, loadSelfLayerPrompt } from "../load.ts";
+import { loadSelfBlocks } from "../load.ts";
 import { runSelfLayerRefreshEngine } from "../refresh-engine-port.ts";
 import {
-  buildSelfLayerRefreshUserMessage,
+  buildSelfLayerRefreshDataMessage,
   formatProposalNotificationBody,
   parseSelfLayerRefreshResponse,
   SELF_LAYER_PROPOSAL_SOURCE_REF,
   SELF_LAYER_PROPOSAL_TITLE,
+  SELF_LAYER_REFRESH_INSTRUCTION,
 } from "./messages.ts";
 
 export type SelfLayerRefreshResult = {
@@ -25,6 +26,7 @@ export type SelfLayerRefreshResult = {
 };
 
 export type RunSelfLayerRefreshOpts = {
+  /** @deprecated 忽略；自我正文作数据层，不再作对话 system */
   selfContent?: string;
 };
 
@@ -45,6 +47,7 @@ async function hasUnreadProposal(): Promise<boolean> {
 export async function runSelfLayerRefresh(
   opts: RunSelfLayerRefreshOpts = {},
 ): Promise<SelfLayerRefreshResult> {
+  void opts.selfContent;
   try {
     await purgeOrphanSelfBlocks();
   } catch (err) {
@@ -54,7 +57,6 @@ export async function runSelfLayerRefresh(
   }
 
   invalidateSelfLayerPromptCache();
-  const selfContent = opts.selfContent?.trim() || (await loadSelfLayerPrompt());
 
   if (await hasUnreadProposal()) {
     const result: SelfLayerRefreshResult = {
@@ -82,14 +84,14 @@ export async function runSelfLayerRefresh(
   }
 
   const blocks = await loadSelfBlocks();
-  const userMessage = buildSelfLayerRefreshUserMessage(evidence, blocks);
+  const userMessage = buildSelfLayerRefreshDataMessage(evidence, blocks);
 
   logComponent("self").info("self-layer refresh LLM started", {
     evidence_count: evidence.length,
   });
 
   const generated = await runSelfLayerRefreshEngine({
-    systemPrompt: selfContent,
+    systemPrompt: SELF_LAYER_REFRESH_INSTRUCTION,
     userMessage,
   });
   const parsed = parseSelfLayerRefreshResponse(generated.content);

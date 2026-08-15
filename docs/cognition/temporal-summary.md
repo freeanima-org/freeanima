@@ -86,7 +86,7 @@ Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至�
 - **不计入**：debug 会话、cron 平台会话。
 - **素材**：可回忆的 user / assistant 非空正文（排除纯 tool / 空 assistant+tool_calls）。
 
-身份上下文（自我层 + 常驻记忆）须随 LLM 摘要调用一起带上。
+身份上下文不进 AutoLlm：时间摘要仅用任务规格 + 材料，不注入自我层或常驻记忆。
 
 栖息地 UI `/web/habitat/temporal-summary`：
 

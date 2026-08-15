@@ -1,14 +1,9 @@
-import { prependSkillsToPrompt, skillPolicyFragments } from "@freeanima/habitat/core/skill";
+import { formatSkillsPrefix, skillPolicyFragments } from "@freeanima/habitat/core/skill";
 import {
   resolveSubagentToolPolicy,
   materializeToolNames,
 } from "@freeanima/habitat/core/capability-policy";
-import {
-  DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
-  getProfileHopFormat,
-  getProfileHopModel,
-  peekActiveRuntimeConfig,
-} from "@freeanima/habitat/core/config";
+import { getProfileHopFormat, getProfileHopModel } from "@freeanima/habitat/core/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import {
   PROFILE_CHAT,
@@ -23,14 +18,16 @@ import {
   reportToolProgress,
   toolResult,
 } from "@freeanima/habitat/core/tool";
-import {
-  foldSystemPromptSectionsDetailed,
-  systemPromptBuild,
-} from "@freeanima/habitat/core/hooks/prompt";
+import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 
-import { runAutoLlm, type AutoLlmRunResult, type AutoLlmToolStep } from "../auto-llm-run.ts";
+import {
+  AUTO_LLM_DEFAULT_MAX_DURATION_MS,
+  runAutoLlm,
+  type AutoLlmRunResult,
+  type AutoLlmToolStep,
+} from "../auto-llm-run.ts";
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
-import { notifyPromptFoldBudgetSoftFailure } from "../prompt-fold-soft-failure-notify.ts";
 import {
   getSubagent,
   getSubagentBySlug,
@@ -264,36 +261,37 @@ export async function resolveSubagentProfile(
   };
 }
 
+/** 子代理稳定任务规格（角色 / opt-in / 目标进 data 或 task_params） */
+export const SUBAGENT_TASK_SPEC = `完成下方数据层中的子任务；有限工具环；勿闲聊。
+角色说明见数据层；slug={{slug}}。`;
+
 /**
- * 子提示词路径（与对话分离）：
- * 1. systemPromptBuild(llm_kind=auto_llm) — 仅 auto_llm/all 注册的 hooks
- * 2. opt-in 旁路（self/world/time）— 档案与调用并集，默认空
- * 3. 角色段（具名 content / 临时 instructions）
+ * 子代理角色 + opt-in 块（数据层，不进 task_spec）。
  */
-export async function buildSubagentSystemPrompt(
-  deps: FullRuntimeDeps,
-  profile: ResolvedSubagentProfile,
-  functionNames: string[],
-): Promise<string> {
-  let hookText = "";
-  try {
-    const run = await deps.kernel.hookRegistry.run(
-      systemPromptBuild,
-      { functionNames, mode: "work" },
-      { llm_kind: "auto_llm" },
-    );
-    const budget =
-      peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
-      DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
-    const folded = foldSystemPromptSectionsDetailed(run.chain, { globalBudgetChars: budget });
-    void notifyPromptFoldBudgetSoftFailure(folded);
-    hookText = folded.text.trim();
-  } catch {
-    hookText = "";
-  }
+export async function buildSubagentRoleData(profile: ResolvedSubagentProfile): Promise<string> {
   const optIn = await buildSubagentOptInSections(profile.prompt_includes);
   const role = formatSubagentRoleSection(profile);
-  return [hookText, ...optIn, role].filter(Boolean).join("\n\n");
+  return [role, ...optIn].filter(Boolean).join("\n\n");
+}
+
+/** @deprecated 使用 SUBAGENT_TASK_SPEC + buildSubagentRoleData */
+export async function buildSubagentTaskSpec(profile: ResolvedSubagentProfile): Promise<string> {
+  const roleData = await buildSubagentRoleData(profile);
+  return [SUBAGENT_TASK_SPEC, roleData].filter(Boolean).join("\n\n");
+}
+
+/** @deprecated 使用 composeAutoLlmPrompt + SUBAGENT_TASK_SPEC */
+export async function buildSubagentSystemPrompt(
+  _deps: FullRuntimeDeps,
+  profile: ResolvedSubagentProfile,
+  _functionNames: string[],
+): Promise<string> {
+  const { systemPrompt } = composeAutoLlmPrompt({
+    kind: "subagent",
+    taskSpec: SUBAGENT_TASK_SPEC,
+    taskParams: { slug: profile.slug },
+  });
+  return systemPrompt;
 }
 
 async function runOneTask(
@@ -328,8 +326,18 @@ async function runOneTask(
     .filter(Boolean)
     .join("\n");
 
-  const withSkills = prependSkillsToPrompt(deps.engine.skills, goalBlock, skillNames);
-  const systemPrompt = await buildSubagentSystemPrompt(deps, profile, toolNames);
+  const skillsText = formatSkillsPrefix(deps.engine.skills, skillNames);
+  const roleData = await buildSubagentRoleData(profile);
+  const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+    kind: "subagent",
+    taskSpec: SUBAGENT_TASK_SPEC,
+    taskParams: { slug: profile.slug },
+    skillsText: skillsText || null,
+    dataParts: [
+      ...(roleData.trim() ? [{ tag: PROMPT_XML_TAGS.sourceData, body: roleData }] : []),
+      { tag: PROMPT_XML_TAGS.sourceData, body: goalBlock },
+    ],
+  });
 
   const maxTurns = resolveMaxTurns(deps, profile, task.max_turns);
   const tier = resolveTemperatureTier(deps, profile, task.temperature_tier);
@@ -361,10 +369,11 @@ async function runOneTask(
       runKind: "subagent",
       subjectId: getResolvedWorldContext().agent_subject_id,
       systemPrompt,
-      userMessages: [withSkills],
+      userMessages,
       model,
       toolNames,
       maxTurns,
+      maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       requestParams,
       toolPolicy: policy,
       parentConversationId,

@@ -11,7 +11,6 @@ import { createEmbeddedMemoryService } from "@freeanima/habitat/capabilities/mem
 import { runRetainCatchUp } from "@freeanima/habitat/capabilities/memory/service/retain-catch-up";
 import { planSleepCatchUp } from "@freeanima/habitat/capabilities/memory/sleep-catch-up";
 import { runSelfLayerRefresh } from "@freeanima/habitat/capabilities/self/refresh/run";
-import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { purgeStaleAutoLlmRuns } from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
@@ -217,8 +216,7 @@ async function runSemanticClusterCalibrateStep(): Promise<MaintenanceStepResult>
 }
 
 async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
-  const selfContent = await loadSelfLayerPrompt();
-  const result = await runSelfLayerRefresh(omitUndefined({ selfContent }));
+  const result = await runSelfLayerRefresh();
   if (result.skipped) {
     return {
       ok: true,
@@ -238,9 +236,8 @@ async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
 }
 
 async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
-  const selfContent = await loadSelfLayerPrompt();
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const result = await runTemporalSummaryDay(omitUndefined({ day: ctx.day, selfContent, config }));
+  const result = await runTemporalSummaryDay(omitUndefined({ day: ctx.day, config }));
   if (result.skipped) {
     return {
       ok: true,
@@ -254,7 +251,6 @@ async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> 
     scheduleTemporalSystemRollWarm({
       kinds: ["past_days"] satisfies SysRollKind[],
       config,
-      selfContent,
       peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
     });
   }
@@ -268,11 +264,8 @@ async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> 
 }
 
 async function runTemporalCascadeStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
-  const selfContent = await loadSelfLayerPrompt();
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const result = await runTemporalSummaryCascade(
-    omitUndefined({ day: ctx.day, selfContent, config }),
-  );
+  const result = await runTemporalSummaryCascade(omitUndefined({ day: ctx.day, config }));
   if (result.skipped) {
     return {
       ok: true,
@@ -291,7 +284,6 @@ async function runTemporalCascadeStep(ctx: StepCtx): Promise<MaintenanceStepResu
       scheduleTemporalSystemRollWarm({
         kinds,
         config,
-        selfContent,
         peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
       });
     }

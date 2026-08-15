@@ -151,7 +151,7 @@ export function formatDialogueMessage(blocks: LightSleepConversationBlock[]): {
 export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string {
   if (rows.length === 0) return "(No existing active memories overlapping these sessions)";
   const lines = [
-    `# Related existing memories (${rows.length}, pre-filtered by source_conversations)`,
+    `Related existing memories (${rows.length}, pre-filtered by source_conversations)`,
   ];
   for (const row of rows) {
     const sources =
@@ -167,38 +167,17 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
   return lines.join("\n").trim();
 }
 
-/** retain 语义抽取指令（历史名 LIGHT_SLEEP_INSTRUCTION_MESSAGE） */
-export const RETAIN_INSTRUCTION_MESSAGE = `# Extraction instructions
+/** retain 任务规格（层 2）；独立抽取任务，非对话人设 */
+export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留的事实，对照「本对话相关 / 语义相关」记忆决定 create / update / deprecate。
+可调用 memory_semantic_search 检索更多既有记忆后再写入。
+记忆类型：world / experience / opinion / observation / preference / procedural / imprint。
+去重：仅与相关既有记忆比较；更准则跳过或更新；补充则 update；不再适用则 deprecate；全新则 create。
+工具：memory_semantic_create / update / deprecate / memory_semantic_search。
+observed_at = 事实首次被提及的消息时间；occurred_at = 内容描述的事件时间（可模糊）。
+直接调工具落库；无需 JSON 总结。`;
 
-You are a digital life running in Free Anima. From "Today's dialogue" above, extract facts worth remembering long-term (first person), and decide create / update / deprecate against "Related existing memories".
-
-## Memory types
-- world / experience / opinion / observation / preference / procedural / imprint
-
-## Dedup rules (local)
-- Compare **only** against existing memories whose source_conversations overlap
-- Existing is more accurate → skip or update
-- New fact supplements existing → update
-- Existing no longer applies → memory_semantic_deprecate
-- Brand new → memory_semantic_create
-
-## Tools
-
-### memory_semantic_create
-Explicit create. Required: content; recommended: type, source_conversations (from dialogue sessions).
-- **observed_at**: message time when the fact was **first mentioned** (ISO8601, from line timestamp above)
-- **occurred_at**: when the fact **described in content** happened (may be fuzzy, e.g. "spring 2025", "last week"); distinct from observed_at
-
-### memory_semantic_update (overwrite fields)
-**Only fields you pass are changed; omitted fields stay as-is.**
-- To change content/type/pinned/observed_at/occurred_at/status → pass the field
-- To **clear** source_conversations → pass \`source_conversations: []\` explicitly
-- Omit source_conversations → unchanged
-
-### memory_semantic_deprecate
-Soft deprecate (status=deprecated), keep history.
-
-Call tools directly to persist; no JSON summary output needed.`;
+/** @deprecated 使用 RETAIN_TASK_SPEC + composeAutoLlmPrompt */
+export const RETAIN_INSTRUCTION_MESSAGE = RETAIN_TASK_SPEC;
 
 /** @deprecated 使用 RETAIN_INSTRUCTION_MESSAGE */
 export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = RETAIN_INSTRUCTION_MESSAGE;

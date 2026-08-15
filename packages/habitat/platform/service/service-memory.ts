@@ -15,7 +15,6 @@ import type { TemporalSummaryWindow } from "@freeanima/habitat/core/db/schema/en
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { cacheGetJson, cacheSetJson } from "@freeanima/habitat/core/redis";
-import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 import {
   runPassiveRecallDebug,
   type PassiveRecallDebugResult,
@@ -105,10 +104,8 @@ export async function regenerateTemporalSummary(args: {
   period_start: string;
 }) {
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const selfContent = await loadSelfLayerPrompt();
   if (args.window === "day") {
     const result = await runTemporalSummaryDay({
-      selfContent,
       config,
       day: args.period_start,
     });
@@ -123,7 +120,6 @@ export async function regenerateTemporalSummary(args: {
   }
   if (args.window === "month") {
     const result = await rebuildMonthSummary({
-      selfContent,
       config,
       period_start: args.period_start,
     });
@@ -137,7 +133,6 @@ export async function regenerateTemporalSummary(args: {
     };
   }
   const result = await rebuildYearSummary({
-    selfContent,
     config,
     period_start: args.period_start,
   });
@@ -284,11 +279,9 @@ export async function listTemporalSystemRollMemories() {
 
 export async function regenerateTemporalSystemRollMemory(args: { kind: SysRollKind }) {
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const selfContent = await loadSelfLayerPrompt();
   const item = await regenerateTemporalSystemRoll({
     kind: args.kind,
     config,
-    selfContent,
     peerCache: peerCache(),
   });
   return { ok: true as const, item };

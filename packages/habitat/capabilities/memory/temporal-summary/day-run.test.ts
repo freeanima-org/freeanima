@@ -79,7 +79,6 @@ describe("runTemporalSummaryDay", () => {
 
   it("selects conversations by message timestamp window", async () => {
     const result = await runTemporalSummaryDay({
-      selfContent: "self",
       config: baseConfig,
       day: "2026-06-08",
     });
@@ -104,7 +103,6 @@ describe("runTemporalSummaryDay", () => {
   it("writes no_sessions when no message activity that day", async () => {
     listConversationIdsWithMessagesBetweenMock.mockImplementation(async () => []);
     const result = await runTemporalSummaryDay({
-      selfContent: "self",
       config: baseConfig,
       day: "2026-06-08",
     });

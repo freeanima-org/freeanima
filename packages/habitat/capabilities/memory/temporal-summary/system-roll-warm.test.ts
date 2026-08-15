@@ -30,7 +30,6 @@ describe("scheduleTemporalSystemRollWarm", () => {
     scheduleTemporalSystemRollWarm({
       kinds: ["past_days", "past_months"],
       config: baseConfig,
-      selfContent: "<self/>",
       regenerateOne,
     });
     await new Promise<void>((r) => {
@@ -48,7 +47,6 @@ describe("scheduleTemporalSystemRollWarm", () => {
     scheduleTemporalSystemRollWarm({
       kinds: ["past_years"],
       config: { ...baseConfig, enabled: false },
-      selfContent: "<self/>",
       regenerateOne,
     });
     await new Promise<void>((r) => {

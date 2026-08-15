@@ -12,7 +12,7 @@ import {
   previousMonthPeriodStart,
   yearPeriodStart,
 } from "./buckets.ts";
-import { summarizeTemporalText } from "./summarize.ts";
+import { summarizeTemporalText, TEMPORAL_SUMMARY_INSTRUCTIONS } from "./summarize.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 
 export type TemporalSummaryCascadeResult = {
@@ -64,7 +64,6 @@ async function upsertEmptyPeriod(opts: {
 
 /** Rebuild month entity from day rows in that month (period_start = YYYY-MM-01). */
 export async function rebuildMonthSummary(opts: {
-  selfContent: string;
   config: ResolvedTemporalSummaryConfig;
   period_start: string;
 }): Promise<RebuildTemporalPeriodResult> {
@@ -96,8 +95,8 @@ export async function rebuildMonthSummary(opts: {
   }
   try {
     const content = await summarizeTemporalText({
-      selfContent: opts.selfContent,
-      instruction: `请将 ${period_start} 至 ${period_end} 的全局天摘要合并为客观月摘要：一句级高度压缩，只留主题主线。`,
+      instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.month,
+      params: { period_start, period_end },
       material: materialDays.map((d) => `[${d.period_start}]\n${d.content}`).join("\n\n"),
       maxChars: opts.config.month_max_chars,
     });
@@ -132,7 +131,6 @@ export async function rebuildMonthSummary(opts: {
 
 /** Rebuild year entity from month rows in that year (period_start = YYYY-01-01). */
 export async function rebuildYearSummary(opts: {
-  selfContent: string;
   config: ResolvedTemporalSummaryConfig;
   period_start: string;
 }): Promise<RebuildTemporalPeriodResult> {
@@ -164,8 +162,8 @@ export async function rebuildYearSummary(opts: {
   }
   try {
     const content = await summarizeTemporalText({
-      selfContent: opts.selfContent,
-      instruction: `请将 ${y} 年各月摘要合并为客观年摘要：一句级高度压缩，只留年度主线与重要结果。`,
+      instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.year,
+      params: { year: y },
       material: materialMonths.map((d) => `[${d.period_start}]\n${d.content}`).join("\n\n"),
       maxChars: opts.config.year_max_chars,
     });
@@ -203,7 +201,6 @@ export async function rebuildYearSummary(opts: {
  * Sleep day D is the *current* calendar day being processed (e.g. 2026-01-01).
  */
 export async function runTemporalSummaryCascade(opts: {
-  selfContent: string;
   config: ResolvedTemporalSummaryConfig;
   day?: string;
 }): Promise<TemporalSummaryCascadeResult> {
@@ -218,7 +215,6 @@ export async function runTemporalSummaryCascade(opts: {
   if (isCstMonthStart(D)) {
     const prevMonth = previousMonthPeriodStart(D);
     const monthResult = await rebuildMonthSummary({
-      selfContent: opts.selfContent,
       config: opts.config,
       period_start: prevMonth,
     });
@@ -238,7 +234,6 @@ export async function runTemporalSummaryCascade(opts: {
   if (isCstYearStart(D)) {
     const prevYear = `${Number(D.slice(0, 4)) - 1}-01-01`;
     const yearResult = await rebuildYearSummary({
-      selfContent: opts.selfContent,
       config: opts.config,
       period_start: prevYear,
     });

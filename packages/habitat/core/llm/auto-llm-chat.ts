@@ -9,7 +9,6 @@ import type { LlmRuntime } from "./llm-stack.ts";
 import type { SimpleChatMessage } from "./llm-adapt.ts";
 
 const OUTPUT_MAX = 10_000;
-const INPUT_SUMMARY_MAX = 2000;
 
 export type AutoLlmChatMessage = SimpleChatMessage;
 
@@ -25,6 +24,10 @@ export type AutoLlmChatInput = {
   metadata?: Record<string, unknown>;
   parentConversationId?: string;
   runtime?: LlmRuntime;
+  /** chat 无工具环；落库审计用，默认 1 */
+  maxTurns?: number;
+  /** 墙钟上限 ms；省略则不限 */
+  maxDurationMs?: number;
 };
 
 export type AutoLlmChatResult = {
@@ -46,14 +49,6 @@ export function generateAutoLlmRunId(): string {
   return `autollm_${ts}_${randomBytes(2).toString("hex")}`;
 }
 
-function summarizeChatInput(messages: AutoLlmChatMessage[]): string {
-  const parts = messages
-    .filter((m) => m.role === "user")
-    .map((m) => m.content.trim())
-    .filter(Boolean);
-  return parts.join("\n---\n").slice(0, INPUT_SUMMARY_MAX);
-}
-
 function toPayloads(messages: AutoLlmChatMessage[], assistantContent: string): MessagePayload[] {
   const now = formatCstIso();
   const payloads: MessagePayload[] = messages.map((m) => {
@@ -72,7 +67,6 @@ function toPayloads(messages: AutoLlmChatMessage[], assistantContent: string): M
 async function persistChatRun(row: {
   id: string;
   input: AutoLlmChatInput;
-  inputSummary: string;
   output: string;
   status: "ok" | "error";
   durationMs: number;
@@ -88,10 +82,11 @@ async function persistChatRun(row: {
       run_name: row.input.runName,
       run_kind: row.input.runKind,
       subject_id: row.input.subjectId,
-      input_summary: row.inputSummary,
       output: row.output.slice(0, OUTPUT_MAX),
       status: row.status,
       duration_ms: row.durationMs,
+      max_turns: row.input.maxTurns ?? 1,
+      max_duration_ms: row.input.maxDurationMs ?? null,
       error: row.error ?? null,
       metadata: {
         ...row.input.metadata,
@@ -108,6 +103,35 @@ async function persistChatRun(row: {
   }
 }
 
+function withWallClockSignal<T>(
+  maxDurationMs: number | undefined,
+  run: (signal?: AbortSignal) => Promise<T>,
+): Promise<T> {
+  if (maxDurationMs == null || maxDurationMs <= 0) {
+    return run(undefined);
+  }
+  const ac = new AbortController();
+  const timer = setTimeout(() => {
+    ac.abort(new Error(`AutoLlm wall-clock timeout after ${maxDurationMs}ms`));
+  }, maxDurationMs);
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    ac.signal.addEventListener(
+      "abort",
+      () => {
+        const reason =
+          ac.signal.reason instanceof Error
+            ? ac.signal.reason
+            : new Error(`AutoLlm wall-clock timeout after ${maxDurationMs}ms`);
+        reject(reason);
+      },
+      { once: true },
+    );
+  });
+  return Promise.race([run(ac.signal), timeoutPromise]).finally(() => {
+    clearTimeout(timer);
+  });
+}
+
 /**
  * 一次性 chat completion → 写入 auto_llm_runs + auto_llm_messages。
  * 侧车 LLM（title / goal_judge / compression）须经此出口，禁止业务直调 chat()。
@@ -116,25 +140,32 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
   const runId = generateAutoLlmRunId();
   const startedAt = formatCstIso();
   const startMs = Date.now();
-  const inputSummary = summarizeChatInput(input.messages);
 
   try {
-    const completion = await chat(
-      input.messages,
-      omitUndefined({
-        profileId: input.profileId,
-        runtime: input.runtime,
-        model: input.model,
-        requestParams: input.requestParams,
-      }),
-    );
+    const completion = await withWallClockSignal(input.maxDurationMs, async (signal) => {
+      if (signal?.aborted) {
+        const reason =
+          signal.reason instanceof Error
+            ? signal.reason.message
+            : `AutoLlm wall-clock timeout after ${input.maxDurationMs}ms`;
+        throw new Error(reason);
+      }
+      return chat(
+        input.messages,
+        omitUndefined({
+          profileId: input.profileId,
+          runtime: input.runtime,
+          model: input.model,
+          requestParams: input.requestParams,
+        }),
+      );
+    });
     const output = (completion.content ?? "").trim();
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
     await persistChatRun({
       id: runId,
       input,
-      inputSummary,
       output: output || "(empty)",
       status: "ok",
       durationMs,
@@ -156,7 +187,6 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
     await persistChatRun({
       id: runId,
       input,
-      inputSummary,
       output: message,
       status: "error",
       durationMs,

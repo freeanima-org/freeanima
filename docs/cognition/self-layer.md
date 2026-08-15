@@ -92,7 +92,9 @@ retain / 自传路径**不再**提取新的自传体叙事，也不再维护自�
 
 自我层使用第二人称指令骨架 + **外层** `<self_layer>`，五块为**嵌套 XML**（`<existence_anchor>` / `<self_model>` / …），不再用 Markdown `##` 标题做结构。
 
-现场环境/健康**变化**不会改写已有会话提示；以 Inbox 通知呈现（事件级）。AutoLLM / cron 运行使用工作模式装配（无自我块）。
+现场环境/健康**变化**不会改写已有会话提示；以 Inbox 通知呈现（事件级）。
+
+**AutoLlmRun（含 cron / retain / subagent 等）≠ 对话工作模式装配**：不 fold 对话 hooks、不注入自我层/常驻/对话 citation·recall。提示：`system` 为 `<auto_llm_protocol>` + `<auto_llm_task_spec>`（可 `{{param}}` 挖空）；`user` 为技能 → `<auto_llm_task_params>` → 数据。`run_name`、`subject_id`、时间、`max_turns`、`max_duration_ms` 为运行元数据（表列），不进提示词。自我相关 kind 可将自我正文作为**任务数据**，而非对话 digital_human 栈。
 
 维护：栖息地自我层工具 / UI，或经 agent Inbox 的慢速自动提议。
 

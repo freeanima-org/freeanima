@@ -1,21 +1,29 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/habitat/core/provider";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
+import {
+  AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
+  composeAutoLlmPrompt,
+  composedAutoLlmPromptToChatMessages,
+} from "./auto-llm-prompt.ts";
 import { runAutoLlmChat } from "./auto-llm-chat.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
 
 export const AUTO_LLM_RUN_KIND_GOAL_JUDGE = "goal-judge";
 
-export const GOAL_JUDGE_SYSTEM_PROMPT = `You are a strict goal-completion judge for an AI agent conversation.
+export const GOAL_JUDGE_TASK_SPEC = `严格判定 AI agent 会话目标是否完成。
 
-Given the conversation goal, optional subgoals, recent conversation excerpt, and the agent's latest assistant reply, decide whether the goal is DONE.
+给定目标、可选子目标、近期摘录与最新 assistant 回复，判断 done。
+保守规则——仅在有明确证据时标完成：
+- PASS (done=true)：助手明确确认完成、给出最终交付物，或声明受阻/不可能/需用户输入（reason 说明阻断）。
+- FAIL (done=false)：仅有进展、含糊暗示、无执行的计划，或缺少具体证据。
 
-Conservative rules — only mark done when there is clear evidence:
-- PASS (done=true): the assistant explicitly confirms completion, clearly presents final deliverables, or states the goal is blocked / impossible / needs user input (explain the blocker in reason).
-- FAIL (done=false): progress only, vague implications, plans without execution, or missing concrete evidence (file contents, command output, published links, etc.).
+只输出合法 JSON（无 markdown 围栏）：
+{"done": true|false, "reason": "与目标相同语言的简短说明"}`;
 
-Output ONLY valid JSON with no markdown fences:
-{"done": true|false, "reason": "brief explanation in the same language as the goal"}`;
+/** @deprecated 使用 GOAL_JUDGE_TASK_SPEC + composeAutoLlmPrompt */
+export const GOAL_JUDGE_SYSTEM_PROMPT = GOAL_JUDGE_TASK_SPEC;
 
 export type GoalJudgeInput = {
   goal: string;
@@ -118,10 +126,11 @@ export async function judgeGoal(
     return { ok: false, error: "empty goal" };
   }
   try {
-    const chatMessages = [
-      { role: "system" as const, content: GOAL_JUDGE_SYSTEM_PROMPT },
-      { role: "user" as const, content: formatGoalJudgeUser(input) },
-    ];
+    const composed = composeAutoLlmPrompt({
+      kind: AUTO_LLM_RUN_KIND_GOAL_JUDGE,
+      taskSpec: GOAL_JUDGE_TASK_SPEC,
+      dataParts: [{ tag: PROMPT_XML_TAGS.sourceData, body: formatGoalJudgeUser(input) }],
+    });
     const recorded = await runAutoLlmChat(
       omitUndefined({
         runName: opts?.parentConversationId
@@ -129,12 +138,14 @@ export async function judgeGoal(
           : "goal-judge",
         runKind: AUTO_LLM_RUN_KIND_GOAL_JUDGE,
         subjectId: getResolvedWorldContext().agent_subject_id,
-        messages: chatMessages,
+        messages: composedAutoLlmPromptToChatMessages(composed),
         profileId: PROFILE_GOAL_JUDGE,
         runtime: opts?.runtime,
         model: opts?.model,
         requestParams: { ...GOAL_JUDGE_REQUEST_PARAMS },
         parentConversationId: opts?.parentConversationId,
+        maxTurns: 1,
+        maxDurationMs: AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
       }),
     );
     if (recorded.status === "error" || !recorded.completion) {
