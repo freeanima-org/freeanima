@@ -13,6 +13,11 @@ mock.module("@freeanima/habitat/core/db/pg/temporal-summary", () => ({
 mock.module("./summarize.ts", () => ({
   summarizeTemporalText: mock(async () => "合并摘要"),
   temporalSummaryHardCap: (n: number) => Math.ceil(n * 1.5),
+  TEMPORAL_SUMMARY_INSTRUCTIONS: {
+    pastDays: "pastDays",
+    pastMonths: "pastMonths",
+    pastYears: "pastYears",
+  },
 }));
 
 const { regenerateTemporalSystemRoll } = await import("./system-rolls.ts");
