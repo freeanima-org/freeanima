@@ -51,6 +51,19 @@ export const messageSendOutputSchema = z.object({
 
 export type MessageSendOutput = z.infer<typeof messageSendOutputSchema>;
 
+export const messageContinueInputSchema = z.object({
+  conversation_id: z.string().min(1),
+  llm_debug: z.boolean().optional(),
+});
+
+export type MessageContinueInput = z.infer<typeof messageContinueInputSchema>;
+
+export const messageContinueOutputSchema = z.object({
+  stream_id: z.string(),
+});
+
+export type MessageContinueOutput = z.infer<typeof messageContinueOutputSchema>;
+
 export const messageInterruptInputSchema = z.object({
   conversation_id: z.string().min(1),
 });

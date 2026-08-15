@@ -18,6 +18,11 @@ export type MessagingPort = {
     platform?: string,
     origin_extra?: Record<string, unknown>,
   ): AsyncGenerator<StreamEvent>;
+  continueMessageStream(
+    conversationId: string,
+    platform?: string,
+    origin_extra?: Record<string, unknown>,
+  ): AsyncGenerator<StreamEvent>;
   registerPlatform(name: string): void;
   updatePlatformStatus(name: string, status: string, extra?: Record<string, unknown>): void;
   waitForDrain(): Promise<void>;

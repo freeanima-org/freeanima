@@ -29,6 +29,8 @@ import {
   llmDebugGetOutputSchema,
   messageInterruptInputSchema,
   messageInterruptOutputSchema,
+  messageContinueInputSchema,
+  messageContinueOutputSchema,
   messageSendInputSchema,
   messageSendOutputSchema,
   streamAttachInputSchema,
@@ -131,6 +133,11 @@ export const chatMethodDefs = {
   "message.send": defineHabitatMethod({
     input: messageSendInputSchema,
     output: messageSendOutputSchema,
+    meta: wsOnlyMeta(),
+  }),
+  "message.continue": defineHabitatMethod({
+    input: messageContinueInputSchema,
+    output: messageContinueOutputSchema,
     meta: wsOnlyMeta(),
   }),
   "chat.attachment.upload": defineHabitatMethod({

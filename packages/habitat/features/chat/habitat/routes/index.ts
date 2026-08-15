@@ -19,6 +19,7 @@ import { handleChatAttachmentUpload } from "../binary.ts";
 import { chatSessionPumps } from "../session-pumps.ts";
 import {
   attachStreamSession,
+  pumpContinueStream,
   pumpInboxUpdates,
   pumpMessageStream,
   pumpSessionUpdates,
@@ -274,6 +275,21 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         attachment_temp_ids: input.attachment_temp_ids,
         attachments: input.attachments,
       }),
+    );
+    return { stream_id: streamId };
+  },
+  "message.continue": async (deps, input, ctx) => {
+    const sapCtx = ctxOf(ctx);
+    const streamId = randomUUID();
+    const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    streamSessionRegistry.openSession(streamId, input.conversation_id);
+    void pumpContinueStream(
+      depsOf(deps),
+      sapCtx,
+      streamId,
+      input.conversation_id,
+      platform,
+      omitUndefined({ llm_debug: input.llm_debug }),
     );
     return { stream_id: streamId };
   },

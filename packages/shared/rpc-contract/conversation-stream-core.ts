@@ -33,6 +33,10 @@ export type SapSessionStreamClient = {
     },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
+  continueMessageStream(
+    input: { conversationId: string; llmDebug?: boolean },
+    callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
+  ): { unsubscribe: () => void };
   resumeMessageStream(
     streamId: string,
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
@@ -172,6 +176,42 @@ export function createSapConversationStreamClient(
               force_tail: input.forceTail ? true : undefined,
               attachment_temp_ids: input.attachmentTempIds,
               attachments: input.attachments,
+            }),
+            { timeoutMs: HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS },
+          );
+          callbacks.onStreamId?.(streamId);
+          cleanups.push(
+            ...bindStreamEventListeners(client, streamId, callbacks, finish, () => closed),
+          );
+        } catch (e) {
+          if (!closed) {
+            callbacks.onError?.(e instanceof Error ? e : new Error(String(e)));
+            finish();
+          }
+        }
+      })();
+
+      return { unsubscribe: finish };
+    },
+    continueMessageStream(input, callbacks) {
+      let closed = false;
+      const cleanups: Array<() => void> = [];
+
+      const finish = (): void => {
+        if (closed) return;
+        closed = true;
+        for (const off of cleanups) off();
+        callbacks.onComplete?.();
+      };
+
+      void (async () => {
+        try {
+          const client = await ensureSessionHooks();
+          const { stream_id: streamId } = await client.request(
+            "message.continue",
+            omitUndefined({
+              conversation_id: input.conversationId,
+              llm_debug: input.llmDebug ? true : undefined,
             }),
             { timeoutMs: HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS },
           );

@@ -226,3 +226,38 @@ export async function retryTurn(
   );
   return [runtimeMsgs, functions, effective];
 }
+
+function lastUserContent(msgs: StoredMessage[]): string {
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    const msg = msgs[i];
+    if (msg?.role === "user" && typeof msg.content === "string" && msg.content.trim()) {
+      return msg.content;
+    }
+  }
+  return "";
+}
+
+/**
+ * Continue turn: 不 rollback，从当前已落库消息链续跑（有无工具尾巴同一路径）。
+ * prepareTurnMessages 内含 tool-loop integrity 修复。
+ */
+export async function continueTurn(
+  registry: ToolSetRegistry,
+  conversationId: string,
+): Promise<[StoredMessage[], string[], string]> {
+  await ensureSystemPromptFresh(conversationId);
+  const meta = await loadConversationMeta(conversationId);
+  const { msgs, tools } = await prepareTurnMessages(registry, conversationId, meta);
+  const effective = lastUserContent(msgs);
+  if (!effective) {
+    throw new Error("No partner message to continue");
+  }
+  await advanceCompressionMeta(registry, conversationId, { meta, msgs });
+  const [runtimeMsgs, functions] = await buildRuntimeMessagesFrom(
+    conversationId,
+    meta,
+    msgs,
+    tools,
+  );
+  return [runtimeMsgs, functions, effective];
+}
