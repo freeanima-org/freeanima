@@ -105,6 +105,9 @@ async function main(): Promise<void> {
     plugins: [createDirImportPlugin(), createTiktokenWasmPlugin(stagedWasm)],
     compile: {
       outfile,
+      // 仓库根 bunfig 有 dir-import preload；standalone 若仍 autoload，在仓内 cwd 跑会
+      // `preload not found "bun-plugin-dir-import/preload"`（插件已在 build 期展开，运行时不需要）。
+      autoloadBunfig: false,
     },
   });
 
