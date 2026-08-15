@@ -15,17 +15,27 @@ function requirePatchableConfig() {
   return config;
 }
 
-export function getHabitatConfig() {
+/** 前端 RPC 读路径：从 PG 刷新本进程快照后再返回；内部热路径不经此 handler。 */
+async function reloadRuntimeConfigForApiRead(): Promise<void> {
+  const config = habitatCtx().engine.config;
+  if (isPatchableRuntimeConfig(config)) {
+    await config.reload();
+  }
+}
+
+export async function getHabitatConfig() {
+  await reloadRuntimeConfigForApiRead();
   // SafeConfigSnapshot.config 已是脱敏后的运行时配置快照，无嵌套 .data 字段。
   return habitatCtx().getConfig().config;
 }
 
-export function getHabitatConfigSection(section: string) {
+export async function getHabitatConfigSection(section: string) {
   if (isBootstrapConfigKey(section)) {
     throw new ApiHandlerError(400, `段 ${section} 为平台冷启动配置，非栖息地运行时配置`, {
       code: "config_bootstrap_section",
     });
   }
+  await reloadRuntimeConfigForApiRead();
   const cfg = habitatCtx().getConfig().config;
   const value = cfg[section];
   if (value !== undefined) {

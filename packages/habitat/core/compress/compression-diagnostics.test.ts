@@ -9,7 +9,7 @@ describe("formatCompressionDiagnostics", () => {
       {
         mode: "token",
         context_window: 1_000_000,
-        context_window_source: "config",
+        context_window_source: "catalog",
         effective_budget: 991_808,
         usage_ratio: 0.42,
         threshold: 100,
@@ -25,7 +25,7 @@ describe("formatCompressionDiagnostics", () => {
       cfg,
     );
     expect(lines.some((l) => l.includes("Mode: token"))).toBe(true);
-    expect(lines.some((l) => l.includes("source: config"))).toBe(true);
+    expect(lines.some((l) => l.includes("source: catalog"))).toBe(true);
     expect(lines.some((l) => l.includes("42%"))).toBe(true);
     expect(lines.some((l) => l.includes("raw segment"))).toBe(false);
   });

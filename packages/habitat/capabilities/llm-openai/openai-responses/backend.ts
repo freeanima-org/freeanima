@@ -26,8 +26,6 @@ import { normalizeUsage } from "../usage.ts";
 
 export const OPENAI_RESPONSES_FORMAT_ID = LLM_FORMAT_OPENAI_RESPONSES;
 
-const DEFAULT_MAX_OUTPUT_TOKENS = 100 * 1024;
-
 function rethrowTimeout(err: unknown): never {
   const llm = extractLlmTimeoutError(err);
   if (llm) throw llm;
@@ -150,17 +148,15 @@ export async function runOpenAiResponses(
   const started = performance.now();
   try {
     const response = await client.responses.create(
-      {
+      omitUndefined({
         model,
         input: turnsToResponseInput(request.messages, request.systemPrompt) as never,
-        max_output_tokens: request.params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+        max_output_tokens: request.params.maxOutputTokens,
         tools: buildTools(request) as never,
-        ...(request.params.temperature !== undefined
-          ? { temperature: request.params.temperature }
-          : {}),
-        ...(request.params.topP !== undefined ? { top_p: request.params.topP } : {}),
+        temperature: request.params.temperature,
+        top_p: request.params.topP,
         ...request.params.extra,
-      },
+      }),
       { signal: timeouts.signal },
     );
     timeouts.onFirstByte();
@@ -204,18 +200,16 @@ export async function* runOpenAiResponsesStream(
 
   try {
     const stream = await client.responses.create(
-      {
+      omitUndefined({
         model,
         input: turnsToResponseInput(request.messages, request.systemPrompt) as never,
-        max_output_tokens: request.params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+        max_output_tokens: request.params.maxOutputTokens,
         tools: buildTools(request) as never,
-        stream: true,
-        ...(request.params.temperature !== undefined
-          ? { temperature: request.params.temperature }
-          : {}),
-        ...(request.params.topP !== undefined ? { top_p: request.params.topP } : {}),
+        stream: true as const,
+        temperature: request.params.temperature,
+        top_p: request.params.topP,
         ...request.params.extra,
-      },
+      }),
       { signal: timeouts.signal },
     );
 

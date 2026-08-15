@@ -1,6 +1,5 @@
 import { Label } from "@freeanima/ui-kit";
 import {
-  HabitatConfigRecordEntryEditor,
   habitatConfigBoolField,
   habitatConfigNumberField,
   habitatConfigSelectClassName,
@@ -18,14 +17,10 @@ export const ADVANCED_SECTIONS = [
   "embedding",
   "cjk",
   "fts",
-  "models",
   "worlds",
   "auto_llm",
   "object_storage",
 ] as const;
-
-/** 以条目名为 key 的 record 段；保存时需整段替换才能删除条目。 */
-export const HABITAT_CONFIG_RECORD_SECTIONS = ["models"] as const;
 
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
@@ -36,14 +31,6 @@ export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>>
   weixin: "微信",
   object_storage: "对象存储",
 };
-
-export type HabitatConfigRecordSectionId = (typeof HABITAT_CONFIG_RECORD_SECTIONS)[number];
-
-export function isHabitatConfigRecordSection(
-  section: AdvancedSectionId,
-): section is HabitatConfigRecordSectionId {
-  return (HABITAT_CONFIG_RECORD_SECTIONS as readonly string[]).includes(section);
-}
 
 function FirecrawlForm({
   value,
@@ -257,29 +244,6 @@ function FtsForm({
         (v) => setTrgm({ fallback_when_hits_lt: v === "" ? undefined : v }),
       )}
     </div>
-  );
-}
-
-function ModelsForm({
-  value,
-  onChange,
-}: {
-  value: Record<string, unknown>;
-  onChange: (v: Record<string, unknown>) => void;
-}) {
-  return (
-    <HabitatConfigRecordEntryEditor
-      label="model"
-      value={value}
-      onChange={onChange}
-      renderFields={(entry, patch) =>
-        habitatConfigNumberField(
-          "context_window",
-          typeof entry.context_window === "number" ? entry.context_window : "",
-          (v) => patch({ context_window: v === "" ? undefined : v }),
-        )
-      }
-    />
   );
 }
 
@@ -523,8 +487,6 @@ export function AdvancedSectionForm({
       return <CjkForm value={value} onChange={onChange} />;
     case "fts":
       return <FtsForm value={value} onChange={onChange} />;
-    case "models":
-      return <ModelsForm value={value} onChange={onChange} />;
     case "worlds":
       return <WorldsForm value={value} onChange={onChange} />;
     case "auto_llm":

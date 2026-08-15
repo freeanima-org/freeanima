@@ -25,6 +25,7 @@ import { conversations } from "@freeanima/habitat/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 
 import { bindHomeChannelConfig } from "@freeanima/habitat/platform/ports/home-channel";
+import { bindContextWindowLookup } from "@freeanima/habitat/platform/bind-context-window.ts";
 import { getDb } from "@freeanima/habitat/core/db/pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
@@ -66,6 +67,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 /** Standard integration-test AppRuntime (builtins / Habitat handler) */
 export function bindIntegrationRuntimeContext(pg: PgTestContext): void {
   bindHomeChannelConfig(pg.config);
+  bindContextWindowLookup();
   const kernel = createServiceKernel(pg.config);
   const conversation = createConversationService(pg.engine.catalog.toolSets);
   const fullDeps = {

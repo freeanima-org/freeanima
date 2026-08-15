@@ -10,6 +10,10 @@ import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { FALLBACK_TOKENIZER_REPO } from "@freeanima/habitat/core/tokenizer";
 import {
+  registerCatalogContextWindowLookup,
+  resetCatalogContextWindowLookupForTest,
+} from "@freeanima/habitat/core/config";
+import {
   bindModelToFallbackForTest,
   ensureFallbackTokenizer,
   resetTokenizerForTest,
@@ -22,13 +26,12 @@ describePg("runtime context stats", () => {
   beforeEach(async () => {
     await beginIntegrationCaseWithConfig(
       "anima-ctx-stats-",
-      `models:
-  test-model:
-    context_window: 128000
-compression:
+      `compression:
   enabled: true
 `,
     );
+    // Avoid waiting on fake OpenAI /models; catalog is the only window source now.
+    registerCatalogContextWindowLookup(async () => 128_000);
     setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text: string) => {
       const len = text.trim().length;
       if (!len) return [];
@@ -42,6 +45,7 @@ compression:
 
   afterEach(async () => {
     resetTokenizerForTest();
+    resetCatalogContextWindowLookupForTest();
     await restoreIntegrationHome(prev);
   });
 

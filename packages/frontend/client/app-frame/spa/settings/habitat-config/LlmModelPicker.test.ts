@@ -12,7 +12,7 @@ describe("modelSubtitle", () => {
         cost: { input: 0.14, output: 0.28 },
         inputModalities: ["text", "image", "audio", "video"],
       }),
-    ).toBe("ctx 1M · $0.14/$0.28/1M · 文字 · 图片 · 音频 · 视频");
+    ).toBe("ctx 1M · out 8k · $0.14/$0.28/1M · 文字 · 图片 · 音频 · 视频");
   });
 
   test("仅文字时只标文字", () => {
@@ -23,7 +23,7 @@ describe("modelSubtitle", () => {
         maxOutputTokens: 8192,
         inputModalities: ["text"],
       }),
-    ).toBe("ctx 1M · 文字");
+    ).toBe("ctx 1M · out 8k · 文字");
   });
 
   test("未知模态时不臆造标签", () => {
@@ -33,6 +33,16 @@ describe("modelSubtitle", () => {
         contextWindow: 128_000,
         maxOutputTokens: 8192,
       }),
-    ).toBe("ctx 128k");
+    ).toBe("ctx 128k · out 8k");
+  });
+
+  test("maxOutputTokens 非正数时不展示 out", () => {
+    expect(
+      modelSubtitle({
+        model: "unknown-out",
+        contextWindow: 64_000,
+        maxOutputTokens: 0,
+      }),
+    ).toBe("ctx 64k");
   });
 });

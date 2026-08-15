@@ -35,10 +35,6 @@ title: 压缩
 
 ```yaml
 # habitat_runtime_config fragment (not config.yaml)
-models:
-  deepseek-v4-flash:
-    context_window: 1000000
-
 compression:
   enabled: true
   reserved_tokens: 8192
@@ -63,16 +59,12 @@ compression:
 
 ### 上下文窗口解析（token 模式）
 
-估算压缩预算时的优先级：
+估算压缩预算时：
 
-1. 栖息地运行时配置中的 `models.<model>.context_window`
-2. `compression.default_context_window`（适用于所有模型）
-3. Provider `/models` 目录的 `contextWindow`（栖息地已注册查找时；可能含 [models.dev](https://models.dev) enrichment — 见 [`service.md`](../ops/service.md) LLM 节）
-4. 以上皆无时的消息数回退（`max_rounds` 阈值）
+1. Provider `/models` 目录的 `contextWindow`（栖息地已注册查找时；可能含 [models.dev](https://models.dev) enrichment — 见 [`service.md`](../ops/service.md) LLM 节）；目录 miss 时常见默认 128k
+2. 以上皆无时的消息数回退（`max_rounds` 阈值）
 
-按模型配置始终优先于动态拉取的目录值；目录只读，永不写回运行时配置。
-
-无任何上下文窗口来源时，压缩回退到按消息数触发。
+目录只读，不经运行时配置覆盖。无上下文窗口来源时，压缩回退到按消息数触发。
 
 在对话中强制压缩：`/compress`（`--force` 忽略迟滞）。
 

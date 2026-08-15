@@ -20,6 +20,14 @@ describe("buildChatCompletionParams", () => {
     expect(body.messages[1]).toMatchObject({ role: "user", content: "ping" });
   });
 
+  it("omits max_tokens when business did not set maxOutputTokens", () => {
+    const body = buildChatCompletionParams("gpt-test", {
+      ...baseRequest,
+      params: { temperature: 0.2 },
+    });
+    expect(body.max_tokens).toBeUndefined();
+  });
+
   it("merges params.extra into body (e.g. tool_choice)", () => {
     const body = buildChatCompletionParams("gpt-test", {
       ...baseRequest,

@@ -12,7 +12,6 @@ import { firecrawlSchema } from "./firecrawl.ts";
 import { browserSchema } from "./browser.ts";
 import { clarifySchema } from "./clarify.ts";
 import { compressionSchema } from "./compression.ts";
-import { modelsConfigSchema } from "./models.ts";
 import { cjkConfigSchema } from "./cjk.ts";
 import { ftsConfigSchema } from "./fts.ts";
 import { gatewayConfigSchema } from "./gateway.ts";
@@ -39,7 +38,6 @@ const runtimeConfigObjectSchema = z.object({
   clarify: clarifySchema.optional(),
   compression: compressionSchema.optional(),
   prompt: promptSchema.optional(),
-  models: modelsConfigSchema.optional(),
   mcp_servers: z.record(z.string(), mcpServerSchema).optional(),
   /**
    * Runtime overrides for ToolSet discovery visibility (name → visibility).
