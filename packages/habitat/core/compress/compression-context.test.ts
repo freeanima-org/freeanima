@@ -21,7 +21,6 @@ const BASE_CONFIG = {
     profiles: { chat: { chain: [{ provider: "main", model: "gpt-x" }] } },
   },
   compression: { enabled: true, reserved_tokens: 8192 },
-  models: {},
 };
 
 describe("buildCompressOptionsResolved", () => {
@@ -34,7 +33,7 @@ describe("buildCompressOptionsResolved", () => {
     resetActiveConfigForTest();
   });
 
-  it("uses catalog fallback when config has no window", async () => {
+  it("uses Provider catalog context window", async () => {
     registerCatalogContextWindowLookup(async () => 256_000);
     const opts = await buildCompressOptionsResolved(
       {

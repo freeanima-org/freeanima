@@ -68,7 +68,7 @@ Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.
 
 1. **目录 enrichment** — Connection `GET /models` 之后，id 匹配时合并 context / max output / 显示名 / 每百万 token USD 成本（连接侧非默认限额优先于 models.dev）。
 2. **`getModel` 回退** — Anthropic Messages / OpenAI Responses / 不稳定的兼容网关若缺少真实目录，在 id 已知时用 models.dev，而非盲目默认 128k。
-3. **压缩 context 回退** — 目录 `contextWindow`（可能已 enrichment）仍是第三优先级，排在运行时 `models.<id>.context_window` 与 `compression.default_context_window` 之后（见 [`compression.md`](../cognition/compression.md)）。
+3. **压缩 context** — 目录 `contextWindow`（可能已 enrichment）是 token 压缩预算的唯一窗口来源；lookup 失败则回退消息数模式（见 [`compression.md`](../cognition/compression.md)）。
 4. **场景模型选择器** — 设置 → 栖息地服务配置 → LLM → 场景路由：经栖息地 RPC `config.listProviderModels` 浏览 / 搜索模型（优先连接目录；`/models` 为空时用 models.dev 的预设切片）。仍允许自由输入模型 id。
 
 **范围外：** models.dev 不替代连接凭证或端点；不计量计费；能力标志仅为提示，非运行时保证。

@@ -35,6 +35,20 @@ describe("clampCallParams", () => {
     });
   });
 
+  it("keeps business max when below catalog limit", () => {
+    const info: ModelInfo = {
+      model: "qwen",
+      contextWindow: 1_000_000,
+      maxOutputTokens: 65_536,
+      supportedParams: ["maxOutputTokens"],
+    };
+    expect(clampCallParams({ maxOutputTokens: 30 }, info)).toEqual({ maxOutputTokens: 30 });
+  });
+
+  it("does not invent maxOutputTokens when business omitted it", () => {
+    expect(clampCallParams({ temperature: 0.5 }, modelInfo)).toEqual({ temperature: 0.5 });
+  });
+
   it("drops unsupported params when supportedParams is set", () => {
     expect(clampCallParams({ temperature: 0.5, topP: 0.9, stop: "END" }, modelInfo)).toEqual({
       temperature: 0.5,

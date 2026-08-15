@@ -21,6 +21,7 @@ import { LLM_FORMAT_ANTHROPIC_MESSAGES } from "@freeanima/habitat/core/config";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { cleanToolCallsForApi } from "@freeanima/habitat/core/provider/stream-tools";
 import { defaultModelInfoEnriched } from "../catalog.ts";
+import { CATALOG_DEFAULT_MAX_OUTPUT_TOKENS } from "../models-dev/enrich.ts";
 import {
   parseOpenAiCompatibleContext,
   resolveChatTimeouts,
@@ -36,7 +37,14 @@ import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const ANTHROPIC_MESSAGES_FORMAT_ID = LLM_FORMAT_ANTHROPIC_MESSAGES;
 
-const DEFAULT_MAX_OUTPUT_TOKENS = 100 * 1024;
+/** Messages API requires max_tokens; use catalog when business did not set one. */
+async function resolveAnthropicMaxTokens(model: string, request: ChatRequest): Promise<number> {
+  if (request.params.maxOutputTokens != null) {
+    return request.params.maxOutputTokens;
+  }
+  const info = await defaultModelInfoEnriched(model);
+  return info.maxOutputTokens > 0 ? info.maxOutputTokens : CATALOG_DEFAULT_MAX_OUTPUT_TOKENS;
+}
 
 function rethrowTimeout(err: unknown): never {
   const llm = extractLlmTimeoutError(err);
@@ -238,10 +246,11 @@ export async function runAnthropicMessages(
         .filter((m) => m.role === "system")
         .map((m) => m.content)
         .join("\n");
+    const max_tokens = await resolveAnthropicMaxTokens(model, request);
     const response = await client.messages.create(
       omitUndefined({
         model,
-        max_tokens: request.params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+        max_tokens,
         system: system || undefined,
         messages: toAnthropicMessages(request.messages),
         tools: toAnthropicTools(request),
@@ -315,10 +324,11 @@ export async function* runAnthropicMessagesStream(
         .filter((m) => m.role === "system")
         .map((m) => m.content)
         .join("\n");
+    const max_tokens = await resolveAnthropicMaxTokens(model, request);
     const stream = client.messages.stream(
       omitUndefined({
         model,
-        max_tokens: request.params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+        max_tokens,
         system: system || undefined,
         messages: toAnthropicMessages(request.messages),
         tools: toAnthropicTools(request),

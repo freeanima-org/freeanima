@@ -1,9 +1,5 @@
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
-export type ModelConfig = {
-  context_window?: number;
-};
-
 export type ResolvedCompressionConfig = {
   enabled: boolean;
   maxRounds: number;
@@ -33,52 +29,27 @@ export function getCompressionConfig(cfg: RuntimeConfig): ResolvedCompressionCon
   };
 }
 
-export function getModelsConfig(cfg: RuntimeConfig): Record<string, ModelConfig> {
-  const models = (cfg as RuntimeConfig & { models?: Record<string, ModelConfig> }).models;
-  if (!models || typeof models !== "object") return {};
-  return models;
-}
-
-export type ContextWindowSource = "config" | "default" | "catalog";
+/** Only Provider catalog (models.dev enrich / defaults); null → message-count mode. */
+export type ContextWindowSource = "catalog";
 
 export type ResolvedContextWindow = {
   window: number | null;
   source: ContextWindowSource | null;
 };
 
-export type ContextWindowResolveOpts = {
-  catalogFallback?: number | null;
-};
-
-/** Resolve context window with source label (config > default > catalog > null) */
+/** Resolve context window from Provider catalog value. */
 export function resolveContextWindowWithSource(
-  cfg: RuntimeConfig,
-  model: string,
-  opts?: ContextWindowResolveOpts,
+  catalogWindow?: number | null,
 ): ResolvedContextWindow {
-  const models = getModelsConfig(cfg);
-  const entry = models[model];
-  if (entry?.context_window != null && entry.context_window > 0) {
-    return { window: entry.context_window, source: "config" };
-  }
-  const fallback = cfg.compression?.default_context_window;
-  if (fallback != null && fallback > 0) {
-    return { window: fallback, source: "default" };
-  }
-  const catalog = opts?.catalogFallback;
-  if (catalog != null && catalog > 0) {
-    return { window: catalog, source: "catalog" };
+  if (catalogWindow != null && catalogWindow > 0) {
+    return { window: catalogWindow, source: "catalog" };
   }
   return { window: null, source: null };
 }
 
 /** Model context window; null when unset (fallback to message-count mode) */
-export function getContextWindow(
-  cfg: RuntimeConfig,
-  model: string,
-  opts?: ContextWindowResolveOpts,
-): number | null {
-  return resolveContextWindowWithSource(cfg, model, opts).window;
+export function getContextWindow(catalogWindow?: number | null): number | null {
+  return resolveContextWindowWithSource(catalogWindow).window;
 }
 
 export function budgetFromContextWindow(cfg: RuntimeConfig, window: number): number {
@@ -88,18 +59,13 @@ export function budgetFromContextWindow(cfg: RuntimeConfig, window: number): num
 
 export function getEffectiveTokenBudget(
   cfg: RuntimeConfig,
-  model: string,
-  opts?: ContextWindowResolveOpts,
+  catalogWindow?: number | null,
 ): number | null {
-  const window = getContextWindow(cfg, model, opts);
+  const window = getContextWindow(catalogWindow);
   if (window == null) return null;
   return budgetFromContextWindow(cfg, window);
 }
 
-export function usesTokenCompression(
-  cfg: RuntimeConfig,
-  model: string,
-  opts?: ContextWindowResolveOpts,
-): boolean {
-  return getEffectiveTokenBudget(cfg, model, opts) != null;
+export function usesTokenCompression(cfg: RuntimeConfig, catalogWindow?: number | null): boolean {
+  return getEffectiveTokenBudget(cfg, catalogWindow) != null;
 }

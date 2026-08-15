@@ -4,14 +4,11 @@ import {
   getCompressionConfig as resolveCompressionConfig,
   getContextWindow as resolveContextWindow,
   getEffectiveTokenBudget as resolveEffectiveTokenBudget,
-  getModelsConfig as resolveModelsConfig,
   usesTokenCompression as resolveUsesTokenCompression,
-  type ContextWindowResolveOpts,
-  type ModelConfig,
   type ResolvedCompressionConfig,
 } from "../config/compression-config.ts";
 
-export type { ModelConfig, ResolvedCompressionConfig };
+export type { ResolvedCompressionConfig };
 
 function activeData(): RuntimeConfig {
   return getActiveRuntimeConfig().data;
@@ -21,30 +18,20 @@ export function getCompressionConfig(cfg: RuntimeConfig = activeData()): Resolve
   return resolveCompressionConfig(cfg);
 }
 
-export function getModelsConfig(cfg: RuntimeConfig = activeData()): Record<string, ModelConfig> {
-  return resolveModelsConfig(cfg);
-}
-
-export function getContextWindow(
-  model: string,
-  cfg: RuntimeConfig = activeData(),
-  opts?: ContextWindowResolveOpts,
-): number | null {
-  return resolveContextWindow(cfg, model, opts);
+export function getContextWindow(catalogWindow?: number | null): number | null {
+  return resolveContextWindow(catalogWindow);
 }
 
 export function getEffectiveTokenBudget(
-  model: string,
+  catalogWindow?: number | null,
   cfg: RuntimeConfig = activeData(),
-  opts?: ContextWindowResolveOpts,
 ): number | null {
-  return resolveEffectiveTokenBudget(cfg, model, opts);
+  return resolveEffectiveTokenBudget(cfg, catalogWindow);
 }
 
 export function usesTokenCompression(
-  model: string,
+  catalogWindow?: number | null,
   cfg: RuntimeConfig = activeData(),
-  opts?: ContextWindowResolveOpts,
 ): boolean {
-  return resolveUsesTokenCompression(cfg, model, opts);
+  return resolveUsesTokenCompression(cfg, catalogWindow);
 }

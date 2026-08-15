@@ -8,14 +8,12 @@ import type { SettingsPanelProps } from "@freeanima/client/portal-sdk/settings";
 import {
   fetchHabitatConfigSection,
   patchHabitatConfigSection,
-  replaceHabitatConfigSection,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
 
 import {
   AdvancedSectionForm,
   readAdvancedSectionDraft,
   type AdvancedSectionId,
-  isHabitatConfigRecordSection,
 } from "./habitat-advanced-forms.tsx";
 import { HabitatConfigConnectionTestButton } from "./HabitatConfigConnectionTestButton.tsx";
 import { LlmSettingsPanel } from "./LlmSettingsPanel.tsx";
@@ -202,11 +200,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
     setError("");
     setSavedHint("");
     try {
-      if (isHabitatConfigRecordSection(configKey)) {
-        await replaceHabitatConfigSection(configKey, advancedDraft);
-      } else {
-        await patchHabitatConfigSection(configKey, advancedDraft);
-      }
+      await patchHabitatConfigSection(configKey, advancedDraft);
       await afterSave(configKey);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

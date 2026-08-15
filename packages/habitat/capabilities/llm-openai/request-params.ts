@@ -7,14 +7,12 @@ import type { ChatRequest } from "@freeanima/habitat/core/provider";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { messagesForApi } from "./messages.ts";
 
-const DEFAULT_MAX_OUTPUT_TOKENS = 100 * 1024;
-
 function baseBody(model: string, request: ChatRequest): Omit<ChatCompletionCreateParams, "stream"> {
   const { params, messages, systemPrompt, tools } = request;
   const body: Omit<ChatCompletionCreateParams, "stream"> = omitUndefined({
     model,
     messages: messagesForApi(messages, systemPrompt),
-    max_tokens: params.maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
+    max_tokens: params.maxOutputTokens,
     tools: tools?.length ? (tools as ChatCompletionTool[]) : undefined,
   });
 

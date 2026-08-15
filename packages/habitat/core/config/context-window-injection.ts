@@ -2,7 +2,7 @@ export type CatalogContextWindowLookup = (model: string) => Promise<number | nul
 
 let lookup: CatalogContextWindowLookup | null = null;
 
-/** Composition root wires Provider catalog lookup for compression fallback */
+/** Composition root wires Provider catalog lookup for compression */
 export function registerCatalogContextWindowLookup(fn: CatalogContextWindowLookup): void {
   lookup = fn;
 }

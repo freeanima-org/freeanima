@@ -26,8 +26,8 @@ describe("Config store", () => {
   it("fromSnapshot exposes data and update replaces snapshot", () => {
     const cfg = Config.fromSnapshot(snapshot);
     expect(cfg.data.llm?.default_profile ?? "").toBe("chat");
-    cfg.update({ ...snapshot, compression: { default_context_window: 32_000 } });
-    expect(cfg.data.compression?.default_context_window).toBe(32_000);
+    cfg.update({ ...snapshot, compression: { reserved_tokens: 4096 } });
+    expect(cfg.data.compression?.reserved_tokens).toBe(4096);
   });
 
   it("bindActiveRuntimeConfig / getActiveRuntimeConfig round-trip", () => {

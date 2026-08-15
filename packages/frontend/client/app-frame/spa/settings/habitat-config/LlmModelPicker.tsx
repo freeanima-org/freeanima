@@ -42,9 +42,12 @@ function formatInputModalities(modalities: HabitatProviderModelEntry["inputModal
   return labels;
 }
 
-/** 列表行 / 已选提示副标题（ctx · 价格 · 输入模态）。 */
+/** 列表行 / 已选提示副标题（ctx · out · 价格 · 输入模态）。 */
 export function modelSubtitle(entry: HabitatProviderModelEntry): string {
   const parts = [`ctx ${formatContext(entry.contextWindow)}`];
+  if (entry.maxOutputTokens > 0) {
+    parts.push(`out ${formatContext(entry.maxOutputTokens)}`);
+  }
   const cost = formatCost(entry.cost);
   if (cost) parts.push(cost);
   parts.push(...formatInputModalities(entry.inputModalities));

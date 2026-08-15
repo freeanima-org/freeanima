@@ -8,7 +8,6 @@ import {
   getActiveRuntimeConfig,
   budgetFromContextWindow,
   lookupCatalogContextWindow,
-  resolveContextWindowWithSource,
   type ContextWindowSource,
 } from "@freeanima/habitat/core/config";
 import { omitUndefined } from "@freeanima/habitat/core/util";
@@ -71,7 +70,7 @@ function enrichCompressOptionsWithWindow(
   });
 }
 
-/** Async: config > default > Provider catalog; sets effectiveBudgetOverride when token mode applies */
+/** Async: Provider catalog contextWindow; sets effectiveBudgetOverride when token mode applies */
 export async function buildCompressOptionsResolved(
   meta: ConversationMetaLoadResult,
   state: CompressionState | null,
@@ -86,21 +85,9 @@ export async function buildCompressOptionsResolved(
   const model = base.model ?? "";
   if (!model) return base;
 
-  const cfg = getActiveRuntimeConfig().data;
-  const sync = resolveContextWindowWithSource(cfg, model);
-  if (sync.window != null && sync.source != null) {
-    return enrichCompressOptionsWithWindow(base, sync.window, sync.source);
-  }
-
   const catalogWindow = await lookupCatalogContextWindow(model);
-  const resolved = resolveContextWindowWithSource(cfg, model, { catalogFallback: catalogWindow });
-  if (resolved.window == null || resolved.source == null) {
+  if (catalogWindow == null || catalogWindow <= 0) {
     return base;
   }
-  return enrichCompressOptionsWithWindow(
-    base,
-    resolved.window,
-    resolved.source,
-    catalogWindow ?? undefined,
-  );
+  return enrichCompressOptionsWithWindow(base, catalogWindow, "catalog", catalogWindow);
 }

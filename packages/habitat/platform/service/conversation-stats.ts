@@ -46,7 +46,7 @@ export type ConversationStats = {
   compression_has_summary: boolean;
   /** token mode */
   compression_context_window: number | null;
-  compression_context_window_source: "config" | "default" | "catalog" | null;
+  compression_context_window_source: "catalog" | null;
   compression_effective_budget: number | null;
   compression_usage_ratio: number | null;
   compression_trigger_high: number;

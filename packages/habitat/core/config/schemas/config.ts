@@ -20,7 +20,6 @@ export { ftsConfigSchema, ftsTrgmConfigSchema, type FtsConfigInput } from "./fts
 export { compressionSchema } from "./compression.ts";
 export { promptSchema, DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS } from "./prompt.ts";
 export type { PromptConfigInput } from "./prompt.ts";
-export { modelsConfigSchema } from "./models.ts";
 export {
   gatewayConfigSchema,
   gatewayToolDisplaySchema,

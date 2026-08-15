@@ -1,6 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import {
-  getActiveRuntimeConfig,
   resolveContextWindowWithSource,
   type ContextWindowSource,
 } from "@freeanima/habitat/core/config";
@@ -312,17 +311,11 @@ function resolveCompressBudget(
     return { budget: null, window: null, source: null };
   }
   const catalogFallback = opts?.catalogContextWindow;
-  const { window, source } = resolveContextWindowWithSource(
-    getActiveRuntimeConfig().data,
-    model,
-    omitUndefined({
-      catalogFallback,
-    }),
-  );
+  const { window, source } = resolveContextWindowWithSource(catalogFallback);
   if (window == null) {
     return { budget: null, window: null, source: null };
   }
-  const budget = getEffectiveTokenBudget(model, undefined, omitUndefined({ catalogFallback }));
+  const budget = getEffectiveTokenBudget(catalogFallback);
   return { budget, window, source };
 }
 
