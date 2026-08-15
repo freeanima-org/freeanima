@@ -76,6 +76,43 @@ export async function pumpMessageStream(
   }
 }
 
+export async function pumpContinueStream(
+  deps: RemoteToolsServerDeps,
+  ctx: RemoteToolsRequestContext,
+  streamId: string,
+  conversationId: string,
+  platform: string,
+  sendExtra?: { llm_debug?: boolean },
+): Promise<void> {
+  const { bridgeMessageStream } = await loadStreamBridge();
+  const originExtra = sendExtra && Object.keys(sendExtra).length > 0 ? sendExtra : undefined;
+
+  const unsubscribe = streamSessionRegistry.subscribe(streamId, (method, payload) => {
+    ctx.sendEvent(method, payload);
+  });
+
+  try {
+    for await (const mapped of bridgeMessageStream(
+      streamId,
+      deps.runtime.continueMessageStream(conversationId, platform, originExtra),
+    )) {
+      if (mapped.method === "stream.llm_debug") {
+        await rememberLlmDebugFromStreamPayload(conversationId, mapped.payload);
+        continue;
+      }
+      publishStreamEvent(ctx, mapped.method, mapped.payload);
+    }
+  } catch (e) {
+    publishStreamEvent(ctx, "stream.error", {
+      stream_id: streamId,
+      error: String(e),
+    });
+    publishStreamEvent(ctx, "stream.done", { stream_id: streamId });
+  } finally {
+    unsubscribe?.();
+  }
+}
+
 export async function pumpSessionUpdates(
   deps: RemoteToolsServerDeps,
   ctx: RemoteToolsRequestContext,

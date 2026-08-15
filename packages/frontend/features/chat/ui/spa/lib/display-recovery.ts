@@ -26,6 +26,17 @@ export function displayAwaitingReply(display: DisplayItem[]): boolean {
   return true;
 }
 
+/**
+ * 展示未完成，但本端未在流式且服务端无 active 流 → stalled（应出【继续】，勿伪装等待）。
+ */
+export function isStalledReply(opts: {
+  awaitingReply: boolean;
+  streaming: boolean;
+  hasActiveStream: boolean;
+}): boolean {
+  return opts.awaitingReply && !opts.streaming && !opts.hasActiveStream;
+}
+
 export const RECOVERY_INITIAL_DELAY_MS = 500;
 export const RECOVERY_MAX_DELAY_MS = 4_000;
 export const RECOVERY_MAX_DURATION_MS = 60_000;

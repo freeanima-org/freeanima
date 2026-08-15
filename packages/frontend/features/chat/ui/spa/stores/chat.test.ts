@@ -33,9 +33,40 @@ mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
       },
     };
   },
-  resumeMessageStream: () => ({ unsubscribe: () => {} }),
+  resumeMessageStream: (_streamId: string, callbacks: StreamCallbacks) => {
+    queueMicrotask(() => {
+      callbacks.onStreamId?.("stream-resume");
+      if (streamScenario === "error_then_done") {
+        callbacks.onData?.({
+          event: "error",
+          data: { error: "LLM call failed: 403 China opt-in required" },
+        });
+        callbacks.onData?.({ event: "done", data: {} });
+        callbacks.onComplete?.();
+      }
+    });
+    return {
+      unsubscribe: () => {
+        callbacks.onComplete?.();
+      },
+    };
+  },
+  subscribeContinueStream: (_input: unknown, callbacks: StreamCallbacks) => {
+    queueMicrotask(() => {
+      callbacks.onStreamId?.("stream-continue");
+      callbacks.onData?.({ event: "token", data: { content: "续" } });
+      callbacks.onData?.({ event: "done", data: {} });
+      callbacks.onComplete?.();
+    });
+    return {
+      unsubscribe: () => {
+        callbacks.onComplete?.();
+      },
+    };
+  },
   interruptMessageStream: async () => {},
-  lookupActiveStream: async () => ({}),
+  lookupActiveStream: async () =>
+    streamScenario === "error_then_done" ? { stream_id: "stream-resume", status: "active" } : {},
 }));
 
 mock.module("@freeanima/shared/habitat-rpc/bundled-browser.ts", () => ({
@@ -135,6 +166,40 @@ describe("useChatStore queue", () => {
 
     expect(errors).toEqual(["LLM call failed: 403 China opt-in required"]);
     expect(onDoneCalled).toBe(false);
+    expect(useChatStore.getState().streaming).toBe(false);
+  });
+
+  test("resumeIfActive：error 后再 done 应调 onError、不调 onDone", async () => {
+    streamScenario = "error_then_done";
+    const errors: string[] = [];
+    let onDoneCalled = false;
+
+    const resumed = await useChatStore.getState().resumeIfActive("conv-1", {
+      recoverDisplay: async () => false,
+      onError: (msg) => {
+        errors.push(msg);
+      },
+      onDone: () => {
+        onDoneCalled = true;
+      },
+    });
+
+    expect(resumed).toBe(false);
+    expect(errors).toEqual(["LLM call failed: 403 China opt-in required"]);
+    expect(onDoneCalled).toBe(false);
+    expect(useChatStore.getState().streaming).toBe(false);
+  });
+
+  test("continueTurn 成功应调 onDone", async () => {
+    streamScenario = "idle";
+    let onDoneCalled = false;
+    await useChatStore.getState().continueTurn("conv-1", {
+      recoverDisplay: async () => false,
+      onDone: () => {
+        onDoneCalled = true;
+      },
+    });
+    expect(onDoneCalled).toBe(true);
     expect(useChatStore.getState().streaming).toBe(false);
   });
 });

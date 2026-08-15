@@ -54,6 +54,7 @@ import {
   beginTurnFast,
   beginTurnPrepare,
   buildRuntimeMessages,
+  continueTurn,
   finishTurn,
   repairAndPersistToolLoop,
   retryTurn,
@@ -150,6 +151,7 @@ export function createConversationService(tools: ToolSetRegistry) {
     rollbackToLastUser,
     rollbackBeforeLastUser,
     retryTurn: (conversationId: string) => retryTurn(tools, conversationId),
+    continueTurn: (conversationId: string) => continueTurn(tools, conversationId),
     cleanupDebugConversations,
   };
 }

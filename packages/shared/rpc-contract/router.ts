@@ -3,6 +3,8 @@
  * 完整 Habitat method 列表与 transport meta 以 `@freeanima/habitat/platform/habitat/habitat-router` 为 SSOT。
  */
 import type {
+  MessageContinueInput,
+  MessageContinueOutput,
   MessageInterruptInput,
   MessageInterruptOutput,
   MessageSendInput,
@@ -280,6 +282,7 @@ export const RPC_PROTOCOL_METHODS = [
   "conversation.commands",
   "conversation.command",
   "message.send",
+  "message.continue",
   "message.interrupt",
   "stream.attach",
   "stream.lookup",
@@ -407,6 +410,7 @@ export type RpcRouterInputs = {
   "conversation.commands": ConversationCommandsInput;
   "conversation.command": ConversationCommandInput;
   "message.send": MessageSendInput;
+  "message.continue": MessageContinueInput;
   "message.interrupt": MessageInterruptInput;
   "stream.attach": StreamAttachInput;
   "stream.lookup": StreamLookupInput;
@@ -537,6 +541,7 @@ export type RpcRouterOutputs = {
   "conversation.commands": ConversationCommandsOutput;
   "conversation.command": ConversationCommandOutput;
   "message.send": MessageSendOutput;
+  "message.continue": MessageContinueOutput;
   "message.interrupt": MessageInterruptOutput;
   "stream.attach": StreamAttachOutput;
   "stream.lookup": StreamLookupOutput;

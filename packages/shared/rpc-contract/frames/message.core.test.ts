@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test";
 
 import {
   mapRuntimeStreamEventToSap,
+  messageContinueInputSchema,
+  messageContinueOutputSchema,
   messageSendInputSchema,
   streamAttachInputSchema,
   streamAttachOutputSchema,
@@ -65,5 +67,10 @@ describe("message stream llm_debug", () => {
 
   it("rejects empty message without attachments", () => {
     expect(() => messageSendInputSchema.parse({ conversation_id: "c1", message: "   " })).toThrow();
+  });
+
+  it("parses message.continue schemas", () => {
+    expect(messageContinueInputSchema.parse({ conversation_id: "c1" }).conversation_id).toBe("c1");
+    expect(messageContinueOutputSchema.parse({ stream_id: "s1" }).stream_id).toBe("s1");
   });
 });

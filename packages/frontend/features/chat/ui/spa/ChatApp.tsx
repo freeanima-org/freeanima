@@ -32,13 +32,17 @@ import {
 import { formatConversationIdDateTime } from "@freeanima/features/chat/ui/spa/lib/format-datetime.ts";
 import {
   displayAwaitingReply,
-  pollUntilAssistantReply,
+  isStalledReply,
 } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
-import { readPersistedActiveStream } from "@freeanima/features/chat/ui/spa/lib/active-stream-persist.ts";
+import {
+  readPersistedActiveStream,
+  clearPersistedActiveStream,
+} from "@freeanima/features/chat/ui/spa/lib/active-stream-persist.ts";
 import {
   fetchLlmDebug,
   listConversationCommands,
   loadConfig,
+  lookupActiveStream,
   rollbackBeforeLastUserMessage,
   runConversationCommand,
   subscribeConversationUpdates,
@@ -209,6 +213,7 @@ export function ChatApp() {
   const streamText = useChatStore((s) => s.streamText);
   const recovering = useChatStore((s) => s.recovering);
   const send = useChatStore((s) => s.send);
+  const continueTurn = useChatStore((s) => s.continueTurn);
   const resumeIfActive = useChatStore((s) => s.resumeIfActive);
   const queue = useChatStore((s) => s.queue);
   const messageQueue = useMemo(
@@ -235,6 +240,10 @@ export function ChatApp() {
   const [editingOutboxOpId, setEditingOutboxOpId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  /** 展示未完成且后端无 active 流：出【继续】，不伪装等待 */
+  const [stalledReply, setStalledReply] = useState(false);
+  /** 在线报错维：与 stalled 正交，错误气泡之外仍可【继续】 */
+  const [offerContinue, setOfferContinue] = useState(false);
 
   const sendingRef = useRef(false);
   const msgAreaRef = useRef<HTMLDivElement>(null);
@@ -426,14 +435,23 @@ export function ChatApp() {
     return [...synced, ...pendingOutbox];
   }, [currentId, display, outboxEntries]);
 
-  /** 等待助手回复：流式中 / 恢复中 / 末条 user 后尚无 assistant（刷新后占位） */
+  /** 等待助手回复：流式中 / 恢复中；stalled 时不占位（改出【继续】） */
   const awaitingAssistant =
     Boolean(currentId) &&
+    !stalledReply &&
     (streamVisible ||
       recovering ||
       (!messagesLoading &&
         displayAwaitingReply(mergedDisplay) &&
         habitatConnection === "connected"));
+
+  const showContinueButton =
+    Boolean(currentId) &&
+    !streaming &&
+    !recovering &&
+    !writesDisabled &&
+    canSendOnline &&
+    (stalledReply || offerContinue);
 
   const pendingOutboxKey = useMemo(
     () =>
@@ -506,13 +524,7 @@ export function ChatApp() {
       pendingRecoveryKeyRef.current = null;
       // abort 可能使进行中的 send() 稍后 settle；先松开发送锁，避免输入/发送无响应
       sendingRef.current = false;
-      if (
-        currentId &&
-        (displayAwaitingReply(useConversationsStore.getState().display) ||
-          readPersistedActiveStream(currentId))
-      ) {
-        useChatStore.setState({ recovering: true });
-      }
+      // recovering 由恢复 effect 在确认仍有 active 流后再置位，避免 stalled 误显「等待结果…」
       await fetchConversations();
       if (currentId) {
         await selectConversation(currentId);
@@ -644,9 +656,12 @@ export function ChatApp() {
     return () => sub.unsubscribe();
   }, [fetchConversations]);
 
-  /** 刷新 / 整页刷新 / 切回会话：先 stream.lookup/attach 续传，否则轮询落库 */
+  /** 刷新 / 整页刷新 / 切回会话：仅 stream.lookup 有 active 时 resume；否则立刻 stalled +【继续】 */
   useEffect(() => {
-    if (!currentId) return () => {};
+    if (!currentId) {
+      setStalledReply(false);
+      return () => {};
+    }
     if (habitatConnection !== "connected") return () => {};
     if (streaming && streamingConversationId === currentId) return () => {};
 
@@ -654,6 +669,7 @@ export function ChatApp() {
     const persisted = Boolean(readPersistedActiveStream(currentId));
     if (!awaiting && !persisted) {
       pendingRecoveryKeyRef.current = null;
+      setStalledReply(false);
       return () => {};
     }
 
@@ -663,7 +679,11 @@ export function ChatApp() {
 
     const baseline = display.length;
     let cancelled = false;
-    useChatStore.setState({ recovering: true });
+
+    // 未证实 alive 前：按 stalled 展示【继续】，避免 Habitat 重启后长期「正在撰写」
+    if (awaiting) {
+      setStalledReply(true);
+    }
 
     const sub = subscribeConversationUpdates(currentId, () => {
       void refreshMessages(currentId, baseline);
@@ -671,12 +691,39 @@ export function ChatApp() {
 
     const originId = currentId;
     const isViewingOrigin = () => useConversationsStore.getState().currentId === originId;
-    // scrollApiRef 避免本 effect 相对 scrollDown 声明的 TDZ
     const scrollResume = () => {
       scrollApiRef.current?.scrollDown({ force: true });
     };
 
     void (async () => {
+      let looked: { stream_id?: string; status?: string } = {};
+      try {
+        looked = await lookupActiveStream(originId);
+      } catch (e) {
+        console.error("stream.lookup failed:", e);
+      }
+      if (cancelled) return;
+
+      // 仅服务端 active 算 alive；sessionStorage 过期 id 在 Habitat 重启后不可信
+      const serverActive = typeof looked.stream_id === "string" && looked.stream_id.length > 0;
+      if (!serverActive) {
+        clearPersistedActiveStream(originId);
+        const stillAwaiting = displayAwaitingReply(useConversationsStore.getState().display);
+        setStalledReply(
+          isStalledReply({
+            awaitingReply: stillAwaiting,
+            streaming: useChatStore.getState().streaming,
+            hasActiveStream: false,
+          }),
+        );
+        if (!useChatStore.getState().streaming) {
+          useChatStore.setState({ recovering: false });
+        }
+        return;
+      }
+
+      setStalledReply(false);
+      useChatStore.setState({ recovering: true });
       const resumed = await resumeIfActive(originId, {
         recoverDisplay: (id) => refreshMessages(id, baseline),
         onToken: () => {
@@ -697,6 +744,7 @@ export function ChatApp() {
           scrollResume();
         },
         onError: (msg) => {
+          setOfferContinue(true);
           if (!isViewingOrigin()) return;
           appendItemForConversation(originId, {
             type: "message",
@@ -706,6 +754,8 @@ export function ChatApp() {
           scrollResume();
         },
         onDone: (opts) => {
+          setOfferContinue(false);
+          setStalledReply(false);
           if (opts?.recovered) {
             if (isViewingOrigin()) scrollResume();
             return;
@@ -716,17 +766,26 @@ export function ChatApp() {
         },
       });
       if (cancelled) return;
-      if (resumed) return;
-      if (!awaiting) {
-        useChatStore.setState({ recovering: false });
+      if (resumed) {
+        setStalledReply(false);
         return;
       }
-      // attach 失败：保持「正在生成」占位，继续轮询落库
-      useChatStore.setState({ recovering: true });
-      await pollUntilAssistantReply(originId, (id) => refreshMessages(id, baseline));
+
+      // lookup 曾有 active 但 resume 失败（竞态）：回到 stalled
+      clearPersistedActiveStream(originId);
+      const stillAwaiting = displayAwaitingReply(useConversationsStore.getState().display);
+      setStalledReply(
+        isStalledReply({
+          awaitingReply: stillAwaiting,
+          streaming: useChatStore.getState().streaming,
+          hasActiveStream: false,
+        }),
+      );
+      if (!useChatStore.getState().streaming) {
+        useChatStore.setState({ recovering: false });
+      }
     })().finally(() => {
       if (cancelled) return;
-      // 仍在流式时由 resumeIfActive 自己清 recovering
       if (!useChatStore.getState().streaming) {
         useChatStore.setState({ recovering: false });
       }
@@ -735,8 +794,6 @@ export function ChatApp() {
     return () => {
       cancelled = true;
       sub.unsubscribe();
-      // 不在 cleanup 清 recovering：lookup 异步期间 display 变化会重跑 effect，
-      // 清掉会导致「正在撰写」占位闪没；由新 effect / finally / resumeIfActive 接管。
     };
   }, [
     currentId,
@@ -761,6 +818,8 @@ export function ChatApp() {
       return;
     }
     setClarifyPending(null);
+    setStalledReply(false);
+    setOfferContinue(false);
     await selectConversation(conversationId);
     setSidebarOpen(false);
   };
@@ -1054,12 +1113,15 @@ export function ChatApp() {
                 role: "assistant",
                 content: `⚠️ ${msg}`,
               });
+              setOfferContinue(true);
               if (isTransportFailureMessage(msg)) {
                 void reconnectHabitat().catch(() => undefined);
               }
               if (isViewingOrigin()) scrollDown();
             },
             onDone: (opts) => {
+              setOfferContinue(false);
+              setStalledReply(false);
               if (sendMeta?.clientOpId) {
                 removeDisplayByClientOpId(sendMeta.clientOpId);
                 void outboxAckEntry(sendMeta.clientOpId);
@@ -1117,6 +1179,75 @@ export function ChatApp() {
       send,
     ],
   );
+
+  const dispatchContinue = useCallback(async () => {
+    if (!currentId || sendingRef.current || writesDisabled || !canSendOnline) return;
+    const originConversationId = currentId;
+    sendingRef.current = true;
+    setStalledReply(false);
+    setOfferContinue(false);
+    const displayBaseline = useConversationsStore.getState().display.length;
+    const isViewingOrigin = () =>
+      useConversationsStore.getState().currentId === originConversationId;
+    try {
+      await continueTurn(
+        originConversationId,
+        {
+          recoverDisplay: (id) => refreshMessages(id, displayBaseline),
+          onToken: () => {
+            if (isViewingOrigin()) scrollDown();
+          },
+          onDisplayAppend: (item) => {
+            appendItemForConversation(originConversationId, item);
+            if (isViewingOrigin()) scrollDown();
+          },
+          onAwaitingClarify: (data) => {
+            if (!isViewingOrigin()) return;
+            if (Array.isArray(data.items) && data.items.length > 0) {
+              setClarifyPending({
+                items: data.items as ClarifyPending["items"],
+                timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+              });
+            }
+            scrollDown();
+          },
+          onError: (msg) => {
+            setOfferContinue(true);
+            appendItemForConversation(originConversationId, {
+              type: "message",
+              role: "assistant",
+              content: `⚠️ ${msg}`,
+            });
+            if (isViewingOrigin()) scrollDown();
+          },
+          onDone: (opts) => {
+            setOfferContinue(false);
+            setStalledReply(false);
+            if (opts?.recovered) {
+              if (isViewingOrigin()) scrollDown();
+              return;
+            }
+            void reloadConversationIfCurrent(originConversationId);
+            void fetchConversations();
+            if (isViewingOrigin()) scrollDown();
+          },
+        },
+        { llmDebug: llmDebugEnabled },
+      );
+    } finally {
+      sendingRef.current = false;
+    }
+  }, [
+    appendItemForConversation,
+    canSendOnline,
+    continueTurn,
+    currentId,
+    fetchConversations,
+    llmDebugEnabled,
+    refreshMessages,
+    reloadConversationIfCurrent,
+    writesDisabled,
+  ]);
 
   useEffect(() => {
     if (!canSendOnline || !ready || !pendingOutboxKey) return;
@@ -1751,6 +1882,20 @@ export function ChatApp() {
               ].join(" ")}
               style={composeLift > 0 ? { transform: `translateY(-${composeLift}px)` } : undefined}
             >
+              {showContinueButton ? (
+                <div className="mb-2 flex justify-center">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="shadow-sm"
+                    isDisabled={streaming}
+                    onClick={() => void dispatchContinue()}
+                  >
+                    {"继续"}
+                  </Button>
+                </div>
+              ) : null}
               {speechPlaybackError ? (
                 <p className="mb-2 text-xs text-destructive">{speechPlaybackError}</p>
               ) : null}

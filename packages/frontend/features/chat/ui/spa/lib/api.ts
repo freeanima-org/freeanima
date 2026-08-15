@@ -236,6 +236,13 @@ export function subscribeMessageStream(
   return sap().sendMessageStream(input, callbacks);
 }
 
+export function subscribeContinueStream(
+  input: { conversationId: string; llmDebug?: boolean },
+  callbacks: SubscribeCallbacks<StreamApiEvent>,
+): { unsubscribe: () => void } {
+  return sap().continueMessageStream(input, callbacks);
+}
+
 export function resumeMessageStream(
   streamId: string,
   callbacks: SubscribeCallbacks<StreamApiEvent>,

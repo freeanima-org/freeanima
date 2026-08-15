@@ -27,6 +27,10 @@ export type BundledSapStreamClient = {
     input: { conversationId: string; message: string },
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
   ): { unsubscribe: () => void };
+  continueMessageStream(
+    input: { conversationId: string; llmDebug?: boolean },
+    callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
+  ): { unsubscribe: () => void };
   resumeMessageStream(
     streamId: string,
     callbacks: SubscribeCallbacks<StreamApiLikeEvent>,
@@ -70,6 +74,7 @@ export function createBundledSapStreamClient(options?: {
     subscribeConversationEvents: stream.subscribeConversationEvents.bind(stream),
     subscribeInboxEvents: stream.subscribeInboxEvents.bind(stream),
     sendMessageStream: stream.sendMessageStream.bind(stream),
+    continueMessageStream: stream.continueMessageStream.bind(stream),
     resumeMessageStream: stream.resumeMessageStream.bind(stream),
   };
 }

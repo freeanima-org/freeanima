@@ -380,6 +380,20 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     );
   }
 
+  continueMessageStream(
+    conversationId: string,
+    platform?: string,
+    origin_extra?: Record<string, unknown>,
+  ): AsyncGenerator<StreamEvent> {
+    return messaging.continueMessageStream(
+      this.fullDeps(),
+      this.messagingDeps(),
+      conversationId,
+      platform,
+      origin_extra,
+    );
+  }
+
   interruptSessionStream(conversationId: string): void {
     messaging.interruptSessionStream(this.messagingDeps(), conversationId);
   }

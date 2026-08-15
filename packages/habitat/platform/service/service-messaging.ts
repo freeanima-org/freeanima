@@ -642,6 +642,56 @@ function runRetryStream(
   );
 }
 
+/** 从当前消息链续跑（不 rollback）；供 message.continue / stalled【继续】 */
+export function runContinueStream(
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
+  conversationId: string,
+  opts?: { llmDebug?: boolean },
+): AsyncGenerator<StreamEvent> {
+  msgDeps.runControl.preemptSessionEngine(conversationId);
+  return runExclusiveStreamTurn(
+    deps,
+    conversationId,
+    {
+      prepare: async () => deps.conversation.continueTurn(conversationId),
+      ...omitUndefined({ llmDebug: opts?.llmDebug }),
+    },
+    msgDeps.streamHost,
+    msgDeps.conversationManager,
+  );
+}
+
+export async function* continueMessageStream(
+  deps: FullRuntimeDeps,
+  msgDeps: MessagingDeps,
+  conversationId: string,
+  platform?: string,
+  origin_extra?: Record<string, unknown>,
+): AsyncGenerator<StreamEvent> {
+  if (msgDeps.runControl.isShuttingDown()) {
+    yield streamErrorEvent(deps, conversationId, "Server is shutting down");
+    return;
+  }
+  if (!(await deps.conversation.conversationExists(conversationId))) {
+    yield streamErrorEvent(deps, conversationId, `Conversation not found: ${conversationId}`);
+    return;
+  }
+  let resolvedPlatform: string;
+  try {
+    resolvedPlatform = await resolveMessagingPlatform(deps, conversationId, platform);
+  } catch (e) {
+    yield streamErrorEvent(deps, conversationId, String(e));
+    return;
+  }
+  await checkPlatform(deps, { platform: resolvedPlatform }, conversationId);
+
+  const sendOpts = parseMessageSendOriginExtra(origin_extra);
+  yield* runContinueStream(deps, msgDeps, conversationId, {
+    llmDebug: sendOpts?.llm_debug === true,
+  });
+}
+
 function runGoalStartStream(
   deps: FullRuntimeDeps,
   msgDeps: MessagingDeps,

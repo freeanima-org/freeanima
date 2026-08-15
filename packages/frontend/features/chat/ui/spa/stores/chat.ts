@@ -12,6 +12,7 @@ import {
   interruptMessageStream,
   lookupActiveStream,
   resumeMessageStream,
+  subscribeContinueStream,
   subscribeMessageStream,
   subscribeConversationUpdates,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
@@ -73,6 +74,12 @@ type ChatState = {
   ) => Promise<void>;
   /** 刷新后按 conversation 续接服务端仍在进行的流；成功返回 true */
   resumeIfActive: (conversationId: string, callbacks?: SendCallbacks) => Promise<boolean>;
+  /** stalled【继续】：从当前消息链续跑（不 rollback） */
+  continueTurn: (
+    conversationId: string,
+    callbacks?: SendCallbacks,
+    opts?: { llmDebug?: boolean },
+  ) => Promise<void>;
   abortStream: () => void;
 };
 
@@ -541,7 +548,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
               }
             }
             if (result.receivedDone) {
-              notifyDone();
+              // error 后再发 done（bridge 惯例）：不当成功，留给下方 onError（对齐 send）
+              if (!receivedError) {
+                notifyDone();
+              }
               settleOk();
             }
           };
@@ -630,22 +640,216 @@ export const useChatStore = create<ChatState>((set, get) => ({
     } catch (e) {
       if (generation !== _streamGeneration || aborted) return false;
       console.error("resumeIfActive error:", e);
-      // sessionStorage 可能过期：清掉后让调用方走 lookup/poll
+      // sessionStorage 可能过期（Habitat 重启后）：清掉，勿长时间轮询假装还在生成
       clearPersistedActiveStream(conversationId);
-      const recovered = await tryRecoverDisplay(
-        conversationId,
-        callbacks.recoverDisplay,
-        (active) => {
-          set({ recovering: active });
-          callbacks.onRecovering?.(active);
-        },
-      );
-      if (recovered) {
-        notifyDone({ recovered: true });
-        return true;
+      const errMsg = e instanceof Error ? e.message : String(e);
+      const streamGone = /stream not found|not found/i.test(errMsg);
+      if (!streamGone) {
+        const recovered = await tryRecoverDisplay(
+          conversationId,
+          callbacks.recoverDisplay,
+          (active) => {
+            set({ recovering: active });
+            callbacks.onRecovering?.(active);
+          },
+        );
+        if (recovered) {
+          notifyDone({ recovered: true });
+          return true;
+        }
       }
       if (transportErrorMsg) callbacks.onError?.(transportErrorMsg);
       return false;
+    } finally {
+      if (generation === _streamGeneration) {
+        if (receivedDone || receivedError) {
+          clearPersistedActiveStream(conversationId);
+        }
+        const active = get();
+        if (active.streamingConversationId === conversationId) {
+          set({
+            streaming: false,
+            recovering: false,
+            streamingConversationId: null,
+            streamText: "",
+          });
+        }
+        if (_unsubscribe) {
+          _unsubscribe();
+          _unsubscribe = null;
+        }
+      }
+    }
+  },
+
+  async continueTurn(conversationId, callbacks = {}, opts = {}) {
+    const prev = get();
+    if (prev.streaming && prev.streamingConversationId === conversationId) {
+      detachStreamClient();
+    } else if (prev.streaming) {
+      _streamGeneration++;
+      detachStreamClient();
+      set({
+        streaming: false,
+        streamingConversationId: null,
+        streamText: "",
+      });
+    }
+
+    const generation = ++_streamGeneration;
+    set({
+      streaming: true,
+      recovering: false,
+      streamingConversationId: conversationId,
+      streamText: "",
+    });
+
+    let streamText = "";
+    let receivedDone = false;
+    let receivedError = false;
+    let serverErrorMsg: string | null = null;
+    let transportErrorMsg: string | null = null;
+    let doneNotified = false;
+
+    const notifyDone = (doneOpts?: SendDoneOptions) => {
+      if (doneNotified) return;
+      doneNotified = true;
+      receivedDone = true;
+      callbacks.onDone?.(doneOpts);
+    };
+
+    try {
+      let connOff: (() => void) | null = null;
+      await new Promise<void>((resolve, reject) => {
+        let activeStreamId: string | null = null;
+        let hadDisconnect = false;
+        let settling = false;
+
+        const settleOk = () => {
+          if (settling) return;
+          settling = true;
+          connOff?.();
+          connOff = null;
+          resolve();
+        };
+        const settleErr = (err: Error) => {
+          if (settling) return;
+          settling = true;
+          connOff?.();
+          connOff = null;
+          reject(err);
+        };
+
+        const attachStreamHandlers = (mode: "continue" | "resume") => {
+          const onData = (ev: StreamApiEvent) => {
+            if (generation !== _streamGeneration) return;
+            const result = handleStreamEvent(ev, streamText, callbacks, (partial) => set(partial));
+            streamText = result.streamText;
+            if (result.receivedError) {
+              receivedError = true;
+              if (ev.event === "error") {
+                serverErrorMsg = ev.data.error || "服务端错误";
+              }
+            }
+            if (result.receivedDone) {
+              if (!receivedError) {
+                notifyDone();
+              }
+              settleOk();
+            }
+          };
+
+          const onError = (err: Error) => {
+            if (generation !== _streamGeneration) {
+              settleOk();
+              return;
+            }
+            if (activeStreamId && !receivedDone) {
+              hadDisconnect = true;
+              return;
+            }
+            receivedError = true;
+            transportErrorMsg = err.message || "服务端错误";
+            settleErr(err);
+          };
+
+          const onComplete = () => {
+            if (generation !== _streamGeneration) {
+              settleOk();
+              return;
+            }
+            if (!receivedDone && activeStreamId && hadDisconnect) return;
+            settleOk();
+          };
+
+          const onStreamId = (streamId: string) => {
+            if (generation !== _streamGeneration) return;
+            activeStreamId = streamId;
+            writePersistedActiveStream(conversationId, streamId);
+          };
+
+          if (mode === "resume" && activeStreamId) {
+            return resumeMessageStream(activeStreamId, {
+              onData,
+              onError,
+              onComplete,
+              onStreamId,
+            });
+          }
+          return subscribeContinueStream(
+            omitUndefined({
+              conversationId,
+              llmDebug: opts.llmDebug,
+            }),
+            { onData, onError, onComplete, onStreamId },
+          );
+        };
+
+        connOff = subscribeHabitatRpcConnectionState((state) => {
+          if (generation !== _streamGeneration || settling) return;
+          if (state === "disconnected" && activeStreamId && !receivedDone) {
+            hadDisconnect = true;
+            return;
+          }
+          if (state === "connected" && hadDisconnect && activeStreamId && !receivedDone) {
+            if (_unsubscribe) {
+              _unsubscribe();
+              _unsubscribe = null;
+            }
+            hadDisconnect = false;
+            const next = attachStreamHandlers("resume");
+            _unsubscribe = () => next.unsubscribe();
+          }
+        });
+
+        const sub = attachStreamHandlers("continue");
+        _unsubscribe = () => sub.unsubscribe();
+      });
+
+      if (generation !== _streamGeneration) return;
+
+      if (serverErrorMsg) {
+        callbacks.onError?.(serverErrorMsg);
+      } else if (!doneNotified) {
+        const recovered = await tryRecoverDisplay(
+          conversationId,
+          callbacks.recoverDisplay,
+          (active) => {
+            set({ recovering: active });
+            callbacks.onRecovering?.(active);
+          },
+        );
+        if (recovered) {
+          notifyDone({ recovered: true });
+        } else if (!streamText.trim()) {
+          callbacks.onError?.("无回复，请检查 API 密钥与服务端日志");
+        }
+      }
+    } catch (e) {
+      if (generation !== _streamGeneration) return;
+      if (e instanceof Error && e.name === "AbortError") return;
+      console.error("continueTurn error:", e);
+      callbacks.onError?.(transportErrorMsg || "网络错误");
     } finally {
       if (generation === _streamGeneration) {
         if (receivedDone || receivedError) {
