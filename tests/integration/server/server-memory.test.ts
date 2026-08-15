@@ -15,6 +15,7 @@ import {
 } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { upsertSelfBlock } from "@freeanima/habitat/core/db/pg/self-layer";
 import { countSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
+import { setSearchDocumentClusterId } from "@freeanima/habitat/core/db/pg/search";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
@@ -156,6 +157,77 @@ describePg("server memory API", () => {
     const unpinned = await getAppRuntime().updateSemanticMemoryPinned(id, false);
     expect(unpinned).toEqual({ ok: true, id, pinned: false });
     expect((await getSemanticMemory(id))?.pinned).toBe(false);
+  });
+
+  it("listSemanticMemories exposes cluster_id and supports cluster filter", async () => {
+    const token = `cluster-list-${randomUUID().slice(0, 8)}`;
+    const idA = await createSemanticMemory({
+      content: `cluster probe a ${token}`,
+      type: "world",
+    });
+    const idB = await createSemanticMemory({
+      content: `cluster probe b ${token}`,
+      type: "world",
+    });
+    const idC = await createSemanticMemory({
+      content: `cluster probe c ${token}`,
+      type: "world",
+    });
+
+    const okA = await setSearchDocumentClusterId("entity", idA, 7);
+    const okB = await setSearchDocumentClusterId("entity", idB, 7);
+    const okC = await setSearchDocumentClusterId("entity", idC, 9);
+    expect(okA && okB && okC).toBe(true);
+
+    const browse = await getAppRuntime().listSemanticMemories({
+      limit: 100,
+      sort_by: "updated_at",
+    });
+    const byId = new Map(
+      browse.items
+        .filter((row: { content: string }) => row.content.includes(token))
+        .map((row: { id: number; cluster_id: number | null }) => [row.id, row.cluster_id]),
+    );
+    expect(byId.get(idA)).toBe(7);
+    expect(byId.get(idB)).toBe(7);
+    expect(byId.get(idC)).toBe(9);
+
+    const filtered = await getAppRuntime().listSemanticMemories({
+      cluster_id: 7,
+      limit: 100,
+    });
+    const filteredIds = filtered.items
+      .filter((row: { content: string }) => row.content.includes(token))
+      .map((row: { id: number }) => row.id)
+      .toSorted((a: number, b: number) => a - b);
+    expect(filteredIds).toEqual([idA, idB].toSorted((a, b) => a - b));
+    expect(filtered.items.every((row: { cluster_id: number | null }) => row.cluster_id === 7)).toBe(
+      true,
+    );
+
+    const ungroupedId = await createSemanticMemory({
+      content: `cluster probe ungrouped ${token}`,
+      type: "world",
+    });
+    const ungrouped = await getAppRuntime().listSemanticMemories({
+      cluster_id: null,
+      limit: 100,
+    });
+    expect(
+      ungrouped.items.some(
+        (row: { id: number; cluster_id: number | null }) =>
+          row.id === ungroupedId && row.cluster_id == null,
+      ),
+    ).toBe(true);
+    expect(
+      ungrouped.items
+        .filter((row: { content: string }) => row.content.includes(token))
+        .every((row: { cluster_id: number | null }) => row.cluster_id == null),
+    ).toBe(true);
+
+    const clusters = await getAppRuntime().listSemanticMemoryClusters();
+    const seven = clusters.items.find((row) => row.cluster_id === 7);
+    expect(seven?.count).toBeGreaterThanOrEqual(2);
   });
 
   it("listSelfBlocks returns five blocks in order", async () => {

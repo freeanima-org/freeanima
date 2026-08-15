@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import {
   SEMANTIC_MEMORY_COMPONENT,
   entities,
@@ -142,4 +142,76 @@ export async function getEntitySearchDocumentClusterId(
     .limit(1);
   if (rows.length === 0) return undefined;
   return rows[0]?.clusterId ?? null;
+}
+
+/** Batch lookup cluster_id by semantic_memory entity ids. Missing docs → null. */
+export async function getClusterIdsByEntityIds(
+  entityIds: readonly number[],
+): Promise<Map<number, number | null>> {
+  const out = new Map<number, number | null>();
+  for (const id of entityIds) out.set(id, null);
+  if (entityIds.length === 0) return out;
+
+  const rows = await getDb()
+    .select({
+      sourceId: searchDocuments.source_id,
+      clusterId: searchDocuments.cluster_id,
+    })
+    .from(searchDocuments)
+    .where(
+      and(
+        eq(searchDocuments.resource, "entity"),
+        inArray(
+          searchDocuments.source_id,
+          entityIds.map((id) => String(id)),
+        ),
+      ),
+    );
+
+  for (const row of rows) {
+    const entityId = Number(row.sourceId);
+    if (!Number.isInteger(entityId) || entityId <= 0) continue;
+    out.set(entityId, row.clusterId ?? null);
+  }
+  return out;
+}
+
+export type SemanticClusterStat = {
+  cluster_id: number | null;
+  count: number;
+};
+
+/** Distinct cluster_id counts for active semantic memories (left join; null = 未分组). */
+export async function listSemanticMemoryClusterStats(opts?: {
+  status?: "active" | "deprecated" | "all";
+}): Promise<SemanticClusterStat[]> {
+  const status = opts?.status ?? "active";
+  const statusCond = buildSemanticStatusCondition(status);
+  const conditions = [
+    eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
+    sql`${entities.deleted_at} IS NULL`,
+  ];
+  if (statusCond) conditions.push(statusCond);
+
+  const rows = await getDb()
+    .select({
+      clusterId: searchDocuments.cluster_id,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(entities)
+    .leftJoin(
+      searchDocuments,
+      and(
+        eq(searchDocuments.resource, "entity"),
+        sql`${searchDocuments.source_id} = ${entities.id}::text`,
+      ),
+    )
+    .where(and(...conditions))
+    .groupBy(searchDocuments.cluster_id)
+    .orderBy(sql`${searchDocuments.cluster_id} ASC NULLS LAST`);
+
+  return rows.map((row) => ({
+    cluster_id: row.clusterId ?? null,
+    count: row.count,
+  }));
 }

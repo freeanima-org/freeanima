@@ -11,6 +11,7 @@ export {
   patchTitleBodySchema,
   promptDebugResponseSchema,
   semanticMemoryListBodySchema,
+  semanticMemoryClustersBodySchema,
   semanticMemoryPinBodySchema,
   streamApiEventSchema,
   subjectEntityCreateBodySchema,

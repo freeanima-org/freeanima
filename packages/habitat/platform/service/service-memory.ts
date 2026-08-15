@@ -328,6 +328,7 @@ export async function listSemanticMemories(
     status?: SemanticMemorySearchOpts["status"];
     source_conversation?: string;
     sort_by?: SemanticMemorySearchOpts["sort_by"];
+    cluster_id?: number | null;
   } = {},
 ): Promise<MemoryListResult<SemanticFtsHit>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
@@ -338,12 +339,22 @@ export async function listSemanticMemories(
     status: args.status,
     source_conversations: sourceSession ? [sourceSession] : undefined,
     sort_by: args.sort_by,
+    cluster_id: args.cluster_id,
   });
   const [items, total] = await Promise.all([
     searchSemanticMemory({ ...filterOpts, offset, limit }),
     countSemanticMemorySearch(filterOpts),
   ]);
   return { items, total, offset, limit };
+}
+
+export async function listSemanticMemoryClusters(
+  _deps: RuntimeDeps,
+): Promise<{ items: Array<{ cluster_id: number | null; count: number }> }> {
+  const { listSemanticMemoryClusterStats } =
+    await import("@freeanima/habitat/core/db/pg/search/clustering-repo.ts");
+  const items = await listSemanticMemoryClusterStats({ status: "active" });
+  return { items };
 }
 
 export async function updateSemanticMemoryPinned(

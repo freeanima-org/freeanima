@@ -1,6 +1,7 @@
 import {
   passiveRecallDebugBodySchema,
   semanticMemoryListBodySchema,
+  semanticMemoryClustersBodySchema,
   semanticMemoryPinBodySchema,
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
@@ -10,6 +11,7 @@ import {
   temporalSystemRollBatchStartBodySchema,
   type PassiveRecallDebugBody,
   type SemanticMemoryListBody,
+  type SemanticMemoryClustersBody,
   type SemanticMemoryPinBody,
   type TemporalSummaryListBody,
   type TemporalSummaryRegenerateBody,
@@ -109,7 +111,13 @@ export async function listSemanticMemories(body: SemanticMemoryListBody) {
     status: parsed.status,
     source_conversation: parsed.source_conversation?.trim() || undefined,
     sort_by: parsed.sort_by,
+    cluster_id: parsed.cluster_id,
   });
+}
+
+export async function listSemanticMemoryClusters(_body: SemanticMemoryClustersBody = {}) {
+  semanticMemoryClustersBodySchema.parse(_body ?? {});
+  return habitatCtx().listSemanticMemoryClusters();
 }
 
 export async function updateSemanticMemoryPinned(body: SemanticMemoryPinBody) {

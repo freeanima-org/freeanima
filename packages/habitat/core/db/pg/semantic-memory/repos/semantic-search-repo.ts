@@ -1,14 +1,16 @@
 import { and, desc, sql as drizzleSql } from "drizzle-orm";
-import { entities } from "@freeanima/habitat/core/db/schema";
+import { entities, searchDocuments } from "@freeanima/habitat/core/db/schema";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
 import type { SemanticFtsHit } from "@freeanima/habitat/core/db/schema/rows";
 import type {
   SemanticMemorySearchOpts,
   SemanticMemorySortBy,
 } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import { getDb } from "../../client.ts";
 import { hybridCountSemanticMemory, hybridSearchSemanticMemory } from "../../fts/hybrid-search.ts";
+import { entitySearchDocumentsJoin } from "../../search/pg-search-index/channel-fts.ts";
 import { entityToSemanticMemoryRow } from "../map-row.ts";
 import { buildSemanticConditions } from "./semantic-filters.ts";
 
@@ -20,7 +22,7 @@ function normalizeSearchOpts(opts: SemanticSearchFilterOpts) {
   const source_conversations =
     opts.source_conversations?.map((s: string) => s.trim()).filter(Boolean) ?? [];
   const q = opts.query?.trim() ?? "";
-  return { types, status, source_conversations, q };
+  return { types, status, source_conversations, q, cluster_id: opts.cluster_id };
 }
 
 function resolveEffectiveSort(
@@ -56,6 +58,7 @@ const semanticSelect = {
   reference_count: entities.reference_count,
   created_at: entities.created_at,
   updated_at: entities.updated_at,
+  cluster_id: searchDocuments.cluster_id,
 } as const;
 
 function mapBrowseRow(row: {
@@ -72,6 +75,7 @@ function mapBrowseRow(row: {
   reference_count: number;
   created_at: Date;
   updated_at: Date;
+  cluster_id: number | null;
 }): SemanticFtsHit {
   const entityRow: EntityRow = {
     id: row.id,
@@ -91,7 +95,11 @@ function mapBrowseRow(row: {
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
-  return { ...entityToSemanticMemoryRow(entityRow), rank: 1.0 };
+  return {
+    ...entityToSemanticMemoryRow(entityRow),
+    rank: 1.0,
+    cluster_id: row.cluster_id ?? null,
+  };
 }
 
 export async function searchSemanticMemory(
@@ -99,38 +107,50 @@ export async function searchSemanticMemory(
 ): Promise<SemanticFtsHit[]> {
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const offset = Math.max(0, opts.offset ?? 0);
-  const { types, status, source_conversations, q } = normalizeSearchOpts(opts);
+  const { types, status, source_conversations, q, cluster_id } = normalizeSearchOpts(opts);
   const effectiveSort = resolveEffectiveSort(q, opts.sort_by);
 
   const db = getDb();
   if (effectiveSort === "rank") {
     if (!q) {
-      return searchSemanticMemoryBrowse(db, {
+      return searchSemanticMemoryBrowse(
+        db,
+        omitUndefined({
+          types,
+          status,
+          source_conversations,
+          cluster_id,
+          sortBy: "updated_at" as const,
+          offset,
+          limit,
+        }),
+      );
+    }
+    return hybridSearchSemanticMemory(
+      q,
+      omitUndefined({
+        limit,
+        offset,
         types,
         status,
         source_conversations,
-        sortBy: "updated_at",
-        offset,
-        limit,
-      });
-    }
-    return hybridSearchSemanticMemory(q, {
-      limit,
-      offset,
+        cluster_id,
+      }),
+    );
+  }
+
+  return searchSemanticMemoryBrowse(
+    db,
+    omitUndefined({
       types,
       status,
       source_conversations,
-    });
-  }
-
-  return searchSemanticMemoryBrowse(db, {
-    types,
-    status,
-    source_conversations,
-    sortBy: effectiveSort,
-    offset,
-    limit,
-  });
+      cluster_id,
+      sortBy: effectiveSort,
+      offset,
+      limit,
+    }),
+  );
 }
 
 async function searchSemanticMemoryBrowse(
@@ -139,16 +159,25 @@ async function searchSemanticMemoryBrowse(
     types: string[];
     status: "active" | "deprecated" | "all";
     source_conversations: string[];
+    cluster_id?: number | null;
     sortBy: Exclude<SemanticMemorySortBy, "rank">;
     offset: number;
     limit: number;
   },
 ): Promise<SemanticFtsHit[]> {
-  const { types, status, source_conversations, sortBy, offset, limit } = args;
-  const conditions = buildSemanticConditions({ types, status, source_conversations });
+  const { types, status, source_conversations, cluster_id, sortBy, offset, limit } = args;
+  const conditions = buildSemanticConditions(
+    omitUndefined({
+      types,
+      status,
+      source_conversations,
+      cluster_id,
+    }),
+  );
   const rows = await db
     .select(semanticSelect)
     .from(entities)
+    .leftJoin(searchDocuments, entitySearchDocumentsJoin())
     .where(conditions.length > 0 ? and(...conditions) : undefined)
     .orderBy(...browseOrderBy(sortBy))
     .offset(offset)
@@ -157,17 +186,28 @@ async function searchSemanticMemoryBrowse(
 }
 
 export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts): Promise<number> {
-  const { types, status, source_conversations, q } = normalizeSearchOpts(opts);
+  const { types, status, source_conversations, q, cluster_id } = normalizeSearchOpts(opts);
 
   const db = getDb();
   if (q) {
-    return hybridCountSemanticMemory(q, { types, status, source_conversations });
+    return hybridCountSemanticMemory(
+      q,
+      omitUndefined({ types, status, source_conversations, cluster_id }),
+    );
   }
 
-  const conditions = buildSemanticConditions({ types, status, source_conversations });
+  const conditions = buildSemanticConditions(
+    omitUndefined({
+      types,
+      status,
+      source_conversations,
+      cluster_id,
+    }),
+  );
   const rows = await db
     .select({ n: drizzleSql<number>`count(*)::int` })
     .from(entities)
+    .leftJoin(searchDocuments, entitySearchDocumentsJoin())
     .where(conditions.length > 0 ? and(...conditions) : undefined);
   return rows[0]?.n ?? 0;
 }

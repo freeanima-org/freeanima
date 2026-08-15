@@ -122,6 +122,9 @@ export type AppRuntimeMemoryPort = {
   getTemporalSystemRollBatchStatus(): unknown;
   countSemanticMemory(): Promise<{ index_rows: number }>;
   listSemanticMemories(opts?: Record<string, unknown>): Promise<unknown>;
+  listSemanticMemoryClusters(): Promise<{
+    items: Array<{ cluster_id: number | null; count: number }>;
+  }>;
   updateSemanticMemoryPinned(
     id: number | string,
     pinned: boolean,

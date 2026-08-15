@@ -33,8 +33,11 @@ export {
   listActiveSemanticMemoryClusterIds,
   findNearestClusteredNeighbor,
   getEntitySearchDocumentClusterId,
+  getClusterIdsByEntityIds,
+  listSemanticMemoryClusterStats,
   type SemanticEmbeddingClusterRow,
   type SemanticClusterIdRow,
+  type SemanticClusterStat,
 } from "./clustering-repo.ts";
 export {
   entitySearchDocumentsJoin,

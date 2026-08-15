@@ -23,7 +23,11 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   status: semanticMemoryStatusSchema.or(z.literal("all")).optional(),
   source_conversation: z.string().optional(),
   sort_by: semanticMemorySortBySchema.optional(),
+  /** 省略=不筛；null=仅未分组；非负整数=该聚类族 */
+  cluster_id: z.number().int().nonnegative().nullable().optional(),
 });
+
+export const semanticMemoryClustersBodySchema = z.object({}).strict();
 
 export const semanticMemoryPinBodySchema = z.object({
   id: z.number().int().positive(),
@@ -165,6 +169,7 @@ export type TemporalSystemRollBatchJobStatus = z.infer<
   typeof temporalSystemRollBatchJobStatusSchema
 >;
 export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
+export type SemanticMemoryClustersBody = z.infer<typeof semanticMemoryClustersBodySchema>;
 export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
 
 export const entityIdParamsSchema = z.object({
