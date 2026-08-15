@@ -7,7 +7,7 @@ import { ANIMA_URI_PROTOCOL_BODY } from "@freeanima/habitat/capabilities/tools/a
 import { registerSubagentCatalogSystemPromptHook } from "@freeanima/features/subagent/domain";
 import { registerCodingProjectContextPromptHook } from "@freeanima/features/coding/domain/project-context-prompt-hooks.ts";
 import { buildMemorySystemPromptSections } from "@freeanima/habitat/capabilities/memory/system-prompt-sections";
-import { loadSelfLayerInner, loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
+import { loadSelfLayerInner } from "@freeanima/habitat/capabilities/self";
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import type { SkillRegistry } from "@freeanima/habitat/core/skill";
 
@@ -163,9 +163,8 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
           await import("@freeanima/habitat/capabilities/memory/temporal-summary");
         const { cacheGetJson, cacheSetJson } = await import("@freeanima/habitat/core/redis");
         const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-        const selfContent = await loadSelfLayerPrompt();
+        // 只读 Redis sys_roll；miss 跳过，不在拼装路径打 LLM
         const { body, truncated } = await buildTemporalSummarySystemBody(config, {
-          selfContent,
           peerCache: {
             getJson: cacheGetJson,
             setJson: cacheSetJson,

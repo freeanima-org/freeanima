@@ -37,6 +37,8 @@ export {
 } from "./engine-port.ts";
 export {
   resolveTemporalSummaryConfig,
+  sysRollTtlSeconds,
+  SYS_ROLL_TTL_SECONDS,
   type ResolvedTemporalSummaryConfig,
   type TemporalSummaryConfigInput,
 } from "./config.ts";
@@ -73,6 +75,7 @@ export {
   type SysRollSlot,
   type SysRollCacheValue,
 } from "./system-rolls.ts";
+export { scheduleTemporalSystemRollWarm } from "./system-roll-warm.ts";
 export {
   startTemporalBatchJob,
   getTemporalBatchJobStatus,

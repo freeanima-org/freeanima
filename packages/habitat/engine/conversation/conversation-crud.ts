@@ -255,7 +255,8 @@ export async function initConversation(
   const platform_extra = opts.platform_extra ? { ...opts.platform_extra } : undefined;
   if (platform_extra) delete platform_extra.capability_mask; // legacy drop
 
-  const metaDraft: ConversationMetaMessage = {
+  // 延后拼装 system_prompt：首条消息 beginTurnPrepare → ensureSystemPromptFresh 再全量重建
+  const meta: ConversationMetaMessage = {
     model,
     cached_toolsets: resolveDefaultConversationToolSets(tools),
     staged_toolsets: [],
@@ -266,15 +267,6 @@ export async function initConversation(
     ...(opts.scenario ? { scenario: opts.scenario } : {}),
     platform_extra:
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
-  };
-  const systemPrompt = await buildSystemPrompt(opts.functions ?? [], cwd, {
-    ...metaDraft,
-    conversation_id: sid,
-  });
-  const meta: ConversationMetaMessage = {
-    ...metaDraft,
-    system_prompt: systemPrompt,
-    system_prompt_built_at: new Date().toISOString(),
   };
   await pgWriteMeta(sid, meta);
 }
@@ -298,6 +290,8 @@ export async function newConversation(
       scenario,
     }),
   );
+  // 尽力预热；失败不影响创建（首条消息 ensure 会同步补齐）
+  void rebuildConversationSystemPrompt(sid).catch(() => undefined);
   return sid;
 }
 

@@ -1,5 +1,5 @@
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
-import { resolveAllSystemRolls } from "./system-rolls.ts";
+import { listTemporalSystemRolls } from "./system-rolls.ts";
 import type { PeerRollCache } from "./tick.ts";
 import {
   PROMPT_XML_TAGS,
@@ -16,11 +16,28 @@ export type BuildTemporalSummarySystemSectionOpts = {
   nowMs?: number;
   /** Redis (or in-process) cache for system rollups. */
   peerCache?: PeerRollCache;
-  /** Identity context for LLM rollup; required for miss path when sources exist. */
+  /**
+   * @deprecated 拼装路径只读缓存，不再用 selfContent 触发 LLM。
+   * 保留字段以免调用方破坏。
+   */
   selfContent?: string;
 };
 
-/** Build system prompt section: 过往日 → 过往月 → 过往年 (each ≤ global_day_max_chars). */
+async function cachedSystemRollBlocks(
+  config: ResolvedTemporalSummaryConfig,
+  opts: BuildTemporalSummarySystemSectionOpts,
+): Promise<Array<{ label: string; summary: string }>> {
+  const { items } = await listTemporalSystemRolls({
+    config,
+    ...(opts.peerCache ? { peerCache: opts.peerCache } : {}),
+    ...(opts.nowMs !== undefined ? { nowMs: opts.nowMs } : {}),
+  });
+  return items
+    .filter((item) => item.cache_hit && item.summary.trim())
+    .map((item) => ({ label: item.label, summary: item.summary.trim() }));
+}
+
+/** Build system prompt section: 过往日 → 过往月 → 过往年（只读 Redis，miss 跳过）。 */
 export async function buildTemporalSummarySystemSection(
   config: ResolvedTemporalSummaryConfig,
   opts: BuildTemporalSummarySystemSectionOpts | number = {},
@@ -30,12 +47,7 @@ export async function buildTemporalSummarySystemSection(
     typeof opts === "number" ? { nowMs: opts } : opts;
   if (!config.enabled) return { content: "", truncated: false };
 
-  const rolls = await resolveAllSystemRolls({
-    config,
-    ...(normalized.peerCache ? { peerCache: normalized.peerCache } : {}),
-    ...(normalized.selfContent !== undefined ? { selfContent: normalized.selfContent } : {}),
-    ...(normalized.nowMs !== undefined ? { nowMs: normalized.nowMs } : {}),
-  });
+  const rolls = await cachedSystemRollBlocks(config, normalized);
   if (rolls.length === 0) return { content: "", truncated: false };
 
   const body = rolls.map((r) => `### ${r.label}\n${r.summary}`).join("\n\n");
@@ -51,7 +63,7 @@ export async function buildTemporalSummarySystemSection(
   };
 }
 
-/** Body-only for fold path (xmlTag applied by hook). */
+/** Body-only for fold path (xmlTag applied by hook). 只读缓存，不打 LLM。 */
 export async function buildTemporalSummarySystemBody(
   config: ResolvedTemporalSummaryConfig,
   opts: BuildTemporalSummarySystemSectionOpts | number = {},
@@ -60,12 +72,7 @@ export async function buildTemporalSummarySystemBody(
     typeof opts === "number" ? { nowMs: opts } : opts;
   if (!config.enabled) return { body: "", truncated: false };
 
-  const rolls = await resolveAllSystemRolls({
-    config,
-    ...(normalized.peerCache ? { peerCache: normalized.peerCache } : {}),
-    ...(normalized.selfContent !== undefined ? { selfContent: normalized.selfContent } : {}),
-    ...(normalized.nowMs !== undefined ? { nowMs: normalized.nowMs } : {}),
-  });
+  const rolls = await cachedSystemRollBlocks(config, normalized);
   if (rolls.length === 0) return { body: "", truncated: false };
 
   const body = rolls.map((r) => `### ${r.label}\n${r.summary}`).join("\n\n");
