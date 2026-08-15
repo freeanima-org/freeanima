@@ -86,6 +86,7 @@ export {
   SheetTrigger,
 } from "./sheet.tsx";
 export { Skeleton } from "./skeleton.tsx";
+export { Slider } from "./slider.tsx";
 export { Spinner } from "./spinner.tsx";
 export { Switch } from "./switch.tsx";
 export { Toggle, toggleVariants } from "./toggle.tsx";
