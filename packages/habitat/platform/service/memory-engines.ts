@@ -36,7 +36,7 @@ import { filterToolNamesByPolicy, resolveSleepCapabilityPolicy } from "./capabil
 import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "./auto-llm-run.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
-const RETAIN_MAX_TURNS = 50;
+const RETAIN_MAX_LOOP_ITERATIONS = 50;
 /** 合轮后：1 次批量 toolcalls + 最多 1 轮摘要；禁止多轮试探式工具环 */
 const REFLECT_MAX_TURNS = 2;
 
@@ -69,7 +69,7 @@ type ReflectStreamInput = {
 type ReflectStreamOptions = {
   runKind: string;
   runName: string;
-  maxTurns: number;
+  maxLoopIterations: number;
   metadata?: Record<string, unknown>;
   onToolResult?: (name: string, content: string) => void;
 };
@@ -103,7 +103,7 @@ async function runReflectStream(
       userMessages: prompt.userMessages,
       model,
       toolNames,
-      maxTurns: opts.maxTurns,
+      maxLoopIterations: opts.maxLoopIterations,
       maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       toolPolicy: sleepPolicy,
       metadata: opts.metadata,
@@ -124,7 +124,7 @@ async function runAutobiographyTurn(
   const { summary, toolCalls } = await runReflectStream(deps, input, {
     runKind: "self-autobiography",
     runName: "self-autobiography",
-    maxTurns: 20,
+    maxLoopIterations: 20,
   });
   return { summary, tool_calls: toolCalls };
 }
@@ -142,7 +142,7 @@ async function runTemporalSummaryTurn(
     userMessages: input.userMessages,
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
     toolNames: [],
-    maxTurns: 1,
+    maxLoopIterations: 1,
     maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
     metadata: { temporal_summary: true },
   });
@@ -170,7 +170,7 @@ async function runSelfLayerRefreshTurn(
     userMessages,
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
     toolNames: [],
-    maxTurns: 1,
+    maxLoopIterations: 1,
     maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
     metadata: { self_layer_refresh: true },
   });
@@ -187,7 +187,7 @@ async function runReflectTurn(
   const { summary, toolCalls } = await runReflectStream(deps, input, {
     runKind: "memory-reflect",
     runName: `memory-reflect/${input.round}`,
-    maxTurns: REFLECT_MAX_TURNS,
+    maxLoopIterations: REFLECT_MAX_TURNS,
     metadata: { reflect: true, round: input.round },
     onToolResult: (name, content) => {
       if (input.changeLog) {
@@ -206,7 +206,7 @@ async function runRetainTurn(
   const { summary, toolCalls } = await runReflectStream(deps, input, {
     runKind: "memory-retain",
     runName: "memory-retain",
-    maxTurns: RETAIN_MAX_TURNS,
+    maxLoopIterations: RETAIN_MAX_LOOP_ITERATIONS,
     metadata: { retain: true },
     onToolResult: (name, content) => {
       const semanticId = extractSemanticMemoryId(name, content);

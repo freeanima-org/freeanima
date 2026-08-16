@@ -1,4 +1,4 @@
-/** Reflect 巩固轮次（按簇单轮；原四轮已合并） */
+/** Reflect 巩固步骤（按簇单轮；原四轮已合并） */
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
 /** consolidate = 完整有序巩固；consolidate_pin = 仅审置顶 */

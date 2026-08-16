@@ -197,8 +197,8 @@ describe("runConversationCommand Chat RPC", () => {
       spyOn(goal, "pauseConversationGoal").mockResolvedValue({
         description: "ship",
         status: "paused",
-        turn_count: 1,
-        max_turns: 20,
+        continue_count: 1,
+        max_continues: 20,
         subgoals: [],
       } as never),
     );

@@ -32,7 +32,7 @@ export type CompressionDiagnosticsInput = Pick<
 
 export type CompressionDiagnosticsConfig = Pick<
   ResolvedCompressionConfig,
-  "triggerHigh" | "triggerLow" | "maxRounds"
+  "triggerHigh" | "triggerLow" | "maxMessagePairs"
 >;
 
 /** Mode-aware compression status lines for /compress and /stats */
@@ -59,7 +59,7 @@ export function formatCompressionDiagnostics(
       `Usage: ${formatCompressionPct(analysis.usage_ratio)} (trigger ≥${formatCompressionPct(cfg.triggerLow)} / tool-loop ≥${formatCompressionPct(cfg.triggerHigh)})`,
     );
   } else {
-    lines.push(`Mode: message-count fallback (max_rounds=${cfg.maxRounds})`);
+    lines.push(`Mode: message-count fallback (max_message_pairs=${cfg.maxMessagePairs})`);
     lines.push(
       `Trigger: first >${analysis.threshold} messages, recompress window >${analysis.recompress_at} messages`,
     );

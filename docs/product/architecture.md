@@ -92,7 +92,7 @@ title: 架构
 | ~1K 系统提示、四个工具       | 保留数字生命自我 / 记忆 / ToolSet 目录；对各段做**预算**，而非照搬 1K              |
 | 双载荷 `content` + `details` | **不要**把仅 UI 用的 `details` 持久化到 `messages.payload`（模型无法用它再取更多） |
 | 极简内置、无 MCP             | 保留 MCP、权限、渐进式 `toolset_load` / `toolset_unload`                           |
-| 无限 agent 循环              | 保留 `max_turns` / 安全上限（策略层，非本主轴）                                    |
+| 无限 agent 循环              | 保留 `max_loop_iterations` / 安全上限（策略层，非本主轴）                          |
 
 ToolSet 发现可见度分三级：`catalog`（进系统提示 `<toolsets>` 目录）、`searchable`（不进目录、可经 `toolset_search` 发现）、`hidden`（仅按名 `toolset_load`）。**内置 ToolSet 默认进目录**（注册时不设可见度）；例外：`self`、`memory_service` 默认 `searchable`。三级可见度主要用于 MCP / Outpost 与运行时 `toolset_visibility` 覆盖。目录段 intro 须说明 MCP/远程等目录外集合仍可通过 `toolset_search` 发现。
 
@@ -306,7 +306,7 @@ Agent 行为
 | Parked   | limbic / dream / narrative — 存量只读（写入已拆除）         |
 
 **程序入口：** `MemoryService`（`embedded` \| `remote` 同契约）。LLM 工具仍是分范围 search（无统一 `memory_recall`）。  
-**巩固路径：** turn 后 `retain`；夜间 `memory-maintenance`（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。
+**巩固路径：** 回合后 `retain`；夜间 `memory-maintenance`（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。
 
 ## 保险库与密钥（摘要）
 
@@ -386,6 +386,8 @@ mcp_servers:
 
 ## Conversation vs AutoLlmRun（对话 vs 自动 LLM 运行）
 
+**回合 / 引擎轮 / 工具轮次：** 术语 SSOT 见 [`i18n/glossary.md`](../../i18n/glossary.md)。一次用户**回合**（`beginTurn`→`finishTurn`/`syncTurn`，retain 按此触发）内可有多次**引擎轮**（`max_loop_iterations`）与**工具轮次**（`onToolRoundComplete`）。Goal 的 `max_continues` 是续写**回合**预算，≠ 引擎轮。压缩 `max_message_pairs` 是消息数阈值，≠ 上述任一。
+
 **轴：** 执行过程中是否有**用户回合**（不是谁触发的）。聊天室 LLM 请求**互斥**：要么对话路径，要么 AutoLlmRun——永不两者兼用，也无第三种孤儿 `chat()`。
 
 | 种类             | 用户回合 | PG 持久化                                                                 | 进程轨迹          | 记忆维护流水线      |
@@ -394,10 +396,10 @@ mcp_servers:
 | **AutoLlmRun**   | 无       | `auto_llm_runs` + `auto_llm_messages`，经 `runAutoLlm` / `runAutoLlmChat` | 完整消息转录，TTL | 排除                |
 | **Script cron**  | 无       | 仅 `cron_log`                                                             | stdout 文件       | 排除                |
 
-**对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录回合在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
-AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；工具循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
+**对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录消息在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
+AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；带工具的 AutoLlm 循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
 
-**AutoLlm 提示：** `composeAutoLlmPrompt` 组装——`system`：`<auto_llm_protocol>` + `<auto_llm_task_spec>`（稳定，可用 `{{param}}` 挖空）；`user`：可选技能 → `<auto_llm_task_params>`（填空）→ 数据。禁止把对话 `system_prompt` 快照当作 AutoLlm system（压缩/handoff 亦然）。审计列含 `subject_id`、`max_turns`、`max_duration_ms`（墙钟预算，可空）与实际 `duration_ms`。
+**AutoLlm 提示：** `composeAutoLlmPrompt` 组装——`system`：`<auto_llm_protocol>` + `<auto_llm_task_spec>`（稳定，可用 `{{param}}` 挖空）；`user`：可选技能 → `<auto_llm_task_params>`（填空）→ 数据。禁止把对话 `system_prompt` 快照当作 AutoLlm system（压缩/handoff 亦然）。审计列含 `subject_id`、`max_loop_iterations`（引擎轮预算）、`max_duration_ms`（墙钟预算，可空）与实际 `duration_ms`。
 
 **行动主体：** `runAutoLlm` 与 `runAutoLlmChat` 都要求 `subjectId`（持久化为 `auto_llm_runs.subject_id`）。工具 world 授权用 `resolveToolCallerSubjectId()`——MCP token subject，否则 ALS `subjectId`，否则栖息地 `agent_subject_id` 回退。今日调用方传入 boot 绑定的 agent subject；多数字生命时传入 job 绑定的 anima，无需改授权路径。
 
@@ -414,7 +416,7 @@ AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题
 | 范围   | 单一对话                                                                                     | 全新 AutoLlmRun                         |
 | 触发   | `/goal` slash + 回合后 judge                                                                 | `subagent_run` 工具调用                 |
 | 持久化 | `conversations.goal` JSONB；continue 回合在 `messages`；judge 跳转在 AutoLlm（`goal-judge`） | `auto_llm_runs`（`run_kind: subagent`） |
-| 延续   | 同一 SSE 流、回合预算                                                                        | 同步工具结果回父方                      |
+| 延续   | 同一 SSE 流、续写回合预算（`max_continues`）                                                 | 同步工具结果回父方                      |
 
 Judge 使用可选 `llm.profiles.goal_judge`；judge 调用/解析失败时目标**暂停**（记 warn + 聊天室状态行）。用户消息抢占循环；`/goal pause` / `/goal resume` 控制自动继续而不清空状态。见 [`goal.md`](../modules/goal.md)。
 

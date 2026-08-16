@@ -96,7 +96,7 @@ describe("runAutoLlm", () => {
       systemPrompt: "sys",
       userMessages: ["do task"],
       toolNames: [],
-      maxTurns: 5,
+      maxLoopIterations: 5,
     });
 
     expect(result.status).toBe("ok");
@@ -105,7 +105,7 @@ describe("runAutoLlm", () => {
     expect(appendCalls.length).toBe(1);
     expect(appendCalls[0]?.run_kind).toBe("cron");
     expect(appendCalls[0]?.subject_id).toBe(2);
-    expect(appendCalls[0]?.max_turns).toBe(5);
+    expect(appendCalls[0]?.max_loop_iterations).toBe(5);
     expect(appendCalls[0]?.max_duration_ms).toBeNull();
     expect(appendCalls[0]?.status).toBe("ok");
     expect(appendCalls[0]?.messages?.length).toBeGreaterThan(0);

@@ -42,7 +42,7 @@ describe("goal manager", () => {
     const goal = await setConversationGoal(conv, "s1", "finish report");
     expect(goal.status).toBe("active");
     expect(goal.description).toBe("finish report");
-    expect(goal.max_turns).toBe(20);
+    expect(goal.max_continues).toBe(20);
     const stored = await readConversationGoal(conv, "s1");
     expect(stored?.description).toBe("finish report");
   });

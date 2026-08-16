@@ -100,8 +100,8 @@ describe("parseConversationGoal", () => {
       description: "ship feature",
       subgoals: ["write tests"],
       status: "active",
-      turn_count: 0,
-      max_turns: 20,
+      continue_count: 0,
+      max_continues: 20,
       set_at: "2026-01-01T00:00:00.000Z",
     });
   });

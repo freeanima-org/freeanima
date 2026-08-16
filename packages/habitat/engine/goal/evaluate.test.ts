@@ -86,7 +86,7 @@ describe("evaluateGoalAfterTurn", () => {
     expect(r.displayHint).toContain("judge failed");
     expect(warnSpy).toHaveBeenCalled();
     const goal = await readConversationGoal(conv, "s1");
-    expect(goal?.turn_count).toBe(0);
+    expect(goal?.continue_count).toBe(0);
     expect(goal?.last_judge_reason).toBe("network");
     expect(goal?.status).toBe("paused");
   });

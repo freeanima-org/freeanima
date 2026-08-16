@@ -183,7 +183,7 @@ export async function runSimpleTurn(
         { tools: deps.engine.catalog.toolSets, ...omitUndefined({ executableTools }) },
       );
     } catch (e) {
-      if (e instanceof loopEngine.MaxTurnsExceeded) {
+      if (e instanceof loopEngine.MaxLoopIterationsExceeded) {
         return `[tool loop limit exceeded] ${e.message}`;
       }
       return `[engine error] ${e instanceof Error ? e.message : String(e)}`;
@@ -256,12 +256,12 @@ export async function* yieldEngineStream(
         yield ev;
       }
     } catch (e) {
-      if (e instanceof loopEngine.EngineTurnInterrupted) {
+      if (e instanceof loopEngine.EngineLoopInterrupted) {
         yield { event: "interrupted", data: { reason: e.message } };
         yield { event: "done", data: { reason: "interrupted" } };
         return;
       }
-      if (e instanceof loopEngine.MaxTurnsExceeded) {
+      if (e instanceof loopEngine.MaxLoopIterationsExceeded) {
         const msg = `tool loop exceeded: ${e.message}`;
         deps.engine.logger.with({ component: "anima-service" }).error(msg, { err: e });
         yield { event: "error", data: { error: msg } };

@@ -33,7 +33,7 @@ export type RunSkillReviewInput = {
   force?: boolean;
   note?: string;
   minToolCalls?: number;
-  maxTurns?: number;
+  maxLoopIterations?: number;
 };
 
 export type SkillReviewOutcome =
@@ -129,7 +129,7 @@ export async function runSkillReview(
       userMessages,
       model,
       toolNames,
-      maxTurns: input.maxTurns ?? SKILL_REVIEW_MAX_TURNS,
+      maxLoopIterations: input.maxLoopIterations ?? SKILL_REVIEW_MAX_TURNS,
       maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       toolPolicy: policy,
       parentConversationId: input.conversationId,

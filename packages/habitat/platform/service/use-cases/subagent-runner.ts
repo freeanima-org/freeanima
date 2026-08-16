@@ -51,7 +51,7 @@ export const SUBAGENT_HARD_DENY_TOOLS = [
   "subagent_delete",
 ] as const;
 
-const DEFAULT_SUBAGENT_MAX_TURNS = 20;
+const DEFAULT_SUBAGENT_MAX_LOOP_ITERATIONS = 20;
 const DEFAULT_SUBAGENT_MAX_PARALLEL = 4;
 const DEFAULT_SUBAGENT_TEMPERATURE_TIER: TemperatureTier = "balanced";
 const EPHEMERAL_SLUG = "ephemeral";
@@ -121,15 +121,18 @@ function publishSubagentProgress(
   );
 }
 
-function resolveMaxTurns(
+function resolveMaxLoopIterations(
   deps: FullRuntimeDeps,
   profile: ResolvedSubagentProfile,
   override?: number,
 ): number {
   if (override != null && override > 0) return override;
-  if (profile.max_turns != null && profile.max_turns > 0) return profile.max_turns;
-  const cfg = deps.engine.config.data.auto_llm as { subagent?: { max_turns?: number } } | undefined;
-  return cfg?.subagent?.max_turns ?? DEFAULT_SUBAGENT_MAX_TURNS;
+  if (profile.max_loop_iterations != null && profile.max_loop_iterations > 0)
+    return profile.max_loop_iterations;
+  const cfg = deps.engine.config.data.auto_llm as
+    | { subagent?: { max_loop_iterations?: number } }
+    | undefined;
+  return cfg?.subagent?.max_loop_iterations ?? DEFAULT_SUBAGENT_MAX_LOOP_ITERATIONS;
 }
 
 /** 调用 > 档案 > auto_llm.subagent.temperature_tier > balanced */
@@ -206,7 +209,7 @@ export async function resolveSubagentProfile(
           summary: hit.description,
           content: hit.content,
           skills: [],
-          max_turns: null,
+          max_loop_iterations: null,
           temperature_tier: null,
           allowed_tools: hit.allowed_tools ?? [],
           denied_tools: [],
@@ -228,7 +231,7 @@ export async function resolveSubagentProfile(
       summary: row.summary,
       content: row.content,
       skills: row.skills,
-      max_turns: row.max_turns,
+      max_loop_iterations: row.max_loop_iterations,
       temperature_tier: row.temperature_tier ?? null,
       allowed_tools: row.allowed_tools,
       denied_tools: row.denied_tools,
@@ -252,7 +255,7 @@ export async function resolveSubagentProfile(
     summary: "",
     content: instructions,
     skills: task.skills ?? [],
-    max_turns: task.max_turns ?? null,
+    max_loop_iterations: task.max_loop_iterations ?? null,
     temperature_tier: task.temperature_tier ?? null,
     allowed_tools: task.allowed_tools,
     denied_tools: [],
@@ -339,7 +342,7 @@ async function runOneTask(
     ],
   });
 
-  const maxTurns = resolveMaxTurns(deps, profile, task.max_turns);
+  const maxLoopIterations = resolveMaxLoopIterations(deps, profile, task.max_loop_iterations);
   const tier = resolveTemperatureTier(deps, profile, task.temperature_tier);
   const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
   const format = getProfileHopFormat(deps.engine.config.data, PROFILE_CHAT);
@@ -372,7 +375,7 @@ async function runOneTask(
       userMessages,
       model,
       toolNames,
-      maxTurns,
+      maxLoopIterations,
       maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       requestParams,
       toolPolicy: policy,

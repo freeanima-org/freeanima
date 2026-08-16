@@ -9,12 +9,12 @@ title: 压缩
 
 ## 设计原则
 
-| 原则       | 说明                                                |
-| ---------- | --------------------------------------------------- |
-| 不删消息   | 历史保留；压缩只改运行时视图与 `conversations` meta |
-| 四段       | LLM 上下文 = system + summary + slim + raw          |
-| 按需触发   | 用量接近窗口上限时压缩；工具循环内阈值更高          |
-| 与记忆独立 | 压缩不触发语义提取；retain/memory-maintenance 另走  |
+| 原则       | 说明                                                               |
+| ---------- | ------------------------------------------------------------------ |
+| 不删消息   | 历史保留；压缩只改运行时视图与 `conversations` meta                |
+| 四段       | LLM 上下文 = system + summary + slim + raw                         |
+| 按需触发   | 用量接近窗口上限时压缩；处于工具调用环（`isInToolLoop`）时阈值更高 |
+| 与记忆独立 | 压缩不触发语义提取；retain/memory-maintenance 另走                 |
 
 ## 运行时四段
 
@@ -38,20 +38,22 @@ title: 压缩
 compression:
   enabled: true
   reserved_tokens: 8192
-  trigger_low: 0.60 # outside tool loop: compress at 60% usage
-  trigger_high: 0.80 # inside tool loop: compress at 80% usage
+  trigger_low: 0.60 # outside tool-calling loop: compress at 60% usage
+  trigger_high: 0.80 # inside tool-calling loop (`isInToolLoop`): compress at 80% usage
   emergency_ratio: 0.92
   raw_min_messages: 5
   slim_min_messages: 50
   summary_max_tokens: 4000
+  max_message_pairs: 50 # 消息对数回退阈值（≠ 引擎轮 / 工具轮次）
 ```
 
-| 设置                | 默认值 | 说明                     |
-| ------------------- | ------ | ------------------------ |
-| `trigger_low`       | 0.60   | 普通对话中的阈值         |
-| `trigger_high`      | 0.80   | 工具循环内的阈值         |
-| `raw_min_messages`  | 5      | raw 段最少消息数         |
-| `slim_min_messages` | 50     | 裁剪后 slim 段最少消息数 |
+| 设置                | 默认值 | 说明                                     |
+| ------------------- | ------ | ---------------------------------------- |
+| `trigger_low`       | 0.60   | 普通对话中的阈值                         |
+| `trigger_high`      | 0.80   | 处于工具调用环内的阈值（≠ 单次工具轮次） |
+| `max_message_pairs` | 50     | 无上下文窗口时的消息数回退阈值           |
+| `raw_min_messages`  | 5      | raw 段最少消息数                         |
+| `slim_min_messages` | 50     | 裁剪后 slim 段最少消息数                 |
 
 ### Token 计数
 
@@ -62,17 +64,17 @@ compression:
 估算压缩预算时：
 
 1. Provider `/models` 目录的 `contextWindow`（栖息地已注册查找时；可能含 [models.dev](https://models.dev) enrichment — 见 [`service.md`](../ops/service.md) LLM 节）；目录 miss 时常见默认 128k
-2. 以上皆无时的消息数回退（`max_rounds` 阈值）
+2. 以上皆无时的消息数回退（`max_message_pairs` 阈值；≠ `max_loop_iterations` 引擎轮）
 
 目录只读，不经运行时配置覆盖。无上下文窗口来源时，压缩回退到按消息数触发。
 
 在对话中强制压缩：`/compress`（`--force` 忽略迟滞）。
 
-手动摘要（Cursor 风格）：`/summarize` 将历史折叠进运行时摘要，不等自动阈值。当轮次**空闲**（最后一条是已完成的助手回复）时，边界变为 `l2 = l3 = l4`，slim/raw 为空。**进行中**轮次时，仅摘要到最后一条已完成助手；未完成尾部留在 raw。摘要文本**增量**合并（与自动压缩相同），命令等待摘要 LLM 完成。若 LLM 运行在 auto-llm 日志中成功但 flush 后 `conversations.compression.summary` 仍空，`/summarize` 返回失败（`summary_empty`）并带 auto-llm `runId` — **不**以空预览报成功。省略摘要文本的并发边界补丁不得抹掉已有非空摘要。
+手动摘要（Cursor 风格）：`/summarize` 将历史折叠进运行时摘要，不等自动阈值。当**回合空闲**（最后一条是已完成的助手回复）时，边界变为 `l2 = l3 = l4`，slim/raw 为空。**进行中**回合时，仅摘要到最后一条已完成助手；未完成尾部留在 raw。摘要文本**增量**合并（与自动压缩相同），命令等待摘要 LLM 完成。若 LLM 运行在 auto-llm 日志中成功但 flush 后 `conversations.compression.summary` 仍空，`/summarize` 返回失败（`summary_empty`）并带 auto-llm `runId` — **不**以空预览报成功。省略摘要文本的并发边界补丁不得抹掉已有非空摘要。
 
-### 轮次中保护 vs 空 raw
+### 回合中保护 vs 空 raw
 
-自动边界推导保持非空 raw 段（带前导 user 消息），以便用量压缩运行时轮次可继续。该规则适用于**必须保留某段 raw 尾**时。它不是禁止空 raw：用户在空闲对话上显式 `/summarize` 时，允许完全折叠（`l2 = l3 = l4`）。轮次中保护通过**不把未完成轮次折进摘要**实现，而非永久要求 raw 中有 user。
+自动边界推导保持非空 raw 段（带前导 user 消息），以便用量压缩时运行中的**回合**可继续。该规则适用于**必须保留某段 raw 尾**时。它不是禁止空 raw：用户在空闲对话上显式 `/summarize` 时，允许完全折叠（`l2 = l3 = l4`）。回合中保护通过**不把未完成回合折进摘要**实现，而非永久要求 raw 中有 user。
 
 ## 与记忆管道的关系
 

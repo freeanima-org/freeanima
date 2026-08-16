@@ -5,11 +5,11 @@ export function assistantReasoningText(msg: AssistantMessage): string {
   return (msg.reasoning ?? "").trim();
 }
 
-/** Resolve max tool-loop turns from protocol (`max_turns`) or runtime (`maxTurns`) opts. */
-export function resolveMaxTurns(
-  opts?: { max_turns?: number; maxTurns?: number },
+/** Resolve max loop iterations from protocol (`max_loop_iterations`) or runtime (`maxLoopIterations`) opts. */
+export function resolveMaxLoopIterations(
+  opts?: { max_loop_iterations?: number; maxLoopIterations?: number },
   fallback = 98,
 ): number {
-  const raw = opts?.max_turns ?? opts?.maxTurns ?? fallback;
+  const raw = opts?.max_loop_iterations ?? opts?.maxLoopIterations ?? fallback;
   return Number.isFinite(raw) ? raw : fallback;
 }

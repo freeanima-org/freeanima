@@ -44,7 +44,7 @@ export function buildCompressOptions(
   const cfg = getCompressionConfig();
   const { model, systemPrompt } = resolveConversationCompressionFields(meta, fallbackModel);
   return omitUndefined({
-    maxRounds: cfg.maxRounds,
+    maxMessagePairs: cfg.maxMessagePairs,
     model,
     systemPrompt,
     tools: overrides?.tools ?? [],

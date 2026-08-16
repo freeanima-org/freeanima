@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { formatCompressionDiagnostics } from "./compression-diagnostics.ts";
 
-const cfg = { triggerHigh: 0.8, triggerLow: 0.6, maxRounds: 50 };
+const cfg = { triggerHigh: 0.8, triggerLow: 0.6, maxMessagePairs: 50 };
 
 describe("formatCompressionDiagnostics", () => {
   it("shows token usage in token mode", () => {

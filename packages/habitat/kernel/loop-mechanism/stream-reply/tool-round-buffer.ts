@@ -62,7 +62,7 @@ export class ToolRoundBuffer {
     return this.entries.length > 0;
   }
 
-  /** 当前轮次快照（不清空）；进行中的 call 保持 running */
+  /** 当前工具轮次快照（不清空）；进行中的 call 保持 running */
   snapshot(): StructuredToolCall[] {
     return this.buildCalls({ finalizeRunning: false });
   }

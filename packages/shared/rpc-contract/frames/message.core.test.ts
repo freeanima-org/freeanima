@@ -43,7 +43,7 @@ describe("message stream llm_debug", () => {
       event: "llm_debug",
       data: {
         phase: "initial",
-        turn_index: 0,
+        loop_index: 0,
         model: "m",
         tool_count: 0,
         tools: [],

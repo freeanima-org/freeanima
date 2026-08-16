@@ -22,7 +22,7 @@ function asSnapshot(payload: Record<string, unknown>): LlmDebugSnapshotPayload |
   if (!invoke || typeof invoke !== "object") return null;
   const snapshot: LlmDebugSnapshotPayload = {
     phase,
-    turn_index: Number(payload.turn_index ?? 0),
+    loop_index: Number(payload.loop_index ?? 0),
     model: coerceString(payload.model),
     tool_count: Number(payload.tool_count ?? 0),
     tools: Array.isArray(payload.tools) ? (payload.tools as LlmDebugSnapshotPayload["tools"]) : [],

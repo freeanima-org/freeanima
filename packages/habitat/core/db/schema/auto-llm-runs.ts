@@ -13,8 +13,8 @@ export const autoLlmRuns = pgTable(
     output: text("output").notNull().default(""),
     status: text("status").notNull(),
     duration_ms: integer("duration_ms").notNull(),
-    /** 轮数预算（引擎 maxTurns） */
-    max_turns: integer("max_turns").notNull().default(50),
+    /** 引擎轮预算（max_loop_iterations） */
+    max_loop_iterations: integer("max_loop_iterations").notNull().default(50),
     /** 墙钟上限 ms；null = 未设超时 */
     max_duration_ms: integer("max_duration_ms"),
     error: text("error"),

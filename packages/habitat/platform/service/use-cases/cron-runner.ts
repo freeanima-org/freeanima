@@ -62,7 +62,7 @@ export async function runCronEngineTurn(
     deps.engine.catalog.toolSets,
   );
 
-  const maxTurns = cfg.compression?.max_rounds ?? 50;
+  const maxLoopIterations = 50;
 
   const result = await runAutoLlm(
     deps,
@@ -74,7 +74,7 @@ export async function runCronEngineTurn(
       userMessages,
       model,
       toolNames,
-      maxTurns,
+      maxLoopIterations,
       maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       // 始终传执行闸（含空 allow = 全禁）
       toolPolicy: policy,

@@ -52,7 +52,7 @@ const emptyForm = {
   summary: "",
   content: "",
   skills: "",
-  max_turns: "",
+  max_loop_iterations: "",
   temperature_tier: "" as "" | "focused" | "balanced" | "creative",
   allowed_tools: "",
   denied_tools: "",
@@ -92,7 +92,7 @@ function SubagentsPage() {
       summary: row.summary,
       content: row.content,
       skills: row.skills.join(", "),
-      max_turns: row.max_turns != null ? String(row.max_turns) : "",
+      max_loop_iterations: row.max_loop_iterations != null ? String(row.max_loop_iterations) : "",
       temperature_tier: row.temperature_tier ?? "",
       allowed_tools: row.allowed_tools.join(", "),
       denied_tools: row.denied_tools.join(", "),
@@ -116,7 +116,9 @@ function SubagentsPage() {
         summary: form.summary,
         content: form.content,
         skills: splitCsv(form.skills),
-        max_turns: form.max_turns.trim() ? Number(form.max_turns) : null,
+        max_loop_iterations: form.max_loop_iterations.trim()
+          ? Number(form.max_loop_iterations)
+          : null,
         temperature_tier: form.temperature_tier || null,
         allowed_tools: splitCsv(form.allowed_tools),
         denied_tools: splitCsv(form.denied_tools),
@@ -253,10 +255,10 @@ function SubagentsPage() {
             />
           </div>
           <div className="space-y-1">
-            <Label>{"最大回合"}</Label>
+            <Label>{"最大引擎轮"}</Label>
             <Input
-              value={form.max_turns}
-              onChange={(e) => setForm((f) => ({ ...f, max_turns: e.target.value }))}
+              value={form.max_loop_iterations}
+              onChange={(e) => setForm((f) => ({ ...f, max_loop_iterations: e.target.value }))}
             />
           </div>
           <div className="space-y-1">

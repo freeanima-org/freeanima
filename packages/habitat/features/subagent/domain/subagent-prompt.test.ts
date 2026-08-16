@@ -16,7 +16,7 @@ function profile(
     title: partial.title ?? partial.slug,
     summary: partial.summary ?? "",
     skills: [],
-    max_turns: null,
+    max_loop_iterations: null,
     temperature_tier: null,
     allowed_tools: [],
     denied_tools: [],

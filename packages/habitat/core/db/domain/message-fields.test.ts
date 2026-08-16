@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { assistantReasoningText, resolveMaxTurns } from "./message-fields.ts";
+import { assistantReasoningText, resolveMaxLoopIterations } from "./message-fields.ts";
 
 describe("assistantReasoningText", () => {
   it("reads reasoning field", () => {
@@ -18,21 +18,21 @@ describe("assistantReasoningText", () => {
   });
 });
 
-describe("resolveMaxTurns", () => {
-  it("reads max_turns protocol field", () => {
-    expect(resolveMaxTurns({ max_turns: 12 })).toBe(12);
+describe("resolveMaxLoopIterations", () => {
+  it("reads max_loop_iterations protocol field", () => {
+    expect(resolveMaxLoopIterations({ max_loop_iterations: 12 })).toBe(12);
   });
 
-  it("reads maxTurns runtime field", () => {
-    expect(resolveMaxTurns({ maxTurns: 8 })).toBe(8);
+  it("reads maxLoopIterations runtime field", () => {
+    expect(resolveMaxLoopIterations({ maxLoopIterations: 8 })).toBe(8);
   });
 
-  it("prefers max_turns over maxTurns", () => {
-    expect(resolveMaxTurns({ max_turns: 3, maxTurns: 9 })).toBe(3);
+  it("prefers max_loop_iterations over maxLoopIterations", () => {
+    expect(resolveMaxLoopIterations({ max_loop_iterations: 3, maxLoopIterations: 9 })).toBe(3);
   });
 
   it("uses fallback for missing or non-finite values", () => {
-    expect(resolveMaxTurns()).toBe(98);
-    expect(resolveMaxTurns({ max_turns: Number.NaN }, 10)).toBe(10);
+    expect(resolveMaxLoopIterations()).toBe(98);
+    expect(resolveMaxLoopIterations({ max_loop_iterations: Number.NaN }, 10)).toBe(10);
   });
 });

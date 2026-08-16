@@ -9,8 +9,8 @@ title: 子代理
 ## 执行路径
 
 - `subagent_run` → `runAutoLlm({ runKind: "subagent" })`
-- 全新消息上下文；**最终**结果仅为工具返回值（不写入父 `messages`，不进 retain 输入输入）。父轮次仍等待工具完成后再进行下一跳 LLM。
-- 运行中，紧凑 `steps[]`（`name` / `title` / `status`）经 engine `tool_progress` → `tool_round_live` 投影到父聊天室工具条（同一 `tool_call_id`；状态保持 `running`）。子轮次仍不写入父 `messages`。
+- 全新消息上下文；**最终**结果仅为工具返回值（不写入父 `messages`，不进 retain 输入）。**父回合**仍等待工具完成后再进行下一跳 LLM（下一引擎轮）。
+- 运行中，紧凑 `steps[]`（`name` / `title` / `status`）经 engine `tool_progress` → `tool_round_live` 投影到父聊天室工具条（同一 `tool_call_id`；状态保持 `running`）。**子 AutoLlm 运行**仍不写入父 `messages`。
 - 返回载荷可含相同紧凑 `steps[]`，供父聊天室多级展开
 - `depth=1`：子运行 HARD_DENY 全部 `subagent_*` 工具
 
@@ -35,7 +35,7 @@ title: 子代理
 ## 派发
 
 - 单任务语法糖或 `tasks[]`（并行，`auto_llm.subagent.max_parallel`，默认 4）
-- `max_turns`：调用 > 配置 > `auto_llm.subagent.max_turns`（默认 20）
+- `max_loop_iterations`：调用 > 配置 > `auto_llm.subagent.max_loop_iterations`（默认 20）
 - `temperature_tier`：调用 > 档案 > `auto_llm.subagent.temperature_tier` > `balanced`
 
 ## 采样档位（`temperature_tier`）

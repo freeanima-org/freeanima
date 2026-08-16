@@ -35,7 +35,7 @@ export async function maybeApplyEmergencyCompression(
   const { compression: state, systemPrompt } =
     await loadConversationMetaForEmergency(conversationId);
   const compressOpts = {
-    maxRounds: cfg.maxRounds,
+    maxMessagePairs: cfg.maxMessagePairs,
     model: opts.model,
     systemPrompt,
     tools: opts.tools,

@@ -28,7 +28,7 @@ export const subagentTemperatureTierSchema = z.enum(SUBAGENT_TEMPERATURE_TIERS);
 export const subagentBodySchema = z.object({
   slug: z.string().regex(SUBAGENT_SLUG_RE),
   skills: z.array(z.string()).default([]),
-  max_turns: z.number().int().positive().nullable().default(null),
+  max_loop_iterations: z.number().int().positive().nullable().default(null),
   temperature_tier: subagentTemperatureTierSchema.nullable().default(null),
   allowed_tools: z.array(z.string()).default([]),
   denied_tools: z.array(z.string()).default([]),

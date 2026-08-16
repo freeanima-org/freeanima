@@ -337,7 +337,7 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 
 ## Subagent 配置
 
-具名 AutoLlm subagent 配置：`type=content`，`primary_component=subagent`。Body 字段含 `slug`、`skills`、`max_turns`、`allowed_tools`、`denied_tools`。见 [`subagent.md`](../modules/subagent.md)。
+具名 AutoLlm subagent 配置：`type=content`，`primary_component=subagent`。Body 字段含 `slug`、`skills`、`max_loop_iterations`、`allowed_tools`、`denied_tools`。见 [`subagent.md`](../modules/subagent.md)。
 
 ## 查询
 

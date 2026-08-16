@@ -210,7 +210,7 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
           {"模型"}: {snapshot.model}
         </Badge>
         <Badge variant="secondary">
-          {"回合"}: {snapshot.turn_index}
+          {"引擎轮"}: {snapshot.loop_index}
         </Badge>
         <Badge variant="secondary">
           {"工具"}: {snapshot.tool_count}
@@ -262,7 +262,7 @@ function SnapshotView({ snapshot }: { snapshot: LlmDebugSnapshotPayload | undefi
         </NestedSection>
       ) : null}
 
-      <NestedSection title={`消息回合 (${snapshot.invoke.turns.length})`}>
+      <NestedSection title={`请求消息 (${snapshot.invoke.turns.length})`}>
         {snapshot.invoke.turns.map((turn, index) => (
           <TurnRow key={`${turn.role}-${turn.name ?? ""}-${index}`} turn={turn} index={index} />
         ))}

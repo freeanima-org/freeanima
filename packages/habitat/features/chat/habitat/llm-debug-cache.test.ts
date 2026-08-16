@@ -23,7 +23,7 @@ describe("llm-debug-cache", () => {
     await rememberLlmDebugFromStreamPayload("c1", {
       stream_id: "s1",
       phase: "initial",
-      turn_index: 0,
+      loop_index: 0,
       model: "m",
       tool_count: 0,
       tools: [],
@@ -32,7 +32,7 @@ describe("llm-debug-cache", () => {
     await rememberLlmDebugFromStreamPayload("c1", {
       stream_id: "s1",
       phase: "final",
-      turn_index: 1,
+      loop_index: 1,
       model: "m",
       tool_count: 1,
       tools: [{ name: "t" }],

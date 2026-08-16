@@ -96,7 +96,7 @@ export function MemoryConsolidationDialog({ open, onOpenChange }: Props) {
           <div>
             <h3 className="text-sm font-medium">{"2. Reflect 巩固"}</h3>
             <p className="text-muted-foreground mt-0.5 text-xs">
-              {"对语义库存做矛盾/拆分/合并等巩固轮次。"}
+              {"对语义库存做矛盾/拆分/合并等巩固步骤。"}
             </p>
           </div>
           <div className="max-w-sm">
@@ -112,8 +112,8 @@ export function MemoryConsolidationDialog({ open, onOpenChange }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem id="full">{"完整（全部轮次）"}</SelectItem>
-                <SelectItem id="incremental">{"增量（跳过静默轮次）"}</SelectItem>
+                <SelectItem id="full">{"完整（全部步骤）"}</SelectItem>
+                <SelectItem id="incremental">{"增量（跳过静默步骤）"}</SelectItem>
               </SelectContent>
             </Select>
           </div>
