@@ -94,6 +94,7 @@ export async function listCalendarRange(
             start_at: item.start_at ?? null,
             due_at: item.due_at,
             status: item.status === "completed" ? "completed" : "pending",
+            priority: item.priority ?? "none",
             project_id: item.project_id ?? null,
             list_id: item.list_id ?? null,
           });
@@ -105,6 +106,7 @@ export async function listCalendarRange(
             id: item.id,
             title: item.title,
             status: item.status === "completed" ? "completed" : "pending",
+            priority: item.priority ?? "none",
             project_id: item.project_id ?? null,
             list_id: item.list_id ?? null,
             due_at: item.due_at,

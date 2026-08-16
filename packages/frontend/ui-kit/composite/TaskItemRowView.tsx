@@ -3,7 +3,8 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent, Ref } from "reac
 import { Checkbox } from "../components/ui/checkbox.tsx";
 import { formatDue } from "../lib/datetime-local.ts";
 import {
-  priorityDot,
+  PRIORITY_LABEL,
+  priorityToneBg,
   resolveTaskTagTitles,
   type TaskItemDisplay,
 } from "../lib/task-item-display.ts";
@@ -127,9 +128,10 @@ export function TaskItemRowView({
           } else onEdit();
         }}
       >
-        {!selectionMode && secondaryLine == null ? (
+        {!selectionMode ? (
           <span
-            className={`size-2 shrink-0 rounded-full ${priorityDot(item.priority)}`}
+            className={`size-2 shrink-0 rounded-full ${priorityToneBg(item.priority)}`}
+            title={PRIORITY_LABEL[item.priority]}
             aria-hidden
           />
         ) : null}
@@ -152,11 +154,6 @@ export function TaskItemRowView({
             {showEntityId ? (
               <span className="text-muted-foreground shrink-0 font-mono text-[10px]">
                 #{item.id}
-              </span>
-            ) : null}
-            {secondaryLine != null ? (
-              <span className={`shrink-0 text-xs ${priorityDot(item.priority)}`} aria-hidden>
-                ●
               </span>
             ) : null}
             {item.due_at ? (

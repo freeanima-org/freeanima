@@ -1,5 +1,11 @@
 import { useMemo } from "react";
 import { cn } from "@freeanima/ui-kit";
+import {
+  PRIORITY_LABEL,
+  priorityToneBg,
+  priorityToneText,
+  type TaskItemPriority,
+} from "@freeanima/ui-kit/lib/task-item-display.ts";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 export type KanbanGroupBy = "priority" | "status";
@@ -12,12 +18,9 @@ type Props = {
   onChangeStatus: (id: number, status: "pending" | "completed") => void;
 };
 
-const PRIORITY_COLS: Array<{ key: TaskItemRowPayload["priority"]; label: string }> = [
-  { key: "high", label: "高" },
-  { key: "medium", label: "中" },
-  { key: "low", label: "低" },
-  { key: "none", label: "无" },
-];
+const PRIORITY_COLS: Array<{ key: TaskItemPriority; label: string }> = (
+  ["high", "medium", "low", "none"] as const
+).map((key) => ({ key, label: PRIORITY_LABEL[key] }));
 
 const STATUS_COLS: Array<{ key: "pending" | "completed"; label: string }> = [
   { key: "pending", label: "待办" },
@@ -67,7 +70,12 @@ export function TaskKanbanBoard({
               }
             }}
           >
-            <header className="border-b border-border/50 px-3 py-2 text-sm font-medium">
+            <header
+              className={cn(
+                "border-b border-border/50 px-3 py-2 text-sm font-medium",
+                groupBy === "priority" ? priorityToneText(col.key as TaskItemPriority) : null,
+              )}
+            >
               {col.label}
               <span className="text-muted-foreground ml-1 text-xs">({list.length})</span>
             </header>
@@ -83,21 +91,34 @@ export function TaskKanbanBoard({
                     }}
                     onClick={() => onOpen(item)}
                     className={cn(
-                      "w-full rounded-md border border-border/50 bg-background px-2 py-2 text-left text-sm shadow-sm",
+                      "flex w-full gap-2 rounded-md border border-border/50 bg-background px-2 py-2 text-left text-sm shadow-sm",
                       "hover:border-primary/40",
                     )}
                   >
-                    <div className="truncate font-medium">{item.title}</div>
-                    {item.subtask_total != null && item.subtask_total > 0 ? (
-                      <div className="text-muted-foreground mt-1 text-xs">
-                        子任务 {item.subtask_done ?? 0}/{item.subtask_total}
-                      </div>
-                    ) : null}
-                    {item.due_at ? (
-                      <div className="text-muted-foreground mt-1 text-xs">
-                        {item.due_at.slice(0, 16)}
-                      </div>
-                    ) : null}
+                    {item.priority !== "none" ? (
+                      <span
+                        className={cn(
+                          "mt-0.5 w-1 shrink-0 self-stretch rounded-full",
+                          priorityToneBg(item.priority),
+                        )}
+                        aria-hidden
+                      />
+                    ) : (
+                      <span className="w-1 shrink-0" aria-hidden />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <div className="truncate font-medium">{item.title}</div>
+                      {item.subtask_total != null && item.subtask_total > 0 ? (
+                        <div className="text-muted-foreground mt-1 text-xs">
+                          子任务 {item.subtask_done ?? 0}/{item.subtask_total}
+                        </div>
+                      ) : null}
+                      {item.due_at ? (
+                        <div className="text-muted-foreground mt-1 text-xs">
+                          {item.due_at.slice(0, 16)}
+                        </div>
+                      ) : null}
+                    </span>
                   </button>
                 </li>
               ))}

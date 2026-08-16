@@ -1,4 +1,5 @@
 import { Button, cn } from "@freeanima/ui-kit";
+import { PRIORITY_LABEL, priorityToneBg } from "@freeanima/ui-kit/lib/task-item-display.ts";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
 import { dayKeyFromIso, isoToTimeLocalValue } from "../lib/format-calendar.ts";
@@ -83,6 +84,15 @@ export function AgendaList({
               else onOpenProject(item.id);
             }}
           >
+            {item.kind === "task" ? (
+              <span
+                className={cn("size-2 shrink-0 rounded-full", priorityToneBg(item.priority))}
+                title={PRIORITY_LABEL[item.priority]}
+                aria-hidden
+              />
+            ) : (
+              <span className="size-2 shrink-0" aria-hidden />
+            )}
             <span className="w-12 shrink-0 text-xs text-muted-foreground">{itemTime(item)}</span>
             <span
               className={cn(
