@@ -3,8 +3,8 @@ import { runBuiltinReflect } from "./builtin-reflect.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
 /**
- * reflect 巩固作业（#16102）。
- * 默认内建四轮巩固；测试可 registerReflectEngine 覆盖。
+ * reflect 巩固作业（#16102 / #18010）。
+ * 默认按簇单轮有序巩固；测试可 registerReflectEngine 覆盖。
  */
 
 export type ReflectEngineInput = {

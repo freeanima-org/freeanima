@@ -1,6 +1,6 @@
 /**
- * 内建 reflect：深睡四轮巩固迁入 MemoryService（#16102）。
- * 按 search_documents.cluster_id 分批；NULL / 超字节再切块。
+ * 内建 reflect：按 search_documents.cluster_id 分批；每批单轮有序巩固（#18010）。
+ * NULL / 超字节再切块。
  */
 
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
@@ -17,9 +17,10 @@ import {
   buildDeepSleepMessages,
   checkJsonSize,
   DEEP_SLEEP_TOOL_NAMES,
+  DEEP_SLEEP_PIN_TOOL_NAMES,
   REFLECT_TASK_SPEC,
-  filterSplitCandidates,
   hasRecentMemoryUpdates,
+  batchHasPinned,
   formatAllMemoriesMessage,
 } from "../reflect/build-messages.ts";
 import {
@@ -34,13 +35,6 @@ import { isReflectLlmRegistered, runReflectLlm } from "./reflect-llm-port.ts";
 import type { ReflectEngineResult } from "./reflect.ts";
 import { partitionRowsByCluster } from "../clustering/batch.ts";
 
-const REFLECT_ROUNDS: DeepSleepRound[] = [
-  "contradiction_expiry",
-  "split",
-  "merge",
-  "pin_maintenance",
-];
-
 export type BuiltinReflectInput = {
   conversation_ids?: string[];
   force?: boolean;
@@ -51,71 +45,55 @@ export type BuiltinReflectInput = {
   mode?: DeepSleepMode;
 };
 
-async function runReflectRoundsOnBatch(opts: {
+function resolveBatchRound(
+  batchRows: SemanticMemoryRow[],
+  mode: DeepSleepMode,
+): DeepSleepRound | null {
+  if (mode === "full" || hasRecentMemoryUpdates(batchRows)) {
+    return "consolidate";
+  }
+  if (batchHasPinned(batchRows)) {
+    return "consolidate_pin";
+  }
+  return null;
+}
+
+async function runReflectOnBatch(opts: {
   batchRows: SemanticMemoryRow[];
   mode: DeepSleepMode;
   changeLog: DeepSleepChangeLog;
 }): Promise<{ roundsExecuted: number; toolCalls: number }> {
   const { batchRows, mode, changeLog } = opts;
-  let roundsExecuted = 0;
-  let toolCalls = 0;
-
-  for (let i = 0; i < REFLECT_ROUNDS.length; i++) {
-    const round = REFLECT_ROUNDS[i];
-    if (round === undefined) continue;
-
-    let splitCandidates: ReturnType<typeof filterSplitCandidates> | undefined;
-    if (round === "split") {
-      splitCandidates = filterSplitCandidates(batchRows, mode);
-      if (splitCandidates.length === 0) continue;
-    }
-    if (
-      round === "contradiction_expiry" &&
-      mode === "incremental" &&
-      !hasRecentMemoryUpdates(batchRows)
-    ) {
-      continue;
-    }
-    if (round === "merge" && mode === "incremental" && !hasRecentMemoryUpdates(batchRows)) {
-      continue;
-    }
-
-    const roundRows = round === "split" ? splitCandidates : batchRows;
-    if (!roundRows) continue;
-
-    const messages = buildDeepSleepMessages(
-      roundRows,
-      round,
-      changeLog,
-      omitUndefined({
-        splitTotalActive: round === "split" ? batchRows.length : undefined,
-      }),
-    );
-
-    const { systemPrompt, userMessages } = composeAutoLlmPrompt({
-      kind: "memory-reflect",
-      taskSpec: REFLECT_TASK_SPEC,
-      dataParts: [
-        { body: messages.allMemoriesText },
-        { body: messages.changeLogText },
-        { body: messages.preScreenText },
-        { body: messages.instructionText },
-      ],
-    });
-
-    const llm = await runReflectLlm({
-      systemPrompt,
-      userMessages,
-      toolNames: [...DEEP_SLEEP_TOOL_NAMES],
-      round,
-      changeLog,
-    });
-    toolCalls += llm.tool_calls;
-    roundsExecuted += 1;
-    void snapshotChangeLog(changeLog);
+  const round = resolveBatchRound(batchRows, mode);
+  if (!round) {
+    return { roundsExecuted: 0, toolCalls: 0 };
   }
 
-  return { roundsExecuted, toolCalls };
+  const messages = buildDeepSleepMessages(batchRows, round, changeLog);
+  const toolNames =
+    round === "consolidate_pin" ? [...DEEP_SLEEP_PIN_TOOL_NAMES] : [...DEEP_SLEEP_TOOL_NAMES];
+
+  const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+    kind: "memory-reflect",
+    taskSpec: REFLECT_TASK_SPEC,
+    dataParts: [
+      { body: messages.allMemoriesText },
+      { body: messages.changeLogText },
+      { body: messages.preScreenText },
+      { body: messages.instructionText },
+    ],
+  });
+
+  const llm = await runReflectLlm({
+    systemPrompt,
+    userMessages,
+    toolNames,
+    round,
+    changeLog,
+  });
+  void snapshotChangeLog(changeLog);
+
+  return { roundsExecuted: 1, toolCalls: llm.tool_calls };
 }
 
 export async function runBuiltinReflect(
@@ -199,7 +177,7 @@ export async function runBuiltinReflect(
       rows: batch.rows.length,
       bytes: batch.bytes,
     });
-    const result = await runReflectRoundsOnBatch({
+    const result = await runReflectOnBatch({
       batchRows: batch.rows,
       mode,
       changeLog,
@@ -213,6 +191,7 @@ export async function runBuiltinReflect(
     roundsCompleted: roundsExecuted,
     stats: omitUndefined({
       total_tool_calls: totalToolCalls,
+      consolidate_calls: roundsExecuted,
     }),
   });
 

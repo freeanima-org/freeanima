@@ -12,7 +12,7 @@ title: 记忆维护（原睡眠机制）
 | 旧机制                | 新机制                                            | 说明                                   |
 | --------------------- | ------------------------------------------------- | -------------------------------------- |
 | `light-sleep`         | `MemoryService.retain` + 维护步 `retain-catch-up` | 热路径 `syncTurn` 触发；**补跑仅手动** |
-| `deep-sleep`          | `MemoryService.reflect` + 维护步 `reflect`        | 四轮巩固；定时仍 CST 周一              |
+| `deep-sleep`          | `MemoryService.reflect` + 维护步 `reflect`        | 按簇单轮有序巩固；定时仍 CST 周一      |
 | `dream`               | 已废止                                            | 存量 dream 块只读                      |
 | `memory-ref-sync`     | **删除**                                          | 热路径已 bump `reference_count`        |
 | `builtin-sleep-cycle` | `builtin-memory-maintenance`                      | cron `0 2 * * *`                       |
@@ -26,7 +26,7 @@ title: 记忆维护（原睡眠机制）
 
 1. `conversation-cleanup`
 2. **Retain 缺口检查**（有缺口 → Inbox 通知；**不自动补跑**）
-3. CST 周一：`semantic-cluster-calibrate`（DBSCAN 全量校准 `search_documents.cluster_id`）→ `reflect`（按簇分批）→ `self-layer-refresh`
+3. CST 周一：`semantic-cluster-calibrate`（DBSCAN 全量校准 `search_documents.cluster_id`）→ `reflect`（按簇分批；每批单轮有序巩固 + 同响应批量 toolcalls）→ `self-layer-refresh`
 4. `temporal-summary-day` → `temporal-summary-cascade`
 
 ### 语义记忆聚类分批（#17）
