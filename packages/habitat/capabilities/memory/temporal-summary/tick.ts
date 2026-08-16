@@ -16,8 +16,6 @@ import {
   cstDateString,
   cstDayStartIso,
   listClosedBucketsToday,
-  peerRollRedisKey,
-  peerRollSourcesFp,
   temporalBucketEndIso,
   temporalBucketStartIso,
   temporalMaterialAfterAt,
@@ -25,11 +23,9 @@ import {
 } from "./buckets.ts";
 import { summarizeTemporalText, TEMPORAL_SUMMARY_INSTRUCTIONS } from "./summarize.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
+import { warmPeerRoll, type PeerRollCache } from "./peer-roll-warm.ts";
 
-export type PeerRollCache = {
-  getJson: <T>(key: string) => Promise<T | null>;
-  setJson: (key: string, value: unknown, ttlSeconds: number) => Promise<void>;
-};
+export type { PeerRollCache };
 
 export type TemporalSummaryTickResult = {
   ok: boolean;
@@ -185,7 +181,7 @@ async function warmClosedPeerRolls(opts: {
 }): Promise<void> {
   const closed = listClosedBucketsToday(opts.nowMs);
   const rows = await listTemporalDayByCstDate(opts.cst_date);
-  for (const bucket of closed.slice(-4)) {
+  for (const bucket of closed) {
     const sources: PeerRollSource[] = [];
     for (const row of rows) {
       for (const ch of row.temporal_day.chunks) {
@@ -202,33 +198,14 @@ async function warmClosedPeerRolls(opts: {
     for (const viewer of viewerIds) {
       const peerSources = sources.filter((s) => s.conversation_id !== viewer);
       if (peerSources.length === 0) continue;
-      const fp = peerRollSourcesFp(peerSources);
-      const key = peerRollRedisKey({
-        prefix: opts.config.redis_key_prefix,
-        cst_date: opts.cst_date,
-        bucket,
-        sources_fp: fp,
-      });
-      const hit = await opts.peerCache.getJson<{ summary: string }>(key);
-      if (hit?.summary) continue;
       try {
-        const summary = await summarizeTemporalText({
-          instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.peerRoll,
-          material: peerSources
-            .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
-            .map((s) => `[${s.conversation_id}]\n${s.summary}`)
-            .join("\n\n"),
-          maxChars: opts.config.peer_roll_max_chars,
+        await warmPeerRoll({
+          cst_date: opts.cst_date,
+          bucket,
+          sources: peerSources,
+          config: opts.config,
+          peerCache: opts.peerCache,
         });
-        await opts.peerCache.setJson(
-          key,
-          {
-            summary,
-            sources_fp: fp,
-            created_at: new Date().toISOString(),
-          },
-          opts.config.peer_roll_ttl_seconds,
-        );
       } catch (e) {
         const error = e instanceof Error ? e.message : String(e);
         logComponent("memory").warn("peer roll warm failed", {

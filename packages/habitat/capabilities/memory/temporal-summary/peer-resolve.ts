@@ -9,19 +9,23 @@ import {
 } from "./buckets.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
 import {
-  summarizeTemporalText,
-  temporalSummaryHardCap,
-  TEMPORAL_SUMMARY_INSTRUCTIONS,
-} from "./summarize.ts";
-import type { PeerRollCache } from "./tick.ts";
+  concatPeerRollSources,
+  schedulePeerRollWarm,
+  type PeerRollCache,
+} from "./peer-roll-warm.ts";
 import type { TimelinePeerInject } from "./timeline-inject.ts";
 
-/** Resolve closed-bucket peer rollups for viewer conversation (one inject per bucket). */
+/**
+ * Resolve closed-bucket peer rollups for viewer conversation (one inject per bucket).
+ * 热路径只读 Redis；miss 时拼接截断并后台预热，禁止懒打 LLM。
+ */
 export async function resolvePeerTimelineInjects(opts: {
   viewerConversationId: string;
   config: ResolvedTemporalSummaryConfig;
   peerCache: PeerRollCache;
   nowMs?: number;
+  /** 测试注入：默认 schedulePeerRollWarm */
+  scheduleWarm?: typeof schedulePeerRollWarm;
 }): Promise<TimelinePeerInject[]> {
   if (!opts.config.enabled) return [];
   const nowMs = opts.nowMs ?? Date.now();
@@ -31,6 +35,7 @@ export async function resolvePeerTimelineInjects(opts: {
     exclude_conversation_id: opts.viewerConversationId,
   });
   const injects: TimelinePeerInject[] = [];
+  const scheduleWarm = opts.scheduleWarm ?? schedulePeerRollWarm;
 
   for (const bucket of closed) {
     const sources: PeerRollSource[] = [];
@@ -54,27 +59,14 @@ export async function resolvePeerTimelineInjects(opts: {
     });
     let summary = (await opts.peerCache.getJson<{ summary: string }>(key))?.summary?.trim() ?? "";
     if (!summary) {
-      try {
-        summary = await summarizeTemporalText({
-          instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.peerRoll,
-          material: sources
-            .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
-            .map((s) => `[${s.conversation_id}]\n${s.summary}`)
-            .join("\n\n"),
-          maxChars: opts.config.peer_roll_max_chars,
-        });
-        await opts.peerCache.setJson(
-          key,
-          { summary, sources_fp: fp, created_at: new Date().toISOString() },
-          opts.config.peer_roll_ttl_seconds,
-        );
-      } catch {
-        summary = sources
-          .toSorted((a, b) => a.conversation_id.localeCompare(b.conversation_id))
-          .map((s) => s.summary)
-          .join("\n")
-          .slice(0, temporalSummaryHardCap(opts.config.peer_roll_max_chars));
-      }
+      scheduleWarm({
+        cst_date,
+        bucket,
+        sources,
+        config: opts.config,
+        peerCache: opts.peerCache,
+      });
+      summary = concatPeerRollSources(sources, opts.config.peer_roll_max_chars);
     }
     if (!summary.trim()) continue;
     injects.push({ at: temporalBucketEndIso(bucket), content: summary });
