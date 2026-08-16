@@ -60,7 +60,7 @@ describe("MemoryService retain / syncTurn / cite", () => {
         listResidentSemanticMemory: async () => [],
         updateSemanticMemory: async () => {},
         deprecateSemanticMemory: async () => true,
-        getMessageContentsByIds: async () => ({}),
+        getMessageTextItemsByIds: async () => [],
         bumpReferenceCountsFromTexts: async () => [],
         watermarkStore: memoryWatermarkStore(),
       },
@@ -93,7 +93,10 @@ describe("MemoryService retain / syncTurn / cite", () => {
         listResidentSemanticMemory: async () => [],
         updateSemanticMemory: async () => {},
         deprecateSemanticMemory: async () => true,
-        getMessageContentsByIds: async () => ({ m1: "hello", m2: "world [[anima:1]]" }),
+        getMessageTextItemsByIds: async () => [
+          { message_id: "m1", role: "user", content: "hello" },
+          { message_id: "m2", role: "assistant", content: "world [[anima:1]]" },
+        ],
         bumpReferenceCountsFromTexts: async () => [1],
         watermarkStore: wm,
       },
@@ -133,7 +136,7 @@ describe("MemoryService retain / syncTurn / cite", () => {
         updateSemanticMemory: async () => {},
         createSemanticMemory: async () => 1,
         deprecateSemanticMemory: async () => true,
-        getMessageContentsByIds: async () => ({}),
+        getMessageTextItemsByIds: async () => [],
         bumpReferenceCountsFromTexts: async (texts) => {
           bumped.push(texts);
           return [42];
@@ -160,7 +163,7 @@ describe("MemoryService retain / syncTurn / cite", () => {
         updateSemanticMemory: async () => {},
         createSemanticMemory: async () => 1,
         deprecateSemanticMemory: async () => true,
-        getMessageContentsByIds: async () => ({ a: "x" }),
+        getMessageTextItemsByIds: async () => [{ message_id: "a", role: "user", content: "x" }],
         bumpReferenceCountsFromTexts: async () => [7],
         watermarkStore: memoryWatermarkStore(),
       },

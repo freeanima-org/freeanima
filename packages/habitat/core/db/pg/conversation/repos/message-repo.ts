@@ -109,23 +109,51 @@ export async function getMessageContentsByIds(
   conversation_id: string,
   messageIds: string[],
 ): Promise<Record<string, string>> {
+  const items = await getMessageTextItemsByIds(conversation_id, messageIds);
+  const out: Record<string, string> = {};
+  for (const item of items) {
+    out[item.message_id] = item.content;
+  }
+  return out;
+}
+
+export type MessageTextItem = {
+  message_id: string;
+  role: "user" | "assistant";
+  content: string;
+};
+
+/** 按传入 messageIds 顺序返回 user/assistant 非空正文（含 role）。 */
+export async function getMessageTextItemsByIds(
+  conversation_id: string,
+  messageIds: string[],
+): Promise<MessageTextItem[]> {
   const uniqueIds = [...new Set(messageIds.filter(Boolean))];
-  if (uniqueIds.length === 0) return {};
+  if (uniqueIds.length === 0) return [];
   const db = getDb();
   const rows = await db
     .select({ id: messages.id, payload: messages.payload })
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), inArray(messages.id, uniqueIds)));
-  const out: Record<string, string> = {};
+  const byId = new Map<string, MessageTextItem>();
   for (const row of rows) {
     const payload = row.payload;
     if (payload.role !== "assistant" && payload.role !== "user") continue;
     const raw = payload.content;
     if (typeof raw === "string" && raw.trim()) {
-      out[row.id] = raw;
+      byId.set(row.id, {
+        message_id: row.id,
+        role: payload.role,
+        content: raw,
+      });
     }
   }
-  return out;
+  const ordered: MessageTextItem[] = [];
+  for (const id of messageIds) {
+    const item = byId.get(id);
+    if (item) ordered.push(item);
+  }
+  return ordered;
 }
 
 export async function appendMessageReturningId(

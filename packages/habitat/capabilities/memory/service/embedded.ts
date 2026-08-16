@@ -7,7 +7,7 @@ import {
   updateSemanticMemory,
 } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
-import { getMessageContentsByIds } from "@freeanima/habitat/core/db/pg/conversation";
+import { getMessageTextItemsByIds } from "@freeanima/habitat/core/db/pg/conversation";
 import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/habitat/core/hooks/prompt";
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -107,7 +107,7 @@ export type CreateEmbeddedMemoryServiceOpts = {
     updateSemanticMemory?: typeof updateSemanticMemory;
     createSemanticMemory?: typeof createSemanticMemory;
     deprecateSemanticMemory?: typeof deprecateSemanticMemory;
-    getMessageContentsByIds?: typeof getMessageContentsByIds;
+    getMessageTextItemsByIds?: typeof getMessageTextItemsByIds;
     bumpReferenceCountsFromTexts?: typeof bumpReferenceCountsFromTexts;
     watermarkStore?: RetainWatermarkStore;
   };
@@ -127,7 +127,7 @@ export function createEmbeddedMemoryService(
     updateSemanticMemory: opts.deps?.updateSemanticMemory ?? updateSemanticMemory,
     createSemanticMemory: opts.deps?.createSemanticMemory ?? createSemanticMemory,
     deprecateSemanticMemory: opts.deps?.deprecateSemanticMemory ?? deprecateSemanticMemory,
-    getMessageContentsByIds: opts.deps?.getMessageContentsByIds ?? getMessageContentsByIds,
+    getMessageTextItemsByIds: opts.deps?.getMessageTextItemsByIds ?? getMessageTextItemsByIds,
     bumpReferenceCountsFromTexts:
       opts.deps?.bumpReferenceCountsFromTexts ?? bumpReferenceCountsFromTexts,
     watermarkStore: opts.deps?.watermarkStore ?? createRetainWatermarkStore(),
@@ -254,13 +254,11 @@ export function createEmbeddedMemoryService(
         }
       }
 
-      const contentMap =
+      const textItems =
         message_ids.length > 0
-          ? await deps.getMessageContentsByIds(conversation_id, message_ids)
-          : {};
-      const texts = message_ids
-        .map((id) => contentMap[id])
-        .filter((t): t is string => Boolean(t?.trim()));
+          ? await deps.getMessageTextItemsByIds(conversation_id, message_ids)
+          : [];
+      const texts = textItems.map((i) => i.content);
 
       const source: MemoryProvenance = omitUndefined({
         conversation_id,
@@ -314,6 +312,7 @@ export function createEmbeddedMemoryService(
         conversation_id,
         message_ids,
         texts,
+        text_items: textItems.map((i) => ({ role: i.role, content: i.content })),
         source,
       });
 

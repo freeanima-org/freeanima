@@ -12,18 +12,16 @@ import { getActiveRuntimeConfig, resolvePassiveRecallConfig } from "@freeanima/h
 
 import { RETAIN_TASK_SPEC, formatExistingMemoriesMessage } from "../day-window/build-messages.ts";
 import { formatPassiveMemoryBlock } from "../passive-recall/inject.ts";
-import { focusPassiveRecallQuery } from "../passive-recall/query.ts";
-import { semanticPassiveRecallSearch } from "../passive-recall/search.ts";
 
 import { withRetainProvenance } from "./retain-context.ts";
 import { isRetainLlmRegistered, runRetainLlm } from "./retain-llm-port.ts";
+import { collectRetainPassiveHits, type RetainTextItem } from "./retain-passive-recall.ts";
 import type { MemoryProvenance } from "./types.ts";
 
 const RETAIN_TOOL_NAMES = [
   "memory_semantic_create",
   "memory_semantic_update",
   "memory_semantic_deprecate",
-  "memory_semantic_search",
 ] as const;
 
 function formatDialogueFromTexts(texts: string[]): string {
@@ -34,7 +32,10 @@ function formatDialogueFromTexts(texts: string[]): string {
 export type BuiltinRetainInput = {
   conversation_id: string;
   message_ids: string[];
-  texts: string[];
+  /** @deprecated 优先 text_items；无 role 时整段当 user 召回 */
+  texts?: string[];
+  /** 本回合 user/assistant 正文（含 role）；语义相关按条召回 */
+  text_items?: RetainTextItem[];
   source: MemoryProvenance;
   /** @deprecated 忽略；retain 不再注入自我层 */
   selfContent?: string;
@@ -47,6 +48,18 @@ export type BuiltinRetainResult = {
   summary?: string;
 };
 
+function resolveTextItems(input: BuiltinRetainInput): RetainTextItem[] {
+  if (input.text_items && input.text_items.length > 0) {
+    return input.text_items
+      .map((i) => ({ role: i.role, content: i.content.trim() }))
+      .filter((i) => i.content.length > 0);
+  }
+  return (input.texts ?? [])
+    .map((t) => t.trim())
+    .filter(Boolean)
+    .map((content) => ({ role: "user" as const, content }));
+}
+
 export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<BuiltinRetainResult> {
   if (!isRetainLlmRegistered()) {
     logComponent("memory").debug("retain LLM not registered; skip extraction", {
@@ -55,7 +68,8 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
     return { created: [], updated: [], skipped: true, summary: "retain_llm_unregistered" };
   }
 
-  const texts = input.texts.map((t) => t.trim()).filter(Boolean);
+  const textItems = resolveTextItems(input);
+  const texts = textItems.map((i) => i.content);
   if (texts.length === 0) {
     return { created: [], updated: [], skipped: true, summary: "no_texts" };
   }
@@ -71,28 +85,17 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
     });
   }
 
-  const query = focusPassiveRecallQuery(texts.join("\n"));
-  if (query) {
-    try {
-      const config = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
-      if (config.enabled) {
-        const hits = await semanticPassiveRecallSearch(query, {
-          limit: config.limit,
-          min_score: config.min_score,
-          min_relative_score: config.min_relative_score,
-        });
-        const filtered = hits.filter((h) => !relatedIds.has(h.semantic_memory_id));
-        const block = formatPassiveMemoryBlock(filtered, 6_000);
-        if (block) {
-          // formatPassiveMemoryBlock 已含 <passive_memory>，直接作为 user 段
-          dataParts.push({ body: block, tag: "" });
-        }
-      }
-    } catch (e) {
-      logComponent("memory").warn("retain passive-style recall failed", {
-        error: e instanceof Error ? e.message : String(e),
-      });
+  try {
+    const config = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
+    const hits = await collectRetainPassiveHits(textItems, relatedIds, config);
+    const block = formatPassiveMemoryBlock(hits, 6_000);
+    if (block) {
+      dataParts.push({ body: block, tag: "" });
     }
+  } catch (e) {
+    logComponent("memory").warn("retain passive-style recall failed", {
+      error: e instanceof Error ? e.message : String(e),
+    });
   }
 
   dataParts.push({

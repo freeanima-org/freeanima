@@ -53,7 +53,7 @@ describe("MemoryService harness (no Habitat UI)", () => {
         listResidentSemanticMemory: async () => [...store.values()].filter((r) => r.pinned),
         updateSemanticMemory: async () => {},
         deprecateSemanticMemory: async () => true,
-        getMessageContentsByIds: async () => ({}),
+        getMessageTextItemsByIds: async () => [],
         bumpReferenceCountsFromTexts: async () => [],
         watermarkStore: {
           get: async () => null,

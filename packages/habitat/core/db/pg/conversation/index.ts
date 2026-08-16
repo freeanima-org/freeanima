@@ -46,6 +46,7 @@ export {
   appendMessageReturningId,
   getMessageContentById,
   getMessageContentsByIds,
+  getMessageTextItemsByIds,
   updateMessageContent,
   nextMessagePos,
   getMaxMessagePos,
