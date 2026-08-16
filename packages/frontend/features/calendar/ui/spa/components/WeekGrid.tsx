@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { cn } from "@freeanima/ui-kit";
+import { PRIORITY_LABEL, priorityToneBg } from "@freeanima/ui-kit/lib/task-item-display.ts";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
 import {
@@ -148,7 +149,7 @@ export function WeekGrid({
                   e.dataTransfer.effectAllowed = "move";
                 }}
                 className={cn(
-                  "truncate rounded px-1 text-left text-[11px] leading-[1.35rem]",
+                  "flex items-center gap-1 truncate rounded px-1 text-left text-[11px] leading-[1.35rem]",
                   kindBarClass(
                     item.kind,
                     item.kind === "task" && item.virtual ? { virtual: true } : undefined,
@@ -164,7 +165,14 @@ export function WeekGrid({
                   openBar(bar, handlers);
                 }}
               >
-                {item.title}
+                {item.kind === "task" ? (
+                  <span
+                    className={cn("size-1.5 shrink-0 rounded-full", priorityToneBg(item.priority))}
+                    title={PRIORITY_LABEL[item.priority]}
+                    aria-hidden
+                  />
+                ) : null}
+                <span className="min-w-0 truncate">{item.title}</span>
               </button>
             );
           })}

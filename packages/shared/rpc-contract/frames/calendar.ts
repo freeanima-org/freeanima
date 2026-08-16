@@ -127,6 +127,7 @@ export const calendarRangeTaskItemSchema = z.object({
   start_at: z.string().nullable().optional(),
   due_at: z.string(),
   status: z.enum(["pending", "completed"]),
+  priority: z.enum(["high", "medium", "low", "none"]),
   project_id: z.number().int().positive().nullable(),
   list_id: z.number().int().positive().nullable(),
   /** 重复虚拟展开实例（非 live due）；点击仍打开 live */

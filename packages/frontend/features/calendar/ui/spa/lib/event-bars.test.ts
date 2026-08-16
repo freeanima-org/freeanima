@@ -39,6 +39,7 @@ function task(
     title: "t",
     due_at: partial.due_at,
     status: "pending",
+    priority: "none",
     project_id: null,
     list_id: 1,
     ...(partial.start_at !== undefined ? { start_at: partial.start_at } : {}),

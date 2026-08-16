@@ -67,6 +67,7 @@ export type CalendarRangeTaskItem = {
   start_at?: string | null;
   due_at: string;
   status: "pending" | "completed";
+  priority: "high" | "medium" | "low" | "none";
   project_id: number | null;
   list_id: number | null;
   virtual?: boolean;

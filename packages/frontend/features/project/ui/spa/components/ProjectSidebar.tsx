@@ -399,7 +399,7 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
           ) : null}
         </SortableContext>
       </div>
-      <div className="shrink-0 space-y-2 border-t border-base-300 pt-2">
+      <div className="shrink-0 space-y-2 border-t border-border pt-2">
         <div className="flex gap-1">
           <Input
             value={props.newFolderName}

@@ -802,7 +802,7 @@ export function ProjectApp() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {error ? <div className="px-3 py-2 text-sm text-error">{error}</div> : null}
+      {error ? <div className="px-3 py-2 text-sm text-destructive">{error}</div> : null}
       {loading ? (
         <div className="flex flex-1 items-center justify-center">
           <Spinner />

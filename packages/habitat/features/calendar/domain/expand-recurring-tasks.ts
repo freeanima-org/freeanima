@@ -18,6 +18,7 @@ export function expandRecurringTaskVirtuals(opts: {
   id: number;
   title: string;
   status: "pending" | "completed";
+  priority: "high" | "medium" | "low" | "none";
   project_id: number | null;
   list_id: number | null;
   due_at: string;
@@ -49,6 +50,7 @@ export function expandRecurringTaskVirtuals(opts: {
       title: opts.title,
       due_at: formatCstIso(new Date(nextIso)),
       status: opts.status,
+      priority: opts.priority,
       project_id: opts.project_id,
       list_id: opts.list_id,
       virtual: true,

@@ -30,6 +30,7 @@ import type {
   TaskRecurrenceCalendar,
   TaskRecurrenceSkip,
 } from "../lib/task-item-display.ts";
+import { PRIORITY_LABEL, priorityToneBg, priorityToneText } from "../lib/task-item-display.ts";
 
 export type TaskDetailFocusField = "title" | "content";
 
@@ -42,13 +43,6 @@ export type TaskDetailEditorProps<T extends TaskItemDisplay = TaskItemDisplay> =
   onTextFieldActivate?: (field: TaskDetailFocusField) => void;
   /** compact immersive：挂载后聚焦的字段 */
   focusField?: TaskDetailFocusField;
-};
-
-const PRIORITY_LABEL: Record<TaskItemPriority, string> = {
-  none: "无",
-  low: "低",
-  medium: "中",
-  high: "高",
 };
 
 const WEEKDAY_LABELS = ["日", "一", "二", "三", "四", "五", "六"] as const;
@@ -243,19 +237,6 @@ function patchRecurrence<T extends TaskItemDisplay>(
     schedule_at: item.due_at ?? new Date().toISOString(),
   };
   return { ...item, recurrence: { ...base, ...patch } };
-}
-
-function priorityFlagClass(priority: TaskItemPriority): string {
-  switch (priority) {
-    case "high":
-      return "text-destructive";
-    case "medium":
-      return "text-amber-500";
-    case "low":
-      return "text-sky-500";
-    default:
-      return "text-muted-foreground";
-  }
 }
 
 function DateTimePopoverFields({
@@ -842,7 +823,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className={cn("ml-auto", priorityFlagClass(item.priority))}
+            className={cn("ml-auto", priorityToneText(item.priority))}
             aria-label={`优先级：${PRIORITY_LABEL[item.priority]}`}
           >
             <FlagIcon
@@ -864,7 +845,11 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
             <DropdownMenuLabel>优先级</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {(Object.keys(PRIORITY_LABEL) as TaskItemPriority[]).map((value) => (
-              <DropdownMenuItem key={value} id={value}>
+              <DropdownMenuItem key={value} id={value} className="gap-2">
+                <span
+                  className={`size-2 shrink-0 rounded-full ${priorityToneBg(value)}`}
+                  aria-hidden
+                />
                 {PRIORITY_LABEL[value]}
               </DropdownMenuItem>
             ))}

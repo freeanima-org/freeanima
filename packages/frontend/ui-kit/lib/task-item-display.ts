@@ -40,17 +40,45 @@ export type TaskItemDisplay = {
   recurrence?: TaskItemRecurrenceDisplay | null | undefined;
 };
 
-export function priorityDot(priority: TaskItemPriority): string {
+/** 优先级文案（列表 title / 详情菜单） */
+export const PRIORITY_LABEL: Record<TaskItemPriority, string> = {
+  none: "无",
+  low: "低",
+  medium: "中",
+  high: "高",
+};
+
+/** 文字色：Flag、看板列头等 */
+export function priorityToneText(priority: TaskItemPriority): string {
   switch (priority) {
     case "high":
-      return "text-error";
+      return "text-destructive";
     case "medium":
-      return "text-warning";
+      return "text-amber-500";
     case "low":
-      return "text-info";
+      return "text-sky-500";
     default:
-      return "text-base-content/30";
+      return "text-muted-foreground";
   }
+}
+
+/** 填充色：列表圆点、看板左边条 */
+export function priorityToneBg(priority: TaskItemPriority): string {
+  switch (priority) {
+    case "high":
+      return "bg-destructive";
+    case "medium":
+      return "bg-amber-500";
+    case "low":
+      return "bg-sky-500";
+    default:
+      return "bg-muted-foreground/30";
+  }
+}
+
+/** @deprecated 兼容 re-export；新代码用 priorityToneText / priorityToneBg */
+export function priorityDot(priority: TaskItemPriority): string {
+  return priorityToneText(priority);
 }
 
 function normalizeRemindersForEqual(item: TaskItemDisplay): {

@@ -12,6 +12,7 @@ function task(
     kind: "task",
     title: "t",
     status: "pending",
+    priority: "none",
     project_id: null,
     list_id: 1,
     id: partial.id,

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { cn } from "@freeanima/ui-kit";
+import { PRIORITY_LABEL, priorityToneBg } from "@freeanima/ui-kit/lib/task-item-display.ts";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
 import {
@@ -134,7 +135,7 @@ export function MonthGrid({
                     type="button"
                     title={bar.item.title}
                     className={cn(
-                      "z-[1] truncate rounded px-1 text-left text-[10px] leading-[1.15rem]",
+                      "z-[1] flex items-center gap-1 truncate rounded px-1 text-left text-[10px] leading-[1.15rem]",
                       kindBarClass(
                         bar.item.kind,
                         bar.item.kind === "task" && bar.item.virtual
@@ -153,7 +154,17 @@ export function MonthGrid({
                       openBar(bar, handlers);
                     }}
                   >
-                    {bar.item.title}
+                    {bar.item.kind === "task" ? (
+                      <span
+                        className={cn(
+                          "size-1.5 shrink-0 rounded-full",
+                          priorityToneBg(bar.item.priority),
+                        )}
+                        title={PRIORITY_LABEL[bar.item.priority]}
+                        aria-hidden
+                      />
+                    ) : null}
+                    <span className="min-w-0 truncate">{bar.item.title}</span>
                   </button>
                 ))}
                 {weekDays.map((day, col) => {
