@@ -1,7 +1,8 @@
-/** Deep sleep round intent labels */
+/** Reflect 巩固轮次（按簇单轮；原四轮已合并） */
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
-export type DeepSleepRound = "contradiction_expiry" | "split" | "merge" | "pin_maintenance";
+/** consolidate = 完整有序巩固；consolidate_pin = 仅审置顶 */
+export type DeepSleepRound = "consolidate" | "consolidate_pin";
 
 /** Deep sleep mode: full (Monday scheduled + manual default) or incremental (manual optional) */
 export type DeepSleepMode = "full" | "incremental";

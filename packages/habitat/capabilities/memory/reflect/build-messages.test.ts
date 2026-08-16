@@ -5,10 +5,9 @@ import {
   fetchAllActiveMemories,
   formatAllMemoriesMessage,
   buildDeepSleepMessages,
-  filterSplitCandidates,
-  formatSplitCandidatesMessage,
   hasRecentMemoryUpdates,
   isMemoryUpdatedSince,
+  batchHasPinned,
 } from "./build-messages.ts";
 
 const listActiveSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[]);
@@ -40,6 +39,13 @@ function makeRow(
   };
 }
 
+const emptyLog = {
+  entries: {},
+  addedIds: [] as string[],
+  modifiedIds: [] as string[],
+  deprecatedIds: [] as string[],
+};
+
 describe("deep sleep build-messages", () => {
   afterEach(() => {
     listActiveSemanticMemoryMock.mockClear();
@@ -65,53 +71,32 @@ describe("deep sleep build-messages", () => {
     expect(text).toContain("# All semantic memories (2 active entries)");
   });
 
-  it("buildDeepSleepMessages includes pin_maintenance round instructions", () => {
+  it("buildDeepSleepMessages consolidate includes ordered steps and batch toolcalls", () => {
     const active = [makeRow(96085, "active")];
-    const { instructionText } = buildDeepSleepMessages(active, "pin_maintenance", {
-      entries: {},
-      addedIds: [],
-      modifiedIds: [],
-      deprecatedIds: [],
-    });
-    expect(instructionText).toContain("round 4: pin maintenance");
-    expect(instructionText).toContain("memory_semantic_update");
-  });
-
-  it("buildDeepSleepMessages split round uses candidate heading", () => {
-    const longContent = "Alice lives in Shanghai. She works at Tencent. She likes Python.";
-    const candidate = makeRow(96085, "active", { content: longContent });
-    const { allMemoriesText, instructionText } = buildDeepSleepMessages(
-      [candidate],
-      "split",
-      { entries: {}, addedIds: [], modifiedIds: [], deprecatedIds: [] },
-      { splitTotalActive: 5 },
+    const { instructionText, allMemoriesText } = buildDeepSleepMessages(
+      active,
+      "consolidate",
+      emptyLog,
     );
-    expect(allMemoriesText).toContain("# Split candidates (1 of 5 active entries)");
-    expect(instructionText).toContain("split candidates in message 1");
+    expect(allMemoriesText).toContain("# All semantic memories (1 active entries)");
+    expect(instructionText).toContain("Reflect consolidate (single pass)");
+    expect(instructionText).toContain("Mandatory planning order");
+    expect(instructionText).toContain("Contradiction + expiry");
+    expect(instructionText).toContain("SINGLE assistant response");
+    expect(instructionText).toContain("memory_semantic_merge");
   });
 
-  it("filterSplitCandidates excludes short single-sentence entries", () => {
-    const short = makeRow(96085, "active", { content: "short fact" });
-    const long = makeRow(14119, "active", {
-      content: "Alice lives in Shanghai. She works at Tencent and likes Python very much.",
-      updated_at: new Date("2026-06-12T10:00:00.000Z"),
-    });
-    const now = new Date("2026-06-12T12:00:00.000Z");
-    expect(filterSplitCandidates([short, long], "full", now)).toEqual([long]);
+  it("buildDeepSleepMessages consolidate_pin is pin-only", () => {
+    const active = [makeRow(96085, "active", { pinned: true })];
+    const { instructionText } = buildDeepSleepMessages(active, "consolidate_pin", emptyLog);
+    expect(instructionText).toContain("Reflect consolidate (pin-only)");
+    expect(instructionText).toContain("Do not create, merge, split, or deprecate");
+    expect(instructionText).toContain("SINGLE assistant response");
   });
 
-  it("filterSplitCandidates incremental requires recent updated", () => {
-    const recent = makeRow(96085, "active", {
-      content: "First fact here. Second fact there. Third fact also included for length.",
-      updated_at: new Date("2026-06-12T11:00:00.000Z"),
-    });
-    const stale = makeRow(14119, "active", {
-      content: "Old fact one. Old fact two. Old fact three with enough length here.",
-      updated_at: new Date("2026-06-01T10:00:00.000Z"),
-      observed_at: new Date("2026-06-12T11:00:00.000Z"),
-    });
-    const now = new Date("2026-06-12T12:00:00.000Z");
-    expect(filterSplitCandidates([recent, stale], "incremental", now)).toEqual([recent]);
+  it("batchHasPinned detects pinned rows", () => {
+    expect(batchHasPinned([makeRow(1, "active")])).toBe(false);
+    expect(batchHasPinned([makeRow(1, "active", { pinned: true })])).toBe(true);
   });
 
   it("hasRecentMemoryUpdates uses updated only", () => {
@@ -124,13 +109,5 @@ describe("deep sleep build-messages", () => {
     expect(hasRecentMemoryUpdates([staleObserved], now)).toBe(false);
     expect(hasRecentMemoryUpdates([recent], now)).toBe(true);
     expect(isMemoryUpdatedSince(recent, new Date("2026-06-12T10:00:00.000Z"))).toBe(true);
-  });
-
-  it("formatSplitCandidatesMessage reports candidate vs total counts", () => {
-    const candidate = makeRow(96085, "active", {
-      content: "Line one. Line two. Line three with enough length.",
-    });
-    const { text } = formatSplitCandidatesMessage([candidate], 10);
-    expect(text).toContain("# Split candidates (1 of 10 active entries)");
   });
 });

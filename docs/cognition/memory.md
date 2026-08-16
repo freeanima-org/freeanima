@@ -41,16 +41,16 @@ Memory
 
 实现：`@freeanima/habitat/capabilities/memory` → `createEmbeddedMemoryService`（及日后 remote client）。
 
-| 方法                                                                   | 角色                                                      |
-| ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| `syncTurn`                                                             | 回合入口：切片 + **内建 cite** + 触发 retain              |
-| `retain`                                                               | 可重放抽取；默认 user/assistant 正文；无思考链/工具       |
-| `recall` / `search`                                                    | 委托 SearchBackend hybrid；scope 分召回                   |
-| `reflect`                                                              | **巩固作业**（按 `search_documents.cluster_id` 分批四轮） |
-| `remember` / `update` / `deprecate` / `get` / `list` / `pin` / `unpin` | CRUD                                                      |
-| `cite`                                                                 | 热度（主路径在 syncTurn；显式 API 备用）                  |
-| `listResident` / `assembleResidentBlock`                               | 常驻系统提示                                              |
-| `temporal.*`                                                           | list / get / 可选 search / regenerate                     |
+| 方法                                                                   | 角色                                                                    |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `syncTurn`                                                             | 回合入口：切片 + **内建 cite** + 触发 retain                            |
+| `retain`                                                               | 可重放抽取；默认 user/assistant 正文；无思考链/工具                     |
+| `recall` / `search`                                                    | 委托 SearchBackend hybrid；scope 分召回                                 |
+| `reflect`                                                              | **巩固作业**（按 `search_documents.cluster_id` 分批；每批单轮有序巩固） |
+| `remember` / `update` / `deprecate` / `get` / `list` / `pin` / `unpin` | CRUD                                                                    |
+| `cite`                                                                 | 热度（主路径在 syncTurn；显式 API 备用）                                |
+| `listResident` / `assembleResidentBlock`                               | 常驻系统提示                                                            |
+| `temporal.*`                                                           | list / get / 可选 search / regenerate                                   |
 
 配置：`memory.deployment`（默认 `embedded`）。
 

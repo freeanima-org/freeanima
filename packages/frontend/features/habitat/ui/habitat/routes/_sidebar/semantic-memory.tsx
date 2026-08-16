@@ -438,6 +438,7 @@ function SemanticMemoryPage() {
                     <TableHead>{"聚类族"}</TableHead>
                     <TableHead>{"状态"}</TableHead>
                     <TableHead>{"置顶"}</TableHead>
+                    <TableHead>{"发现时间"}</TableHead>
                     <TableHead>{"创建时间"}</TableHead>
                     <TableHead>{"更新时间"}</TableHead>
                     <TableHead>{"引用"}</TableHead>
@@ -486,6 +487,9 @@ function SemanticMemoryPage() {
                         ) : (
                           "-"
                         )}
+                      </TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
+                        {row.observed_at ? formatDisplayDateTime(row.observed_at) : "-"}
                       </TableCell>
                       <TableCell className="text-xs whitespace-nowrap">
                         {formatDisplayDateTime(row.created_at)}

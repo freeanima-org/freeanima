@@ -37,7 +37,8 @@ import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "./auto-llm-run.ts"
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 const RETAIN_MAX_TURNS = 50;
-const REFLECT_MAX_TURNS = 100;
+/** 合轮后：1 次批量 toolcalls + 最多 1 轮摘要；禁止多轮试探式工具环 */
+const REFLECT_MAX_TURNS = 2;
 
 const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
   "memory_semantic_create",
