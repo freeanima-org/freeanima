@@ -51,7 +51,7 @@ function toPayload(row: NonNullable<Awaited<ReturnType<typeof getSubagent>>>) {
     summary: row.summary,
     content: row.content,
     skills: row.skills,
-    max_turns: row.max_turns,
+    max_loop_iterations: row.max_loop_iterations,
     temperature_tier: row.temperature_tier ?? null,
     allowed_tools: row.allowed_tools,
     denied_tools: row.denied_tools,
@@ -101,7 +101,7 @@ export async function serviceSubagentCreate(
     summary?: string;
     content?: string;
     skills?: string[];
-    max_turns?: number | null;
+    max_loop_iterations?: number | null;
     temperature_tier?: "focused" | "balanced" | "creative" | null;
     allowed_tools?: string[];
     denied_tools?: string[];
@@ -126,7 +126,7 @@ export async function serviceSubagentPatch(
     summary?: string;
     content?: string;
     skills?: string[];
-    max_turns?: number | null;
+    max_loop_iterations?: number | null;
     temperature_tier?: "focused" | "balanced" | "creative" | null;
     allowed_tools?: string[];
     denied_tools?: string[];

@@ -36,10 +36,12 @@ describe("engine.run", () => {
     await expect(engine.run([], { model: "test" })).resolves.toBe("final");
   });
 
-  it("maps Tool loop exceeded to MaxTurnsExceeded", async () => {
+  it("maps Tool loop exceeded to MaxLoopIterationsExceeded", async () => {
     streamSpy = spyOn(engine, "runStream").mockImplementation(async function* () {
-      yield { event: "error", data: { error: "Tool loop exceeded max turns" } };
+      yield { event: "error", data: { error: "Tool loop exceeded max loop iterations" } };
     });
-    await expect(engine.run([], { model: "test" })).rejects.toBeInstanceOf(engine.MaxTurnsExceeded);
+    await expect(engine.run([], { model: "test" })).rejects.toBeInstanceOf(
+      engine.MaxLoopIterationsExceeded,
+    );
   });
 });

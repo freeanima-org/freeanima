@@ -99,7 +99,7 @@ describePg("conversation compression", () => {
   beforeEach(async () => {
     await beginIntegrationCaseWithConfig(
       "anima-conv-compress-",
-      "compression:\n  enabled: true\n  max_rounds: 50\n",
+      "compression:\n  enabled: true\n  max_message_pairs: 50\n",
     );
     // 强制消息数模式：避免假 Provider catalog 窗口把触发切到 token 路径
     registerCatalogContextWindowLookup(async () => null);

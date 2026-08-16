@@ -14,7 +14,7 @@ function profile(partial: Partial<ResolvedSubagentProfile> = {}): ResolvedSubage
     summary: "",
     content: "",
     skills: [],
-    max_turns: null,
+    max_loop_iterations: null,
     temperature_tier: null,
     allowed_tools: [],
     denied_tools: [],

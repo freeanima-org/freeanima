@@ -298,9 +298,9 @@ function AutoLlmForm({
         (v) => onChange({ ...value, per_run_kind_keep: v === "" ? undefined : v }),
       )}
       {habitatConfigNumberField(
-        "subagent.max_turns",
-        typeof subagent.max_turns === "number" ? subagent.max_turns : "",
-        (v) => patchSubagent({ max_turns: v === "" ? undefined : v }),
+        "subagent.max_loop_iterations",
+        typeof subagent.max_loop_iterations === "number" ? subagent.max_loop_iterations : "",
+        (v) => patchSubagent({ max_loop_iterations: v === "" ? undefined : v }),
       )}
       {habitatConfigNumberField(
         "subagent.max_parallel",

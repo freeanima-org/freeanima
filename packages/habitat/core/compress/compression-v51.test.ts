@@ -162,7 +162,7 @@ describe("compression v5.1", () => {
   it("compress advances l2/l3 monotonically", () => {
     const msgs = buildHistory(60);
     const [out1, s1] = compress(msgs, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       force: true,
       boundaryOverrides: smallBoundary,
     });
@@ -170,7 +170,7 @@ describe("compression v5.1", () => {
     expect(out1.length).toBeLessThan(msgs.length);
     const extended = [...msgs, ua(200, "new"), aa(201)];
     const [out2, s2] = compress(extended, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       force: true,
       state: s1,
       boundaryOverrides: smallBoundary,

@@ -111,7 +111,7 @@ export type LlmDebugGetInput = z.infer<typeof llmDebugGetInputSchema>;
 const llmDebugSnapshotSchema = z
   .object({
     phase: z.enum(["initial", "final"]),
-    turn_index: z.number(),
+    loop_index: z.number(),
     model: z.string(),
     tool_count: z.number(),
     tools: z.array(
@@ -236,7 +236,7 @@ export type PassiveRecallDebugTrace = {
 
 export type LlmDebugSnapshotPayload = {
   phase: "initial" | "final";
-  turn_index: number;
+  loop_index: number;
   model: string;
   tool_count: number;
   tools: Array<{

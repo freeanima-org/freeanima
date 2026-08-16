@@ -37,7 +37,7 @@ export type StructuredToolCall = {
 
 export type StreamReplyEffect =
   | { kind: "tool_round"; calls: StructuredToolCall[] }
-  /** 轮次进行中快照（不清空 buffer）；客户端 upsert 末尾 tool_block */
+  /** 工具轮次进行中快照（不清空 buffer）；客户端 upsert 末尾 tool_block */
   | { kind: "tool_round_live"; calls: StructuredToolCall[] }
   | { kind: "answer_open"; segmentId: number }
   | { kind: "answer_delta"; delta: string }

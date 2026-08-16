@@ -119,9 +119,9 @@ function parseTask(raw: Record<string, unknown>): SubagentTaskInput | string {
     allowed_tools: hasNamed ? undefined : (allowedRaw ?? []),
     context: raw.context != null ? coerceString(raw.context) : undefined,
     skills: parseStringArray(raw.skills),
-    max_turns:
-      raw.max_turns != null && Number(raw.max_turns) > 0
-        ? Math.floor(Number(raw.max_turns))
+    max_loop_iterations:
+      raw.max_loop_iterations != null && Number(raw.max_loop_iterations) > 0
+        ? Math.floor(Number(raw.max_loop_iterations))
         : undefined,
     temperature_tier: temperatureTier,
     denied_tools: parseStringArray(raw.denied_tools),
@@ -138,7 +138,7 @@ function rowPayload(row: Awaited<ReturnType<typeof getSubagent>>) {
     summary: row.summary,
     content: row.content,
     skills: row.skills,
-    max_turns: row.max_turns,
+    max_loop_iterations: row.max_loop_iterations,
     temperature_tier: row.temperature_tier ?? null,
     allowed_tools: row.allowed_tools,
     denied_tools: row.denied_tools,
@@ -217,7 +217,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               summary: { type: "string" },
               content: { type: "string", description: "Extra system instructions" },
               skills: { type: "array", items: { type: "string" } },
-              max_turns: { type: "integer" },
+              max_loop_iterations: { type: "integer" },
               temperature_tier: {
                 type: "string",
                 enum: [...SUBAGENT_TEMPERATURE_TIERS],
@@ -248,9 +248,9 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                   summary: args.summary != null ? coerceString(args.summary) : undefined,
                   content: args.content != null ? coerceString(args.content) : undefined,
                   skills: parseStringArray(args.skills),
-                  max_turns:
-                    args.max_turns != null && Number(args.max_turns) > 0
-                      ? Math.floor(Number(args.max_turns))
+                  max_loop_iterations:
+                    args.max_loop_iterations != null && Number(args.max_loop_iterations) > 0
+                      ? Math.floor(Number(args.max_loop_iterations))
                       : undefined,
                   temperature_tier: parseTemperatureTier(args.temperature_tier),
                   allowed_tools: parseStringArray(args.allowed_tools),
@@ -277,7 +277,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               summary: { type: "string" },
               content: { type: "string" },
               skills: { type: "array", items: { type: "string" } },
-              max_turns: { type: "integer" },
+              max_loop_iterations: { type: "integer" },
               temperature_tier: {
                 type: "string",
                 enum: [...SUBAGENT_TEMPERATURE_TIERS],
@@ -310,10 +310,10 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                   summary: args.summary != null ? coerceString(args.summary) : undefined,
                   content: args.content != null ? coerceString(args.content) : undefined,
                   skills: parseStringArray(args.skills),
-                  max_turns:
-                    args.max_turns != null
-                      ? Number(args.max_turns) > 0
-                        ? Math.floor(Number(args.max_turns))
+                  max_loop_iterations:
+                    args.max_loop_iterations != null
+                      ? Number(args.max_loop_iterations) > 0
+                        ? Math.floor(Number(args.max_loop_iterations))
                         : null
                       : undefined,
                   temperature_tier:
@@ -392,7 +392,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               },
               context: { type: "string" },
               skills: { type: "array", items: { type: "string" } },
-              max_turns: { type: "integer" },
+              max_loop_iterations: { type: "integer" },
               temperature_tier: {
                 type: "string",
                 enum: [...SUBAGENT_TEMPERATURE_TIERS],

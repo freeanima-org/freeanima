@@ -103,7 +103,7 @@ export async function generateConversationSummary(
         profileId: PROFILE_SUMMARY,
         requestParams: COMPRESSION_SUMMARY_REQUEST_PARAMS,
         parentConversationId: opts?.parentConversationId,
-        maxTurns: 1,
+        maxLoopIterations: 1,
         maxDurationMs: AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
       }),
     );

@@ -2,7 +2,7 @@ import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 
 export type ResolvedCompressionConfig = {
   enabled: boolean;
-  maxRounds: number;
+  maxMessagePairs: number;
   reservedTokens: number;
   triggerHigh: number;
   triggerLow: number;
@@ -18,7 +18,7 @@ export function getCompressionConfig(cfg: RuntimeConfig): ResolvedCompressionCon
   const comp = cfg.compression ?? {};
   return {
     enabled: comp.enabled !== false,
-    maxRounds: comp.max_rounds ?? 50,
+    maxMessagePairs: comp.max_message_pairs ?? 50,
     reservedTokens: comp.reserved_tokens ?? DEFAULT_RESERVED,
     triggerHigh: comp.trigger_high ?? 0.8,
     triggerLow: comp.trigger_low ?? 0.6,

@@ -22,7 +22,7 @@ export type SubagentCreateInput = {
   summary?: string;
   content?: string;
   skills?: string[];
-  max_turns?: number | null;
+  max_loop_iterations?: number | null;
   temperature_tier?: SubagentTemperatureTier | null;
   allowed_tools?: string[];
   denied_tools?: string[];
@@ -36,7 +36,7 @@ export type SubagentUpdateInput = {
   summary?: string;
   content?: string;
   skills?: string[];
-  max_turns?: number | null;
+  max_loop_iterations?: number | null;
   temperature_tier?: SubagentTemperatureTier | null;
   allowed_tools?: string[];
   denied_tools?: string[];
@@ -59,7 +59,7 @@ export type SubagentTaskInput = {
   allowed_tools?: string[];
   context?: string;
   skills?: string[];
-  max_turns?: number;
+  max_loop_iterations?: number;
   temperature_tier?: SubagentTemperatureTier;
   denied_tools?: string[];
   /** 与档案 prompt_includes 并集；仅 opt-in */
@@ -75,7 +75,7 @@ export type ResolvedSubagentProfile = {
   summary: string;
   content: string;
   skills: string[];
-  max_turns: number | null;
+  max_loop_iterations: number | null;
   temperature_tier: SubagentTemperatureTier | null;
   allowed_tools: string[];
   denied_tools: string[];

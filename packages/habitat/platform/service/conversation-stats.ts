@@ -52,7 +52,7 @@ export type ConversationStats = {
   compression_trigger_high: number;
   compression_trigger_low: number;
   /** message-count fallback mode */
-  compression_max_rounds: number;
+  compression_max_message_pairs: number;
   compression_threshold: number;
   compression_recompress_at: number;
   compression_window_raw: number;
@@ -123,7 +123,7 @@ async function readCompressionAndContextFields(
     | "compression_usage_ratio"
     | "compression_trigger_high"
     | "compression_trigger_low"
-    | "compression_max_rounds"
+    | "compression_max_message_pairs"
     | "compression_threshold"
     | "compression_recompress_at"
     | "compression_window_raw"
@@ -204,7 +204,7 @@ async function readCompressionAndContextFields(
     compression_usage_ratio: analysis.usage_ratio,
     compression_trigger_high: cfg.triggerHigh,
     compression_trigger_low: cfg.triggerLow,
-    compression_max_rounds: cfg.maxRounds,
+    compression_max_message_pairs: cfg.maxMessagePairs,
     compression_threshold: analysis.threshold,
     compression_recompress_at: analysis.recompress_at,
     compression_window_raw: analysis.window_raw,
@@ -369,9 +369,9 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
       compression_usage_ratio: null,
       compression_trigger_high: cfg.triggerHigh,
       compression_trigger_low: cfg.triggerLow,
-      compression_max_rounds: cfg.maxRounds,
-      compression_threshold: cfg.maxRounds * 2,
-      compression_recompress_at: cfg.maxRounds * 4,
+      compression_max_message_pairs: cfg.maxMessagePairs,
+      compression_threshold: cfg.maxMessagePairs * 2,
+      compression_recompress_at: cfg.maxMessagePairs * 4,
       compression_window_raw: 0,
       compression_messages_until_recompress: null,
       compression_rounds_until_recompress: null,
@@ -460,7 +460,7 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
     compression_usage_ratio: null,
     compression_trigger_high: items[0]?.compression_trigger_high ?? 0.72,
     compression_trigger_low: items[0]?.compression_trigger_low ?? 0.55,
-    compression_max_rounds: items[0]?.compression_max_rounds ?? 50,
+    compression_max_message_pairs: items[0]?.compression_max_message_pairs ?? 50,
     compression_threshold: items[0]?.compression_threshold ?? 100,
     compression_recompress_at: items[0]?.compression_recompress_at ?? 200,
     compression_window_raw: 0,

@@ -53,7 +53,7 @@ type AutoLlmRunRow = {
   output: string;
   status: string;
   duration_ms: number;
-  max_turns?: number;
+  max_loop_iterations?: number;
   max_duration_ms?: number | null;
   error: string | null;
   metadata: Record<string, unknown> | null;
@@ -136,7 +136,10 @@ function RequestParamsList({ row }: { row: AutoLlmRunRow }) {
     ["status", row.status],
     ["subject_id", row.subject_id == null ? "—" : String(row.subject_id)],
     ["duration_ms", String(row.duration_ms)],
-    ["max_turns", row.max_turns == null ? "—" : String(row.max_turns)],
+    [
+      "max_loop_iterations",
+      row.max_loop_iterations == null ? "—" : String(row.max_loop_iterations),
+    ],
     ["max_duration_ms", row.max_duration_ms == null ? "—" : String(row.max_duration_ms)],
     ["created_at", row.created_at],
     ["finished_at", row.finished_at],
@@ -343,7 +346,7 @@ function AutoLlmRunsPage() {
                       {formatDurationMs(row.duration_ms)}
                     </TableCell>
                     <TableCell className="font-mono text-xs whitespace-nowrap">
-                      {row.max_turns != null ? `${row.max_turns}轮` : "—"}
+                      {row.max_loop_iterations != null ? `${row.max_loop_iterations} 引擎轮` : "—"}
                       {row.max_duration_ms != null
                         ? ` / ≤${formatDurationMs(row.max_duration_ms)}`
                         : ""}

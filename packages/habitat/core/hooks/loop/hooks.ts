@@ -30,7 +30,7 @@ export const toolAfterCall = createHook<ToolAfterCallContext, ToolAfterCallEffec
 
 export const beforeLlmCall = createHook<BeforeLlmCallContext>(
   "@freeanima/habitat/kernel/loop-mechanism-hooks/before-llm-call",
-  "Fires before each LLM call (first turn and every tool-loop turn)",
+  "Fires before each LLM call (first loop iteration and every subsequent iteration)",
 );
 
 export type { HookEffectOf };

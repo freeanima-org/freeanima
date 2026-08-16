@@ -164,7 +164,7 @@ async function cmdGoal(ctx: CommandContext): Promise<CommandResult> {
   const goal = await setConversationGoal(conv(), ctx.conversationId, description);
   const prompt = formatGoalStartPrompt(description);
   return {
-    text: formatGoalSetMessage(goal.max_turns),
+    text: formatGoalSetMessage(goal.max_continues),
     ux: "toast",
     data: { action: "goal_start", prompt },
   };

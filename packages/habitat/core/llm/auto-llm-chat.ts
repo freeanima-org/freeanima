@@ -25,7 +25,7 @@ export type AutoLlmChatInput = {
   parentConversationId?: string;
   runtime?: LlmRuntime;
   /** chat 无工具环；落库审计用，默认 1 */
-  maxTurns?: number;
+  maxLoopIterations?: number;
   /** 墙钟上限 ms；省略则不限 */
   maxDurationMs?: number;
 };
@@ -85,7 +85,7 @@ async function persistChatRun(row: {
       output: row.output.slice(0, OUTPUT_MAX),
       status: row.status,
       duration_ms: row.durationMs,
-      max_turns: row.input.maxTurns ?? 1,
+      max_loop_iterations: row.input.maxLoopIterations ?? 1,
       max_duration_ms: row.input.maxDurationMs ?? null,
       error: row.error ?? null,
       metadata: {

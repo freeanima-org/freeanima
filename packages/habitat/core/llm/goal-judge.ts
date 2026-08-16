@@ -144,7 +144,7 @@ export async function judgeGoal(
         model: opts?.model,
         requestParams: { ...GOAL_JUDGE_REQUEST_PARAMS },
         parentConversationId: opts?.parentConversationId,
-        maxTurns: 1,
+        maxLoopIterations: 1,
         maxDurationMs: AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
       }),
     );

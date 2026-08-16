@@ -114,7 +114,7 @@ export async function generateConversationTitle(
         model: opts?.model,
         requestParams: SESSION_TITLE_REQUEST_PARAMS,
         parentConversationId: opts?.parentConversationId,
-        maxTurns: 1,
+        maxLoopIterations: 1,
         maxDurationMs: AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS,
       }),
     );

@@ -29,7 +29,7 @@ function toRow(
     content: parsed.content,
     slug: parsed.slug,
     skills: parsed.skills,
-    max_turns: parsed.max_turns,
+    max_loop_iterations: parsed.max_loop_iterations,
     temperature_tier: parsed.temperature_tier ?? null,
     allowed_tools: parsed.allowed_tools,
     denied_tools: parsed.denied_tools,
@@ -123,7 +123,7 @@ export async function createSubagent(
     body: {
       slug,
       skills: input.skills ?? [],
-      max_turns: input.max_turns ?? null,
+      max_loop_iterations: input.max_loop_iterations ?? null,
       temperature_tier: input.temperature_tier ?? null,
       allowed_tools: input.allowed_tools ?? [],
       denied_tools: input.denied_tools ?? [],
@@ -156,7 +156,10 @@ export async function updateSubagent(
   const body = {
     slug,
     skills: input.skills ?? existing.skills,
-    max_turns: input.max_turns !== undefined ? input.max_turns : existing.max_turns,
+    max_loop_iterations:
+      input.max_loop_iterations !== undefined
+        ? input.max_loop_iterations
+        : existing.max_loop_iterations,
     temperature_tier:
       input.temperature_tier !== undefined ? input.temperature_tier : existing.temperature_tier,
     allowed_tools: input.allowed_tools ?? existing.allowed_tools,

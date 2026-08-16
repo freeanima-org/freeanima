@@ -35,10 +35,10 @@ describe("habitat-config-api", () => {
   });
 
   test("fetchHabitatConfigSection 走 habitatRpc.call config.getSection", async () => {
-    call.mockResolvedValue({ enabled: true, max_rounds: 50 });
+    call.mockResolvedValue({ enabled: true, max_message_pairs: 50 });
     const result = await fetchHabitatConfigSection("compression");
     expect(call).toHaveBeenCalledWith("config.getSection", { section: "compression" });
-    expect(result).toEqual({ enabled: true, max_rounds: 50 });
+    expect(result).toEqual({ enabled: true, max_message_pairs: 50 });
   });
 
   test("patchHabitatConfigSection 走 habitatRpc.call config.patchSection", async () => {

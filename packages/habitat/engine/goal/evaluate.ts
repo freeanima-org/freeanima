@@ -74,16 +74,16 @@ export async function evaluateGoalAfterTurn(
     return { action: "stop" };
   }
 
-  if (goal.turn_count >= goal.max_turns) {
+  if (goal.continue_count >= goal.max_continues) {
     const exhausted = conversationGoalSchema.parse({
       ...goal,
       status: "exhausted",
-      last_judge_reason: formatGoalExhaustedMessage(goal.max_turns),
+      last_judge_reason: formatGoalExhaustedMessage(goal.max_continues),
     });
     await patchConversationGoal(deps.conversation, conversationId, exhausted);
     return {
       action: "stop",
-      displayHint: formatGoalExhaustedMessage(goal.max_turns),
+      displayHint: formatGoalExhaustedMessage(goal.max_continues),
     };
   }
 
@@ -104,8 +104,8 @@ export async function evaluateGoalAfterTurn(
     deps.logger.warn("goal judge failed; pausing auto-continue", {
       conversationId,
       error: judge.error,
-      turn_count: goal.turn_count,
-      max_turns: goal.max_turns,
+      continue_count: goal.continue_count,
+      max_continues: goal.max_continues,
       model,
     });
     const failed = conversationGoalSchema.parse({
@@ -134,15 +134,15 @@ export async function evaluateGoalAfterTurn(
     };
   }
 
-  const nextCount = goal.turn_count + 1;
+  const nextCount = goal.continue_count + 1;
   const updated = conversationGoalSchema.parse({
     ...goal,
-    turn_count: nextCount,
+    continue_count: nextCount,
     last_judge_reason: judge.reason,
   });
   await patchConversationGoal(deps.conversation, conversationId, updated);
 
-  if (nextCount >= goal.max_turns) {
+  if (nextCount >= goal.max_continues) {
     const exhausted = conversationGoalSchema.parse({
       ...updated,
       status: "exhausted",
@@ -150,11 +150,11 @@ export async function evaluateGoalAfterTurn(
     await patchConversationGoal(deps.conversation, conversationId, exhausted);
     return {
       action: "stop",
-      displayHint: formatGoalExhaustedMessage(goal.max_turns),
+      displayHint: formatGoalExhaustedMessage(goal.max_continues),
     };
   }
 
-  const continuePrompt = formatGoalContinuePrompt(nextCount, goal.max_turns, judge.reason);
+  const continuePrompt = formatGoalContinuePrompt(nextCount, goal.max_continues, judge.reason);
   return {
     action: "continue",
     continuePrompt,

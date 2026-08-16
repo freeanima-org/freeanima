@@ -27,7 +27,7 @@ import {
 } from "@freeanima/habitat/core/tool";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/habitat/core/llm";
 import {
-  resolveMaxTurns,
+  resolveMaxLoopIterations,
   type AssistantMessage,
   type StoredMessage,
   type ToolMessage,
@@ -35,12 +35,12 @@ import {
 } from "@freeanima/habitat/core/db/domain";
 import { buildLlmDebugSnapshot, type LlmDebugSnapshot } from "./llm-debug-snapshot.ts";
 
-export class MaxTurnsExceeded extends Error {
-  override name = "MaxTurnsExceeded";
+export class MaxLoopIterationsExceeded extends Error {
+  override name = "MaxLoopIterationsExceeded";
 }
 
-export class EngineTurnInterrupted extends Error {
-  override name = "EngineTurnInterrupted";
+export class EngineLoopInterrupted extends Error {
+  override name = "EngineLoopInterrupted";
 }
 
 /** Persist 后副作用（紧急压缩等）；loop 默认 no-op，由调用方注入 */
@@ -52,7 +52,7 @@ export type AfterMessagesPersisted = (ctx: {
 }) => void | Promise<void>;
 
 export type EngineOpts = {
-  max_turns?: number;
+  max_loop_iterations?: number;
   /** 必填：由调用方解析 profile；loop 不读默认 chat profile */
   model: string;
   logger?: Logger;
@@ -124,14 +124,14 @@ function cleanToolCalls(
 
 function checkAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
-    throw new EngineTurnInterrupted(REPAIR_REASON_INTERRUPT);
+    throw new EngineLoopInterrupted(REPAIR_REASON_INTERRUPT);
   }
 }
 
 function checkShouldStop(opts?: Pick<EngineOpts, "signal" | "shouldStop">): void {
   checkAborted(opts?.signal);
   if (opts?.shouldStop?.()) {
-    throw new EngineTurnInterrupted("Service is shutting down");
+    throw new EngineLoopInterrupted("Service is shutting down");
   }
 }
 
@@ -257,12 +257,12 @@ export async function run(messages: StoredMessage[], opts: EngineOpts): Promise<
       case "error": {
         const msg = ev.data.error;
         if (msg.includes("Tool loop exceeded")) {
-          throw new MaxTurnsExceeded(msg);
+          throw new MaxLoopIterationsExceeded(msg);
         }
         throw new Error(msg);
       }
       case "interrupted":
-        throw new EngineTurnInterrupted(ev.data.reason);
+        throw new EngineLoopInterrupted(ev.data.reason);
       case "awaiting_clarify":
       case "tool_begin":
       case "tool_progress":
@@ -358,7 +358,7 @@ export async function* runStream(
   messages: StoredMessage[],
   opts: EngineOpts,
 ): AsyncGenerator<StreamEvent> {
-  const maxTurns = resolveMaxTurns(opts);
+  const maxLoopIterations = resolveMaxLoopIterations(opts);
   const [toolSchemas, model] = prepareEngine(opts);
   const compiled = toolSchemas.length > 0 ? toolSchemas : undefined;
   const failureCounts = new Map<string, number>();
@@ -367,7 +367,7 @@ export async function* runStream(
 
   let lastDebugSnapshot: LlmDebugSnapshot | null = null;
 
-  for (let turn = 0; turn < maxTurns; turn++) {
+  for (let iteration = 0; iteration < maxLoopIterations; iteration++) {
     checkShouldStop(opts);
     // Run beforeLlmCall hook; modules (e.g. notifications) may modify messages before LLM inference
     const llmCallExtras: Record<string, unknown> = {};
@@ -387,17 +387,24 @@ export async function* runStream(
     }
 
     if (opts.llm_debug) {
-      if (turn === 0) {
+      if (iteration === 0) {
         yield {
           event: "llm_debug",
-          data: buildLlmDebugSnapshot(messages, toolSchemas, model, turn, "initial", llmCallExtras),
+          data: buildLlmDebugSnapshot(
+            messages,
+            toolSchemas,
+            model,
+            iteration,
+            "initial",
+            llmCallExtras,
+          ),
         };
       }
       lastDebugSnapshot = buildLlmDebugSnapshot(
         messages,
         toolSchemas,
         model,
-        turn,
+        iteration,
         "final",
         llmCallExtras,
       );
@@ -405,10 +412,10 @@ export async function* runStream(
 
     const buffer: string[] = [];
     let toolCalls: llm.LlmResponse["tool_calls"] | undefined;
-    let turnReasoning: string | null = null;
-    let turnUsage: Record<string, number> | null = null;
-    let turnFinishReason = "stop";
-    const turnStarted = performance.now();
+    let iterationReasoning: string | null = null;
+    let iterationUsage: Record<string, number> | null = null;
+    let iterationFinishReason = "stop";
+    const iterationStarted = performance.now();
 
     try {
       for await (const chunk of llm.chatStream(
@@ -426,13 +433,13 @@ export async function* runStream(
         } else if (chunk.type === "tool_calls") {
           toolCalls = chunk.tool_calls;
         } else if (chunk.type === "done") {
-          turnReasoning = chunk.reasoning ?? null;
-          turnUsage = chunk.usage ?? null;
-          turnFinishReason = chunk.finish_reason ?? turnFinishReason;
+          iterationReasoning = chunk.reasoning ?? null;
+          iterationUsage = chunk.usage ?? null;
+          iterationFinishReason = chunk.finish_reason ?? iterationFinishReason;
         }
       }
     } catch (e) {
-      if (e instanceof EngineTurnInterrupted) {
+      if (e instanceof EngineLoopInterrupted) {
         yield { event: "interrupted", data: { reason: e.message } };
         yield { event: "done", data: { reason: "interrupted" } };
         return;
@@ -455,8 +462,8 @@ export async function* runStream(
       return;
     }
 
-    const turnLatencyMs = Math.round(performance.now() - turnStarted);
-    const streamMeta = { usage: turnUsage, latency_ms: turnLatencyMs };
+    const turnLatencyMs = Math.round(performance.now() - iterationStarted);
+    const streamMeta = { usage: iterationUsage, latency_ms: turnLatencyMs };
 
     if (!toolCalls?.length) {
       const textContent = buffer.join("");
@@ -466,9 +473,9 @@ export async function* runStream(
             role: "assistant",
             content: textContent,
             model,
-            finish_reason: turnFinishReason,
+            finish_reason: iterationFinishReason,
           },
-          turnReasoning,
+          iterationReasoning,
         ),
         streamMeta,
       );
@@ -491,9 +498,9 @@ export async function* runStream(
             role: "assistant",
             content: textContent,
             model,
-            finish_reason: turnFinishReason,
+            finish_reason: iterationFinishReason,
           },
-          turnReasoning,
+          iterationReasoning,
         ),
         streamMeta,
       );
@@ -513,9 +520,9 @@ export async function* runStream(
           content: buffer.join("") || null,
           tool_calls: cleanedCalls,
           model,
-          finish_reason: turnFinishReason,
+          finish_reason: iterationFinishReason,
         },
-        turnReasoning,
+        iterationReasoning,
       ),
       streamMeta,
     );
@@ -613,7 +620,7 @@ export async function* runStream(
       await afterMessagesPersisted(messages, batch, model, toolSchemas, opts);
       yield { event: "tool_round_end", data: { tool_count: cleanedCalls.length } };
     } catch (e) {
-      if (e instanceof EngineTurnInterrupted) {
+      if (e instanceof EngineLoopInterrupted) {
         const batch = await persistToolRound(
           withTools,
           toolMsgs,
@@ -647,7 +654,7 @@ export async function* runStream(
     }
   }
 
-  const msg = `Tool loop exceeded ${maxTurns} turns`;
+  const msg = `Tool loop exceeded ${maxLoopIterations} loop iterations`;
   (opts.logger ?? getRuntimeLogger()).with({ component: "engine" }).error(msg);
   yield { event: "error", data: { error: msg } };
 }

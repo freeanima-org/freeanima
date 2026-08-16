@@ -30,7 +30,7 @@ export type LlmDebugRuntimeInjections = {
 
 export type LlmDebugSnapshot = {
   phase: "initial" | "final";
-  turn_index: number;
+  loop_index: number;
   model: string;
   tool_count: number;
   tools: LlmDebugToolPreview[];
@@ -103,7 +103,7 @@ export function buildLlmDebugSnapshot(
   messages: StoredMessage[],
   toolSchemas: OpenAiToolSchema[],
   model: string,
-  turnIndex: number,
+  loopIndex: number,
   phase: "initial" | "final",
   extras?: Record<string, unknown>,
 ): LlmDebugSnapshot {
@@ -112,7 +112,7 @@ export function buildLlmDebugSnapshot(
 
   return omitUndefined({
     phase,
-    turn_index: turnIndex,
+    loop_index: loopIndex,
     model,
     tool_count: toolSchemas.length,
     /** Full OpenAI tools[] entries as sent to the provider. */

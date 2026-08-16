@@ -32,7 +32,7 @@ describe("compression extended", () => {
       ua(27, "last"),
     ];
     const [out, state] = compress(msgs, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       model: "test",
       systemPrompt: "system",
       tools: [],
@@ -61,7 +61,7 @@ describe("compression extended", () => {
     ];
     const budget = 2000;
     const [, state1] = compress(msgs, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       model: "test",
       systemPrompt: "sys",
       tools: [],
@@ -74,7 +74,7 @@ describe("compression extended", () => {
 
     const extended = [...msgs, ua(7, "one"), aa(8), ua(9, "two"), aa(10)];
     const [out2, state2] = compress(extended, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       model: "test",
       systemPrompt: "sys",
       tools: [],

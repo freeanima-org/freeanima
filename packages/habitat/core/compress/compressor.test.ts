@@ -11,7 +11,7 @@ installCompressionConfigForTests();
 describe("compressor", () => {
   it("returns original when below threshold", () => {
     const msgs = [ua(1, "u0"), aa(2, "a0"), ua(3, "u1"), aa(4, "a1")];
-    const [out, state] = compress(msgs, { maxRounds: 50, boundaryOverrides: testBoundary });
+    const [out, state] = compress(msgs, { maxMessagePairs: 50, boundaryOverrides: testBoundary });
     expect(out).toStrictEqual(msgs);
     expect(state).toBeNull();
   });
@@ -22,7 +22,7 @@ describe("compressor", () => {
       msgs.push(ua(i * 2 + 1, `u${i}`), aa(i * 2 + 2, `a${i}`));
     }
     const [out, state] = compress(msgs, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       force: true,
       boundaryOverrides: testBoundary,
     });
@@ -42,14 +42,14 @@ describe("compressor", () => {
       msgs.push(ua(i * 2 + 1, `u${i}`), aa(i * 2 + 2, `a${i}`));
     }
     const [out1, state1] = compress(msgs, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       force: true,
       boundaryOverrides: testBoundary,
     });
     expect(state1).not.toBeNull();
 
     const [out2, state2] = compress(msgs, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       state: state1,
       boundaryOverrides: testBoundary,
     });
@@ -70,7 +70,7 @@ describe("compressor", () => {
       aa(113, "a55"),
     );
     const [out, state] = compress(msgs, {
-      maxRounds: 50,
+      maxMessagePairs: 50,
       force: true,
       state: { l2: 2, l3: 100 },
       boundaryOverrides: testBoundary,

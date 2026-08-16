@@ -72,7 +72,7 @@ title: 技能
 | 触发 | 回合后门控（≥N 次工具调用、skill_load+报错、报错后恢复、`/learn`） | `/skills curate`（后续可加周期钩子） |
 | 输入 | 回合摘要 + 目录                                                    | 目录；工具按需拉取正文               |
 
-共用：同一元技能、同一套 `skill_*` 工具、同一 `llm.profiles.skill_review`（回退到 default）、较小的 `maxTurns`。
+共用：同一元技能、同一套 `skill_*` 工具、同一 `llm.profiles.skill_review`（回退到 default）、较小的 `maxLoopIterations`。
 
 ### 写入路径（无需人工审批）
 

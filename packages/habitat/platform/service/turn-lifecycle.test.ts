@@ -107,7 +107,7 @@ describe("turn-lifecycle", () => {
     );
   });
 
-  it("runSimpleTurn catches MaxTurnsExceeded", async () => {
+  it("runSimpleTurn catches MaxLoopIterationsExceeded", async () => {
     const deps = bindTestDeps();
     restores.push(
       spyOn(conversationTitle, "triggerConversationTitleIfFirstTurn").mockResolvedValue(undefined),
@@ -123,7 +123,7 @@ describe("turn-lifecycle", () => {
         functions: [],
         timestamp: "",
       }),
-      spyOn(engine, "run").mockRejectedValue(new engine.MaxTurnsExceeded()),
+      spyOn(engine, "run").mockRejectedValue(new engine.MaxLoopIterationsExceeded()),
     );
 
     const out = await runSimpleTurn(deps, {

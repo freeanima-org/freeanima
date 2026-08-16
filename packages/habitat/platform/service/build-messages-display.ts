@@ -73,7 +73,7 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
           args: argsObj,
         };
       });
-      // 有可见 assistant 文本时先收口上一块再分段；无文本的连续 tool 轮次合并进同一 tool_block
+      // 有可见 assistant 文本时先收口上一块再分段；无文本的连续工具轮次合并进同一 tool_block
       if (msg.content) {
         flushPendingBlock();
         display.push({ type: "message", role: "assistant", content: msg.content });

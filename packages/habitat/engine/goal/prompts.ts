@@ -1,4 +1,4 @@
-export const DEFAULT_GOAL_MAX_TURNS = 20;
+export const DEFAULT_GOAL_MAX_CONTINUES = 20;
 
 export const GOAL_START_PREFIX = "[Goal]";
 
@@ -7,19 +7,19 @@ export function formatGoalStartPrompt(description: string): string {
 }
 
 export function formatGoalContinuePrompt(
-  turnCount: number,
-  maxTurns: number,
+  continueCount: number,
+  maxContinues: number,
   reason: string,
 ): string {
-  return `↻ Continuing toward goal (${turnCount}/${maxTurns}): ${reason.trim()}`;
+  return `↻ Continuing toward goal (${continueCount}/${maxContinues}): ${reason.trim()}`;
 }
 
 export function formatGoalAchievedMessage(reason: string): string {
   return `✓ Goal achieved: ${reason.trim()}`;
 }
 
-export function formatGoalExhaustedMessage(maxTurns: number): string {
-  return `⊙ Goal turn budget exhausted (${maxTurns}/${maxTurns})`;
+export function formatGoalExhaustedMessage(maxContinues: number): string {
+  return `⊙ Goal continue budget exhausted (${maxContinues}/${maxContinues})`;
 }
 
 /** Judge 调用/解析失败：暂停自动续跑，避免装死（active 但不续跑） */
@@ -28,6 +28,6 @@ export function formatGoalJudgeFailedMessage(error: string): string {
   return `⊙ Goal paused: judge failed (${detail}). Use \`/goal resume\` to retry.`;
 }
 
-export function formatGoalSetMessage(maxTurns: number): string {
-  return `⊙ Goal set (${maxTurns}-turn budget)`;
+export function formatGoalSetMessage(maxContinues: number): string {
+  return `⊙ Goal set (${maxContinues}-continue budget)`;
 }

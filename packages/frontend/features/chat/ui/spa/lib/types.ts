@@ -40,7 +40,7 @@ export type ConversationListItem = {
 
 export type LlmDebugSnapshotPayload = {
   phase: "initial" | "final";
-  turn_index: number;
+  loop_index: number;
   model: string;
   tool_count: number;
   tools: Array<{

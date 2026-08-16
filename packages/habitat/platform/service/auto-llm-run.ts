@@ -46,7 +46,7 @@ export type AutoLlmRunInput = {
   userMessages: string[];
   model?: string;
   toolNames: string[];
-  maxTurns: number;
+  maxLoopIterations: number;
   /** 墙钟上限 ms；省略则不限 */
   maxDurationMs?: number;
   goal?: ConversationGoal;
@@ -127,13 +127,13 @@ async function evaluateGoalForAutoLlm(
   if (goal.status === "paused" || goal.status === "completed" || goal.status === "exhausted") {
     return { action: "stop", goal };
   }
-  if (goal.turn_count >= goal.max_turns) {
+  if (goal.continue_count >= goal.max_continues) {
     return {
       action: "stop",
       goal: conversationGoalSchema.parse({
         ...goal,
         status: "exhausted",
-        last_judge_reason: formatGoalExhaustedMessage(goal.max_turns),
+        last_judge_reason: formatGoalExhaustedMessage(goal.max_continues),
       }),
     };
   }
@@ -158,8 +158,8 @@ async function evaluateGoalForAutoLlm(
       .with({ component: "goal" })
       .warn("goal judge failed; pausing auto-continue", {
         error: judge.error,
-        turn_count: goal.turn_count,
-        max_turns: goal.max_turns,
+        continue_count: goal.continue_count,
+        max_continues: goal.max_continues,
         model,
       });
     return {
@@ -184,13 +184,13 @@ async function evaluateGoalForAutoLlm(
     };
   }
 
-  const nextCount = goal.turn_count + 1;
+  const nextCount = goal.continue_count + 1;
   const updated = conversationGoalSchema.parse({
     ...goal,
-    turn_count: nextCount,
+    continue_count: nextCount,
     last_judge_reason: judge.reason,
   });
-  if (nextCount >= goal.max_turns) {
+  if (nextCount >= goal.max_continues) {
     return {
       action: "stop",
       goal: conversationGoalSchema.parse({ ...updated, status: "exhausted" }),
@@ -200,7 +200,7 @@ async function evaluateGoalForAutoLlm(
   return {
     action: "continue",
     goal: updated,
-    continuePrompt: formatGoalContinuePrompt(nextCount, goal.max_turns, judge.reason),
+    continuePrompt: formatGoalContinuePrompt(nextCount, goal.max_continues, judge.reason),
   };
 }
 
@@ -229,7 +229,7 @@ async function runEngineOnce(
         executableTools: input.toolNames,
         conversationId: "",
         ...omitUndefined({ toolPolicy, requestParams: input.requestParams, signal }),
-        max_turns: input.maxTurns,
+        max_loop_iterations: input.maxLoopIterations,
         hookRegistry: deps.kernel.hookRegistry,
         llm_kind: "auto_llm",
       })) {
@@ -362,7 +362,7 @@ async function persistAutoLlmRun(
     output: row.output.slice(0, OUTPUT_MAX),
     status: row.status,
     duration_ms: row.durationMs,
-    max_turns: row.input.maxTurns,
+    max_loop_iterations: row.input.maxLoopIterations,
     max_duration_ms: row.input.maxDurationMs ?? null,
     error: row.error ?? null,
     metadata: {

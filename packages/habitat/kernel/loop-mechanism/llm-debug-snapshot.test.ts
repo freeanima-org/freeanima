@@ -109,7 +109,7 @@ describe("buildLlmDebugSnapshot", () => {
     expect(snapshot.tool_count).toBe(1);
     expect(snapshot.tools[0]?.function.name).toBe("memory_semantic_search");
     expect(snapshot.tools[0]?.function.description).toContain("Returns (JSON Schema):");
-    expect(snapshot.turn_index).toBe(1);
+    expect(snapshot.loop_index).toBe(1);
     expect(snapshot.phase).toBe("final");
   });
 });

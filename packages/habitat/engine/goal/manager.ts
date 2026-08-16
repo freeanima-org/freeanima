@@ -1,7 +1,7 @@
 import { conversationGoalSchema, type ConversationGoal } from "@freeanima/habitat/core/db/domain";
 import type { ConversationPort } from "@freeanima/habitat/core/tool/conversation-port.ts";
 
-import { DEFAULT_GOAL_MAX_TURNS } from "./prompts.ts";
+import { DEFAULT_GOAL_MAX_CONTINUES } from "./prompts.ts";
 import { clearConversationGoal, patchConversationGoal, readConversationGoal } from "./store.ts";
 
 function nowIso(): string {
@@ -12,14 +12,14 @@ export async function setConversationGoal(
   conversation: ConversationPort,
   conversationId: string,
   description: string,
-  maxTurns = DEFAULT_GOAL_MAX_TURNS,
+  maxContinues = DEFAULT_GOAL_MAX_CONTINUES,
 ): Promise<ConversationGoal> {
   const goal = conversationGoalSchema.parse({
     description: description.trim(),
     subgoals: [],
     status: "active",
-    turn_count: 0,
-    max_turns: maxTurns,
+    continue_count: 0,
+    max_continues: maxContinues,
     set_at: nowIso(),
   });
   await patchConversationGoal(conversation, conversationId, goal);
@@ -102,7 +102,7 @@ export function formatGoalStatus(goal: ConversationGoal): string {
   const lines = [
     `**Goal status:** \`${goal.status}\``,
     `• Description: ${goal.description}`,
-    `• Turns: ${goal.turn_count}/${goal.max_turns}`,
+    `• Continues: ${goal.continue_count}/${goal.max_continues}`,
   ];
   if (goal.subgoals.length > 0) {
     lines.push("• Subgoals:");

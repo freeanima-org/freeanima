@@ -259,7 +259,7 @@ function buildRuntimeEstimate(
 export type CompressionAnalysis = {
   enabled: boolean;
   mode: "token" | "messages";
-  max_rounds: number;
+  max_message_pairs: number;
   threshold: number;
   recompress_at: number;
   l2: number | null;
@@ -281,7 +281,7 @@ export type CompressionAnalysis = {
 };
 
 export type CompressOptions = {
-  maxRounds?: number;
+  maxMessagePairs?: number;
   state?: CompressionState | null;
   systemPrompt?: string;
   tools?: OpenAiToolSchema[];
@@ -319,8 +319,8 @@ function resolveCompressBudget(
   return { budget, window, source };
 }
 
-function messageThreshold(maxRounds: number): { threshold: number; recompressAt: number } {
-  const threshold = maxRounds * 2;
+function messageThreshold(maxMessagePairs: number): { threshold: number; recompressAt: number } {
+  const threshold = maxMessagePairs * 2;
   return { threshold, recompressAt: threshold * 2 };
 }
 
@@ -329,9 +329,9 @@ export function analyzeCompression(
   opts?: CompressOptions,
 ): CompressionAnalysis {
   const cfg = getCompressionConfig();
-  const maxRounds = opts?.maxRounds ?? cfg.maxRounds;
+  const maxMessagePairs = opts?.maxMessagePairs ?? cfg.maxMessagePairs;
   const model = opts?.model ?? "";
-  const { threshold, recompressAt } = messageThreshold(maxRounds);
+  const { threshold, recompressAt } = messageThreshold(maxMessagePairs);
   const { budget, window, source } = resolveCompressBudget(model, opts);
   const tokenMode = budget != null;
   const state = opts?.state ?? null;
@@ -366,7 +366,7 @@ export function analyzeCompression(
   return {
     enabled: true,
     mode: tokenMode ? "token" : "messages",
-    max_rounds: maxRounds,
+    max_message_pairs: maxMessagePairs,
     threshold,
     recompress_at: recompressAt,
     l2,
@@ -391,10 +391,10 @@ export function analyzeCompression(
 /** Whether this turn will advance compression boundary (does not run deriveBoundariesFromL4) */
 export function willAdvanceCompression(messages: StoredMessage[], opts?: CompressOptions): boolean {
   const cfg = getCompressionConfig();
-  const maxRounds = opts?.maxRounds ?? cfg.maxRounds;
+  const maxMessagePairs = opts?.maxMessagePairs ?? cfg.maxMessagePairs;
   const state = opts?.state ?? null;
   const model = opts?.model ?? "";
-  const { threshold, recompressAt } = messageThreshold(maxRounds);
+  const { threshold, recompressAt } = messageThreshold(maxMessagePairs);
   const { budget } = resolveCompressBudget(model, opts);
   const tokenMode = budget != null;
 

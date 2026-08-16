@@ -8,7 +8,7 @@ export type AutoLlmRunRow = {
   output: string;
   status: string;
   duration_ms: number;
-  max_turns: number;
+  max_loop_iterations: number;
   max_duration_ms: number | null;
   error: string | null;
   metadata: Record<string, unknown> | null;
@@ -37,7 +37,7 @@ export type AutoLlmRunAppendInput = {
   output: string;
   status: "ok" | "error";
   duration_ms: number;
-  max_turns: number;
+  max_loop_iterations: number;
   max_duration_ms?: number | null;
   error?: string | null;
   metadata?: Record<string, unknown> | null;

@@ -6,7 +6,7 @@ import type { LlmDebugSnapshotPayload, StreamApiEvent } from "./types.ts";
 function snap(phase: "initial" | "final"): LlmDebugSnapshotPayload {
   return {
     phase,
-    turn_index: 0,
+    loop_index: 0,
     model: "m",
     tool_count: 0,
     tools: [],

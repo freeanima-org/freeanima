@@ -84,7 +84,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
 
   const [compression, setCompression] = useState({
     enabled: true,
-    max_rounds: 50,
+    max_message_pairs: 50,
     reserved_tokens: 8192,
   });
   const [memoryRecall, setMemoryRecall] = useState({
@@ -108,7 +108,8 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
       if (configKey === "compression") {
         setCompression({
           enabled: asRecord.enabled !== false,
-          max_rounds: typeof asRecord.max_rounds === "number" ? asRecord.max_rounds : 50,
+          max_message_pairs:
+            typeof asRecord.max_message_pairs === "number" ? asRecord.max_message_pairs : 50,
           reserved_tokens:
             typeof asRecord.reserved_tokens === "number" ? asRecord.reserved_tokens : 8192,
         });
@@ -160,7 +161,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
     try {
       await patchHabitatConfigSection("compression", {
         enabled: compression.enabled,
-        max_rounds: compression.max_rounds,
+        max_message_pairs: compression.max_message_pairs,
         reserved_tokens: compression.reserved_tokens,
       });
       await afterSave("compression");
@@ -231,8 +232,8 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
               checked={compression.enabled}
               onChange={(enabled) => setCompression((c) => ({ ...c, enabled }))}
             />
-            {numberField("最大轮次", compression.max_rounds, (v) =>
-              setCompression((c) => ({ ...c, max_rounds: v === "" ? 50 : v })),
+            {numberField("消息对数阈值", compression.max_message_pairs, (v) =>
+              setCompression((c) => ({ ...c, max_message_pairs: v === "" ? 50 : v })),
             )}
             {numberField("保留 token", compression.reserved_tokens, (v) =>
               setCompression((c) => ({ ...c, reserved_tokens: v === "" ? 8192 : v })),
