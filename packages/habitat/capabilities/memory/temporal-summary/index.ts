@@ -56,7 +56,6 @@ export {
   runTemporalSummaryTick,
   filterMessagesAfterAt,
   formatMessagesForSummary,
-  type PeerRollCache,
   type TemporalSummaryTickResult,
 } from "./tick.ts";
 export { runTemporalSummaryDay, type TemporalSummaryDayResult } from "./day-run.ts";
@@ -80,6 +79,12 @@ export {
   type SysRollCacheValue,
 } from "./system-rolls.ts";
 export { scheduleTemporalSystemRollWarm } from "./system-roll-warm.ts";
+export {
+  concatPeerRollSources,
+  schedulePeerRollWarm,
+  warmPeerRoll,
+  type PeerRollCache,
+} from "./peer-roll-warm.ts";
 export {
   startTemporalBatchJob,
   getTemporalBatchJobStatus,

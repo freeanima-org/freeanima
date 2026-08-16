@@ -69,7 +69,7 @@ title: 时间摘要
 | 步骤       | 触发                                                        | 输出                                             |
 | ---------- | ----------------------------------------------------------- | ------------------------------------------------ |
 | 会话分片   | 进程内 `Bun.cron` `builtin-temporal-summary-tick` `*/30`    | 若 watermark 后有 **CST 当日消息活动**则追加分片 |
-| 同伴合摘要 | 同一 tick / 装配时对**已关闭**桶                            | 按观众源集合合并一条同伴摘要 → Redis 缓存        |
+| 同伴合摘要 | 同一 tick / 装配 miss 时后台预热对**已关闭**桶              | 按观众源集合合并一条同伴摘要 → Redis 缓存        |
 | 全局日     | 维护步骤 `temporal-summary-day`（retain 补跑之后）          | 覆盖该日的全局 `day` 实体                        |
 | 月         | 记忆维护步骤 `temporal-summary-cascade`，在**月初**（1 日） | 由该月的日实体生成上月                           |
 | 年         | 同一 cascade，在 **1 月 1 日**                              | 由该年的月实体生成上年                           |
@@ -104,7 +104,8 @@ Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至�
 - `sources_fp`：对规范排序的 `(conversation_id, at, summary)` 的短哈希，**排除观众本人**
 - 值：`{ summary, sources_fp, created_at }`
 - TTL：约 36h（可丢弃缓存：Redis 缓存层 + 进程内回退）
-- 未命中：LLM 合并（LLM 不可用则拼接截断）；命中：复用
+- 未命中：拼接截断注入（不写 Redis）并后台 LLM 预热；命中：复用
+- **注入路径**（`beforeLlmCall`）：只读上述 Redis；**禁止**懒打 LLM（对齐系统合摘要）
 
 ### Redis 系统合摘要 keys（系统提示合摘要）
 
@@ -143,7 +144,7 @@ Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至�
 为观众 `V` 装配消息时：
 
 1. 对今日每个**已关闭**的 CST 半小时桶，收集该桶内其他会话的分片。
-2. 经上述 Redis key 解析同伴合摘要 → **一条**摘要字符串。
+2. 经上述 Redis key 解析同伴合摘要 → **一条**摘要字符串（miss：拼接截断并后台预热，不懒打 LLM）。
 3. 在 `V` 时间线上按消息时间戳，于 `bucket_end` 插入仅运行时存在的 assistant 消息（`name: temporal_summary_peers`）。
 4. 永不改写更旧的桶；新活动只打开更新的桶 → 并行会话间 LLM KV 缓存前缀稳定。
 
