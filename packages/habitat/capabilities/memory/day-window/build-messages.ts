@@ -168,13 +168,14 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
 }
 
 /** retain 任务规格（层 2）；独立抽取任务，非对话人设 */
-export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留的事实，对照「本对话相关 / 语义相关」记忆决定 create / update / deprecate。
-可调用 memory_semantic_search 检索更多既有记忆后再写入。
+export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留的事实，对照已注入的「本对话相关 / 语义相关」记忆决定 create / update / deprecate。
+勿再检索；以工具返回的 ok 为准，勿被开场相关记忆列表覆盖。
 记忆类型：world / experience / opinion / observation / preference / procedural / imprint。
 去重：仅与相关既有记忆比较；更准则跳过或更新；补充则 update；不再适用则 deprecate；全新则 create。
-工具：memory_semantic_create / update / deprecate / memory_semantic_search。
+本 run 内同一 id 成功写入后勿再 create/update/deprecate（除非上次 error）。
+工具：memory_semantic_create / memory_semantic_update / memory_semantic_deprecate。
 observed_at = 事实首次被提及的消息时间；occurred_at = 内容描述的事件时间（可模糊）。
-直接调工具落库；无需 JSON 总结。`;
+写完后按协议输出约 20 字总结收尾，勿再调工具。`;
 
 /** @deprecated 使用 RETAIN_TASK_SPEC + composeAutoLlmPrompt */
 export const RETAIN_INSTRUCTION_MESSAGE = RETAIN_TASK_SPEC;

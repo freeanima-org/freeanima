@@ -16,6 +16,7 @@ export const AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS = 2 * 60 * 1000;
 export const AUTO_LLM_PROTOCOL_BODY = `这不是用户对话，也不是聊天室人格扮演。
 你正在执行一次独立的 AutoLlmRun：无用户回合、有限工具环、完成后即结束。
 依据任务规格与后续给出的数据/技能完成目标；需要外部信息时使用可用工具。
+目标达成后，最后一轮仅输出约 20 字精简任务总结，禁止再带 tool_calls。
 完成后停止；不要闲聊、不要索取用户确认。`;
 
 export const AUTO_LLM_PROTOCOL_FRAME = "以下为 AutoLlm 运行硬性协议（适用于所有自动 LLM 任务）。";

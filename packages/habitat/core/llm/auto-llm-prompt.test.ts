@@ -20,6 +20,8 @@ describe("composeAutoLlmPrompt", () => {
 
     expect(systemPrompt).toContain(`<${PROMPT_XML_TAGS.autoLlmProtocol}>`);
     expect(systemPrompt).toContain(AUTO_LLM_PROTOCOL_BODY.slice(0, 20));
+    expect(systemPrompt).toContain("约 20 字");
+    expect(systemPrompt).toContain("禁止再带 tool_calls");
     expect(systemPrompt).toContain(`<${PROMPT_XML_TAGS.autoLlmTaskSpec}`);
     expect(systemPrompt).toContain('kind="cron"');
     expect(systemPrompt).not.toContain(MEMORY_REFERENCE_CITATION_RULE);
