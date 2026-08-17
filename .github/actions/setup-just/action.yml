@@ -5,6 +5,9 @@ runs:
   steps:
     - name: Install just
       shell: bash
+      env:
+        # 钉死版本，避免 just.systems install.sh 在 GHA 共享 IP 上 403/限流
+        JUST_VERSION: "1.57.0"
       run: |
         set -euo pipefail
         if command -v just >/dev/null 2>&1; then
@@ -12,7 +15,28 @@ runs:
           exit 0
         fi
         mkdir -p "$HOME/.local/bin"
-        curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh \
-          | bash -s -- --to "$HOME/.local/bin"
-        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-        just --version
+        dest="$HOME/.local/bin"
+        os="$(uname -s)"
+        arch="$(uname -m)"
+        case "$os-$arch" in
+          Linux-x86_64) target=x86_64-unknown-linux-musl; archive=tar.gz ;;
+          Linux-aarch64) target=aarch64-unknown-linux-musl; archive=tar.gz ;;
+          Darwin-x86_64) target=x86_64-apple-darwin; archive=tar.gz ;;
+          Darwin-arm64) target=aarch64-apple-darwin; archive=tar.gz ;;
+          MINGW*|MSYS*|CYGWIN*|Windows_NT-*)
+            echo "Windows: 请用 choco/winget 预装 just，或扩展本 action" >&2
+            exit 1
+            ;;
+          *)
+            echo "unsupported platform: $os $arch" >&2
+            exit 1
+            ;;
+        esac
+        url="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${target}.${archive}"
+        tmp="$(mktemp -d)"
+        curl -fsSL "$url" -o "$tmp/just.${archive}"
+        tar -xzf "$tmp/just.${archive}" -C "$tmp"
+        install -m 755 "$tmp/just" "$dest/just"
+        rm -rf "$tmp"
+        echo "$dest" >> "$GITHUB_PATH"
+        "$dest/just" --version
