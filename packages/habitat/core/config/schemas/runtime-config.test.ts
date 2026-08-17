@@ -11,6 +11,8 @@ describe("isRuntimeConfigSectionKey", () => {
     expect(isRuntimeConfigSectionKey("gateway")).toBe(true);
     expect(isRuntimeConfigSectionKey("tts")).toBe(true);
     expect(isRuntimeConfigSectionKey("llm")).toBe(true);
+    expect(isRuntimeConfigSectionKey("passive_recall")).toBe(true);
+    expect(isRuntimeConfigSectionKey("semantic_clustering")).toBe(true);
   });
 
   it("排除 bootstrap 与未知段", () => {

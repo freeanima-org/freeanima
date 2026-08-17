@@ -5,6 +5,13 @@ export {
   type DbscanOptions,
   type DbscanResult,
 } from "./dbscan.ts";
+export { runHdbscan, type HdbscanOptions } from "./hdbscan.ts";
+export {
+  ensureSemanticClusterTitle,
+  warmSemanticClusterTitles,
+  sanitizeSemanticClusterTitle,
+  semanticClusterTitleCacheKey,
+} from "./cluster-title.ts";
 export {
   calibrateSemanticMemoryClusters,
   assignIncrementalCluster,

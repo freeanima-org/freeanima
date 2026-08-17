@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SemanticMemoryRow } from "@freeanima/shared/db-shapes";
 import {
   Badge,
@@ -60,7 +60,7 @@ type BrowseSortBy = (typeof BROWSE_SORT_OPTIONS)[number];
 
 type SemanticRow = SemanticMemoryRow & { rank?: number; cluster_id?: number | null };
 
-type ClusterStat = { cluster_id: number | null; count: number };
+type ClusterStat = { cluster_id: number | null; count: number; title?: string | null };
 
 function clusterFilterKey(clusterFilter: number | null | undefined): string {
   if (clusterFilter === undefined) return ALL_VALUE;
@@ -75,8 +75,10 @@ function parseClusterFilterKey(key: string): number | null | undefined {
   return Number.isInteger(n) && n >= 0 ? n : undefined;
 }
 
-function formatClusterLabel(clusterId: number | null | undefined): string {
+function formatClusterLabel(clusterId: number | null | undefined, title?: string | null): string {
   if (clusterId == null) return "未分组";
+  const trimmed = title?.trim();
+  if (trimmed) return trimmed;
   return `族 ${clusterId}`;
 }
 
@@ -136,6 +138,15 @@ function SemanticMemoryPage() {
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
   const calibrating = runningStepId === CLUSTER_CALIBRATE_STEP;
   const ungroupedCount = clusterStats.find((s) => s.cluster_id == null)?.count;
+  const clusterTitleById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const s of clusterStats) {
+      if (s.cluster_id == null) continue;
+      const t = s.title?.trim();
+      if (t) map.set(s.cluster_id, t);
+    }
+    return map;
+  }, [clusterStats]);
 
   const setPassiveSheetOpen = (open: boolean) => {
     setPassiveOpen(open);
@@ -370,7 +381,7 @@ function SemanticMemoryPage() {
                         .filter((s) => s.cluster_id != null)
                         .map((s) => (
                           <SelectItem key={String(s.cluster_id)} id={String(s.cluster_id)}>
-                            {`族 ${s.cluster_id}（${s.count}）`}
+                            {`${formatClusterLabel(s.cluster_id, s.title)}（${s.count}）`}
                           </SelectItem>
                         ))}
                     </SelectContent>
@@ -462,7 +473,12 @@ function SemanticMemoryPage() {
                           onClick={() => filterByCluster(row.cluster_id ?? null)}
                         >
                           <Badge variant="ghost" className="text-xs">
-                            {formatClusterLabel(row.cluster_id)}
+                            {formatClusterLabel(
+                              row.cluster_id,
+                              row.cluster_id != null
+                                ? (clusterTitleById.get(row.cluster_id) ?? null)
+                                : null,
+                            )}
                           </Badge>
                         </button>
                       </TableCell>

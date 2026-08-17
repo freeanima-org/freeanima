@@ -15,7 +15,8 @@ import {
 } from "@freeanima/habitat/core/db/pg/search/pg-search-index/backend.ts";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
 
-import { runDbscan } from "./dbscan.ts";
+import { runHdbscan } from "./hdbscan.ts";
+import { warmSemanticClusterTitles } from "./cluster-title.ts";
 
 const log = logComponent("memory.clustering");
 
@@ -47,12 +48,12 @@ export async function calibrateSemanticMemoryClusters(opts?: {
   }
   if (n > cfg.max_calibrate_n) {
     const reason = `max_calibrate_n:${n}>${cfg.max_calibrate_n}`;
-    log.warn("full DBSCAN skipped", { n, max: cfg.max_calibrate_n });
+    log.warn("full HDBSCAN skipped", { n, max: cfg.max_calibrate_n });
     void notifySoftFailure({
       sourceRef: cstDaySourceRef("memory:cluster_calibrate_skipped"),
       title: "语义记忆聚类校准跳过",
       body: [
-        "全量 DBSCAN 因条数超过上限已跳过（保护 2C2G）。",
+        "全量 HDBSCAN 因条数超过上限已跳过（保护 2C2G）。",
         `n=${n}`,
         `max_calibrate_n=${cfg.max_calibrate_n}`,
         "reflect 仍可按已有 cluster_id / NULL 分批。",
@@ -64,9 +65,13 @@ export async function calibrateSemanticMemoryClusters(opts?: {
   }
 
   const started = Date.now();
-  const result = await runDbscan(
+  const result = await runHdbscan(
     rows.map((r) => ({ id: r.entityId, embedding: r.embedding })),
-    { eps: cfg.eps, minPoints: cfg.min_points },
+    {
+      minClusterSize: cfg.min_points,
+      minSamples: cfg.min_samples,
+      peelSmall: cfg.peel_small,
+    },
   );
 
   const patches: Array<{ sourceId: number; clusterId: number | null }> = [];
@@ -75,13 +80,25 @@ export async function calibrateSemanticMemoryClusters(opts?: {
   }
   const updated = await patchEntitySearchDocumentClusterIds(patches);
 
-  log.info("full DBSCAN calibrated", {
+  log.info("full HDBSCAN calibrated", {
     n,
     clusterCount: result.clusterCount,
     noiseCount: result.noiseCount,
     updated,
     ms: Date.now() - started,
   });
+
+  const clusterIds = [
+    ...new Set(
+      [...result.labels.values()].filter((lab): lab is number => Number.isInteger(lab) && lab >= 0),
+    ),
+  ].toSorted((a, b) => a - b);
+  try {
+    const warm = await warmSemanticClusterTitles(clusterIds);
+    log.info("cluster titles warmed", warm);
+  } catch (e) {
+    log.warn("cluster title warm skipped", { error: String(e) });
+  }
 
   return {
     ok: true,

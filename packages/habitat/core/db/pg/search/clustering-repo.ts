@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import {
   SEMANTIC_MEMORY_COMPONENT,
   entities,
@@ -213,5 +213,58 @@ export async function listSemanticMemoryClusterStats(opts?: {
   return rows.map((row) => ({
     cluster_id: row.clusterId ?? null,
     count: row.count,
+  }));
+}
+
+export type SemanticClusterTitleSample = {
+  entityId: number;
+  title: string;
+  summary: string;
+  content: string;
+};
+
+/**
+ * 按 entity id 升序取某簇最多 limit 条，供簇 title 生成（确定性，非随机）。
+ * cluster_id 必须为非负整数；未分组勿调用。
+ */
+export async function listSemanticClusterTitleSamples(
+  clusterId: number,
+  opts?: { limit?: number },
+): Promise<SemanticClusterTitleSample[]> {
+  const limit = Math.max(1, Math.min(opts?.limit ?? 3, 10));
+  const statusCond = buildSemanticStatusCondition("active");
+  const conditions = [
+    eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
+    sql`${entities.deleted_at} IS NULL`,
+    eq(searchDocuments.resource, "entity"),
+    eq(searchDocuments.cluster_id, clusterId),
+    isNotNull(searchDocuments.cluster_id),
+  ];
+  if (statusCond) conditions.push(statusCond);
+
+  const rows = await getDb()
+    .select({
+      entityId: entities.id,
+      title: entities.title,
+      summary: entities.summary,
+      content: entities.content,
+    })
+    .from(entities)
+    .innerJoin(
+      searchDocuments,
+      and(
+        eq(searchDocuments.resource, "entity"),
+        sql`${searchDocuments.source_id} = ${entities.id}::text`,
+      ),
+    )
+    .where(and(...conditions))
+    .orderBy(asc(entities.id))
+    .limit(limit);
+
+  return rows.map((row) => ({
+    entityId: row.entityId,
+    title: row.title ?? "",
+    summary: row.summary ?? "",
+    content: row.content ?? "",
   }));
 }

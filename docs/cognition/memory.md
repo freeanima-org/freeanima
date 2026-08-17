@@ -69,13 +69,13 @@ links: Array<{ type: "merged_from"|"supersedes"|"conflicts_with"|"derived_from";
 
 ### 存储（embedded）
 
-| 表                      | 角色                                                                       |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `entities`              | semantic / temporal；`reference_count`                                     |
-| `search_documents`      | 可重建索引；**embedding + cluster_id**（向量簇，供 reflect 分批）          |
-| ~~memory_references~~   | **已删除**；cite 在 syncTurn / append 路径 bump `entities.reference_count` |
-| ~~memory_episodes~~     | embedded **不建**；EpisodeSource = messages view                           |
-| ~~memory_retain_queue~~ | **不建**；watermark（可从 provenance 重建）                                |
+| 表                      | 角色                                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------- |
+| `entities`              | semantic / temporal；`reference_count`                                                       |
+| `search_documents`      | 可重建索引；**embedding + cluster_id**（HDBSCAN 向量簇，供 reflect 分批；簇 title 在 Redis） |
+| ~~memory_references~~   | **已删除**；cite 在 syncTurn / append 路径 bump `entities.reference_count`                   |
+| ~~memory_episodes~~     | embedded **不建**；EpisodeSource = messages view                                             |
+| ~~memory_retain_queue~~ | **不建**；watermark（可从 provenance 重建）                                                  |
 
 ### 依赖边界
 

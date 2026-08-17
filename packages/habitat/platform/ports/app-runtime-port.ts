@@ -123,7 +123,7 @@ export type AppRuntimeMemoryPort = {
   countSemanticMemory(): Promise<{ index_rows: number }>;
   listSemanticMemories(opts?: Record<string, unknown>): Promise<unknown>;
   listSemanticMemoryClusters(): Promise<{
-    items: Array<{ cluster_id: number | null; count: number }>;
+    items: Array<{ cluster_id: number | null; count: number; title: string | null }>;
   }>;
   updateSemanticMemoryPinned(
     id: number | string,
