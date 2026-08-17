@@ -15,7 +15,7 @@
     "@vitejs/plugin-react": "^6.0.5",
     "bun-plugin-dir-import": "github:running-grass/bun-plugin-dir-import#v0.1.5",
     "drizzle-kit": "^1.0.0-rc.4",
-    "drizzle-orm": "^1.0.0-rc.4",
+    "drizzle-orm": "^1.0.0-rc.5-169397b",
     "esbuild": "^0.28.1",
     "husky": "^9.1.7",
     "jszip": "^3.10.1",
