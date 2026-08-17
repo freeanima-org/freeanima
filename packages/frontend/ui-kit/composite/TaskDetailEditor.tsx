@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
-import { BellIcon, CalendarIcon, FlagIcon, RepeatIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { BellIcon, CalendarClockIcon, CalendarIcon, FlagIcon, RepeatIcon } from "lucide-react";
 
 import { Button } from "../components/ui/button.tsx";
 import { Checkbox } from "../components/ui/checkbox.tsx";
@@ -15,22 +15,36 @@ import { Popover, PopoverDialog, PopoverTrigger } from "../components/ui/popover
 import { Input } from "../components/ui/input.tsx";
 import { Textarea } from "../components/ui/textarea.tsx";
 import { DatePickerInput } from "../form/DatePickerInput.tsx";
+import { DateRangePickerPanel } from "../form/DateRangePickerPanel.tsx";
 import { TimePickerInput } from "../form/TimePickerInput.tsx";
 import { cn } from "../lib/utils.ts";
+import { formatCstIso } from "@freeanima/shared/util/time.ts";
+
 import {
   formatDueChip,
   isoToDateLocalValue,
   isoToTimeLocalValue,
   mergeDateTimeLocal,
+  todayDateLocalValue,
 } from "../lib/datetime-local.ts";
 import type {
   TaskItemDisplay,
   TaskItemPriority,
   TaskItemRecurrenceDisplay,
+  TaskItemReminderDisplay,
   TaskRecurrenceCalendar,
   TaskRecurrenceSkip,
+  TaskReminderAnchor,
 } from "../lib/task-item-display.ts";
-import { PRIORITY_LABEL, priorityToneBg, priorityToneText } from "../lib/task-item-display.ts";
+import {
+  PRIORITY_LABEL,
+  hasTaskDeadline,
+  hasTaskPlan,
+  hasTaskScheduleTime,
+  priorityToneBg,
+  priorityToneText,
+  taskPlanClock,
+} from "../lib/task-item-display.ts";
 
 export type TaskDetailFocusField = "title" | "content";
 
@@ -64,40 +78,66 @@ const SKIP_LABEL: Record<TaskRecurrenceSkip, string> = {
 const RECURRENCE_PRESETS: Array<{
   id: string;
   label: string;
-  build: (dueAt: string) => TaskItemRecurrenceDisplay | null;
+  build: (planClock: string) => TaskItemRecurrenceDisplay | null;
 }> = [
   { id: "none", label: "不重复", build: () => null },
   {
     id: "daily",
     label: "每天",
-    build: (dueAt) => ({ freq: "daily", interval: 1, anchor: "due", schedule_at: dueAt }),
+    build: (planClock) => ({
+      freq: "daily",
+      interval: 1,
+      anchor: "due",
+      schedule_at: planClock,
+    }),
   },
   {
     id: "weekly",
     label: "每周",
-    build: (dueAt) => ({ freq: "weekly", interval: 1, anchor: "due", schedule_at: dueAt }),
+    build: (planClock) => ({
+      freq: "weekly",
+      interval: 1,
+      anchor: "due",
+      schedule_at: planClock,
+    }),
   },
   {
     id: "monthly",
     label: "每月",
-    build: (dueAt) => ({ freq: "monthly", interval: 1, anchor: "due", schedule_at: dueAt }),
+    build: (planClock) => ({
+      freq: "monthly",
+      interval: 1,
+      anchor: "due",
+      schedule_at: planClock,
+    }),
   },
   {
     id: "yearly",
     label: "每年",
-    build: (dueAt) => ({ freq: "yearly", interval: 1, anchor: "due", schedule_at: dueAt }),
+    build: (planClock) => ({
+      freq: "yearly",
+      interval: 1,
+      anchor: "due",
+      schedule_at: planClock,
+    }),
   },
 ];
 
-type RemindPresetId = "at_due" | "5m" | "1h" | "1d" | "9am" | "custom";
+type RemindPresetId = "at_anchor" | "5m" | "1h" | "1d" | "9am";
 
 const REMIND_ADD_PRESETS: Array<{ id: RemindPresetId; label: string }> = [
-  { id: "at_due", label: "截止时" },
+  { id: "at_anchor", label: "当时" },
   { id: "5m", label: "提前 5 分钟" },
   { id: "1h", label: "提前 1 小时" },
   { id: "1d", label: "提前 1 天" },
   { id: "9am", label: "当天 09:00" },
 ];
+
+const ANCHOR_LABEL: Record<TaskReminderAnchor, string> = {
+  start: "开始",
+  end: "结束",
+  due: "截止",
+};
 
 function recurrenceLabel(recurrence: TaskItemRecurrenceDisplay | null | undefined): string {
   if (!recurrence) return "不重复";
@@ -137,104 +177,198 @@ function recurrenceLabel(recurrence: TaskItemRecurrenceDisplay | null | undefine
   return label;
 }
 
-function listReminderAts(item: TaskItemDisplay): string[] {
-  const fromArray = (item.reminders ?? []).map((r) => r.at).filter(Boolean);
-  if (fromArray.length > 0) return fromArray.toSorted((a, b) => Date.parse(a) - Date.parse(b));
-  return item.remind_at ? [item.remind_at] : [];
+function listReminders(item: TaskItemDisplay): TaskItemReminderDisplay[] {
+  const fromArray = (item.reminders ?? []).filter((r) => r.at);
+  if (fromArray.length > 0) {
+    return fromArray.toSorted((a, b) => Date.parse(a.at) - Date.parse(b.at));
+  }
+  return item.remind_at ? [{ at: item.remind_at }] : [];
 }
 
 function remindLabel(item: TaskItemDisplay): string {
-  const ats = listReminderAts(item);
-  if (ats.length === 0) return "提醒";
-  if (ats.length > 1) return `${ats.length} 个提醒`;
-  const at = ats[0];
-  if (!at) return "提醒";
-  if (item.due_at && at === item.due_at) return "截止时";
-  if (item.due_at) {
-    const diffMs = new Date(item.due_at).getTime() - new Date(at).getTime();
-    if (diffMs === 5 * 60 * 1000) return "提前 5 分钟";
-    if (diffMs === 60 * 60 * 1000) return "提前 1 小时";
-    if (diffMs === 24 * 60 * 60 * 1000) return "提前 1 天";
-  }
-  const d = new Date(at);
-  if (Number.isNaN(d.getTime())) return "提醒";
-  return `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const reminders = listReminders(item);
+  if (reminders.length === 0) return "提醒";
+  if (reminders.length > 1) return `${reminders.length} 个提醒`;
+  const first = reminders[0];
+  if (!first) return "提醒";
+  return formatRemindChip(item, first);
 }
 
-function formatRemindChip(dueAt: string | null, at: string): string {
-  if (dueAt && at === dueAt) return "截止时";
-  if (dueAt) {
-    const diffMs = new Date(dueAt).getTime() - new Date(at).getTime();
-    if (diffMs === 5 * 60 * 1000) return "提前 5 分钟";
-    if (diffMs === 60 * 60 * 1000) return "提前 1 小时";
-    if (diffMs === 24 * 60 * 60 * 1000) return "提前 1 天";
+function resolveAnchorIso(item: TaskItemDisplay, anchor: TaskReminderAnchor): string | null {
+  if (anchor === "start") return item.start_at?.trim() ? item.start_at : null;
+  if (anchor === "end") return item.end_at?.trim() ? item.end_at : null;
+  return item.due_at?.trim() ? item.due_at : null;
+}
+
+function formatRemindChip(item: TaskItemDisplay, reminder: TaskItemReminderDisplay): string {
+  const anchor = reminder.anchor;
+  const anchorIso = anchor ? resolveAnchorIso(item, anchor) : null;
+  const prefix = anchor ? `${ANCHOR_LABEL[anchor]}·` : "";
+  if (anchorIso && reminder.at === anchorIso) return `${prefix}当时`;
+  if (anchorIso) {
+    const diffMs = new Date(anchorIso).getTime() - new Date(reminder.at).getTime();
+    if (diffMs === 5 * 60 * 1000) return `${prefix}提前 5 分钟`;
+    if (diffMs === 60 * 60 * 1000) return `${prefix}提前 1 小时`;
+    if (diffMs === 24 * 60 * 60 * 1000) return `${prefix}提前 1 天`;
   }
-  const d = new Date(at);
-  if (Number.isNaN(d.getTime())) return at;
+  const d = new Date(reminder.at);
+  if (Number.isNaN(d.getTime())) return reminder.at;
   return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-function setReminders<T extends TaskItemDisplay>(item: T, ats: string[]): T {
-  const unique = [...new Set(ats.filter(Boolean))].toSorted(
-    (a, b) => Date.parse(a) - Date.parse(b),
-  );
+function setReminders<T extends TaskItemDisplay>(item: T, reminders: TaskItemReminderDisplay[]): T {
+  const uniqueMap = new Map<string, TaskItemReminderDisplay>();
+  for (const r of reminders) {
+    if (!r.at) continue;
+    uniqueMap.set(r.at, {
+      at: r.at,
+      ...(r.anchor !== undefined ? { anchor: r.anchor } : {}),
+    });
+  }
+  const unique = [...uniqueMap.values()].toSorted((a, b) => Date.parse(a.at) - Date.parse(b.at));
   if (unique.length === 0) {
     return { ...item, remind_at: null, reminders: [] };
   }
   return {
     ...item,
-    remind_at: unique[0] ?? null,
-    reminders: unique.map((at) => ({ at })),
+    remind_at: unique[0]?.at ?? null,
+    reminders: unique,
   };
 }
 
-function offsetFromDue(dueAt: string, offsetMs: number): string | null {
-  const dueMs = new Date(dueAt).getTime();
-  if (Number.isNaN(dueMs)) return null;
-  return new Date(dueMs - offsetMs).toISOString();
+function offsetFromAnchor(anchorAt: string, offsetMs: number): string | null {
+  const anchorMs = new Date(anchorAt).getTime();
+  if (Number.isNaN(anchorMs)) return null;
+  return formatCstIso(new Date(anchorMs - offsetMs));
 }
 
-/** 全天/有 due：当天本地 09:00（相对 due 日） */
-function remindAtNineOnDueDay(dueAt: string): string | null {
-  const datePart = isoToDateLocalValue(dueAt);
+/** 全天/有锚点：当天本地 09:00（相对锚点日） */
+function remindAtNineOnAnchorDay(anchorAt: string): string | null {
+  const datePart = isoToDateLocalValue(anchorAt);
   if (!datePart) return null;
   return mergeDateTimeLocal(datePart, "09:00");
 }
 
-function clearScheduleFields<T extends TaskItemDisplay>(item: T): T {
-  return {
-    ...item,
-    start_at: null,
-    due_at: null,
-    recurrence: null,
-    remind_at: null,
-    reminders: [],
-  };
+function availableReminderAnchors(item: TaskItemDisplay): TaskReminderAnchor[] {
+  const out: TaskReminderAnchor[] = [];
+  if (item.start_at?.trim()) out.push("start");
+  if (item.end_at?.trim()) out.push("end");
+  if (item.due_at?.trim()) out.push("due");
+  return out;
 }
 
-function scheduleChipLabel(item: TaskItemDisplay): string {
-  const due = formatDueChip(item.due_at);
-  if (!item.due_at) return due.label;
-  if (!item.start_at || item.start_at === item.due_at) return due.label;
-  const startDate = isoToDateLocalValue(item.start_at);
-  const startTime = isoToTimeLocalValue(item.start_at);
-  const dueDate = isoToDateLocalValue(item.due_at);
-  const dueTime = isoToTimeLocalValue(item.due_at);
-  if (startDate && dueDate && startDate === dueDate) {
-    return `${startTime || "—"}–${dueTime || "—"}`;
+/** 清计划；保留截止。无剩余时间则清提醒。重复绑计划，一并清。 */
+function clearPlanFields<T extends TaskItemDisplay>(item: T): T {
+  const next: T = {
+    ...item,
+    start_at: null,
+    end_at: null,
+    recurrence: null,
+  };
+  if (!hasTaskDeadline(next)) {
+    return { ...next, remind_at: null, reminders: [] };
   }
-  return `${startDate || "?"} → ${due.label}`;
+  return next;
+}
+
+/** 清截止；保留计划。无剩余时间则清提醒。 */
+function clearDueFields<T extends TaskItemDisplay>(item: T): T {
+  const next: T = { ...item, due_at: null };
+  if (!hasTaskPlan(next)) {
+    return { ...next, remind_at: null, reminders: [] };
+  }
+  return next;
+}
+
+function formatPlanRangeChip(item: TaskItemDisplay): string | null {
+  if (!hasTaskPlan(item)) return null;
+  const startDate = isoToDateLocalValue(item.start_at ?? null);
+  const startTime = isoToTimeLocalValue(item.start_at ?? null);
+  if (!item.end_at) {
+    const due = formatDueChip(item.start_at);
+    return due.label === "截止日期" ? startDate || "计划" : due.label;
+  }
+  const endDate = isoToDateLocalValue(item.end_at);
+  const endTime = isoToTimeLocalValue(item.end_at);
+  if (startDate && endDate && startDate === endDate) {
+    return `${startTime || "—"}–${endTime || "—"}`;
+  }
+  const startLabel = formatDueChip(item.start_at).label;
+  const endLabel = formatDueChip(item.end_at).label;
+  return `${startLabel} → ${endLabel}`;
+}
+
+/** 开启时段：无结束则默认开始 +1 小时 */
+function enablePlanRangeMode<T extends TaskItemDisplay>(item: T): T {
+  if (!item.start_at?.trim()) {
+    const now = formatCstIso(new Date());
+    const start = mergeDateTimeLocal(isoToDateLocalValue(now) || todayDateLocalValue(), "09:00");
+    if (!start) return item;
+    const endMs = Date.parse(start) + 60 * 60 * 1000;
+    const end = formatCstIso(new Date(endMs));
+    const next = { ...item, start_at: start, end_at: end };
+    return next.recurrence ? patchRecurrence(next, { schedule_at: end }) : next;
+  }
+  if (item.end_at?.trim()) return item;
+  const startMs = Date.parse(item.start_at);
+  if (!Number.isFinite(startMs)) return item;
+  const end = formatCstIso(new Date(startMs + 60 * 60 * 1000));
+  const next = { ...item, end_at: end };
+  return next.recurrence ? patchRecurrence(next, { schedule_at: end }) : next;
+}
+
+function disablePlanRangeMode<T extends TaskItemDisplay>(item: T): T {
+  if (!item.end_at?.trim()) return item;
+  const next = { ...item, end_at: null };
+  const clock = taskPlanClock(next);
+  return next.recurrence && clock ? patchRecurrence(next, { schedule_at: clock }) : next;
+}
+
+function planChipLabel(item: TaskItemDisplay): string {
+  return formatPlanRangeChip(item) ?? "计划";
+}
+
+function dueChipLabel(item: TaskItemDisplay): string {
+  if (!item.due_at) return "截止";
+  return formatDueChip(item.due_at).label;
+}
+
+function dueChipOverdue(item: TaskItemDisplay): boolean {
+  if (!item.due_at) return false;
+  return formatDueChip(item.due_at).overdue;
+}
+
+/** 计划时段：按区间日期写 start_at/end_at，保留已有时刻 */
+function applyPlanDateRange<T extends TaskItemDisplay>(
+  item: T,
+  range: { start: string; end: string },
+  startTime: string,
+  endTime: string,
+): T {
+  const start = mergeDateTimeLocal(range.start, startTime || "09:00");
+  if (!start) return item;
+  const end = mergeDateTimeLocal(range.end, endTime || startTime || "10:00");
+  if (!end) return item;
+  let nextEnd = end;
+  if (Date.parse(start) > Date.parse(end)) {
+    nextEnd = formatCstIso(new Date(Date.parse(start) + 60 * 60 * 1000));
+  }
+  const next = { ...item, start_at: start, end_at: nextEnd };
+  if (!next.recurrence) return next;
+  const clock = taskPlanClock(next);
+  return clock ? patchRecurrence(next, { schedule_at: clock }) : next;
 }
 
 function patchRecurrence<T extends TaskItemDisplay>(
   item: T,
   patch: Partial<TaskItemRecurrenceDisplay>,
 ): T {
+  const planClock = taskPlanClock(item) ?? new Date().toISOString();
   const base = item.recurrence ?? {
     freq: "daily" as const,
     interval: 1,
     anchor: "due" as const,
-    schedule_at: item.due_at ?? new Date().toISOString(),
+    schedule_at: planClock,
   };
   return { ...item, recurrence: { ...base, ...patch } };
 }
@@ -291,14 +425,27 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
   onTextFieldActivate,
   focusField,
 }: TaskDetailEditorProps<T>) {
-  const dueChip = formatDueChip(item.due_at);
-  const datePart = isoToDateLocalValue(item.due_at);
-  const timePart = isoToTimeLocalValue(item.due_at);
+  const dueDatePart = isoToDateLocalValue(item.due_at);
+  const dueTimePart = isoToTimeLocalValue(item.due_at);
   const startDatePart = isoToDateLocalValue(item.start_at ?? null);
   const startTimePart = isoToTimeLocalValue(item.start_at ?? null);
+  const endDatePart = isoToDateLocalValue(item.end_at ?? null);
+  const endTimePart = isoToTimeLocalValue(item.end_at ?? null);
   const completed = item.status === "completed";
-  const scheduleAnchor = item.due_at ?? new Date().toISOString();
-  const reminderAts = listReminderAts(item);
+  const planClock = taskPlanClock(item);
+  const canRemind = hasTaskScheduleTime(item);
+  const canRecur = hasTaskPlan(item);
+  const reminderAnchors = availableReminderAnchors(item);
+  const defaultRemindAnchor: TaskReminderAnchor =
+    reminderAnchors.find((a) => a === "start") ??
+    reminderAnchors.find((a) => a === "end") ??
+    reminderAnchors[0] ??
+    "due";
+  const [remindAnchor, setRemindAnchor] = useState<TaskReminderAnchor>(defaultRemindAnchor);
+  const activeRemindAnchor = reminderAnchors.includes(remindAnchor)
+    ? remindAnchor
+    : defaultRemindAnchor;
+  const reminders = listReminders(item);
   const recurrence = item.recurrence;
   const recurrenceUntilDate = isoToDateLocalValue(recurrence?.until ?? null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -307,16 +454,17 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
     onTextFieldActivate?.(field);
   };
 
-  const addRemindPreset = (presetId: RemindPresetId) => {
-    if (!item.due_at) return;
+  const addRemindPreset = (presetId: RemindPresetId, anchor: TaskReminderAnchor) => {
+    const anchorAt = resolveAnchorIso(item, anchor);
+    if (!anchorAt) return;
     let at: string | null = null;
-    if (presetId === "at_due") at = item.due_at;
-    else if (presetId === "5m") at = offsetFromDue(item.due_at, 5 * 60 * 1000);
-    else if (presetId === "1h") at = offsetFromDue(item.due_at, 60 * 60 * 1000);
-    else if (presetId === "1d") at = offsetFromDue(item.due_at, 24 * 60 * 60 * 1000);
-    else if (presetId === "9am") at = remindAtNineOnDueDay(item.due_at);
+    if (presetId === "at_anchor") at = anchorAt;
+    else if (presetId === "5m") at = offsetFromAnchor(anchorAt, 5 * 60 * 1000);
+    else if (presetId === "1h") at = offsetFromAnchor(anchorAt, 60 * 60 * 1000);
+    else if (presetId === "1d") at = offsetFromAnchor(anchorAt, 24 * 60 * 60 * 1000);
+    else if (presetId === "9am") at = remindAtNineOnAnchorDay(anchorAt);
     if (!at) return;
-    onChange(setReminders(item, [...reminderAts, at]));
+    onChange(setReminders(item, [...reminders, { at, anchor }]));
   };
 
   /** peek Sheet 关闭会 restoreFocus 到列表项；延迟抢回，避免双键盘/失焦 */
@@ -359,80 +507,175 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
             variant="ghost"
             size="sm"
             className={cn(
-              "h-8 max-w-[min(100%,18rem)] gap-1.5 px-2 font-normal",
-              dueChip.overdue ? "text-destructive" : "text-muted-foreground",
-              item.due_at && !dueChip.overdue ? "text-foreground" : null,
+              "h-8 max-w-[min(100%,14rem)] gap-1.5 px-2 font-normal",
+              hasTaskPlan(item) ? "text-foreground" : "text-muted-foreground",
             )}
-            aria-label="日程"
+            aria-label="计划时间"
           >
             <CalendarIcon className="size-4 shrink-0" />
-            <span className="truncate">{scheduleChipLabel(item)}</span>
+            <span className="truncate">{planChipLabel(item)}</span>
+          </Button>
+          <Popover placement="bottom start" className="w-auto p-3">
+            <PopoverDialog>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">计划时间</p>
+              <label className="mb-2 flex items-center gap-2 text-sm">
+                <Checkbox
+                  isSelected={item.end_at != null}
+                  aria-label="时间段"
+                  onChange={(selected) =>
+                    onChange(selected ? enablePlanRangeMode(item) : disablePlanRangeMode(item))
+                  }
+                />
+                时间段
+              </label>
+              {item.end_at ? (
+                <div className="flex flex-col gap-2">
+                  <DateRangePickerPanel
+                    aria-label="计划日期区间"
+                    value={
+                      startDatePart && endDatePart
+                        ? { start: startDatePart, end: endDatePart }
+                        : startDatePart
+                          ? { start: startDatePart, end: startDatePart }
+                          : null
+                    }
+                    onChange={(range) => {
+                      onChange(applyPlanDateRange(item, range, startTimePart, endTimePart));
+                    }}
+                  />
+                  <div className="flex flex-col gap-2">
+                    <TimePickerInput
+                      className="w-full"
+                      value={startTimePart}
+                      disabled={!startDatePart}
+                      aria-label="计划开始时间"
+                      onChange={(nextTime) => {
+                        if (!startDatePart) return;
+                        onChange(
+                          applyPlanDateRange(
+                            item,
+                            {
+                              start: startDatePart,
+                              end: endDatePart || startDatePart,
+                            },
+                            nextTime,
+                            endTimePart,
+                          ),
+                        );
+                      }}
+                    />
+                    <TimePickerInput
+                      className="w-full"
+                      value={endTimePart}
+                      disabled={!endDatePart && !startDatePart}
+                      aria-label="计划结束时间"
+                      onChange={(nextTime) => {
+                        const dateStart = startDatePart;
+                        const dateEnd = endDatePart || startDatePart;
+                        if (!dateStart || !dateEnd) return;
+                        onChange(
+                          applyPlanDateRange(
+                            item,
+                            { start: dateStart, end: dateEnd },
+                            startTimePart,
+                            nextTime,
+                          ),
+                        );
+                      }}
+                    />
+                  </div>
+                  {item.start_at ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="self-start"
+                      onClick={() => onChange(clearPlanFields(item))}
+                    >
+                      清除计划
+                    </Button>
+                  ) : null}
+                </div>
+              ) : (
+                <DateTimePopoverFields
+                  datePart={startDatePart}
+                  timePart={startTimePart}
+                  dateLabel="计划日期"
+                  timeLabel="计划时间"
+                  showClear={item.start_at != null}
+                  onDateChange={(nextDate) => {
+                    if (!nextDate) {
+                      onChange(clearPlanFields(item));
+                      return;
+                    }
+                    const start = mergeDateTimeLocal(nextDate, startTimePart || "09:00");
+                    if (!start) return;
+                    const next = { ...item, start_at: start, end_at: null };
+                    onChange(
+                      next.recurrence ? patchRecurrence(next, { schedule_at: start }) : next,
+                    );
+                  }}
+                  onTimeChange={(nextTime) => {
+                    if (!startDatePart) return;
+                    const start = mergeDateTimeLocal(startDatePart, nextTime);
+                    if (!start) return;
+                    const next = { ...item, start_at: start, end_at: null };
+                    onChange(
+                      next.recurrence ? patchRecurrence(next, { schedule_at: start }) : next,
+                    );
+                  }}
+                  onClear={() => onChange(clearPlanFields(item))}
+                />
+              )}
+            </PopoverDialog>
+          </Popover>
+        </PopoverTrigger>
+
+        <PopoverTrigger>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-8 max-w-[min(100%,12rem)] gap-1.5 px-2 font-normal",
+              dueChipOverdue(item) ? "text-destructive" : "text-muted-foreground",
+              item.due_at && !dueChipOverdue(item) ? "text-foreground" : null,
+            )}
+            aria-label="截止日期"
+          >
+            <CalendarClockIcon className="size-4 shrink-0" />
+            <span className="truncate">{dueChipLabel(item)}</span>
           </Button>
           <Popover placement="bottom start" className="w-72 p-3">
             <PopoverDialog>
-              <p className="text-muted-foreground mb-2 text-xs font-medium">开始时间（可选）</p>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">截止日期</p>
+              <p className="text-muted-foreground mb-2 text-[11px]">
+                独立于计划；常用于项目截止。到期会进收件箱。
+              </p>
               <DateTimePopoverFields
-                datePart={startDatePart}
-                timePart={startTimePart}
-                dateLabel="开始日期"
-                timeLabel="开始时间"
-                showClear={item.start_at != null}
-                onDateChange={(nextDate) => {
-                  if (!nextDate) {
-                    onChange({ ...item, start_at: null });
-                    return;
-                  }
-                  if (!item.due_at) {
-                    const due = mergeDateTimeLocal(nextDate, startTimePart || "09:00");
-                    onChange({
-                      ...item,
-                      start_at: due,
-                      due_at: due,
-                    });
-                    return;
-                  }
-                  onChange({
-                    ...item,
-                    start_at: mergeDateTimeLocal(nextDate, startTimePart || timePart || "09:00"),
-                  });
-                }}
-                onTimeChange={(nextTime) => {
-                  if (!startDatePart && !item.due_at) return;
-                  const date = startDatePart || datePart;
-                  if (!date) return;
-                  const start = mergeDateTimeLocal(date, nextTime);
-                  if (!item.due_at) {
-                    onChange({ ...item, start_at: start, due_at: start });
-                    return;
-                  }
-                  onChange({ ...item, start_at: start });
-                }}
-                onClear={() => onChange({ ...item, start_at: null })}
-              />
-              <p className="text-muted-foreground mt-3 mb-2 text-xs font-medium">截止日期</p>
-              <DateTimePopoverFields
-                datePart={datePart}
-                timePart={timePart}
+                datePart={dueDatePart}
+                timePart={dueTimePart}
                 dateLabel="截止日期"
                 timeLabel="截止时间"
                 showClear={item.due_at != null}
                 onDateChange={(nextDate) => {
                   if (!nextDate) {
-                    onChange(clearScheduleFields(item));
+                    onChange(clearDueFields(item));
                     return;
                   }
                   onChange({
                     ...item,
-                    due_at: mergeDateTimeLocal(nextDate, timePart),
+                    due_at: mergeDateTimeLocal(nextDate, dueTimePart || "09:00"),
                   });
                 }}
-                onTimeChange={(nextTime) =>
+                onTimeChange={(nextTime) => {
+                  if (!dueDatePart) return;
                   onChange({
                     ...item,
-                    due_at: mergeDateTimeLocal(datePart, nextTime),
-                  })
-                }
-                onClear={() => onChange(clearScheduleFields(item))}
+                    due_at: mergeDateTimeLocal(dueDatePart, nextTime),
+                  });
+                }}
+                onClear={() => onChange(clearDueFields(item))}
               />
             </PopoverDialog>
           </Popover>
@@ -445,23 +688,43 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
             size="sm"
             className={cn(
               "h-8 gap-1.5 px-2 font-normal",
-              reminderAts.length > 0 ? "text-foreground" : "text-muted-foreground",
+              reminders.length > 0 ? "text-foreground" : "text-muted-foreground",
             )}
             aria-label={`提醒：${remindLabel(item)}`}
-            isDisabled={!item.due_at}
+            isDisabled={!canRemind}
           >
             <BellIcon className="size-4 shrink-0" />
             <span className="truncate">{remindLabel(item)}</span>
           </Button>
           <Popover placement="bottom start" className="w-80 p-3">
             <PopoverDialog>
-              <p className="text-muted-foreground mb-2 text-xs font-medium">相对截止的提醒</p>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">提醒锚点</p>
+              <div className="mb-2 flex flex-wrap gap-1">
+                {reminderAnchors.map((anchor) => (
+                  <Button
+                    key={anchor}
+                    type="button"
+                    variant={activeRemindAnchor === anchor ? "secondary" : "outline"}
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => setRemindAnchor(anchor)}
+                  >
+                    {ANCHOR_LABEL[anchor]}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">
+                相对{ANCHOR_LABEL[activeRemindAnchor]}的提醒
+              </p>
               <div className="flex flex-col gap-2">
-                {reminderAts.length > 0 ? (
+                {reminders.length > 0 ? (
                   <ul className="flex flex-col gap-1">
-                    {reminderAts.map((at) => (
-                      <li key={at} className="flex items-center justify-between gap-2 text-sm">
-                        <span className="truncate">{formatRemindChip(item.due_at, at)}</span>
+                    {reminders.map((reminder) => (
+                      <li
+                        key={`${reminder.anchor ?? ""}:${reminder.at}`}
+                        className="flex items-center justify-between gap-2 text-sm"
+                      >
+                        <span className="truncate">{formatRemindChip(item, reminder)}</span>
                         <Button
                           type="button"
                           variant="ghost"
@@ -471,7 +734,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                             onChange(
                               setReminders(
                                 item,
-                                reminderAts.filter((x) => x !== at),
+                                reminders.filter((x) => x.at !== reminder.at),
                               ),
                             )
                           }
@@ -492,8 +755,8 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                       variant="outline"
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      isDisabled={!item.due_at}
-                      onClick={() => addRemindPreset(preset.id)}
+                      isDisabled={!resolveAnchorIso(item, activeRemindAnchor)}
+                      onClick={() => addRemindPreset(preset.id, activeRemindAnchor)}
                     >
                       + {preset.label}
                     </Button>
@@ -503,7 +766,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                     variant="ghost"
                     size="sm"
                     className="h-7 px-2 text-xs"
-                    isDisabled={reminderAts.length === 0}
+                    isDisabled={reminders.length === 0}
                     onClick={() => onChange(setReminders(item, []))}
                   >
                     清空
@@ -524,7 +787,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
               item.recurrence ? "text-foreground" : "text-muted-foreground",
             )}
             aria-label={`重复：${recurrenceLabel(item.recurrence)}`}
-            isDisabled={!item.due_at}
+            isDisabled={!canRecur}
           >
             <RepeatIcon className="size-4 shrink-0" />
             <span className="truncate">{recurrenceLabel(item.recurrence)}</span>
@@ -532,7 +795,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
           {/* Menu 只渲染 MenuItem 集合；复杂表单须用 Popover（同提醒/截止日） */}
           <Popover placement="bottom start" className="w-80 p-3">
             <PopoverDialog>
-              <p className="text-muted-foreground mb-2 text-xs font-medium">重复</p>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">重复（绑计划时钟）</p>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-wrap gap-1">
                   {RECURRENCE_PRESETS.map((preset) => (
@@ -550,12 +813,12 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                       }
                       size="sm"
                       className="h-7 px-2 text-xs"
-                      isDisabled={!item.due_at}
+                      isDisabled={!planClock}
                       onClick={() => {
-                        if (!item.due_at) return;
+                        if (!planClock) return;
                         onChange({
                           ...item,
-                          recurrence: preset.build(scheduleAnchor),
+                          recurrence: preset.build(planClock),
                         });
                       }}
                     >

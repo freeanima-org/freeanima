@@ -2,6 +2,15 @@ import { z } from "zod";
 
 import { notificationRecipientKindSchema } from "./notification.ts";
 
+const calendarReminderAnchorSchema = z.enum(["start", "end", "due"]);
+
+const calendarReminderEntrySchema = z.object({
+  at: z.string().min(1),
+  /** 事件提醒锚定开始；缺省按 start */
+  anchor: calendarReminderAnchorSchema.optional(),
+  last_notified_at: z.string().nullable().optional(),
+});
+
 export const calendarEventRowSchema = z.object({
   id: z.number().int().positive(),
   title: z.string(),
@@ -10,6 +19,8 @@ export const calendarEventRowSchema = z.object({
   end_at: z.string().nullable(),
   all_day: z.boolean(),
   remind_at: z.string().nullable(),
+  /** 多提醒真源；与 remind_at（最早一项）同步；相对 start */
+  reminders: z.array(calendarReminderEntrySchema).optional(),
   tag_ids: z.array(z.number().int().positive()),
   created_at: z.string(),
   updated_at: z.string(),
@@ -38,6 +49,7 @@ export const calendarCreateInputSchema = z.object({
   end_at: z.string().nullable().optional(),
   all_day: z.boolean().optional(),
   remind_at: z.string().nullable().optional(),
+  reminders: z.array(calendarReminderEntrySchema).optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -54,6 +66,7 @@ export const calendarPatchInputSchema = z.object({
   end_at: z.string().nullable().optional(),
   all_day: z.boolean().optional(),
   remind_at: z.string().nullable().optional(),
+  reminders: z.array(calendarReminderEntrySchema).optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -94,8 +107,10 @@ export const calendarConvertToTaskOutputSchema = z.object({
     status: z.enum(["pending", "completed"]),
     priority: z.enum(["high", "medium", "low", "none"]),
     start_at: z.string().nullable().optional(),
+    end_at: z.string().nullable().optional(),
     due_at: z.string().nullable(),
     remind_at: z.string().nullable(),
+    reminders: z.array(calendarReminderEntrySchema).optional(),
     list_id: z.number().int().positive().nullable(),
     project_id: z.number().int().positive().nullable().optional(),
     sort_order: z.number(),
@@ -118,19 +133,24 @@ export const calendarRangeEventItemSchema = z.object({
   end_at: z.string().nullable(),
   all_day: z.boolean(),
   remind_at: z.string().nullable(),
+  reminders: z.array(calendarReminderEntrySchema).optional(),
 });
 
 export const calendarRangeTaskItemSchema = z.object({
   kind: z.literal("task"),
   id: z.number().int().positive(),
   title: z.string(),
+  /** 计划开始；日历条带用计划区间，不用 due 当地平终点 */
   start_at: z.string().nullable().optional(),
-  due_at: z.string(),
+  /** 计划结束；单点时为 null */
+  end_at: z.string().nullable().optional(),
+  /** 截止（deadline），与计划独立 */
+  due_at: z.string().nullable().optional(),
   status: z.enum(["pending", "completed"]),
   priority: z.enum(["high", "medium", "low", "none"]),
   project_id: z.number().int().positive().nullable(),
   list_id: z.number().int().positive().nullable(),
-  /** 重复虚拟展开实例（非 live due）；点击仍打开 live */
+  /** 重复虚拟展开实例（非 live 计划时钟）；点击仍打开 live */
   virtual: z.boolean().optional(),
 });
 

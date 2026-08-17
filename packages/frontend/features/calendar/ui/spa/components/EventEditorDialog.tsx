@@ -12,6 +12,7 @@ import {
 } from "@freeanima/ui-kit";
 import { DatePickerInput } from "@freeanima/ui-kit/form/DatePickerInput.tsx";
 import { TimePickerInput } from "@freeanima/ui-kit/form/TimePickerInput.tsx";
+import { formatCstIso } from "@freeanima/shared/util/time.ts";
 
 import type { CalendarEventRow } from "../lib/api.ts";
 import {
@@ -26,6 +27,8 @@ export type EventEditorTarget =
   | { mode: "create"; day?: string }
   | { mode: "edit"; event: CalendarEventRow };
 
+type EventReminderPresetId = "none" | "at_start" | "5m" | "1h" | "1d" | "9am";
+
 type EventEditorDialogProps = {
   open: boolean;
   target: EventEditorTarget | null;
@@ -37,10 +40,61 @@ type EventEditorDialogProps = {
     end_at: string | null;
     all_day: boolean;
     remind_at: string | null;
+    reminders: Array<{ at: string; anchor: "start" }>;
   }) => void | Promise<void>;
   onDelete?: () => void | Promise<void>;
   onConvertToTask?: () => void | Promise<void>;
 };
+
+const REMIND_PRESETS: Array<{ id: EventReminderPresetId; label: string }> = [
+  { id: "none", label: "无提醒" },
+  { id: "at_start", label: "开始时" },
+  { id: "5m", label: "提前 5 分钟" },
+  { id: "1h", label: "提前 1 小时" },
+  { id: "1d", label: "提前 1 天" },
+  { id: "9am", label: "当天 09:00" },
+];
+
+function offsetFromStart(startAt: string, offsetMs: number): string | null {
+  const startMs = Date.parse(startAt);
+  if (!Number.isFinite(startMs)) return null;
+  return formatCstIso(new Date(startMs - offsetMs));
+}
+
+function remindAtNineOnStartDay(startAt: string): string | null {
+  const datePart = isoToDateLocalValue(startAt);
+  if (!datePart) return null;
+  return mergeDateTimeLocal(datePart, "09:00");
+}
+
+function buildReminderFromPreset(
+  preset: EventReminderPresetId,
+  startAt: string,
+): { remind_at: string | null; reminders: Array<{ at: string; anchor: "start" }> } {
+  if (preset === "none") return { remind_at: null, reminders: [] };
+  let at: string | null = null;
+  if (preset === "at_start") at = startAt;
+  else if (preset === "5m") at = offsetFromStart(startAt, 5 * 60 * 1000);
+  else if (preset === "1h") at = offsetFromStart(startAt, 60 * 60 * 1000);
+  else if (preset === "1d") at = offsetFromStart(startAt, 24 * 60 * 60 * 1000);
+  else if (preset === "9am") at = remindAtNineOnStartDay(startAt);
+  if (!at) return { remind_at: null, reminders: [] };
+  return { remind_at: at, reminders: [{ at, anchor: "start" }] };
+}
+
+function detectPresetFromEvent(event: CalendarEventRow): EventReminderPresetId {
+  const start = event.start_at;
+  const at = event.reminders?.find((r) => r.at)?.at ?? event.remind_at ?? null;
+  if (!at) return "none";
+  if (at === start) return "at_start";
+  const diffMs = Date.parse(start) - Date.parse(at);
+  if (diffMs === 5 * 60 * 1000) return "5m";
+  if (diffMs === 60 * 60 * 1000) return "1h";
+  if (diffMs === 24 * 60 * 60 * 1000) return "1d";
+  const nine = remindAtNineOnStartDay(start);
+  if (nine && at === nine) return "9am";
+  return "at_start";
+}
 
 export function EventEditorDialog({
   open,
@@ -57,8 +111,7 @@ export function EventEditorDialog({
   const [startTime, setStartTime] = useState("09:00");
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [remindDate, setRemindDate] = useState("");
-  const [remindTime, setRemindTime] = useState("");
+  const [remindPreset, setRemindPreset] = useState<EventReminderPresetId>("none");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -72,8 +125,7 @@ export function EventEditorDialog({
       setStartTime("09:00");
       setEndDate("");
       setEndTime("");
-      setRemindDate("");
-      setRemindTime("");
+      setRemindPreset("none");
     } else {
       const ev = target.event;
       setTitle(ev.title);
@@ -83,8 +135,7 @@ export function EventEditorDialog({
       setStartTime(isoToTimeLocalValue(ev.start_at) || "09:00");
       setEndDate(isoToDateLocalValue(ev.end_at));
       setEndTime(isoToTimeLocalValue(ev.end_at));
-      setRemindDate(isoToDateLocalValue(ev.remind_at));
-      setRemindTime(isoToTimeLocalValue(ev.remind_at));
+      setRemindPreset(detectPresetFromEvent(ev));
     }
     setSaving(false);
   }, [open, target]);
@@ -101,17 +152,15 @@ export function EventEditorDialog({
       if (endDate) {
         end_at = allDay ? dateLocalToIso(endDate) : mergeDateTimeLocal(endDate, endTime || "23:59");
       }
-      let remind_at: string | null = null;
-      if (remindDate) {
-        remind_at = mergeDateTimeLocal(remindDate, remindTime || "09:00");
-      }
+      const reminder = buildReminderFromPreset(remindPreset, start_at);
       await onSave({
         title: trimmed,
         content: content.trim(),
         start_at,
         end_at,
         all_day: allDay,
-        remind_at,
+        remind_at: reminder.remind_at,
+        reminders: reminder.reminders,
       });
       onClose();
     } finally {
@@ -157,14 +206,21 @@ export function EventEditorDialog({
             </div>
           ) : null}
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="flex flex-col gap-1.5">
-            <Label>{"提醒日期"}</Label>
-            <DatePickerInput value={remindDate} onChange={setRemindDate} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label>{"提醒时间"}</Label>
-            <TimePickerInput value={remindTime} onChange={setRemindTime} />
+        <div className="flex flex-col gap-1.5">
+          <Label>{"提醒（相对开始）"}</Label>
+          <div className="flex flex-wrap gap-1">
+            {REMIND_PRESETS.map((preset) => (
+              <Button
+                key={preset.id}
+                type="button"
+                variant={remindPreset === preset.id ? "secondary" : "outline"}
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onPress={() => setRemindPreset(preset.id)}
+              >
+                {preset.label}
+              </Button>
+            ))}
           </div>
         </div>
         <div className="flex flex-col gap-1.5">
@@ -199,13 +255,13 @@ export function EventEditorDialog({
             {"转为任务"}
           </Button>
         ) : null}
-        <Button type="button" variant="ghost" onPress={onClose} isDisabled={saving}>
+        <Button type="button" variant="ghost" isDisabled={saving} onPress={onClose}>
           {"取消"}
         </Button>
         <Button
           type="button"
-          onPress={() => void handleSave()}
           isDisabled={saving || !title.trim()}
+          onPress={() => void handleSave()}
         >
           {"保存"}
         </Button>

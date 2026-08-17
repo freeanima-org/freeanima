@@ -1,6 +1,7 @@
 import {
   CALENDAR_EVENT_COMPONENT,
   asCalendarEvent,
+  normalizeSchedulableReminders,
   type CalendarEventBody,
   type CalendarEventSearchFilters,
 } from "@freeanima/habitat/core/db/schema/entity";
@@ -18,25 +19,52 @@ import type {
   CalendarEventListOpts,
   CalendarEventRow,
   CalendarEventUpdateInput,
+  CalendarReminderEntry,
   CalendarStoreContext,
 } from "./types.ts";
+
+function toCalendarReminders(
+  reminders: ReadonlyArray<{ at: string } & Record<string, unknown>>,
+): CalendarReminderEntry[] {
+  return reminders.map((r) => {
+    const entry: CalendarReminderEntry = { at: r.at };
+    const anchor = r.anchor;
+    if (anchor === "start" || anchor === "end" || anchor === "due") {
+      entry.anchor = anchor;
+    }
+    if ("last_notified_at" in r) {
+      const last = r.last_notified_at;
+      entry.last_notified_at = last === null || typeof last === "string" ? last : null;
+    }
+    return entry;
+  });
+}
 
 function toEventRow(
   row: NonNullable<ReturnType<typeof asCalendarEvent>>,
   meta: { created_at: Date; updated_at: Date; tag_ids?: number[] },
 ): CalendarEventRow {
-  return {
+  const reminders = normalizeSchedulableReminders({
+    remind_at: row.remind_at,
+    reminders: row.reminders,
+    defaultAnchor: "start",
+  });
+  const base: CalendarEventRow = {
     id: row.id,
     title: row.title,
     content: row.content,
     start_at: row.start_at,
     end_at: row.end_at ?? null,
     all_day: row.all_day ?? false,
-    remind_at: row.remind_at ?? null,
+    remind_at: reminders.remind_at,
     tag_ids: [...(meta.tag_ids ?? [])],
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
+  if (reminders.reminders.length > 0) {
+    return { ...base, reminders: toCalendarReminders(reminders.reminders) };
+  }
+  return base;
 }
 
 function sortByStartAtAsc(a: CalendarEventRow, b: CalendarEventRow): number {
@@ -135,11 +163,18 @@ export async function createCalendarEvent(
   const startAt = input.start_at.trim();
   if (!startAt) throw new Error("start_at is required");
 
+  const reminders = normalizeSchedulableReminders({
+    remind_at: input.remind_at === undefined ? null : input.remind_at,
+    reminders: input.reminders,
+    defaultAnchor: "start",
+  });
+
   const body: CalendarEventBody = {
     start_at: startAt,
     end_at: input.end_at === undefined ? null : input.end_at,
     all_day: input.all_day ?? false,
-    remind_at: input.remind_at === undefined ? null : input.remind_at,
+    remind_at: reminders.remind_at,
+    reminders: reminders.reminders,
     last_notified_at: null,
     client_op_id: input.client_op_id ?? null,
   };
@@ -171,12 +206,24 @@ export async function updateCalendarEvent(
 ): Promise<CalendarEventRow | null> {
   const existing = await getEntity(input.id);
   if (!assertEventInWorld(existing, ctx)) return null;
+  const parsedExisting = asCalendarEvent(existing);
+  if (!parsedExisting) return null;
 
   const bodyPatch: Record<string, unknown> = {};
   if (input.start_at !== undefined) bodyPatch.start_at = input.start_at.trim();
   if (input.end_at !== undefined) bodyPatch.end_at = input.end_at;
   if (input.all_day !== undefined) bodyPatch.all_day = input.all_day;
-  if (input.remind_at !== undefined) bodyPatch.remind_at = input.remind_at;
+  if (input.remind_at !== undefined || input.reminders !== undefined) {
+    const synced = normalizeSchedulableReminders({
+      remind_at:
+        input.remind_at !== undefined ? input.remind_at : (parsedExisting.remind_at ?? null),
+      reminders:
+        input.reminders !== undefined ? input.reminders : (parsedExisting.reminders ?? undefined),
+      defaultAnchor: "start",
+    });
+    bodyPatch.remind_at = synced.remind_at;
+    bodyPatch.reminders = synced.reminders;
+  }
 
   const row = await updateEntity(
     omitUndefined({

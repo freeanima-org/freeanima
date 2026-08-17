@@ -80,6 +80,7 @@ export function TaskEntityOverlay({ id }: EntityOverlayProps): JSX.Element {
                 tag_ids: next.tag_ids,
                 priority: next.priority,
                 start_at: next.start_at ?? null,
+                end_at: next.end_at ?? null,
                 due_at: next.due_at,
                 remind_at: next.remind_at ?? null,
                 reminders: next.reminders ?? [],

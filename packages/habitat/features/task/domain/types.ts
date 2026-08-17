@@ -33,6 +33,7 @@ export type TaskListUpdateInput = {
 
 export type TaskReminderEntryInput = {
   at: string;
+  anchor?: "start" | "end" | "due";
   last_notified_at?: string | null;
 };
 
@@ -43,7 +44,11 @@ export type TaskItemCreateInput = {
   /** 任务模块必填；与 project_id 互斥 */
   list_id?: number | null;
   priority?: TaskItemPriority;
+  /** 计划开始（单点或时段起点） */
   start_at?: string | null;
+  /** 计划结束；单点时为 null */
+  end_at?: string | null;
+  /** 截止（deadline），与计划独立 */
   due_at?: string | null;
   remind_at?: string | null;
   reminders?: TaskReminderEntryInput[];
@@ -65,6 +70,7 @@ export type TaskItemUpdateInput = {
   project_id?: number | null;
   priority?: TaskItemPriority;
   start_at?: string | null;
+  end_at?: string | null;
   due_at?: string | null;
   remind_at?: string | null;
   reminders?: TaskReminderEntryInput[];
@@ -73,7 +79,7 @@ export type TaskItemUpdateInput = {
   status?: "pending" | "completed";
   recurrence?: TaskRecurrenceInput | TaskRecurrence | null | undefined;
   /**
-   * 仅当有 recurrence 且改 due_at 时：true = 仅此一次（不改 schedule_at）；
+   * 仅当有 recurrence 且改计划时钟时：true = 仅此一次（不改 schedule_at）；
    * false/缺省 = 同时改规则轨 schedule_at。
    */
   only_this?: boolean;

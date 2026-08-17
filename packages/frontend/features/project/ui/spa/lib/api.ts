@@ -298,6 +298,7 @@ export async function updateProjectTask(
       | "tag_ids"
       | "priority"
       | "start_at"
+      | "end_at"
       | "due_at"
       | "remind_at"
       | "reminders"

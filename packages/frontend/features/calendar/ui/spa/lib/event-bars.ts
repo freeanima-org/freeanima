@@ -23,9 +23,11 @@ export function itemDayRange(item: CalendarRangeItem): DayRange | null {
     return end < start ? { start, end: start } : { start, end };
   }
   if (item.kind === "task") {
-    const start = dayKeyFromIso(item.start_at ?? item.due_at);
-    const end = dayKeyFromIso(item.due_at);
-    if (!start || !end) return null;
+    // 日历条带用计划区间；due 不当地平终点。无计划则不展示条带。
+    if (!item.start_at) return null;
+    const start = dayKeyFromIso(item.start_at);
+    if (!start) return null;
+    const end = (item.end_at ? dayKeyFromIso(item.end_at) : start) || start;
     return end < start ? { start: end, end: start } : { start, end };
   }
   const start = dayKeyFromIso(item.start_at ?? "");
@@ -143,7 +145,8 @@ export function dayOverflowCount(
 
 export function barItemKey(item: CalendarRangeItem): string {
   if (item.kind === "task") {
-    return `task:${item.id}:${item.due_at}:${item.virtual ? "v" : "l"}`;
+    const clock = item.end_at ?? item.start_at ?? item.due_at ?? "";
+    return `task:${item.id}:${clock}:${item.virtual ? "v" : "l"}`;
   }
   return `${item.kind}:${item.id}`;
 }

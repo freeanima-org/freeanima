@@ -70,12 +70,13 @@ title: 架构
 
 设置 / 栖息地 UI 已暴露许多段；下列在 **`runtimeConfigSchema` 已注册但 UI 未（完全）可编辑**（运维 / 栖息地 RPC / 手改仍可用）。勿把缺少 UI 当成「未使用配置」。
 
-| 缺口                | 段                                        | 说明                                                                                          |
-| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **无设置面板**      | `i18n`、`clarify`、`prompt`               | `i18n` 为 transferred（locale/timezone）；`clarify` live；`prompt.system_prompt_budget_chars` |
-| **遗留 / 重叠**     | `notifications`                           | subject id；优先 `worlds`（boot 仍可能作回退读取）                                            |
-| **可能死码 / 预留** | `push`、`fallback_providers`、`platforms` | 几乎无产品消费者；后续清理候选                                                                |
-| **部分 UI**         | `compression`、`memory`                   | 压缩 UI 省略触发/摘要字段；记忆运维：语义记忆页被动召回调试 + `temporal-summary` 浏览         |
+| 缺口                | 段                                        | 说明                                                                                  |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| **无设置面板**      | `clarify`、`prompt`                       | `clarify` live；`prompt.system_prompt_budget_chars`                                   |
+| **有设置面板**      | `i18n`                                    | transferred；时区 IANA（默认 Asia/Shanghai）                                          |
+| **遗留 / 重叠**     | `notifications`                           | subject id；优先 `worlds`（boot 仍可能作回退读取）                                    |
+| **可能死码 / 预留** | `push`、`fallback_providers`、`platforms` | 几乎无产品消费者；后续清理候选                                                        |
+| **部分 UI**         | `compression`、`memory`                   | 压缩 UI 省略触发/摘要字段；记忆运维：语义记忆页被动召回调试 + `temporal-summary` 浏览 |
 
 别处已覆盖：`mcp_servers` → 栖息地 `/habitat/mcp`；`companion` → 设置 → 桌面伴侣；多数高级段 → 设置 → 栖息地服务配置。
 

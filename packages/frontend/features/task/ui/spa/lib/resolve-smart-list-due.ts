@@ -1,22 +1,29 @@
+import { formatCstIso, hostTimeZoneId } from "@freeanima/shared/util";
 import type { TaskItemSearchFilters } from "./api.ts";
 
-/** Asia/Shanghai 日历日 YYYY-MM-DD */
+function hostOffsetSuffix(date: Date = new Date()): string {
+  const iso = formatCstIso(date);
+  const m = /([+-]\d{2}:\d{2})$/.exec(iso);
+  return m?.[1] ?? "+08:00";
+}
+
+/** Host 时区日历日 YYYY-MM-DD */
 export function cstCalendarDay(date: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Shanghai",
+    timeZone: hostTimeZoneId(),
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(date);
 }
 
-/** CST 日历日 00:00 → ISO（UTC） */
+/** Host 日历日 00:00 → ISO（UTC） */
 export function cstDayStartIso(day: string): string {
-  return new Date(`${day}T00:00:00+08:00`).toISOString();
+  return new Date(`${day}T00:00:00${hostOffsetSuffix()}`).toISOString();
 }
 
 function shiftCstDay(day: string, deltaDays: number): string {
-  const base = new Date(`${day}T12:00:00+08:00`);
+  const base = new Date(`${day}T12:00:00${hostOffsetSuffix()}`);
   base.setUTCDate(base.getUTCDate() + deltaDays);
   return cstCalendarDay(base);
 }
@@ -49,7 +56,8 @@ function clampDayToRange(today: string, start: string | null, end: string | null
 }
 
 /**
- * 从智能清单 filters 推导快速添加应写入的 due_at。
+ * 从智能清单 filters 推导快速添加应写入的 due_at（截止日期）。
+ * 「到期」智能清单仍只看 due_at；「有安排」看计划 start/end，不经本函数。
  * 时间点 → 该日；日期段 → 段内距今最近的合法 CST 日（通常为今天）。
  */
 export function resolveSmartListDueAt(

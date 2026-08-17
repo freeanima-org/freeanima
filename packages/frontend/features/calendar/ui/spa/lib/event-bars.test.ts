@@ -28,8 +28,10 @@ function event(
 }
 
 function task(
-  partial: Pick<Extract<CalendarRangeItem, { kind: "task" }>, "id" | "due_at"> & {
+  partial: Pick<Extract<CalendarRangeItem, { kind: "task" }>, "id"> & {
     start_at?: string | null;
+    end_at?: string | null;
+    due_at?: string | null;
     virtual?: boolean;
   },
 ): Extract<CalendarRangeItem, { kind: "task" }> {
@@ -37,12 +39,13 @@ function task(
     kind: "task",
     id: partial.id,
     title: "t",
-    due_at: partial.due_at,
+    start_at: partial.start_at ?? null,
+    end_at: partial.end_at ?? null,
+    due_at: partial.due_at ?? null,
     status: "pending",
     priority: "none",
     project_id: null,
     list_id: 1,
-    ...(partial.start_at !== undefined ? { start_at: partial.start_at } : {}),
     ...(partial.virtual !== undefined ? { virtual: partial.virtual } : {}),
   };
 }
@@ -89,16 +92,40 @@ describe("itemDayRange", () => {
     ).toEqual({ start: "2026-08-12", end: "2026-08-14" });
   });
 
-  test("task 用 start_at..due_at", () => {
+  test("task 用 start_at..end_at（due 不当地平终点）", () => {
     expect(
       itemDayRange(
         task({
           id: 2,
           start_at: "2026-08-11T09:00:00+08:00",
-          due_at: "2026-08-13T09:00:00+08:00",
+          end_at: "2026-08-13T09:00:00+08:00",
+          due_at: "2026-08-20T09:00:00+08:00",
         }),
       ),
     ).toEqual({ start: "2026-08-11", end: "2026-08-13" });
+  });
+
+  test("task 仅 start 为单日；无计划不展示", () => {
+    expect(
+      itemDayRange(
+        task({
+          id: 2,
+          start_at: "2026-08-12T09:00:00+08:00",
+          end_at: null,
+          due_at: "2026-08-20T09:00:00+08:00",
+        }),
+      ),
+    ).toEqual({ start: "2026-08-12", end: "2026-08-12" });
+    expect(
+      itemDayRange(
+        task({
+          id: 3,
+          start_at: null,
+          end_at: null,
+          due_at: "2026-08-12T09:00:00+08:00",
+        }),
+      ),
+    ).toBeNull();
   });
 
   test("project 跨日", () => {

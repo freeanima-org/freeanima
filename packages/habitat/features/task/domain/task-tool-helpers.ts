@@ -1,7 +1,7 @@
 import type { TaskItemPriority } from "@freeanima/habitat/core/db/schema/entity";
 import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 
-import type { TaskItemRow, TaskListRow } from "./types.ts";
+import type { TaskItemRow, TaskListRow, TaskReminderEntryInput } from "./types.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const TASK_PRIORITIES: TaskItemPriority[] = ["high", "medium", "low", "none"];
@@ -105,6 +105,48 @@ export async function resolveToolTagIds(
   return { ok: true, value: mergeTagIds(parts) };
 }
 
+const REMINDER_ANCHORS = new Set(["start", "end", "due"]);
+
+/** 解析 reminders[]；非法形状报错。 */
+export function parseReminders(raw: unknown): ParseResult<TaskReminderEntryInput[] | undefined> {
+  if (raw === undefined) return { ok: true, value: undefined };
+  if (raw == null) return { ok: true, value: [] };
+  if (!Array.isArray(raw)) {
+    return { ok: false, error: "reminders must be an array of { at, anchor? }" };
+  }
+  const out: TaskReminderEntryInput[] = [];
+  for (const item of raw) {
+    if (item == null || typeof item !== "object") {
+      return { ok: false, error: "invalid reminders element" };
+    }
+    const rec = item as Record<string, unknown>;
+    const at = coerceString(rec.at ?? "").trim();
+    if (!at) return { ok: false, error: "reminders[].at is required" };
+    const entry: TaskReminderEntryInput = { at };
+    if (rec.anchor !== undefined && rec.anchor !== null && rec.anchor !== "") {
+      const anchor = coerceString(rec.anchor);
+      if (!REMINDER_ANCHORS.has(anchor)) {
+        return { ok: false, error: `invalid reminders[].anchor: ${anchor}` };
+      }
+      entry.anchor = anchor as "start" | "end" | "due";
+    }
+    if (rec.last_notified_at !== undefined) {
+      entry.last_notified_at =
+        rec.last_notified_at == null || rec.last_notified_at === ""
+          ? null
+          : coerceString(rec.last_notified_at);
+    }
+    out.push(entry);
+  }
+  return { ok: true, value: out };
+}
+
+export function parseOptionalIso(raw: unknown): string | null | undefined {
+  if (raw === undefined) return undefined;
+  if (raw == null || raw === "") return null;
+  return coerceString(raw).trim() || null;
+}
+
 export function itemPayload(item: TaskItemRow) {
   return {
     id: item.id,
@@ -113,8 +155,11 @@ export function itemPayload(item: TaskItemRow) {
     tag_ids: item.tag_ids,
     status: item.status,
     priority: item.priority,
+    start_at: item.start_at ?? null,
+    end_at: item.end_at ?? null,
     due_at: item.due_at,
     remind_at: item.remind_at,
+    ...(item.reminders != null && item.reminders.length > 0 ? { reminders: item.reminders } : {}),
     list_id: item.list_id,
     project_id: item.project_id ?? null,
     project_title: item.project_title ?? null,

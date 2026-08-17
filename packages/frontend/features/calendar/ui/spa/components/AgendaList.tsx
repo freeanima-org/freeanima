@@ -25,12 +25,12 @@ function itemTime(item: CalendarRangeItem): string {
     return isoToTimeLocalValue(item.start_at) || "—";
   }
   if (item.kind === "task") {
-    const start = isoToTimeLocalValue(item.start_at ?? item.due_at);
-    const due = isoToTimeLocalValue(item.due_at);
-    if (item.start_at && item.start_at !== item.due_at && start && due && start !== due) {
-      return `${start}–${due}`;
+    const start = isoToTimeLocalValue(item.start_at ?? null);
+    const end = isoToTimeLocalValue(item.end_at ?? null);
+    if (item.start_at && item.end_at && start && end && start !== end) {
+      return `${start}–${end}`;
     }
-    return due || "—";
+    return start || "—";
   }
   return isoToTimeLocalValue(item.start_at) || "—";
 }
@@ -50,8 +50,10 @@ export function AgendaList({
       return start <= day && day <= end;
     }
     if (item.kind === "task") {
-      const start = dayKeyFromIso(item.start_at ?? item.due_at);
-      const end = dayKeyFromIso(item.due_at);
+      if (!item.start_at) return false;
+      const start = dayKeyFromIso(item.start_at);
+      if (!start) return false;
+      const end = (item.end_at ? dayKeyFromIso(item.end_at) : start) || start;
       return start <= day && day <= end;
     }
     const start = dayKeyFromIso(item.start_at ?? "");
@@ -70,7 +72,7 @@ export function AgendaList({
         <li
           key={
             item.kind === "task"
-              ? `${item.kind}-${item.id}-${item.due_at}-${item.virtual ? "v" : "l"}`
+              ? `${item.kind}-${item.id}-${item.end_at ?? item.start_at ?? item.due_at ?? ""}-${item.virtual ? "v" : "l"}`
               : `${item.kind}-${item.id}`
           }
         >

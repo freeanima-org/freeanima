@@ -1058,6 +1058,7 @@ export async function offlineUpdateProjectTask(
       | "tag_ids"
       | "priority"
       | "start_at"
+      | "end_at"
       | "due_at"
       | "remind_at"
       | "reminders"
@@ -1087,14 +1088,29 @@ export async function offlineUpdateProjectTask(
             : existing.completed_at,
       updated_at: now,
     };
-    if (patch.due_at === null || patch.due_at === "") {
+    const nextStart = patch.start_at !== undefined ? patch.start_at : (updated.start_at ?? null);
+    const nextEnd = patch.end_at !== undefined ? patch.end_at : (updated.end_at ?? null);
+    const nextDue = patch.due_at !== undefined ? patch.due_at : updated.due_at;
+    const hasPlan =
+      (typeof nextStart === "string" && nextStart.trim() !== "") ||
+      (typeof nextEnd === "string" && nextEnd.trim() !== "");
+    const hasDue = typeof nextDue === "string" && nextDue.trim() !== "";
+    if (!hasPlan && !hasDue) {
       updated = {
         ...updated,
-        due_at: null,
         start_at: null,
+        end_at: null,
+        due_at: null,
         recurrence: null,
         remind_at: null,
         reminders: [],
+      };
+    } else if (!hasPlan) {
+      updated = {
+        ...updated,
+        start_at: null,
+        end_at: null,
+        recurrence: null,
       };
     }
     await upsertLocalItem(scope, updated);

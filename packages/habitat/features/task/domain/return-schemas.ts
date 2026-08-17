@@ -1,5 +1,11 @@
 import { defineToolReturn, type ToolReturnContractFields, z } from "@freeanima/habitat/core/tool";
 
+const reminderEntrySchema = z.object({
+  at: z.string(),
+  anchor: z.enum(["start", "end", "due"]).optional(),
+  last_notified_at: z.string().nullable().optional(),
+});
+
 const taskItemSchema = z.object({
   id: z.number(),
   title: z.string(),
@@ -7,8 +13,11 @@ const taskItemSchema = z.object({
   tag_ids: z.array(z.number()),
   status: z.enum(["pending", "completed"]),
   priority: z.enum(["high", "medium", "low", "none"]),
+  start_at: z.string().nullable().optional(),
+  end_at: z.string().nullable().optional(),
   due_at: z.string().nullable(),
   remind_at: z.string().nullable(),
+  reminders: z.array(reminderEntrySchema).optional(),
   list_id: z.number().nullable(),
   sort_order: z.number(),
   completed_at: z.string().nullable(),
@@ -33,6 +42,8 @@ const exampleItem = {
   tag_ids: [1],
   status: "pending" as const,
   priority: "none" as const,
+  start_at: null,
+  end_at: null,
   due_at: null,
   remind_at: null,
   list_id: 2,
