@@ -40,14 +40,14 @@ function parseProvider(raw: unknown): TtsProvider {
 }
 
 /**
- * 从 llm.scenes.tts + 连接 voice_protocol=edge-tts 解析 Edge 连接。
+ * 从 llm.scenes.tts（可继承 voice_generate）+ 连接 voice_protocol=edge-tts 解析 Edge 连接。
  * 未配置时返回 null（合成仍可用库默认端点）。
  */
 export function resolveEdgeTtsConnection(cfg: RuntimeConfig): ResolvedEdgeTtsConnection | null {
   const llm = tryGetLlmConfig(cfg);
   if (!llm) return null;
   const scenes = materializeLlmScenes(llm);
-  const scene = scenes.tts;
+  const scene = scenes.tts ?? scenes.voice_generate;
   if (!scene?.connection) return null;
   const provider = llm.providers[scene.connection];
   if (!provider) return null;
@@ -66,17 +66,29 @@ export function getResolvedSpeechConfig(cfg: RuntimeConfig): ResolvedSpeechConfi
   const preview = tts.preview_text?.trim() || DEFAULT_TTS_PREVIEW_TEXT;
   const edge = resolveEdgeTtsConnection(cfg);
 
-  // 有 edge 场景且未显式选 web-speech → 走 edge-tts
+  // 显式 web-speech → 客户端；否则走栖息地场景（edge / openai / alibaba）
   let provider = parseProvider(tts.provider);
-  if (edge && tts.provider !== "web-speech") {
+  if (tts.provider === "web-speech") {
+    provider = "web-speech";
+  } else if (edge || tts.provider === "edge-tts") {
+    provider = "edge-tts";
+  } else {
+    // 非 edge 的 Habitat 协议仍标为 edge-tts 枚举以外？ResolvedSpeechConfig.provider 仅 edge|web-speech
+    // 前端用 edge-tts 表示「走 Habitat RPC」；实际协议由 scenes.tts 决定
     provider = "edge-tts";
   }
+
+  const llm = tryGetLlmConfig(cfg);
+  const scenes = llm ? materializeLlmScenes(llm) : null;
+  const voiceScene = scenes?.tts ?? scenes?.voice_generate;
+  const sceneVoice =
+    typeof voiceScene?.params?.voice === "string" ? voiceScene.params.voice.trim() : null;
 
   return {
     enabled: tts.enabled !== false,
     provider,
     lang,
-    voiceName: voiceName || edge?.voiceHint || null,
+    voiceName: voiceName || sceneVoice || edge?.voiceHint || null,
     preferLocal: tts.prefer_local !== false,
     rate: clampRate(tts.rate),
     pitch: clampPitch(tts.pitch),

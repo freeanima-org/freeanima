@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 
-import * as edgeSynthesize from "@freeanima/habitat/core/tts/edge-synthesize";
+import * as voiceSynthesize from "@freeanima/habitat/capabilities/llm-openai/voice-synthesize";
 import * as ports from "@freeanima/habitat/platform/ports";
 
 import { handleTtsSynthesize } from "./tts-handler.ts";
@@ -13,24 +13,25 @@ describe("handleTtsSynthesize", () => {
 
   test("returns audio/mpeg Response on success", async () => {
     spyOn(ports, "assertNotShuttingDown").mockImplementation(() => {});
-    const streamSpy = spyOn(edgeSynthesize, "streamEdgeTtsAudio").mockImplementation(
-      () => new ReadableStream(),
-    );
+    const synthSpy = spyOn(voiceSynthesize, "synthesizeVoiceFromScene").mockResolvedValue({
+      bytes: new Uint8Array([1, 2, 3]),
+      mimeType: "audio/mpeg",
+    });
 
     const res = (await handleTtsSynthesize({} as never, { text: "你好" }, {} as never)) as Response;
     expect(res).toBeInstanceOf(Response);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("audio/mpeg");
     expect(res.headers.get("cache-control")).toBe("no-store");
-    expect(streamSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ text: "你好", appLocale: "zh-CN" }),
+    expect(synthSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ text: "你好", purpose: "tts" }),
     );
   });
 
   test("maps validation errors to ApiHandlerError 400", async () => {
     spyOn(ports, "assertNotShuttingDown").mockImplementation(() => {});
-    spyOn(edgeSynthesize, "streamEdgeTtsAudio").mockImplementation(() => {
-      throw new Error("朗读文本不能为空");
+    spyOn(voiceSynthesize, "synthesizeVoiceFromScene").mockResolvedValue({
+      error: "朗读文本不能为空",
     });
 
     try {
@@ -46,8 +47,8 @@ describe("handleTtsSynthesize", () => {
 
   test("maps upstream failures to ApiHandlerError 503", async () => {
     spyOn(ports, "assertNotShuttingDown").mockImplementation(() => {});
-    spyOn(edgeSynthesize, "streamEdgeTtsAudio").mockImplementation(() => {
-      throw new Error("Edge TTS unavailable");
+    spyOn(voiceSynthesize, "synthesizeVoiceFromScene").mockResolvedValue({
+      error: "Edge TTS unavailable",
     });
 
     try {

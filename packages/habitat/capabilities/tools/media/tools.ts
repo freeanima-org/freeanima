@@ -20,6 +20,8 @@ import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { createObjectFile } from "@freeanima/features/object-storage/domain";
 import { generateOpenAiImage } from "@freeanima/habitat/capabilities/llm-openai/images";
 import { generateAlibabaMultimodalImage } from "@freeanima/habitat/capabilities/llm-openai/images-alibaba-multimodal";
+import { synthesizeVoiceFromScene } from "@freeanima/habitat/capabilities/llm-openai/voice-synthesize";
+import { readVoiceProsodyParams } from "@freeanima/habitat/core/tts/voice-params";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 const MEDIA_TOOL_RETURNS = {
@@ -36,6 +38,20 @@ const MEDIA_TOOL_RETURNS = {
       title: "cat.png",
       mime_type: "image/png",
       size: 1024,
+    },
+  }),
+  voice_generate: defineToolReturn({
+    schema: z.object({
+      object_file_id: z.number().int().positive(),
+      title: z.string(),
+      mime_type: z.string(),
+      size: z.number().int().nonnegative(),
+    }),
+    example: {
+      object_file_id: 43,
+      title: "speech.mp3",
+      mime_type: "audio/mpeg",
+      size: 2048,
     },
   }),
 };
@@ -67,7 +83,7 @@ async function resolveWorld(args: ToolArgs): Promise<number | string> {
 export function registerMediaTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "media",
-    "Media generation (image; voice reserved). Requires scenes.image_generate and connection image_protocol.",
+    "Media generation (image + voice). Requires scenes.image_generate / voice_generate and matching connection protocols.",
     attachToolReturns(
       [
         {
@@ -134,7 +150,6 @@ export function registerMediaTools(toolSets: ToolSetRegistry): void {
 
             let baseUrl: string;
             try {
-              // 内置预设不落盘 base_url，须用预设固定根（与对话 materializeConnection 一致）
               baseUrl = materializeConnection(scene.provider).baseUrl;
             } catch (err) {
               return toolError(err instanceof Error ? err.message : "图片生成连接 Base URL 无效");
@@ -197,6 +212,81 @@ export function registerMediaTools(toolSets: ToolSetRegistry): void {
               });
             } catch (err) {
               return toolError(err instanceof Error ? err.message : "保存生成图失败");
+            }
+          },
+        },
+        {
+          name: "voice_generate",
+          description:
+            "Synthesize speech from text via the configured voice_generate scene. Saves to object storage and returns object_file_id.",
+          parameters: {
+            type: "object",
+            properties: {
+              text: { type: "string", description: "Text to synthesize" },
+              voice: { type: "string", description: "Optional voice id override" },
+              rate: { type: "number", description: "Relative speaking rate (1.0 = default)" },
+              pitch: { type: "number", description: "Relative pitch (1.0 = default)" },
+              volume: { type: "number", description: "Relative volume (1.0 = default)" },
+              title: {
+                type: "string",
+                description: "Optional object_file title; defaults from text",
+              },
+              world_id: {
+                type: "integer",
+                description: "Optional world override",
+              },
+              subject_kind: {
+                type: "string",
+                enum: ["user", "agent"],
+                description: "Owning subject when world_id omitted",
+              },
+            },
+            required: ["text"],
+          },
+          handler: async (args: ToolArgs) => {
+            const text = coerceString(args.text ?? "").trim();
+            if (!text) return toolError("text is required");
+
+            const override = readVoiceProsodyParams({
+              voice: args.voice,
+              rate: args.rate,
+              pitch: args.pitch,
+              volume: args.volume,
+            });
+
+            const generated = await synthesizeVoiceFromScene({
+              text,
+              purpose: "voice_generate",
+              prosody: override,
+            });
+            if ("error" in generated) return toolError(generated.error);
+
+            const world = await resolveWorld(args);
+            if (typeof world === "string") return world;
+
+            const ext = generated.mimeType.includes("wav")
+              ? "wav"
+              : generated.mimeType.includes("pcm")
+                ? "pcm"
+                : "mp3";
+            const title =
+              coerceString(args.title ?? "").trim() || `speech-${Date.now()}.${ext}`.slice(0, 80);
+
+            try {
+              const file = await createObjectFile({
+                world_id: world,
+                title,
+                bytes: generated.bytes,
+                mime_type: generated.mimeType,
+              });
+              return toolResult({
+                object_file_id: file.id,
+                title: file.title,
+                mime_type: file.mime_type,
+                size: file.size,
+              });
+            } catch (err) {
+              return toolError(err instanceof Error ? err.message : "保存生成音频失败");
             }
           },
         },

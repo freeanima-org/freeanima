@@ -1,9 +1,5 @@
-import { streamEdgeTtsAudio } from "@freeanima/habitat/core/tts/edge-synthesize";
-import {
-  edgeTtsProxyFromBaseUrl,
-  getResolvedSpeechConfig,
-  resolveEdgeTtsConnection,
-} from "@freeanima/habitat/core/config/tts-helpers";
+import { synthesizeVoiceFromScene } from "@freeanima/habitat/capabilities/llm-openai/voice-synthesize";
+import { getResolvedSpeechConfig } from "@freeanima/habitat/core/config/tts-helpers";
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { assertNotShuttingDown } from "@freeanima/habitat/platform/ports";
 import type { FeatureRpcHandler } from "@freeanima/habitat/platform/features";
@@ -25,44 +21,65 @@ export const handleTtsSynthesize: FeatureRpcHandler = async (_deps, payload) => 
   const parsed = payload as TtsSynthesizePayload;
 
   let speech;
-  let edgeConn;
   try {
-    const cfg = getActiveRuntimeConfig().data;
-    speech = getResolvedSpeechConfig(cfg);
-    edgeConn = resolveEdgeTtsConnection(cfg);
+    speech = getResolvedSpeechConfig(getActiveRuntimeConfig().data);
   } catch {
     speech = null;
-    edgeConn = null;
   }
 
-  const proxy = edgeTtsProxyFromBaseUrl(edgeConn?.baseUrl);
+  if (speech && speech.provider === "web-speech") {
+    throw new ApiHandlerError(400, "当前为浏览器本机朗读，请由客户端直接合成");
+  }
 
   try {
-    const stream = streamEdgeTtsAudio({
+    const result = await synthesizeVoiceFromScene({
       text: parsed.text,
-      lang: parsed.lang ?? speech?.lang ?? null,
-      voice: parsed.voice ?? speech?.voiceName ?? edgeConn?.voiceHint ?? null,
-      appLocale: parsed.app_locale ?? "zh-CN",
-      ...(parsed.rate !== undefined ? { rate: parsed.rate } : speech ? { rate: speech.rate } : {}),
-      ...(parsed.pitch !== undefined
-        ? { pitch: parsed.pitch }
-        : speech
-          ? { pitch: speech.pitch }
-          : {}),
-      ...(parsed.volume !== undefined
-        ? { volume: parsed.volume }
-        : speech
-          ? { volume: speech.volume }
-          : {}),
-      ...(proxy ? { proxy } : {}),
+      purpose: "tts",
+      prosody: {
+        ...(parsed.voice?.trim()
+          ? { voice: parsed.voice.trim() }
+          : speech?.voiceName
+            ? { voice: speech.voiceName }
+            : {}),
+        ...(parsed.lang?.trim()
+          ? { language: parsed.lang.trim() }
+          : speech?.lang
+            ? { language: speech.lang }
+            : {}),
+        ...(parsed.rate !== undefined
+          ? { rate: parsed.rate }
+          : speech
+            ? { rate: speech.rate }
+            : {}),
+        ...(parsed.pitch !== undefined
+          ? { pitch: parsed.pitch }
+          : speech
+            ? { pitch: speech.pitch }
+            : {}),
+        ...(parsed.volume !== undefined
+          ? { volume: parsed.volume }
+          : speech
+            ? { volume: speech.volume }
+            : {}),
+      },
     });
-    return new Response(stream, {
+
+    if ("error" in result) {
+      const message = result.error;
+      if (message.includes("过长") || message.includes("不能为空")) {
+        throw new ApiHandlerError(400, message);
+      }
+      throw new ApiHandlerError(503, message);
+    }
+
+    return new Response(Buffer.from(result.bytes), {
       headers: {
-        "content-type": "audio/mpeg",
+        "content-type": result.mimeType || "audio/mpeg",
         "cache-control": "no-store",
       },
     });
   } catch (err) {
+    if (err instanceof ApiHandlerError) throw err;
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("过长") || message.includes("不能为空")) {
       throw new ApiHandlerError(400, message);

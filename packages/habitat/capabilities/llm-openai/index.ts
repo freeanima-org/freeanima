@@ -26,3 +26,14 @@ export {
   alibabaMultimodalGenerationUrl,
   normalizeAlibabaImageSize,
 } from "./images-alibaba-multimodal.ts";
+export {
+  generateOpenAiSpeech,
+  type GenerateSpeechInput,
+  type GenerateSpeechResult,
+} from "./audio-speech.ts";
+export {
+  alibabaAudioWsUrl,
+  synthesizeAlibabaTts,
+  assertAlibabaRealtimeModelReady,
+} from "./audio-alibaba.ts";
+export { synthesizeVoiceFromScene } from "./voice-synthesize.ts";

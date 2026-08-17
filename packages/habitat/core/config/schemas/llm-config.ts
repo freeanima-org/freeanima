@@ -49,13 +49,23 @@ export type ImageProtocolId = (typeof IMAGE_PROTOCOL_IDS)[number];
 
 export const VOICE_PROTOCOL_OPENAI_AUDIO = "openai_audio_speech";
 export const VOICE_PROTOCOL_EDGE_TTS = "edge-tts";
-export const VOICE_PROTOCOL_IDS = [VOICE_PROTOCOL_OPENAI_AUDIO, VOICE_PROTOCOL_EDGE_TTS] as const;
+/** 阿里云 Token Plan / 百炼 DashScope 音频（TTS / 实时；≠ 文生图 alibaba_multimodal） */
+export const VOICE_PROTOCOL_ALIBABA_AUDIO = "alibaba_audio";
+export const VOICE_PROTOCOL_IDS = [
+  VOICE_PROTOCOL_OPENAI_AUDIO,
+  VOICE_PROTOCOL_EDGE_TTS,
+  VOICE_PROTOCOL_ALIBABA_AUDIO,
+] as const;
 export type VoiceProtocolId = (typeof VOICE_PROTOCOL_IDS)[number];
 
 /** Edge TTS 默认服务根（密钥可空） */
 export const DEFAULT_EDGE_TTS_BASE_URL = "https://api.msedgeservices.com/tts";
 
-/** 扁平场景用途键（含对话子场景 + 媒体） */
+/**
+ * 扁平场景用途键（校验枚举）。
+ * 能力族：对话 chat… / 向量 embedding / 文生图 image_generate /
+ * 语音合成 voice_generate（主）+ tts + voice_realtime。
+ */
 export const LLM_SCENE_PURPOSE_IDS = [
   "chat",
   "summary",
@@ -66,8 +76,20 @@ export const LLM_SCENE_PURPOSE_IDS = [
   "image_generate",
   "voice_generate",
   "tts",
+  "voice_realtime",
 ] as const;
 export type LlmScenePurposeId = (typeof LLM_SCENE_PURPOSE_IDS)[number];
+
+/** 语音合成族：主场景 + 交付子场景（朗读 / 实时） */
+export const VOICE_SYNTHESIS_SCENE_PURPOSE_IDS = [
+  "voice_generate",
+  "tts",
+  "voice_realtime",
+] as const;
+export type VoiceSynthesisScenePurposeId = (typeof VOICE_SYNTHESIS_SCENE_PURPOSE_IDS)[number];
+
+export const VOICE_SYNTHESIS_MAIN_PURPOSE = "voice_generate" as const;
+export const VOICE_SYNTHESIS_CHILD_PURPOSE_IDS = ["tts", "voice_realtime"] as const;
 
 const llmFormatIdSchema = z.enum(LLM_FORMAT_IDS);
 const llmPresetIdSchema = z.enum(LLM_PRESET_IDS);

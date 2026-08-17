@@ -79,8 +79,8 @@ export function foldObjectFileAttachmentsIntoContent(
   });
 }
 
-/** 从 image_generate tool 结果解析 object_file id */
-export function parseImageGenerateObjectFileId(result: string | undefined): number | null {
+/** 从 image_generate / voice_generate tool 结果解析 object_file id */
+export function parseMediaGenerateObjectFileId(result: string | undefined): number | null {
   if (!result?.trim()) return null;
   try {
     const parsed = JSON.parse(result) as Record<string, unknown>;
@@ -91,6 +91,13 @@ export function parseImageGenerateObjectFileId(result: string | undefined): numb
     return null;
   }
 }
+
+/** @deprecated 使用 parseMediaGenerateObjectFileId */
+export function parseImageGenerateObjectFileId(result: string | undefined): number | null {
+  return parseMediaGenerateObjectFileId(result);
+}
+
+const MEDIA_GENERATE_TOOL_NAMES = new Set(["image_generate", "voice_generate"]);
 
 /** Project conversation message sequence to Habitat display list (with tool_block aggregation) */
 export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
@@ -185,8 +192,8 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
             msg.content.startsWith('{"error"') ||
             msg.content.startsWith("Error:");
           call.status = isError ? "error" : "done";
-          if (!isError && call.name === "image_generate") {
-            const id = parseImageGenerateObjectFileId(msg.content);
+          if (!isError && MEDIA_GENERATE_TOOL_NAMES.has(call.name)) {
+            const id = parseMediaGenerateObjectFileId(msg.content);
             if (id != null) pendingGeneratedFileIds.push(id);
           }
         }

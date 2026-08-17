@@ -55,9 +55,18 @@ function sceneHasUsableBinding(
   return Boolean(s?.connection && s?.model);
 }
 
+function cloneSceneBinding(scene: LlmSceneBinding): LlmSceneBinding {
+  return {
+    connection: scene.connection,
+    model: scene.model,
+    ...(scene.params ? { params: { ...scene.params } } : {}),
+  };
+}
+
 /**
  * 从遗留 profiles + bindings 合成扁平 scenes（不写回）。
  * 已有 scenes 时以 scenes 为准并补全缺失用途。
+ * 语音合成族：遗留仅 tts → promote 主场景；子场景缺绑定时继承 voice_generate。
  */
 export function materializeLlmScenes(llm: LlmConfig): Record<string, LlmSceneBinding> {
   const out: Record<string, LlmSceneBinding> = { ...llm.scenes };
@@ -91,19 +100,41 @@ export function materializeLlmScenes(llm: LlmConfig): Record<string, LlmSceneBin
     }
   }
 
+  const voiceMain = out.voice_generate;
+  const legacyTts = out.tts;
+  if (
+    (!voiceMain || !voiceMain.connection || !voiceMain.model) &&
+    legacyTts?.connection &&
+    legacyTts.model
+  ) {
+    out.voice_generate = cloneSceneBinding(legacyTts);
+  }
+  const resolvedVoiceMain = out.voice_generate;
+  if (resolvedVoiceMain?.connection && resolvedVoiceMain.model) {
+    for (const child of ["tts", "voice_realtime"] as const) {
+      const cur = out[child];
+      if (!cur?.connection || !cur.model) {
+        out[child] = cloneSceneBinding(resolvedVoiceMain);
+      }
+    }
+  }
+
   return out;
 }
 
 /**
  * 非对话线场景：不进入 ProfileRegistry（无 chat 后端 / 可无密钥）。
- * embedding / 生图 / TTS 各走专用解析。
+ * embedding / 生图 / 语音合成各走专用解析。
  */
 export const NON_CHAT_SCENE_PURPOSE_IDS = [
   "embedding",
   "image_generate",
   "voice_generate",
   "tts",
+  "voice_realtime",
 ] as const;
+
+const VOICE_SYNTHESIS_CHILD_PURPOSES = new Set<string>(["tts", "voice_realtime"]);
 
 export function isNonChatScenePurpose(purpose: string): boolean {
   return (NON_CHAT_SCENE_PURPOSE_IDS as readonly string[]).includes(purpose);
@@ -167,6 +198,18 @@ export function resolveConfiguredProfileId(cfg: RuntimeConfig, profileId?: strin
     return requested;
   }
 
+  // 语音合成子场景：先继承 voice_generate（勿回落到 chat）
+  if (
+    VOICE_SYNTHESIS_CHILD_PURPOSES.has(requested) &&
+    sceneHasUsableBinding(llm, "voice_generate")
+  ) {
+    return "voice_generate";
+  }
+  // 遗留：仅有 tts、无 voice_generate → 文生声解析走 tts
+  if (requested === "voice_generate" && sceneHasUsableBinding(llm, "tts")) {
+    return "tts";
+  }
+
   const bindings = llm.profile_bindings;
   const hasBinding = bindings != null && Object.prototype.hasOwnProperty.call(bindings, requested);
 
@@ -181,6 +224,14 @@ export function resolveConfiguredProfileId(cfg: RuntimeConfig, profileId?: strin
   if (sceneHasUsableBinding(llm, preferred) || profileHasUsableChain(llm, preferred)) {
     return preferred;
   }
+
+  if (
+    VOICE_SYNTHESIS_CHILD_PURPOSES.has(requested) &&
+    sceneHasUsableBinding(llm, "voice_generate")
+  ) {
+    return "voice_generate";
+  }
+
   return defaultId;
 }
 
