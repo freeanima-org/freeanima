@@ -26,16 +26,18 @@ title: 记忆维护（原睡眠机制）
 
 1. `conversation-cleanup`
 2. **Retain 缺口检查**（有缺口 → Inbox 通知；**不自动补跑**）
-3. CST 周一：`semantic-cluster-calibrate`（DBSCAN 全量校准 `search_documents.cluster_id`）→ `reflect`（按簇分批；每批单轮有序巩固 + 同响应批量 toolcalls）→ `self-layer-refresh`
+3. CST 周一：`semantic-cluster-calibrate`（HDBSCAN 全量校准 `search_documents.cluster_id`）→ `reflect`（按簇分批；每批单轮有序巩固 + 同响应批量 toolcalls）→ `self-layer-refresh`
 4. `temporal-summary-day` → `temporal-summary-cascade`
 
-### 语义记忆聚类分批（#17）
+### 语义记忆聚类分批（#17 / #18020）
 
-- 聚合依据：`search_documents.embedding`（向量 DBSCAN / 余弦距离），**不是**文本 FTS。
+- 聚合依据：`search_documents.embedding`（向量 **HDBSCAN**：mutual-reachability MST + 真分裂切边），**不是**文本 FTS。
 - 簇号存在旁表 `search_documents.cluster_id`（与 embedding 同表）；噪声 / 未分组为 `NULL`。
-- 增量：embedding 写入后挂靠最近已标簇邻居（HNSW）；周全量校准纠偏。
-- 配置：`memory.clustering`（`eps` / `min_points` / `max_batch_bytes` / `max_calibrate_n`）。
+- 默认不做噪声事后挂靠；可选 `peel_small` 剥落过小侧（更纯、未分组↑）。
+- 增量：新 embedding 在距离 &lt; `eps` 时并入最近已标簇；否则保持未分组直至全量校准。
+- 可调参数在 **设置 → Habitat 配置 → 语义记忆**（顶层段 `passive_recall` / `semantic_clustering`，分 Tab 保存）；改完后于语义记忆页「全量聚类」生效。
 - 全量校准条数默认上限 5000（保护 2C2G）；超限 skip + soft-failure，reflect 仍可按已有簇 / NULL 分批。
+- 簇 title：按 entity id 升序取最多 3 条样本，LLM 生成 ≤8 字短标签；Redis `anima:cache:semantic-cluster-title:v2:…` 缓存一个月。
 
 ## 运维 UI 挂载
 

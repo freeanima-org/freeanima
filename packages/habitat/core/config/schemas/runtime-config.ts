@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 import { embeddingConfigSchema } from "./embedding.ts";
-import { memoryConfigSchema } from "./memory-config.ts";
+import {
+  memoryClusteringConfigSchema,
+  memoryConfigSchema,
+  passiveRecallConfigSchema,
+} from "./memory-config.ts";
 import { notificationsConfigSchema } from "./notifications.ts";
 import { ttsConfigSchema } from "./tts.ts";
 import { worldsConfigSchema } from "./worlds.ts";
@@ -46,7 +50,12 @@ const runtimeConfigObjectSchema = z.object({
   toolset_visibility: z.record(z.string(), z.enum(["hidden", "searchable", "catalog"])).optional(),
   fallback_providers: z.array(fallbackProviderSchema).optional(),
   platforms: z.record(z.string(), z.unknown()).optional(),
+  /** @deprecated 新写入用顶层 passive_recall / semantic_clustering；保留供旧配置与 resident 等 */
   memory: memoryConfigSchema.optional(),
+  /** 被动语义召回（设置 UI 独立段） */
+  passive_recall: passiveRecallConfigSchema.optional(),
+  /** 语义记忆聚类 HDBSCAN（设置 UI 独立段） */
+  semantic_clustering: memoryClusteringConfigSchema.optional(),
   cjk: cjkConfigSchema,
   fts: ftsConfigSchema,
   embedding: embeddingConfigSchema,

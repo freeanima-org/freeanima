@@ -23,12 +23,23 @@ export const memoryDeploymentSchema = z.enum(["embedded", "remote"]);
 /** 语义记忆向量聚类（reflect 分批）；默认在 embedding 开启时启用 */
 export const memoryClusteringConfigSchema = z.object({
   enabled: z.boolean().optional(),
-  /** 余弦距离阈值 */
+  /**
+   * 仅增量：新记忆并入「已有族」的余弦距离上限（全量 HDBSCAN 不用）。
+   * 越小越严；过大易把不相干并入。
+   */
   eps: z.number().positive().optional(),
+  /** 全量 HDBSCAN min_cluster_size（配置键历史名 min_points） */
   min_points: z.number().int().positive().optional(),
+  /** 核心距离邻域点数；默认 min_points-1 */
+  min_samples: z.number().int().positive().optional(),
+  /**
+   * 全量校准时是否剥落「不够大的一侧」。
+   * false（默认）少未分组；true 簇更纯、未分组更多。不做噪声事后挂靠。
+   */
+  peel_small: z.boolean().optional(),
   /** 单 batch 喂给 reflect 的 JSON 字节上限 */
   max_batch_bytes: z.number().int().positive().optional(),
-  /** 全量 DBSCAN 条数上限（保护小规格机器） */
+  /** 全量聚类校准条数上限（保护小规格机器） */
   max_calibrate_n: z.number().int().positive().optional(),
 });
 
@@ -49,7 +60,13 @@ export const memoryConfigSchema = z
   .object({
     /** 默认 embedded；remote 客户端实现同 MemoryService 契约 */
     deployment: memoryDeploymentSchema.optional(),
+    /**
+     * @deprecated 新写入请用顶层段 `passive_recall`；解析仍回退读取此处
+     */
     passive_recall: passiveRecallConfigSchema.optional(),
+    /**
+     * @deprecated 新写入请用顶层段 `semantic_clustering`；解析仍回退读取此处
+     */
     clustering: memoryClusteringConfigSchema.optional(),
     resident: memoryResidentConfigSchema.optional(),
     reference: memoryReferenceConfigSchema.optional(),
@@ -96,9 +113,11 @@ export const DEFAULT_PASSIVE_RECALL_MIN_SCORE = 0.016;
 /** Keep hits within this fraction of the top hybrid score */
 export const DEFAULT_PASSIVE_RECALL_MIN_RELATIVE_SCORE = 0.55;
 
-/** 余弦距离；bge-m3 上经验默认，可用配置覆盖 */
+/** 增量：新记忆并入已有族的余弦距离上限（全量 HDBSCAN 不用） */
 export const DEFAULT_CLUSTERING_EPS = 0.35;
+/** 全量 HDBSCAN min_cluster_size */
 export const DEFAULT_CLUSTERING_MIN_POINTS = 3;
+export const DEFAULT_CLUSTERING_PEEL_SMALL = false;
 /** 与原 reflect FULL_JSON_BATCH 对齐 */
 export const DEFAULT_CLUSTERING_MAX_BATCH_BYTES = 100_000;
 /** 2C2G / 数千条量级保护上限 */
@@ -108,17 +127,22 @@ export type ResolvedMemoryClusteringConfig = {
   enabled: boolean;
   eps: number;
   min_points: number;
+  min_samples: number;
+  peel_small: boolean;
   max_batch_bytes: number;
   max_calibrate_n: number;
 };
 
 export function resolveMemoryClusteringConfig(cfg: RuntimeConfig): ResolvedMemoryClusteringConfig {
-  const raw = cfg.memory?.clustering;
+  const raw = cfg.semantic_clustering ?? cfg.memory?.clustering;
   const embeddingOn = isEmbeddingEnabled(cfg);
+  const min_points = raw?.min_points ?? DEFAULT_CLUSTERING_MIN_POINTS;
   return {
     enabled: raw?.enabled ?? embeddingOn,
     eps: raw?.eps ?? DEFAULT_CLUSTERING_EPS,
-    min_points: raw?.min_points ?? DEFAULT_CLUSTERING_MIN_POINTS,
+    min_points,
+    min_samples: raw?.min_samples ?? Math.max(1, min_points - 1),
+    peel_small: raw?.peel_small ?? DEFAULT_CLUSTERING_PEEL_SMALL,
     max_batch_bytes: raw?.max_batch_bytes ?? DEFAULT_CLUSTERING_MAX_BATCH_BYTES,
     max_calibrate_n: raw?.max_calibrate_n ?? DEFAULT_CLUSTERING_MAX_CALIBRATE_N,
   };
@@ -163,7 +187,7 @@ export function resolveMemoryReferenceConfig(
 }
 
 export function resolvePassiveRecallConfig(cfg: RuntimeConfig): ResolvedPassiveRecallConfig {
-  const raw = cfg.memory?.passive_recall;
+  const raw = cfg.passive_recall ?? cfg.memory?.passive_recall;
   const embeddingOn = isEmbeddingEnabled(cfg);
   return {
     enabled: raw?.enabled ?? true,

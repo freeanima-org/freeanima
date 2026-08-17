@@ -417,7 +417,7 @@ export async function listSemanticMemories(input: {
 
 export async function listSemanticMemoryClusters() {
   return hubCall(habitat().call("memory.semanticClusters", {})) as Promise<{
-    items: Array<{ cluster_id: number | null; count: number }>;
+    items: Array<{ cluster_id: number | null; count: number; title: string | null }>;
   }>;
 }
 

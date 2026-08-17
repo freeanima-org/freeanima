@@ -23,7 +23,7 @@ const HABITAT_CONFIG_SECTION_DEFS: Array<{
   order: number;
 }> = [
   { id: "compression", title: "压缩", order: 50 },
-  { id: "memory", title: "记忆", order: 51 },
+  { id: "memory", title: "语义记忆", order: 51 },
   { id: "llm", title: "LLM", order: 52 },
   { id: "tts", title: "语音", order: 53 },
   ...ADVANCED_SECTIONS.map((id, index) => ({

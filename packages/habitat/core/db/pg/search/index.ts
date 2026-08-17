@@ -35,9 +35,11 @@ export {
   getEntitySearchDocumentClusterId,
   getClusterIdsByEntityIds,
   listSemanticMemoryClusterStats,
+  listSemanticClusterTitleSamples,
   type SemanticEmbeddingClusterRow,
   type SemanticClusterIdRow,
   type SemanticClusterStat,
+  type SemanticClusterTitleSample,
 } from "./clustering-repo.ts";
 export {
   entitySearchDocumentsJoin,

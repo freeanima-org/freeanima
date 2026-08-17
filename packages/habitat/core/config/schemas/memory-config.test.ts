@@ -89,9 +89,52 @@ describe("resolveMemoryClusteringConfig", () => {
       resolveMemoryClusteringConfig({
         ...base,
         embedding: { model: "bge-m3" },
-        memory: { clustering: { enabled: false, eps: 0.2, max_calibrate_n: 1000 } },
+        memory: {
+          clustering: {
+            enabled: false,
+            eps: 0.2,
+            min_points: 4,
+            min_samples: 2,
+            peel_small: true,
+            max_calibrate_n: 1000,
+          },
+        },
       }),
-    ).toMatchObject({ enabled: false, eps: 0.2, max_calibrate_n: 1000 });
+    ).toMatchObject({
+      enabled: false,
+      eps: 0.2,
+      min_points: 4,
+      min_samples: 2,
+      peel_small: true,
+      max_calibrate_n: 1000,
+    });
+  });
+
+  it("prefers top-level passive_recall / semantic_clustering", () => {
+    expect(
+      resolvePassiveRecallConfig({
+        ...base,
+        memory: { passive_recall: { limit: 9 } },
+        passive_recall: { limit: 3 },
+      }),
+    ).toMatchObject({ limit: 3 });
+    expect(
+      resolveMemoryClusteringConfig({
+        ...base,
+        embedding: { model: "bge-m3" },
+        memory: { clustering: { eps: 0.5 } },
+        semantic_clustering: { eps: 0.2, peel_small: true },
+      }),
+    ).toMatchObject({ eps: 0.2, peel_small: true });
+  });
+
+  it("defaults peel_small false and min_samples to min_points-1", () => {
+    const resolved = resolveMemoryClusteringConfig({
+      ...base,
+      embedding: { model: "bge-m3" },
+    });
+    expect(resolved.peel_small).toBe(false);
+    expect(resolved.min_samples).toBe(2);
   });
 });
 
