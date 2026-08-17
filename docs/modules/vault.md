@@ -37,6 +37,9 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - 路由：`/vault`
 - 解锁 / 改密 / CRUD；用户库导入 **Bitwarden 未加密 JSON**（按 `import_refs.bitwarden` 幂等
   upsert；可选「仅新建」）— 入口在栖息地 **数据维护**（不再放在 `/vault` 工具栏）
+- User 库会话：默认 **1 小时滑动超时**（浏览 / 搜索 / 选中条目等 UI 活动会续期）；扩展仍为最多 **8
+  小时绝对超时**（浏览器关闭清 session）
+- 侧栏：搜索（标题 / 用户名 / URI；`content` 写入时拼入 username+uris）+ 标签单选过滤
 - Habitat **数据维护**：**解锁 agent 密码库**（本地缓存状态 + 解锁/锁定；根密钥 SSOT = User 库
   `import_refs.agent_root_key=habitat`，于 User 库解锁时自动确保）
 - 编辑表单与扩展共用

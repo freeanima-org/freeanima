@@ -105,6 +105,27 @@ function normalizeUris(uris: VaultUriEntry[] | undefined): VaultUriEntry[] | und
   return out.length > 0 ? out : undefined;
 }
 
+/** 供 FTS/ILIKE：username + url + uris（不含密文 notes） */
+export function buildVaultItemSearchContent(opts: {
+  username?: string;
+  url?: string;
+  uris?: VaultUriEntry[];
+  extra?: string;
+}): string {
+  const parts: string[] = [];
+  const extra = opts.extra?.trim();
+  if (extra) parts.push(extra);
+  const username = opts.username?.trim();
+  if (username) parts.push(username);
+  const url = opts.url?.trim();
+  if (url) parts.push(url);
+  for (const entry of opts.uris ?? []) {
+    const uri = entry.uri.trim();
+    if (uri && uri !== url) parts.push(uri);
+  }
+  return parts.join("\n");
+}
+
 function toRow(
   parsed: NonNullable<ReturnType<typeof asVaultItem>>,
   entity: Pick<EntityRow, "created_at" | "updated_at" | "tag_ids">,
@@ -161,7 +182,7 @@ export async function listVaultItems(
 export async function searchVaultItems(
   worldId: number,
   query: string,
-  opts: { limit?: number; include_secrets?: boolean } = {},
+  opts: { limit?: number; include_secrets?: boolean; tag_ids?: number[] } = {},
 ): Promise<Array<VaultItemRow | VaultItemMetaRow>> {
   const result = await searchEntities({
     world_id: worldId,
@@ -169,6 +190,7 @@ export async function searchVaultItems(
     query,
     limit: opts.limit ?? 50,
     mode: "hybrid",
+    ...(opts.tag_ids?.length ? { tag_ids: opts.tag_ids } : {}),
   });
   return result.results
     .map((row) => {
@@ -217,7 +239,12 @@ export async function createVaultItem(
     components: [VAULT_ITEM_COMPONENT],
     primary_component: VAULT_ITEM_COMPONENT,
     title: input.title.trim().slice(0, 500),
-    content: input.content?.trim() ?? "",
+    content: buildVaultItemSearchContent({
+      ...(input.username !== undefined ? { username: input.username } : {}),
+      ...(input.url !== undefined ? { url: input.url } : {}),
+      ...(uris !== undefined ? { uris } : {}),
+      ...(input.content !== undefined ? { extra: input.content } : {}),
+    }),
     body,
     tag_ids: tagIds,
   });
@@ -260,10 +287,17 @@ export async function updateVaultItem(
         ? { import_refs: parsed.import_refs }
         : {}),
   };
+  const nextUsername = input.username !== undefined ? input.username : parsed.username;
+  const nextUrl = input.url !== undefined ? input.url : parsed.url;
   const updated = await updateEntity({
     id: input.id,
     ...(input.title !== undefined ? { title: input.title.trim().slice(0, 500) } : {}),
-    ...(input.content !== undefined ? { content: input.content.trim() } : {}),
+    content: buildVaultItemSearchContent({
+      ...(nextUsername !== undefined ? { username: nextUsername } : {}),
+      ...(nextUrl !== undefined ? { url: nextUrl } : {}),
+      ...(nextUris !== undefined ? { uris: nextUris } : {}),
+      ...(input.content !== undefined ? { extra: input.content } : {}),
+    }),
     body,
     ...(input.tag_ids !== undefined ? { tag_ids: nextTagIds } : {}),
     ...(input.skip_revision ? { skip_revision: true } : {}),
