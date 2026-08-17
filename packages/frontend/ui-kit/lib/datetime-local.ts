@@ -1,3 +1,5 @@
+import { formatCstIso } from "@freeanima/shared/util/time.ts";
+
 function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
@@ -16,12 +18,13 @@ export function isoToTimeLocalValue(iso: string | null | undefined): string {
   return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
+/** 合并本地日期+时间为 host 时区 ISO（禁止裸 toISOString/Z） */
 export function mergeDateTimeLocal(datePart: string, timePart: string): string | null {
   if (!datePart) return null;
   const time = timePart || "00:00";
   const d = new Date(`${datePart}T${time}:00`);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
+  return formatCstIso(d);
 }
 
 export function dateLocalToIso(datePart: string): string | null {
@@ -29,7 +32,7 @@ export function dateLocalToIso(datePart: string): string | null {
 }
 
 export function todayDateLocalValue(): string {
-  return isoToDateLocalValue(new Date().toISOString());
+  return isoToDateLocalValue(formatCstIso(new Date()));
 }
 
 const DATE_LOCAL_RE = /^(\d{4})-(\d{2})-(\d{2})$/;

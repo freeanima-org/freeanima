@@ -349,6 +349,7 @@ type TaskItemContentPatch = Partial<
     | "tag_ids"
     | "priority"
     | "start_at"
+    | "end_at"
     | "due_at"
     | "remind_at"
     | "reminders"
@@ -1021,35 +1022,67 @@ export async function offlineUpdateTaskItem(
       updated_at: now,
     };
 
-    // 无日期则无重复、提醒与开始时间
-    if (patch.due_at === null || patch.due_at === "") {
+    // 无计划且无截止 → 清提醒/重复；仅清 due 不连带清计划
+    const nextStart = patch.start_at !== undefined ? patch.start_at : (updated.start_at ?? null);
+    const nextEnd = patch.end_at !== undefined ? patch.end_at : (updated.end_at ?? null);
+    const nextDue = patch.due_at !== undefined ? patch.due_at : updated.due_at;
+    const hasPlan =
+      (typeof nextStart === "string" && nextStart.trim() !== "") ||
+      (typeof nextEnd === "string" && nextEnd.trim() !== "");
+    const hasDue = typeof nextDue === "string" && nextDue.trim() !== "";
+    if (!hasPlan && !hasDue) {
       updated = {
         ...updated,
-        due_at: null,
         start_at: null,
+        end_at: null,
+        due_at: null,
         recurrence: null,
         remind_at: null,
         reminders: [],
+      };
+    } else if (!hasPlan) {
+      updated = {
+        ...updated,
+        start_at: null,
+        end_at: null,
+        recurrence: null,
       };
     }
 
     // 重复任务完成：乐观滚动，保持 pending（与服务端 complete 语义一致）
     if (completing && existing.recurrence) {
-      const next = computeNextOccurrence(
-        normalizeRecurrenceInput(existing.recurrence, existing.due_at),
-        {
-          completedAt: nowIso,
-          currentDueAt: existing.due_at,
-          decrementCount: true,
-        },
-      );
+      const prevClock = existing.end_at ?? existing.start_at ?? existing.due_at ?? null;
+      const next = computeNextOccurrence(normalizeRecurrenceInput(existing.recurrence, prevClock), {
+        completedAt: nowIso,
+        currentDueAt: prevClock,
+        decrementCount: true,
+      });
       if (next) {
+        const shiftIso = (iso: string | null | undefined): string | null => {
+          if (!iso || !prevClock) return iso ?? null;
+          const prevMs = Date.parse(prevClock);
+          const nextMs = Date.parse(next.schedule_at);
+          const curMs = Date.parse(iso);
+          if (!Number.isFinite(prevMs) || !Number.isFinite(nextMs) || !Number.isFinite(curMs)) {
+            return iso;
+          }
+          return formatCstIso(new Date(curMs + (nextMs - prevMs)));
+        };
+        const nextReminders = (existing.reminders ?? []).map((r) => ({
+          ...r,
+          at: shiftIso(r.at) ?? r.at,
+          last_notified_at: null as string | null,
+        }));
         updated = {
           ...updated,
           status: "pending",
           completed_at: null,
-          due_at: next.due_at,
-          remind_at: shiftRemindAt(existing.due_at, existing.remind_at, next.due_at),
+          start_at: shiftIso(existing.start_at),
+          end_at: shiftIso(existing.end_at),
+          due_at: shiftIso(existing.due_at),
+          remind_at:
+            nextReminders[0]?.at ?? shiftRemindAt(prevClock, existing.remind_at, next.schedule_at),
+          ...(nextReminders.length > 0 ? { reminders: nextReminders } : { reminders: [] }),
           recurrence: next.recurrence,
         };
       } else {

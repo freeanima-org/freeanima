@@ -8,9 +8,14 @@ import {
   computeNextOccurrence,
   normalizeRecurrenceInput,
   normalizeSchedulableReminders,
+  shiftSchedulableDueAt,
+  shiftSchedulablePlannedRange,
   shiftSchedulableReminders,
-  shiftSchedulableStartAt,
   taskDeleteDetachesCarrier,
+  taskPlanClock,
+  hasTaskPlan,
+  hasTaskScheduleTime,
+  nonEmptyIso,
   type EntityRow,
   type TaskRecurrence,
 } from "@freeanima/habitat/core/db/schema/entity";
@@ -88,6 +93,7 @@ function toItemRow(entity: EntityRow): TaskItemRow {
     status: row.status,
     priority: row.priority,
     start_at: row.start_at ?? null,
+    end_at: row.end_at ?? null,
     due_at: row.due_at ?? null,
     remind_at: reminders.remind_at,
     ...(reminders.reminders.length > 0 ? { reminders: reminders.reminders } : {}),
@@ -244,24 +250,27 @@ export async function createTaskItem(
     sortOrder = clampSortOrder(sortOrder);
   }
 
-  const dueAt = input.due_at ?? null;
-  let startAt = input.start_at ?? null;
-  if (dueAt == null || dueAt === "") {
-    startAt = null;
-  } else if (startAt != null && startAt !== "") {
+  const dueAt = nonEmptyIso(input.due_at);
+  let startAt = nonEmptyIso(input.start_at);
+  let endAt = nonEmptyIso(input.end_at);
+  if (endAt != null && startAt == null) {
+    throw new Error("end_at requires start_at");
+  }
+  if (startAt != null && endAt != null) {
     const startMs = Date.parse(startAt);
-    const dueMs = Date.parse(dueAt);
-    if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
-      throw new Error("start_at must be <= due_at");
+    const endMs = Date.parse(endAt);
+    if (Number.isFinite(startMs) && Number.isFinite(endMs) && startMs > endMs) {
+      throw new Error("start_at must be <= end_at");
     }
   }
 
+  const planClock = taskPlanClock({ start_at: startAt, end_at: endAt });
   let recurrence: TaskRecurrence | null = null;
   if (input.recurrence != null) {
-    if (dueAt == null || dueAt === "") {
-      throw new Error("recurrence requires due_at");
+    if (planClock == null) {
+      throw new Error("recurrence requires planned time (start_at)");
     }
-    recurrence = normalizeRecurrenceInput(input.recurrence, dueAt);
+    recurrence = normalizeRecurrenceInput(input.recurrence, planClock);
   }
 
   if (input.parent_id != null) {
@@ -280,10 +289,10 @@ export async function createTaskItem(
     reminders: input.reminders,
   });
   if (
-    (dueAt == null || dueAt === "") &&
+    !hasTaskScheduleTime({ start_at: startAt, end_at: endAt, due_at: dueAt }) &&
     (reminders.remind_at != null || reminders.reminders.length > 0)
   ) {
-    throw new Error("reminders require due_at");
+    throw new Error("reminders require planned time or due_at");
   }
 
   const body = {
@@ -292,6 +301,7 @@ export async function createTaskItem(
     list_id: listId,
     sort_order: sortOrder,
     start_at: startAt,
+    end_at: endAt,
     due_at: dueAt,
     remind_at: reminders.remind_at,
     reminders: reminders.reminders,
@@ -356,6 +366,7 @@ export async function updateTaskItem(
       rest.priority !== undefined ||
       rest.due_at !== undefined ||
       rest.start_at !== undefined ||
+      rest.end_at !== undefined ||
       rest.remind_at !== undefined ||
       rest.reminders !== undefined ||
       rest.sort_order !== undefined ||
@@ -402,64 +413,80 @@ export async function updateTaskItem(
     }
   }
   if (input.priority !== undefined) bodyPatch.priority = input.priority;
-  if (input.due_at !== undefined) {
-    const nextDue = input.due_at === "" ? null : input.due_at;
-    bodyPatch.due_at = nextDue;
-    if (nextDue == null) {
-      // 无日期则无重复、提醒与 start
-      bodyPatch.recurrence = null;
-      bodyPatch.remind_at = null;
-      bodyPatch.reminders = [];
-      bodyPatch.start_at = null;
-    } else {
-      const existingRec = parsedExisting.recurrence ?? null;
-      if (existingRec && input.only_this !== true) {
-        bodyPatch.recurrence = { ...existingRec, schedule_at: nextDue };
-      }
-    }
-  }
+
+  // 计划 / deadline 补丁（先写字段，再统一校验）
   if (input.start_at !== undefined) {
-    const nextStart = input.start_at === "" ? null : input.start_at;
-    const dueAfterPatch =
-      bodyPatch.due_at !== undefined
-        ? (bodyPatch.due_at as string | null)
-        : (parsedExisting.due_at ?? null);
-    if (nextStart != null && (dueAfterPatch == null || dueAfterPatch === "")) {
-      throw new Error("start_at requires due_at");
-    }
-    if (nextStart != null && dueAfterPatch) {
-      const startMs = Date.parse(nextStart);
-      const dueMs = Date.parse(dueAfterPatch);
-      if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
-        throw new Error("start_at must be <= due_at");
-      }
-    }
-    bodyPatch.start_at = nextStart;
-  } else if (input.due_at !== undefined && bodyPatch.due_at != null) {
-    // 改 due 未显式改 start：若旧 start 晚于新 due 则清空
-    const existingStart = parsedExisting.start_at ?? null;
-    if (existingStart) {
-      const startMs = Date.parse(existingStart);
-      const dueMs = Date.parse(bodyPatch.due_at as string);
-      if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
-        bodyPatch.start_at = null;
-      }
+    bodyPatch.start_at = input.start_at === "" ? null : input.start_at;
+  }
+  if (input.end_at !== undefined) {
+    bodyPatch.end_at = input.end_at === "" ? null : input.end_at;
+  }
+  if (input.due_at !== undefined) {
+    bodyPatch.due_at = input.due_at === "" ? null : input.due_at;
+  }
+
+  const mergedStart =
+    bodyPatch.start_at !== undefined
+      ? (bodyPatch.start_at as string | null)
+      : (parsedExisting.start_at ?? null);
+  const mergedEnd =
+    bodyPatch.end_at !== undefined
+      ? (bodyPatch.end_at as string | null)
+      : (parsedExisting.end_at ?? null);
+  const mergedDue =
+    bodyPatch.due_at !== undefined
+      ? (bodyPatch.due_at as string | null)
+      : (parsedExisting.due_at ?? null);
+
+  if (nonEmptyIso(mergedEnd) != null && nonEmptyIso(mergedStart) == null) {
+    throw new Error("end_at requires start_at");
+  }
+  if (nonEmptyIso(mergedStart) != null && nonEmptyIso(mergedEnd) != null) {
+    const startMs = Date.parse(mergedStart as string);
+    const endMs = Date.parse(mergedEnd as string);
+    if (Number.isFinite(startMs) && Number.isFinite(endMs) && startMs > endMs) {
+      throw new Error("start_at must be <= end_at");
     }
   }
+
+  const mergedPlanClock = taskPlanClock({ start_at: mergedStart, end_at: mergedEnd });
+  const hasSchedule = hasTaskScheduleTime({
+    start_at: mergedStart,
+    end_at: mergedEnd,
+    due_at: mergedDue,
+  });
+
+  if (!hasSchedule) {
+    bodyPatch.recurrence = null;
+    bodyPatch.remind_at = null;
+    bodyPatch.reminders = [];
+    bodyPatch.start_at = null;
+    bodyPatch.end_at = null;
+  } else if (!hasTaskPlan({ start_at: mergedStart, end_at: mergedEnd })) {
+    // 仅 deadline：清重复
+    if (parsedExisting.recurrence != null && input.recurrence === undefined) {
+      bodyPatch.recurrence = null;
+    }
+  }
+
+  // 改计划时钟且有重复：默认同轨更新 schedule_at（only_this=true 则不改）
+  if (
+    (input.start_at !== undefined || input.end_at !== undefined) &&
+    mergedPlanClock != null &&
+    parsedExisting.recurrence &&
+    input.only_this !== true &&
+    input.recurrence === undefined
+  ) {
+    bodyPatch.recurrence = { ...parsedExisting.recurrence, schedule_at: mergedPlanClock };
+  }
+
   if (input.remind_at !== undefined || input.reminders !== undefined) {
     const synced = normalizeSchedulableReminders({
       remind_at: input.remind_at !== undefined ? input.remind_at : parsedExisting.remind_at,
       reminders: input.reminders !== undefined ? input.reminders : parsedExisting.reminders,
     });
-    const dueAfterPatch =
-      bodyPatch.due_at !== undefined
-        ? (bodyPatch.due_at as string | null)
-        : (parsedExisting.due_at ?? null);
-    if (
-      (dueAfterPatch == null || dueAfterPatch === "") &&
-      (synced.remind_at != null || synced.reminders.length > 0)
-    ) {
-      throw new Error("reminders require due_at");
+    if (!hasSchedule && (synced.remind_at != null || synced.reminders.length > 0)) {
+      throw new Error("reminders require planned time or due_at");
     }
     bodyPatch.remind_at = synced.remind_at;
     bodyPatch.reminders = synced.reminders;
@@ -512,18 +539,17 @@ export async function updateTaskItem(
     if (input.recurrence == null) {
       bodyPatch.recurrence = null;
     } else {
-      const dueForSchedule =
-        bodyPatch.due_at !== undefined
-          ? (bodyPatch.due_at as string | null)
-          : input.due_at !== undefined
-            ? input.due_at === ""
-              ? null
-              : input.due_at
-            : (parsedExisting.due_at ?? null);
-      if (dueForSchedule == null || dueForSchedule === "") {
-        throw new Error("recurrence requires due_at");
+      const planForSchedule =
+        bodyPatch.start_at !== undefined || bodyPatch.end_at !== undefined
+          ? mergedPlanClock
+          : taskPlanClock({
+              start_at: parsedExisting.start_at,
+              end_at: parsedExisting.end_at,
+            });
+      if (planForSchedule == null) {
+        throw new Error("recurrence requires planned time (start_at)");
       }
-      bodyPatch.recurrence = normalizeRecurrenceInput(input.recurrence, dueForSchedule);
+      bodyPatch.recurrence = normalizeRecurrenceInput(input.recurrence, planForSchedule);
     }
   }
 
@@ -546,6 +572,8 @@ export async function updateTaskItem(
 
   if (
     input.due_at !== undefined ||
+    input.start_at !== undefined ||
+    input.end_at !== undefined ||
     input.remind_at !== undefined ||
     input.reminders !== undefined ||
     input.status !== undefined ||
@@ -595,9 +623,11 @@ async function rollOrFinishRecurring(
     return row ? toItemRow(row) : null;
   }
 
+  const prevClock =
+    taskPlanClock({ start_at: parsed.start_at, end_at: parsed.end_at }) ?? parsed.due_at ?? null;
   const next = computeNextOccurrence(recurrence, {
     completedAt: now,
-    currentDueAt: parsed.due_at ?? null,
+    currentDueAt: prevClock,
     decrementCount: opts.writeOccurrence,
   });
 
@@ -615,19 +645,26 @@ async function rollOrFinishRecurring(
   }
 
   const nextReminders = shiftSchedulableReminders(
-    parsed.due_at,
-    next.due_at,
+    prevClock,
+    next.schedule_at,
     parsed.reminders,
     parsed.remind_at,
   );
-  const nextStart = shiftSchedulableStartAt(parsed.due_at, next.due_at, parsed.start_at);
+  const nextPlan = shiftSchedulablePlannedRange(
+    prevClock,
+    next.schedule_at,
+    parsed.start_at,
+    parsed.end_at,
+  );
+  const nextDue = shiftSchedulableDueAt(prevClock, next.schedule_at, parsed.due_at);
   const row = await updateEntity({
     id,
     body: {
       status: "pending",
       completed_at: null,
-      start_at: nextStart,
-      due_at: next.due_at,
+      start_at: nextPlan.start_at,
+      end_at: nextPlan.end_at,
+      due_at: nextDue,
       remind_at: nextReminders.remind_at,
       reminders: nextReminders.reminders,
       recurrence: next.recurrence,

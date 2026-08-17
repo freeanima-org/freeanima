@@ -9,6 +9,7 @@ import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 export const ADVANCED_SECTIONS = [
+  "i18n",
   "gateway",
   "discord",
   "weixin",
@@ -26,11 +27,69 @@ export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
 /** Shell 侧边栏标题；未列出的段用 section id */
 export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>> = {
+  i18n: "时区",
   gateway: "网关",
   discord: "Discord",
   weixin: "微信",
   object_storage: "对象存储",
 };
+
+function I18nForm({
+  value,
+  onChange,
+}: {
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+}) {
+  const timezone = coerceString(value.timezone ?? "Asia/Shanghai") || "Asia/Shanghai";
+  const common = [
+    "Asia/Shanghai",
+    "Asia/Hong_Kong",
+    "Asia/Tokyo",
+    "UTC",
+    "America/Los_Angeles",
+    "America/New_York",
+    "Europe/London",
+    "Europe/Berlin",
+  ];
+  const isCommon = common.includes(timezone);
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        栖息地全局时区（IANA）。影响任务/日历日界、提醒扫描与写入 ISO 的 offset。默认
+        Asia/Shanghai。改后立即生效，无需重启。
+      </p>
+      <div className="space-y-2">
+        <Label htmlFor="i18n-timezone">时区</Label>
+        <select
+          id="i18n-timezone"
+          className={habitatConfigSelectClassName}
+          value={isCommon ? timezone : "__custom__"}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "__custom__") {
+              onChange({ ...value, timezone: isCommon ? "" : timezone });
+              return;
+            }
+            onChange({ ...value, timezone: v });
+          }}
+        >
+          {common.map((tz) => (
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
+          ))}
+          <option value="__custom__">其他（手动输入）</option>
+        </select>
+        {!isCommon
+          ? hubConfigTextField("timezone", timezone, (tz) => onChange({ ...value, timezone: tz }), {
+              hint: "例：Asia/Shanghai、Europe/Paris",
+            })
+          : null}
+      </div>
+    </div>
+  );
+}
 
 function FirecrawlForm({
   value,
@@ -469,6 +528,8 @@ export function AdvancedSectionForm({
   onChange: (v: Record<string, unknown>) => void;
 }) {
   switch (section) {
+    case "i18n":
+      return <I18nForm value={value} onChange={onChange} />;
     case "gateway":
       return <GatewayForm value={value} onChange={onChange} />;
     case "discord":

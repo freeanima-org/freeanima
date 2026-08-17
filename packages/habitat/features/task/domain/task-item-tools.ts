@@ -23,7 +23,9 @@ import { getDefaultTaskList } from "./list-store.ts";
 import { TASK_TOOL_RETURNS } from "./return-schemas.ts";
 import {
   itemPayload,
+  parseOptionalIso,
   parsePriority,
+  parseReminders,
   parseTagIds,
   resolveToolTagIds,
   TASK_PRIORITIES,
@@ -82,9 +84,12 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const tagResolved = await resolveToolTagIds(worldId, args);
   if (!tagResolved.ok) return toolError(tagResolved.error);
 
-  const dueAt = args.due_at != null && args.due_at !== "" ? coerceString(args.due_at).trim() : null;
-  const remindAt =
-    args.remind_at != null && args.remind_at !== "" ? coerceString(args.remind_at).trim() : null;
+  const startAt = parseOptionalIso(args.start_at);
+  const endAt = parseOptionalIso(args.end_at);
+  const dueAt = parseOptionalIso(args.due_at);
+  const remindAt = parseOptionalIso(args.remind_at);
+  const remindersParsed = parseReminders(args.reminders);
+  if (!remindersParsed.ok) return toolError(remindersParsed.error);
   const content = args.content != null ? coerceString(args.content) : "";
   const project_id = hasProjectId ? Number(projectIdRaw) : undefined;
   let recurrence: ReturnType<typeof parseRecurrenceArg>;
@@ -103,8 +108,11 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
         tag_ids: tagResolved.value,
         list_id: listId,
         priority,
-        due_at: dueAt,
-        remind_at: remindAt,
+        start_at: startAt ?? undefined,
+        end_at: endAt ?? undefined,
+        due_at: dueAt ?? undefined,
+        remind_at: remindAt ?? undefined,
+        reminders: remindersParsed.value,
         project_id,
         recurrence: recurrence ?? undefined,
       }),
@@ -140,12 +148,22 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
     if (!priority) return toolError(`invalid priority: ${coerceString(args.priority)}`);
     patch.priority = priority;
   }
+  if (args.start_at !== undefined) {
+    patch.start_at = parseOptionalIso(args.start_at) ?? null;
+  }
+  if (args.end_at !== undefined) {
+    patch.end_at = parseOptionalIso(args.end_at) ?? null;
+  }
   if (args.due_at !== undefined) {
-    patch.due_at = args.due_at != null && args.due_at !== "" ? coerceString(args.due_at) : null;
+    patch.due_at = parseOptionalIso(args.due_at) ?? null;
   }
   if (args.remind_at !== undefined) {
-    patch.remind_at =
-      args.remind_at != null && args.remind_at !== "" ? coerceString(args.remind_at) : null;
+    patch.remind_at = parseOptionalIso(args.remind_at) ?? null;
+  }
+  if (args.reminders !== undefined) {
+    const remindersParsed = parseReminders(args.reminders);
+    if (!remindersParsed.ok) return toolError(remindersParsed.error);
+    patch.reminders = remindersParsed.value ?? [];
   }
   if (args.sort_order !== undefined) patch.sort_order = Number(args.sort_order);
   if (args.project_id !== undefined) {
@@ -245,8 +263,13 @@ async function handleGet(args: Record<string, unknown>): Promise<string> {
     tag_ids: [...(row.tag_ids ?? [])],
     status: parsed.status,
     priority: parsed.priority,
+    start_at: parsed.start_at ?? null,
+    end_at: parsed.end_at ?? null,
     due_at: parsed.due_at ?? null,
     remind_at: parsed.remind_at ?? null,
+    ...(parsed.reminders != null && parsed.reminders.length > 0
+      ? { reminders: parsed.reminders }
+      : {}),
     list_id: parsed.list_id,
     project_id: parsed.project_id ?? null,
     sort_order: parsed.sort_order ?? 0,
@@ -401,12 +424,35 @@ export function buildTaskItemToolDefs() {
               description: "Create in project (clears list affiliation); exclusive with list_id",
             },
             priority: { type: "string", enum: TASK_PRIORITIES },
-            due_at: { type: "string", description: "Due time ISO8601" },
-            remind_at: { type: "string", description: "Reminder time ISO8601" },
+            start_at: {
+              type: "string",
+              description: "Planned start ISO8601 (point or range start)",
+            },
+            end_at: {
+              type: "string",
+              description: "Planned end ISO8601; null/omit for point plan",
+            },
+            due_at: { type: "string", description: "Deadline ISO8601 (independent of plan)" },
+            remind_at: {
+              type: "string",
+              description: "Earliest reminder ISO8601 (mirrors reminders)",
+            },
+            reminders: {
+              type: "array",
+              description: "Advance reminders: [{ at, anchor?: start|end|due }]",
+              items: {
+                type: "object",
+                properties: {
+                  at: { type: "string" },
+                  anchor: { type: "string", enum: ["start", "end", "due"] },
+                },
+                required: ["at"],
+              },
+            },
             recurrence: {
               type: "object",
               description:
-                "Recurrence rule: {freq, interval?, anchor?, weekdays?, until?, count?, schedule_at?}",
+                "Recurrence rule: {freq, interval?, anchor?, weekdays?, until?, count?, schedule_at?} (binds plan clock)",
             },
           },
           required: ["subject_kind", "title"],
@@ -436,8 +482,22 @@ export function buildTaskItemToolDefs() {
               description: "Move to project; null to return to Backlog",
             },
             priority: { type: "string", enum: TASK_PRIORITIES },
-            due_at: { type: "string" },
+            start_at: { type: "string", description: "Planned start ISO8601" },
+            end_at: { type: "string", description: "Planned end ISO8601; null to clear" },
+            due_at: { type: "string", description: "Deadline ISO8601; null to clear" },
             remind_at: { type: "string" },
+            reminders: {
+              type: "array",
+              description: "Advance reminders: [{ at, anchor?: start|end|due }]",
+              items: {
+                type: "object",
+                properties: {
+                  at: { type: "string" },
+                  anchor: { type: "string", enum: ["start", "end", "due"] },
+                },
+                required: ["at"],
+              },
+            },
             sort_order: { type: "integer" },
             recurrence: {
               type: "object",
@@ -445,7 +505,7 @@ export function buildTaskItemToolDefs() {
             },
             only_this: {
               type: "boolean",
-              description: "When changing due_at with recurrence: true = this occurrence only",
+              description: "When changing plan clock with recurrence: true = this occurrence only",
             },
           },
           required: ["subject_kind", "id"],
@@ -455,7 +515,7 @@ export function buildTaskItemToolDefs() {
       {
         name: "task_complete",
         description:
-          "Complete task (recurring: write occurrence and roll due; non-recurring: mark completed)",
+          "Complete task (recurring: write occurrence and roll plan clock; non-recurring: mark completed)",
         exposeMcp: true,
         parameters: {
           type: "object",
@@ -563,7 +623,7 @@ export function buildTaskItemToolDefs() {
       {
         name: "task_convert_to_event",
         description:
-          "Retype a pending rooted task with a date into a calendar_event (same entity id; lossy: drops recurrence, list/project, subtasks).",
+          "Retype a pending rooted task with planned time into a calendar_event (same entity id; lossy: drops recurrence, deadline, list/project, subtasks).",
         exposeMcp: true,
         parameters: {
           type: "object",

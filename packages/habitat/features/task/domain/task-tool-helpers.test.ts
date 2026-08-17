@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { parseTagIds, parseTagTitles } from "./task-tool-helpers.ts";
+import { parseReminders, parseTagIds, parseTagTitles } from "./task-tool-helpers.ts";
 
 describe("parseTagIds", () => {
   test("undefined when omitted", () => {
@@ -35,5 +35,26 @@ describe("parseTagTitles", () => {
 
   test("rejects non-array", () => {
     expect(parseTagTitles("bug").ok).toBe(false);
+  });
+});
+
+describe("parseReminders", () => {
+  test("undefined when omitted", () => {
+    expect(parseReminders(undefined)).toEqual({ ok: true, value: undefined });
+  });
+
+  test("empty array when null", () => {
+    expect(parseReminders(null)).toEqual({ ok: true, value: [] });
+  });
+
+  test("accepts at + optional anchor", () => {
+    expect(parseReminders([{ at: "2026-08-11T10:00:00+08:00", anchor: "start" }])).toEqual({
+      ok: true,
+      value: [{ at: "2026-08-11T10:00:00+08:00", anchor: "start" }],
+    });
+  });
+
+  test("rejects invalid anchor", () => {
+    expect(parseReminders([{ at: "x", anchor: "bogus" }]).ok).toBe(false);
   });
 });

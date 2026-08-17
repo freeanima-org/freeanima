@@ -204,6 +204,7 @@ export function TaskApp() {
           tag_ids: snapshot.tag_ids,
           priority: snapshot.priority,
           start_at: snapshot.start_at ?? null,
+          end_at: snapshot.end_at ?? null,
           due_at: snapshot.due_at,
           remind_at: snapshot.remind_at ?? null,
           reminders: snapshot.reminders ?? [],

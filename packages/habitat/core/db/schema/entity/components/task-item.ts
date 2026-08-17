@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 import { taskRecurrenceSchema } from "../task-recurrence.ts";
-import { schedulableBodySchema } from "./schedulable.ts";
+import {
+  hasTaskPlan,
+  hasTaskScheduleTime,
+  nonEmptyIso,
+  schedulableBodySchema,
+  taskPlanClock,
+} from "./schedulable.ts";
 import { TASK_ITEM_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
 export {
   taskItemStatusSchema,
@@ -38,17 +44,28 @@ const taskItemBodyFieldsSchema = schedulableBodySchema.extend({
  * 归属互斥：恰好一方有值（list_id XOR project_id）。
  * 读路径预处理：
  * - 存量「进项目仍带 list_id」归一为 list_id=null
- * - 无 due_at 时剥离 recurrence / 提醒（硬约束：无日期则无重复与提醒）
+ * - 无计划且无 due 时剥离 recurrence / 提醒
+ * - 旧 due→计划 仅由 PG migration 完成（不可在读路径猜：新模型允许「仅 due」为真 deadline）
  */
 export const taskItemBodySchema = z.preprocess(
   (val) => {
     if (val == null || typeof val !== "object") return val;
-    let obj = val as Record<string, unknown>;
+    let obj = { ...(val as Record<string, unknown>) };
     if (obj.project_id != null && obj.project_id !== "") {
       obj = { ...obj, list_id: null };
     }
-    const dueEmpty = obj.due_at == null || obj.due_at === "";
-    if (dueEmpty) {
+
+    // 有 end 无 start：先丢弃孤立 end（再算计划/约束）
+    if (nonEmptyIso(obj.end_at) != null && nonEmptyIso(obj.start_at) == null) {
+      obj = { ...obj, end_at: null };
+    }
+
+    const hasSchedule = hasTaskScheduleTime({
+      start_at: nonEmptyIso(obj.start_at),
+      end_at: nonEmptyIso(obj.end_at),
+      due_at: nonEmptyIso(obj.due_at),
+    });
+    if (!hasSchedule) {
       const hasRemind =
         (typeof obj.remind_at === "string" && obj.remind_at.length > 0) ||
         (Array.isArray(obj.reminders) && obj.reminders.length > 0);
@@ -56,15 +73,17 @@ export const taskItemBodySchema = z.preprocess(
       if (hasRemind || hasRecurrence) {
         obj = {
           ...obj,
-          due_at: null,
           recurrence: null,
           remind_at: null,
           reminders: [],
         };
       }
-      // 无 due 时不保留孤立 start_at
-      if (obj.start_at != null && obj.start_at !== "") {
-        obj = { ...obj, start_at: null };
+    } else if (
+      !hasTaskPlan({ start_at: nonEmptyIso(obj.start_at), end_at: nonEmptyIso(obj.end_at) })
+    ) {
+      // 仅 deadline：不允许重复（重复绑计划时钟）
+      if (obj.recurrence != null && obj.recurrence !== undefined) {
+        obj = { ...obj, recurrence: null };
       }
     }
     return obj;
@@ -79,44 +98,56 @@ export const taskItemBodySchema = z.preprocess(
         path: hasList ? ["project_id"] : ["list_id"],
       });
     }
-    const dueEmpty = data.due_at == null || data.due_at === "";
-    const start = data.start_at != null && data.start_at !== "" ? data.start_at : null;
-    if (start != null && dueEmpty) {
+
+    const start = nonEmptyIso(data.start_at);
+    const end = nonEmptyIso(data.end_at);
+    if (end != null && start == null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "start_at requires due_at",
-        path: ["start_at"],
+        message: "end_at requires start_at",
+        path: ["end_at"],
       });
     }
-    if (start != null && !dueEmpty && data.due_at) {
+    if (start != null && end != null) {
       const startMs = Date.parse(start);
-      const dueMs = Date.parse(data.due_at);
-      if (Number.isFinite(startMs) && Number.isFinite(dueMs) && startMs > dueMs) {
+      const endMs = Date.parse(end);
+      if (Number.isFinite(startMs) && Number.isFinite(endMs) && startMs > endMs) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "start_at must be <= due_at",
+          message: "start_at must be <= end_at",
           path: ["start_at"],
         });
       }
     }
-    if (!dueEmpty) return;
-    if (data.recurrence != null) {
+
+    const hasPlan = hasTaskPlan({ start_at: start, end_at: end });
+    const hasSchedule = hasTaskScheduleTime({
+      start_at: start,
+      end_at: end,
+      due_at: data.due_at,
+    });
+
+    if (data.recurrence != null && !hasPlan) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "recurrence requires due_at",
+        message: "recurrence requires planned time (start_at)",
         path: ["recurrence"],
       });
     }
+
     const hasRemind =
       (data.remind_at != null && data.remind_at !== "") ||
       (data.reminders != null && data.reminders.length > 0);
-    if (hasRemind) {
+    if (hasRemind && !hasSchedule) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "reminders require due_at",
+        message: "reminders require planned time or due_at",
         path: ["reminders"],
       });
     }
+
+    // 静默：taskPlanClock 供调用方；此处确保字段合法即可
+    void taskPlanClock({ start_at: start, end_at: end });
   }),
 );
 

@@ -1,5 +1,11 @@
 export type CalendarSubjectKind = "user" | "agent";
 
+export type CalendarReminderEntry = {
+  at: string;
+  anchor?: "start" | "end" | "due";
+  last_notified_at?: string | null;
+};
+
 export type CalendarEventRow = {
   id: number;
   title: string;
@@ -8,6 +14,7 @@ export type CalendarEventRow = {
   end_at: string | null;
   all_day: boolean;
   remind_at: string | null;
+  reminders?: CalendarReminderEntry[];
   tag_ids: number[];
   created_at: string;
   updated_at: string;
@@ -20,6 +27,7 @@ export type CalendarEventCreateInput = {
   end_at?: string | null;
   all_day?: boolean;
   remind_at?: string | null;
+  reminders?: CalendarReminderEntry[];
   tag_ids?: number[];
   client_op_id?: string;
 };
@@ -32,6 +40,7 @@ export type CalendarEventUpdateInput = {
   end_at?: string | null;
   all_day?: boolean;
   remind_at?: string | null;
+  reminders?: CalendarReminderEntry[];
   tag_ids?: number[];
 };
 
@@ -57,15 +66,19 @@ export type CalendarRangeEventItem = {
   end_at: string | null;
   all_day: boolean;
   remind_at: string | null;
+  reminders?: CalendarReminderEntry[];
 };
 
 export type CalendarRangeTaskItem = {
   kind: "task";
   id: number;
   title: string;
-  /** 时段起点；无则与 due_at 相同语义 */
+  /** 计划开始 */
   start_at?: string | null;
-  due_at: string;
+  /** 计划结束；单点时为 null */
+  end_at?: string | null;
+  /** 截止（deadline），与计划独立 */
+  due_at?: string | null;
   status: "pending" | "completed";
   priority: "high" | "medium" | "low" | "none";
   project_id: number | null;

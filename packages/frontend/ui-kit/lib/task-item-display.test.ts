@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  hasTaskPlan,
+  hasTaskScheduleTime,
   isTaskItemDisplayEqual,
   PRIORITY_LABEL,
   priorityDot,
@@ -9,6 +11,7 @@ import {
   resolveTaskTagTitles,
   splitTaskTagTitlesForDisplay,
   TASK_ROW_TAG_MAX_VISIBLE,
+  taskPlanClock,
   type TaskItemDisplay,
 } from "./task-item-display.ts";
 
@@ -74,6 +77,45 @@ describe("isTaskItemDisplayEqual", () => {
     const missingTags = { ...base, tag_ids: undefined as unknown as number[] };
     expect(isTaskItemDisplayEqual(missingTags, { ...base, tag_ids: [] })).toBe(true);
     expect(isTaskItemDisplayEqual(missingTags, base)).toBe(false);
+  });
+
+  test("compares end_at and reminder anchor", () => {
+    expect(
+      isTaskItemDisplayEqual(
+        { ...base, start_at: "a", end_at: "b" },
+        { ...base, start_at: "a", end_at: "b" },
+      ),
+    ).toBe(true);
+    expect(
+      isTaskItemDisplayEqual({ ...base, start_at: "a", end_at: "b" }, { ...base, start_at: "a" }),
+    ).toBe(false);
+    expect(
+      isTaskItemDisplayEqual(
+        { ...base, due_at: "d", reminders: [{ at: "r", anchor: "due" }] },
+        { ...base, due_at: "d", reminders: [{ at: "r", anchor: "start" }] },
+      ),
+    ).toBe(false);
+    expect(
+      isTaskItemDisplayEqual(
+        { ...base, due_at: "d", reminders: [{ at: "r", anchor: "due" }] },
+        { ...base, due_at: "d", reminders: [{ at: "r", anchor: "due" }] },
+      ),
+    ).toBe(true);
+  });
+});
+
+describe("task plan helpers", () => {
+  test("taskPlanClock prefers end then start", () => {
+    expect(taskPlanClock({ start_at: "s", end_at: "e" })).toBe("e");
+    expect(taskPlanClock({ start_at: "s", end_at: null })).toBe("s");
+    expect(taskPlanClock({ start_at: null, end_at: null })).toBeNull();
+  });
+
+  test("hasTaskPlan / hasTaskScheduleTime", () => {
+    expect(hasTaskPlan({ start_at: "s" })).toBe(true);
+    expect(hasTaskPlan({ start_at: null, end_at: null })).toBe(false);
+    expect(hasTaskScheduleTime({ start_at: null, due_at: "d" })).toBe(true);
+    expect(hasTaskScheduleTime({ start_at: null, due_at: null })).toBe(false);
   });
 });
 

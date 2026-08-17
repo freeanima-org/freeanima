@@ -7,6 +7,7 @@ import {
   formatDateTime,
   formatDueChip,
   formatRemindChip,
+  mergeDateTimeLocal,
   parseDateLocalValue,
 } from "./datetime-local.ts";
 
@@ -93,5 +94,18 @@ describe("dateLocalPresets", () => {
     expect(presets[1]!.value).toBe(addDaysToDateLocal(today, 1));
     expect(presets[2]!.value).toBe(addDaysToDateLocal(today, 7));
     expect(presets[3]!.value).toBe(addMonthsToDateLocal(today, 1));
+  });
+});
+
+describe("mergeDateTimeLocal", () => {
+  test("returns host-TZ ISO rather than bare Z from toISOString", () => {
+    const iso = mergeDateTimeLocal("2026-08-17", "09:30");
+    expect(iso).toBeTruthy();
+    expect(iso!).not.toMatch(/Z$/);
+    expect(iso!).toMatch(/[+-]\d{2}:\d{2}$/);
+  });
+
+  test("empty date returns null", () => {
+    expect(mergeDateTimeLocal("", "09:00")).toBeNull();
   });
 });

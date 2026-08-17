@@ -4,6 +4,8 @@ export { cn } from "./lib/utils.ts";
 export { FormField, FormFieldLabel, FormFieldset, FormToggle } from "./form/FormFieldset.tsx";
 export { DatePickerInput } from "./form/DatePickerInput.tsx";
 export type { DatePickerGranularity } from "./form/DatePickerInput.tsx";
+export { DateRangePickerPanel } from "./form/DateRangePickerPanel.tsx";
+export type { DateRangeValue, DateRangePickerPanelProps } from "./form/DateRangePickerPanel.tsx";
 export { TimePickerInput } from "./form/TimePickerInput.tsx";
 export { ListDetailLayout } from "./layout/index.ts";
 export type { ListDetailLayoutProps, ListDetailListContext } from "./layout/index.ts";

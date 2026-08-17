@@ -88,7 +88,7 @@ describe("taskReminderSourceRef", () => {
 });
 
 describe("calendarEventReminderSourceRef", () => {
-  it("includes calendar_event prefix and sends on start_at", () => {
+  it("includes calendar_event prefix and sends on start_at fallback", () => {
     const ms = Date.parse("2026-07-31T10:00:00.000Z");
     expect(calendarEventReminderSourceRef(9, ms)).toBe(
       "calendar_event:9:trigger:2026-07-31T10:00:00.000Z",
@@ -96,6 +96,23 @@ describe("calendarEventReminderSourceRef", () => {
     expect(shouldSendCalendarEventReminder({ start_at: "2026-07-31T10:00:00.000Z" }, ms + 1)).toBe(
       true,
     );
+  });
+
+  it("prefers reminders over start_at; does not treat start as due", () => {
+    const start = "2026-07-31T10:00:00.000Z";
+    const remind = "2026-07-31T09:00:00.000Z";
+    expect(
+      shouldSendCalendarEventReminder(
+        { start_at: start, reminders: [{ at: remind, anchor: "start" }] },
+        Date.parse(remind) + 1,
+      ),
+    ).toBe(true);
+    expect(
+      shouldSendCalendarEventReminder(
+        { start_at: start, reminders: [{ at: remind, anchor: "start" }] },
+        Date.parse(remind) - 1,
+      ),
+    ).toBe(false);
   });
 });
 

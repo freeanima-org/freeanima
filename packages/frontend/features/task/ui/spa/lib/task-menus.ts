@@ -105,7 +105,11 @@ export function buildItemMenuItems(
   if (item.project_id == null && handlers.onMoveToProject) {
     items.push({ label: "移入项目…", onClick: () => handlers.onMoveToProject?.(item) });
   }
-  if (item.status === "pending" && (item.due_at || item.start_at) && handlers.onConvertToEvent) {
+  if (
+    item.status === "pending" &&
+    (item.start_at || item.end_at || item.due_at) &&
+    handlers.onConvertToEvent
+  ) {
     items.push({
       label: "转为事件",
       onClick: () => handlers.onConvertToEvent?.(item),

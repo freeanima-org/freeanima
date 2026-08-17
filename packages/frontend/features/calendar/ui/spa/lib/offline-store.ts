@@ -182,6 +182,7 @@ export async function offlineCreateCalendarEvent(
     end_at?: string | null;
     all_day?: boolean;
     remind_at?: string | null;
+    reminders?: CalendarEventRow["reminders"];
     client_op_id?: string;
   },
 ): Promise<CalendarEventRow> {
@@ -201,6 +202,7 @@ export async function offlineCreateCalendarEvent(
           end_at: input.end_at,
           all_day: input.all_day,
           remind_at: input.remind_at,
+          reminders: input.reminders,
           client_op_id: clientOpId,
         }),
       );
@@ -218,6 +220,7 @@ export async function offlineCreateCalendarEvent(
         end_at: input.end_at ?? null,
         all_day: input.all_day ?? false,
         remind_at: input.remind_at ?? null,
+        ...(input.reminders != null ? { reminders: input.reminders } : {}),
         tag_ids: [],
         created_at: now,
         updated_at: now,
@@ -235,6 +238,7 @@ export async function offlineCreateCalendarEvent(
           end_at: input.end_at,
           all_day: input.all_day,
           remind_at: input.remind_at,
+          reminders: input.reminders,
           client_op_id: clientOpId,
         }),
         tempEntityId: tempId,
@@ -256,6 +260,7 @@ export async function offlineUpdateCalendarEvent(
     end_at?: string | null;
     all_day?: boolean;
     remind_at?: string | null;
+    reminders?: CalendarEventRow["reminders"];
   },
 ): Promise<CalendarEventRow> {
   const scope = resolveOutboxScope();
@@ -274,6 +279,7 @@ export async function offlineUpdateCalendarEvent(
           end_at: input.end_at,
           all_day: input.all_day,
           remind_at: input.remind_at,
+          reminders: input.reminders,
         }),
       );
       await upsertLocalEvent(scope, data.item);
@@ -291,6 +297,7 @@ export async function offlineUpdateCalendarEvent(
         end_at: input.end_at === undefined ? existing.end_at : input.end_at,
         all_day: input.all_day ?? existing.all_day,
         remind_at: input.remind_at === undefined ? existing.remind_at : input.remind_at,
+        ...(input.reminders !== undefined ? { reminders: input.reminders } : {}),
         updated_at: formatCstIso(),
       };
       await upsertLocalEvent(scope, item);
@@ -308,6 +315,7 @@ export async function offlineUpdateCalendarEvent(
           end_at: input.end_at,
           all_day: input.all_day,
           remind_at: input.remind_at,
+          reminders: input.reminders,
           client_op_id: opId,
         }),
         ...(isTempId(input.id) ? { tempEntityId: input.id } : {}),

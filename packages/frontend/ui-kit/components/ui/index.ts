@@ -1,8 +1,8 @@
 export { Alert, AlertDescription, AlertTitle, alertVariants } from "./alert.tsx";
 export { Badge, badgeVariants } from "./badge.tsx";
 export { Button, LinkButton, buttonVariants } from "./button.tsx";
-export { Calendar } from "./calendar.tsx";
-export type { DateValue } from "./calendar.tsx";
+export { Calendar, RangeCalendar } from "./calendar.tsx";
+export type { DateValue, DateRange } from "./calendar.tsx";
 export {
   Card,
   CardAction,

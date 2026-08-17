@@ -21,7 +21,7 @@ export type TaskReminderSchedulable = {
   last_notified_at?: string | null;
 };
 
-/** 日程提醒：remind_at 优先，否则 start_at（映射为 due_at 复用触发逻辑） */
+/** 日程提醒：走 reminders[]；缺省可用 start 作为单条 remind（不把 start 伪装成 due） */
 export type CalendarEventReminderSchedulable = {
   start_at?: string | null;
   remind_at?: string | null;
@@ -68,13 +68,26 @@ export function listAdvanceReminders(item: TaskReminderSchedulable): Schedulable
   }).reminders;
 }
 
+/** 事件提醒列表：reminders 真源；空则用 start 作为单条 remind */
+export function listCalendarEventReminders(
+  item: CalendarEventReminderSchedulable,
+): SchedulableReminderEntry[] {
+  const normalized = normalizeSchedulableReminders({
+    remind_at: item.remind_at,
+    reminders: item.reminders,
+    defaultAnchor: "start",
+  }).reminders;
+  if (normalized.length > 0) return normalized;
+  const start = item.start_at != null && item.start_at !== "" ? item.start_at : null;
+  if (start == null) return [];
+  return [{ at: start, anchor: "start" }];
+}
+
 export function calendarEventTriggerMs(item: CalendarEventReminderSchedulable): number | null {
-  return triggerMs({
-    ...(item.remind_at !== undefined ? { remind_at: item.remind_at } : {}),
-    ...(item.reminders !== undefined ? { reminders: item.reminders } : {}),
-    ...(item.start_at !== undefined ? { due_at: item.start_at } : {}),
-    ...(item.last_notified_at !== undefined ? { last_notified_at: item.last_notified_at } : {}),
-  });
+  const first = listCalendarEventReminders(item)[0]?.at;
+  if (!first) return null;
+  const ms = Date.parse(first);
+  return Number.isFinite(ms) ? ms : null;
 }
 
 export function shouldSendDueNotification(
@@ -99,7 +112,7 @@ export function shouldSendAdvanceReminder(
   return true;
 }
 
-/** @deprecated 旧合并语义：用于日历 start/remind；任务请拆 due/advance */
+/** @deprecated 旧合并语义：任务请拆 due/advance */
 export function shouldSendTaskReminder(
   item: TaskReminderSchedulable,
   nowMs: number = Date.now(),
@@ -112,15 +125,13 @@ export function shouldSendCalendarEventReminder(
   item: CalendarEventReminderSchedulable,
   nowMs: number = Date.now(),
 ): boolean {
-  return shouldSendTaskReminder(
-    {
-      ...(item.remind_at !== undefined ? { remind_at: item.remind_at } : {}),
-      ...(item.reminders !== undefined ? { reminders: item.reminders } : {}),
-      ...(item.start_at !== undefined ? { due_at: item.start_at } : {}),
-      ...(item.last_notified_at !== undefined ? { last_notified_at: item.last_notified_at } : {}),
-    },
-    nowMs,
-  );
+  return listCalendarEventReminders(item).some((r) => {
+    const withLegacyLast =
+      r.last_notified_at != null || item.last_notified_at == null
+        ? r
+        : { ...r, last_notified_at: item.last_notified_at };
+    return shouldSendAdvanceReminder(withLegacyLast, nowMs);
+  });
 }
 
 export function taskReminderSourceRef(taskItemId: number, triggerAtMs: number): string {
@@ -147,9 +158,10 @@ function buildAdvanceBody(item: TaskReminderSchedulable & { title: string }, at:
 
 function buildCalendarReminderBody(
   item: CalendarEventReminderSchedulable & { title: string },
+  at: string,
 ): string {
   const startLine = item.start_at ? `开始时间：${item.start_at}` : "";
-  const remindLine = item.remind_at ? `提醒时间：${item.remind_at}` : "";
+  const remindLine = `提醒时间：${at}`;
   return [startLine, remindLine].filter(Boolean).join("\n") || item.title;
 }
 
@@ -197,6 +209,21 @@ export function nextFireMsFromSchedulable(
       candidates.push(nowMs);
       continue;
     }
+    if (at > nowMs) candidates.push(at);
+  }
+  if (candidates.length === 0) return null;
+  return Math.min(...candidates);
+}
+
+export function nextFireMsFromCalendarEvent(
+  item: CalendarEventReminderSchedulable,
+  nowMs: number = Date.now(),
+): number | null {
+  if (shouldSendCalendarEventReminder(item, nowMs)) return nowMs;
+  const candidates: number[] = [];
+  for (const r of listCalendarEventReminders(item)) {
+    const at = Date.parse(r.at);
+    if (!Number.isFinite(at)) continue;
     if (at > nowMs) candidates.push(at);
   }
   if (candidates.length === 0) return null;
@@ -254,10 +281,8 @@ async function scanTaskReminders(port: ReminderPort, now: number): Promise<TaskR
     }
 
     const normalized = listAdvanceReminders(schedulable);
-    // 无 due 的任务不应有 advance 提醒（防存量脏数据）
-    if (item.due_at == null || item.due_at === "") {
-      continue;
-    }
+    if (normalized.length === 0) continue;
+
     let remindersChanged = false;
     const nextReminders = normalized.map((entry) => {
       if (!shouldSendAdvanceReminder(entry, now)) return entry;
@@ -321,12 +346,10 @@ async function scanCalendarEventReminders(
       title: item.title,
       start_at: item.start_at,
       remind_at: item.remind_at ?? null,
+      reminders: item.reminders ?? null,
       last_notified_at: item.last_notified_at ?? null,
     };
     if (!shouldSendCalendarEventReminder(schedulable, now)) continue;
-
-    const at = calendarEventTriggerMs(schedulable);
-    if (at == null) continue;
 
     const recipient = recipientForTaskWorld(row.world_id, port);
     if (!recipient) {
@@ -334,27 +357,64 @@ async function scanCalendarEventReminders(
       continue;
     }
 
-    await port.create({
-      recipient_kind: recipient.kind,
-      recipient_id: recipient.id,
-      title: `日程提醒：${item.title}`,
-      body: buildCalendarReminderBody(schedulable),
-      source_kind: "system",
-      source_ref: calendarEventReminderSourceRef(item.id, at),
-      payload: { calendar_event_id: item.id },
-    });
+    const listed = listCalendarEventReminders(schedulable).map((r) =>
+      r.last_notified_at != null || schedulable.last_notified_at == null
+        ? r
+        : { ...r, last_notified_at: schedulable.last_notified_at },
+    );
+    const dueEntries = listed.filter((entry) => shouldSendAdvanceReminder(entry, now));
+    if (dueEntries.length === 0) continue;
 
+    const notifiedAt = formatCstIso(new Date());
+    for (const entry of dueEntries) {
+      const at = Date.parse(entry.at);
+      if (!Number.isFinite(at)) continue;
+      await port.create({
+        recipient_kind: recipient.kind,
+        recipient_id: recipient.id,
+        title: `日程提醒：${item.title}`,
+        body: buildCalendarReminderBody(schedulable, entry.at),
+        source_kind: "system",
+        source_ref: calendarEventReminderSourceRef(item.id, at),
+        payload: { calendar_event_id: item.id },
+      });
+      sent += 1;
+    }
+
+    const isSyntheticStart =
+      (!item.reminders || item.reminders.length === 0) &&
+      (item.remind_at == null || item.remind_at === "");
+
+    if (isSyntheticStart) {
+      await updateEntity({
+        id: item.id,
+        body: { last_notified_at: notifiedAt },
+      });
+      continue;
+    }
+
+    const firedAts = new Set(dueEntries.map((e) => e.at));
+    const nextReminders = listed.map((entry) =>
+      firedAts.has(entry.at) ? { ...entry, last_notified_at: notifiedAt } : entry,
+    );
+    const synced = normalizeSchedulableReminders({
+      reminders: nextReminders,
+      defaultAnchor: "start",
+    });
     await updateEntity({
       id: item.id,
-      body: { last_notified_at: formatCstIso(new Date()) },
+      body: {
+        reminders: synced.reminders,
+        remind_at: synced.remind_at,
+        last_notified_at: notifiedAt,
+      },
     });
-    sent += 1;
   }
 
   return { sent, scanned: search.results.length, skipped_unknown_world: skippedUnknownWorld };
 }
 
-/** 扫描到期任务与日程事件：due→Inbox；advance→本机 Alert 事件 */
+/** 扫描到期任务与日程事件：due→Inbox；advance→本机 Alert；事件 reminders→Inbox */
 export async function runTaskReminderScan(): Promise<string> {
   const port = getNotificationPort();
   if (!port) {
@@ -407,10 +467,11 @@ export async function queryEarliestTaskReminderFireMs(
   for (const row of calSearch.results) {
     const item = asCalendarEvent(row);
     if (!item) continue;
-    const next = nextFireMsFromSchedulable(
+    const next = nextFireMsFromCalendarEvent(
       {
-        due_at: item.start_at,
+        start_at: item.start_at,
         remind_at: item.remind_at ?? null,
+        reminders: item.reminders ?? null,
         last_notified_at: item.last_notified_at ?? null,
       },
       nowMs,

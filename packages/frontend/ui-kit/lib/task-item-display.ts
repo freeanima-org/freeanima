@@ -19,8 +19,12 @@ export type TaskItemRecurrenceDisplay = {
   lunar_day?: number | undefined;
 };
 
+export type TaskReminderAnchor = "start" | "end" | "due";
+
 export type TaskItemReminderDisplay = {
   at: string;
+  /** 相对哪类时间锚点；缺省由读写路径补 */
+  anchor?: TaskReminderAnchor | undefined;
 };
 
 /** 任务列表/详情 UI 的最小字段集（feature 层 row 类型可结构兼容） */
@@ -31,14 +35,48 @@ export type TaskItemDisplay = {
   tag_ids: number[];
   status: TaskItemStatus;
   priority: TaskItemPriority;
-  /** 时段起点；缺省/null = 无开始时间 */
+  /** 计划开始；单点或时段起点 */
   start_at?: string | null | undefined;
+  /** 计划结束；单点时为 null */
+  end_at?: string | null | undefined;
+  /** 截止（deadline），与计划独立 */
   due_at: string | null;
   remind_at?: string | null | undefined;
   reminders?: TaskItemReminderDisplay[] | undefined;
   /** 缺省/undefined = 非重复；null 显式清除 */
   recurrence?: TaskItemRecurrenceDisplay | null | undefined;
 };
+
+/** 计划时钟：时段终点，否则单点开始 */
+export function taskPlanClock(item: {
+  start_at?: string | null | undefined;
+  end_at?: string | null | undefined;
+}): string | null {
+  const end = item.end_at?.trim() ? item.end_at : null;
+  if (end) return end;
+  const start = item.start_at?.trim() ? item.start_at : null;
+  return start;
+}
+
+export function hasTaskPlan(item: {
+  start_at?: string | null | undefined;
+  end_at?: string | null | undefined;
+}): boolean {
+  return taskPlanClock(item) != null;
+}
+
+export function hasTaskDeadline(item: { due_at?: string | null | undefined }): boolean {
+  return item.due_at != null && item.due_at.trim() !== "";
+}
+
+/** 有计划或截止 → 允许提醒；重复另需计划时钟 */
+export function hasTaskScheduleTime(item: {
+  start_at?: string | null | undefined;
+  end_at?: string | null | undefined;
+  due_at?: string | null | undefined;
+}): boolean {
+  return hasTaskPlan(item) || hasTaskDeadline(item);
+}
 
 /** 优先级文案（列表 title / 详情菜单） */
 export const PRIORITY_LABEL: Record<TaskItemPriority, string> = {
@@ -87,7 +125,13 @@ function normalizeRemindersForEqual(item: TaskItemDisplay): {
 } {
   const fromArray = (item.reminders ?? []).filter((r) => r.at);
   if (fromArray.length > 0) {
-    return { remind_at: fromArray[0]?.at ?? null, reminders: fromArray };
+    return {
+      remind_at: fromArray[0]?.at ?? null,
+      reminders: fromArray.map((r) => ({
+        at: r.at,
+        ...(r.anchor !== undefined ? { anchor: r.anchor } : {}),
+      })),
+    };
   }
   const single = item.remind_at ?? null;
   return { remind_at: single, reminders: single ? [{ at: single }] : [] };
@@ -97,7 +141,12 @@ export function cloneTaskItemDisplay<T extends TaskItemDisplay>(item: T): T {
   return {
     ...item,
     tag_ids: [...(item.tag_ids ?? [])],
-    reminders: item.reminders ? item.reminders.map((r) => ({ ...r })) : undefined,
+    reminders: item.reminders
+      ? item.reminders.map((r) => ({
+          at: r.at,
+          ...(r.anchor !== undefined ? { anchor: r.anchor } : {}),
+        }))
+      : undefined,
   };
 }
 
@@ -112,6 +161,7 @@ export function isTaskItemDisplayEqual(a: TaskItemDisplay, b: TaskItemDisplay): 
     a.status === b.status &&
     a.priority === b.priority &&
     (a.start_at ?? null) === (b.start_at ?? null) &&
+    (a.end_at ?? null) === (b.end_at ?? null) &&
     a.due_at === b.due_at &&
     aRem.remind_at === bRem.remind_at &&
     JSON.stringify(aRem.reminders) === JSON.stringify(bRem.reminders) &&

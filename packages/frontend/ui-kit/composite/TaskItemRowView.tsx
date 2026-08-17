@@ -4,8 +4,11 @@ import { Checkbox } from "../components/ui/checkbox.tsx";
 import { formatDue } from "../lib/datetime-local.ts";
 import {
   PRIORITY_LABEL,
+  hasTaskDeadline,
+  hasTaskPlan,
   priorityToneBg,
   resolveTaskTagTitles,
+  taskPlanClock,
   type TaskItemDisplay,
 } from "../lib/task-item-display.ts";
 import { ListRow } from "./ListRow.tsx";
@@ -156,9 +159,14 @@ export function TaskItemRowView({
                 #{item.id}
               </span>
             ) : null}
-            {item.due_at ? (
+            {hasTaskPlan(item) ? (
               <span className="text-muted-foreground shrink-0 text-xs">
-                {formatDue(item.due_at)}
+                {formatDue(taskPlanClock(item))}
+              </span>
+            ) : null}
+            {hasTaskDeadline(item) ? (
+              <span className="text-muted-foreground shrink-0 text-xs">
+                截止 {formatDue(item.due_at)}
               </span>
             ) : null}
           </>

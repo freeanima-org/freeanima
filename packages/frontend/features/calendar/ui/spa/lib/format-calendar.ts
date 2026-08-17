@@ -1,4 +1,4 @@
-import { CST_OFFSET_MS, formatCstIso } from "@freeanima/shared/util";
+import { formatCstIso, hostTimeZoneId } from "@freeanima/shared/util";
 import {
   dateLocalToIso,
   isoToDateLocalValue,
@@ -15,14 +15,20 @@ export {
   todayDateLocalValue,
 };
 
-/** CST YYYY-MM-DD for a Date instant */
+function hostOffsetSuffix(date: Date = new Date()): string {
+  const iso = formatCstIso(date);
+  const m = /([+-]\d{2}:\d{2})$/.exec(iso);
+  return m?.[1] ?? "+08:00";
+}
+
+/** Host-TZ YYYY-MM-DD for a Date instant */
 export function cstDayKey(date: Date = new Date()): string {
   return formatCstIso(date).slice(0, 10);
 }
 
 /**
- * 将任意 ISO / 日期字符串落到 CST 日历日（YYYY-MM-DD）。
- * 不可对带时区的 UTC 串直接 slice 前缀（如 `…T16:00:00.000Z` 在 CST 已是次日）。
+ * 将任意 ISO / 日期字符串落到 host 时区日历日（YYYY-MM-DD）。
+ * 不可对带时区的 UTC 串直接 slice 前缀（如 `…T16:00:00.000Z` 在 +08 已是次日）。
  * 纯日期 `YYYY-MM-DD` 视为已是日历日，原样返回。
  */
 export function dayKeyFromIso(iso: string): string {
@@ -33,7 +39,7 @@ export function dayKeyFromIso(iso: string): string {
   return cstDayKey(new Date(ms));
 }
 
-/** CST 日键加一天；非法输入返回 null */
+/** Host 日键加一天；非法输入返回 null */
 export function nextDayKey(day: string): string | null {
   const parts = day.split("-").map(Number);
   const y = parts[0];
@@ -51,11 +57,8 @@ export function monthLabel(year: number, monthIndex: number): string {
 
 /** Build month grid cells (Mon-first), each cell is YYYY-MM-DD or null padding */
 export function buildMonthGrid(year: number, monthIndex: number): (string | null)[] {
-  const firstUtc = Date.UTC(year, monthIndex, 1) - CST_OFFSET_MS;
-  const first = new Date(firstUtc + CST_OFFSET_MS);
-  // weekday in CST: 0=Sun..6=Sat → Mon-first offset
   const cstParts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Shanghai",
+    timeZone: hostTimeZoneId(),
     year: "numeric",
     month: "numeric",
     day: "numeric",
@@ -80,16 +83,16 @@ export function buildMonthGrid(year: number, monthIndex: number): (string | null
     cells.push(`${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`);
   }
   while (cells.length % 7 !== 0) cells.push(null);
-  void first;
   return cells;
 }
 
 export function monthRangeIso(year: number, monthIndex: number): { from: string; to: string } {
   const lastDay = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
   const mm = String(monthIndex + 1).padStart(2, "0");
+  const offset = hostOffsetSuffix();
   return {
-    from: `${year}-${mm}-01T00:00:00+08:00`,
-    to: `${year}-${mm}-${String(lastDay).padStart(2, "0")}T23:59:59+08:00`,
+    from: `${year}-${mm}-01T00:00:00${offset}`,
+    to: `${year}-${mm}-${String(lastDay).padStart(2, "0")}T23:59:59${offset}`,
   };
 }
 

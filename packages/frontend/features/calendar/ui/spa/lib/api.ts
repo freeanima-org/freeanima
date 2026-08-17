@@ -81,6 +81,7 @@ export async function createCalendarEvent(
     end_at?: string | null;
     all_day?: boolean;
     remind_at?: string | null;
+    reminders?: Array<{ at: string; anchor?: "start" | "end" | "due" }>;
     client_op_id?: string;
   },
 ): Promise<CalendarEventRow> {
@@ -98,6 +99,7 @@ export async function updateCalendarEvent(
     end_at?: string | null;
     all_day?: boolean;
     remind_at?: string | null;
+    reminders?: Array<{ at: string; anchor?: "start" | "end" | "due" }>;
   },
 ): Promise<CalendarEventRow> {
   ensureCalendarOfflineModule();

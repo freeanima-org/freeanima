@@ -60,6 +60,11 @@ export async function serviceCalendarCreate(
     end_at?: string | null;
     all_day?: boolean;
     remind_at?: string | null;
+    reminders?: Array<{
+      at: string;
+      anchor?: "start" | "end" | "due";
+      last_notified_at?: string | null;
+    }>;
     tag_ids?: number[];
     client_op_id?: string;
   },
@@ -81,6 +86,11 @@ export async function serviceCalendarPatch(
     end_at?: string | null;
     all_day?: boolean;
     remind_at?: string | null;
+    reminders?: Array<{
+      at: string;
+      anchor?: "start" | "end" | "due";
+      last_notified_at?: string | null;
+    }>;
     tag_ids?: number[];
   },
 ) {

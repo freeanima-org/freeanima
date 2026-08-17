@@ -3,6 +3,8 @@ import {
   TASK_ITEM_COMPONENT,
   asProject,
   asTaskItem,
+  hasTaskPlan,
+  taskPlanClock,
 } from "@freeanima/habitat/core/db/schema/entity";
 import { searchEntities } from "@freeanima/habitat/core/db/pg/entity";
 
@@ -23,12 +25,34 @@ function sortKey(item: CalendarRangeItem): number {
     return Number.isFinite(ms) ? ms : 0;
   }
   if (item.kind === "task") {
-    const anchor = item.start_at ?? item.due_at;
-    const ms = Date.parse(anchor);
+    const anchor = item.start_at ?? item.end_at ?? item.due_at ?? null;
+    const ms = anchor ? Date.parse(anchor) : NaN;
     return Number.isFinite(ms) ? ms : 0;
   }
   const start = item.start_at ? Date.parse(item.start_at) : NaN;
   return Number.isFinite(start) ? start : 0;
+}
+
+function planOverlapsRange(
+  startAt: string | null,
+  endAt: string | null,
+  from: string,
+  to: string,
+): boolean {
+  const clock = taskPlanClock({ start_at: startAt, end_at: endAt });
+  if (clock == null) return false;
+  const startMs = startAt ? Date.parse(startAt) : Date.parse(clock);
+  const endMs = endAt ? Date.parse(endAt) : startMs;
+  const fromMs = Date.parse(from);
+  const toMs = Date.parse(to);
+  return (
+    Number.isFinite(startMs) &&
+    Number.isFinite(endMs) &&
+    Number.isFinite(fromMs) &&
+    Number.isFinite(toMs) &&
+    startMs <= toMs &&
+    endMs >= fromMs
+  );
 }
 
 export async function listCalendarRange(
@@ -55,6 +79,7 @@ export async function listCalendarRange(
         end_at: e.end_at,
         all_day: e.all_day,
         remind_at: e.remind_at,
+        ...(e.reminders != null && e.reminders.length > 0 ? { reminders: e.reminders } : {}),
       });
     }
   }
@@ -66,7 +91,7 @@ export async function listCalendarRange(
       filters: {
         status: "pending",
         roots_only: true,
-        // 不设 in_backlog：同时包含清单/backlog 与项目内带 due 任务
+        // 不设 in_backlog：同时包含清单/backlog 与项目内带计划任务
       },
       limit: 500,
       mode: "filter_only",
@@ -74,25 +99,18 @@ export async function listCalendarRange(
     for (const row of result.results) {
       const item = asTaskItem(row);
       if (!item) continue;
-      if (item.due_at) {
-        const dueMs = Date.parse(item.due_at);
-        const startMs = item.start_at ? Date.parse(item.start_at) : dueMs;
-        const fromMs = Date.parse(opts.from);
-        const toMs = Date.parse(opts.to);
-        const overlaps =
-          Number.isFinite(dueMs) &&
-          Number.isFinite(startMs) &&
-          Number.isFinite(fromMs) &&
-          Number.isFinite(toMs) &&
-          startMs <= toMs &&
-          dueMs >= fromMs;
-        if (overlaps) {
+      const startAt = item.start_at ?? null;
+      const endAt = item.end_at ?? null;
+      const dueAt = item.due_at ?? null;
+      if (hasTaskPlan({ start_at: startAt, end_at: endAt })) {
+        if (planOverlapsRange(startAt, endAt, opts.from, opts.to)) {
           items.push({
             kind: "task",
             id: item.id,
             title: item.title,
-            start_at: item.start_at ?? null,
-            due_at: item.due_at,
+            start_at: startAt,
+            end_at: endAt,
+            due_at: dueAt,
             status: item.status === "completed" ? "completed" : "pending",
             priority: item.priority ?? "none",
             project_id: item.project_id ?? null,
@@ -100,7 +118,7 @@ export async function listCalendarRange(
           });
         }
       }
-      if (item.recurrence && item.due_at) {
+      if (item.recurrence && hasTaskPlan({ start_at: startAt, end_at: endAt })) {
         items.push(
           ...expandRecurringTaskVirtuals({
             id: item.id,
@@ -109,7 +127,9 @@ export async function listCalendarRange(
             priority: item.priority ?? "none",
             project_id: item.project_id ?? null,
             list_id: item.list_id ?? null,
-            due_at: item.due_at,
+            start_at: startAt,
+            end_at: endAt,
+            due_at: dueAt,
             recurrence: item.recurrence,
             from: opts.from,
             to: opts.to,

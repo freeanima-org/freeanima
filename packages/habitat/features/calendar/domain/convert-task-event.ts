@@ -4,6 +4,7 @@ import {
   asCalendarEvent,
   asTaskItem,
   normalizeSchedulableReminders,
+  taskPlanClock,
   type CalendarEventBody,
   type TaskItemBody,
 } from "@freeanima/habitat/core/db/schema/entity";
@@ -21,7 +22,7 @@ import { nextPrependSortOrder } from "@freeanima/shared/task/sort-order.ts";
 import { getTaskItem, listTaskItems } from "@freeanima/features/task/domain/item-store.ts";
 import type { TaskItemRow } from "@freeanima/features/task/domain/types.ts";
 
-import type { CalendarEventRow, CalendarStoreContext } from "./types.ts";
+import type { CalendarEventRow, CalendarStoreContext, CalendarReminderEntry } from "./types.ts";
 
 function touchReminderScheduler(): void {
   try {
@@ -31,57 +32,97 @@ function touchReminderScheduler(): void {
   }
 }
 
-function earliestRemindAt(input: {
-  remind_at?: string | null;
-  reminders?: Array<{ at: string }> | null;
-}): string | null {
-  const normalized = normalizeSchedulableReminders({
-    remind_at: input.remind_at,
-    reminders: input.reminders ?? undefined,
+function toCalendarReminders(
+  reminders: ReadonlyArray<{ at: string } & Record<string, unknown>>,
+): CalendarReminderEntry[] {
+  return reminders.map((r) => {
+    const entry: CalendarReminderEntry = { at: r.at };
+    const anchor = r.anchor;
+    if (anchor === "start" || anchor === "end" || anchor === "due") {
+      entry.anchor = anchor;
+    }
+    if ("last_notified_at" in r) {
+      const last = r.last_notified_at;
+      entry.last_notified_at = last === null || typeof last === "string" ? last : null;
+    }
+    return entry;
   });
-  return normalized.remind_at;
 }
 
-/** 有损：task_item body → calendar_event body（丢弃 recurrence / 归属 / 状态等） */
+/** 有损：task_item → calendar_event（丢弃 recurrence / 归属 / deadline / 状态等） */
 export function mapTaskItemBodyToCalendarEvent(task: {
   start_at?: string | null;
+  end_at?: string | null;
   due_at?: string | null;
   remind_at?: string | null;
-  reminders?: Array<{ at: string }> | null;
+  reminders?: ReadonlyArray<{
+    at: string;
+    anchor?: string | null;
+    last_notified_at?: string | null;
+  }> | null;
 }): CalendarEventBody {
-  const due = task.due_at != null && task.due_at !== "" ? task.due_at : null;
   const start = task.start_at != null && task.start_at !== "" ? task.start_at : null;
-  if (due == null && start == null) {
-    throw new Error("task requires start_at or due_at to convert to event");
+  const end = task.end_at != null && task.end_at !== "" ? task.end_at : null;
+  if (start == null || taskPlanClock({ start_at: start, end_at: end }) == null) {
+    throw new Error("task requires planned time (start_at) to convert to event");
   }
-  const start_at = start ?? due;
-  if (start_at == null) {
-    throw new Error("task requires start_at or due_at to convert to event");
-  }
-  const end_at = start != null && due != null && start !== due ? due : null;
+  const reminders = normalizeSchedulableReminders({
+    remind_at: task.remind_at,
+    reminders: (task.reminders ?? undefined)?.map((r) => ({
+      at: r.at,
+      ...(r.anchor === "start" || r.anchor === "end" || r.anchor === "due"
+        ? { anchor: r.anchor }
+        : {}),
+      ...(r.last_notified_at !== undefined ? { last_notified_at: r.last_notified_at } : {}),
+    })),
+    defaultAnchor: "start",
+  });
+  const eventReminders = reminders.reminders.map((r) => ({
+    at: r.at,
+    anchor: "start" as const,
+    ...(r.last_notified_at !== undefined ? { last_notified_at: r.last_notified_at } : {}),
+  }));
+  const normalized = normalizeSchedulableReminders({
+    reminders: eventReminders,
+    defaultAnchor: "start",
+  });
   return {
-    start_at,
-    end_at,
+    start_at: start,
+    end_at: end,
     all_day: false,
-    remind_at: earliestRemindAt(task),
+    remind_at: normalized.remind_at,
+    reminders: normalized.reminders,
     last_notified_at: null,
     client_op_id: null,
   };
 }
 
-/** 有损：calendar_event → task_item body 字段（需调用方注入 list_id / sort_order） */
+/** 有损：calendar_event → task_item；计划 1:1，不自动填 deadline */
 export function mapCalendarEventBodyToTaskItemFields(
   event: {
     start_at: string;
     end_at?: string | null;
     remind_at?: string | null;
+    reminders?: ReadonlyArray<{
+      at: string;
+      anchor?: string | null;
+      last_notified_at?: string | null;
+    }> | null;
   },
   opts: { list_id: number; sort_order: number },
 ): TaskItemBody {
   const start_at = event.start_at;
-  const due_at = event.end_at != null && event.end_at !== "" ? event.end_at : event.start_at;
+  const end_at = event.end_at != null && event.end_at !== "" ? event.end_at : null;
   const reminders = normalizeSchedulableReminders({
     remind_at: event.remind_at ?? null,
+    reminders: (event.reminders ?? undefined)?.map((r) => ({
+      at: r.at,
+      ...(r.anchor === "start" || r.anchor === "end" || r.anchor === "due"
+        ? { anchor: r.anchor }
+        : {}),
+      ...(r.last_notified_at !== undefined ? { last_notified_at: r.last_notified_at } : {}),
+    })),
+    defaultAnchor: "start",
   });
   return {
     status: "pending",
@@ -89,8 +130,9 @@ export function mapCalendarEventBodyToTaskItemFields(
     list_id: opts.list_id,
     project_id: null,
     sort_order: opts.sort_order,
-    start_at: start_at === due_at ? null : start_at,
-    due_at,
+    start_at,
+    end_at,
+    due_at: null,
     remind_at: reminders.remind_at,
     reminders: reminders.reminders,
     completed_at: null,
@@ -105,21 +147,30 @@ function toEventRowFromEntity(
 ): CalendarEventRow {
   const parsed = asCalendarEvent(row);
   if (!parsed) throw new Error("calendar event retype failed");
-  return {
+  const reminders = normalizeSchedulableReminders({
+    remind_at: parsed.remind_at,
+    reminders: parsed.reminders,
+    defaultAnchor: "start",
+  });
+  const base = {
     id: parsed.id,
     title: parsed.title,
     content: parsed.content,
     start_at: parsed.start_at,
     end_at: parsed.end_at ?? null,
     all_day: parsed.all_day ?? false,
-    remind_at: parsed.remind_at ?? null,
+    remind_at: reminders.remind_at,
     tag_ids: [...(row.tag_ids ?? [])],
     created_at: row.created_at.toISOString(),
     updated_at: row.updated_at.toISOString(),
   };
+  if (reminders.reminders.length > 0) {
+    return { ...base, reminders: toCalendarReminders(reminders.reminders) };
+  }
+  return base;
 }
 
-/** 任务 → 事件（同 id retype）；仅 pending 根任务 */
+/** 任务 → 事件（同 id retype）；仅 pending 根任务且须有计划时间 */
 export async function convertTaskItemToCalendarEvent(
   worldId: number,
   id: number,
@@ -137,9 +188,10 @@ export async function convertTaskItemToCalendarEvent(
 
   const eventBody = mapTaskItemBodyToCalendarEvent({
     start_at: parsed.start_at ?? null,
+    end_at: parsed.end_at ?? null,
     due_at: parsed.due_at ?? null,
     remind_at: parsed.remind_at ?? null,
-    reminders: parsed.reminders ?? null,
+    reminders: parsed.reminders ? toCalendarReminders(parsed.reminders) : null,
   });
 
   await deleteOccurrencesForSeries(worldId, id);
@@ -192,6 +244,7 @@ export async function convertCalendarEventToTaskItem(
       start_at: parsed.start_at,
       end_at: parsed.end_at ?? null,
       remind_at: parsed.remind_at ?? null,
+      reminders: parsed.reminders ? toCalendarReminders(parsed.reminders) : null,
     },
     {
       list_id: inbox.id,

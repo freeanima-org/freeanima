@@ -72,8 +72,12 @@ export const taskListRowSchema = z.object({
 
 export type TaskListRowPayload = z.infer<typeof taskListRowSchema>;
 
+const taskReminderAnchorSchema = z.enum(["start", "end", "due"]);
+
 const taskReminderEntrySchema = z.object({
   at: z.string().min(1),
+  /** 相对哪类时间锚点；缺省由读写路径补 */
+  anchor: taskReminderAnchorSchema.optional(),
   last_notified_at: z.string().nullable().optional(),
 });
 
@@ -84,11 +88,14 @@ export const taskItemRowSchema = z.object({
   tag_ids: z.array(z.number().int().positive()),
   status: taskStatusSchema,
   priority: taskPrioritySchema,
-  /** 时段起点；无则仅用 due_at */
+  /** 计划开始；单点或时段起点 */
   start_at: z.string().nullable().optional(),
+  /** 计划结束；单点时为 null */
+  end_at: z.string().nullable().optional(),
+  /** 截止（deadline），与计划独立；Inbox「到期」仅看本字段 */
   due_at: z.string().nullable(),
   remind_at: z.string().nullable(),
-  /** 多提前提醒；与 remind_at（最早一项）同步 */
+  /** 多提前提醒；与 remind_at（最早一项）同步；可锚 start/end/due */
   reminders: z.array(taskReminderEntrySchema).optional(),
   list_id: z.number().int().positive().nullable(),
   project_id: z.number().int().positive().nullable(),
@@ -298,7 +305,11 @@ export const tasklistItemCreateInputSchema = z.object({
   content: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
+  /** 计划开始 */
   start_at: z.string().nullable().optional(),
+  /** 计划结束；单点时为 null */
+  end_at: z.string().nullable().optional(),
+  /** 截止（deadline） */
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
   reminders: z.array(taskReminderEntrySchema).optional(),
@@ -320,6 +331,7 @@ export const projectItemCreateInputSchema = z.object({
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
   start_at: z.string().nullable().optional(),
+  end_at: z.string().nullable().optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
   reminders: z.array(taskReminderEntrySchema).optional(),
@@ -378,6 +390,7 @@ export const taskPatchInputSchema = z.object({
   tag_ids: z.array(z.number().int().positive()).optional(),
   priority: taskPrioritySchema.optional(),
   start_at: z.string().nullable().optional(),
+  end_at: z.string().nullable().optional(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
   reminders: z.array(taskReminderEntrySchema).optional(),
@@ -385,7 +398,7 @@ export const taskPatchInputSchema = z.object({
   status: taskStatusSchema.optional(),
   recurrence: taskRecurrenceInputSchema.nullable().optional(),
   parent_id: z.number().int().positive().nullable().optional(),
-  /** 有 recurrence 时改 due：true=仅此一次；缺省=改规则轨 */
+  /** 有 recurrence 时改计划时钟：true=仅此一次；缺省=改规则轨 */
   only_this: z.boolean().optional(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -464,6 +477,7 @@ export const taskConvertToEventOutputSchema = z.object({
     end_at: z.string().nullable(),
     all_day: z.boolean(),
     remind_at: z.string().nullable(),
+    reminders: z.array(taskReminderEntrySchema).optional(),
     tag_ids: z.array(z.number().int().positive()),
     created_at: z.string(),
     updated_at: z.string(),

@@ -28,6 +28,11 @@ function eventPayload(item: {
   end_at: string | null;
   all_day: boolean;
   remind_at: string | null;
+  reminders?: Array<{
+    at: string;
+    anchor?: "start" | "end" | "due";
+    last_notified_at?: string | null;
+  }>;
 }) {
   return {
     id: item.id,
@@ -37,6 +42,7 @@ function eventPayload(item: {
     end_at: item.end_at,
     all_day: item.all_day,
     remind_at: item.remind_at,
+    ...(item.reminders != null && item.reminders.length > 0 ? { reminders: item.reminders } : {}),
   };
 }
 
@@ -300,7 +306,7 @@ export function buildCalendarToolDefs() {
     {
       name: "calendar_range",
       description:
-        "Unified calendar range: events, pending tasks with due_at, and projects overlapping [from, to].",
+        "Unified calendar range: events, pending tasks with planned time, and projects overlapping [from, to].",
       parameters: {
         type: "object",
         properties: {

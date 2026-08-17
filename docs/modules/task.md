@@ -19,22 +19,23 @@ title: 任务
 
 - 永远代表「当前期」：待办列表默认只查 **根任务**（`roots_only` / `parent_id` 空）。
 - `body.parent_id`（可选）：一层子任务；子任务不可再挂子任务，也不可带 `recurrence`。
-- **硬约束**：无 `due_at` 则无 `recurrence`、无提醒（`remind_at` / `reminders`）、无
-  `start_at`。清日期时级联清除；写入路径拒绝无日期的重复/提醒。
-- `body.start_at`（可选）：时段起点；有值时须同时有 `due_at` 且 `start_at` ≤ `due_at`。日历聚合优先用
-  `start_at`（跨天任务按区间展示）。
+- **两类时间**：
+  - **计划**：`start_at` + `end_at`（单点：仅 `start_at`，`end_at=null`；时段：两者且
+    `start_at` ≤ `end_at`）。日历条带按计划区间展示。
+  - **截止（deadline）**：独立 `due_at`（项目场景常用）；Inbox「到期」**仅**看本字段。
+- **硬约束**：无计划且无 `due_at` → 禁止提醒；**重复**另需计划时间（`end_at ?? start_at` 为计划时钟）。清全部时间时级联清除提醒/重复。
 - `body.recurrence`（可选）：`freq` / `interval` / `anchor` / `weekdays?` /
   `until?` / `count?` / **`schedule_at`** / `skip?` / `workdays_only?` /
   `calendar?` / `lunar_month?` / `lunar_day?`。
   - `calendar=lunar` 仅支持 `monthly` / `yearly`：月重复必填
     `lunar_day`（按农历月推进同日）；年重复必填 `lunar_month` + `lunar_day`（闰月 `lunar_month`
     为负，与 lunar-javascript 一致）。
-- **显示与提醒**用顶层 `due_at`；**相对 due 的多提醒**用 `reminders[]`（与兼容字段 `remind_at` =
-  最早一项同步；依赖 `due_at`）。详情 UI 可增删多条相对预设（截止时 / 提前 / 当天 09:00）。
-- **规则时钟**用 `recurrence.schedule_at`。
-- 「仅此一次」改期：只改 `due_at`（及 remind / start 相对偏移），**不改** `schedule_at`。改规则轨：同时改
-  `due_at` 与 `schedule_at`（或显式 patch `recurrence`）。RPC：`only_this`（默认 false
-  = 改规则轨；详情 UI 默认 true）。
+- **多提醒** `reminders[]`：每条 `{ at, anchor?: start|end|due, last_notified_at? }`；兼容字段
+  `remind_at` = 最早一项。Advance → 仅本机 Alert；到期 Inbox 仍只绑 `due_at`。
+- **规则时钟**用 `recurrence.schedule_at`（绑计划时钟）。
+- 「仅此一次」改期：只改计划（及按锚点平移的 remind），**不改** `schedule_at`。改规则轨：同时改计划与
+  `schedule_at`。RPC：`only_this`（默认 false = 改规则轨；详情 UI 默认 true）。
+- 时区：全局 `i18n.timezone`（IANA，默认 `Asia/Shanghai`）；设置面板可改。
 
 ### 历史 `task_occurrence`
 
@@ -51,7 +52,7 @@ title: 任务
 ```
 无 recurrence → status=completed + completed_at
 有 recurrence → 写 task_occurrence；若 count/until 耗尽则清规则并 completed；
-              否则按 anchor 推进 due_at + schedule_at，保持 pending，清 last_notified_at / 提醒 notified
+              否则按计划时钟推进 start/end（及 due）+ schedule_at，保持 pending，清 last_notified_at / 提醒 notified
 skip → 只推进，不写 occurrence，不减 count
 completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 ```
@@ -87,11 +88,11 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 ## UI 视图
 
-| 视图 | 说明                                                                       |
-| ---- | -------------------------------------------------------------------------- |
-| 列表 | 默认；支持拖拽排序                                                         |
-| 看板 | `/tasks` 内切换；按优先级或状态分列，拖拽改字段；只显示根任务              |
-| 详情 | 时段（start/due）/ 多提醒 / 重复高级选项 / 一层子任务 checklist / 番茄专注 |
+| 视图 | 说明                                                                                          |
+| ---- | --------------------------------------------------------------------------------------------- |
+| 列表 | 默认；支持拖拽排序                                                                            |
+| 看板 | `/tasks` 内切换；按优先级或状态分列，拖拽改字段；只显示根任务                                 |
+| 详情 | 计划（单点/时段切换）/ 截止 due / 多锚点提醒 / 重复高级选项 / 一层子任务 checklist / 番茄专注 |
 
 ## 滴答清单 CSV 导入（有损、一次性）
 
@@ -110,7 +111,7 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 ## v1 边界（非目标）
 
 - 不做独立 template 实体、预创建未来期、**完整通用 RRULE**（滴答 CSV 常见子集见上）
-- 不做跨时区多日历；日界与现有任务筛选一致（Asia/Shanghai）
+- 日界与写入 offset 由全局 `i18n.timezone` 决定（默认 Asia/Shanghai）；不做每事件自带时区 / 多日历
 - 不做自然语言快速添加、习惯打卡、倒数日、清单协作、第三方日历**持续**同步
 - 不做四象限 / 时间线甘特；项目文件夹级跨项目看板仍属后续
 
@@ -118,8 +119,8 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 ## 与日历事件互转（retype）
 
-- `task.convertToEvent`：同 id 将 pending 根任务（须有 `start_at`/`due_at`）换成
-  `calendar_event`；有损丢弃 recurrence / 归属 / 子任务（级联软删）与 occurrence。
+- `task.convertToEvent`：同 id 将 pending 根任务（须有**计划时间** `start_at`）换成
+  `calendar_event`；计划 1:1；有损丢弃 recurrence / 归属 / **deadline** / 子任务（级联软删）与 occurrence。
 - 反向见 [`calendar.md`](./calendar.md) `calendar.convertToTask`。
 - 形态约定见 [`entity-model.md`](../product/entity-model.md) Morph（retype /
   attach）。
