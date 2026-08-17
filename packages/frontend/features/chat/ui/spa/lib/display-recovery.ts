@@ -37,6 +37,22 @@ export function isStalledReply(opts: {
   return opts.awaitingReply && !opts.streaming && !opts.hasActiveStream;
 }
 
+/**
+ * lookup 无 active 流后：用「已与服务端同步」的 awaiting 判定是否出【继续】。
+ * 本地 display 滞后（切模块 / 断流）时须先 reload，再传入 awaitingAfterSync。
+ */
+export function resolveStalledAfterLookup(opts: {
+  awaitingAfterSync: boolean;
+  streaming: boolean;
+  hasActiveStream: boolean;
+}): boolean {
+  return isStalledReply({
+    awaitingReply: opts.awaitingAfterSync,
+    streaming: opts.streaming,
+    hasActiveStream: opts.hasActiveStream,
+  });
+}
+
 export const RECOVERY_INITIAL_DELAY_MS = 500;
 export const RECOVERY_MAX_DELAY_MS = 4_000;
 export const RECOVERY_MAX_DURATION_MS = 60_000;
