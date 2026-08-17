@@ -26,6 +26,7 @@ import {
   VaultUnlockForm,
   type VaultItemFormValues,
 } from "@freeanima/features/vault/ui/shared";
+import { fetchTags, type TagRow } from "@freeanima/features/tag/ui/spa/lib/api.ts";
 
 import {
   changeVaultCryptoConfig,
@@ -46,6 +47,9 @@ import { newUserVaultSalt } from "./lib/crypto-client.ts";
 import { ChangeMasterPasswordDialog } from "./components/ChangeMasterPasswordDialog.tsx";
 import { VaultItemDetail, type VaultDetailSecrets } from "./components/VaultItemDetail.tsx";
 import { VaultItemHistoryDialog } from "./components/VaultItemHistoryDialog.tsx";
+
+/** 与 UserVaultSession 默认一致；壳内显式 configure 便于 onLocked */
+const VAULT_UI_TIMEOUT_MS = 60 * 60 * 1000;
 
 function normalizeCustomFields(secrets: VaultSecretsPayload): VaultCustomField[] {
   const raw = secrets.custom_fields;
@@ -111,6 +115,8 @@ export function VaultApp() {
   const [items, setItems] = useState<VaultItemMetaRowPayload[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [tagFilterId, setTagFilterId] = useState<number | null>(null);
+  const [tagPool, setTagPool] = useState<TagRow[]>([]);
   const [listOpen, setListOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -137,11 +143,43 @@ export function VaultApp() {
     setCreating(false);
     setEditing(false);
     setEditInitial(null);
+    setTagFilterId(null);
+    setSearchQuery("");
   }
 
   const session = useMemo(() => getUserVaultSession(), []);
   const isUserVault = subjectKind === "user";
   const showLockScreen = isUserVault && !userUnlocked;
+
+  const touchVaultActivity = useCallback(() => {
+    if (isUserVault) session.touchActivity();
+  }, [isUserVault, session]);
+
+  useEffect(() => {
+    session.configure({
+      timeoutMs: VAULT_UI_TIMEOUT_MS,
+      timeoutMode: "sliding",
+      onLocked: () => setUserUnlocked(false),
+    });
+  }, [session]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!showLockScreen) {
+      void fetchTags()
+        .then((tags) => {
+          if (!cancelled) setTagPool(tags);
+        })
+        .catch(() => {
+          if (!cancelled) setTagPool([]);
+        });
+    } else {
+      setTagPool([]);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [showLockScreen, subjectKind]);
 
   const selectedItem = useMemo(
     () => items.find((item) => item.id === selectedId) ?? null,
@@ -152,10 +190,14 @@ export function VaultApp() {
     queryKey:
       showLockScreen || (isUserVault && userSetupMode)
         ? null
-        : ["vault", "list", subjectKind, searchQuery.trim()],
+        : ["vault", "list", subjectKind, searchQuery.trim(), tagFilterId],
     queryFn: async () => {
+      touchVaultActivity();
       const query = searchQuery.trim();
-      return fetchVaultItems(subjectKind, query ? { query } : {});
+      return fetchVaultItems(subjectKind, {
+        ...(query ? { query } : {}),
+        ...(tagFilterId != null ? { tag_ids: [tagFilterId] } : {}),
+      });
     },
     enabled: !showLockScreen,
   });
@@ -164,6 +206,7 @@ export function VaultApp() {
 
   const reload = useCallback(async () => {
     setError("");
+    touchVaultActivity();
     try {
       if (isUserVault) {
         const config = await getVaultCryptoConfig("user");
@@ -175,7 +218,7 @@ export function VaultApp() {
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [isUserVault, reloadVaultList]);
+  }, [isUserVault, reloadVaultList, touchVaultActivity]);
 
   useEffect(() => {
     const list = vaultListQuery.data;
@@ -576,15 +619,6 @@ export function VaultApp() {
           </>
         ) : null}
         <span className="flex-1" />
-        <Input
-          className="h-8 w-full sm:h-9 sm:max-w-xs"
-          placeholder="搜索…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") void reload();
-          }}
-        />
         <Button
           type="button"
           size="sm"
@@ -649,7 +683,7 @@ export function VaultApp() {
         }
         list={(ctx) => (
           <div className="flex h-full min-h-0 flex-col">
-            <div className="shrink-0 border-b p-2">
+            <div className="shrink-0 space-y-2 border-b p-2">
               <Button
                 type="button"
                 size="sm"
@@ -662,6 +696,35 @@ export function VaultApp() {
               >
                 新建条目
               </Button>
+              <Input
+                className="h-8 w-full"
+                placeholder="搜索标题、用户名、URI…"
+                value={searchQuery}
+                onChange={(e) => {
+                  touchVaultActivity();
+                  setSearchQuery(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void reload();
+                }}
+              />
+              <select
+                className="border-input bg-background h-8 w-full rounded-md border px-2 text-xs"
+                value={tagFilterId ?? ""}
+                aria-label="按标签筛选"
+                onChange={(e) => {
+                  touchVaultActivity();
+                  const v = e.target.value;
+                  setTagFilterId(v ? Number(v) : null);
+                }}
+              >
+                <option value="">全部标签</option>
+                {tagPool.map((tag) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.title}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-2">
               {loading ? (
@@ -684,6 +747,7 @@ export function VaultApp() {
                               : "text-foreground/90"
                           }`}
                           onClick={() => {
+                            touchVaultActivity();
                             setSelectedId(item.id);
                             setCreating(false);
                             setEditing(false);

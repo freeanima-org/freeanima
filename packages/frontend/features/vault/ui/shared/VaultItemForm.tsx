@@ -240,46 +240,50 @@ export function VaultItemForm({
       <FormField label="URI（可添加多条）">
         <div className="space-y-2">
           {values.uris.map((row, i) => (
-            <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div key={i} className="space-y-2 rounded-md border border-border/60 p-2">
               <Input
-                className="min-w-0 flex-1"
-                type="url"
+                className="w-full"
+                type="text"
                 placeholder="https://"
                 value={row.uri}
                 disabled={busy}
                 autoComplete="off"
+                aria-label={`URI ${i + 1}`}
                 onChange={(e) => updateUri(i, { uri: e.target.value })}
               />
-              <select
-                className={`${selectClassName} sm:w-28`}
-                value={row.match}
-                disabled={busy}
-                aria-label="匹配方式"
-                onChange={(e) => updateUri(i, { match: e.target.value as VaultUriMatch })}
-              >
-                {VAULT_URI_MATCH_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="shrink-0"
-                isDisabled={busy || values.uris.length <= 1}
-                aria-label="删除 URI"
-                onClick={() =>
-                  setValues((prev) => ({
-                    ...prev,
-                    uris:
-                      prev.uris.length <= 1 ? [emptyUri()] : prev.uris.filter((_, j) => j !== i),
-                  }))
-                }
-              >
-                ×
-              </Button>
+              <div className="flex items-center gap-2">
+                <label className="shrink-0 text-xs text-muted-foreground">匹配方式</label>
+                <select
+                  className={`${selectClassName} min-w-0 flex-1`}
+                  value={row.match}
+                  disabled={busy}
+                  aria-label="匹配方式"
+                  onChange={(e) => updateUri(i, { match: e.target.value as VaultUriMatch })}
+                >
+                  {VAULT_URI_MATCH_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  isDisabled={busy || values.uris.length <= 1}
+                  aria-label="删除 URI"
+                  onClick={() =>
+                    setValues((prev) => ({
+                      ...prev,
+                      uris:
+                        prev.uris.length <= 1 ? [emptyUri()] : prev.uris.filter((_, j) => j !== i),
+                    }))
+                  }
+                >
+                  ×
+                </Button>
+              </div>
             </div>
           ))}
           <Button

@@ -45,11 +45,14 @@ async function vaultRequest<T>(
 
 export async function fetchVaultItems(
   subjectKind: SubjectKind,
-  opts?: { limit?: number; query?: string },
+  opts?: { limit?: number; query?: string; tag_ids?: number[] },
 ): Promise<VaultItemMetaRowPayload[]> {
   const scope = resolveHabitatCacheScope();
   const q = opts?.query?.trim();
-  const cacheId = q ? `search:${subjectKind}:${q}` : `list:${subjectKind}`;
+  const tagKey = opts?.tag_ids?.length ? opts.tag_ids.join(",") : "";
+  const cacheId = q
+    ? `search:${subjectKind}:${q}:tags:${tagKey}`
+    : `list:${subjectKind}:tags:${tagKey}`;
   // 仅 meta 列表；secrets 永不入 IDB（getVaultItem include_secrets 仍在线直连）
   return withOfflineCache({
     scope,
@@ -61,12 +64,14 @@ export async function fetchVaultItems(
           subject_kind: subjectKind,
           query: q,
           limit: opts?.limit ?? 200,
+          ...(opts?.tag_ids?.length ? { tag_ids: opts.tag_ids } : {}),
         });
         return data.items;
       }
       const data = await vaultRequest<VaultListOutput>("vault.list", {
         subject_kind: subjectKind,
         limit: opts?.limit ?? 200,
+        ...(opts?.tag_ids?.length ? { tag_ids: opts.tag_ids } : {}),
       });
       return data.items;
     },

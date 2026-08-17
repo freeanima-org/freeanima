@@ -31,7 +31,8 @@ export type MasterPasswordChangePrep = {
   commit: () => void;
 };
 
-const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000;
+/** App 壳默认 1h 滑动超时；扩展可 configure 为更长 absolute */
+const DEFAULT_TIMEOUT_MS = 60 * 60 * 1000;
 
 export type VaultSessionTimeoutMode = "sliding" | "absolute";
 

@@ -5,6 +5,7 @@ import { generateTotpCode } from "@freeanima/shared/vault-crypto";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
 import { VAULT_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes";
 import { TagPicker } from "@freeanima/features/tag/ui/spa/components/TagPicker.tsx";
+import { VAULT_ITEM_TYPE_OPTIONS, VAULT_URI_MATCH_OPTIONS } from "../../shared/uri-match.ts";
 
 export type VaultDetailSecrets = {
   password?: string;
@@ -12,6 +13,14 @@ export type VaultDetailSecrets = {
   totp?: string;
   custom_fields?: Array<{ name: string; value: string }>;
 };
+
+function itemTypeLabel(type: VaultItemMetaRowPayload["item_type"]): string {
+  return VAULT_ITEM_TYPE_OPTIONS.find((opt) => opt.value === type)?.label ?? type;
+}
+
+function uriMatchLabel(match: string): string {
+  return VAULT_URI_MATCH_OPTIONS.find((opt) => opt.value === match)?.label ?? match;
+}
 
 function SecretFieldRow({
   label,
@@ -146,23 +155,48 @@ export function VaultItemDetail({
   secrets: VaultDetailSecrets | null;
   secretsLoading: boolean;
 }) {
+  const uriEntries =
+    item.uris && item.uris.length > 0
+      ? item.uris
+      : item.url
+        ? [{ uri: item.url, match: "domain" as const }]
+        : [];
+
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4">
       <div className="space-y-1">
+        <p className="text-xs text-muted-foreground">{itemTypeLabel(item.item_type)}</p>
         <h2 className="text-lg font-semibold">{item.title}</h2>
-        {item.url ? (
-          <a
-            href={item.url}
-            className="text-sm text-primary break-all hover:underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {item.url}
-          </a>
-        ) : null}
       </div>
 
+      {uriEntries.length > 0 ? (
+        <div className="space-y-2">
+          <span className="text-xs text-muted-foreground">URI</span>
+          {uriEntries.map((entry, i) => (
+            <div key={`${entry.uri}-${i}`} className="rounded-md border bg-muted/30 px-3 py-2">
+              <a
+                href={entry.uri}
+                className="text-sm text-primary break-all hover:underline"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {entry.uri}
+              </a>
+              <p className="mt-1 text-xs text-muted-foreground">
+                匹配：{uriMatchLabel(entry.match)}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       {item.username ? <SecretFieldRow label="用户名" value={item.username} /> : null}
+
+      {item.last_used_at ? (
+        <p className="text-xs text-muted-foreground">
+          最近填充：{new Date(item.last_used_at).toLocaleString()}
+        </p>
+      ) : null}
 
       {item.tag_ids.length > 0 ? (
         <TagPicker

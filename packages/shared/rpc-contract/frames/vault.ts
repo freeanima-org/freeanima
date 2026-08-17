@@ -169,6 +169,7 @@ export type VaultDeleteOutput = z.infer<typeof vaultDeleteOutputSchema>;
 export const vaultSearchInputSchema = z.object({
   subject_kind: vaultSubjectKindSchema,
   query: z.string().min(1),
+  tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
 });
 export type VaultSearchInput = z.infer<typeof vaultSearchInputSchema>;

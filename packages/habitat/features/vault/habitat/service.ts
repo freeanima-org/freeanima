@@ -340,6 +340,7 @@ export async function serviceVaultSearch(
   input: {
     subject_kind?: SubjectKind;
     query: string;
+    tag_ids?: number[];
     limit?: number;
     include_secrets?: boolean;
   },
@@ -350,7 +351,11 @@ export async function serviceVaultSearch(
   const items = await searchVaultItems(
     worldId,
     input.query,
-    omitUndefined({ limit: input.limit, include_secrets: input.include_secrets }),
+    omitUndefined({
+      limit: input.limit,
+      include_secrets: input.include_secrets,
+      tag_ids: input.tag_ids,
+    }),
   );
   return { items: items.map((row) => toMetaPayload(row)) };
 }
