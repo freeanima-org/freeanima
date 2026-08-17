@@ -32,7 +32,7 @@ import {
 import { formatConversationIdDateTime } from "@freeanima/features/chat/ui/spa/lib/format-datetime.ts";
 import {
   displayAwaitingReply,
-  isStalledReply,
+  resolveStalledAfterLookup,
 } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import {
   readPersistedActiveStream,
@@ -656,7 +656,7 @@ export function ChatApp() {
     return () => sub.unsubscribe();
   }, [fetchConversations]);
 
-  /** 刷新 / 整页刷新 / 切回会话：仅 stream.lookup 有 active 时 resume；否则立刻 stalled +【继续】 */
+  /** 刷新 / 切回会话：lookup 有 active 则 resume；否则先同步 display 再决定 stalled */
   useEffect(() => {
     if (!currentId) {
       setStalledReply(false);
@@ -670,6 +670,9 @@ export function ChatApp() {
     if (!awaiting && !persisted) {
       pendingRecoveryKeyRef.current = null;
       setStalledReply(false);
+      if (!useChatStore.getState().streaming) {
+        useChatStore.setState({ recovering: false });
+      }
       return () => {};
     }
 
@@ -680,9 +683,10 @@ export function ChatApp() {
     const baseline = display.length;
     let cancelled = false;
 
-    // 未证实 alive 前：按 stalled 展示【继续】，避免 Habitat 重启后长期「正在撰写」
+    // 核实期用 recovering 占位，勿乐观 stalled（本地 display 可能滞后于已完成的后端）
     if (awaiting) {
-      setStalledReply(true);
+      setStalledReply(false);
+      useChatStore.setState({ recovering: true });
     }
 
     const sub = subscribeConversationUpdates(currentId, () => {
@@ -693,6 +697,27 @@ export function ChatApp() {
     const isViewingOrigin = () => useConversationsStore.getState().currentId === originId;
     const scrollResume = () => {
       scrollApiRef.current?.scrollDown({ force: true });
+    };
+
+    const applyStalledFromSyncedDisplay = async () => {
+      clearPersistedActiveStream(originId);
+      try {
+        await reloadConversationIfCurrent(originId);
+      } catch (e) {
+        console.error("reload before stalled decision failed:", e);
+      }
+      if (cancelled) return;
+      const stillAwaiting = displayAwaitingReply(useConversationsStore.getState().display);
+      setStalledReply(
+        resolveStalledAfterLookup({
+          awaitingAfterSync: stillAwaiting,
+          streaming: useChatStore.getState().streaming,
+          hasActiveStream: false,
+        }),
+      );
+      if (!useChatStore.getState().streaming) {
+        useChatStore.setState({ recovering: false });
+      }
     };
 
     void (async () => {
@@ -707,18 +732,7 @@ export function ChatApp() {
       // 仅服务端 active 算 alive；sessionStorage 过期 id 在 Habitat 重启后不可信
       const serverActive = typeof looked.stream_id === "string" && looked.stream_id.length > 0;
       if (!serverActive) {
-        clearPersistedActiveStream(originId);
-        const stillAwaiting = displayAwaitingReply(useConversationsStore.getState().display);
-        setStalledReply(
-          isStalledReply({
-            awaitingReply: stillAwaiting,
-            streaming: useChatStore.getState().streaming,
-            hasActiveStream: false,
-          }),
-        );
-        if (!useChatStore.getState().streaming) {
-          useChatStore.setState({ recovering: false });
-        }
+        await applyStalledFromSyncedDisplay();
         return;
       }
 
@@ -771,19 +785,8 @@ export function ChatApp() {
         return;
       }
 
-      // lookup 曾有 active 但 resume 失败（竞态）：回到 stalled
-      clearPersistedActiveStream(originId);
-      const stillAwaiting = displayAwaitingReply(useConversationsStore.getState().display);
-      setStalledReply(
-        isStalledReply({
-          awaitingReply: stillAwaiting,
-          streaming: useChatStore.getState().streaming,
-          hasActiveStream: false,
-        }),
-      );
-      if (!useChatStore.getState().streaming) {
-        useChatStore.setState({ recovering: false });
-      }
+      // lookup 曾有 active 但 resume 失败（竞态）：同步后再判 stalled
+      await applyStalledFromSyncedDisplay();
     })().finally(() => {
       if (cancelled) return;
       if (!useChatStore.getState().streaming) {

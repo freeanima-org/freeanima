@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { displayAwaitingReply, isStalledReply } from "./display-recovery.ts";
+import {
+  displayAwaitingReply,
+  isStalledReply,
+  resolveStalledAfterLookup,
+} from "./display-recovery.ts";
 import type { DisplayItem } from "./types.ts";
 
 const user = (content: string): DisplayItem => ({ type: "message", role: "user", content });
@@ -50,5 +54,31 @@ describe("isStalledReply", () => {
     expect(isStalledReply({ awaitingReply: false, streaming: false, hasActiveStream: false })).toBe(
       false,
     );
+  });
+});
+
+describe("resolveStalledAfterLookup", () => {
+  test("同步后本地仍 awaiting → stalled（真中断）", () => {
+    const staleLocal = [user("hi")];
+    expect(displayAwaitingReply(staleLocal)).toBe(true);
+    expect(
+      resolveStalledAfterLookup({
+        awaitingAfterSync: displayAwaitingReply(staleLocal),
+        streaming: false,
+        hasActiveStream: false,
+      }),
+    ).toBe(true);
+  });
+
+  test("同步后已有 assistant → 不 stalled（本地曾滞后）", () => {
+    const afterReload = [user("hi"), assistant("已完成")];
+    expect(displayAwaitingReply(afterReload)).toBe(false);
+    expect(
+      resolveStalledAfterLookup({
+        awaitingAfterSync: displayAwaitingReply(afterReload),
+        streaming: false,
+        hasActiveStream: false,
+      }),
+    ).toBe(false);
   });
 });
