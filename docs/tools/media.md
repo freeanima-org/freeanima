@@ -1,3 +1,7 @@
+---
+title: media（媒体生成）
+---
+
 # media（媒体生成）
 
 Habitat 本地 ToolSet：文生图（语音生成见风巢 #135）。
