@@ -1,11 +1,15 @@
 /**
- * 内建 reflect：按 search_documents.cluster_id 分批；每批单轮有序巩固（#18010）。
+ * 内建 reflect：按 search_documents.cluster_id 分批巩固；结束后若全局 pin 超限再精简。
  * NULL / 超字节再切块。
  */
 
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
-import { resolveMemoryClusteringConfig } from "@freeanima/habitat/core/config/schemas/memory-config.ts";
+import {
+  resolveMemoryClusteringConfig,
+  resolveMemoryResidentConfig,
+} from "@freeanima/habitat/core/config/schemas/memory-config.ts";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { listActiveSemanticMemoryClusterIds } from "@freeanima/habitat/core/db/pg/search/clustering-repo.ts";
@@ -14,19 +18,18 @@ import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 import { cstDayRange } from "../day-window/build-messages.ts";
 import {
   fetchAllActiveMemories,
-  buildDeepSleepMessages,
   checkJsonSize,
   DEEP_SLEEP_TOOL_NAMES,
   DEEP_SLEEP_PIN_TOOL_NAMES,
-  REFLECT_TASK_SPEC,
+  REFLECT_CONSOLIDATE_TASK_SPEC,
+  REFLECT_CONSOLIDATE_PIN_TASK_SPEC,
   hasRecentMemoryUpdates,
-  batchHasPinned,
+  shouldTrimPinned,
   formatAllMemoriesMessage,
 } from "../reflect/build-messages.ts";
 import {
   createEmptyChangeLog,
   snapshotChangeLog,
-  type DeepSleepRound,
   type DeepSleepMode,
   type DeepSleepChangeLog,
 } from "../reflect/types.ts";
@@ -45,50 +48,60 @@ export type BuiltinReflectInput = {
   mode?: DeepSleepMode;
 };
 
-function resolveBatchRound(
-  batchRows: SemanticMemoryRow[],
-  mode: DeepSleepMode,
-): DeepSleepRound | null {
-  if (mode === "full" || hasRecentMemoryUpdates(batchRows)) {
-    return "consolidate";
-  }
-  if (batchHasPinned(batchRows)) {
-    return "consolidate_pin";
-  }
-  return null;
+function shouldConsolidateBatch(batchRows: SemanticMemoryRow[], mode: DeepSleepMode): boolean {
+  return mode === "full" || hasRecentMemoryUpdates(batchRows);
 }
 
-async function runReflectOnBatch(opts: {
+async function runConsolidateBatch(opts: {
   batchRows: SemanticMemoryRow[];
-  mode: DeepSleepMode;
   changeLog: DeepSleepChangeLog;
 }): Promise<{ roundsExecuted: number; toolCalls: number }> {
-  const { batchRows, mode, changeLog } = opts;
-  const round = resolveBatchRound(batchRows, mode);
-  if (!round) {
-    return { roundsExecuted: 0, toolCalls: 0 };
-  }
-
-  const messages = buildDeepSleepMessages(batchRows, round, changeLog);
-  const toolNames =
-    round === "consolidate_pin" ? [...DEEP_SLEEP_PIN_TOOL_NAMES] : [...DEEP_SLEEP_TOOL_NAMES];
+  const { batchRows, changeLog } = opts;
+  const { text } = formatAllMemoriesMessage(batchRows);
 
   const { systemPrompt, userMessages } = composeAutoLlmPrompt({
     kind: "memory-reflect",
-    taskSpec: REFLECT_TASK_SPEC,
-    dataParts: [
-      { body: messages.allMemoriesText },
-      { body: messages.changeLogText },
-      { body: messages.preScreenText },
-      { body: messages.instructionText },
-    ],
+    taskSpec: REFLECT_CONSOLIDATE_TASK_SPEC,
+    dataParts: [{ tag: PROMPT_XML_TAGS.semanticMemories, body: text }],
   });
 
   const llm = await runReflectLlm({
     systemPrompt,
     userMessages,
-    toolNames,
-    round,
+    toolNames: [...DEEP_SLEEP_TOOL_NAMES],
+    round: "consolidate",
+    changeLog,
+  });
+  void snapshotChangeLog(changeLog);
+
+  return { roundsExecuted: 1, toolCalls: llm.tool_calls };
+}
+
+async function runPinTrimBatch(opts: {
+  batchRows: SemanticMemoryRow[];
+  pinnedCount: number;
+  pinnedMax: number;
+  changeLog: DeepSleepChangeLog;
+}): Promise<{ roundsExecuted: number; toolCalls: number }> {
+  const { batchRows, pinnedCount, pinnedMax, changeLog } = opts;
+  if (batchRows.length === 0) {
+    return { roundsExecuted: 0, toolCalls: 0 };
+  }
+
+  const { text } = formatAllMemoriesMessage(batchRows);
+
+  const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+    kind: "memory-reflect",
+    taskSpec: REFLECT_CONSOLIDATE_PIN_TASK_SPEC,
+    taskParams: { pinned_count: pinnedCount, pinned_max: pinnedMax },
+    dataParts: [{ tag: PROMPT_XML_TAGS.semanticMemories, body: text }],
+  });
+
+  const llm = await runReflectLlm({
+    systemPrompt,
+    userMessages,
+    toolNames: [...DEEP_SLEEP_PIN_TOOL_NAMES],
+    round: "consolidate_pin",
     changeLog,
   });
   void snapshotChangeLog(changeLog);
@@ -125,7 +138,9 @@ export async function runBuiltinReflect(
     };
   }
 
-  const clustering = resolveMemoryClusteringConfig(getActiveRuntimeConfig().data);
+  const runtimeData = getActiveRuntimeConfig().data;
+  const clustering = resolveMemoryClusteringConfig(runtimeData);
+  const { pinned_max: pinnedMax } = resolveMemoryResidentConfig(runtimeData);
   const clusterRows = await listActiveSemanticMemoryClusterIds();
   const clusterById = new Map<number, number | null>();
   for (const row of clusterRows) {
@@ -169,6 +184,8 @@ export async function runBuiltinReflect(
   for (let bi = 0; bi < batches.length; bi++) {
     const batch = batches[bi];
     if (!batch || batch.rows.length === 0) continue;
+    if (!shouldConsolidateBatch(batch.rows, mode)) continue;
+
     logComponent("memory").info("reflect batch", {
       day,
       batchIndex: bi,
@@ -176,14 +193,43 @@ export async function runBuiltinReflect(
       clusterId: batch.clusterId,
       rows: batch.rows.length,
       bytes: batch.bytes,
+      round: "consolidate",
     });
-    const result = await runReflectOnBatch({
+    const result = await runConsolidateBatch({
       batchRows: batch.rows,
-      mode,
       changeLog,
     });
     roundsExecuted += result.roundsExecuted;
     totalToolCalls += result.toolCalls;
+  }
+
+  // 全局 pin 超限 → 精简（与簇巩固分离；只 unpin）
+  const pinnedRows = allRows.filter((r) => r.pinned);
+  const pinnedCount = pinnedRows.length;
+  if (shouldTrimPinned(pinnedCount, pinnedMax)) {
+    const pinBatches = partitionRowsByCluster(
+      pinnedRows,
+      new Map(pinnedRows.map((r) => [r.id, null])),
+      clustering.max_batch_bytes,
+    );
+    logComponent("memory").info("reflect pin trim", {
+      day,
+      pinnedCount,
+      pinnedMax,
+      batches: pinBatches.length,
+    });
+    for (let pi = 0; pi < pinBatches.length; pi++) {
+      const pinBatch = pinBatches[pi];
+      if (!pinBatch || pinBatch.rows.length === 0) continue;
+      const result = await runPinTrimBatch({
+        batchRows: pinBatch.rows,
+        pinnedCount,
+        pinnedMax,
+        changeLog,
+      });
+      roundsExecuted += result.roundsExecuted;
+      totalToolCalls += result.toolCalls;
+    }
   }
 
   recordDeepSleepRun({
@@ -208,6 +254,8 @@ export async function runBuiltinReflect(
     merged,
     deprecated,
     conflicts,
+    pinnedCount,
+    pinnedMax,
   });
 
   return {

@@ -37,6 +37,8 @@ export const PROMPT_XML_TAGS = {
   autoLlmTaskParams: "auto_llm_task_params",
   relatedMemories: "related_memories",
   sourceData: "source_data",
+  /** Reflect 巩固：本批语义记忆清单 */
+  semanticMemories: "semantic_memories",
 } as const;
 
 export type PromptXmlTag = (typeof PROMPT_XML_TAGS)[keyof typeof PROMPT_XML_TAGS];

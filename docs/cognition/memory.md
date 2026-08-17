@@ -124,7 +124,7 @@ retain 热路径复用同一 hybrid，但按本 **回合** 内各条 user/assist
 
 ### 常驻记忆
 
-置顶 + 高引用；标记 `[[anima:id]]`。装配目标走 `assembleResidentBlock`（迁移期 `system-prompt.ts` 仍可直接 listResident）。条数 / 置顶上限：`memory.resident.top_n` / `pinned_max`（默认 20 / 40）；cite 权重窗口：`memory.reference.*`。详见 [`context-management.md`](context-management.md)。
+置顶 + 高引用；标记 `[[anima:id]]`。装配目标走 `assembleResidentBlock`（迁移期 `system-prompt.ts` 仍可直接 listResident）。条数 / 置顶上限：`memory.resident.top_n` / `pinned_max`（默认 20 / 20）；cite 权重窗口：`memory.reference.*`。详见 [`context-management.md`](context-management.md)。
 
 ### 引用
 

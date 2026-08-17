@@ -97,8 +97,8 @@ describe("resolveMemoryClusteringConfig", () => {
 
 describe("resolveMemoryResidentConfig", () => {
   it("returns defaults when resident unset", () => {
-    expect(resolveMemoryResidentConfig(base)).toEqual({ top_n: 20, pinned_max: 40 });
-    expect(resolveMemoryResidentConfig(null)).toEqual({ top_n: 20, pinned_max: 40 });
+    expect(resolveMemoryResidentConfig(base)).toEqual({ top_n: 20, pinned_max: 20 });
+    expect(resolveMemoryResidentConfig(null)).toEqual({ top_n: 20, pinned_max: 20 });
   });
 
   it("merges explicit resident settings", () => {

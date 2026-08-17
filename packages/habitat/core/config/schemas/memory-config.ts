@@ -125,7 +125,7 @@ export function resolveMemoryClusteringConfig(cfg: RuntimeConfig): ResolvedMemor
 }
 
 export const DEFAULT_RESIDENT_TOP_N = 20;
-export const DEFAULT_RESIDENT_PINNED_MAX = 40;
+export const DEFAULT_RESIDENT_PINNED_MAX = 20;
 export const DEFAULT_REFERENCE_DECAY_DAYS = 30;
 export const DEFAULT_REFERENCE_RECENT_WEIGHT = 2;
 export const DEFAULT_REFERENCE_STALE_WEIGHT = 1;
