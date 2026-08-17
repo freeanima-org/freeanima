@@ -19,8 +19,12 @@ import {
   connectionListSubtitle,
   emptyConnectionEntry,
   emptySceneEntry,
+  llmEntryTitle,
+  newConnectionId,
+  newSceneId,
   profilesDraftToPatch,
   providersDraftToPatch,
+  readProfileBindings,
   readProvidersDraft,
   readTimeoutDraft,
   sceneListSubtitle,
@@ -28,11 +32,11 @@ import {
 } from "./llm-settings-draft.ts";
 import {
   LlmConnectionEditorForm,
-  LlmDefaultSceneForm,
   LlmSceneEditorForm,
+  LlmSystemScenesPanel,
 } from "./llm-settings-forms.tsx";
 
-type LlmTabId = "connections" | "scenes" | "default";
+type LlmTabId = "connections" | "custom" | "scenes";
 
 type EditorState =
   | { kind: "connection"; mode: "create" | "edit"; id: string; entry: Record<string, unknown> }
@@ -48,10 +52,11 @@ type Props = {
 
 export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, onSaved }: Props) {
   const useActionSheet = useActionSheetCapability();
-  const [tab, setTab] = useState<LlmTabId>("connections");
+  const [tab, setTab] = useState<LlmTabId>("scenes");
   const [providersDraft, setProvidersDraft] = useState<Record<string, unknown>>({});
   const [profilesDraft, setProfilesDraft] = useState<Record<string, unknown>>({});
   const [defaultProfile, setDefaultProfile] = useState("chat");
+  const [profileBindings, setProfileBindings] = useState<Record<string, string | null>>({});
   const [editor, setEditor] = useState<EditorState | null>(null);
 
   useEffect(() => {
@@ -62,34 +67,50 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     setDefaultProfile(
       typeof llmConfig.default_profile === "string" ? llmConfig.default_profile : "chat",
     );
+    setProfileBindings(readProfileBindings(llmConfig.profile_bindings));
   }, [llmConfig]);
 
-  const connectionIds = useMemo(
-    () => Object.keys(readHabitatConfigRecord(providersDraft)).toSorted(),
-    [providersDraft],
-  );
-  const sceneIds = useMemo(
-    () => Object.keys(readHabitatConfigRecord(profilesDraft)).toSorted(),
-    [profilesDraft],
-  );
+  const providersRecord = useMemo(() => readHabitatConfigRecord(providersDraft), [providersDraft]);
+  const profilesRecord = useMemo(() => readHabitatConfigRecord(profilesDraft), [profilesDraft]);
 
-  const saveGeneral = useCallback(async () => {
+  const connectionIds = useMemo(() => Object.keys(providersRecord).toSorted(), [providersRecord]);
+  const schemeIds = useMemo(() => Object.keys(profilesRecord).toSorted(), [profilesRecord]);
+
+  const connectionLabels = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const id of connectionIds) {
+      out[id] = llmEntryTitle(id, providersRecord[id]);
+    }
+    return out;
+  }, [connectionIds, providersRecord]);
+
+  const saveScenesTab = useCallback(async () => {
     onSavingChange(true);
     onError("");
     try {
       const id = defaultProfile.trim();
       if (!id) {
-        onError("请选择默认场景");
+        onError("请选择主场景");
         return;
       }
-      await patchHabitatConfigSection("llm", { default_profile: id });
+      await patchHabitatConfigSection("llm", {
+        default_profile: id,
+        profile_bindings: profileBindings,
+      });
       await onSaved("llm");
     } catch (e) {
       onError(e instanceof Error ? e.message : String(e));
     } finally {
       onSavingChange(false);
     }
-  }, [defaultProfile, onError, onSaved, onSavingChange]);
+  }, [defaultProfile, profileBindings, onError, onSaved, onSavingChange]);
+
+  const onBindingChange = useCallback((purposeId: string, value: string) => {
+    setProfileBindings((prev) => ({
+      ...prev,
+      [purposeId]: value === "" ? null : value,
+    }));
+  }, []);
 
   /** 静默校验（关闭时用）；不写 onError，避免拦关闭导致 Dialog FocusScope 崩。 */
   const isEditorValid = useCallback((): boolean => {
@@ -99,17 +120,17 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     if (editor.kind === "connection") {
       if (validateTimeoutDraft(readTimeoutDraft(editor.entry))) return false;
       if (editor.mode === "create" && connectionIds.includes(id)) return false;
-    } else if (editor.mode === "create" && sceneIds.includes(id)) {
+    } else if (editor.mode === "create" && schemeIds.includes(id)) {
       return false;
     }
     return true;
-  }, [editor, connectionIds, sceneIds]);
+  }, [editor, connectionIds, schemeIds]);
 
   const validateEditor = useCallback((): boolean => {
     if (!editor) return false;
     const id = editor.id.trim();
     if (!id) {
-      onError(editor.kind === "connection" ? "请填写连接 id" : "请填写场景 id");
+      onError(editor.kind === "connection" ? "连接 id 无效" : "方案 id 无效");
       return false;
     }
     if (editor.kind === "connection") {
@@ -122,15 +143,13 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
         onError(`连接 id「${id}」已存在`);
         return false;
       }
-    } else {
-      if (editor.mode === "create" && sceneIds.includes(id)) {
-        onError(`场景 id「${id}」已存在`);
-        return false;
-      }
+    } else if (editor.mode === "create" && schemeIds.includes(id)) {
+      onError(`方案 id「${id}」已存在`);
+      return false;
     }
     onError("");
     return true;
-  }, [editor, connectionIds, sceneIds, onError]);
+  }, [editor, connectionIds, schemeIds, onError]);
 
   const computeUpdatedProviders = useCallback(
     (draft: Record<string, unknown>): Record<string, unknown> => {
@@ -205,27 +224,41 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     setEditor(null);
   }, [editor, isEditorValid, computeUpdatedProviders, computeUpdatedProfiles, onError]);
 
+  const openCreateConnection = () => {
+    setEditor({
+      kind: "connection",
+      mode: "create",
+      id: newConnectionId(),
+      entry: emptyConnectionEntry(),
+    });
+  };
+
+  const openCreateScheme = () => {
+    setEditor({
+      kind: "scene",
+      mode: "create",
+      id: newSceneId(),
+      entry: emptySceneEntry(),
+    });
+  };
+
   const deleteConnection = async (id: string) => {
+    const label = llmEntryTitle(id, providersRecord[id]);
     const ok = await showConfirm({
       title: "删除连接？",
-      description: `将移除连接「${id}」。`,
+      description: `将移除连接「${label}」。`,
       confirmLabel: "删除",
       variant: "error",
     });
     if (!ok) return;
-    setProvidersDraft((prev) => {
-      const next = { ...readHabitatConfigRecord(prev) };
-      delete next[id];
-      return next;
-    });
+    const next = { ...providersRecord };
+    delete next[id];
+    setProvidersDraft(next);
     onSavingChange(true);
     onError("");
     try {
       await patchHabitatConfigSection("llm", {
-        providers: providersDraftToPatch({
-          ...readHabitatConfigRecord(providersDraft),
-          [id]: undefined,
-        }),
+        providers: providersDraftToPatch(next),
       });
       await onSaved("llm.providers");
     } catch (e) {
@@ -235,27 +268,23 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     }
   };
 
-  const deleteScene = async (id: string) => {
+  const deleteScheme = async (id: string) => {
+    const label = llmEntryTitle(id, profilesRecord[id]);
     const ok = await showConfirm({
-      title: "删除场景？",
-      description: `将移除场景「${id}」。`,
+      title: "删除方案？",
+      description: `将移除方案「${label}」。`,
       confirmLabel: "删除",
       variant: "error",
     });
     if (!ok) return;
-    setProfilesDraft((prev) => {
-      const next = { ...readHabitatConfigRecord(prev) };
-      delete next[id];
-      return next;
-    });
+    const next = { ...profilesRecord };
+    delete next[id];
+    setProfilesDraft(next);
     onSavingChange(true);
     onError("");
     try {
       await patchHabitatConfigSection("llm", {
-        profiles: profilesDraftToPatch({
-          ...readHabitatConfigRecord(profilesDraft),
-          [id]: undefined,
-        }),
+        profiles: profilesDraftToPatch(next),
       });
       await onSaved("llm.profiles");
     } catch (e) {
@@ -272,8 +301,8 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
         : "编辑连接"
       : editor?.kind === "scene"
         ? editor.mode === "create"
-          ? "新建场景"
-          : "编辑场景"
+          ? "新建方案"
+          : "编辑方案"
         : "";
 
   return (
@@ -285,28 +314,90 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
           className="w-full"
         >
           <TabsList variant="default" className="w-full justify-start">
-            <TabsTrigger id="connections">连接</TabsTrigger>
             <TabsTrigger id="scenes">场景</TabsTrigger>
-            <TabsTrigger id="default">默认</TabsTrigger>
+            <TabsTrigger id="custom">自定义</TabsTrigger>
+            <TabsTrigger id="connections">连接</TabsTrigger>
           </TabsList>
+
+          <TabsContent id="scenes" className="space-y-4 pt-2">
+            <LlmSystemScenesPanel
+              defaultProfile={defaultProfile}
+              profileIds={schemeIds}
+              profiles={profilesRecord}
+              bindings={profileBindings}
+              onDefaultProfileChange={setDefaultProfile}
+              onBindingChange={onBindingChange}
+            />
+            <Button type="button" isDisabled={saving} onClick={() => void saveScenesTab()}>
+              保存场景
+            </Button>
+          </TabsContent>
+
+          <TabsContent id="custom" className="space-y-4 pt-2">
+            {schemeIds.length === 0 ? (
+              <EmptyState
+                message="还没有方案"
+                action={
+                  <Button type="button" size="sm" onClick={openCreateScheme}>
+                    新建方案
+                  </Button>
+                }
+              />
+            ) : (
+              <ul className="space-y-1">
+                {schemeIds.map((id) => {
+                  const entry = profilesRecord[id] ?? {};
+                  return (
+                    <ListRow
+                      key={id}
+                      as="li"
+                      useActionSheet={useActionSheet}
+                      className="cursor-pointer bg-background/60 px-2"
+                      onClick={() =>
+                        setEditor({
+                          kind: "scene",
+                          mode: "edit",
+                          id,
+                          entry: { ...entry },
+                        })
+                      }
+                    >
+                      <div className="min-w-0 flex-1 py-1">
+                        <p className="truncate text-sm font-medium">{llmEntryTitle(id, entry)}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {sceneListSubtitle(entry)}
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive shrink-0"
+                        onClick={(e: MouseEvent) => {
+                          e.stopPropagation();
+                          void deleteScheme(id);
+                        }}
+                      >
+                        删除
+                      </Button>
+                    </ListRow>
+                  );
+                })}
+              </ul>
+            )}
+            {schemeIds.length > 0 ? (
+              <Button type="button" size="sm" variant="outline" onClick={openCreateScheme}>
+                新建方案
+              </Button>
+            ) : null}
+          </TabsContent>
 
           <TabsContent id="connections" className="space-y-4 pt-2">
             {connectionIds.length === 0 ? (
               <EmptyState
                 message="还没有连接"
                 action={
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() =>
-                      setEditor({
-                        kind: "connection",
-                        mode: "create",
-                        id: "",
-                        entry: emptyConnectionEntry(),
-                      })
-                    }
-                  >
+                  <Button type="button" size="sm" onClick={openCreateConnection}>
                     新建连接
                   </Button>
                 }
@@ -314,7 +405,7 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
             ) : (
               <ul className="space-y-1">
                 {connectionIds.map((id) => {
-                  const entry = readHabitatConfigRecord(providersDraft)[id] ?? {};
+                  const entry = providersRecord[id] ?? {};
                   return (
                     <ListRow
                       key={id}
@@ -331,7 +422,7 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                       }
                     >
                       <div className="min-w-0 flex-1 py-1">
-                        <p className="truncate text-sm font-medium">{id}</p>
+                        <p className="truncate text-sm font-medium">{llmEntryTitle(id, entry)}</p>
                         <p className="truncate text-xs text-muted-foreground">
                           {connectionListSubtitle(entry)}
                         </p>
@@ -354,115 +445,10 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
               </ul>
             )}
             {connectionIds.length > 0 ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  setEditor({
-                    kind: "connection",
-                    mode: "create",
-                    id: "",
-                    entry: emptyConnectionEntry(),
-                  })
-                }
-              >
+              <Button type="button" size="sm" variant="outline" onClick={openCreateConnection}>
                 新建连接
               </Button>
             ) : null}
-          </TabsContent>
-
-          <TabsContent id="scenes" className="space-y-4 pt-2">
-            {sceneIds.length === 0 ? (
-              <EmptyState
-                message="还没有场景"
-                action={
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() =>
-                      setEditor({
-                        kind: "scene",
-                        mode: "create",
-                        id: "",
-                        entry: emptySceneEntry(),
-                      })
-                    }
-                  >
-                    新建场景
-                  </Button>
-                }
-              />
-            ) : (
-              <ul className="space-y-1">
-                {sceneIds.map((id) => {
-                  const entry = readHabitatConfigRecord(profilesDraft)[id] ?? {};
-                  return (
-                    <ListRow
-                      key={id}
-                      as="li"
-                      useActionSheet={useActionSheet}
-                      className="cursor-pointer bg-background/60 px-2"
-                      onClick={() =>
-                        setEditor({
-                          kind: "scene",
-                          mode: "edit",
-                          id,
-                          entry: { ...entry },
-                        })
-                      }
-                    >
-                      <div className="min-w-0 flex-1 py-1">
-                        <p className="truncate text-sm font-medium">{id}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {sceneListSubtitle(entry)}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive shrink-0"
-                        onClick={(e: MouseEvent) => {
-                          e.stopPropagation();
-                          void deleteScene(id);
-                        }}
-                      >
-                        删除
-                      </Button>
-                    </ListRow>
-                  );
-                })}
-              </ul>
-            )}
-            {sceneIds.length > 0 ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  setEditor({
-                    kind: "scene",
-                    mode: "create",
-                    id: "",
-                    entry: emptySceneEntry(),
-                  })
-                }
-              >
-                新建场景
-              </Button>
-            ) : null}
-          </TabsContent>
-
-          <TabsContent id="default" className="space-y-4 pt-2">
-            <LlmDefaultSceneForm
-              defaultProfile={defaultProfile}
-              sceneIds={sceneIds}
-              onDefaultProfileChange={setDefaultProfile}
-            />
-            <Button type="button" isDisabled={saving} onClick={() => void saveGeneral()}>
-              保存默认
-            </Button>
           </TabsContent>
         </Tabs>
 
@@ -490,19 +476,16 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
                 {editor.kind === "connection" ? (
                   <LlmConnectionEditorForm
                     connectionId={editor.id}
-                    idEditable={editor.mode === "create"}
                     entry={editor.entry}
-                    onIdChange={(id) => setEditor({ ...editor, id })}
                     onChange={(entry) => setEditor({ ...editor, entry })}
                     testDisabled={saving}
                   />
                 ) : (
                   <LlmSceneEditorForm
                     sceneId={editor.id}
-                    idEditable={editor.mode === "create"}
                     entry={editor.entry}
                     connectionIds={connectionIds}
-                    onIdChange={(id) => setEditor({ ...editor, id })}
+                    connectionLabels={connectionLabels}
                     onChange={(entry) => setEditor({ ...editor, entry })}
                   />
                 )}
