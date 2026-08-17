@@ -10,6 +10,7 @@ import {
   EMBEDDINGS_PROTOCOL_OPENAI,
   IMAGE_PROTOCOL_OPENAI,
   IMAGE_PROTOCOL_ALIBABA_MULTIMODAL,
+  VOICE_PROTOCOL_ALIBABA_AUDIO,
   type EmbeddingsProtocolId,
   type ImageProtocolId,
   type LlmFormatId,
@@ -131,7 +132,7 @@ export const LLM_PRESETS: Record<Exclude<LlmPresetId, "custom">, LlmPresetDef> =
       text: LLM_FORMAT_OPENAI_COMPATIBLE,
       image: IMAGE_PROTOCOL_ALIBABA_MULTIMODAL,
       embeddings: null,
-      voice: null,
+      voice: VOICE_PROTOCOL_ALIBABA_AUDIO,
     },
   },
 };

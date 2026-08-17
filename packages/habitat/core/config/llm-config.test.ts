@@ -144,6 +144,64 @@ describe("resolveConfiguredProfileId", () => {
     expect(view.scenes?.tts?.connection).toBe("edge");
   });
 
+  it("voice child tts inherits voice_generate; legacy tts promotes main", () => {
+    const withMain = runtimeConfigSchema.parse({
+      llm: {
+        default_profile: "chat",
+        providers: {
+          main: {
+            format: "openai_compatible",
+            base_url: "https://api.openai.com/v1",
+            api_key: "k",
+          },
+          edge: {
+            preset: "custom",
+            voice_protocol: "edge-tts",
+            base_url: "https://api.msedgeservices.com/tts",
+            api_key: "",
+          },
+        },
+        profiles: {},
+        scenes: {
+          chat: { connection: "main", model: "chat-model" },
+          voice_generate: { connection: "edge", model: "zh-CN-XiaoxiaoNeural" },
+        },
+      },
+    });
+    const cfgMain = Config.fromSnapshot(withMain).data;
+    expect(resolveConfiguredProfileId(cfgMain, "tts")).toBe("voice_generate");
+    expect(resolveScene(cfgMain, "tts").model).toBe("zh-CN-XiaoxiaoNeural");
+    expect(resolveLlmConfigView(cfgMain).scenes?.tts?.connection).toBe("edge");
+
+    const legacyOnly = runtimeConfigSchema.parse({
+      llm: {
+        default_profile: "chat",
+        providers: {
+          main: {
+            format: "openai_compatible",
+            base_url: "https://api.openai.com/v1",
+            api_key: "k",
+          },
+          edge: {
+            preset: "custom",
+            voice_protocol: "edge-tts",
+            base_url: "https://api.msedgeservices.com/tts",
+            api_key: "",
+          },
+        },
+        profiles: {},
+        scenes: {
+          chat: { connection: "main", model: "chat-model" },
+          tts: { connection: "edge", model: "zh-CN-YunxiNeural" },
+        },
+      },
+    });
+    const cfgLegacy = Config.fromSnapshot(legacyOnly).data;
+    expect(resolveConfiguredProfileId(cfgLegacy, "voice_generate")).toBe("tts");
+    expect(resolveScene(cfgLegacy, "voice_generate").model).toBe("zh-CN-YunxiNeural");
+    expect(resolveLlmConfigView(cfgLegacy).scenes?.voice_generate?.model).toBe("zh-CN-YunxiNeural");
+  });
+
   it("absent binding key keeps legacy self profile when usable", () => {
     const snap = runtimeConfigSchema.parse({
       llm: {

@@ -84,9 +84,12 @@ Outbox 布局与
 
 ## 朗读
 
-消息操作栏可朗读助手/用户文本。Provider 由 Habitat `tts` 配置（默认 **edge-tts**：Habitat 合成 MP3 +
-客户端 `HTMLAudioElement`；可选 **web-speech**：浏览器 `speechSynthesis`）。朗读前经
-`markdownToPlainText` 占位过滤（代码块 / 表格 / 链接 / 图片 / 裸 URL），听者保留上下文而不读结构内容本身。
+消息操作栏可朗读助手/用户文本。路由走 `llm.scenes.tts`（可「同主场景」继承 `voice_generate`）+
+连接 `voice_protocol`（`edge-tts` / `openai_audio_speech` / `alibaba_audio`）；Habitat RPC
+`tts.synthesize` 流式（或整段）返回音频。播放参数（语速等）在 `config.tts`；可选强制 **web-speech**
+（浏览器 `speechSynthesis`，不入库）。与 Agent **文生声**（`media.voice_generate` → `object_file`）同属语音合成，交付不同。
+
+朗读前经 `markdownToPlainText` 占位过滤（代码块 / 表格 / 链接 / 图片 / 裸 URL），听者保留上下文而不读结构内容本身。
 
 ### 自动朗读（顶栏）
 

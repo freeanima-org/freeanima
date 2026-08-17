@@ -7,6 +7,10 @@ import {
   alibabaBuiltinImageGenerateEntries,
   filterImageGenerateCatalog,
 } from "@freeanima/habitat/core/llm/image-generate-models.ts";
+import {
+  alibabaBuiltinVoiceGenerateEntries,
+  filterVoiceGenerateCatalog,
+} from "@freeanima/habitat/core/llm/voice-generate-models.ts";
 import type {
   ModelInfo,
   ModelInputModality,
@@ -22,7 +26,7 @@ import {
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
 
-export type ListProviderModelsPurpose = "chat" | "image_generate" | "embedding";
+export type ListProviderModelsPurpose = "chat" | "image_generate" | "embedding" | "voice_generate";
 
 export type ListProviderModelsInput = {
   provider_id: string;
@@ -100,23 +104,39 @@ function applyPurposeFilter(
   query: string | undefined,
   limit: number,
 ): ModelInfo[] {
-  if (purpose !== "image_generate") {
-    return filterModels(models, query, limit);
+  if (purpose === "image_generate") {
+    return filterImageGenerateCatalog(models, {
+      ...(query != null && query !== "" ? { query } : {}),
+      limit,
+    }).map((entry): ModelInfo => {
+      if ("contextWindow" in entry && typeof entry.contextWindow === "number") {
+        return entry;
+      }
+      return {
+        model: entry.model,
+        ...(entry.label != null ? { label: entry.label } : {}),
+        contextWindow: CATALOG_DEFAULT_CONTEXT_WINDOW,
+        maxOutputTokens: CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+      };
+    });
   }
-  return filterImageGenerateCatalog(models, {
-    ...(query != null && query !== "" ? { query } : {}),
-    limit,
-  }).map((entry) => {
-    if ("contextWindow" in entry && typeof entry.contextWindow === "number") {
-      return entry;
-    }
-    return {
-      model: entry.model,
-      ...(entry.label != null ? { label: entry.label } : {}),
-      contextWindow: CATALOG_DEFAULT_CONTEXT_WINDOW,
-      maxOutputTokens: CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
-    };
-  });
+  if (purpose === "voice_generate") {
+    return filterVoiceGenerateCatalog(models, {
+      ...(query != null && query !== "" ? { query } : {}),
+      limit,
+    }).map((entry): ModelInfo => {
+      if ("contextWindow" in entry && typeof entry.contextWindow === "number") {
+        return entry;
+      }
+      return {
+        model: entry.model,
+        ...(entry.label != null ? { label: entry.label } : {}),
+        contextWindow: CATALOG_DEFAULT_CONTEXT_WINDOW,
+        maxOutputTokens: CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+      };
+    });
+  }
+  return filterModels(models, query, limit);
 }
 
 /** List models for an LLM Connection: provider `/models` (enriched) or models.dev fallback. */
@@ -151,11 +171,24 @@ export async function listProviderModels(
   if (input.purpose === "image_generate" && !providerCfg.image_protocol) {
     return { models: [], source: "provider" };
   }
+  if (input.purpose === "voice_generate" && !providerCfg.voice_protocol) {
+    return { models: [], source: "provider" };
+  }
 
   // 阿里云 Token Plan：文生图用内置「图片生成」表，不拿 /models 里的对话模型冒充
   if (input.purpose === "image_generate" && providerCfg.preset === LLM_PRESET_ALIBABA_TOKEN_PLAN) {
     const builtin = entriesToModelInfo(
       alibabaBuiltinImageGenerateEntries({
+        ...(input.query != null && input.query !== "" ? { query: input.query } : {}),
+        limit,
+      }),
+    );
+    return { models: builtin.map(serializeModel), source: "builtin" };
+  }
+
+  if (input.purpose === "voice_generate" && providerCfg.preset === LLM_PRESET_ALIBABA_TOKEN_PLAN) {
+    const builtin = entriesToModelInfo(
+      alibabaBuiltinVoiceGenerateEntries({
         ...(input.query != null && input.query !== "" ? { query: input.query } : {}),
         limit,
       }),

@@ -223,9 +223,10 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
         configKey === "connections" ||
         configKey === "dialogue" ||
         configKey === "image_gen" ||
+        configKey === "voice" ||
         configKey === "llm"
           ? "llm"
-          : configKey === "voice" || configKey === "tts"
+          : configKey === "tts"
             ? "tts"
             : configKey;
 
@@ -236,9 +237,22 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
         fetchKey === "llm" ||
         configKey === "connections" ||
         configKey === "dialogue" ||
-        configKey === "image_gen"
+        configKey === "image_gen" ||
+        configKey === "voice"
       ) {
-        setConfig(asRecord);
+        if (configKey === "voice") {
+          try {
+            const ttsSec = await fetchHabitatConfigSection("tts");
+            setConfig({
+              ...asRecord,
+              tts: ttsSec ?? {},
+            });
+          } catch {
+            setConfig(asRecord);
+          }
+        } else {
+          setConfig(asRecord);
+        }
         if (configKey === "dialogue") {
           const autoSec = await fetchHabitatConfigSection("auto_llm");
           setAutoLlmDraft(readAdvancedSectionDraft(autoSec));
@@ -559,7 +573,8 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
       {(configKey === "llm" ||
         configKey === "connections" ||
         configKey === "dialogue" ||
-        configKey === "image_gen") &&
+        configKey === "image_gen" ||
+        configKey === "voice") &&
       config ? (
         <>
           <LlmSettingsPanel
@@ -575,7 +590,9 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
                   ? "dialogue"
                   : configKey === "image_gen"
                     ? "image_gen"
-                    : "all"
+                    : configKey === "voice"
+                      ? "voice"
+                      : "all"
             }
           />
           {configKey === "dialogue" ? (
@@ -600,10 +617,21 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
               </CardContent>
             </Card>
           ) : null}
+          {configKey === "voice" ? (
+            <SpeechSettingsTab
+              config={config}
+              saving={saving}
+              onSavingChange={setSaving}
+              onError={setError}
+              onSaved={async () => {
+                await afterSave("tts");
+              }}
+            />
+          ) : null}
         </>
       ) : null}
 
-      {(configKey === "tts" || configKey === "voice") && config ? (
+      {configKey === "tts" && config ? (
         <SpeechSettingsTab
           config={config}
           saving={saving}

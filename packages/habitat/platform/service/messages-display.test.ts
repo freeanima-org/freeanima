@@ -181,6 +181,40 @@ describe("buildMessagesDisplay", () => {
     }
   });
 
+  it("embeds voice_generate object_file as anima URI in assistant content", () => {
+    const msgs: StoredMessage[] = [
+      { role: "user", content: "念一段" },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "v1",
+            type: "function",
+            function: { name: "voice_generate", arguments: '{"text":"你好"}' },
+          },
+        ],
+      },
+      {
+        role: "tool",
+        tool_call_id: "v1",
+        content: JSON.stringify({
+          object_file_id: 99,
+          title: "speech.mp3",
+          mime_type: "audio/mpeg",
+          size: 200,
+        }),
+      },
+      { role: "assistant", content: "已生成" },
+    ];
+    const display = buildMessagesDisplay(msgs);
+    const assistant = display.find((d) => d.type === "message" && d.role === "assistant");
+    expect(assistant?.type).toBe("message");
+    if (assistant?.type === "message") {
+      expect(assistant.content).toBe("已生成\n\n[[anima:99]]");
+    }
+  });
+
   it("synthesizes assistant bubble with anima URI when tool ends without text", () => {
     const msgs: StoredMessage[] = [
       { role: "user", content: "画" },

@@ -59,7 +59,7 @@ export const LLM_SETTINGS_PRESETS = [
   {
     id: LLM_PRESET_ALIBABA_TOKEN_PLAN,
     label: "阿里云 Token Plan",
-    hint: "对话 + 文生图（OpenAI 兼容根；Anthropic 另建连接）",
+    hint: "对话 + 文生图 + 语音合成（OpenAI 兼容根；Anthropic 另建连接）",
   },
   {
     id: LLM_PRESET_OPENCODE_GO,
@@ -79,16 +79,34 @@ export const LLM_SETTINGS_FORMATS = [
   { id: LLM_FORMAT_ANTHROPIC_MESSAGES, label: "Messages", code: "anthropic_messages" },
 ] as const;
 
-/** 系统用途行（场景 Tab）；summary 兼任压缩与标题 */
-export const LLM_SYSTEM_PURPOSE_ROWS = [
+/** 对话场景族 */
+export const DIALOGUE_SCENE_ROWS = [
   { id: "chat", label: "聊天" },
   { id: "summary", label: "会话压缩 / 标题" },
   { id: "reflect", label: "反思" },
   { id: "goal_judge", label: "目标判定" },
   { id: "skill_review", label: "技能审阅" },
-  { id: "embedding", label: "向量嵌入" },
-  { id: "image_generate", label: "图片生成" },
-  { id: "tts", label: "语音朗读" },
+] as const;
+
+/** 文生图场景族 */
+export const IMAGE_SCENE_ROWS = [{ id: "image_generate", label: "图片生成" }] as const;
+
+/** 语音合成场景族（主：文生声；子：朗读 / 实时） */
+export const VOICE_SCENE_ROWS = [
+  { id: "voice_generate", label: "文生声" },
+  { id: "tts", label: "朗读" },
+  { id: "voice_realtime", label: "实时语音对话" },
+] as const;
+
+/** 向量 / 检索场景族 */
+export const RETRIEVAL_SCENE_ROWS = [{ id: "embedding", label: "向量嵌入" }] as const;
+
+/** @deprecated 勿再用于「一张总表」；请用各族 *_SCENE_ROWS */
+export const LLM_SYSTEM_PURPOSE_ROWS = [
+  ...DIALOGUE_SCENE_ROWS,
+  ...RETRIEVAL_SCENE_ROWS,
+  ...IMAGE_SCENE_ROWS,
+  ...VOICE_SCENE_ROWS,
 ] as const;
 
 export const LLM_SETTINGS_IMAGE_PROTOCOLS = [
@@ -110,6 +128,7 @@ export const LLM_SETTINGS_VOICE_PROTOCOLS = [
   { id: "", label: "无" },
   { id: "edge-tts", label: "Edge TTS", code: "edge-tts" },
   { id: "openai_audio_speech", label: "OpenAI Audio Speech", code: "openai_audio_speech" },
+  { id: "alibaba_audio", label: "阿里云音频（DashScope）", code: "alibaba_audio" },
 ] as const;
 
 export function llmEntryTitle(
@@ -273,33 +292,19 @@ export function emptyEdgeTtsConnectionEntry(): Record<string, unknown> {
 }
 
 /** 场景用途按设置侧栏拆分 */
-export const LLM_PURPOSE_IDS_DIALOGUE = [
-  "chat",
-  "summary",
-  "reflect",
-  "goal_judge",
-  "skill_review",
-] as const;
-
-export const LLM_PURPOSE_IDS_IMAGE = ["image_generate"] as const;
-export const LLM_PURPOSE_IDS_VOICE = ["tts"] as const;
-export const LLM_PURPOSE_IDS_RETRIEVAL = ["embedding"] as const;
+export const LLM_PURPOSE_IDS_DIALOGUE = DIALOGUE_SCENE_ROWS.map((r) => r.id);
+export const LLM_PURPOSE_IDS_IMAGE = IMAGE_SCENE_ROWS.map((r) => r.id);
+export const LLM_PURPOSE_IDS_VOICE = VOICE_SCENE_ROWS.map((r) => r.id);
+export const LLM_PURPOSE_IDS_RETRIEVAL = RETRIEVAL_SCENE_ROWS.map((r) => r.id);
 
 export function purposeRowsForFocus(
   focus: "connections" | "dialogue" | "image_gen" | "retrieval" | "voice" | "all",
 ): ReadonlyArray<{ id: string; label: string }> {
-  const allow =
-    focus === "dialogue"
-      ? new Set<string>(LLM_PURPOSE_IDS_DIALOGUE)
-      : focus === "image_gen"
-        ? new Set<string>(LLM_PURPOSE_IDS_IMAGE)
-        : focus === "retrieval"
-          ? new Set<string>(LLM_PURPOSE_IDS_RETRIEVAL)
-          : focus === "voice"
-            ? new Set<string>(LLM_PURPOSE_IDS_VOICE)
-            : null;
-  if (!allow) return LLM_SYSTEM_PURPOSE_ROWS;
-  return LLM_SYSTEM_PURPOSE_ROWS.filter((row) => allow.has(row.id));
+  if (focus === "dialogue") return DIALOGUE_SCENE_ROWS;
+  if (focus === "image_gen") return IMAGE_SCENE_ROWS;
+  if (focus === "retrieval") return RETRIEVAL_SCENE_ROWS;
+  if (focus === "voice") return VOICE_SCENE_ROWS;
+  return LLM_SYSTEM_PURPOSE_ROWS;
 }
 
 export function emptySceneEntry(): Record<string, unknown> {
@@ -559,7 +564,7 @@ function hop0AsSceneBinding(
 
 /**
  * 从 llm 段读出场景 UI 草稿：优先 scenes；chat 可回退 profiles。
- * 子用途无独立 scenes 键 → null（同主场景）。
+ * 子用途无独立 scenes 键 → null（同主场景）。按能力族分别读取。
  */
 export function readScenesUiDraft(
   llm: Record<string, unknown>,
@@ -574,7 +579,13 @@ export function readScenesUiDraft(
         : "chat";
 
   const out: Record<string, SceneBindingDraft | null> = {};
-  for (const row of LLM_SYSTEM_PURPOSE_ROWS) {
+  const allRows = [
+    ...DIALOGUE_SCENE_ROWS,
+    ...IMAGE_SCENE_ROWS,
+    ...VOICE_SCENE_ROWS,
+    ...RETRIEVAL_SCENE_ROWS,
+  ];
+  for (const row of allRows) {
     const fromScene = readSceneBindingDraft(scenes[row.id]);
     if (fromScene?.connection && fromScene.model) {
       out[row.id] = fromScene;
@@ -583,6 +594,10 @@ export function readScenesUiDraft(
     if (row.id === "chat") {
       out.chat = hop0AsSceneBinding(profiles.chat) ??
         hop0AsSceneBinding(profiles[defaultId]) ?? { connection: "", model: "" };
+    } else if (row.id === "voice_generate") {
+      // 遗留：仅有 tts 时在 UI 上展示为文生声主场景
+      const fromTts = readSceneBindingDraft(scenes.tts);
+      out.voice_generate = fromTts?.connection && fromTts.model ? fromTts : null;
     } else {
       out[row.id] = null;
     }

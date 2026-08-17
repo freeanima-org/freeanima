@@ -65,7 +65,7 @@ export function LlmModelPicker({
   value: string;
   onChange: (model: string) => void;
   /** 图片场景传 image_generate，筛文生图模型 */
-  purpose?: "chat" | "image_generate" | "embedding";
+  purpose?: "chat" | "image_generate" | "embedding" | "voice_generate";
 }) {
   const inputId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -79,7 +79,9 @@ export function LlmModelPicker({
   const placeholder =
     purpose === "image_generate"
       ? "文生图模型 id，例如 qwen-image-3.0-pro"
-      : "供应方模型 id，例如 deepseek-chat";
+      : purpose === "voice_generate"
+        ? "语音合成模型 / 音色 id"
+        : "供应方模型 id，例如 deepseek-chat";
 
   useEffect(() => {
     if (!open) return () => {};
@@ -182,11 +184,17 @@ export function LlmModelPicker({
                     : source === "provider"
                       ? "文生图候选（连接目录）"
                       : "文生图候选（models.dev）"
-                  : source === "provider"
-                    ? "来自连接 /models（含 models.dev 元数据）"
-                    : source === "builtin"
-                      ? "来自内置模型表"
-                      : "来自 models.dev 回退目录"}
+                  : purpose === "voice_generate"
+                    ? source === "builtin"
+                      ? "内置语音合成模型（阿里云 Token Plan）"
+                      : source === "provider"
+                        ? "语音合成候选（连接目录）"
+                        : "语音合成候选（models.dev）"
+                    : source === "provider"
+                      ? "来自连接 /models（含 models.dev 元数据）"
+                      : source === "builtin"
+                        ? "来自内置模型表"
+                        : "来自 models.dev 回退目录"}
               </p>
             ) : null}
             {loading ? <p className="text-muted-foreground text-xs">加载中…</p> : null}
@@ -195,7 +203,9 @@ export function LlmModelPicker({
               <p className="text-muted-foreground text-xs">
                 {purpose === "image_generate"
                   ? "无匹配文生图模型；可手填如 qwen-image-3.0-pro / wan2.7-image。"
-                  : "无匹配模型；可继续手填任意 id。"}
+                  : purpose === "voice_generate"
+                    ? "无匹配语音模型；可手填如 qwen-audio-3.0-tts-plus 或 Edge 音色 ShortName。"
+                    : "无匹配模型；可继续手填任意 id。"}
               </p>
             ) : null}
             <ul className="h-60 overflow-y-auto">
@@ -229,7 +239,9 @@ export function LlmModelPicker({
             ? `已选：${modelSubtitle(selectedMeta)}；输入即可过滤或手填`
             : purpose === "image_generate"
               ? "列表为文生图候选；也可手填供应方模型 id"
-              : "输入过滤列表，或手填任意供应方模型 id"
+              : purpose === "voice_generate"
+                ? "列表为语音合成候选；也可手填模型 / 音色 id"
+                : "输入过滤列表，或手填任意供应方模型 id"
           : "请先选择连接后再展开列表；仍可手填模型 id"}
       </p>
     </div>

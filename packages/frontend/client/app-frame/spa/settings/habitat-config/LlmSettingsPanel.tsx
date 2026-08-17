@@ -54,8 +54,8 @@ type Props = {
   onSavingChange: (saving: boolean) => void;
   onError: (message: string) => void;
   onSaved: (section: string) => Promise<void>;
-  /** 设置侧栏拆分：连接 / 对话场景 / 图片场景 / 向量场景 / 全量 */
-  panelFocus?: "connections" | "dialogue" | "image_gen" | "retrieval" | "all";
+  /** 设置侧栏拆分：连接 / 对话场景 / 图片场景 / 语音场景 / 向量场景 / 全量 */
+  panelFocus?: "connections" | "dialogue" | "image_gen" | "retrieval" | "voice" | "all";
 };
 
 function sceneBindingComplete(v: SceneBindingDraft | null | undefined): boolean {
@@ -108,7 +108,10 @@ export function LlmSettingsPanel({
   }, [connectionIds, providersRecord]);
 
   const purposeFocus =
-    panelFocus === "dialogue" || panelFocus === "image_gen" || panelFocus === "retrieval"
+    panelFocus === "dialogue" ||
+    panelFocus === "image_gen" ||
+    panelFocus === "retrieval" ||
+    panelFocus === "voice"
       ? panelFocus
       : "all";
 
@@ -126,7 +129,9 @@ export function LlmSettingsPanel({
           ? "image_generate"
           : purposeFocus === "retrieval"
             ? "embedding"
-            : "chat";
+            : purposeFocus === "voice"
+              ? "voice_generate"
+              : "chat";
       if (purposes.includes(requiredMain) && !sceneBindingComplete(scenesDraft[requiredMain])) {
         onError("请为该能力的主场景选择连接与模型");
         return;
@@ -388,7 +393,8 @@ export function LlmSettingsPanel({
     else if (
       panelFocus === "dialogue" ||
       panelFocus === "image_gen" ||
-      panelFocus === "retrieval"
+      panelFocus === "retrieval" ||
+      panelFocus === "voice"
     ) {
       setTab("scenes");
     }
@@ -398,7 +404,8 @@ export function LlmSettingsPanel({
     panelFocus === "all" ||
     panelFocus === "dialogue" ||
     panelFocus === "image_gen" ||
-    panelFocus === "retrieval";
+    panelFocus === "retrieval" ||
+    panelFocus === "voice";
   const showCustom = panelFocus === "all";
   const showConnections = panelFocus === "all" || panelFocus === "connections";
 

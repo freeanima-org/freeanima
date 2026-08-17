@@ -462,14 +462,23 @@ function connectionIdsForScenePurpose(
       return typeof proto === "string" && proto.length > 0;
     });
   }
+  if (purposeId === "voice_generate" || purposeId === "tts" || purposeId === "voice_realtime") {
+    return connectionIds.filter((id) => {
+      const proto = providersById[id]?.voice_protocol;
+      return typeof proto === "string" && proto.length > 0;
+    });
+  }
   return connectionIds;
 }
 
 function modelPurposeForScene(
   purposeId: string,
-): "chat" | "image_generate" | "embedding" | undefined {
+): "chat" | "image_generate" | "embedding" | "voice_generate" | undefined {
   if (purposeId === "image_generate") return "image_generate";
   if (purposeId === "embedding") return "embedding";
+  if (purposeId === "voice_generate" || purposeId === "tts" || purposeId === "voice_realtime") {
+    return "voice_generate";
+  }
   return undefined;
 }
 
@@ -534,7 +543,9 @@ export function LlmSystemScenesPanel({
       ? "image_generate"
       : purposeFocus === "retrieval"
         ? "embedding"
-        : null;
+        : purposeFocus === "voice"
+          ? "voice_generate"
+          : null;
   const capabilityMainRow = capabilityMainPurpose
     ? purposeRows.find((r) => r.id === capabilityMainPurpose)
     : null;
@@ -595,7 +606,9 @@ export function LlmSystemScenesPanel({
             <StatusAlert variant="info">
               {capabilityMainRow.id === "image_generate"
                 ? "没有带图片协议的连接。请先在「连接」中为连接启用文生图协议（如 openai_images）。"
-                : "没有带向量协议的连接。请先在「连接」中启用 embeddings 协议。"}
+                : capabilityMainRow.id === "voice_generate"
+                  ? "没有带语音协议的连接。请先在「连接」中启用 voice_protocol（edge-tts / openai_audio_speech / alibaba_audio）。"
+                  : "没有带向量协议的连接。请先在「连接」中启用 embeddings 协议。"}
             </StatusAlert>
           ) : null}
         </div>
