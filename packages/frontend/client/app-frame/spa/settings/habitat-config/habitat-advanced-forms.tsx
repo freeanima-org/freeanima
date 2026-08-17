@@ -27,6 +27,7 @@ export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
 /** 侧栏一等运维项：已并入对话/向量 Tab 的段不重复列出 */
 export const SIDEBAR_OPS_SECTIONS = [
+  "i18n",
   "gateway",
   "discord",
   "weixin",
