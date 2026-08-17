@@ -34,6 +34,7 @@ const HABITAT_CONFIG_DESCRIPTION =
 
 /** 运维段中文标题（补全原 advanced 里缺标题的项） */
 const OPS_SECTION_TITLES: Record<AdvancedSectionId, string> = {
+  i18n: ADVANCED_SECTION_TITLES.i18n ?? "时区",
   gateway: ADVANCED_SECTION_TITLES.gateway ?? "网关",
   discord: ADVANCED_SECTION_TITLES.discord ?? "Discord",
   weixin: ADVANCED_SECTION_TITLES.weixin ?? "微信",
