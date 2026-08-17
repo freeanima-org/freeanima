@@ -1,5 +1,6 @@
 import {
   LLM_FORMAT_OPENAI_COMPATIBLE,
+  LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
   LLM_PRESET_OPENCODE_GO,
@@ -8,8 +9,10 @@ import {
   LLM_FORMAT_ANTHROPIC_MESSAGES,
   normalizeLlmProviderRaw,
   normalizeOptionalTitle,
+  DEFAULT_EDGE_TTS_BASE_URL,
+  VOICE_PROTOCOL_EDGE_TTS,
 } from "@freeanima/habitat/core/config";
-import { getLlmPreset } from "@freeanima/habitat/core/llm/presets";
+import { getLlmPreset, presetModalityFields } from "@freeanima/habitat/core/llm/presets";
 import { readHabitatConfigRecord } from "./habitat-config-field-helpers.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
@@ -21,6 +24,15 @@ export function providersDraftToPatch(
   const out: Record<string, unknown> = {};
   for (const [id, provider] of Object.entries(entries)) {
     const normalized = normalizeLlmProviderRaw(provider) as Record<string, unknown>;
+    const preset = coerceString(normalized.preset ?? LLM_PRESET_CUSTOM);
+    if (preset !== LLM_PRESET_CUSTOM) {
+      const suite = presetModalityFields(preset as typeof LLM_PRESET_DEEPSEEK);
+      for (const [k, v] of Object.entries(suite)) {
+        if (!(k in normalized)) normalized[k] = v;
+      }
+      // 内置预设不落盘可改 base_url（运行时用固定根）
+      delete normalized.base_url;
+    }
     out[id] = normalized;
   }
   return out;
@@ -34,14 +46,31 @@ export function readProvidersDraft(
 }
 
 export const LLM_SETTINGS_PRESETS = [
-  { id: LLM_PRESET_DEEPSEEK, label: "DeepSeek", hint: "单格式 · Chat Completions" },
-  { id: LLM_PRESET_OPENROUTER, label: "OpenRouter", hint: "单格式 · Chat Completions" },
+  {
+    id: LLM_PRESET_DEEPSEEK,
+    label: "DeepSeek",
+    hint: "对话 Completions · 无文生图/向量/语音",
+  },
+  {
+    id: LLM_PRESET_OPENROUTER,
+    label: "OpenRouter",
+    hint: "对话 + 文生图 + 向量（OpenAI 兼容根）",
+  },
+  {
+    id: LLM_PRESET_ALIBABA_TOKEN_PLAN,
+    label: "阿里云 Token Plan",
+    hint: "对话 + 文生图（OpenAI 兼容根；Anthropic 另建连接）",
+  },
   {
     id: LLM_PRESET_OPENCODE_GO,
     label: "OpenCode Go",
-    hint: "多格式网关 · 按模型自动选协议",
+    hint: "多格式对话网关 · 无文生图/向量/语音",
   },
-  { id: LLM_PRESET_CUSTOM, label: "自定义", hint: "自行指定格式与 Base URL" },
+  {
+    id: LLM_PRESET_CUSTOM,
+    label: "自定义",
+    hint: "自行指定各模态协议与 Base URL",
+  },
 ] as const;
 
 export const LLM_SETTINGS_FORMATS = [
@@ -57,6 +86,30 @@ export const LLM_SYSTEM_PURPOSE_ROWS = [
   { id: "reflect", label: "反思" },
   { id: "goal_judge", label: "目标判定" },
   { id: "skill_review", label: "技能审阅" },
+  { id: "embedding", label: "向量嵌入" },
+  { id: "image_generate", label: "图片生成" },
+  { id: "tts", label: "语音朗读" },
+] as const;
+
+export const LLM_SETTINGS_IMAGE_PROTOCOLS = [
+  { id: "", label: "无" },
+  { id: "openai_images", label: "OpenAI Images", code: "openai_images" },
+  {
+    id: "alibaba_multimodal",
+    label: "阿里云多模态生成（万相/千问文生图）",
+    code: "alibaba_multimodal",
+  },
+] as const;
+
+export const LLM_SETTINGS_EMBEDDINGS_PROTOCOLS = [
+  { id: "", label: "无" },
+  { id: "openai_embeddings", label: "OpenAI Embeddings", code: "openai_embeddings" },
+] as const;
+
+export const LLM_SETTINGS_VOICE_PROTOCOLS = [
+  { id: "", label: "无" },
+  { id: "edge-tts", label: "Edge TTS", code: "edge-tts" },
+  { id: "openai_audio_speech", label: "OpenAI Audio Speech", code: "openai_audio_speech" },
 ] as const;
 
 export function llmEntryTitle(
@@ -92,22 +145,76 @@ export function llmFormatLabel(formatId: string): string {
   return hit ? `${hit.label}（${hit.code}）` : formatId;
 }
 
-/** 列表副文：预设名 + URL（空则「使用预设默认」） */
+/** 列表副文：预设名 + URL（内置预设固定根；自定义未填则提示） */
 export function connectionListSubtitle(entry: Record<string, unknown>): string {
   const preset = coerceString(entry.preset ?? LLM_PRESET_CUSTOM);
   const label = llmPresetLabel(preset);
+  if (preset !== LLM_PRESET_CUSTOM) {
+    const def = getLlmPreset(preset as typeof LLM_PRESET_DEEPSEEK);
+    const fixed = def?.defaultBaseUrl;
+    return fixed ? `${label} · ${fixed}` : label;
+  }
   const base = typeof entry.base_url === "string" ? entry.base_url.trim() : "";
   if (base) return `${label} · ${base}`;
-  if (preset === LLM_PRESET_CUSTOM) return `${label} · 未填 Base URL`;
-  const def = getLlmPreset(preset as typeof LLM_PRESET_DEEPSEEK);
-  const defaultUrl = def?.defaultBaseUrl;
-  return defaultUrl ? `${label} · 使用预设默认` : label;
+  return `${label} · 未填 Base URL`;
 }
 
 export function connectionDefaultBaseUrl(presetId: string): string | null {
   if (presetId === LLM_PRESET_CUSTOM) return null;
   const def = getLlmPreset(presetId as typeof LLM_PRESET_DEEPSEEK);
   return def?.defaultBaseUrl ?? null;
+}
+
+/** 将内置预设的全套模态协议写回连接草稿；并清除可覆盖的 base_url（运行时用预设固定根） */
+export function applyPresetToConnectionEntry(
+  entry: Record<string, unknown>,
+  presetId: string,
+): Record<string, unknown> {
+  if (presetId === LLM_PRESET_CUSTOM) {
+    return {
+      ...entry,
+      preset: LLM_PRESET_CUSTOM,
+      format: entry.format ?? LLM_FORMAT_OPENAI_COMPATIBLE,
+      text_protocol: entry.text_protocol ?? entry.format ?? LLM_FORMAT_OPENAI_COMPATIBLE,
+    };
+  }
+  const modalities = presetModalityFields(presetId as typeof LLM_PRESET_DEEPSEEK);
+  const next: Record<string, unknown> = {
+    ...entry,
+    preset: presetId,
+    ...modalities,
+  };
+  delete next.base_url;
+  return next;
+}
+
+function protocolLabel(kind: "text" | "image" | "embeddings" | "voice", id: string | null): string {
+  if (id == null || id === "") return "无";
+  if (kind === "text") {
+    if (id === "gateway") return "按模型自动";
+    return llmFormatLabel(id);
+  }
+  if (kind === "image") {
+    return LLM_SETTINGS_IMAGE_PROTOCOLS.find((p) => p.id === id)?.label ?? id;
+  }
+  if (kind === "embeddings") {
+    return LLM_SETTINGS_EMBEDDINGS_PROTOCOLS.find((p) => p.id === id)?.label ?? id;
+  }
+  return LLM_SETTINGS_VOICE_PROTOCOLS.find((p) => p.id === id)?.label ?? id;
+}
+
+/** 预设协议套件摘要（只读展示） */
+export function presetModalitySuiteSummary(presetId: string): string | null {
+  if (presetId === LLM_PRESET_CUSTOM) return null;
+  const def = getLlmPreset(presetId as typeof LLM_PRESET_DEEPSEEK);
+  if (!def) return null;
+  const text = def.modalities.text === "gateway" ? "gateway" : def.modalities.text;
+  return [
+    `对话 ${protocolLabel("text", text)}`,
+    `文生图 ${protocolLabel("image", def.modalities.image)}`,
+    `向量 ${protocolLabel("embeddings", def.modalities.embeddings)}`,
+    `语音 ${protocolLabel("voice", def.modalities.voice)}`,
+  ].join(" · ");
 }
 
 export type TimeoutDraft = {
@@ -150,7 +257,49 @@ export function emptyConnectionEntry(): Record<string, unknown> {
   return {
     preset: LLM_PRESET_CUSTOM,
     format: LLM_FORMAT_OPENAI_COMPATIBLE,
+    text_protocol: LLM_FORMAT_OPENAI_COMPATIBLE,
   };
+}
+
+/** Edge TTS 专用连接草稿（密钥可空，base_url 默认可改） */
+export function emptyEdgeTtsConnectionEntry(): Record<string, unknown> {
+  return {
+    preset: LLM_PRESET_CUSTOM,
+    title: "Edge TTS",
+    voice_protocol: VOICE_PROTOCOL_EDGE_TTS,
+    base_url: DEFAULT_EDGE_TTS_BASE_URL,
+    api_key: "",
+  };
+}
+
+/** 场景用途按设置侧栏拆分 */
+export const LLM_PURPOSE_IDS_DIALOGUE = [
+  "chat",
+  "summary",
+  "reflect",
+  "goal_judge",
+  "skill_review",
+] as const;
+
+export const LLM_PURPOSE_IDS_IMAGE = ["image_generate"] as const;
+export const LLM_PURPOSE_IDS_VOICE = ["tts"] as const;
+export const LLM_PURPOSE_IDS_RETRIEVAL = ["embedding"] as const;
+
+export function purposeRowsForFocus(
+  focus: "connections" | "dialogue" | "image_gen" | "retrieval" | "voice" | "all",
+): ReadonlyArray<{ id: string; label: string }> {
+  const allow =
+    focus === "dialogue"
+      ? new Set<string>(LLM_PURPOSE_IDS_DIALOGUE)
+      : focus === "image_gen"
+        ? new Set<string>(LLM_PURPOSE_IDS_IMAGE)
+        : focus === "retrieval"
+          ? new Set<string>(LLM_PURPOSE_IDS_RETRIEVAL)
+          : focus === "voice"
+            ? new Set<string>(LLM_PURPOSE_IDS_VOICE)
+            : null;
+  if (!allow) return LLM_SYSTEM_PURPOSE_ROWS;
+  return LLM_SYSTEM_PURPOSE_ROWS.filter((row) => allow.has(row.id));
 }
 
 export function emptySceneEntry(): Record<string, unknown> {
@@ -265,9 +414,7 @@ export function sceneListSubtitle(entry: Record<string, unknown>): string {
   const chain = readChain(entry.chain);
   const primary = chain[0];
   if (!primary || (!primary.provider && !primary.model)) return "未配置路由";
-  const main = [primary.provider, primary.model].filter(Boolean).join(" / ");
-  const backup = chain.length > 1 ? ` · ${chain.length - 1} 个备用` : "";
-  return main + backup;
+  return [primary.provider, primary.model].filter(Boolean).join(" / ");
 }
 
 function profileHasUsableChain(entry: Record<string, unknown> | undefined): boolean {
@@ -317,7 +464,8 @@ export function profilesDraftToPatch(
   for (const [id, profile] of Object.entries(entries)) {
     const chain = readChain(profile.chain)
       .map(normalizeHop)
-      .filter((hop) => hop.provider && hop.model);
+      .filter((hop) => hop.provider && hop.model)
+      .slice(0, 1);
     const params =
       profile.params && typeof profile.params === "object" && !Array.isArray(profile.params)
         ? (profile.params as Record<string, unknown>)
@@ -331,4 +479,144 @@ export function profilesDraftToPatch(
     out[id] = next;
   }
   return out;
+}
+
+/**
+ * 从 profiles + bindings（及已有 scenes）合成扁平 scenes 写入。
+ * 系统用途优先；其余 profile id 也落入 scenes（兼容自定义方案）。
+ * @deprecated 日常场景 UI 已改为直接写 scenes；保留给遗留「自定义方案」保存路径。
+ */
+export function scenesDraftFromProfilesAndBindings(opts: {
+  profiles: Record<string, unknown>;
+  bindings: Record<string, string | null>;
+  defaultProfile: string;
+  existingScenes?: Record<string, unknown>;
+}): Record<string, unknown> {
+  const profiles = readHabitatConfigRecord(opts.profiles);
+  const existing = readHabitatConfigRecord(opts.existingScenes);
+  const out: Record<string, unknown> = { ...existing };
+  const defaultId = opts.defaultProfile.trim() || "chat";
+
+  const hop0Of = (profileId: string): { connection: string; model: string } | null => {
+    const entry = profiles[profileId];
+    const hop = readChain(entry?.chain)[0];
+    if (!hop?.provider || !hop.model) return null;
+    return { connection: hop.provider, model: hop.model };
+  };
+
+  const setPurpose = (purpose: string, profileId: string) => {
+    const hop = hop0Of(profileId);
+    if (!hop) return;
+    out[purpose] = {
+      connection: hop.connection,
+      model: hop.model,
+    };
+  };
+
+  setPurpose(defaultId, defaultId);
+  setPurpose("chat", defaultId);
+
+  for (const row of LLM_SYSTEM_PURPOSE_ROWS) {
+    const purpose = row.id;
+    if (Object.prototype.hasOwnProperty.call(opts.bindings, purpose)) {
+      const bound = opts.bindings[purpose];
+      const profileId = bound == null || bound === "" ? defaultId : bound;
+      setPurpose(purpose, profileId);
+    } else if (profileHasUsableChain(profiles[purpose])) {
+      setPurpose(purpose, purpose);
+    }
+  }
+
+  for (const [id] of Object.entries(profiles)) {
+    if (!out[id]) setPurpose(id, id);
+  }
+
+  return out;
+}
+
+/** 扁平场景绑定草稿；`null` = 同主场景（不写该用途键） */
+export type SceneBindingDraft = {
+  connection: string;
+  model: string;
+};
+
+export function readSceneBindingDraft(raw: unknown): SceneBindingDraft | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const connection = typeof o.connection === "string" ? o.connection.trim() : "";
+  const model = typeof o.model === "string" ? o.model.trim() : "";
+  if (!connection && !model) return null;
+  return { connection, model };
+}
+
+function hop0AsSceneBinding(
+  profile: Record<string, unknown> | undefined,
+): SceneBindingDraft | null {
+  const hop = readChain(profile?.chain)[0];
+  if (!hop?.provider || !hop.model) return null;
+  return { connection: hop.provider, model: hop.model };
+}
+
+/**
+ * 从 llm 段读出场景 UI 草稿：优先 scenes；chat 可回退 profiles。
+ * 子用途无独立 scenes 键 → null（同主场景）。
+ */
+export function readScenesUiDraft(
+  llm: Record<string, unknown>,
+): Record<string, SceneBindingDraft | null> {
+  const scenes = readHabitatConfigRecord(llm.scenes as Record<string, unknown> | undefined);
+  const profiles = readHabitatConfigRecord(llm.profiles as Record<string, unknown> | undefined);
+  const defaultId =
+    typeof llm.default_scene === "string" && llm.default_scene.trim()
+      ? llm.default_scene.trim()
+      : typeof llm.default_profile === "string" && llm.default_profile.trim()
+        ? llm.default_profile.trim()
+        : "chat";
+
+  const out: Record<string, SceneBindingDraft | null> = {};
+  for (const row of LLM_SYSTEM_PURPOSE_ROWS) {
+    const fromScene = readSceneBindingDraft(scenes[row.id]);
+    if (fromScene?.connection && fromScene.model) {
+      out[row.id] = fromScene;
+      continue;
+    }
+    if (row.id === "chat") {
+      out.chat = hop0AsSceneBinding(profiles.chat) ??
+        hop0AsSceneBinding(profiles[defaultId]) ?? { connection: "", model: "" };
+    } else {
+      out[row.id] = null;
+    }
+  }
+  return out;
+}
+
+/** 只更新指定用途键；null/空 → 写入 null（merge 时删除该用途，同主场景） */
+export function scenesUiDraftToPatch(
+  draft: Record<string, SceneBindingDraft | null>,
+  existingScenes: Record<string, unknown> | null | undefined,
+  purposes: readonly string[],
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const existing = readHabitatConfigRecord(existingScenes);
+  for (const purpose of purposes) {
+    const v = draft[purpose];
+    if (v == null || !v.connection.trim() || !v.model.trim()) {
+      // 仅当库里已有该键时发 tombstone，避免无意义 null
+      if (Object.prototype.hasOwnProperty.call(existing, purpose)) {
+        out[purpose] = null;
+      }
+    } else {
+      out[purpose] = {
+        connection: v.connection.trim(),
+        model: v.model.trim(),
+      };
+    }
+  }
+  return out;
+}
+
+export function purposeIdsForFocus(
+  focus: "connections" | "dialogue" | "image_gen" | "retrieval" | "voice" | "all",
+): string[] {
+  return purposeRowsForFocus(focus).map((r) => r.id);
 }

@@ -7,6 +7,8 @@ import {
   isLlmConfigured,
   LLM_NOT_CONFIGURED_MESSAGE,
   resolveConfiguredProfileId,
+  resolveLlmConfigView,
+  resolveScene,
   tryGetLlmConfig,
 } from "./llm-config.ts";
 import { llmConfigSchema, llmProviderSchema } from "./schemas/llm-config.ts";
@@ -101,6 +103,45 @@ describe("resolveConfiguredProfileId", () => {
     const cfg = Config.fromSnapshot(snap).data;
     expect(resolveConfiguredProfileId(cfg, "summary")).toBe("cheap");
     expect(getProfileHopModel(cfg, "summary")).toBe("cheap-model");
+  });
+
+  it("flat scenes resolve without profiles hop", () => {
+    const snap = runtimeConfigSchema.parse({
+      llm: {
+        default_profile: "chat",
+        providers: {
+          main: {
+            format: "openai_compatible",
+            base_url: "https://api.openai.com/v1",
+            api_key: "k",
+            image_protocol: "openai_images",
+          },
+          edge: {
+            preset: "custom",
+            voice_protocol: "edge-tts",
+            base_url: "https://api.msedgeservices.com/tts",
+            api_key: "",
+          },
+        },
+        profiles: {},
+        scenes: {
+          chat: { connection: "main", model: "chat-model" },
+          image_generate: { connection: "main", model: "gpt-image-1" },
+          tts: { connection: "edge", model: "zh-CN-XiaoxiaoNeural" },
+        },
+      },
+    });
+    const cfg = Config.fromSnapshot(snap).data;
+    expect(isLlmConfigured(cfg)).toBe(true);
+    expect(getProfileHopModel(cfg, "chat")).toBe("chat-model");
+    const scene = resolveScene(cfg, "image_generate");
+    expect(scene.connection).toBe("main");
+    expect(scene.model).toBe("gpt-image-1");
+    expect(scene.imageProtocol).toBe("openai_images");
+    const view = resolveLlmConfigView(cfg);
+    expect(view.profiles.tts).toBeUndefined();
+    expect(view.profiles.image_generate).toBeUndefined();
+    expect(view.scenes?.tts?.connection).toBe("edge");
   });
 
   it("absent binding key keeps legacy self profile when usable", () => {

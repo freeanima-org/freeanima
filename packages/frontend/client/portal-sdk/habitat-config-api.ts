@@ -123,17 +123,19 @@ export type HabitatProviderModelEntry = {
   maxOutputTokens: number;
   cost?: { input?: number; output?: number };
   inputModalities?: Array<"text" | "image" | "audio" | "video" | "pdf">;
+  outputModalities?: Array<"text" | "image" | "audio" | "video">;
 };
 
 export type HabitatListProviderModelsResult = {
   models: HabitatProviderModelEntry[];
-  source: "provider" | "models_dev";
+  source: "provider" | "models_dev" | "builtin";
 };
 
 export async function listHabitatProviderModels(input: {
   provider_id: string;
   query?: string;
   limit?: number;
+  purpose?: "chat" | "image_generate" | "embedding";
 }): Promise<HabitatListProviderModelsResult> {
   return (await habitatRpc().call(
     "config.listProviderModels",

@@ -16,3 +16,13 @@ export {
   type EmbedTextFn,
   type EmbedTextsFn,
 } from "./embedding.ts";
+export {
+  generateOpenAiImage,
+  type GenerateImageInput,
+  type GenerateImageResult,
+} from "./images.ts";
+export {
+  generateAlibabaMultimodalImage,
+  alibabaMultimodalGenerationUrl,
+  normalizeAlibabaImageSize,
+} from "./images-alibaba-multimodal.ts";

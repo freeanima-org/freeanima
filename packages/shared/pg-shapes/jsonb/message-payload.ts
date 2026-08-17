@@ -31,6 +31,8 @@ export const messageAttachmentMetaSchema = z.object({
   filename: z.string().min(1),
   mime_type: z.string().min(1),
   size: z.number().int().nonnegative(),
+  /** 对象存储文件（生成图等）；有则前端可拉预览 */
+  object_file_id: z.number().int().positive().optional(),
 });
 
 export type MessageAttachmentMeta = z.infer<typeof messageAttachmentMetaSchema>;
@@ -76,6 +78,8 @@ export const assistantPayloadSchema = messageBaseSchema.extend({
   usage: messageUsageSchema.optional(),
   latency_ms: z.number().optional(),
   name: z.string().optional(),
+  /** 生成图等持久附件（含 object_file_id） */
+  attachments: z.array(messageAttachmentMetaSchema).optional(),
 });
 
 export const toolPayloadSchema = messageBaseSchema.extend({

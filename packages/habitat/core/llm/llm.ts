@@ -44,7 +44,8 @@ export async function chat(
   messages: StoredMessage[] | SimpleChatMessage[],
   opts?: LlmInvokeOpts,
 ): Promise<LlmResponse> {
-  const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
+  const resolvedId = resolveRuntime(opts).resolveProfileId(opts?.profileId);
+  const profile = resolveRuntime(opts).profiles.resolve(resolvedId);
   const input = isSimpleChatOnly(messages)
     ? simpleMessagesToInvokeInput(messages as SimpleChatMessage[])
     : storedMessagesToInvokeInput(messages);
@@ -74,7 +75,8 @@ export async function* chatStream(
       model?: string;
     }
 > {
-  const profile = resolveRuntime(opts).profiles.resolve(opts?.profileId);
+  const resolvedId = resolveRuntime(opts).resolveProfileId(opts?.profileId);
+  const profile = resolveRuntime(opts).profiles.resolve(resolvedId);
   const input = storedMessagesToInvokeInput(messages);
 
   for await (const event of profile.chatStream(

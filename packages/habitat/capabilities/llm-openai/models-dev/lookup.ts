@@ -1,15 +1,16 @@
 import type { Model, ProviderMap } from "@opencode-ai/models";
 import type { LlmPresetId } from "@freeanima/habitat/core/config/schemas/llm-config";
 import {
+  LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
   LLM_PRESET_OPENCODE_GO,
   LLM_PRESET_OPENROUTER,
 } from "@freeanima/habitat/core/config/schemas/llm-config";
 
-/** FreeAnima LLM preset → models.dev provider id. */
+/** FreeAnima LLM preset → models.dev provider id（内置目录 preset 除外）。 */
 export const PRESET_TO_MODELS_DEV_PROVIDER: Record<
-  Exclude<LlmPresetId, typeof LLM_PRESET_CUSTOM>,
+  Exclude<LlmPresetId, typeof LLM_PRESET_CUSTOM | typeof LLM_PRESET_ALIBABA_TOKEN_PLAN>,
   string
 > = {
   [LLM_PRESET_DEEPSEEK]: "deepseek",
@@ -20,7 +21,9 @@ export const PRESET_TO_MODELS_DEV_PROVIDER: Record<
 export function modelsDevProviderIdForPreset(
   preset: LlmPresetId | null | undefined,
 ): string | null {
-  if (preset == null || preset === LLM_PRESET_CUSTOM) return null;
+  if (preset == null || preset === LLM_PRESET_CUSTOM || preset === LLM_PRESET_ALIBABA_TOKEN_PLAN) {
+    return null;
+  }
   return PRESET_TO_MODELS_DEV_PROVIDER[preset] ?? null;
 }
 

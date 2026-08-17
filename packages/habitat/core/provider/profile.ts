@@ -3,7 +3,7 @@ import type { LlmTurnMessage, OpenAiToolSchema } from "./messages.ts";
 import type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
 import type { LlmCallParams } from "./model.ts";
 import type { LlmProvider, ProviderRegistry } from "./provider.ts";
-import { shouldFailoverToNextHop, withLlmRouteContext, type ProviderError } from "./errors.ts";
+import { withLlmRouteContext, type ProviderError } from "./errors.ts";
 
 export const PROFILE_CHAT = "chat";
 export const PROFILE_REFLECT = "reflect";
@@ -19,7 +19,7 @@ export const BUILTIN_PROFILE_IDS = [
   PROFILE_SKILL_REVIEW,
 ] as const;
 
-/** One hop in profile chain; later hops are standby routes on failover-eligible failures */
+/** One hop in profile chain（仅使用 chain[0]；多跳已废弃） */
 export type RouteHopSpec = {
   provider: string;
   model: string;
@@ -201,57 +201,35 @@ export class LlmProfile {
   }
 
   async chat(messages: LlmTurnMessage[], opts?: ProfileChatOptions): Promise<ChatCompletion> {
-    let lastError: ProviderError | undefined;
-    for (let hopIndex = 0; hopIndex < this.def.chain.length; hopIndex++) {
-      await this.bindHop(hopIndex, opts);
-      const p = this.provider;
-      const request = this.buildRequest(messages, opts);
-      try {
-        const out = await p.formatForModel(this._model).chat(this._model, request, p.context);
-        p.markHealthy();
-        return out;
-      } catch (err) {
-        lastError = this.enrichFailure(err, hopIndex);
-        const canFailover =
-          hopIndex + 1 < this.def.chain.length && shouldFailoverToNextHop(lastError);
-        if (!canFailover) {
-          throw lastError;
-        }
-      }
+    await this.bindHop(0, opts);
+    const p = this.provider;
+    const request = this.buildRequest(messages, opts);
+    try {
+      const out = await p.formatForModel(this._model).chat(this._model, request, p.context);
+      p.markHealthy();
+      return out;
+    } catch (err) {
+      throw this.enrichFailure(err, 0);
     }
-    throw lastError ?? new Error(`profile "${this.def.id}" chain cannot be empty`);
   }
 
   async *chatStream(
     messages: LlmTurnMessage[],
     opts?: ProfileChatOptions,
   ): AsyncIterable<ChatStreamEvent> {
-    let lastError: ProviderError | undefined;
-    for (let hopIndex = 0; hopIndex < this.def.chain.length; hopIndex++) {
-      await this.bindHop(hopIndex, opts);
-      const p = this.provider;
-      const request = this.buildRequest(messages, opts);
-      let yielded = false;
-      try {
-        for await (const event of p
-          .formatForModel(this._model)
-          .chatStream(this._model, request, p.context)) {
-          yielded = true;
-          yield event;
-        }
-        p.markHealthy();
-        return;
-      } catch (err) {
-        lastError = this.enrichFailure(err, hopIndex);
-        // Mid-stream failure cannot safely restart on another hop (partial tokens already sent).
-        const canFailover =
-          !yielded && hopIndex + 1 < this.def.chain.length && shouldFailoverToNextHop(lastError);
-        if (!canFailover) {
-          throw lastError;
-        }
+    await this.bindHop(0, opts);
+    const p = this.provider;
+    const request = this.buildRequest(messages, opts);
+    try {
+      for await (const event of p
+        .formatForModel(this._model)
+        .chatStream(this._model, request, p.context)) {
+        yield event;
       }
+      p.markHealthy();
+    } catch (err) {
+      throw this.enrichFailure(err, 0);
     }
-    throw lastError ?? new Error(`profile "${this.def.id}" chain cannot be empty`);
   }
 }
 

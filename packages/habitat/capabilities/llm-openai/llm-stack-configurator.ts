@@ -27,6 +27,14 @@ export function bindLlmStack(
 
   for (const [id, raw] of Object.entries(llm.providers)) {
     const providerCfg = llmProviderSchema.parse(raw);
-    providers.registerSpec(providerConfigToSpec(id, providerCfg));
+    // 纯语音等无密钥连接不进 chat ProviderRegistry
+    if (!providerCfg.api_key?.trim()) continue;
+    const textProto = providerCfg.format ?? providerCfg.text_protocol;
+    if (textProto == null && providerCfg.preset === "custom") continue;
+    try {
+      providers.registerSpec(providerConfigToSpec(id, providerCfg));
+    } catch {
+      // skip connections that cannot materialize as chat providers
+    }
   }
 }

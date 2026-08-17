@@ -10,7 +10,10 @@ import {
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
 
+import { OBJECT_FILE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
+
 import { fetchEntityDetail, type EntityDetail } from "../lib/api.ts";
+import { ObjectFileMediaPanel } from "./ObjectFileMediaPanel.tsx";
 
 type EntityDetailDialogProps = {
   open: boolean;
@@ -130,6 +133,16 @@ export function EntityDetailDialog({
           </div>
         ) : item ? (
           <>
+            {item.primary_component === OBJECT_FILE_COMPONENT ? (
+              <ObjectFileMediaPanel
+                objectFileId={item.id}
+                {...(item.title.trim() ? { title: item.title } : {})}
+                {...(typeof item.body.mime_type === "string"
+                  ? { mimeType: item.body.mime_type }
+                  : {})}
+                {...(typeof item.body.size === "number" ? { size: item.body.size } : {})}
+              />
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2">
               <DetailField label="ID">#{item.id}</DetailField>
               <DetailField label="Anima URI">

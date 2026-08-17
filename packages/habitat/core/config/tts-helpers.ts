@@ -7,9 +7,17 @@ import {
   type ResolvedSpeechConfig,
   type TtsProvider,
 } from "./schemas/tts.ts";
+import { DEFAULT_EDGE_TTS_BASE_URL, VOICE_PROTOCOL_EDGE_TTS } from "./schemas/llm-config.ts";
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
+import { materializeLlmScenes, tryGetLlmConfig } from "./llm-config.ts";
 
 export type { ResolvedSpeechConfig };
+
+export type ResolvedEdgeTtsConnection = {
+  baseUrl: string;
+  /** 场景 model 可作默认 voice ShortName */
+  voiceHint: string | null;
+};
 
 function clampRate(value: number | undefined): number {
   if (typeof value !== "number" || !Number.isFinite(value)) return DEFAULT_TTS_RATE;
@@ -31,17 +39,44 @@ function parseProvider(raw: unknown): TtsProvider {
   return DEFAULT_TTS_PROVIDER;
 }
 
+/**
+ * 从 llm.scenes.tts + 连接 voice_protocol=edge-tts 解析 Edge 连接。
+ * 未配置时返回 null（合成仍可用库默认端点）。
+ */
+export function resolveEdgeTtsConnection(cfg: RuntimeConfig): ResolvedEdgeTtsConnection | null {
+  const llm = tryGetLlmConfig(cfg);
+  if (!llm) return null;
+  const scenes = materializeLlmScenes(llm);
+  const scene = scenes.tts;
+  if (!scene?.connection) return null;
+  const provider = llm.providers[scene.connection];
+  if (!provider) return null;
+  if (provider.voice_protocol != null && provider.voice_protocol !== VOICE_PROTOCOL_EDGE_TTS) {
+    return null;
+  }
+  const baseUrl = (provider.base_url?.trim() || DEFAULT_EDGE_TTS_BASE_URL).replace(/\/$/, "");
+  const voiceHint = scene.model?.trim() || null;
+  return { baseUrl, voiceHint };
+}
+
 export function getResolvedSpeechConfig(cfg: RuntimeConfig): ResolvedSpeechConfig {
   const tts = cfg.tts ?? {};
   const lang = tts.lang?.trim() || null;
   const voiceName = tts.voice_name?.trim() || null;
   const preview = tts.preview_text?.trim() || DEFAULT_TTS_PREVIEW_TEXT;
+  const edge = resolveEdgeTtsConnection(cfg);
+
+  // 有 edge 场景且未显式选 web-speech → 走 edge-tts
+  let provider = parseProvider(tts.provider);
+  if (edge && tts.provider !== "web-speech") {
+    provider = "edge-tts";
+  }
 
   return {
     enabled: tts.enabled !== false,
-    provider: parseProvider(tts.provider),
+    provider,
     lang,
-    voiceName,
+    voiceName: voiceName || edge?.voiceHint || null,
     preferLocal: tts.prefer_local !== false,
     rate: clampRate(tts.rate),
     pitch: clampPitch(tts.pitch),
@@ -52,4 +87,18 @@ export function getResolvedSpeechConfig(cfg: RuntimeConfig): ResolvedSpeechConfi
 
 export function isSpeechPlaybackEnabled(cfg: RuntimeConfig): boolean {
   return getResolvedSpeechConfig(cfg).enabled;
+}
+
+/**
+ * Edge 合成用的 HTTP proxy：仅当 base_url 不像默认微软 TTS 根时传入库的 proxy。
+ * （库无自定义 service endpoint；反代场景把 base_url 当 proxy。）
+ */
+export function edgeTtsProxyFromBaseUrl(baseUrl: string | null | undefined): string | undefined {
+  const trimmed = baseUrl?.trim().replace(/\/$/, "");
+  if (!trimmed) return undefined;
+  const def = DEFAULT_EDGE_TTS_BASE_URL.replace(/\/$/, "");
+  if (trimmed === def || trimmed.startsWith("https://api.msedgeservices.com")) {
+    return undefined;
+  }
+  return trimmed;
 }

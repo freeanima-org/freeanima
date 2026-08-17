@@ -20,6 +20,7 @@ const DEFAULT_PRESENT_BY_COMPONENT: Record<string, AnimaPresent> = {
   calendar_event: "overlay",
   project: "overlay",
   note: "navigate",
+  object_file: "overlay",
 };
 
 export function defaultPresentForComponent(component: string | undefined): AnimaPresent {

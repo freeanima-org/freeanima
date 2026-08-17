@@ -12,6 +12,8 @@ export type EdgeSynthesizeInput = {
   rate?: number;
   pitch?: number;
   volume?: number;
+  /** HTTP proxy（来自连接 base_url，非默认微软根时） */
+  proxy?: string | null;
 };
 
 export type EdgeProsodyStrings = {
@@ -65,6 +67,7 @@ export function createEdgeCommunicate(input: EdgeSynthesizeInput): Communicate {
     rate: prosody.rate,
     pitch: prosody.pitch,
     volume: prosody.volume,
+    ...(input.proxy?.trim() ? { proxy: input.proxy.trim() } : {}),
   });
 }
 

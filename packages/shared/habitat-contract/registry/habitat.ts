@@ -97,6 +97,7 @@ const configListProviderModelsInputSchema = z.object({
   provider_id: z.string().min(1),
   query: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(500).optional(),
+  purpose: z.enum(["chat", "image_generate", "embedding"]).optional(),
 });
 const configListProviderModelsOutputSchema = z.object({
   models: z.array(
@@ -112,9 +113,10 @@ const configListProviderModelsOutputSchema = z.object({
         })
         .optional(),
       inputModalities: z.array(z.enum(["text", "image", "audio", "video", "pdf"])).optional(),
+      outputModalities: z.array(z.enum(["text", "image", "audio", "video"])).optional(),
     }),
   ),
-  source: z.enum(["provider", "models_dev"]),
+  source: z.enum(["provider", "models_dev", "builtin"]),
 });
 const sleepRunStepBodySchema = z.object({
   step_id: z.string().min(1),

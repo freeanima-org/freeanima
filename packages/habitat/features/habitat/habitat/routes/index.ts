@@ -286,7 +286,14 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "config.listProviderModels",
     habitatMethodDefs["config.listProviderModels"],
     wrapConsoleLegacyHandler((payload) =>
-      listProviderModels(payload as { provider_id: string; query?: string; limit?: number }),
+      listProviderModels(
+        payload as {
+          provider_id: string;
+          query?: string;
+          limit?: number;
+          purpose?: "chat" | "image_generate" | "embedding";
+        },
+      ),
     ),
   ),
   defineHabitatRouteFromDef(

@@ -145,4 +145,67 @@ describe("buildMessagesDisplay", () => {
       expect(toolBlocks[0].calls.every((c) => c.status === "done")).toBe(true);
     }
   });
+
+  it("embeds image_generate object_file as anima URI in assistant content", () => {
+    const msgs: StoredMessage[] = [
+      { role: "user", content: "画一只猫" },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "img1",
+            type: "function",
+            function: { name: "image_generate", arguments: '{"prompt":"cat"}' },
+          },
+        ],
+      },
+      {
+        role: "tool",
+        tool_call_id: "img1",
+        content: JSON.stringify({
+          object_file_id: 42,
+          title: "cat.png",
+          mime_type: "image/png",
+          size: 100,
+        }),
+      },
+      { role: "assistant", content: "画好了" },
+    ];
+    const display = buildMessagesDisplay(msgs);
+    const assistant = display.find((d) => d.type === "message" && d.role === "assistant");
+    expect(assistant?.type).toBe("message");
+    if (assistant?.type === "message") {
+      expect(assistant.content).toBe("画好了\n\n[[anima:42]]");
+      expect(assistant.attachments).toBeUndefined();
+    }
+  });
+
+  it("synthesizes assistant bubble with anima URI when tool ends without text", () => {
+    const msgs: StoredMessage[] = [
+      { role: "user", content: "画" },
+      {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "img1",
+            type: "function",
+            function: { name: "image_generate", arguments: "{}" },
+          },
+        ],
+      },
+      {
+        role: "tool",
+        tool_call_id: "img1",
+        content: JSON.stringify({ object_file_id: 7, mime_type: "image/png", size: 1 }),
+      },
+    ];
+    const display = buildMessagesDisplay(msgs);
+    const assistant = display.find((d) => d.type === "message" && d.role === "assistant");
+    expect(assistant?.type).toBe("message");
+    if (assistant?.type === "message") {
+      expect(assistant.content).toBe("[[anima:7]]");
+    }
+  });
 });

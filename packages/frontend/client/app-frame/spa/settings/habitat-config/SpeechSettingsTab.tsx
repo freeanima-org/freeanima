@@ -22,7 +22,18 @@ import {
   getWebSpeechUnsupportedReason,
   isWebSpeechApiAvailable,
 } from "@freeanima/client/portal-sdk/speech/web-speech-support";
-import { habitatConfigSelectClassName } from "./habitat-config-field-helpers.tsx";
+import { DEFAULT_EDGE_TTS_BASE_URL, VOICE_PROTOCOL_EDGE_TTS } from "@freeanima/habitat/core/config";
+import {
+  habitatConfigSelectClassName,
+  readHabitatConfigRecord,
+} from "./habitat-config-field-helpers.tsx";
+import {
+  emptyEdgeTtsConnectionEntry,
+  llmEntryTitle,
+  newConnectionId,
+  providersDraftToPatch,
+  readProvidersDraft,
+} from "./llm-settings-draft.ts";
 
 const LANG_OPTIONS = [
   { value: "", label: "跟随应用语言" },
@@ -59,6 +70,35 @@ function numberField(
   );
 }
 
+function readTtsSceneConnection(llm: Record<string, unknown> | undefined): string {
+  const scenes = readHabitatConfigRecord(llm?.scenes as Record<string, unknown> | undefined);
+  const tts = scenes.tts;
+  if (!tts || typeof tts !== "object" || Array.isArray(tts)) return "";
+  const connection = Reflect.get(tts, "connection");
+  return typeof connection === "string" ? connection : "";
+}
+
+function listEdgeTtsConnections(
+  providers: Record<string, Record<string, unknown>>,
+): Array<{ id: string; label: string; baseUrl: string }> {
+  const out: Array<{ id: string; label: string; baseUrl: string }> = [];
+  for (const [id, entry] of Object.entries(providers)) {
+    if (coerceVoiceProtocol(entry) !== VOICE_PROTOCOL_EDGE_TTS) continue;
+    const base =
+      typeof entry.base_url === "string" && entry.base_url.trim()
+        ? entry.base_url.trim()
+        : DEFAULT_EDGE_TTS_BASE_URL;
+    out.push({ id, label: llmEntryTitle(id, entry), baseUrl: base });
+  }
+  return out.toSorted((a, b) => a.label.localeCompare(b.label, "zh"));
+}
+
+function coerceVoiceProtocol(entry: Record<string, unknown>): string | null {
+  const v = entry.voice_protocol;
+  if (typeof v !== "string" || v === "") return null;
+  return v;
+}
+
 type Props = {
   config: Record<string, unknown>;
   saving: boolean;
@@ -70,6 +110,21 @@ type Props = {
 export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onSaved }: Props) {
   const [draft, setDraft] = useState<SpeechConfigDraft>(() => readSpeechConfigDraft(config.tts));
   const [voices, setVoices] = useState<WebSpeechVoiceInfo[]>([]);
+  const [edgeConnectionId, setEdgeConnectionId] = useState(() =>
+    readTtsSceneConnection(config.llm as Record<string, unknown> | undefined),
+  );
+
+  const llmRecord = useMemo(
+    () =>
+      config.llm && typeof config.llm === "object" ? (config.llm as Record<string, unknown>) : {},
+    [config.llm],
+  );
+  const providersRecord = useMemo(
+    () =>
+      readHabitatConfigRecord(readProvidersDraft(llmRecord.providers as Record<string, unknown>)),
+    [llmRecord.providers],
+  );
+  const edgeConnections = useMemo(() => listEdgeTtsConnections(providersRecord), [providersRecord]);
 
   const previewOptions = useMemo(() => parseSpeechConfigFromHub(draft), [draft]);
   const previewLocale = draft.lang.trim() || navigator.language || "zh-CN";
@@ -84,7 +139,8 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
 
   useEffect(() => {
     setDraft(readSpeechConfigDraft(config.tts));
-  }, [config.tts]);
+    setEdgeConnectionId(readTtsSceneConnection(config.llm as Record<string, unknown> | undefined));
+  }, [config.tts, config.llm]);
 
   useEffect(() => {
     const refresh = () => setVoices(listWebSpeechVoices());
@@ -100,24 +156,73 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
     draft.enabled &&
     (draft.provider === "edge-tts" || (isWebSpeechApiAvailable() && webSpeechIssue === null));
 
+  const ensureEdgeConnection = useCallback(async (): Promise<string> => {
+    if (edgeConnectionId && providersRecord[edgeConnectionId]) {
+      return edgeConnectionId;
+    }
+    if (edgeConnections[0]) return edgeConnections[0].id;
+    const id = newConnectionId();
+    const nextProviders = {
+      ...providersRecord,
+      [id]: emptyEdgeTtsConnectionEntry(),
+    };
+    await patchHabitatConfigSection("llm", {
+      providers: providersDraftToPatch(nextProviders),
+      scenes: {
+        ...readHabitatConfigRecord(llmRecord.scenes as Record<string, unknown> | undefined),
+        tts: { connection: id, model: draft.voice_name.trim() || "zh-CN-XiaoxiaoNeural" },
+      },
+    });
+    return id;
+  }, [draft.voice_name, edgeConnectionId, edgeConnections, llmRecord.scenes, providersRecord]);
+
   const save = useCallback(async () => {
     onSavingChange(true);
     onError("");
     setLocalError("");
     try {
       await patchHabitatConfigSection("tts", speechConfigDraftToPatch(draft));
+
+      if (draft.provider === "edge-tts") {
+        const connectionId = edgeConnectionId || (await ensureEdgeConnection());
+        const existingScenes = readHabitatConfigRecord(
+          llmRecord.scenes as Record<string, unknown> | undefined,
+        );
+        await patchHabitatConfigSection("llm", {
+          scenes: {
+            ...existingScenes,
+            tts: {
+              connection: connectionId,
+              model: draft.voice_name.trim() || "zh-CN-XiaoxiaoNeural",
+            },
+          },
+        });
+        setEdgeConnectionId(connectionId);
+      }
+
       await onSaved();
     } catch (e) {
       onError(e instanceof Error ? e.message : String(e));
     } finally {
       onSavingChange(false);
     }
-  }, [draft, onError, onSaved, onSavingChange, setLocalError]);
+  }, [
+    draft,
+    edgeConnectionId,
+    ensureEdgeConnection,
+    llmRecord.scenes,
+    onError,
+    onSaved,
+    onSavingChange,
+    setLocalError,
+  ]);
 
   const preview = useCallback(() => {
     stop();
     runPreview(draft.preview_text);
   }, [draft.preview_text, runPreview, stop]);
+
+  const selectedEdge = edgeConnections.find((c) => c.id === edgeConnectionId);
 
   return (
     <Card className="bg-muted py-0">
@@ -146,9 +251,34 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
         </div>
 
         {draft.provider === "edge-tts" ? (
-          <StatusAlert variant="info">
-            朗读文本经 Habitat 发送至 Microsoft Edge 语音服务合成；Habitat 需能访问外网。
-          </StatusAlert>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-sm">Edge TTS 连接</Label>
+              <select
+                className={selectClassName}
+                value={edgeConnectionId}
+                onChange={(e) => setEdgeConnectionId(e.target.value)}
+              >
+                <option value="">保存时自动创建默认连接</option>
+                {edgeConnections.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}（{c.baseUrl}）
+                  </option>
+                ))}
+                {edgeConnectionId && !selectedEdge ? (
+                  <option value={edgeConnectionId}>{edgeConnectionId}（未在列表中）</option>
+                ) : null}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                须 voice_protocol=edge-tts；base_url 可改（默认 {DEFAULT_EDGE_TTS_BASE_URL}
+                ，反代地址作 HTTP proxy）。密钥可空。也可在「连接」里新建后回来选。
+              </p>
+            </div>
+            <StatusAlert variant="info">
+              保存时会写入 llm.scenes.tts（connection + 语音名作
+              model）；本页同时保存语速等播放参数到 tts 段。
+            </StatusAlert>
+          </div>
         ) : null}
 
         {draft.provider === "web-speech" && webSpeechIssue === "insecure_context" ? (
@@ -196,7 +326,7 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
                 ))}
               </select>
               <p className="text-xs text-muted-foreground">
-                Microsoft Edge Neural 语音；留空则按语言自动选择。
+                Microsoft Edge Neural 语音；写入场景 model；留空则按语言自动选择。
               </p>
             </>
           ) : (

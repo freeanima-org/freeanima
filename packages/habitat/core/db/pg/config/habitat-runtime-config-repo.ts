@@ -6,6 +6,22 @@ import { habitatRuntimeConfig } from "@freeanima/habitat/core/db/schema";
 
 import { getDb } from "../client.ts";
 
+/** 条目级合并；`null` 表示删除该键（用于连接/方案/场景删除） */
+function mergeMapEntries(
+  base: Record<string, unknown>,
+  patch: Record<string, unknown>,
+): Record<string, unknown> {
+  const next = { ...base };
+  for (const [id, value] of Object.entries(patch)) {
+    if (value === null) {
+      delete next[id];
+    } else {
+      next[id] = value;
+    }
+  }
+  return next;
+}
+
 function mergeSection(
   document: Record<string, unknown>,
   section: string,
@@ -17,6 +33,39 @@ function mergeSection(
     !Array.isArray(document[section])
       ? (document[section] as Record<string, unknown>)
       : {};
+
+  // llm.providers / scenes / profiles：条目级合并，避免只 patch 一条连接时冲掉其它条目
+  // 条目值为 null → 删除（patch 缺键仍保留，故删除必须显式传 null）
+  if (section === "llm") {
+    const next: Record<string, unknown> = { ...existing, ...patch };
+    for (const key of ["providers", "profiles", "scenes"] as const) {
+      if (patch[key] != null && typeof patch[key] === "object" && !Array.isArray(patch[key])) {
+        const base =
+          typeof existing[key] === "object" &&
+          existing[key] != null &&
+          !Array.isArray(existing[key])
+            ? (existing[key] as Record<string, unknown>)
+            : {};
+        next[key] = mergeMapEntries(base, patch[key] as Record<string, unknown>);
+      }
+    }
+    // profile_bindings：null 表示「同主场景」，需保留键，不能当删除
+    if (
+      patch.profile_bindings != null &&
+      typeof patch.profile_bindings === "object" &&
+      !Array.isArray(patch.profile_bindings)
+    ) {
+      const base =
+        typeof existing.profile_bindings === "object" &&
+        existing.profile_bindings != null &&
+        !Array.isArray(existing.profile_bindings)
+          ? (existing.profile_bindings as Record<string, unknown>)
+          : {};
+      next.profile_bindings = { ...base, ...(patch.profile_bindings as Record<string, unknown>) };
+    }
+    return { ...document, [section]: next };
+  }
+
   return {
     ...document,
     [section]: { ...existing, ...patch },

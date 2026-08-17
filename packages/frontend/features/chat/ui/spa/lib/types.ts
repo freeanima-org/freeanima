@@ -18,6 +18,7 @@ export type DisplayMessageItem = {
     mime_type: string;
     size: number;
     previewUrl?: string;
+    object_file_id?: number;
   }>;
 };
 

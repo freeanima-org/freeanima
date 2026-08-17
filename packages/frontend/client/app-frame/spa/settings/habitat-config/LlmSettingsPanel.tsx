@@ -20,15 +20,21 @@ import {
   emptyConnectionEntry,
   emptySceneEntry,
   llmEntryTitle,
+  LLM_SYSTEM_PURPOSE_ROWS,
   newConnectionId,
   newSceneId,
   profilesDraftToPatch,
   providersDraftToPatch,
+  purposeIdsForFocus,
   readProfileBindings,
   readProvidersDraft,
+  readScenesUiDraft,
   readTimeoutDraft,
   sceneListSubtitle,
+  scenesDraftFromProfilesAndBindings,
+  scenesUiDraftToPatch,
   validateTimeoutDraft,
+  type SceneBindingDraft,
 } from "./llm-settings-draft.ts";
 import {
   LlmConnectionEditorForm,
@@ -48,15 +54,31 @@ type Props = {
   onSavingChange: (saving: boolean) => void;
   onError: (message: string) => void;
   onSaved: (section: string) => Promise<void>;
+  /** 设置侧栏拆分：连接 / 对话场景 / 图片场景 / 向量场景 / 全量 */
+  panelFocus?: "connections" | "dialogue" | "image_gen" | "retrieval" | "all";
 };
 
-export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, onSaved }: Props) {
+function sceneBindingComplete(v: SceneBindingDraft | null | undefined): boolean {
+  return Boolean(v?.connection?.trim() && v?.model?.trim());
+}
+
+export function LlmSettingsPanel({
+  llmConfig,
+  saving,
+  onSavingChange,
+  onError,
+  onSaved,
+  panelFocus = "all",
+}: Props) {
   const useActionSheet = useActionSheetCapability();
-  const [tab, setTab] = useState<LlmTabId>("scenes");
+  const initialTab: LlmTabId =
+    panelFocus === "connections" ? "connections" : panelFocus === "all" ? "scenes" : "scenes";
+  const [tab, setTab] = useState<LlmTabId>(initialTab);
   const [providersDraft, setProvidersDraft] = useState<Record<string, unknown>>({});
   const [profilesDraft, setProfilesDraft] = useState<Record<string, unknown>>({});
   const [defaultProfile, setDefaultProfile] = useState("chat");
   const [profileBindings, setProfileBindings] = useState<Record<string, string | null>>({});
+  const [scenesDraft, setScenesDraft] = useState<Record<string, SceneBindingDraft | null>>({});
   const [editor, setEditor] = useState<EditorState | null>(null);
 
   useEffect(() => {
@@ -68,6 +90,7 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
       typeof llmConfig.default_profile === "string" ? llmConfig.default_profile : "chat",
     );
     setProfileBindings(readProfileBindings(llmConfig.profile_bindings));
+    setScenesDraft(readScenesUiDraft(llmConfig));
   }, [llmConfig]);
 
   const providersRecord = useMemo(() => readHabitatConfigRecord(providersDraft), [providersDraft]);
@@ -84,33 +107,56 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     return out;
   }, [connectionIds, providersRecord]);
 
+  const purposeFocus =
+    panelFocus === "dialogue" || panelFocus === "image_gen" || panelFocus === "retrieval"
+      ? panelFocus
+      : "all";
+
+  const onSceneChange = useCallback((purposeId: string, value: SceneBindingDraft | null) => {
+    setScenesDraft((prev) => ({ ...prev, [purposeId]: value }));
+  }, []);
+
   const saveScenesTab = useCallback(async () => {
     onSavingChange(true);
     onError("");
     try {
-      const id = defaultProfile.trim();
-      if (!id) {
-        onError("请选择主场景");
+      const purposes = purposeIdsForFocus(purposeFocus);
+      const requiredMain =
+        purposeFocus === "image_gen"
+          ? "image_generate"
+          : purposeFocus === "retrieval"
+            ? "embedding"
+            : "chat";
+      if (purposes.includes(requiredMain) && !sceneBindingComplete(scenesDraft[requiredMain])) {
+        onError("请为该能力的主场景选择连接与模型");
         return;
       }
-      await patchHabitatConfigSection("llm", {
-        default_profile: id,
-        profile_bindings: profileBindings,
-      });
+      for (const purpose of purposes) {
+        if (purpose === requiredMain) continue;
+        const v = scenesDraft[purpose];
+        if (v != null && !sceneBindingComplete(v)) {
+          onError("单独指定的子场景须同时填写连接与模型，或改回「同主场景」");
+          return;
+        }
+      }
+      const scenes = scenesUiDraftToPatch(
+        scenesDraft,
+        (llmConfig.scenes as Record<string, unknown> | undefined) ?? {},
+        purposes,
+      );
+      const patch: Record<string, unknown> = { scenes };
+      if (purposeFocus === "dialogue" || purposeFocus === "all") {
+        patch.default_scene = "chat";
+        patch.default_profile = "chat";
+      }
+      await patchHabitatConfigSection("llm", patch);
       await onSaved("llm");
     } catch (e) {
       onError(e instanceof Error ? e.message : String(e));
     } finally {
       onSavingChange(false);
     }
-  }, [defaultProfile, profileBindings, onError, onSaved, onSavingChange]);
-
-  const onBindingChange = useCallback((purposeId: string, value: string) => {
-    setProfileBindings((prev) => ({
-      ...prev,
-      [purposeId]: value === "" ? null : value,
-    }));
-  }, []);
+  }, [scenesDraft, purposeFocus, llmConfig.scenes, onError, onSaved, onSavingChange]);
 
   /** 静默校验（关闭时用）；不写 onError，避免拦关闭导致 Dialog FocusScope 崩。 */
   const isEditorValid = useCallback((): boolean => {
@@ -187,8 +233,15 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
         await onSaved("llm.providers");
       } else {
         const nextDraft = computeUpdatedProfiles(profilesDraft);
+        const scenes = scenesDraftFromProfilesAndBindings({
+          profiles: nextDraft,
+          bindings: profileBindings,
+          defaultProfile,
+          existingScenes: (llmConfig.scenes as Record<string, unknown> | undefined) ?? {},
+        });
         await patchHabitatConfigSection("llm", {
           profiles: profilesDraftToPatch(nextDraft),
+          scenes,
         });
         setProfilesDraft(nextDraft);
         await onSaved("llm.profiles");
@@ -206,6 +259,9 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     computeUpdatedProfiles,
     providersDraft,
     profilesDraft,
+    profileBindings,
+    defaultProfile,
+    llmConfig.scenes,
     onSaved,
     onSavingChange,
     onError,
@@ -257,8 +313,9 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     onSavingChange(true);
     onError("");
     try {
+      // providers 为条目级合并：缺键不会删，须显式 null
       await patchHabitatConfigSection("llm", {
-        providers: providersDraftToPatch(next),
+        providers: { [id]: null },
       });
       await onSaved("llm.providers");
     } catch (e) {
@@ -280,11 +337,32 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
     const next = { ...profilesRecord };
     delete next[id];
     setProfilesDraft(next);
+    const nextBindings = { ...profileBindings };
+    for (const [purpose, bound] of Object.entries(nextBindings)) {
+      if (bound === id) nextBindings[purpose] = null;
+    }
+    setProfileBindings(nextBindings);
     onSavingChange(true);
     onError("");
     try {
+      const scenes = scenesDraftFromProfilesAndBindings({
+        profiles: next,
+        bindings: nextBindings,
+        defaultProfile,
+        existingScenes: (llmConfig.scenes as Record<string, unknown> | undefined) ?? {},
+      });
+      // 去掉已删除方案 id 对应的自定义 scene（系统用途仍由 bindings 合成）
+      if (scenes[id] && !LLM_SYSTEM_PURPOSE_ROWS.some((r) => r.id === id)) {
+        delete scenes[id];
+      }
       await patchHabitatConfigSection("llm", {
-        profiles: profilesDraftToPatch(next),
+        profiles: { [id]: null },
+        profile_bindings: nextBindings,
+        scenes: {
+          ...scenes,
+          // 自定义方案同名 scene：显式删除
+          ...(LLM_SYSTEM_PURPOSE_ROWS.some((r) => r.id === id) ? {} : { [id]: null }),
+        },
       });
       await onSaved("llm.profiles");
     } catch (e) {
@@ -305,152 +383,204 @@ export function LlmSettingsPanel({ llmConfig, saving, onSavingChange, onError, o
           : "编辑方案"
         : "";
 
+  useEffect(() => {
+    if (panelFocus === "connections") setTab("connections");
+    else if (
+      panelFocus === "dialogue" ||
+      panelFocus === "image_gen" ||
+      panelFocus === "retrieval"
+    ) {
+      setTab("scenes");
+    }
+  }, [panelFocus]);
+
+  const showScenes =
+    panelFocus === "all" ||
+    panelFocus === "dialogue" ||
+    panelFocus === "image_gen" ||
+    panelFocus === "retrieval";
+  const showCustom = panelFocus === "all";
+  const showConnections = panelFocus === "all" || panelFocus === "connections";
+
+  const tabCount = Number(showScenes) + Number(showCustom) + Number(showConnections);
+  const useTabs = tabCount > 1;
+
+  const scenesPanel = (
+    <div className="space-y-4">
+      <LlmSystemScenesPanel
+        scenesDraft={scenesDraft}
+        onSceneChange={onSceneChange}
+        connectionIds={connectionIds}
+        connectionLabels={connectionLabels}
+        providersById={providersRecord}
+        purposeFocus={purposeFocus}
+      />
+      <Button type="button" isDisabled={saving} onClick={() => void saveScenesTab()}>
+        保存场景
+      </Button>
+    </div>
+  );
+
+  const customPanel = (
+    <div className="space-y-4">
+      {schemeIds.length === 0 ? (
+        <EmptyState
+          message="还没有方案"
+          action={
+            <Button type="button" size="sm" onClick={openCreateScheme}>
+              新建方案
+            </Button>
+          }
+        />
+      ) : (
+        <ul className="space-y-1">
+          {schemeIds.map((id) => {
+            const entry = profilesRecord[id] ?? {};
+            return (
+              <ListRow
+                key={id}
+                as="li"
+                useActionSheet={useActionSheet}
+                className="cursor-pointer bg-background/60 px-2"
+                onClick={() =>
+                  setEditor({
+                    kind: "scene",
+                    mode: "edit",
+                    id,
+                    entry: { ...entry },
+                  })
+                }
+              >
+                <div className="min-w-0 flex-1 py-1">
+                  <p className="truncate text-sm font-medium">{llmEntryTitle(id, entry)}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {sceneListSubtitle(entry)}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive shrink-0"
+                  onClick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    void deleteScheme(id);
+                  }}
+                >
+                  删除
+                </Button>
+              </ListRow>
+            );
+          })}
+        </ul>
+      )}
+      {schemeIds.length > 0 ? (
+        <Button type="button" size="sm" variant="outline" onClick={openCreateScheme}>
+          新建方案
+        </Button>
+      ) : null}
+    </div>
+  );
+
+  const connectionsPanel = (
+    <div className="space-y-4">
+      {connectionIds.length === 0 ? (
+        <EmptyState
+          message="还没有连接"
+          action={
+            <Button type="button" size="sm" onClick={openCreateConnection}>
+              新建连接
+            </Button>
+          }
+        />
+      ) : (
+        <ul className="space-y-1">
+          {connectionIds.map((id) => {
+            const entry = providersRecord[id] ?? {};
+            return (
+              <ListRow
+                key={id}
+                as="li"
+                useActionSheet={useActionSheet}
+                className="cursor-pointer bg-background/60 px-2"
+                onClick={() =>
+                  setEditor({
+                    kind: "connection",
+                    mode: "edit",
+                    id,
+                    entry: { ...entry },
+                  })
+                }
+              >
+                <div className="min-w-0 flex-1 py-1">
+                  <p className="truncate text-sm font-medium">{llmEntryTitle(id, entry)}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {connectionListSubtitle(entry)}
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive shrink-0"
+                  onClick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    void deleteConnection(id);
+                  }}
+                >
+                  删除
+                </Button>
+              </ListRow>
+            );
+          })}
+        </ul>
+      )}
+      {connectionIds.length > 0 ? (
+        <Button type="button" size="sm" variant="outline" onClick={openCreateConnection}>
+          新建连接
+        </Button>
+      ) : null}
+    </div>
+  );
+
   return (
     <Card className="bg-muted py-0">
       <CardContent className="gap-4 py-4">
-        <Tabs
-          selectedKey={tab}
-          onSelectionChange={(key: Key) => setTab(String(key) as LlmTabId)}
-          className="w-full"
-        >
-          <TabsList variant="default" className="w-full justify-start">
-            <TabsTrigger id="scenes">场景</TabsTrigger>
-            <TabsTrigger id="custom">自定义</TabsTrigger>
-            <TabsTrigger id="connections">连接</TabsTrigger>
-          </TabsList>
+        {useTabs ? (
+          <Tabs
+            selectedKey={tab}
+            onSelectionChange={(key: Key) => setTab(String(key) as LlmTabId)}
+            className="w-full"
+          >
+            <TabsList variant="default" className="w-full justify-start">
+              {showScenes ? <TabsTrigger id="scenes">场景</TabsTrigger> : null}
+              {showCustom ? <TabsTrigger id="custom">自定义</TabsTrigger> : null}
+              {showConnections ? <TabsTrigger id="connections">连接</TabsTrigger> : null}
+            </TabsList>
 
-          <TabsContent id="scenes" className="space-y-4 pt-2">
-            <LlmSystemScenesPanel
-              defaultProfile={defaultProfile}
-              profileIds={schemeIds}
-              profiles={profilesRecord}
-              bindings={profileBindings}
-              onDefaultProfileChange={setDefaultProfile}
-              onBindingChange={onBindingChange}
-            />
-            <Button type="button" isDisabled={saving} onClick={() => void saveScenesTab()}>
-              保存场景
-            </Button>
-          </TabsContent>
-
-          <TabsContent id="custom" className="space-y-4 pt-2">
-            {schemeIds.length === 0 ? (
-              <EmptyState
-                message="还没有方案"
-                action={
-                  <Button type="button" size="sm" onClick={openCreateScheme}>
-                    新建方案
-                  </Button>
-                }
-              />
-            ) : (
-              <ul className="space-y-1">
-                {schemeIds.map((id) => {
-                  const entry = profilesRecord[id] ?? {};
-                  return (
-                    <ListRow
-                      key={id}
-                      as="li"
-                      useActionSheet={useActionSheet}
-                      className="cursor-pointer bg-background/60 px-2"
-                      onClick={() =>
-                        setEditor({
-                          kind: "scene",
-                          mode: "edit",
-                          id,
-                          entry: { ...entry },
-                        })
-                      }
-                    >
-                      <div className="min-w-0 flex-1 py-1">
-                        <p className="truncate text-sm font-medium">{llmEntryTitle(id, entry)}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {sceneListSubtitle(entry)}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive shrink-0"
-                        onClick={(e: MouseEvent) => {
-                          e.stopPropagation();
-                          void deleteScheme(id);
-                        }}
-                      >
-                        删除
-                      </Button>
-                    </ListRow>
-                  );
-                })}
-              </ul>
-            )}
-            {schemeIds.length > 0 ? (
-              <Button type="button" size="sm" variant="outline" onClick={openCreateScheme}>
-                新建方案
-              </Button>
+            {showScenes ? (
+              <TabsContent id="scenes" className="space-y-4 pt-2">
+                {scenesPanel}
+              </TabsContent>
             ) : null}
-          </TabsContent>
-
-          <TabsContent id="connections" className="space-y-4 pt-2">
-            {connectionIds.length === 0 ? (
-              <EmptyState
-                message="还没有连接"
-                action={
-                  <Button type="button" size="sm" onClick={openCreateConnection}>
-                    新建连接
-                  </Button>
-                }
-              />
-            ) : (
-              <ul className="space-y-1">
-                {connectionIds.map((id) => {
-                  const entry = providersRecord[id] ?? {};
-                  return (
-                    <ListRow
-                      key={id}
-                      as="li"
-                      useActionSheet={useActionSheet}
-                      className="cursor-pointer bg-background/60 px-2"
-                      onClick={() =>
-                        setEditor({
-                          kind: "connection",
-                          mode: "edit",
-                          id,
-                          entry: { ...entry },
-                        })
-                      }
-                    >
-                      <div className="min-w-0 flex-1 py-1">
-                        <p className="truncate text-sm font-medium">{llmEntryTitle(id, entry)}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {connectionListSubtitle(entry)}
-                        </p>
-                      </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive shrink-0"
-                        onClick={(e: MouseEvent) => {
-                          e.stopPropagation();
-                          void deleteConnection(id);
-                        }}
-                      >
-                        删除
-                      </Button>
-                    </ListRow>
-                  );
-                })}
-              </ul>
-            )}
-            {connectionIds.length > 0 ? (
-              <Button type="button" size="sm" variant="outline" onClick={openCreateConnection}>
-                新建连接
-              </Button>
+            {showCustom ? (
+              <TabsContent id="custom" className="space-y-4 pt-2">
+                {customPanel}
+              </TabsContent>
             ) : null}
-          </TabsContent>
-        </Tabs>
+            {showConnections ? (
+              <TabsContent id="connections" className="space-y-4 pt-2">
+                {connectionsPanel}
+              </TabsContent>
+            ) : null}
+          </Tabs>
+        ) : showScenes ? (
+          scenesPanel
+        ) : showCustom ? (
+          customPanel
+        ) : showConnections ? (
+          connectionsPanel
+        ) : null}
 
         <ModalSheetPresent
           open={editor != null}

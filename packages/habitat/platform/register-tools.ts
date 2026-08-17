@@ -15,6 +15,7 @@ import {
   registerCoreTools,
   registerSupplementalTools,
 } from "@freeanima/habitat/capabilities/tools";
+import { registerMediaTools } from "@freeanima/habitat/capabilities/tools/media/tools";
 import { registerCronjobTool } from "@freeanima/habitat/capabilities/connectors/cron/cronjob-tool";
 import { registerSelfTools } from "@freeanima/habitat/capabilities/self";
 import {
@@ -63,6 +64,7 @@ export function registerServiceTools(opts: {
   registerPomodoroTools(opts.toolSets);
   registerVaultTools(opts.toolSets);
   registerObjectStorageTools(opts.toolSets);
+  registerMediaTools(opts.toolSets);
   registeredCatalog = opts;
 }
 
