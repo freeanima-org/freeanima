@@ -28,11 +28,33 @@ export function getDefaultProfileId(cfg: RuntimeConfig): string {
   return getLlmConfig(cfg).default_profile;
 }
 
-/** 场景 profile 未配置时回退 llm.default_profile */
+function profileHasUsableChain(
+  llm: { profiles: Record<string, { chain?: Array<{ model?: string }> | undefined }> },
+  id: string,
+): boolean {
+  return Boolean(llm.profiles[id]?.chain?.[0]?.model);
+}
+
+/**
+ * 解析用途键到实际 profile id。
+ * - 有 `profile_bindings[requested]`：null/"" → default_profile；否则用绑定 id（不可用再回退 default）
+ * - 无 binding 键：兼容旧配置——有可用 profiles[requested] 则用之，否则 default_profile
+ */
 export function resolveConfiguredProfileId(cfg: RuntimeConfig, profileId?: string): string {
   const llm = getLlmConfig(cfg);
-  const preferred = profileId ?? llm.default_profile;
-  if (llm.profiles[preferred]?.chain[0]?.model) {
+  const requested = profileId ?? llm.default_profile;
+  const bindings = llm.profile_bindings;
+  const hasBinding = bindings != null && Object.prototype.hasOwnProperty.call(bindings, requested);
+
+  let preferred: string;
+  if (hasBinding) {
+    const bound = bindings[requested];
+    preferred = bound == null || bound === "" ? llm.default_profile : bound;
+  } else {
+    preferred = requested;
+  }
+
+  if (profileHasUsableChain(llm, preferred)) {
     return preferred;
   }
   return llm.default_profile;

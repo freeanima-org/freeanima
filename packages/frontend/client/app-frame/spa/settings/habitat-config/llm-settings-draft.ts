@@ -7,10 +7,12 @@ import {
   LLM_FORMAT_OPENAI_RESPONSES,
   LLM_FORMAT_ANTHROPIC_MESSAGES,
   normalizeLlmProviderRaw,
+  normalizeOptionalTitle,
 } from "@freeanima/habitat/core/config";
 import { getLlmPreset } from "@freeanima/habitat/core/llm/presets";
 import { readHabitatConfigRecord } from "./habitat-config-field-helpers.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
 
 export function providersDraftToPatch(
   draft: Record<string, unknown> | null | undefined,
@@ -47,6 +49,39 @@ export const LLM_SETTINGS_FORMATS = [
   { id: LLM_FORMAT_OPENAI_RESPONSES, label: "Responses", code: "openai_responses" },
   { id: LLM_FORMAT_ANTHROPIC_MESSAGES, label: "Messages", code: "anthropic_messages" },
 ] as const;
+
+/** 系统用途行（场景 Tab）；summary 兼任压缩与标题 */
+export const LLM_SYSTEM_PURPOSE_ROWS = [
+  { id: "chat", label: "聊天" },
+  { id: "summary", label: "会话压缩 / 标题" },
+  { id: "reflect", label: "反思" },
+  { id: "goal_judge", label: "目标判定" },
+  { id: "skill_review", label: "技能审阅" },
+] as const;
+
+export function llmEntryTitle(
+  id: string,
+  entry: Record<string, unknown> | null | undefined,
+  builtinFallback?: string,
+): string {
+  const title = normalizeOptionalTitle(entry?.title);
+  if (title) return title;
+  if (builtinFallback) return builtinFallback;
+  return id;
+}
+
+function shortIdSuffix(): string {
+  return randomUuid().replace(/-/g, "").slice(0, 8);
+}
+
+export function newConnectionId(): string {
+  return `c-${shortIdSuffix()}`;
+}
+
+/** 新建方案（profile）id */
+export function newSceneId(): string {
+  return `s-${shortIdSuffix()}`;
+}
 
 export function llmPresetLabel(presetId: string): string {
   return LLM_SETTINGS_PRESETS.find((p) => p.id === presetId)?.label ?? presetId;
@@ -235,7 +270,45 @@ export function sceneListSubtitle(entry: Record<string, unknown>): string {
   return main + backup;
 }
 
-/** 保存前规范化：去掉空 hop，保留非空 params（含静默保留的 extra） */
+function profileHasUsableChain(entry: Record<string, unknown> | undefined): boolean {
+  if (!entry) return false;
+  const chain = readChain(entry.chain);
+  const primary = chain[0];
+  return Boolean(primary?.provider && primary?.model);
+}
+
+/** 读 profile_bindings；非法结构视为空 */
+export function readProfileBindings(raw: unknown): Record<string, string | null> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const out: Record<string, string | null> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (value === null) out[key] = null;
+    else if (typeof value === "string") out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * 系统用途下拉回显值：
+ * - 有 bindings 键：null/"" → ""（同主场景）；否则绑定 id
+ * - 无键：若 profiles[purpose] 可用 → 自指该 id；否则 ""（同主场景）
+ */
+export function systemPurposeSelectValue(
+  purposeId: string,
+  bindings: Record<string, string | null>,
+  profiles: Record<string, unknown>,
+): string {
+  if (Object.prototype.hasOwnProperty.call(bindings, purposeId)) {
+    const bound = bindings[purposeId];
+    if (bound == null || bound === "") return "";
+    return bound;
+  }
+  const entry = readHabitatConfigRecord(profiles)[purposeId];
+  if (profileHasUsableChain(entry)) return purposeId;
+  return "";
+}
+
+/** 保存前规范化：去掉空 hop，保留非空 params（含静默保留的 extra），trim title */
 export function profilesDraftToPatch(
   draft: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> {
@@ -250,6 +323,9 @@ export function profilesDraftToPatch(
         ? (profile.params as Record<string, unknown>)
         : undefined;
     const next: Record<string, unknown> = { ...profile, chain };
+    const title = normalizeOptionalTitle(profile.title);
+    if (title) next.title = title;
+    else delete next.title;
     if (params && Object.keys(params).length > 0) next.params = params;
     else delete next.params;
     out[id] = next;

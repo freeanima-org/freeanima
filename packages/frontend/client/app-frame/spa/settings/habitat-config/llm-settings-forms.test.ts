@@ -2,9 +2,13 @@ import { describe, expect, it } from "bun:test";
 import {
   callParamsRoundTrip,
   connectionListSubtitle,
+  llmEntryTitle,
+  newConnectionId,
+  newSceneId,
   profilesDraftToPatch,
   providersDraftToPatch,
   readProvidersDraft,
+  systemPurposeSelectValue,
   validateTimeoutDraft,
 } from "./llm-settings-draft.ts";
 
@@ -86,6 +90,15 @@ describe("call params / profiles", () => {
       chain: [{ provider: "main", model: "m1" }],
     });
   });
+
+  it("profilesDraftToPatch 保留 title、省略空白 title", () => {
+    const patched = profilesDraftToPatch({
+      a: { title: " 主方案 ", chain: [{ provider: "main", model: "m1" }] },
+      b: { title: "  ", chain: [{ provider: "main", model: "m2" }] },
+    });
+    expect(patched.a).toMatchObject({ title: "主方案" });
+    expect((patched.b as Record<string, unknown>).title).toBeUndefined();
+  });
 });
 
 describe("connectionListSubtitle", () => {
@@ -95,5 +108,30 @@ describe("connectionListSubtitle", () => {
 
   it("预设留空 URL 提示默认", () => {
     expect(connectionListSubtitle({ preset: "deepseek" })).toContain("使用预设默认");
+  });
+});
+
+describe("llmEntryTitle / ids / bindings UI", () => {
+  it("title 优先，否则回退 id 或内置名", () => {
+    expect(llmEntryTitle("c-1", { title: " DeepSeek " })).toBe("DeepSeek");
+    expect(llmEntryTitle("c-1", {})).toBe("c-1");
+    expect(llmEntryTitle("chat", {}, "聊天")).toBe("聊天");
+  });
+
+  it("自动生成连接/方案 id 前缀", () => {
+    expect(newConnectionId()).toMatch(/^c-[0-9a-f]{8}$/);
+    expect(newSceneId()).toMatch(/^s-[0-9a-f]{8}$/);
+  });
+
+  it("systemPurposeSelectValue：bindings 与旧配置回显", () => {
+    const profiles = {
+      chat: { chain: [{ provider: "main", model: "m" }] },
+      summary: { chain: [{ provider: "main", model: "s" }] },
+      cheap: { chain: [{ provider: "main", model: "c" }] },
+    };
+    expect(systemPurposeSelectValue("summary", { summary: null }, profiles)).toBe("");
+    expect(systemPurposeSelectValue("summary", { summary: "cheap" }, profiles)).toBe("cheap");
+    expect(systemPurposeSelectValue("summary", {}, profiles)).toBe("summary");
+    expect(systemPurposeSelectValue("reflect", {}, profiles)).toBe("");
   });
 });

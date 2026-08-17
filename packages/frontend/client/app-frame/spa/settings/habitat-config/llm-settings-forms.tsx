@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, Textarea } from "@freeanima/ui-kit";
+import { useState } from "react";
+import { Button } from "@freeanima/ui-kit";
 import { Label } from "@freeanima/ui-kit/components/ui";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import {
@@ -12,15 +12,15 @@ import { LlmModelPicker } from "./LlmModelPicker.tsx";
 import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { HabitatConfigConnectionTestButton } from "./HabitatConfigConnectionTestButton.tsx";
 import {
-  callParamsDraftToValue,
   connectionDefaultBaseUrl,
+  llmEntryTitle,
   LLM_SETTINGS_FORMATS,
   LLM_SETTINGS_PRESETS,
-  readCallParamsDraft,
+  LLM_SYSTEM_PURPOSE_ROWS,
   readChain,
   readTimeoutDraft,
+  systemPurposeSelectValue,
   validateTimeoutDraft,
-  type CallParamsDraft,
   type RouteHop,
   type TimeoutDraft,
 } from "./llm-settings-draft.ts";
@@ -31,74 +31,16 @@ import {
   LLM_PRESET_OPENCODE_GO,
 } from "@freeanima/habitat/core/config";
 
-function LlmCallParamsEditor({
-  title,
-  value,
-  onChange,
-}: {
-  title: string;
-  value: unknown;
-  onChange: (params: Record<string, unknown> | undefined) => void;
-}) {
-  const [draft, setDraft] = useState<CallParamsDraft>(() => readCallParamsDraft(value));
-  const skipSyncRef = useRef(false);
-  const valueKey = useMemo(() => {
-    try {
-      return JSON.stringify(value ?? null);
-    } catch {
-      return "";
-    }
-  }, [value]);
-
-  useEffect(() => {
-    if (skipSyncRef.current) {
-      skipSyncRef.current = false;
-      return;
-    }
-    setDraft(readCallParamsDraft(value));
-  }, [value, valueKey]);
-
-  const commit = (next: CallParamsDraft) => {
-    setDraft(next);
-    skipSyncRef.current = true;
-    onChange(callParamsDraftToValue(next));
-  };
-
-  return (
-    <div className="space-y-3 rounded-md border border-dashed p-3">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="text-xs text-muted-foreground">
-        留空表示不覆盖；仅 temperature / topP / 输出上限 / stop。
-      </p>
-      {habitatConfigNumberField("温度 temperature", draft.temperature, (temperature) =>
-        commit({ ...draft, temperature }),
-      )}
-      {habitatConfigNumberField("topP", draft.topP, (topP) => commit({ ...draft, topP }))}
-      {habitatConfigNumberField(
-        "输出上限 maxOutputTokens",
-        draft.maxOutputTokens,
-        (maxOutputTokens) => commit({ ...draft, maxOutputTokens }),
-      )}
-      <div className="space-y-1">
-        <Label className="text-sm">stop（每行一个）</Label>
-        <Textarea
-          className="w-full font-mono text-xs min-h-16"
-          value={draft.stop}
-          onChange={(e) => commit({ ...draft, stop: e.target.value })}
-        />
-      </div>
-    </div>
-  );
-}
-
 function ConnectionSelect({
   value,
   connectionIds,
+  connectionLabels,
   onChange,
   id,
 }: {
   value: string;
   connectionIds: string[];
+  connectionLabels?: Record<string, string>;
   onChange: (id: string) => void;
   id?: string;
 }) {
@@ -120,10 +62,12 @@ function ConnectionSelect({
         disabled={connectionIds.length === 0 && !missing}
       >
         <option value="">选择连接…</option>
-        {missing ? <option value={value}>{value}（已删除）</option> : null}
+        {missing ? (
+          <option value={value}>{(connectionLabels?.[value] ?? value) + "（已删除）"}</option>
+        ) : null}
         {connectionIds.map((cid) => (
           <option key={cid} value={cid}>
-            {cid}
+            {connectionLabels?.[cid] ?? cid}
           </option>
         ))}
       </select>
@@ -138,6 +82,7 @@ function LlmRouteHopEditor({
   hop,
   index,
   connectionIds,
+  connectionLabels,
   canRemove,
   onChange,
   onRemove,
@@ -145,6 +90,7 @@ function LlmRouteHopEditor({
   hop: RouteHop;
   index: number;
   connectionIds: string[];
+  connectionLabels?: Record<string, string>;
   canRemove: boolean;
   onChange: (part: Partial<RouteHop>) => void;
   onRemove: () => void;
@@ -171,17 +117,13 @@ function LlmRouteHopEditor({
         id={`llm-hop-conn-${index}`}
         value={hop.provider}
         connectionIds={connectionIds}
+        {...(connectionLabels ? { connectionLabels } : {})}
         onChange={(provider) => onChange({ provider })}
       />
       <LlmModelPicker
         providerId={hop.provider}
         value={hop.model}
         onChange={(model) => onChange({ model })}
-      />
-      <LlmCallParamsEditor
-        title="本步骤调用参数（可选）"
-        value={hop.params}
-        onChange={(params) => onChange({ params })}
       />
     </div>
   );
@@ -190,10 +132,12 @@ function LlmRouteHopEditor({
 function LlmChainEditor({
   chain,
   connectionIds,
+  connectionLabels,
   onChange,
 }: {
   chain: RouteHop[];
   connectionIds: string[];
+  connectionLabels?: Record<string, string>;
   onChange: (chain: RouteHop[]) => void;
 }) {
   const hops = chain.length > 0 ? chain : [{ provider: "", model: "" }];
@@ -235,6 +179,7 @@ function LlmChainEditor({
         hop={primary}
         index={0}
         connectionIds={connectionIds}
+        {...(connectionLabels ? { connectionLabels } : {})}
         canRemove={false}
         onChange={(part) => patchHop(0, part)}
         onRemove={() => undefined}
@@ -248,6 +193,7 @@ function LlmChainEditor({
               hop={hop}
               index={i + 1}
               connectionIds={connectionIds}
+              {...(connectionLabels ? { connectionLabels } : {})}
               canRemove
               onChange={(part) => patchHop(i + 1, part)}
               onRemove={() => removeHop(i + 1)}
@@ -327,16 +273,12 @@ function TimeoutAdvancedFields({
 /** 连接编辑表单（放在 ModalSheetPresent 内） */
 export function LlmConnectionEditorForm({
   connectionId,
-  idEditable,
   entry,
-  onIdChange,
   onChange,
   testDisabled,
 }: {
   connectionId: string;
-  idEditable: boolean;
   entry: Record<string, unknown>;
-  onIdChange: (id: string) => void;
   onChange: (next: Record<string, unknown>) => void;
   testDisabled?: boolean;
 }) {
@@ -351,16 +293,13 @@ export function LlmConnectionEditorForm({
 
   return (
     <div className="space-y-4">
-      {idEditable ? (
-        hubConfigTextField("连接 id", connectionId, onIdChange, {
-          hint: "配置键，保存后用于场景路由；建议小写字母与连字符",
-        })
-      ) : (
-        <div className="space-y-1">
-          <Label className="text-sm">连接 id</Label>
-          <p className="font-mono text-sm">{connectionId}</p>
-        </div>
+      {hubConfigTextField("显示名称", coerceString(entry.title ?? ""), (v) =>
+        patch({ title: v.trim() ? v : undefined }),
       )}
+      <div className="space-y-1">
+        <Label className="text-sm">连接 id</Label>
+        <p className="font-mono text-xs text-muted-foreground">{connectionId}</p>
+      </div>
 
       <div className="space-y-1">
         <Label className="text-sm" htmlFor="llm-connection-preset">
@@ -461,91 +400,147 @@ export function LlmConnectionEditorForm({
   );
 }
 
-/** 场景编辑表单 */
+/** 方案（profile）编辑表单 */
 export function LlmSceneEditorForm({
   sceneId,
-  idEditable,
   entry,
   connectionIds,
-  onIdChange,
+  connectionLabels,
   onChange,
 }: {
   sceneId: string;
-  idEditable: boolean;
   entry: Record<string, unknown>;
   connectionIds: string[];
-  onIdChange: (id: string) => void;
+  connectionLabels?: Record<string, string>;
   onChange: (next: Record<string, unknown>) => void;
 }) {
   const patch = (part: Record<string, unknown>) => onChange({ ...entry, ...part });
 
   return (
     <div className="space-y-4">
-      {idEditable ? (
-        hubConfigTextField("场景 id", sceneId, onIdChange, {
-          hint: "例如 chat；调用方按 id 绑定场景",
-        })
-      ) : (
-        <div className="space-y-1">
-          <Label className="text-sm">场景 id</Label>
-          <p className="font-mono text-sm">{sceneId}</p>
-        </div>
+      {hubConfigTextField("显示名称", coerceString(entry.title ?? ""), (v) =>
+        patch({ title: v.trim() ? v : undefined }),
       )}
+      <div className="space-y-1">
+        <Label className="text-sm">方案 id</Label>
+        <p className="font-mono text-xs text-muted-foreground">{sceneId}</p>
+      </div>
       <LlmChainEditor
         chain={readChain(entry.chain)}
         connectionIds={connectionIds}
+        {...(connectionLabels ? { connectionLabels } : {})}
         onChange={(chain) => patch({ chain })}
-      />
-      <LlmCallParamsEditor
-        title="场景级调用参数（可选）"
-        value={entry.params}
-        onChange={(params) => {
-          if (params) patch({ params });
-          else {
-            const next = { ...entry };
-            delete next.params;
-            onChange(next);
-          }
-        }}
       />
     </div>
   );
 }
 
-export function LlmDefaultSceneForm({
+function ProfileSelectOptions({
+  profileIds,
+  profiles,
+  includeEmpty,
+  emptyLabel,
+  missingId,
+}: {
+  profileIds: string[];
+  profiles: Record<string, Record<string, unknown>>;
+  includeEmpty?: boolean;
+  emptyLabel?: string;
+  missingId?: string;
+}): ReactNode {
+  return (
+    <>
+      {includeEmpty ? <option value="">{emptyLabel ?? "同主场景"}</option> : null}
+      {missingId && !profileIds.includes(missingId) ? (
+        <option value={missingId}>{missingId}（未在列表中）</option>
+      ) : null}
+      {profileIds.map((id) => (
+        <option key={id} value={id}>
+          {llmEntryTitle(id, profiles[id])}
+        </option>
+      ))}
+    </>
+  );
+}
+
+/** 场景 Tab：主场景 + 系统子场景用途指派 */
+export function LlmSystemScenesPanel({
   defaultProfile,
-  sceneIds,
+  profileIds,
+  profiles,
+  bindings,
   onDefaultProfileChange,
+  onBindingChange,
 }: {
   defaultProfile: string;
-  sceneIds: string[];
+  profileIds: string[];
+  profiles: Record<string, Record<string, unknown>>;
+  bindings: Record<string, string | null>;
   onDefaultProfileChange: (value: string) => void;
+  onBindingChange: (purposeId: string, value: string) => void;
 }): ReactNode {
-  const missing = defaultProfile && !sceneIds.includes(defaultProfile);
+  const missingDefault = defaultProfile && !profileIds.includes(defaultProfile);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="space-y-1">
-        <Label className="text-sm" htmlFor="llm-default-scene">
-          默认场景
+        <Label className="text-sm" htmlFor="llm-main-scene">
+          主场景
         </Label>
         <select
-          id="llm-default-scene"
+          id="llm-main-scene"
           className={habitatConfigSelectClassName}
           value={defaultProfile}
           onChange={(e) => onDefaultProfileChange(e.target.value)}
         >
-          <option value="">选择场景…</option>
-          {missing ? <option value={defaultProfile}>{defaultProfile}（未在列表中）</option> : null}
-          {sceneIds.map((id) => (
-            <option key={id} value={id}>
-              {id}
-            </option>
-          ))}
+          <option value="">选择方案…</option>
+          <ProfileSelectOptions
+            profileIds={profileIds}
+            profiles={profiles}
+            {...(missingDefault ? { missingId: defaultProfile } : {})}
+          />
         </select>
-        <p className="text-xs text-muted-foreground">未指定场景时的回退项。</p>
+        <p className="text-xs text-muted-foreground">
+          未指定用途或用途选「同主场景」时的回退方案。
+        </p>
       </div>
-      {sceneIds.length === 0 ? (
-        <StatusAlert variant="info">请先在「场景」页创建至少一个场景。</StatusAlert>
+
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <p className="text-sm font-medium">系统子场景</p>
+          <p className="text-xs text-muted-foreground">
+            各用途可单独指定方案；「同主场景」表示与主场景相同。
+          </p>
+        </div>
+        {LLM_SYSTEM_PURPOSE_ROWS.map((row) => {
+          const value = systemPurposeSelectValue(row.id, bindings, profiles);
+          const missing = value !== "" && !profileIds.includes(value);
+          return (
+            <div key={row.id} className="space-y-1">
+              <Label className="text-sm" htmlFor={`llm-purpose-${row.id}`}>
+                {row.label}
+              </Label>
+              <select
+                id={`llm-purpose-${row.id}`}
+                className={habitatConfigSelectClassName}
+                value={value}
+                onChange={(e) => onBindingChange(row.id, e.target.value)}
+              >
+                <ProfileSelectOptions
+                  profileIds={profileIds}
+                  profiles={profiles}
+                  includeEmpty
+                  emptyLabel="同主场景"
+                  {...(missing ? { missingId: value } : {})}
+                />
+              </select>
+            </div>
+          );
+        })}
+      </div>
+
+      {profileIds.length === 0 ? (
+        <StatusAlert variant="info">请先在「自定义」页创建至少一个方案。</StatusAlert>
       ) : null}
     </div>
   );
@@ -556,4 +551,6 @@ export {
   readProvidersDraft,
   profilesDraftToPatch,
   sceneListSubtitle,
+  llmEntryTitle,
+  systemPurposeSelectValue,
 } from "./llm-settings-draft.ts";

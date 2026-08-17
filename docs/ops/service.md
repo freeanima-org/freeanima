@@ -50,17 +50,23 @@ Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.
 
 每个 `llm.providers.<id>` 条目是一条 **连接（Connection）**（凭证 + 端点）。概念：
 
-| 概念 | 配置                | 含义                                                                  |
-| ---- | ------------------- | --------------------------------------------------------------------- |
-| 格式 | `format`            | 线协议：`openai_compatible`、`openai_responses`、`anthropic_messages` |
-| 预设 | `preset`            | 内置配方：`deepseek`、`openrouter`、`opencode_go`，或 `custom`        |
-| 场景 | `llm.profiles.<id>` | 场景路由 + 链式故障转移                                               |
+| 概念         | 配置                | 含义                                                                  |
+| ------------ | ------------------- | --------------------------------------------------------------------- |
+| 格式         | `format`            | 线协议：`openai_compatible`、`openai_responses`、`anthropic_messages` |
+| 预设         | `preset`            | 内置配方：`deepseek`、`openrouter`、`opencode_go`，或 `custom`        |
+| 方案         | `llm.profiles.<id>` | 可复用路由（chain + 故障转移）；可选 `title` 展示名；UI「自定义」     |
+| 主场景       | `default_profile`   | 未覆盖用途时的回退方案 id                                             |
+| 用途指派     | `profile_bindings`  | 系统用途（`chat` / `summary` 等）→ 方案 id；`null`/空 = 同主场景      |
+| 连接/方案 id | map key             | 新建时自动生成；保存后只读；列表主文优先 `title`                      |
+
+设置 UI Tab：**场景 | 自定义 | 连接**（场景页只做主场景 + 系统子场景下拉指派，不改路由；按使用频率排序）。
 
 - **单格式预设**（`deepseek`、`openrouter`）：固定格式 + 默认 `base_url`。
 - **多格式网关预设**（`opencode_go`）：base 为 `https://opencode.ai/zen/go/v1`；格式**按模型**选择（Chat Completions / Responses / Messages）。见 [OpenCode Go 端点](https://opencode.ai/docs/zh-cn/go#api-%E7%AB%AF%E7%82%B9)。
 - **Custom**：自行设置 `format` + `base_url`。PG `habitat_runtime_config.llm` 中遗留 `backend` 由迁移改写为 `format`；加载时 `normalizeLlmProviderRaw` 仍可消化未落库的旧 YAML。
 - **没有**内置 `openai` 预设。
 - **API 密钥**：配置中明文，或 `vault(...)` / `env(...)` 引用。设置 UI **不会**自动掩码密钥。
+- **`summary` 用途**：会话压缩与会话标题生成共用（引擎 `PROFILE_SUMMARY`）。
 
 ### models.dev 元数据
 
@@ -69,7 +75,7 @@ Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.
 1. **目录 enrichment** — Connection `GET /models` 之后，id 匹配时合并 context / max output / 显示名 / 每百万 token USD 成本（连接侧非默认限额优先于 models.dev）。
 2. **`getModel` 回退** — Anthropic Messages / OpenAI Responses / 不稳定的兼容网关若缺少真实目录，在 id 已知时用 models.dev，而非盲目默认 128k。
 3. **压缩 context** — 目录 `contextWindow`（可能已 enrichment）是 token 压缩预算的唯一窗口来源；lookup 失败则回退消息数模式（见 [`compression.md`](../cognition/compression.md)）。
-4. **场景模型选择器** — 设置 → 栖息地服务配置 → LLM → 场景路由：经栖息地 RPC `config.listProviderModels` 浏览 / 搜索模型（优先连接目录；`/models` 为空时用 models.dev 的预设切片）。仍允许自由输入模型 id。
+4. **方案模型选择器** — 设置 → 栖息地服务配置 → LLM → 自定义方案路由：经栖息地 RPC `config.listProviderModels` 浏览 / 搜索模型（优先连接目录；`/models` 为空时用 models.dev 的预设切片）。仍允许自由输入模型 id。
 
 **范围外：** models.dev 不替代连接凭证或端点；不计量计费；能力标志仅为提示，非运行时保证。
 

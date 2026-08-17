@@ -66,6 +66,13 @@ function refineTimeouts(
   }
 }
 
+/** Trim empty `title` so stored config omits blank display names. */
+export function normalizeOptionalTitle(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const t = raw.trim();
+  return t.length > 0 ? t : undefined;
+}
+
 /** Migrate legacy `backend` → `format` and default `preset: custom`. */
 export function normalizeLlmProviderRaw(raw: unknown): unknown {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
@@ -82,6 +89,20 @@ export function normalizeLlmProviderRaw(raw: unknown): unknown {
   if (out.format == null && out.preset === LLM_PRESET_CUSTOM) {
     out.format = LLM_FORMAT_OPENAI_COMPATIBLE;
   }
+  const title = normalizeOptionalTitle(out.title);
+  if (title === undefined) delete out.title;
+  else out.title = title;
+  return out;
+}
+
+/** Normalize profile value objects (trim empty title). */
+export function normalizeLlmProfileRaw(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const src = raw as Record<string, unknown>;
+  const out: Record<string, unknown> = { ...src };
+  const title = normalizeOptionalTitle(out.title);
+  if (title === undefined) delete out.title;
+  else out.title = title;
   return out;
 }
 
@@ -89,6 +110,8 @@ export const llmProviderSchema = z.preprocess(
   normalizeLlmProviderRaw,
   z
     .object({
+      /** 展示名；缺省时 UI 回退 map key */
+      title: z.string().min(1).optional(),
       preset: llmPresetIdSchema.default(LLM_PRESET_CUSTOM),
       /** Required for `custom`; single-format presets may omit (filled from preset table). */
       format: llmFormatIdSchema.optional(),
@@ -133,10 +156,15 @@ export const llmRouteHopSchema = z.object({
   params: z.record(z.string(), z.unknown()).optional(),
 });
 
-export const llmProfileSchema = z.object({
-  chain: z.array(llmRouteHopSchema).min(1),
-  params: z.record(z.string(), z.unknown()).optional(),
-});
+export const llmProfileSchema = z.preprocess(
+  normalizeLlmProfileRaw,
+  z.object({
+    /** 展示名；缺省时 UI 回退 map key */
+    title: z.string().min(1).optional(),
+    chain: z.array(llmRouteHopSchema).min(1),
+    params: z.record(z.string(), z.unknown()).optional(),
+  }),
+);
 
 /**
  * Loose provider shape for stored RuntimeConfig / UI drafts.
@@ -146,6 +174,7 @@ export const llmProviderLooseSchema = z.preprocess(
   normalizeLlmProviderRaw,
   z
     .object({
+      title: z.string().optional(),
       preset: llmPresetIdSchema.optional(),
       format: llmFormatIdSchema.optional(),
       base_url: z.string().optional(),
@@ -155,11 +184,20 @@ export const llmProviderLooseSchema = z.preprocess(
     .passthrough(),
 );
 
+/**
+ * 用途键 → 方案 id。
+ * - 键不存在：兼容旧配置（有可用 profiles[用途] 则用之）
+ * - null / ""：同主场景 → default_profile
+ * - string：使用该 profile
+ */
+export const llmProfileBindingsSchema = z.record(z.string(), z.string().nullable());
+
 /** 允许分 tab 增量保存：缺 profiles / providers 时给空对象 */
 export const llmConfigSchema = z.object({
   default_profile: z.string().min(1).default("chat"),
   providers: z.record(z.string(), llmProviderLooseSchema).default({}),
   profiles: z.record(z.string(), llmProfileSchema).default({}),
+  profile_bindings: llmProfileBindingsSchema.optional(),
 });
 
 /**
@@ -168,6 +206,7 @@ export const llmConfigSchema = z.object({
  * Optional fields include `| undefined` for exactOptionalPropertyTypes + Zod output.
  */
 export type LlmProviderConfig = {
+  title?: string | undefined;
   preset?: LlmPresetId | undefined;
   format?: LlmFormatId | undefined;
   /** @deprecated Migrated to {@link format} by {@link normalizeLlmProviderRaw} */

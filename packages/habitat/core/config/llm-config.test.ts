@@ -49,6 +49,117 @@ describe("resolveConfiguredProfileId", () => {
     const cfg = chatOnlyConfig().data;
     expect(getProfileHopModel(cfg, "summary")).toBe("chat-model");
   });
+
+  it("profile_bindings null/empty means 同主场景 → default_profile", () => {
+    const snap = runtimeConfigSchema.parse({
+      llm: {
+        default_profile: "chat",
+        providers: {
+          main: {
+            format: "openai_compatible",
+            base_url: "https://api.openai.com/v1",
+            api_key: "k",
+          },
+        },
+        profiles: {
+          chat: { chain: [{ provider: "main", model: "chat-model" }] },
+          cheap: { chain: [{ provider: "main", model: "cheap-model" }] },
+          summary: { chain: [{ provider: "main", model: "summary-model" }] },
+        },
+        profile_bindings: {
+          summary: null,
+          reflect: "",
+        },
+      },
+    });
+    const cfg = Config.fromSnapshot(snap).data;
+    expect(resolveConfiguredProfileId(cfg, "summary")).toBe("chat");
+    expect(resolveConfiguredProfileId(cfg, "reflect")).toBe("chat");
+    expect(getProfileHopModel(cfg, "summary")).toBe("chat-model");
+  });
+
+  it("profile_bindings string selects that profile", () => {
+    const snap = runtimeConfigSchema.parse({
+      llm: {
+        default_profile: "chat",
+        providers: {
+          main: {
+            format: "openai_compatible",
+            base_url: "https://api.openai.com/v1",
+            api_key: "k",
+          },
+        },
+        profiles: {
+          chat: { chain: [{ provider: "main", model: "chat-model" }] },
+          cheap: { chain: [{ provider: "main", model: "cheap-model" }] },
+        },
+        profile_bindings: {
+          summary: "cheap",
+        },
+      },
+    });
+    const cfg = Config.fromSnapshot(snap).data;
+    expect(resolveConfiguredProfileId(cfg, "summary")).toBe("cheap");
+    expect(getProfileHopModel(cfg, "summary")).toBe("cheap-model");
+  });
+
+  it("absent binding key keeps legacy self profile when usable", () => {
+    const snap = runtimeConfigSchema.parse({
+      llm: {
+        default_profile: "chat",
+        providers: {
+          main: {
+            format: "openai_compatible",
+            base_url: "https://api.openai.com/v1",
+            api_key: "k",
+          },
+        },
+        profiles: {
+          chat: { chain: [{ provider: "main", model: "chat-model" }] },
+          summary: { chain: [{ provider: "main", model: "summary-model" }] },
+        },
+      },
+    });
+    const cfg = Config.fromSnapshot(snap).data;
+    expect(resolveConfiguredProfileId(cfg, "summary")).toBe("summary");
+    expect(getProfileHopModel(cfg, "summary")).toBe("summary-model");
+  });
+});
+
+describe("llm title + profile_bindings schema", () => {
+  it("keeps title and omits blank title on provider/profile", () => {
+    const parsed = llmConfigSchema.parse({
+      providers: {
+        a: {
+          title: "  DeepSeek  ",
+          preset: "deepseek",
+          api_key: "k",
+        },
+        b: {
+          title: "   ",
+          format: "openai_compatible",
+          base_url: "https://example.com/v1",
+          api_key: "k",
+        },
+      },
+      profiles: {
+        chat: {
+          title: "主对话",
+          chain: [{ provider: "a", model: "m" }],
+        },
+        other: {
+          title: "",
+          chain: [{ provider: "a", model: "m2" }],
+        },
+      },
+      profile_bindings: { summary: null, reflect: "other" },
+    });
+    expect(parsed.providers.a?.title).toBe("DeepSeek");
+    expect(parsed.providers.b?.title).toBeUndefined();
+    expect(parsed.profiles.chat?.title).toBe("主对话");
+    expect(parsed.profiles.other?.title).toBeUndefined();
+    expect(parsed.profile_bindings).toEqual({ summary: null, reflect: "other" });
+  });
 });
 
 describe("LLM optional at cold start", () => {
