@@ -17,6 +17,8 @@ export type DisplayAttachment = {
   size: number;
   /** 仅当次发送乐观预览（blob:）；历史重载无此字段 */
   previewUrl?: string;
+  /** 对象存储文件 id；展示层优先折入正文 `[[anima:id]]`，前端经浮层预览 */
+  object_file_id?: number;
 };
 
 export type DisplayMessageItem = {

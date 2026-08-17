@@ -49,7 +49,12 @@ describe("Engine", () => {
       PROFILE_CHAT,
       providers,
     );
-    const llm = { backends, providers, profiles };
+    const llm = {
+      backends,
+      providers,
+      profiles,
+      resolveProfileId: (id?: string) => id ?? PROFILE_CHAT,
+    };
     const config = Config.fromSnapshot(testCfg);
     const engine = new Engine(catalog, llm, config, createTestLogger());
     expect(engine.toolSets).toBe(catalog.toolSets);

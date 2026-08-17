@@ -3,8 +3,10 @@ import type { LlmPresetId } from "@freeanima/habitat/core/config/schemas/llm-con
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import {
   MODEL_INPUT_MODALITIES,
+  MODEL_OUTPUT_MODALITIES,
   type ModelInfo,
   type ModelInputModality,
+  type ModelOutputModality,
   type SupportedParam,
 } from "@freeanima/habitat/core/provider";
 
@@ -86,6 +88,12 @@ export function mergeModelInfoWithModelsDev(
     ? MODEL_INPUT_MODALITIES.filter((m) => known.has(m))
     : base.inputModalities;
 
+  const modalitiesOut = entry.modalities?.output;
+  const knownOut = new Set<string>(Array.isArray(modalitiesOut) ? modalitiesOut : []);
+  const outputModalities: ModelOutputModality[] | undefined = Array.isArray(modalitiesOut)
+    ? MODEL_OUTPUT_MODALITIES.filter((m) => knownOut.has(m))
+    : base.outputModalities;
+
   return omitUndefined({
     model: base.model,
     contextWindow,
@@ -95,6 +103,7 @@ export function mergeModelInfoWithModelsDev(
     supportedParams,
     supportsVision,
     inputModalities: inputModalities?.length ? inputModalities : undefined,
+    outputModalities: outputModalities?.length ? outputModalities : undefined,
   });
 }
 

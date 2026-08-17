@@ -179,7 +179,7 @@ describe("LlmProfile", () => {
     }
   });
 
-  it("chat falls over to chain[1] on authentication failure", async () => {
+  it("chat 忽略 chain[1]，认证失败不切换备用", async () => {
     const primary = new MockBackend({
       id: "primary",
       chatError: new ProviderError("401 Invalid API key.", "authentication", false),
@@ -198,12 +198,11 @@ describe("LlmProfile", () => {
       profileDef("chat", [hop("p1", "m1"), hop("p2", "standby-model")]),
       providers,
     );
-    const out = await profile.chat([{ role: "user", content: "hi" }]);
-    expect(out.content).toBe("from-standby");
+    await expect(profile.chat([{ role: "user", content: "hi" }])).rejects.toMatchObject({
+      code: "authentication",
+    });
     expect(primary.chatCalls).toHaveLength(1);
-    expect(standby.chatCalls).toHaveLength(1);
-    expect(profile.provider.id).toBe("p2");
-    expect(profile.model).toBe("standby-model");
+    expect(standby.chatCalls).toHaveLength(0);
   });
 
   it("chat does not failover on invalid_request", async () => {
@@ -229,7 +228,7 @@ describe("LlmProfile", () => {
     expect(shouldFailoverToNextHop(new ProviderError("x", "invalid_request", false))).toBe(false);
   });
 
-  it("chatStream falls over before first token", async () => {
+  it("chatStream 忽略 chain[1]，首 token 前失败也不切换", async () => {
     const primary = new MockBackend({
       id: "primary",
       streamError: new ProviderError("401 Invalid API key.", "authentication", false),
@@ -251,16 +250,13 @@ describe("LlmProfile", () => {
       profileDef("chat", [hop("p1", "m1"), hop("p2", "m2")]),
       providers,
     );
-    const events = [];
-    for await (const ev of profile.chatStream([{ role: "user", content: "hi" }])) {
-      events.push(ev);
-    }
-    expect(events).toEqual([
-      { type: "content", content: "ok" },
-      { type: "done", model: "m2", finish_reason: "stop" },
-    ]);
+    await expect(async () => {
+      for await (const event of profile.chatStream([{ role: "user", content: "hi" }])) {
+        void event;
+      }
+    }).toThrow();
     expect(primary.streamCalls).toHaveLength(1);
-    expect(standby.streamCalls).toHaveLength(1);
+    expect(standby.streamCalls).toHaveLength(0);
   });
 
   it("chatStream yields backend events and marks healthy on completion", async () => {

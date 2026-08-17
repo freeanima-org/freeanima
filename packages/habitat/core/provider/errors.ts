@@ -79,18 +79,10 @@ export function withLlmRouteContext(
 }
 
 /**
- * Whether profile.chain should try the next hop after this failure.
- * UI documents multi-hop as standby routes; do not failover on client cancel / bad request / filter.
+ * @deprecated 多跳备用路由已移除；保留导出以免外部引用断裂，恒为 false。
  */
-export function shouldFailoverToNextHop(err: ProviderError): boolean {
-  switch (err.code) {
-    case "cancelled":
-    case "invalid_request":
-    case "content_filtered":
-      return false;
-    default:
-      return true;
-  }
+export function shouldFailoverToNextHop(_err: ProviderError): boolean {
+  return false;
 }
 
 /** Fallback trusts ProviderError.retryable only; unknown errors are fatal */

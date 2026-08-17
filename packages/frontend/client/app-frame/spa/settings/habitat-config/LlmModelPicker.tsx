@@ -59,10 +59,13 @@ export function LlmModelPicker({
   providerId,
   value,
   onChange,
+  purpose,
 }: {
   providerId: string;
   value: string;
   onChange: (model: string) => void;
+  /** 图片场景传 image_generate，筛文生图模型 */
+  purpose?: "chat" | "image_generate" | "embedding";
 }) {
   const inputId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -70,9 +73,13 @@ export function LlmModelPicker({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [models, setModels] = useState<HabitatProviderModelEntry[]>([]);
-  const [source, setSource] = useState<"provider" | "models_dev" | null>(null);
+  const [source, setSource] = useState<"provider" | "models_dev" | "builtin" | null>(null);
 
   const canBrowse = providerId.trim().length > 0;
+  const placeholder =
+    purpose === "image_generate"
+      ? "文生图模型 id，例如 qwen-image-3.0-pro"
+      : "供应方模型 id，例如 deepseek-chat";
 
   useEffect(() => {
     if (!open) return () => {};
@@ -95,6 +102,7 @@ export function LlmModelPicker({
         provider_id: providerId.trim(),
         limit: 200,
         ...(value.trim() ? { query: value.trim() } : {}),
+        ...(purpose ? { purpose } : {}),
       })
         .then((res) => {
           if (cancelled) return;
@@ -115,7 +123,7 @@ export function LlmModelPicker({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [open, canBrowse, providerId, value]);
+  }, [open, canBrowse, providerId, value, purpose]);
 
   const selectedMeta = models.find((m) => m.model === value);
 
@@ -128,7 +136,7 @@ export function LlmModelPicker({
         <InputGroup>
           <InputGroupInput
             id={inputId}
-            placeholder="供应方模型 id，例如 deepseek-chat"
+            placeholder={placeholder}
             value={value}
             autoComplete="off"
             onChange={(e) => {
@@ -168,15 +176,27 @@ export function LlmModelPicker({
           >
             {source ? (
               <p className="text-muted-foreground mb-1 text-xs">
-                {source === "provider"
-                  ? "来自连接 /models（含 models.dev 元数据）"
-                  : "来自 models.dev 回退目录"}
+                {purpose === "image_generate"
+                  ? source === "builtin"
+                    ? "内置文生图模型（阿里云 Token Plan）"
+                    : source === "provider"
+                      ? "文生图候选（连接目录）"
+                      : "文生图候选（models.dev）"
+                  : source === "provider"
+                    ? "来自连接 /models（含 models.dev 元数据）"
+                    : source === "builtin"
+                      ? "来自内置模型表"
+                      : "来自 models.dev 回退目录"}
               </p>
             ) : null}
             {loading ? <p className="text-muted-foreground text-xs">加载中…</p> : null}
             {error ? <p className="text-destructive text-xs">{error}</p> : null}
             {!loading && !error && models.length === 0 ? (
-              <p className="text-muted-foreground text-xs">无匹配模型；可继续手填任意 id。</p>
+              <p className="text-muted-foreground text-xs">
+                {purpose === "image_generate"
+                  ? "无匹配文生图模型；可手填如 qwen-image-3.0-pro / wan2.7-image。"
+                  : "无匹配模型；可继续手填任意 id。"}
+              </p>
             ) : null}
             <ul className="h-60 overflow-y-auto">
               {models.map((entry) => (
@@ -207,7 +227,9 @@ export function LlmModelPicker({
         {canBrowse
           ? selectedMeta
             ? `已选：${modelSubtitle(selectedMeta)}；输入即可过滤或手填`
-            : "输入过滤列表，或手填任意供应方模型 id"
+            : purpose === "image_generate"
+              ? "列表为文生图候选；也可手填供应方模型 id"
+              : "输入过滤列表，或手填任意供应方模型 id"
           : "请先选择连接后再展开列表；仍可手填模型 id"}
       </p>
     </div>

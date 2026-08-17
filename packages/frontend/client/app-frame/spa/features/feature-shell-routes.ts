@@ -3,10 +3,12 @@ import { registerShellFeatureRoutes } from "./shell-registry.ts";
 import { registerTaskEntityOverlay } from "@freeanima/features/task/ui/spa/register-task-entity-overlay.ts";
 import { registerSemanticMemoryEntityOverlay } from "@freeanima/features/memory/ui/spa/register-semantic-memory-entity-overlay.ts";
 import { registerCalendarEventEntityOverlay } from "@freeanima/features/calendar/ui/spa/register-calendar-entity-overlay.ts";
+import { registerObjectFileEntityOverlay } from "@freeanima/features/entity/ui/spa/register-object-file-entity-overlay.ts";
 
 registerTaskEntityOverlay();
 registerSemanticMemoryEntityOverlay();
 registerCalendarEventEntityOverlay();
+registerObjectFileEntityOverlay();
 
 /** Shell routes for migrated feature plugins (Phase 2+). */
 export function registerFeaturePluginShellRoutes(): void {

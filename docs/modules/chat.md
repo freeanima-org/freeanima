@@ -54,6 +54,13 @@ pending`）。
 - Coding 与 Chat 共用 `ComposeAttachmentStrip` / `ConversationTranscript` 与同一条 `message.send`
 - stream 结束后清理临时文件；未消费 temp 有 TTL
 
+## 媒体生成（文生图）
+
+- 与上方 **输入** 多模态正交：生成图经 ToolSet `media` / `image_generate` → `object_storage`（`object_file_id`）
+- 路由：`llm.scenes.image_generate` + 连接上 `image_protocol`（如 `openai_images`）；`base_url` 为 API 根，不写完整 endpoint
+- 展示：`DisplayAttachment.object_file_id`；Chat 气泡经 `object_storage.file.get` 预览
+- 装载：非默认 ToolSet，需 `toolset_load media`
+
 `conversation.tail` 返回 `{ tail_pos, tail_role?, updated_at? }`。
 
 流错误 `code`：

@@ -36,9 +36,9 @@ describe("withLlmRouteContext", () => {
 });
 
 describe("shouldFailoverToNextHop", () => {
-  it("allows auth and rate limit; blocks cancel and invalid_request", () => {
-    expect(shouldFailoverToNextHop(new ProviderError("x", "authentication", false))).toBe(true);
-    expect(shouldFailoverToNextHop(new ProviderError("x", "rate_limited", true))).toBe(true);
+  it("多跳已移除，恒为 false", () => {
+    expect(shouldFailoverToNextHop(new ProviderError("x", "authentication", false))).toBe(false);
+    expect(shouldFailoverToNextHop(new ProviderError("x", "rate_limited", true))).toBe(false);
     expect(shouldFailoverToNextHop(new ProviderError("x", "cancelled", false))).toBe(false);
     expect(shouldFailoverToNextHop(new ProviderError("x", "invalid_request", false))).toBe(false);
   });

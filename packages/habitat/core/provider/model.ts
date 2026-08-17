@@ -37,6 +37,10 @@ export type ModelCostInfo = {
 export const MODEL_INPUT_MODALITIES = ["text", "image", "audio", "video", "pdf"] as const;
 export type ModelInputModality = (typeof MODEL_INPUT_MODALITIES)[number];
 
+/** models.dev `modalities.output` 子集。 */
+export const MODEL_OUTPUT_MODALITIES = ["text", "image", "audio", "video"] as const;
+export type ModelOutputModality = (typeof MODEL_OUTPUT_MODALITIES)[number];
+
 export type ModelInfo = {
   model: string;
   contextWindow: number;
@@ -52,6 +56,8 @@ export type ModelInfo = {
   supportsVision?: boolean;
   /** 已知输入模态；缺省 = 未知（勿臆造「仅文字」）。 */
   inputModalities?: ModelInputModality[];
+  /** 已知输出模态；缺省 = 未知。含 image 时可用于文生图筛选。 */
+  outputModalities?: ModelOutputModality[];
 };
 
 export function modelSupports(info: ModelInfo, key: SupportedParam): boolean {

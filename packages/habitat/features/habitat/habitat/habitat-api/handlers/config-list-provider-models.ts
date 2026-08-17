@@ -1,16 +1,35 @@
-import { llmProviderSchema } from "@freeanima/habitat/core/config/schemas/llm-config.ts";
+import {
+  llmProviderSchema,
+  LLM_PRESET_ALIBABA_TOKEN_PLAN,
+} from "@freeanima/habitat/core/config/schemas/llm-config.ts";
 import { getLlmRuntime } from "@freeanima/habitat/core/llm";
-import type { ModelInfo, ModelInputModality } from "@freeanima/habitat/core/provider";
+import {
+  alibabaBuiltinImageGenerateEntries,
+  filterImageGenerateCatalog,
+} from "@freeanima/habitat/core/llm/image-generate-models.ts";
+import type {
+  ModelInfo,
+  ModelInputModality,
+  ModelOutputModality,
+} from "@freeanima/habitat/core/provider";
 import { listModelInfoFromModelsDev } from "@freeanima/habitat/capabilities/llm-openai/models-dev";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import {
+  CATALOG_DEFAULT_CONTEXT_WINDOW,
+  CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+} from "@freeanima/habitat/capabilities/llm-openai/models-dev/enrich.ts";
 
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
+
+export type ListProviderModelsPurpose = "chat" | "image_generate" | "embedding";
 
 export type ListProviderModelsInput = {
   provider_id: string;
   query?: string;
   limit?: number;
+  /** 按用途筛选目录；缺省 = 全量（对话） */
+  purpose?: ListProviderModelsPurpose;
 };
 
 export type ListProviderModelsEntry = {
@@ -20,11 +39,12 @@ export type ListProviderModelsEntry = {
   maxOutputTokens: number;
   cost?: { input?: number; output?: number };
   inputModalities?: ModelInputModality[];
+  outputModalities?: ModelOutputModality[];
 };
 
 export type ListProviderModelsResult = {
   models: ListProviderModelsEntry[];
-  source: "provider" | "models_dev";
+  source: "provider" | "models_dev" | "builtin";
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -42,6 +62,7 @@ function serializeModel(info: ModelInfo): ListProviderModelsEntry {
     maxOutputTokens: info.maxOutputTokens,
     cost: info.cost,
     inputModalities: info.inputModalities,
+    outputModalities: info.outputModalities,
   });
 }
 
@@ -57,6 +78,45 @@ function filterModels(models: ModelInfo[], query: string | undefined, limit: num
     if (out.length >= limit) break;
   }
   return out;
+}
+
+function entriesToModelInfo(
+  entries: ReturnType<typeof alibabaBuiltinImageGenerateEntries>,
+): ModelInfo[] {
+  return entries.map((entry) => ({
+    model: entry.model,
+    ...(entry.label != null ? { label: entry.label } : {}),
+    contextWindow: entry.contextWindow ?? CATALOG_DEFAULT_CONTEXT_WINDOW,
+    maxOutputTokens: entry.maxOutputTokens ?? CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+    ...(entry.outputModalities
+      ? { outputModalities: [...entry.outputModalities] as ModelOutputModality[] }
+      : {}),
+  }));
+}
+
+function applyPurposeFilter(
+  models: ModelInfo[],
+  purpose: ListProviderModelsPurpose | undefined,
+  query: string | undefined,
+  limit: number,
+): ModelInfo[] {
+  if (purpose !== "image_generate") {
+    return filterModels(models, query, limit);
+  }
+  return filterImageGenerateCatalog(models, {
+    ...(query != null && query !== "" ? { query } : {}),
+    limit,
+  }).map((entry) => {
+    if ("contextWindow" in entry && typeof entry.contextWindow === "number") {
+      return entry;
+    }
+    return {
+      model: entry.model,
+      ...(entry.label != null ? { label: entry.label } : {}),
+      contextWindow: CATALOG_DEFAULT_CONTEXT_WINDOW,
+      maxOutputTokens: CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
+    };
+  });
 }
 
 /** List models for an LLM Connection: provider `/models` (enriched) or models.dev fallback. */
@@ -88,6 +148,21 @@ export async function listProviderModels(
     });
   }
 
+  if (input.purpose === "image_generate" && !providerCfg.image_protocol) {
+    return { models: [], source: "provider" };
+  }
+
+  // 阿里云 Token Plan：文生图用内置「图片生成」表，不拿 /models 里的对话模型冒充
+  if (input.purpose === "image_generate" && providerCfg.preset === LLM_PRESET_ALIBABA_TOKEN_PLAN) {
+    const builtin = entriesToModelInfo(
+      alibabaBuiltinImageGenerateEntries({
+        ...(input.query != null && input.query !== "" ? { query: input.query } : {}),
+        limit,
+      }),
+    );
+    return { models: builtin.map(serializeModel), source: "builtin" };
+  }
+
   let fromProvider: ModelInfo[] = [];
   try {
     const runtime = getLlmRuntime();
@@ -105,17 +180,21 @@ export async function listProviderModels(
 
   if (fromProvider.length > 0) {
     return {
-      models: filterModels(fromProvider, input.query, limit).map(serializeModel),
+      models: applyPurposeFilter(fromProvider, input.purpose, input.query, limit).map(
+        serializeModel,
+      ),
       source: "provider",
     };
   }
 
   const fromDev = await listModelInfoFromModelsDev(providerCfg.preset ?? "custom", {
-    ...(input.query != null && input.query !== "" ? { query: input.query } : {}),
-    limit,
+    ...(input.purpose !== "image_generate" && input.query != null && input.query !== ""
+      ? { query: input.query }
+      : {}),
+    limit: input.purpose === "image_generate" ? 500 : limit,
   });
   return {
-    models: fromDev.map(serializeModel),
+    models: applyPurposeFilter(fromDev, input.purpose, input.query, limit).map(serializeModel),
     source: "models_dev",
   };
 }

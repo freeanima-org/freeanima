@@ -8,6 +8,8 @@ import {
   profilesDraftToPatch,
   providersDraftToPatch,
   readProvidersDraft,
+  readScenesUiDraft,
+  scenesUiDraftToPatch,
   systemPurposeSelectValue,
   validateTimeoutDraft,
 } from "./llm-settings-draft.ts";
@@ -37,6 +39,7 @@ describe("providersDraftToPatch", () => {
         base_url: "https://example.com/v1",
         preset: "custom",
         format: "openai_compatible",
+        text_protocol: "openai_compatible",
       },
     });
   });
@@ -106,8 +109,8 @@ describe("connectionListSubtitle", () => {
     expect(connectionListSubtitle({ preset: "custom" })).toContain("未填 Base URL");
   });
 
-  it("预设留空 URL 提示默认", () => {
-    expect(connectionListSubtitle({ preset: "deepseek" })).toContain("使用预设默认");
+  it("预设固定展示默认 API 根", () => {
+    expect(connectionListSubtitle({ preset: "deepseek" })).toContain("api.deepseek.com");
   });
 });
 
@@ -133,5 +136,52 @@ describe("llmEntryTitle / ids / bindings UI", () => {
     expect(systemPurposeSelectValue("summary", { summary: "cheap" }, profiles)).toBe("cheap");
     expect(systemPurposeSelectValue("summary", {}, profiles)).toBe("summary");
     expect(systemPurposeSelectValue("reflect", {}, profiles)).toBe("");
+  });
+});
+
+describe("scenes UI draft", () => {
+  it("readScenesUiDraft：优先 scenes，子用途缺省为同主场景", () => {
+    const draft = readScenesUiDraft({
+      scenes: {
+        chat: { connection: "main", model: "m1" },
+        summary: { connection: "main", model: "s1" },
+      },
+      profiles: {
+        chat: { chain: [{ provider: "legacy", model: "old" }] },
+      },
+    });
+    expect(draft.chat).toEqual({ connection: "main", model: "m1" });
+    expect(draft.summary).toEqual({ connection: "main", model: "s1" });
+    expect(draft.reflect).toBeNull();
+  });
+
+  it("readScenesUiDraft：无 scenes 时 chat 回退 profile chain", () => {
+    const draft = readScenesUiDraft({
+      profiles: {
+        chat: { chain: [{ provider: "main", model: "from-profile" }] },
+      },
+    });
+    expect(draft.chat).toEqual({ connection: "main", model: "from-profile" });
+  });
+
+  it("scenesUiDraftToPatch：null/空删除键，完整绑定写入", () => {
+    const patched = scenesUiDraftToPatch(
+      {
+        chat: { connection: "main", model: "m1" },
+        summary: null,
+        reflect: { connection: "main", model: "" },
+      },
+      {
+        chat: { connection: "old", model: "o" },
+        summary: { connection: "old", model: "s" },
+        reflect: { connection: "old", model: "r" },
+        keep: { connection: "x", model: "y" },
+      },
+      ["chat", "summary", "reflect"],
+    );
+    expect(patched.chat).toEqual({ connection: "main", model: "m1" });
+    expect(patched.summary).toBeNull();
+    expect(patched.reflect).toBeNull();
+    expect(patched.keep).toBeUndefined();
   });
 });

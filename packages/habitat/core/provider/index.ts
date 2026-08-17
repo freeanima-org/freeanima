@@ -7,12 +7,14 @@ export type {
   ModelCostInfo,
   ModelInfo,
   ModelInputModality,
+  ModelOutputModality,
   SupportedParam,
 } from "./model.ts";
 export {
   EXTENDED_PARAM_KEYS,
   LLM_PARAM_KEYS,
   MODEL_INPUT_MODALITIES,
+  MODEL_OUTPUT_MODALITIES,
   clampCallParams,
   mergeCallParams,
   modelSupports,

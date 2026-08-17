@@ -1,10 +1,5 @@
 import type { EngineCatalog } from "./catalog.ts";
 import { createEngineCatalog } from "./catalog.ts";
-import type {
-  BackendRegistry,
-  ProfileRegistry,
-  ProviderRegistry,
-} from "@freeanima/habitat/core/provider";
 import type { Config } from "@freeanima/habitat/core/config";
 import {
   bindActiveRuntimeConfig,
@@ -12,7 +7,7 @@ import {
   resetActiveConfigForTest,
   resetRuntimeLoggerForTest,
 } from "@freeanima/habitat/core/config";
-import { createLlmRuntime } from "@freeanima/habitat/core/llm";
+import { createLlmRuntime, type LlmRuntime } from "@freeanima/habitat/core/llm";
 import type { Logger } from "@freeanima/habitat/kernel/logging";
 import { createLogger } from "@freeanima/habitat/kernel/logging";
 import { createNullSink } from "@freeanima/habitat/kernel/logging/sinks/null.ts";
@@ -20,12 +15,8 @@ import { createNullSink } from "@freeanima/habitat/kernel/logging/sinks/null.ts"
 export type { EngineCatalog } from "./catalog.ts";
 export { createEngineCatalog } from "./catalog.ts";
 
-/** LLM sub-component group (same shape as legacy llm-stack LlmRuntime) */
-export type EngineLlm = {
-  backends: BackendRegistry;
-  providers: ProviderRegistry;
-  profiles: ProfileRegistry;
-};
+/** LLM sub-component group（与 llm-stack LlmRuntime 同形，含 resolveProfileId） */
+export type EngineLlm = LlmRuntime;
 
 export type EngineDeps = {
   catalog?: EngineCatalog;

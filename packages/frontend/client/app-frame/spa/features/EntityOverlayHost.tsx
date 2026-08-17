@@ -60,7 +60,7 @@ export function EntityOverlayHost(): JSX.Element | null {
       onClose={() => setReq(null)}
       aria-label="实体详情"
       showCloseButton
-      className="flex min-h-[min(40vh,20rem)] flex-col md:max-w-lg"
+      className="flex min-h-[min(40vh,20rem)] flex-col md:max-w-2xl"
     >
       <DialogHeader className="sr-only">
         <DialogTitle>实体详情</DialogTitle>

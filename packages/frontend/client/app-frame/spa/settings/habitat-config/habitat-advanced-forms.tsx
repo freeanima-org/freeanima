@@ -25,12 +25,30 @@ export const ADVANCED_SECTIONS = [
 
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
-/** Shell 侧边栏标题；未列出的段用 section id */
+/** 侧栏一等运维项：已并入对话/向量 Tab 的段不重复列出 */
+export const SIDEBAR_OPS_SECTIONS = [
+  "gateway",
+  "discord",
+  "weixin",
+  "firecrawl",
+  "browser",
+  "worlds",
+  "object_storage",
+] as const satisfies ReadonlyArray<AdvancedSectionId>;
+
+/** Shell 侧边栏标题；未列出的段用 section id。注意：这是运维段列表，不是名为「高级」的产品分类。 */
 export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>> = {
   i18n: "时区",
   gateway: "网关",
   discord: "Discord",
   weixin: "微信",
+  firecrawl: "Firecrawl",
+  browser: "浏览器",
+  embedding: "Embedding",
+  cjk: "中文分词",
+  fts: "全文检索",
+  worlds: "世界",
+  auto_llm: "自动 LLM",
   object_storage: "对象存储",
 };
 
