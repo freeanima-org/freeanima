@@ -1,13 +1,17 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
+import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
+import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 
 import {
   fetchAllActiveMemories,
   formatAllMemoriesMessage,
-  buildDeepSleepMessages,
+  rowToJsonCompact,
   hasRecentMemoryUpdates,
   isMemoryUpdatedSince,
-  batchHasPinned,
+  shouldTrimPinned,
+  REFLECT_CONSOLIDATE_TASK_SPEC,
+  REFLECT_CONSOLIDATE_PIN_TASK_SPEC,
 } from "./build-messages.ts";
 
 const listActiveSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[]);
@@ -39,14 +43,7 @@ function makeRow(
   };
 }
 
-const emptyLog = {
-  entries: {},
-  addedIds: [] as string[],
-  modifiedIds: [] as string[],
-  deprecatedIds: [] as string[],
-};
-
-describe("deep sleep build-messages", () => {
+describe("reflect build-messages", () => {
   afterEach(() => {
     listActiveSemanticMemoryMock.mockClear();
   });
@@ -55,6 +52,33 @@ describe("deep sleep build-messages", () => {
     const active = [makeRow(96085, "active"), makeRow(14119, "active")];
     const { text } = formatAllMemoriesMessage(active);
     expect(text).toContain("# All semantic memories (2 active entries)");
+  });
+
+  it("rowToJsonCompact only includes consolidate-useful fields", () => {
+    const row = makeRow(7, "active", {
+      pinned: true,
+      source_conversations: ["c1"],
+      occurred_at: "2024 summer",
+      reference_count: 99,
+      source: { conversation_id: "c1", message_ids: ["m1"] },
+      links: [{ type: "merged_from", memory_id: 1 }],
+    });
+    const json = JSON.parse(rowToJsonCompact(row)) as Record<string, unknown>;
+    expect(json).toEqual({
+      id: 7,
+      type: "world",
+      content: "memory 7",
+      source_conversations: ["c1"],
+      observed: "2026-06-12T10:00:00",
+      occurred: "2024 summer",
+    });
+    expect(json).not.toHaveProperty("pinned");
+    expect(json).not.toHaveProperty("updated_at");
+    expect(json).not.toHaveProperty("created_at");
+    expect(json).not.toHaveProperty("reference_count");
+    expect(json).not.toHaveProperty("sources");
+    expect(json).not.toHaveProperty("source");
+    expect(json).not.toHaveProperty("links");
   });
 
   it("fetchAllActiveMemories uses listActive and excludes deprecated rows", async () => {
@@ -71,32 +95,59 @@ describe("deep sleep build-messages", () => {
     expect(text).toContain("# All semantic memories (2 active entries)");
   });
 
-  it("buildDeepSleepMessages consolidate includes ordered steps and batch toolcalls", () => {
-    const active = [makeRow(96085, "active")];
-    const { instructionText, allMemoriesText } = buildDeepSleepMessages(
-      active,
-      "consolidate",
-      emptyLog,
+  it("REFLECT_CONSOLIDATE_TASK_SPEC has ordered steps and forbids adding pins", () => {
+    expect(REFLECT_CONSOLIDATE_TASK_SPEC).toContain("Reflect consolidate (single pass)");
+    expect(REFLECT_CONSOLIDATE_TASK_SPEC).toContain("Mandatory planning order");
+    expect(REFLECT_CONSOLIDATE_TASK_SPEC).toContain("Contradiction + expiry");
+    expect(REFLECT_CONSOLIDATE_TASK_SPEC).toContain("SINGLE assistant response");
+    expect(REFLECT_CONSOLIDATE_TASK_SPEC).toContain("memory_semantic_merge");
+    expect(REFLECT_CONSOLIDATE_TASK_SPEC).not.toContain("Pin maintenance");
+    expect(REFLECT_CONSOLIDATE_TASK_SPEC).toContain("must **not** add pins");
+  });
+
+  it("REFLECT_CONSOLIDATE_PIN_TASK_SPEC is unpin-only over limit", () => {
+    expect(REFLECT_CONSOLIDATE_PIN_TASK_SPEC).toContain("Reflect pin trim");
+    expect(REFLECT_CONSOLIDATE_PIN_TASK_SPEC).toContain("{{pinned_count}}");
+    expect(REFLECT_CONSOLIDATE_PIN_TASK_SPEC).toContain("{{pinned_max}}");
+    expect(REFLECT_CONSOLIDATE_PIN_TASK_SPEC).toContain("pinned: false");
+    expect(REFLECT_CONSOLIDATE_PIN_TASK_SPEC).toContain("never `pinned: true`");
+    expect(REFLECT_CONSOLIDATE_PIN_TASK_SPEC).toContain(
+      "Do not create, merge, split, or deprecate",
     );
-    expect(allMemoriesText).toContain("# All semantic memories (1 active entries)");
-    expect(instructionText).toContain("Reflect consolidate (single pass)");
-    expect(instructionText).toContain("Mandatory planning order");
-    expect(instructionText).toContain("Contradiction + expiry");
-    expect(instructionText).toContain("SINGLE assistant response");
-    expect(instructionText).toContain("memory_semantic_merge");
   });
 
-  it("buildDeepSleepMessages consolidate_pin is pin-only", () => {
-    const active = [makeRow(96085, "active", { pinned: true })];
-    const { instructionText } = buildDeepSleepMessages(active, "consolidate_pin", emptyLog);
-    expect(instructionText).toContain("Reflect consolidate (pin-only)");
-    expect(instructionText).toContain("Do not create, merge, split, or deprecate");
-    expect(instructionText).toContain("SINGLE assistant response");
+  it("composeAutoLlmPrompt for reflect uses only semantic_memories data part", () => {
+    const { text } = formatAllMemoriesMessage([makeRow(1, "active")]);
+    const { systemPrompt, userMessages } = composeAutoLlmPrompt({
+      kind: "memory-reflect",
+      taskSpec: REFLECT_CONSOLIDATE_TASK_SPEC,
+      dataParts: [{ tag: PROMPT_XML_TAGS.semanticMemories, body: text }],
+    });
+    expect(systemPrompt).toContain("Reflect consolidate");
+    expect(userMessages).toHaveLength(1);
+    expect(userMessages[0]).toContain(`<${PROMPT_XML_TAGS.semanticMemories}>`);
+    expect(userMessages.join("\n")).not.toContain("No pre-screen");
+    expect(userMessages.join("\n")).not.toContain("Incremental changes");
   });
 
-  it("batchHasPinned detects pinned rows", () => {
-    expect(batchHasPinned([makeRow(1, "active")])).toBe(false);
-    expect(batchHasPinned([makeRow(1, "active", { pinned: true })])).toBe(true);
+  it("composeAutoLlmPrompt for pin trim includes task_params", () => {
+    const { text } = formatAllMemoriesMessage([makeRow(1, "active", { pinned: true })]);
+    const { userMessages } = composeAutoLlmPrompt({
+      kind: "memory-reflect",
+      taskSpec: REFLECT_CONSOLIDATE_PIN_TASK_SPEC,
+      taskParams: { pinned_count: 25, pinned_max: 20 },
+      dataParts: [{ tag: PROMPT_XML_TAGS.semanticMemories, body: text }],
+    });
+    expect(userMessages.length).toBe(2);
+    expect(userMessages[0]).toContain("pinned_count: 25");
+    expect(userMessages[0]).toContain("pinned_max: 20");
+    expect(userMessages[1]).toContain(`<${PROMPT_XML_TAGS.semanticMemories}>`);
+  });
+
+  it("shouldTrimPinned only when over max", () => {
+    expect(shouldTrimPinned(20, 20)).toBe(false);
+    expect(shouldTrimPinned(19, 20)).toBe(false);
+    expect(shouldTrimPinned(21, 20)).toBe(true);
   });
 
   it("hasRecentMemoryUpdates uses updated only", () => {

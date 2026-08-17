@@ -13,7 +13,7 @@ function rowBytes(row: SemanticMemoryRow): number {
     id: row.id,
     type: row.type,
     content: row.content,
-    sources: row.source_conversations,
+    source_conversations: row.source_conversations,
   });
   return Buffer.byteLength(approx, "utf-8");
 }
