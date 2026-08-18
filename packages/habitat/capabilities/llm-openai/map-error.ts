@@ -11,6 +11,7 @@ import {
   isLlmTimeoutError,
   type LlmTimeoutError,
 } from "./request-timeouts.ts";
+import { isQuotaExhaustedText } from "./sdk-retry-guard.ts";
 
 function mapOpenAiErrorCode(status: number | undefined): ProviderErrorCode {
   if (status === 429) return "rate_limited";
@@ -99,6 +100,18 @@ export function mapOpenAiCompatibleError(
     const status = typeof err.status === "number" ? err.status : 0;
     if ((!status || status === 0) && isTransientConnectionError(err)) {
       return unavailableFromConnection(err, meta);
+    }
+    const quotaText = `${err.message} ${JSON.stringify(err.error ?? {})}`;
+    if (status === 429 && isQuotaExhaustedText(quotaText)) {
+      return new ProviderError(
+        err.message,
+        "rate_limited",
+        false,
+        omitUndefined({
+          providerId: meta?.providerId,
+          cause: err,
+        }),
+      );
     }
     return providerErrorFromHttpStatus(
       status,
