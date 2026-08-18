@@ -8,7 +8,7 @@ import {
   DEFAULT_EDGE_TTS_BASE_URL,
   type ResolvedScene,
 } from "@freeanima/habitat/core/config";
-import { materializeConnection } from "@freeanima/habitat/core/llm/presets";
+import { connectionEndpointUrl } from "@freeanima/habitat/core/llm/presets";
 import { isAlibabaRealtimeVoiceModel } from "@freeanima/habitat/core/llm/voice-generate-models";
 import {
   mergeVoiceProsodyParams,
@@ -64,7 +64,7 @@ export async function synthesizeVoiceFromScene(
     scene = resolveScene(getActiveRuntimeConfig().data, purpose);
   } catch (err) {
     return {
-      error: err instanceof Error ? err.message : `未配置语音合成场景（llm.scenes.${purpose}）`,
+      error: err instanceof Error ? err.message : `未配置语音合成场景（audio_generate）`,
     };
   }
 
@@ -78,7 +78,7 @@ export async function synthesizeVoiceFromScene(
 
   const protocol = scene.voiceProtocol;
   if (!protocol) {
-    return { error: "该连接未配置语音协议（voice_protocol）" };
+    return { error: "该连接未配置语音协议（audio_protocol）" };
   }
 
   const sceneProsody = readVoiceProsodyParams(scene.params ?? {});
@@ -89,7 +89,7 @@ export async function synthesizeVoiceFromScene(
     if (protocol === VOICE_PROTOCOL_EDGE_TTS) {
       baseUrl = (scene.provider.base_url?.trim() || DEFAULT_EDGE_TTS_BASE_URL).replace(/\/$/, "");
     } else {
-      baseUrl = materializeConnection(scene.provider).baseUrl;
+      baseUrl = connectionEndpointUrl(scene.provider);
     }
   } catch (err) {
     return { error: err instanceof Error ? err.message : "语音连接 Base URL 无效" };

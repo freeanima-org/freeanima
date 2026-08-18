@@ -5,7 +5,8 @@ const companionHubPanelLoad = () =>
 
 export const companionHabitatSettingsSection: SettingsSection = {
   id: "companion",
-  order: 55,
+  /** 接在文本嵌入（57）之后、运维侧栏（60+）之前，避免插进能力层中间 */
+  order: 58,
   category: "server",
   title: "桌面伴侣",
   description:

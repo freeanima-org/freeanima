@@ -80,11 +80,35 @@ function isAdvancedSectionKey(key: HabitatConfigSectionKey): key is AdvancedSect
     key !== "llm" &&
     key !== "tts" &&
     key !== "connections" &&
+    key !== "text_generate" &&
+    key !== "image_generate" &&
+    key !== "audio_generate" &&
+    key !== "video_generate" &&
+    key !== "embedding" &&
     key !== "dialogue" &&
     key !== "image_gen" &&
     key !== "voice" &&
     key !== "retrieval"
   );
+}
+
+function resolveCapabilityKey(
+  key: HabitatConfigSectionKey,
+):
+  | "connections"
+  | "text_generate"
+  | "image_generate"
+  | "audio_generate"
+  | "video_generate"
+  | "embedding"
+  | null {
+  if (key === "llm" || key === "connections") return "connections";
+  if (key === "dialogue" || key === "text_generate") return "text_generate";
+  if (key === "image_gen" || key === "image_generate") return "image_generate";
+  if (key === "voice" || key === "audio_generate") return "audio_generate";
+  if (key === "video_generate") return "video_generate";
+  if (key === "retrieval" || key === "embedding") return "embedding";
+  return null;
 }
 
 const ADVANCED_TEST_SERVICES: Partial<
@@ -116,11 +140,6 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
   const [saving, setSaving] = useState(false);
   const [advancedDraft, setAdvancedDraft] = useState<Record<string, unknown>>({});
   const [autoLlmDraft, setAutoLlmDraft] = useState<Record<string, unknown>>({});
-  const [retrievalDrafts, setRetrievalDrafts] = useState<{
-    embedding: Record<string, unknown>;
-    fts: Record<string, unknown>;
-    cjk: Record<string, unknown>;
-  }>({ embedding: {}, fts: {}, cjk: {} });
 
   const [compression, setCompression] = useState({
     enabled: true,
@@ -203,70 +222,42 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
         return;
       }
 
-      if (configKey === "retrieval") {
-        const [llmSec, emb, fts, cjk] = await Promise.all([
-          fetchHabitatConfigSection("llm"),
-          fetchHabitatConfigSection("embedding"),
-          fetchHabitatConfigSection("fts"),
-          fetchHabitatConfigSection("cjk"),
+      const capabilityKey = resolveCapabilityKey(configKey);
+      if (capabilityKey) {
+        const [connectionsSec, layerSec] = await Promise.all([
+          fetchHabitatConfigSection("connections"),
+          capabilityKey === "connections"
+            ? Promise.resolve({})
+            : fetchHabitatConfigSection(capabilityKey),
         ]);
-        setConfig(asConfigRecord(llmSec));
-        setRetrievalDrafts({
-          embedding: readAdvancedSectionDraft(emb),
-          fts: readAdvancedSectionDraft(fts),
-          cjk: readAdvancedSectionDraft(cjk),
-        });
-        return;
-      }
-
-      const fetchKey =
-        configKey === "connections" ||
-        configKey === "dialogue" ||
-        configKey === "image_gen" ||
-        configKey === "voice" ||
-        configKey === "llm"
-          ? "llm"
-          : configKey === "tts"
-            ? "tts"
-            : configKey;
-
-      const section = await fetchHabitatConfigSection(fetchKey);
-      const asRecord = asConfigRecord(section);
-
-      if (
-        fetchKey === "llm" ||
-        configKey === "connections" ||
-        configKey === "dialogue" ||
-        configKey === "image_gen" ||
-        configKey === "voice"
-      ) {
-        if (configKey === "voice") {
+        const next: Record<string, unknown> = {
+          connections: asConfigRecord(connectionsSec),
+        };
+        if (capabilityKey !== "connections") {
+          next[capabilityKey] = asConfigRecord(layerSec);
+        }
+        if (capabilityKey === "audio_generate") {
           try {
             const ttsSec = await fetchHabitatConfigSection("tts");
-            setConfig({
-              ...asRecord,
-              tts: ttsSec ?? {},
-            });
+            next.tts = ttsSec ?? {};
           } catch {
-            setConfig(asRecord);
+            next.tts = {};
           }
-        } else {
-          setConfig(asRecord);
         }
-        if (configKey === "dialogue") {
+        if (capabilityKey === "text_generate") {
           const autoSec = await fetchHabitatConfigSection("auto_llm");
           setAutoLlmDraft(readAdvancedSectionDraft(autoSec));
         }
-      } else if (fetchKey === "tts") {
-        try {
-          const llmSec = await fetchHabitatConfigSection("llm");
-          setConfig({
-            tts: section ?? {},
-            llm: asConfigRecord(llmSec),
-          });
-        } catch {
-          setConfig({ tts: section ?? {} });
-        }
+        setConfig(next);
+        return;
+      }
+
+      const fetchKey = configKey === "tts" ? "tts" : configKey;
+      const section = await fetchHabitatConfigSection(fetchKey);
+      const asRecord = asConfigRecord(section);
+
+      if (fetchKey === "tts") {
+        setConfig({ tts: section ?? {} });
       } else if (isAdvancedSectionKey(configKey)) {
         setAdvancedDraft(readAdvancedSectionDraft(section));
         setConfig({});
@@ -570,32 +561,17 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
         </Tabs>
       ) : null}
 
-      {(configKey === "llm" ||
-        configKey === "connections" ||
-        configKey === "dialogue" ||
-        configKey === "image_gen" ||
-        configKey === "voice") &&
-      config ? (
+      {resolveCapabilityKey(configKey) && config ? (
         <>
           <LlmSettingsPanel
-            llmConfig={config}
+            config={config}
             saving={saving}
             onSavingChange={setSaving}
             onError={setError}
             onSaved={afterSave}
-            panelFocus={
-              configKey === "connections"
-                ? "connections"
-                : configKey === "dialogue"
-                  ? "dialogue"
-                  : configKey === "image_gen"
-                    ? "image_gen"
-                    : configKey === "voice"
-                      ? "voice"
-                      : "all"
-            }
+            panelFocus={resolveCapabilityKey(configKey) ?? "connections"}
           />
-          {configKey === "dialogue" ? (
+          {resolveCapabilityKey(configKey) === "text_generate" ? (
             <Card className="mt-4 bg-muted py-0">
               <CardContent className="gap-4 py-4">
                 <p className="text-sm font-medium">自动 LLM 运行参数</p>
@@ -617,7 +593,7 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
               </CardContent>
             </Card>
           ) : null}
-          {configKey === "voice" ? (
+          {resolveCapabilityKey(configKey) === "audio_generate" ? (
             <SpeechSettingsTab
               config={config}
               saving={saving}
@@ -641,74 +617,6 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
             await afterSave("tts");
           }}
         />
-      ) : null}
-
-      {configKey === "retrieval" && config ? (
-        <div className="space-y-4">
-          <LlmSettingsPanel
-            llmConfig={config}
-            saving={saving}
-            onSavingChange={setSaving}
-            onError={setError}
-            onSaved={afterSave}
-            panelFocus="retrieval"
-          />
-          <Card className="bg-muted py-0">
-            <CardContent className="gap-4 py-4">
-              <p className="text-sm font-medium">Embedding 遗留参数</p>
-              <p className="text-xs text-muted-foreground">
-                向量模型优先上方场景 + 连接 embeddings_protocol；以下为遗留 embedding 段（dimensions
-                / 超时等）。
-              </p>
-              <AdvancedSectionForm
-                section="embedding"
-                value={retrievalDrafts.embedding}
-                onChange={(v) => setRetrievalDrafts((d) => ({ ...d, embedding: v }))}
-              />
-              <Button
-                type="button"
-                isDisabled={saving}
-                onClick={() => void saveAdvancedAs("embedding", retrievalDrafts.embedding)}
-              >
-                保存 Embedding
-              </Button>
-            </CardContent>
-          </Card>
-          <Card className="bg-muted py-0">
-            <CardContent className="gap-4 py-4">
-              <p className="text-sm font-medium">全文检索（FTS）</p>
-              <AdvancedSectionForm
-                section="fts"
-                value={retrievalDrafts.fts}
-                onChange={(v) => setRetrievalDrafts((d) => ({ ...d, fts: v }))}
-              />
-              <Button
-                type="button"
-                isDisabled={saving}
-                onClick={() => void saveAdvancedAs("fts", retrievalDrafts.fts)}
-              >
-                保存 FTS
-              </Button>
-            </CardContent>
-          </Card>
-          <Card className="bg-muted py-0">
-            <CardContent className="gap-4 py-4">
-              <p className="text-sm font-medium">中文分词</p>
-              <AdvancedSectionForm
-                section="cjk"
-                value={retrievalDrafts.cjk}
-                onChange={(v) => setRetrievalDrafts((d) => ({ ...d, cjk: v }))}
-              />
-              <Button
-                type="button"
-                isDisabled={saving}
-                onClick={() => void saveAdvancedAs("cjk", retrievalDrafts.cjk)}
-              >
-                保存分词
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
       ) : null}
 
       {isAdvancedSectionKey(configKey) ? (

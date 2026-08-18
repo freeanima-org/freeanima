@@ -9,13 +9,15 @@ import {
 } from "./config-store.ts";
 
 const snapshot = {
-  llm: {
-    default_profile: "chat",
-    providers: {
-      main: { backend: "openai_compatible" as const, base_url: "https://api.example/v1" },
+  connections: {
+    main: {
+      preset: "custom",
+      custom_kind: "text",
+      text_protocol: "openai_compatible",
+      base_url: "https://api.example/v1",
     },
-    profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
+  text_generate: { main: { connection: "main", model: "m" } },
 } as RuntimeConfig;
 
 describe("Config store", () => {
@@ -25,7 +27,7 @@ describe("Config store", () => {
 
   it("fromSnapshot exposes data and update replaces snapshot", () => {
     const cfg = Config.fromSnapshot(snapshot);
-    expect(cfg.data.llm?.default_profile ?? "").toBe("chat");
+    expect(cfg.data.text_generate?.main?.model ?? "").toBe("m");
     cfg.update({ ...snapshot, compression: { reserved_tokens: 4096 } });
     expect(cfg.data.compression?.reserved_tokens).toBe(4096);
   });

@@ -58,7 +58,7 @@ export async function bindTokenizerRuntime(config: Config): Promise<void> {
   }
 
   if (isEmbeddingEnabled(cfg)) {
-    const embeddingModel = cfg.embedding?.model?.trim();
+    const embeddingModel = cfg.embedding?.main?.model?.trim();
     if (embeddingModel) {
       tasks.push(
         ensureTokenizer(embeddingModel).catch((err) => {

@@ -30,6 +30,9 @@ export const LLM_PRESET_IDS = [
 
 export type LlmPresetId = (typeof LLM_PRESET_IDS)[number];
 
+export const CUSTOM_KIND_IDS = ["text", "image", "audio", "video", "embeddings"] as const;
+export type CustomKindId = (typeof CUSTOM_KIND_IDS)[number];
+
 /** 文本对话线协议（= 既有 format） */
 export const TEXT_PROTOCOL_IDS = LLM_FORMAT_IDS;
 export type TextProtocolId = LlmFormatId;
@@ -41,46 +44,57 @@ export type EmbeddingsProtocolId = (typeof EMBEDDINGS_PROTOCOL_IDS)[number];
 export const IMAGE_PROTOCOL_OPENAI = "openai_images";
 /** 阿里云 Token Plan / 百炼多模态生成（wan / qwen-image 等，非 OpenAI Images） */
 export const IMAGE_PROTOCOL_ALIBABA_MULTIMODAL = "alibaba_multimodal";
+export const GENERIC_IMAGE_PROTOCOL_IDS = [IMAGE_PROTOCOL_OPENAI] as const;
 export const IMAGE_PROTOCOL_IDS = [
   IMAGE_PROTOCOL_OPENAI,
   IMAGE_PROTOCOL_ALIBABA_MULTIMODAL,
 ] as const;
 export type ImageProtocolId = (typeof IMAGE_PROTOCOL_IDS)[number];
 
-export const VOICE_PROTOCOL_OPENAI_AUDIO = "openai_audio_speech";
-export const VOICE_PROTOCOL_EDGE_TTS = "edge-tts";
-/** 阿里云 Token Plan / 百炼 DashScope 音频（TTS / 实时；≠ 文生图 alibaba_multimodal） */
-export const VOICE_PROTOCOL_ALIBABA_AUDIO = "alibaba_audio";
-export const VOICE_PROTOCOL_IDS = [
-  VOICE_PROTOCOL_OPENAI_AUDIO,
-  VOICE_PROTOCOL_EDGE_TTS,
-  VOICE_PROTOCOL_ALIBABA_AUDIO,
+export const AUDIO_PROTOCOL_OPENAI_AUDIO = "openai_audio_speech";
+export const AUDIO_PROTOCOL_EDGE_TTS = "edge-tts";
+/** 阿里云 Token Plan / 百炼 DashScope 音频 */
+export const AUDIO_PROTOCOL_ALIBABA_AUDIO = "alibaba_audio";
+export const GENERIC_AUDIO_PROTOCOL_IDS = [
+  AUDIO_PROTOCOL_OPENAI_AUDIO,
+  AUDIO_PROTOCOL_EDGE_TTS,
 ] as const;
-export type VoiceProtocolId = (typeof VOICE_PROTOCOL_IDS)[number];
+export const AUDIO_PROTOCOL_IDS = [
+  AUDIO_PROTOCOL_OPENAI_AUDIO,
+  AUDIO_PROTOCOL_EDGE_TTS,
+  AUDIO_PROTOCOL_ALIBABA_AUDIO,
+] as const;
+export type AudioProtocolId = (typeof AUDIO_PROTOCOL_IDS)[number];
+
+/** @deprecated 用 AUDIO_PROTOCOL_* */
+export const VOICE_PROTOCOL_OPENAI_AUDIO = AUDIO_PROTOCOL_OPENAI_AUDIO;
+export const VOICE_PROTOCOL_EDGE_TTS = AUDIO_PROTOCOL_EDGE_TTS;
+export const VOICE_PROTOCOL_ALIBABA_AUDIO = AUDIO_PROTOCOL_ALIBABA_AUDIO;
+export const VOICE_PROTOCOL_IDS = AUDIO_PROTOCOL_IDS;
+export type VoiceProtocolId = AudioProtocolId;
 
 /** Edge TTS 默认服务根（密钥可空） */
 export const DEFAULT_EDGE_TTS_BASE_URL = "https://api.msedgeservices.com/tts";
 
-/**
- * 扁平场景用途键（校验枚举）。
- * 能力族：对话 chat… / 向量 embedding / 文生图 image_generate /
- * 语音合成 voice_generate（主）+ tts + voice_realtime。
- */
-export const LLM_SCENE_PURPOSE_IDS = [
+export const TEXT_GENERATE_PURPOSE_IDS = [
   "chat",
   "summary",
   "reflect",
   "goal_judge",
   "skill_review",
+] as const;
+
+export const LLM_SCENE_PURPOSE_IDS = [
+  ...TEXT_GENERATE_PURPOSE_IDS,
   "embedding",
   "image_generate",
   "voice_generate",
   "tts",
   "voice_realtime",
+  "video_generate",
 ] as const;
 export type LlmScenePurposeId = (typeof LLM_SCENE_PURPOSE_IDS)[number];
 
-/** 语音合成族：主场景 + 交付子场景（朗读 / 实时） */
 export const VOICE_SYNTHESIS_SCENE_PURPOSE_IDS = [
   "voice_generate",
   "tts",
@@ -93,16 +107,14 @@ export const VOICE_SYNTHESIS_CHILD_PURPOSE_IDS = ["tts", "voice_realtime"] as co
 
 const llmFormatIdSchema = z.enum(LLM_FORMAT_IDS);
 const llmPresetIdSchema = z.enum(LLM_PRESET_IDS);
+const customKindIdSchema = z.enum(CUSTOM_KIND_IDS);
 const embeddingsProtocolIdSchema = z.enum(EMBEDDINGS_PROTOCOL_IDS);
 const imageProtocolIdSchema = z.enum(IMAGE_PROTOCOL_IDS);
-const voiceProtocolIdSchema = z.enum(VOICE_PROTOCOL_IDS);
+const audioProtocolIdSchema = z.enum(AUDIO_PROTOCOL_IDS);
 
 const timeoutFieldsSchema = {
-  /** 整体墙钟超时（ms） */
   timeout_ms: z.number().int().positive().optional(),
-  /** 首字节超时（ms）；须 ≤ timeout_ms */
   first_byte_timeout_ms: z.number().int().positive().optional(),
-  /** 流式 chunk idle（ms）；须 ≤ timeout_ms */
   idle_timeout_ms: z.number().int().positive().optional(),
 };
 
@@ -132,171 +144,241 @@ function refineTimeouts(
   }
 }
 
-/** Trim empty `title` so stored config omits blank display names. */
 export function normalizeOptionalTitle(raw: unknown): string | undefined {
   if (typeof raw !== "string") return undefined;
   const t = raw.trim();
   return t.length > 0 ? t : undefined;
 }
 
-/** Migrate legacy `backend` → `format` / `text_protocol` and default `preset: custom`. */
-export function normalizeLlmProviderRaw(raw: unknown): unknown {
+function isGenericImageProtocol(id: string): boolean {
+  return (GENERIC_IMAGE_PROTOCOL_IDS as readonly string[]).includes(id);
+}
+
+function isGenericAudioProtocol(id: string): boolean {
+  return (GENERIC_AUDIO_PROTOCOL_IDS as readonly string[]).includes(id);
+}
+
+function protocolSet(val: {
+  text_protocol?: string | undefined;
+  image_protocol?: string | null | undefined;
+  audio_protocol?: string | null | undefined;
+  embeddings_protocol?: string | null | undefined;
+  video_protocol?: string | null | undefined;
+}): { text: boolean; image: boolean; audio: boolean; embeddings: boolean; video: boolean } {
+  return {
+    text: val.text_protocol != null && val.text_protocol !== "",
+    image: val.image_protocol != null && val.image_protocol !== "",
+    audio: val.audio_protocol != null && val.audio_protocol !== "",
+    embeddings: val.embeddings_protocol != null && val.embeddings_protocol !== "",
+    video: val.video_protocol != null && val.video_protocol !== "",
+  };
+}
+
+/** 连接草稿归一：trim title；custom 缺 preset。不给非文本 custom 补文本协议。 */
+export function normalizeConnectionRaw(raw: unknown): unknown {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
   const src = raw as Record<string, unknown>;
   const out: Record<string, unknown> = { ...src };
-  if (out.format == null && typeof out.backend === "string") {
-    out.format = out.backend;
+  if (out.audio_protocol == null && typeof out.voice_protocol === "string") {
+    out.audio_protocol = out.voice_protocol;
   }
+  delete out.voice_protocol;
   delete out.backend;
-  if (out.text_protocol == null && typeof out.format === "string") {
-    out.text_protocol = out.format;
-  }
-  if (out.format == null && typeof out.text_protocol === "string") {
-    out.format = out.text_protocol;
-  }
-  if (out.preset == null) {
-    out.preset = LLM_PRESET_CUSTOM;
-  }
-  // Legacy configs omitted format/backend → Chat Completions
-  if (out.format == null && out.preset === LLM_PRESET_CUSTOM) {
-    out.format = LLM_FORMAT_OPENAI_COMPATIBLE;
-    out.text_protocol = LLM_FORMAT_OPENAI_COMPATIBLE;
-  }
+  delete out.format;
+  if (out.preset == null) out.preset = LLM_PRESET_CUSTOM;
   const title = normalizeOptionalTitle(out.title);
   if (title === undefined) delete out.title;
   else out.title = title;
   return out;
 }
 
-/** Normalize profile value objects (trim empty title; chain 仅保留首跳). */
-export function normalizeLlmProfileRaw(raw: unknown): unknown {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const src = raw as Record<string, unknown>;
-  const out: Record<string, unknown> = { ...src };
-  const title = normalizeOptionalTitle(out.title);
-  if (title === undefined) delete out.title;
-  else out.title = title;
-  if (Array.isArray(out.chain) && out.chain.length > 1) {
-    out.chain = out.chain.slice(0, 1);
-  }
-  return out;
-}
+/** @deprecated 用 {@link normalizeConnectionRaw} */
+export const normalizeLlmProviderRaw = normalizeConnectionRaw;
 
-export const llmProviderSchema = z.preprocess(
-  normalizeLlmProviderRaw,
-  z
-    .object({
-      /** 展示名；缺省时 UI 回退 map key */
-      title: z.string().min(1).optional(),
-      preset: llmPresetIdSchema.default(LLM_PRESET_CUSTOM),
-      /**
-       * 文本协议（遗留字段名 format，与 text_protocol 同步）。
-       * Required for `custom`；单格式预设可省略。
-       */
-      format: llmFormatIdSchema.optional(),
-      /** 文本协议；与 format 同义，新配置优先写此字段 */
-      text_protocol: llmFormatIdSchema.optional(),
-      /** 文生图协议；null/省略 = 不支持 */
-      image_protocol: imageProtocolIdSchema.nullable().optional(),
-      /** 文生声 / TTS HTTP 协议；null/省略 = 不支持（web-speech 不进连接表） */
-      voice_protocol: voiceProtocolIdSchema.nullable().optional(),
-      /** 向量协议；null/省略 = 不支持 */
-      embeddings_protocol: embeddingsProtocolIdSchema.nullable().optional(),
-      base_url: z.string().url().optional(),
-      api_key: z.string().optional(),
-      ...timeoutFieldsSchema,
-    })
-    .strict()
-    .superRefine((val, ctx) => {
-      refineTimeouts(
-        {
-          ...(val.timeout_ms !== undefined ? { timeout_ms: val.timeout_ms } : {}),
-          ...(val.first_byte_timeout_ms !== undefined
-            ? { first_byte_timeout_ms: val.first_byte_timeout_ms }
-            : {}),
-          ...(val.idle_timeout_ms !== undefined ? { idle_timeout_ms: val.idle_timeout_ms } : {}),
-        },
-        ctx,
-      );
-      const textProto = val.text_protocol ?? val.format;
-      if (val.preset === LLM_PRESET_CUSTOM) {
-        if (textProto == null) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["text_protocol"],
-            message: "custom connection requires text_protocol (or format)",
-          });
-        }
-        if (val.base_url == null || !val.base_url.trim()) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["base_url"],
-            message: "custom connection requires base_url",
-          });
-        }
-      }
-      if (val.voice_protocol === VOICE_PROTOCOL_EDGE_TTS) {
-        if (val.base_url == null || !val.base_url.trim()) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["base_url"],
-            message: "edge-tts connection requires base_url",
-          });
-        }
-      }
-    }),
-);
-
-export const llmRouteHopSchema = z.object({
-  provider: z.string().min(1),
-  model: z.string().min(1),
-  params: z.record(z.string(), z.unknown()).optional(),
-});
-
-export const llmProfileSchema = z.preprocess(
-  normalizeLlmProfileRaw,
-  z.object({
-    /** 展示名；缺省时 UI 回退 map key */
+const connectionObjectSchema = z
+  .object({
     title: z.string().min(1).optional(),
-    /** 仅首跳有效；多跳配置加载时会被截断 */
-    chain: z.array(llmRouteHopSchema).min(1).max(1),
-    params: z.record(z.string(), z.unknown()).optional(),
-  }),
+    preset: llmPresetIdSchema.default(LLM_PRESET_CUSTOM),
+    custom_kind: customKindIdSchema.optional(),
+    text_protocol: llmFormatIdSchema.optional(),
+    image_protocol: imageProtocolIdSchema.nullable().optional(),
+    audio_protocol: audioProtocolIdSchema.nullable().optional(),
+    embeddings_protocol: embeddingsProtocolIdSchema.nullable().optional(),
+    /** 占位；暂无实现枚举 */
+    video_protocol: z.string().nullable().optional(),
+    base_url: z.string().url().optional(),
+    api_key: z.string().optional(),
+    ...timeoutFieldsSchema,
+  })
+  .strict();
+
+function refineConnection(val: z.infer<typeof connectionObjectSchema>, ctx: z.RefinementCtx): void {
+  refineTimeouts(
+    {
+      ...(val.timeout_ms !== undefined ? { timeout_ms: val.timeout_ms } : {}),
+      ...(val.first_byte_timeout_ms !== undefined
+        ? { first_byte_timeout_ms: val.first_byte_timeout_ms }
+        : {}),
+      ...(val.idle_timeout_ms !== undefined ? { idle_timeout_ms: val.idle_timeout_ms } : {}),
+    },
+    ctx,
+  );
+
+  if (val.preset !== LLM_PRESET_CUSTOM) {
+    if (val.custom_kind != null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["custom_kind"],
+        message: "builtin connection cannot set custom_kind",
+      });
+    }
+    return;
+  }
+
+  if (val.custom_kind == null) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["custom_kind"],
+      message: "custom connection requires custom_kind",
+    });
+    return;
+  }
+
+  const flags = protocolSet(val);
+  const requireBaseUrl = () => {
+    if (val.base_url == null || !val.base_url.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["base_url"],
+        message: "custom connection requires base_url",
+      });
+    }
+  };
+
+  const onlyKind = (kind: CustomKindId) => {
+    if (kind !== "text" && flags.text) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["text_protocol"],
+        message: "custom connection may only set the protocol for custom_kind",
+      });
+    }
+    if (kind !== "image" && flags.image) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["image_protocol"],
+        message: "custom connection may only set the protocol for custom_kind",
+      });
+    }
+    if (kind !== "audio" && flags.audio) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["audio_protocol"],
+        message: "custom connection may only set the protocol for custom_kind",
+      });
+    }
+    if (kind !== "embeddings" && flags.embeddings) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["embeddings_protocol"],
+        message: "custom connection may only set the protocol for custom_kind",
+      });
+    }
+    if (kind !== "video" && flags.video) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["video_protocol"],
+        message: "custom connection may only set the protocol for custom_kind",
+      });
+    }
+  };
+
+  switch (val.custom_kind) {
+    case "text":
+      onlyKind("text");
+      if (val.text_protocol == null) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["text_protocol"],
+          message: "custom text connection requires text_protocol",
+        });
+      }
+      requireBaseUrl();
+      break;
+    case "image":
+      onlyKind("image");
+      if (val.image_protocol == null) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["image_protocol"],
+          message: "custom image connection requires image_protocol",
+        });
+      } else if (!isGenericImageProtocol(val.image_protocol)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["image_protocol"],
+          message: "custom image connection must use a generic protocol",
+        });
+      }
+      requireBaseUrl();
+      break;
+    case "audio":
+      onlyKind("audio");
+      if (val.audio_protocol == null) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["audio_protocol"],
+          message: "custom audio connection requires audio_protocol",
+        });
+      } else if (!isGenericAudioProtocol(val.audio_protocol)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["audio_protocol"],
+          message: "custom audio connection must use a generic protocol",
+        });
+      }
+      requireBaseUrl();
+      break;
+    case "embeddings":
+      onlyKind("embeddings");
+      if (val.embeddings_protocol == null) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["embeddings_protocol"],
+          message: "custom embeddings connection requires embeddings_protocol",
+        });
+      }
+      requireBaseUrl();
+      break;
+    case "video":
+      onlyKind("video");
+      requireBaseUrl();
+      break;
+    default:
+      break;
+  }
+}
+
+export const connectionSchema = z.preprocess(
+  normalizeConnectionRaw,
+  connectionObjectSchema.superRefine(refineConnection),
 );
 
-/** 扁平场景：用途 → 连接 + 模型（协议从连接读） */
-export const llmSceneBindingSchema = z.object({
-  connection: z.string().min(1),
-  model: z.string().min(1),
-  params: z.record(z.string(), z.unknown()).optional(),
-  /** @deprecated 多跳备用已移除；解析时忽略 */
-  fallback: z
-    .array(
-      z.object({
-        connection: z.string().min(1),
-        model: z.string().min(1),
-      }),
-    )
-    .optional(),
-});
+/** @deprecated 用 {@link connectionSchema} */
+export const llmProviderSchema = connectionSchema;
 
-export type LlmSceneBinding = z.infer<typeof llmSceneBindingSchema>;
-
-/**
- * Loose provider shape for stored RuntimeConfig / UI drafts.
- * Accepts legacy `backend`; full validation runs at bind via {@link llmProviderSchema}.
- */
-export const llmProviderLooseSchema = z.preprocess(
-  normalizeLlmProviderRaw,
+export const connectionLooseSchema = z.preprocess(
+  normalizeConnectionRaw,
   z
     .object({
       title: z.string().optional(),
       preset: llmPresetIdSchema.optional(),
-      format: llmFormatIdSchema.optional(),
+      custom_kind: customKindIdSchema.optional(),
       text_protocol: llmFormatIdSchema.optional(),
       image_protocol: imageProtocolIdSchema.nullable().optional(),
-      voice_protocol: voiceProtocolIdSchema.nullable().optional(),
+      audio_protocol: audioProtocolIdSchema.nullable().optional(),
       embeddings_protocol: embeddingsProtocolIdSchema.nullable().optional(),
+      video_protocol: z.string().nullable().optional(),
       base_url: z.string().optional(),
       api_key: z.string().optional(),
       ...timeoutFieldsSchema,
@@ -304,43 +386,20 @@ export const llmProviderLooseSchema = z.preprocess(
     .passthrough(),
 );
 
-/**
- * 用途键 → 方案 id（遗留）。
- * - 键不存在：兼容旧配置（有可用 profiles[用途] 则用之）
- * - null / ""：同主场景 → default_profile
- * - string：使用该 profile
- */
-export const llmProfileBindingsSchema = z.record(z.string(), z.string().nullable());
+/** @deprecated 用 {@link connectionLooseSchema} */
+export const llmProviderLooseSchema = connectionLooseSchema;
 
-/** 允许分 tab 增量保存：缺 profiles / providers 时给空对象 */
-export const llmConfigSchema = z.object({
-  default_profile: z.string().min(1).default("chat"),
-  /** 主场景用途键；缺省 chat（与 default_profile 对齐） */
-  default_scene: z.string().min(1).optional(),
-  providers: z.record(z.string(), llmProviderLooseSchema).default({}),
-  /** @deprecated 日常路径改用 scenes；保留供迁移与 failover 兼容 */
-  profiles: z.record(z.string(), llmProfileSchema).default({}),
-  /** @deprecated 改用 scenes；读时归一 */
-  profile_bindings: llmProfileBindingsSchema.optional(),
-  /** 扁平场景（SSOT，新写入优先） */
-  scenes: z.record(z.string(), llmSceneBindingSchema).optional(),
-});
+export const connectionsConfigSchema = z.record(z.string(), connectionLooseSchema).default({});
 
-/**
- * Connection config (TS). Allows legacy `backend` and omitted `preset` so fixtures /
- * incremental UI drafts type-check; runtime parse via {@link llmProviderSchema} normalizes.
- * Optional fields include `| undefined` for exactOptionalPropertyTypes + Zod output.
- */
-export type LlmProviderConfig = {
+export type ConnectionConfig = {
   title?: string | undefined;
   preset?: LlmPresetId | undefined;
-  format?: LlmFormatId | undefined;
+  custom_kind?: CustomKindId | undefined;
   text_protocol?: TextProtocolId | undefined;
   image_protocol?: ImageProtocolId | null | undefined;
-  voice_protocol?: VoiceProtocolId | null | undefined;
+  audio_protocol?: AudioProtocolId | null | undefined;
   embeddings_protocol?: EmbeddingsProtocolId | null | undefined;
-  /** @deprecated Migrated to {@link format} by {@link normalizeLlmProviderRaw} */
-  backend?: string | undefined;
+  video_protocol?: string | null | undefined;
   base_url?: string | undefined;
   api_key?: string | undefined;
   timeout_ms?: number | undefined;
@@ -348,12 +407,11 @@ export type LlmProviderConfig = {
   idle_timeout_ms?: number | undefined;
 };
 
-export type LlmProfileConfig = z.infer<typeof llmProfileSchema>;
-export type LlmRouteHopConfig = z.infer<typeof llmRouteHopSchema>;
-export type LlmConfig = z.infer<typeof llmConfigSchema>;
+/** @deprecated 用 {@link ConnectionConfig} */
+export type LlmProviderConfig = ConnectionConfig;
 
-export function llmProviderConfigToContext(
-  cfg: LlmProviderConfig,
+export function connectionConfigToContext(
+  cfg: ConnectionConfig,
   baseUrl: string,
 ): Record<string, unknown> {
   return omitUndefined({
@@ -365,7 +423,12 @@ export function llmProviderConfigToContext(
   });
 }
 
-/** 连接上的文本协议（format / text_protocol） */
-export function getProviderTextProtocol(cfg: LlmProviderConfig): TextProtocolId | undefined {
-  return cfg.text_protocol ?? cfg.format;
+/** @deprecated 用 {@link connectionConfigToContext} */
+export const llmProviderConfigToContext = connectionConfigToContext;
+
+export function getConnectionTextProtocol(cfg: ConnectionConfig): TextProtocolId | undefined {
+  return cfg.text_protocol;
 }
+
+/** @deprecated 用 {@link getConnectionTextProtocol} */
+export const getProviderTextProtocol = getConnectionTextProtocol;

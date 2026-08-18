@@ -53,17 +53,16 @@ describe("generateConversationSummary", () => {
     });
     bindActiveRuntimeConfig(
       Config.fromSnapshot({
-        llm: {
-          default_profile: "chat",
-          providers: {
-            main: {
-              backend: "openai_compatible" as const,
-              base_url: "https://api.openai.com/v1",
-              api_key: "test",
-            },
+        connections: {
+          main: {
+            preset: "custom" as const,
+            custom_kind: "text" as const,
+            text_protocol: "openai_compatible" as const,
+            base_url: "https://api.openai.com/v1",
+            api_key: "test",
           },
-          profiles: { chat: { chain: [{ provider: "main", model: "gpt-x" }] } },
         },
+        text_generate: { main: { connection: "main", model: "gpt-x" } },
         compression: { enabled: true, summary_max_tokens: 400 },
       }),
     );

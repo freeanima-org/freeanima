@@ -2,10 +2,16 @@ import { describe, expect, it } from "bun:test";
 import { LLM_FORMAT_OPENAI_COMPATIBLE } from "@freeanima/habitat/core/config/schemas/llm-config.ts";
 import { parseOpenAiCompatibleProviderSpec } from "./config.ts";
 
+const customText = {
+  preset: "custom" as const,
+  custom_kind: "text" as const,
+  text_protocol: LLM_FORMAT_OPENAI_COMPATIBLE,
+};
+
 describe("parseOpenAiCompatibleProviderSpec", () => {
   it("parses yaml config and strips trailing slash from base_url", () => {
     const spec = parseOpenAiCompatibleProviderSpec("deepseek", {
-      backend: LLM_FORMAT_OPENAI_COMPATIBLE,
+      ...customText,
       base_url: "https://api.example.com/v1/",
       api_key: "sk-test",
       timeout_ms: 30_000,
@@ -23,7 +29,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
 
   it("does not write context when no timeout_ms", () => {
     const spec = parseOpenAiCompatibleProviderSpec("p", {
-      backend: LLM_FORMAT_OPENAI_COMPATIBLE,
+      ...customText,
       base_url: "https://api.example.com",
       api_key: "k",
     });
@@ -35,7 +41,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
 
   it("parses first_byte and idle timeouts", () => {
     const spec = parseOpenAiCompatibleProviderSpec("p", {
-      backend: LLM_FORMAT_OPENAI_COMPATIBLE,
+      ...customText,
       base_url: "https://api.example.com",
       api_key: "k",
       timeout_ms: 120_000,
@@ -52,7 +58,7 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
   it("rejects first_byte_timeout_ms > timeout_ms", () => {
     expect(() =>
       parseOpenAiCompatibleProviderSpec("p", {
-        backend: LLM_FORMAT_OPENAI_COMPATIBLE,
+        ...customText,
         base_url: "https://api.example.com",
         api_key: "k",
         timeout_ms: 10_000,
@@ -64,14 +70,16 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
   it("rejects invalid backend or missing fields", () => {
     expect(() =>
       parseOpenAiCompatibleProviderSpec("p", {
-        backend: "other",
+        preset: "custom",
+        custom_kind: "text",
+        text_protocol: "other",
         base_url: "https://x.com",
         api_key: "k",
       }),
     ).toThrow();
     expect(() =>
       parseOpenAiCompatibleProviderSpec("p", {
-        backend: LLM_FORMAT_OPENAI_COMPATIBLE,
+        ...customText,
         base_url: "not-a-url",
         api_key: "k",
       }),

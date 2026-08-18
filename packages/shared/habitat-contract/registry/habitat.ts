@@ -98,7 +98,9 @@ const configListProviderModelsInputSchema = z.object({
   provider_id: z.string().min(1),
   query: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(500).optional(),
-  purpose: z.enum(["chat", "image_generate", "embedding", "voice_generate"]).optional(),
+  purpose: z
+    .enum(["chat", "image_generate", "embedding", "voice_generate", "video_generate"])
+    .optional(),
 });
 const configListProviderModelsOutputSchema = z.object({
   models: z.array(

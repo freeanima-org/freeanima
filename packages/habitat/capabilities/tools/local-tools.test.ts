@@ -12,21 +12,21 @@ import { createTempDir, removeTempDir } from "@freeanima/habitat/core/util/temp-
 
 import { Config } from "@freeanima/habitat/platform/config";
 import { registerCoreTools } from "@freeanima/habitat/capabilities/tools";
+import { registerMediaTools } from "@freeanima/habitat/capabilities/tools/media/tools";
 import { parseYaml } from "@freeanima/habitat/platform/config";
 
 const MIN_CONFIG = `
-llm:
-  default_profile: chat
-  providers:
-    main:
-      backend: openai_compatible
-      base_url: https://api.openai.com/v1
-      api_key: test-key
-  profiles:
-    chat:
-      chain:
-        - provider: main
-          model: test-model
+connections:
+  main:
+    preset: custom
+    custom_kind: text
+    text_protocol: openai_compatible
+    base_url: https://api.openai.com/v1
+    api_key: test-key
+text_generate:
+  main:
+    connection: main
+    model: test-model
 `;
 
 const hasRg = spawnSync("rg", ["--version"], { encoding: "utf-8" }).status === 0;
@@ -76,6 +76,15 @@ describe("local tools", () => {
     ]) {
       expect(names.has(n), n).toBe(true);
     }
+  });
+
+  it("video_generate 配置不注册视频工具", () => {
+    const extra = new ToolSetRegistry();
+    registerMediaTools(extra);
+    const names = extra.listTools().map((t) => t.name);
+    expect(names).toContain("image_generate");
+    expect(names).toContain("voice_generate");
+    expect(names).not.toContain("video_generate");
   });
 
   it.skipIf(!hasRg)("search_files content mode", async () => {

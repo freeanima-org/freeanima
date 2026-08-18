@@ -1,46 +1,55 @@
 import { describe, expect, it } from "bun:test";
 import {
   callParamsRoundTrip,
+  capabilityUiDraftToSection,
+  applyCustomKindToConnectionEntry,
   connectionListSubtitle,
+  emptyConnectionEntry,
   llmEntryTitle,
   newConnectionId,
-  newSceneId,
-  profilesDraftToPatch,
   providersDraftToPatch,
+  readCapabilityUiDraft,
   readProvidersDraft,
-  readScenesUiDraft,
-  sceneDraftVoice,
-  scenesUiDraftToPatch,
-  systemPurposeSelectValue,
   validateTimeoutDraft,
-  withSceneDraftVoice,
+  LLM_SETTINGS_GENERIC_AUDIO_PROTOCOLS,
+  LLM_SETTINGS_GENERIC_IMAGE_PROTOCOLS,
 } from "./llm-settings-draft.ts";
 
 describe("providersDraftToPatch", () => {
-  it("补上 UI 展示了但草稿未写入的默认 format/preset", () => {
+  it("自定义文本补 custom_kind 与 text_protocol", () => {
     const patched = providersDraftToPatch({
       "opencode-go": {
+        preset: "custom",
+        custom_kind: "text",
+        text_protocol: "openai_compatible",
         base_url: "https://opencode.ai/zen/go/v1",
         api_key: "sk-test",
       },
     });
     expect(patched["opencode-go"]).toMatchObject({
       preset: "custom",
-      format: "openai_compatible",
+      custom_kind: "text",
+      text_protocol: "openai_compatible",
       base_url: "https://opencode.ai/zen/go/v1",
     });
+    expect((patched["opencode-go"] as Record<string, unknown>).format).toBeUndefined();
   });
 
   it("readProvidersDraft 与保存规范化一致", () => {
     expect(
       readProvidersDraft({
-        main: { base_url: "https://example.com/v1" },
+        main: {
+          preset: "custom",
+          custom_kind: "text",
+          text_protocol: "openai_compatible",
+          base_url: "https://example.com/v1",
+        },
       }),
-    ).toEqual({
+    ).toMatchObject({
       main: {
         base_url: "https://example.com/v1",
         preset: "custom",
-        format: "openai_compatible",
+        custom_kind: "text",
         text_protocol: "openai_compatible",
       },
     });
@@ -69,7 +78,7 @@ describe("validateTimeoutDraft", () => {
   });
 });
 
-describe("call params / profiles", () => {
+describe("call params", () => {
   it("不提供 extra 编辑面，但回写保留已有 extra", () => {
     expect(
       callParamsRoundTrip({
@@ -81,34 +90,13 @@ describe("call params / profiles", () => {
       extra: { foo: 1 },
     });
   });
-
-  it("profilesDraftToPatch 去掉空 hop", () => {
-    const patched = profilesDraftToPatch({
-      chat: {
-        chain: [
-          { provider: "main", model: "m1" },
-          { provider: "", model: "" },
-        ],
-      },
-    });
-    expect(patched.chat).toMatchObject({
-      chain: [{ provider: "main", model: "m1" }],
-    });
-  });
-
-  it("profilesDraftToPatch 保留 title、省略空白 title", () => {
-    const patched = profilesDraftToPatch({
-      a: { title: " 主方案 ", chain: [{ provider: "main", model: "m1" }] },
-      b: { title: "  ", chain: [{ provider: "main", model: "m2" }] },
-    });
-    expect(patched.a).toMatchObject({ title: "主方案" });
-    expect((patched.b as Record<string, unknown>).title).toBeUndefined();
-  });
 });
 
 describe("connectionListSubtitle", () => {
   it("自定义未填 URL", () => {
-    expect(connectionListSubtitle({ preset: "custom" })).toContain("未填 Base URL");
+    expect(connectionListSubtitle({ preset: "custom", custom_kind: "text" })).toContain(
+      "未填 Base URL",
+    );
   });
 
   it("预设固定展示默认 API 根", () => {
@@ -116,79 +104,78 @@ describe("connectionListSubtitle", () => {
   });
 });
 
-describe("llmEntryTitle / ids / bindings UI", () => {
+describe("llmEntryTitle / ids", () => {
   it("title 优先，否则回退 id 或内置名", () => {
     expect(llmEntryTitle("c-1", { title: " DeepSeek " })).toBe("DeepSeek");
     expect(llmEntryTitle("c-1", {})).toBe("c-1");
     expect(llmEntryTitle("chat", {}, "聊天")).toBe("聊天");
   });
 
-  it("自动生成连接/方案 id 前缀", () => {
+  it("自动生成连接 id 前缀", () => {
     expect(newConnectionId()).toMatch(/^c-[0-9a-f]{8}$/);
-    expect(newSceneId()).toMatch(/^s-[0-9a-f]{8}$/);
   });
 
-  it("systemPurposeSelectValue：bindings 与旧配置回显", () => {
-    const profiles = {
-      chat: { chain: [{ provider: "main", model: "m" }] },
-      summary: { chain: [{ provider: "main", model: "s" }] },
-      cheap: { chain: [{ provider: "main", model: "c" }] },
-    };
-    expect(systemPurposeSelectValue("summary", { summary: null }, profiles)).toBe("");
-    expect(systemPurposeSelectValue("summary", { summary: "cheap" }, profiles)).toBe("cheap");
-    expect(systemPurposeSelectValue("summary", {}, profiles)).toBe("summary");
-    expect(systemPurposeSelectValue("reflect", {}, profiles)).toBe("");
+  it("emptyConnectionEntry 按层只带一层协议", () => {
+    expect(emptyConnectionEntry("text")).toMatchObject({
+      preset: "custom",
+      custom_kind: "text",
+      text_protocol: "openai_compatible",
+    });
+    expect(emptyConnectionEntry("image").text_protocol).toBeUndefined();
+    expect(emptyConnectionEntry("video").video_protocol).toBeUndefined();
+  });
+
+  it("自定义协议表不含内置专用协议；换层只保留该层协议", () => {
+    expect(LLM_SETTINGS_GENERIC_IMAGE_PROTOCOLS.map((p) => p.id)).toEqual(["openai_images"]);
+    expect(LLM_SETTINGS_GENERIC_AUDIO_PROTOCOLS.map((p) => p.id)).toEqual([
+      "openai_audio_speech",
+      "edge-tts",
+    ]);
+    const image = applyCustomKindToConnectionEntry(
+      { ...emptyConnectionEntry("text"), api_key: "k", title: "x" },
+      "image",
+    );
+    expect(image).toMatchObject({
+      preset: "custom",
+      custom_kind: "image",
+      image_protocol: "openai_images",
+      title: "x",
+      api_key: "k",
+    });
+    expect(image.text_protocol).toBeUndefined();
   });
 });
 
-describe("scenes UI draft", () => {
-  it("readScenesUiDraft：优先 scenes，子用途缺省为同主场景", () => {
-    const draft = readScenesUiDraft({
-      scenes: {
-        chat: { connection: "main", model: "m1" },
+describe("capability UI draft", () => {
+  it("readCapabilityUiDraft：子用途缺省为同主场景", () => {
+    const draft = readCapabilityUiDraft(
+      {
+        main: { connection: "main", model: "m1" },
         summary: { connection: "main", model: "s1" },
       },
-      profiles: {
-        chat: { chain: [{ provider: "legacy", model: "old" }] },
-      },
-    });
+      "text_generate",
+    );
     expect(draft.chat).toEqual({ connection: "main", model: "m1" });
     expect(draft.summary).toEqual({ connection: "main", model: "s1" });
     expect(draft.reflect).toBeNull();
   });
 
-  it("readScenesUiDraft：无 scenes 时 chat 回退 profile chain", () => {
-    const draft = readScenesUiDraft({
-      profiles: {
-        chat: { chain: [{ provider: "main", model: "from-profile" }] },
-      },
-    });
-    expect(draft.chat).toEqual({ connection: "main", model: "from-profile" });
-  });
-
-  it("scenesUiDraftToPatch：null/空删除键，完整绑定写入", () => {
-    const patched = scenesUiDraftToPatch(
+  it("capabilityUiDraftToSection：省略 inherit 子键", () => {
+    const patched = capabilityUiDraftToSection(
       {
         chat: { connection: "main", model: "m1" },
         summary: null,
         reflect: { connection: "main", model: "" },
       },
-      {
-        chat: { connection: "old", model: "o" },
-        summary: { connection: "old", model: "s" },
-        reflect: { connection: "old", model: "r" },
-        keep: { connection: "x", model: "y" },
-      },
-      ["chat", "summary", "reflect"],
+      "text_generate",
     );
-    expect(patched.chat).toEqual({ connection: "main", model: "m1" });
-    expect(patched.summary).toBeNull();
-    expect(patched.reflect).toBeNull();
-    expect(patched.keep).toBeUndefined();
+    expect(patched.main).toEqual({ connection: "main", model: "m1" });
+    expect(patched.summary).toBeUndefined();
+    expect(patched.reflect).toBeUndefined();
   });
 
-  it("scenesUiDraftToPatch 保留 params.voice", () => {
-    const patched = scenesUiDraftToPatch(
+  it("capabilityUiDraftToSection 保留 params.voice", () => {
+    const patched = capabilityUiDraftToSection(
       {
         voice_generate: {
           connection: "ali",
@@ -196,32 +183,12 @@ describe("scenes UI draft", () => {
           params: { voice: "longanlingxin" },
         },
       },
-      {},
-      ["voice_generate"],
+      "audio_generate",
     );
-    expect(patched.voice_generate).toEqual({
+    expect(patched.main).toEqual({
       connection: "ali",
       model: "qwen-audio-3.0-tts-plus",
       params: { voice: "longanlingxin" },
     });
-  });
-
-  it("readScenesUiDraft 读出 params.voice", () => {
-    const draft = readScenesUiDraft({
-      scenes: {
-        voice_generate: {
-          connection: "ali",
-          model: "qwen-audio-3.0-tts-plus",
-          params: { voice: "longanlufeng" },
-        },
-      },
-    });
-    expect(draft.voice_generate).toEqual({
-      connection: "ali",
-      model: "qwen-audio-3.0-tts-plus",
-      params: { voice: "longanlufeng" },
-    });
-    expect(sceneDraftVoice(draft.voice_generate!)).toBe("longanlufeng");
-    expect(sceneDraftVoice(withSceneDraftVoice(draft.voice_generate!, ""))).toBe("");
   });
 });

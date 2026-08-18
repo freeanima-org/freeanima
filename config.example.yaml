@@ -1,7 +1,7 @@
 # 逸灵风 config.yaml — 冷启动引导（bootstrap）
 # 复制到 ~/.anima/config.yaml 并根据需要修改
 #
-# 运行时配置（llm、compression、mcp 等）保存在 PostgreSQL（habitat_runtime_config）；
+# 运行时配置（connections、text_generate、compression、mcp 等）保存在 PostgreSQL（habitat_runtime_config）；
 # 请在 Shell 设置 → Habitat 服务 → 服务配置 中编辑。YAML 中的运行时段会被忽略，请清理废段。
 # 有 Web dist 时 Habitat 始终托管 /web/*（无需配置；源码 just pack web）。
 
@@ -38,7 +38,7 @@ database:
 
 # --- 以下运行时段请通过 Shell「Habitat 服务设置」编辑；勿再写入 config.yaml ---
 #
-# llm / compression / memory / mcp_servers / acp_agents / embedding / worlds …
+# connections / text_generate / image_generate / audio_generate / video_generate / embedding / compression / memory / mcp_servers / worlds …
 # memory.temporal_summary：时间摘要（半小时 tick、全局天/月/年、peer Redis）；见 docs/cognition/temporal-summary.md
 # 消息网关：gateway / discord / weixin（见 docs/ops/message-gateway.md）
 # 完整示例见仓库 git 历史中的 config.example.yaml（迁移前版本）

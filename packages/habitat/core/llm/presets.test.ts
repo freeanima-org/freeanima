@@ -12,6 +12,7 @@ import {
 import {
   effectiveProviderModalities,
   materializeConnection,
+  connectionEndpointUrl,
   providerConfigToSpec,
   resolveOpencodeGoFormat,
 } from "./presets.ts";
@@ -48,10 +49,11 @@ describe("materializeConnection", () => {
     expect(m.resolveFormat?.("gpt-5.6-luna")).toBe(LLM_FORMAT_OPENAI_RESPONSES);
   });
 
-  it("custom requires format + base_url", () => {
+  it("custom requires text_protocol + base_url", () => {
     const cfg = llmProviderSchema.parse({
       preset: LLM_PRESET_CUSTOM,
-      format: LLM_FORMAT_OPENAI_RESPONSES,
+      custom_kind: "text",
+      text_protocol: LLM_FORMAT_OPENAI_RESPONSES,
       base_url: "https://api.openai.com/v1",
       api_key: "k",
     });
@@ -73,6 +75,30 @@ describe("providerConfigToSpec", () => {
 });
 
 describe("effectiveProviderModalities", () => {
+  it("custom cannot use builtin-only audio protocol", () => {
+    expect(() =>
+      llmProviderSchema.parse({
+        preset: LLM_PRESET_CUSTOM,
+        custom_kind: "audio",
+        audio_protocol: "alibaba_audio",
+        base_url: "https://example.com/v1",
+        api_key: "k",
+      }),
+    ).toThrow(/generic protocol/);
+  });
+
+  it("connectionEndpointUrl works for custom audio", () => {
+    const cfg = llmProviderSchema.parse({
+      preset: LLM_PRESET_CUSTOM,
+      custom_kind: "audio",
+      audio_protocol: "openai_audio_speech",
+      base_url: "https://api.openai.com/v1",
+      api_key: "k",
+    });
+    expect(connectionEndpointUrl(cfg)).toBe("https://api.openai.com/v1");
+    expect(() => materializeConnection(cfg)).toThrow(/text-capable/);
+  });
+
   it("alibaba preset supplies voice even when stored voice_protocol is null", () => {
     const m = effectiveProviderModalities({
       preset: LLM_PRESET_ALIBABA_TOKEN_PLAN,
@@ -85,8 +111,10 @@ describe("effectiveProviderModalities", () => {
   it("custom connection reads stored fields", () => {
     const m = effectiveProviderModalities({
       preset: LLM_PRESET_CUSTOM,
-      voice_protocol: "edge-tts",
+      custom_kind: "audio",
+      audio_protocol: "edge-tts",
     });
     expect(m.voice_protocol).toBe("edge-tts");
+    expect(m.audio_protocol).toBe("edge-tts");
   });
 });

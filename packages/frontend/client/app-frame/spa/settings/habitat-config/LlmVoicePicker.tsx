@@ -19,6 +19,8 @@ export function LlmVoicePicker({
   value,
   onChange,
   label = "音色",
+  hideLabel = false,
+  id,
 }: {
   providerId: string;
   /** 合成模型；阿里用于过滤音色 */
@@ -26,8 +28,12 @@ export function LlmVoicePicker({
   value: string;
   onChange: (voice: string) => void;
   label?: string;
+  /** 由父级 LabelControlRow 画标签时隐藏内置标签 */
+  hideLabel?: boolean;
+  id?: string;
 }) {
-  const inputId = useId();
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -82,9 +88,11 @@ export function LlmVoicePicker({
 
   return (
     <div className="space-y-1">
-      <Label htmlFor={inputId} className="text-sm">
-        {label}
-      </Label>
+      {hideLabel ? null : (
+        <Label htmlFor={inputId} className="text-sm">
+          {label}
+        </Label>
+      )}
       <div ref={rootRef} className="relative">
         <InputGroup>
           <InputGroupInput

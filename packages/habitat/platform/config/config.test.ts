@@ -16,7 +16,7 @@ describe("service-config", () => {
   it("loads llm profiles and resolves default model", () => {
     const config = Config.fromSnapshot(parseMinimalConfig());
     expect(getProfileHopModel(config.data, "chat")).toBe("test-model");
-    expect(config.data.llm?.default_profile ?? "").toBe("chat");
+    expect(config.data.text_generate?.main?.model ?? "").toBe("test-model");
   });
 
   it("loads firecrawl with llm block", () => {

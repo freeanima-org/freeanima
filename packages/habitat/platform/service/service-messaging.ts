@@ -39,7 +39,7 @@ import {
 } from "@freeanima/features/chat/domain/turn-attachments.ts";
 import {
   getActiveRuntimeConfig,
-  getLlmConfig,
+  getConnection,
   getProfileHopModel,
   getProfileHopProviderId,
   LLM_PRESET_CUSTOM,
@@ -57,7 +57,7 @@ async function chatProfileModelSupportsVision(): Promise<boolean | null> {
     const cfg = getActiveRuntimeConfig().data;
     const model = getProfileHopModel(cfg, PROFILE_CHAT);
     const providerId = getProfileHopProviderId(cfg, PROFILE_CHAT);
-    const preset = getLlmConfig(cfg).providers[providerId]?.preset;
+    const preset = getConnection(cfg, providerId)?.preset;
     const info = await enrichModelInfoFromModelsDev(
       defaultModelInfo(model),
       omitUndefined({

@@ -25,7 +25,7 @@ export const ADVANCED_SECTIONS = [
 
 export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 
-/** 侧栏一等运维项：已并入对话/向量 Tab 的段不重复列出 */
+/** 侧栏一等运维项：已并入能力层 Tab 的段不重复列出 */
 export const SIDEBAR_OPS_SECTIONS = [
   "i18n",
   "gateway",
@@ -33,6 +33,8 @@ export const SIDEBAR_OPS_SECTIONS = [
   "weixin",
   "firecrawl",
   "browser",
+  "cjk",
+  "fts",
   "worlds",
   "object_storage",
 ] as const satisfies ReadonlyArray<AdvancedSectionId>;
@@ -254,15 +256,6 @@ function EmbeddingForm({
       {habitatConfigBoolField("enabled", value.enabled !== false, (enabled) =>
         onChange({ ...value, enabled }),
       )}
-      {hubConfigTextField("base_url", coerceString(value.base_url ?? ""), (v) =>
-        onChange({ ...value, base_url: v }),
-      )}
-      {hubConfigVaultField("api_key", coerceString(value.api_key ?? ""), (v) =>
-        onChange({ ...value, api_key: v }),
-      )}
-      {hubConfigTextField("model", coerceString(value.model ?? ""), (v) =>
-        onChange({ ...value, model: v }),
-      )}
       {habitatConfigNumberField(
         "dimensions",
         typeof value.dimensions === "number" ? value.dimensions : "",
@@ -272,6 +265,11 @@ function EmbeddingForm({
         "timeout_ms",
         typeof value.timeout_ms === "number" ? value.timeout_ms : "",
         (v) => onChange({ ...value, timeout_ms: v === "" ? undefined : v }),
+      )}
+      {habitatConfigNumberField(
+        "query_timeout_ms",
+        typeof value.query_timeout_ms === "number" ? value.query_timeout_ms : "",
+        (v) => onChange({ ...value, query_timeout_ms: v === "" ? undefined : v }),
       )}
     </div>
   );

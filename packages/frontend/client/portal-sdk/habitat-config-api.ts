@@ -135,7 +135,7 @@ export async function listHabitatProviderModels(input: {
   provider_id: string;
   query?: string;
   limit?: number;
-  purpose?: "chat" | "image_generate" | "embedding" | "voice_generate";
+  purpose?: "chat" | "image_generate" | "embedding" | "voice_generate" | "video_generate";
 }): Promise<HabitatListProviderModelsResult> {
   return (await habitatRpc().call(
     "config.listProviderModels",

@@ -22,21 +22,16 @@ const TEST_PORT = 18_658;
 const HEALTH_TIMEOUT_MS = 120_000;
 
 const STANDALONE_RUNTIME_CONFIG = {
-  llm: {
-    default_profile: "chat",
-    providers: {
-      main: {
-        backend: "openai_compatible",
-        base_url: "https://api.openai.com/v1",
-        api_key: "test-key",
-      },
-    },
-    profiles: {
-      chat: { chain: [{ provider: "main", model: "test-model" }] },
-      reflect: { chain: [{ provider: "main", model: "test-model" }] },
-      summary: { chain: [{ provider: "main", model: "test-model" }] },
+  connections: {
+    main: {
+      preset: "custom",
+      custom_kind: "text",
+      text_protocol: "openai_compatible",
+      base_url: "https://api.openai.com/v1",
+      api_key: "test-key",
     },
   },
+  text_generate: { main: { connection: "main", model: "test-model" } },
 };
 
 async function seedRuntimeConfig(url: string): Promise<void> {

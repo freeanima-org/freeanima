@@ -195,7 +195,7 @@ export async function buildStatus(
   }
 
   if (isEmbeddingEnabled(cfg)) {
-    const embeddingModel = cfg.embedding?.model?.trim();
+    const embeddingModel = cfg.embedding?.main?.model?.trim();
     if (embeddingModel) {
       const embeddingBinding = getTokenizerBindingSnapshot(embeddingModel);
       if (embeddingBinding) tokenizerStatus.embedding = embeddingBinding;

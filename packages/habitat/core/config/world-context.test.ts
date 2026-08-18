@@ -12,14 +12,14 @@ import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 describe("resolveWorldSubjectIds", () => {
   it("returns empty when unset", () => {
     const config = {
-      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      connections: {},
     } as RuntimeConfig;
     expect(resolveWorldSubjectIds(config)).toEqual({});
   });
 
   it("prefers worlds section over notifications", () => {
     const config = {
-      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      connections: {},
       worlds: { user_subject_id: 5, agent_subject_id: 6 },
       notifications: { user_subject_id: 1, agent_subject_id: 2 },
     } as RuntimeConfig;
@@ -31,7 +31,7 @@ describe("resolveWorldSubjectIds", () => {
 
   it("allows partial worlds override", () => {
     const config = {
-      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      connections: {},
       worlds: { user_subject_id: 5 },
     } as RuntimeConfig;
     expect(resolveWorldSubjectIds(config)).toEqual({

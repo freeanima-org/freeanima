@@ -14,7 +14,11 @@ import {
   llmProviderSchema,
   type LlmProviderConfig,
 } from "@freeanima/habitat/core/config/schemas/llm-config.ts";
-import { materializeConnection } from "@freeanima/habitat/core/llm/presets";
+import {
+  materializeConnection,
+  connectionEndpointUrl,
+  connectionHasTextCapability,
+} from "@freeanima/habitat/core/llm/presets";
 import { resolveValue } from "@freeanima/habitat/platform/config/resolve.ts";
 import { CONFIG_MASKED_SECRET } from "@freeanima/habitat/platform/config";
 import { createBunS3Client } from "@freeanima/features/object-storage/domain/bun-s3.ts";
@@ -176,41 +180,41 @@ async function testCamofox(draft: Record<string, unknown>): Promise<ConfigTestCo
 }
 
 async function testEmbedding(draft: Record<string, unknown>): Promise<ConfigTestConnectionResult> {
-  const saved = asRecord(runtimeConfig().embedding);
+  const runtime = runtimeConfig();
+  const saved = asRecord(runtime.embedding);
   const enabled = draft.enabled !== undefined ? draft.enabled !== false : saved.enabled !== false;
   if (!enabled) return failure("embedding 已禁用");
 
-  const merged = {
-    enabled: true as const,
-    base_url: pickConfigString(draft.base_url, saved.base_url) || undefined,
-    api_key: pickConfigString(draft.api_key, saved.api_key) || undefined,
-    model: pickConfigString(draft.model, saved.model) || undefined,
-    dimensions:
-      typeof draft.dimensions === "number" && draft.dimensions > 0
-        ? draft.dimensions
-        : typeof saved.dimensions === "number" && saved.dimensions > 0
-          ? saved.dimensions
-          : DEFAULT_EMBEDDING_DIMENSIONS,
-    timeout_ms:
-      typeof draft.timeout_ms === "number" && draft.timeout_ms > 0
-        ? draft.timeout_ms
-        : typeof saved.timeout_ms === "number" && saved.timeout_ms > 0
-          ? saved.timeout_ms
-          : undefined,
+  const draftMain = asRecord(draft.main);
+  const savedMain = asRecord(saved.main);
+  const main = {
+    connection: pickConfigString(draftMain.connection, savedMain.connection),
+    model: pickConfigString(draftMain.model, savedMain.model),
   };
-
-  let apiKey = merged.api_key ?? "";
-  try {
-    apiKey = await resolveConfigString(draft.api_key, saved.api_key);
-  } catch (err) {
-    return failure(err instanceof Error ? err.message : String(err));
-  }
+  const dimensions =
+    typeof draft.dimensions === "number" && draft.dimensions > 0
+      ? draft.dimensions
+      : typeof saved.dimensions === "number" && saved.dimensions > 0
+        ? saved.dimensions
+        : DEFAULT_EMBEDDING_DIMENSIONS;
+  const timeout_ms =
+    typeof draft.timeout_ms === "number" && draft.timeout_ms > 0
+      ? draft.timeout_ms
+      : typeof saved.timeout_ms === "number" && saved.timeout_ms > 0
+        ? saved.timeout_ms
+        : undefined;
 
   const cfg = getResolvedEmbeddingConfig({
-    ...runtimeConfig(),
-    embedding: { ...merged, api_key: apiKey || undefined },
+    ...runtime,
+    embedding: {
+      ...saved,
+      enabled: true,
+      main,
+      dimensions,
+      ...(timeout_ms != null ? { timeout_ms } : {}),
+    },
   });
-  if (!cfg) return failure("请填写 embedding model");
+  if (!cfg) return failure("请在文本嵌入主场景选择连接与模型");
 
   const started = Date.now();
   try {
@@ -240,9 +244,7 @@ async function testLlmProvider(
   providerId: string,
   draft: Record<string, unknown>,
 ): Promise<ConfigTestConnectionResult> {
-  const savedLlm = asRecord(runtimeConfig().llm);
-  const savedProviders = asRecord(savedLlm.providers);
-  const saved = asRecord(savedProviders[providerId]);
+  const saved = asRecord(asRecord(runtimeConfig().connections)[providerId]);
 
   const merged: Record<string, unknown> = {
     ...saved,
@@ -258,9 +260,9 @@ async function testLlmProvider(
     return failure(err instanceof Error ? err.message : String(err));
   }
 
-  let materialized;
+  let baseUrl: string;
   try {
-    materialized = materializeConnection(providerCfg);
+    baseUrl = connectionEndpointUrl(providerCfg);
   } catch (err) {
     return failure(err instanceof Error ? err.message : String(err));
   }
@@ -268,6 +270,23 @@ async function testLlmProvider(
   let apiKey = "";
   try {
     apiKey = await resolveConfigString(draft.api_key, saved.api_key);
+  } catch (err) {
+    return failure(err instanceof Error ? err.message : String(err));
+  }
+
+  if (!connectionHasTextCapability(providerCfg)) {
+    const started = Date.now();
+    return success("非文本连接已解析端点（未探测对话目录）", Date.now() - started, {
+      preset: providerCfg.preset,
+      provider_id: providerId,
+      base_url: baseUrl,
+      custom_kind: providerCfg.custom_kind,
+    });
+  }
+
+  let materialized;
+  try {
+    materialized = materializeConnection(providerCfg);
   } catch (err) {
     return failure(err instanceof Error ? err.message : String(err));
   }

@@ -31,7 +31,7 @@ export const OPS_TOOL_RETURNS: Record<string, ToolReturnContractFields> = {
       section: z.string().optional(),
     }),
     example: {
-      config: { llm: { default_profile: "chat" } },
+      config: { connections: {}, text_generate: { main: { connection: "main", model: "m" } } },
     },
   }),
   ops_config_patch: defineToolReturn({

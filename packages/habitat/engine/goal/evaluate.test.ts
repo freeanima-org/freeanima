@@ -22,15 +22,15 @@ function createMemoryConversation(): ConversationPort {
 
 const testConfig = Config.fromSnapshot(
   runtimeConfigSchema.parse({
-    llm: {
-      default_profile: "chat",
-      providers: {
-        main: { backend: "openai_compatible", base_url: "http://127.0.0.1:1" },
-      },
-      profiles: {
-        chat: { chain: [{ provider: "main", model: "test-model" }] },
+    connections: {
+      main: {
+        preset: "custom",
+        custom_kind: "text",
+        text_protocol: "openai_compatible",
+        base_url: "http://127.0.0.1:1",
       },
     },
+    text_generate: { main: { connection: "main", model: "test-model" } },
   }),
 );
 const llm = {} as LlmRuntime;
