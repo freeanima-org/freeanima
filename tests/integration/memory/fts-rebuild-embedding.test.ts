@@ -59,7 +59,7 @@ describePg("FTS rebuild embedding PG", () => {
     applyTestConfig({
       embedding: {
         enabled: true,
-        model: "test-embed-model",
+        main: { connection: "main", model: "test-embed-model" },
         dimensions: SEMANTIC_EMBEDDING_DIMENSIONS,
       },
     });
