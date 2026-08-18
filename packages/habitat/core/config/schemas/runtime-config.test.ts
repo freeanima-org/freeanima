@@ -10,7 +10,13 @@ describe("isRuntimeConfigSectionKey", () => {
   it("识别已知运行时段", () => {
     expect(isRuntimeConfigSectionKey("gateway")).toBe(true);
     expect(isRuntimeConfigSectionKey("tts")).toBe(true);
-    expect(isRuntimeConfigSectionKey("llm")).toBe(true);
+    expect(isRuntimeConfigSectionKey("connections")).toBe(true);
+    expect(isRuntimeConfigSectionKey("text_generate")).toBe(true);
+    expect(isRuntimeConfigSectionKey("image_generate")).toBe(true);
+    expect(isRuntimeConfigSectionKey("audio_generate")).toBe(true);
+    expect(isRuntimeConfigSectionKey("video_generate")).toBe(true);
+    expect(isRuntimeConfigSectionKey("embedding")).toBe(true);
+    expect(isRuntimeConfigSectionKey("llm")).toBe(false);
     expect(isRuntimeConfigSectionKey("passive_recall")).toBe(true);
     expect(isRuntimeConfigSectionKey("semantic_clustering")).toBe(true);
   });
@@ -26,11 +32,8 @@ describe("runtimeConfigSchema", () => {
   it("接受运行时段", () => {
     const parsed = runtimeConfigSchema.safeParse({
       compression: { enabled: true },
-      llm: {
-        default_profile: "chat",
-        providers: {},
-        profiles: { chat: { chain: [{ provider: "p", model: "m" }] } },
-      },
+      connections: {},
+      text_generate: { main: { connection: "p", model: "m" } },
     });
     expect(parsed.success).toBe(true);
   });

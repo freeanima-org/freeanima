@@ -7,25 +7,23 @@ import {
 } from "./config-sanitize.ts";
 
 describe("sanitizeConfigForApi", () => {
-  it("llm.providers.api_key 原样返回", () => {
+  it("connections.*.api_key 原样返回", () => {
     const out = sanitizeConfigForApi({
-      llm: {
-        default_profile: "chat",
-        providers: {
-          main: {
-            backend: "openai_compatible",
-            base_url: "https://api.openai.com/v1",
-            api_key: "sk-secret",
-          },
-        },
-        profiles: {
-          chat: { chain: [{ provider: "main", model: "m" }] },
+      connections: {
+        main: {
+          preset: "custom",
+          custom_kind: "text",
+          text_protocol: "openai_compatible",
+          base_url: "https://api.openai.com/v1",
+          api_key: "sk-secret",
         },
       },
+      text_generate: {
+        main: { connection: "main", model: "m" },
+      },
     });
-    const llm = out.llm as Record<string, unknown>;
-    const providers = llm.providers as Record<string, Record<string, unknown>>;
-    expect(providers.main?.api_key).toBe("sk-secret");
+    const connections = out.connections as Record<string, Record<string, unknown>>;
+    expect(connections.main?.api_key).toBe("sk-secret");
   });
 
   it("database.url 原样返回", () => {
@@ -81,26 +79,24 @@ describe("sanitizeConfigForApi", () => {
 });
 
 describe("maskConfigSecretsForLlm", () => {
-  it("掩码 llm.providers.api_key", () => {
+  it("掩码 connections.*.api_key", () => {
     const out = maskConfigSecretsForLlm({
-      llm: {
-        default_profile: "chat",
-        providers: {
-          main: {
-            backend: "openai_compatible",
-            base_url: "https://api.openai.com/v1",
-            api_key: "sk-secret",
-          },
-        },
-        profiles: {
-          chat: { chain: [{ provider: "main", model: "m" }] },
+      connections: {
+        main: {
+          preset: "custom",
+          custom_kind: "text",
+          text_protocol: "openai_compatible",
+          base_url: "https://api.openai.com/v1",
+          api_key: "sk-secret",
         },
       },
+      text_generate: {
+        main: { connection: "main", model: "m" },
+      },
     });
-    const llm = out.llm as Record<string, unknown>;
-    const providers = llm.providers as Record<string, Record<string, unknown>>;
-    expect(providers.main?.api_key).toBe(CONFIG_MASKED_SECRET);
-    expect(providers.main?.base_url).toBe("https://api.openai.com/v1");
+    const connections = out.connections as Record<string, Record<string, unknown>>;
+    expect(connections.main?.api_key).toBe(CONFIG_MASKED_SECRET);
+    expect(connections.main?.base_url).toBe("https://api.openai.com/v1");
   });
 
   it("掩码 database.url", () => {

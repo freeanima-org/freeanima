@@ -8,11 +8,7 @@ import {
 } from "./embedding-helpers.ts";
 
 const base = {
-  llm: {
-    default_profile: "chat",
-    providers: {},
-    profiles: {},
-  },
+  connections: {},
 } as RuntimeConfig;
 
 describe("embedding query timeout config", () => {
@@ -32,10 +28,22 @@ describe("embedding query timeout config", () => {
 
   it("includes queryTimeoutMs on resolved embedding config", () => {
     const resolved = getResolvedEmbeddingConfig({
-      ...base,
-      embedding: { model: "bge-m3", query_timeout_ms: 900 },
+      connections: {
+        main: {
+          preset: "custom",
+          custom_kind: "embeddings",
+          embeddings_protocol: "openai_embeddings",
+          base_url: "https://api.openai.com/v1",
+          api_key: "k",
+        },
+      },
+      embedding: {
+        main: { connection: "main", model: "bge-m3" },
+        query_timeout_ms: 900,
+      },
     });
     expect(resolved?.queryTimeoutMs).toBe(900);
     expect(resolved?.timeoutMs).toBe(60_000);
+    expect(resolved?.model).toBe("bge-m3");
   });
 });

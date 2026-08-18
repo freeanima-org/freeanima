@@ -64,19 +64,16 @@ describe("ops tools", () => {
         ({
           getConfig: () => ({
             config: {
-              llm: {
-                providers: { main: { api_key: "sk-secret", base_url: "https://x" } },
-              },
+              connections: { main: { api_key: "sk-secret", base_url: "https://x" } },
             },
           }),
         }) as never,
     });
     const out = parseResult(await handleOpsConfigGet({}));
     const config = out.config as Record<string, unknown>;
-    const llm = config.llm as Record<string, unknown>;
-    const providers = llm.providers as Record<string, Record<string, unknown>>;
-    expect(providers.main?.api_key).toBe(CONFIG_MASKED_SECRET);
-    expect(providers.main?.base_url).toBe("https://x");
+    const connections = config.connections as Record<string, Record<string, unknown>>;
+    expect(connections.main?.api_key).toBe(CONFIG_MASKED_SECRET);
+    expect(connections.main?.base_url).toBe("https://x");
   });
 
   it("ops_config_get rejects bootstrap section", async () => {

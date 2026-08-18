@@ -13,14 +13,14 @@ import {
   IMAGE_PROTOCOL_OPENAI,
   IMAGE_PROTOCOL_ALIBABA_MULTIMODAL,
   IMAGE_PROTOCOL_IDS,
-  VOICE_PROTOCOL_ALIBABA_AUDIO,
-  VOICE_PROTOCOL_IDS,
+  AUDIO_PROTOCOL_ALIBABA_AUDIO,
+  AUDIO_PROTOCOL_IDS,
+  type AudioProtocolId,
   type EmbeddingsProtocolId,
   type ImageProtocolId,
   type LlmFormatId,
   type LlmPresetId,
-  type LlmProviderConfig,
-  type VoiceProtocolId,
+  type ConnectionConfig,
 } from "@freeanima/habitat/core/config/schemas/llm-config";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { ProviderSpec } from "@freeanima/habitat/core/provider";
@@ -41,7 +41,8 @@ export type PresetModalitySuite = {
   text: LlmFormatId | "gateway";
   image: ImageProtocolId | null;
   embeddings: EmbeddingsProtocolId | null;
-  voice: VoiceProtocolId | null;
+  audio: AudioProtocolId | null;
+  video: string | null;
 };
 
 export type SingleFormatPreset = {
@@ -64,11 +65,6 @@ export type GatewayFormatPreset = {
 
 export type LlmPresetDef = SingleFormatPreset | GatewayFormatPreset;
 
-/**
- * OpenCode Go model → format routing.
- * Source: https://opencode.ai/docs/zh-cn/go#api-端点
- * Unknown models default to openai_compatible (with warn via caller).
- */
 const OPENCODE_GO_RESPONSES_MODELS = new Set(["gpt-5.6-luna"]);
 
 const OPENCODE_GO_ANTHROPIC_MODELS = new Set([
@@ -99,7 +95,8 @@ export const LLM_PRESETS: Record<Exclude<LlmPresetId, "custom">, LlmPresetDef> =
       text: LLM_FORMAT_OPENAI_COMPATIBLE,
       image: null,
       embeddings: null,
-      voice: null,
+      audio: null,
+      video: null,
     },
   },
   [LLM_PRESET_OPENROUTER]: {
@@ -111,7 +108,8 @@ export const LLM_PRESETS: Record<Exclude<LlmPresetId, "custom">, LlmPresetDef> =
       text: LLM_FORMAT_OPENAI_COMPATIBLE,
       image: IMAGE_PROTOCOL_OPENAI,
       embeddings: EMBEDDINGS_PROTOCOL_OPENAI,
-      voice: null,
+      audio: null,
+      video: null,
     },
   },
   [LLM_PRESET_OPENCODE_GO]: {
@@ -124,7 +122,8 @@ export const LLM_PRESETS: Record<Exclude<LlmPresetId, "custom">, LlmPresetDef> =
       text: "gateway",
       image: null,
       embeddings: null,
-      voice: null,
+      audio: null,
+      video: null,
     },
   },
   [LLM_PRESET_ALIBABA_TOKEN_PLAN]: {
@@ -136,7 +135,8 @@ export const LLM_PRESETS: Record<Exclude<LlmPresetId, "custom">, LlmPresetDef> =
       text: LLM_FORMAT_OPENAI_COMPATIBLE,
       image: IMAGE_PROTOCOL_ALIBABA_MULTIMODAL,
       embeddings: null,
-      voice: VOICE_PROTOCOL_ALIBABA_AUDIO,
+      audio: AUDIO_PROTOCOL_ALIBABA_AUDIO,
+      video: null,
     },
   },
 };
@@ -146,23 +146,22 @@ export function getLlmPreset(id: LlmPresetId): LlmPresetDef | null {
   return LLM_PRESETS[id];
 }
 
-/** 非自定义预设的模态协议写入连接字段 */
 export function presetModalityFields(presetId: LlmPresetId): Partial<{
-  format: LlmFormatId;
   text_protocol: LlmFormatId;
   image_protocol: ImageProtocolId | null;
   embeddings_protocol: EmbeddingsProtocolId | null;
-  voice_protocol: VoiceProtocolId | null;
+  audio_protocol: AudioProtocolId | null;
+  video_protocol: string | null;
 }> {
   const def = getLlmPreset(presetId);
   if (!def) return {};
   const text = def.kind === "gateway" ? def.defaultFormat : def.format;
   return {
-    format: text,
     text_protocol: text,
     image_protocol: def.modalities.image,
     embeddings_protocol: def.modalities.embeddings,
-    voice_protocol: def.modalities.voice,
+    audio_protocol: def.modalities.audio,
+    video_protocol: def.modalities.video,
   };
 }
 
@@ -170,42 +169,114 @@ function pickKnownId<T extends string>(
   raw: string | null | undefined,
   ids: readonly T[],
 ): T | null {
-  if (raw == null) return null;
+  if (raw == null || raw === "") return null;
   for (const id of ids) {
     if (id === raw) return id;
   }
   return null;
 }
 
+export function connectionHasTextCapability(cfg: {
+  preset?: string | undefined;
+  custom_kind?: string | undefined;
+  text_protocol?: string | undefined;
+}): boolean {
+  const presetId = pickKnownId(cfg.preset, LLM_PRESET_IDS);
+  if (presetId != null && presetId !== LLM_PRESET_CUSTOM) return true;
+  if (cfg.custom_kind === "text") return true;
+  return cfg.custom_kind == null && Boolean(cfg.text_protocol);
+}
+
+export function effectiveTextProtocol(cfg: ConnectionConfig): LlmFormatId | undefined {
+  const presetId = pickKnownId(cfg.preset, LLM_PRESET_IDS);
+  if (presetId != null && presetId !== LLM_PRESET_CUSTOM) {
+    const def = LLM_PRESETS[presetId];
+    return def.kind === "gateway" ? def.defaultFormat : def.format;
+  }
+  return cfg.text_protocol;
+}
+
+/** 连接是否覆盖某能力层（内置看套件；自定义看 custom_kind） */
+export function connectionSupportsLayer(
+  cfg: {
+    preset?: string | undefined;
+    custom_kind?: string | undefined;
+    text_protocol?: string | undefined;
+    image_protocol?: string | null | undefined;
+    embeddings_protocol?: string | null | undefined;
+    audio_protocol?: string | null | undefined;
+    voice_protocol?: string | null | undefined;
+    video_protocol?: string | null | undefined;
+  },
+  layer: "text" | "image" | "audio" | "video" | "embeddings",
+): boolean {
+  const presetId = pickKnownId(cfg.preset, LLM_PRESET_IDS);
+  if (presetId != null && presetId !== LLM_PRESET_CUSTOM) {
+    if (layer === "text") return true;
+    const modalities = effectiveProviderModalities(cfg);
+    if (layer === "image") return modalities.image_protocol != null;
+    if (layer === "audio") return modalities.audio_protocol != null;
+    if (layer === "embeddings") return modalities.embeddings_protocol != null;
+    return modalities.video_protocol != null;
+  }
+  return cfg.custom_kind === layer;
+}
+
 /**
  * 连接上生效的模态协议。
- * 内置预设以预设声明为准（遗留连接可能尚未写回 voice_protocol 等字段）；
- * 自定义连接读连接自身字段。
+ * 内置预设以预设声明为准；自定义读连接自身字段。
  */
 export function effectiveProviderModalities(cfg: {
   preset?: string | undefined;
+  custom_kind?: string | undefined;
   image_protocol?: string | null | undefined;
   embeddings_protocol?: string | null | undefined;
+  audio_protocol?: string | null | undefined;
   voice_protocol?: string | null | undefined;
+  video_protocol?: string | null | undefined;
 }): {
   image_protocol: ImageProtocolId | null;
   embeddings_protocol: EmbeddingsProtocolId | null;
-  voice_protocol: VoiceProtocolId | null;
+  audio_protocol: AudioProtocolId | null;
+  voice_protocol: AudioProtocolId | null;
+  video_protocol: string | null;
 } {
   const presetId = pickKnownId(cfg.preset, LLM_PRESET_IDS);
   if (presetId != null && presetId !== LLM_PRESET_CUSTOM) {
     const fields = presetModalityFields(presetId);
+    const audio = fields.audio_protocol ?? null;
     return {
       image_protocol: fields.image_protocol ?? null,
       embeddings_protocol: fields.embeddings_protocol ?? null,
-      voice_protocol: fields.voice_protocol ?? null,
+      audio_protocol: audio,
+      voice_protocol: audio,
+      video_protocol: fields.video_protocol ?? null,
     };
   }
+  const audio = pickKnownId(cfg.audio_protocol ?? cfg.voice_protocol, AUDIO_PROTOCOL_IDS);
+  const video =
+    typeof cfg.video_protocol === "string" && cfg.video_protocol.trim()
+      ? cfg.video_protocol.trim()
+      : null;
   return {
     image_protocol: pickKnownId(cfg.image_protocol, IMAGE_PROTOCOL_IDS),
     embeddings_protocol: pickKnownId(cfg.embeddings_protocol, EMBEDDINGS_PROTOCOL_IDS),
-    voice_protocol: pickKnownId(cfg.voice_protocol, VOICE_PROTOCOL_IDS),
+    audio_protocol: audio,
+    voice_protocol: audio,
+    video_protocol: video,
   };
+}
+
+export function connectionEndpointUrl(cfg: ConnectionConfig): string {
+  const presetId = cfg.preset ?? LLM_PRESET_CUSTOM;
+  if (presetId !== LLM_PRESET_CUSTOM) {
+    return LLM_PRESETS[presetId].defaultBaseUrl.replace(/\/$/, "");
+  }
+  const baseUrl = cfg.base_url?.replace(/\/$/, "");
+  if (baseUrl == null || !baseUrl) {
+    throw new Error("custom connection requires base_url");
+  }
+  return baseUrl;
 }
 
 export type MaterializedConnection = {
@@ -215,21 +286,24 @@ export type MaterializedConnection = {
 };
 
 /** Resolve preset + config into format/baseUrl (+ optional per-model format). */
-export function materializeConnection(cfg: LlmProviderConfig): MaterializedConnection {
+export function materializeConnection(cfg: ConnectionConfig): MaterializedConnection {
   const presetId = cfg.preset ?? LLM_PRESET_CUSTOM;
-  const textFormat = cfg.format ?? cfg.text_protocol;
+  const textFormat = cfg.text_protocol;
   if (presetId === LLM_PRESET_CUSTOM) {
-    if (textFormat == null || cfg.base_url == null) {
-      throw new Error("custom connection requires text_protocol/format and base_url");
+    const baseUrl = cfg.base_url?.replace(/\/$/, "");
+    if (baseUrl == null || !baseUrl) {
+      throw new Error("custom connection requires base_url");
     }
-    return {
-      formatId: textFormat,
-      baseUrl: cfg.base_url.replace(/\/$/, ""),
-    };
+    if (cfg.custom_kind === "text" || (cfg.custom_kind == null && textFormat != null)) {
+      if (textFormat == null) {
+        throw new Error("custom text connection requires text_protocol");
+      }
+      return { formatId: textFormat, baseUrl };
+    }
+    throw new Error("materializeConnection is for text-capable connections");
   }
 
   const presetDef = LLM_PRESETS[presetId];
-  // 内置预设固定 API 根；反代/自建请用「自定义」
   const baseUrl = presetDef.defaultBaseUrl.replace(/\/$/, "");
 
   if (presetDef.kind === "single") {
@@ -246,9 +320,9 @@ export function materializeConnection(cfg: LlmProviderConfig): MaterializedConne
   };
 }
 
-export function providerConfigToSpec(id: string, cfg: LlmProviderConfig): ProviderSpec {
+export function providerConfigToSpec(id: string, cfg: ConnectionConfig): ProviderSpec {
   if (!cfg.api_key?.trim()) {
-    throw new Error(`llm.providers.${id}.api_key is required`);
+    throw new Error(`connections.${id}.api_key is required`);
   }
   const materialized = materializeConnection(cfg);
   return omitUndefined({

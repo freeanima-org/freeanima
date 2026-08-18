@@ -7,13 +7,16 @@ import { resetJiebaForTest } from "./segment.ts";
 
 function minimalConfig(cjkEnabled: boolean) {
   return runtimeConfigSchema.parse({
-    llm: {
-      default_profile: "chat",
-      providers: {
-        main: { backend: "openai_compatible", base_url: "http://localhost", api_key: "test" },
+    connections: {
+      main: {
+        preset: "custom",
+        custom_kind: "text",
+        text_protocol: "openai_compatible",
+        base_url: "http://localhost",
+        api_key: "test",
       },
-      profiles: { chat: { chain: [{ provider: "main", model: "test" }] } },
     },
+    text_generate: { main: { connection: "main", model: "test" } },
     cjk: { enabled: cjkEnabled },
   });
 }

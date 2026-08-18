@@ -27,10 +27,17 @@ describe("config-mechanism Config", () => {
   });
 
   it("fromSnapshot / update / bind", () => {
-    const cfg = new Config({ llm: { default_profile: "chat" } });
-    expect(cfg.data.llm?.default_profile).toBe("chat");
-    cfg.update({ llm: { default_profile: "other" } });
-    expect(cfg.data.llm?.default_profile).toBe("other");
+    const snapshot = {
+      connections: {},
+      text_generate: { main: { connection: "main", model: "m" } },
+    };
+    const cfg = new Config(snapshot);
+    expect(cfg.data.text_generate?.main?.model).toBe("m");
+    cfg.update({
+      ...snapshot,
+      text_generate: { main: { connection: "main", model: "other" } },
+    });
+    expect(cfg.data.text_generate?.main?.model).toBe("other");
     bindActiveRuntimeConfig(cfg);
     expect(getActiveRuntimeConfig()).toBe(cfg);
   });
@@ -40,10 +47,10 @@ describe("bootstrap-keys", () => {
   it("pick / strip", () => {
     const raw = {
       database: { url: "postgresql://x" },
-      llm: { default_profile: "chat" },
+      connections: {},
     };
     expect(pickBootstrapRecord(raw)).toEqual({ database: { url: "postgresql://x" } });
-    expect(pickRuntimeDocument(raw)).toEqual({ llm: { default_profile: "chat" } });
+    expect(pickRuntimeDocument(raw)).toEqual({ connections: {} });
     expect(isBootstrapConfigKey("database")).toBe(true);
   });
 });

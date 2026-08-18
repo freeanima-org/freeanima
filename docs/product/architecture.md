@@ -52,7 +52,7 @@ title: 架构
 - 记忆编排内建于运行时；LLM 不控制记忆流水线
 - 凭证管理是一等系统关切
 - 栖息地**运行时配置**（LLM、压缩、集成）以**每段一行**（`section` + `value`）持久化在 PostgreSQL `habitat_runtime_config`；`~/.anima/config.yaml` 仅持**引导**（`database`、`http`、`redis`）供冷启动 — 不可经壳或栖息地 UI API 编辑
-- 栖息地**可在未配置 LLM 时启动**；首次设置在壳 **设置 → 栖息地**（写入 PG）。保存运行时配置会**内存热应用**（无需重启栖息地）。缺少 `llm` 不得阻塞冷启动。
+- 栖息地**可在未配置 LLM 时启动**；首次设置在壳 **设置 → 栖息地**（写入 PG）。保存运行时配置会**内存热应用**（无需重启栖息地）。缺少 `text_generate.main` 不得阻塞冷启动。
 - 只要存在 Web dist，栖息地就**托管浏览器 `/web/*`**（无配置开关；源码部署跑 `just pack web`）。源码 `just dev habitat` 跳过托管以便 Vite 提供 UI。
 - **资产管理**是一等系统关切
 
@@ -60,11 +60,11 @@ title: 架构
 
 ### 运行时配置：Live vs Transferred（即时 vs 需转移）
 
-| 种类                      | 段（示例）                                                                                                                                           | UI 保存后                                                          |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Live（即时）**          | `compression`、`prompt`、`memory`、`fts`、`cjk`、`clarify`、`browser`、`firecrawl`、`models`、`tts`、`auto_llm`、`companion`、gateway `tool_display` | 消费者每次读 `Config.data`；快照更新即可                           |
-| **Transferred（需转移）** | `llm`、`i18n`、`embedding`、`mcp_servers`、`discord` / `weixin` / `gateway` platforms、`worlds`、`object_storage`                                    | 快照更新**外加**段应用（重初始化注册表 / 重连 / 重绑 ObjectStore） |
-| **Bootstrap（引导）**     | `database`、`http`、`redis`                                                                                                                          | 改 YAML；需**进程重启**                                            |
+| 种类                      | 段（示例）                                                                                                                                                                                                 | UI 保存后                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Live（即时）**          | `compression`、`prompt`、`memory`、`fts`、`cjk`、`clarify`、`browser`、`firecrawl`、`models`、`tts`、`auto_llm`、`companion`、`image_generate`、`audio_generate`、`video_generate`、gateway `tool_display` | 消费者每次读 `Config.data`；快照更新即可                           |
+| **Transferred（需转移）** | `connections`、`text_generate`、`i18n`、`embedding`、`mcp_servers`、`discord` / `weixin` / `gateway` platforms、`worlds`、`object_storage`                                                                 | 快照更新**外加**段应用（重初始化注册表 / 重连 / 重绑 ObjectStore） |
+| **Bootstrap（引导）**     | `database`、`http`、`redis`                                                                                                                                                                                | 改 YAML；需**进程重启**                                            |
 
 ### 运行时配置：UI 覆盖缺口
 

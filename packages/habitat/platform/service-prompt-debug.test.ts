@@ -62,17 +62,16 @@ const mockConv = {
 };
 
 const minimalConfig = Config.fromSnapshot({
-  llm: {
-    default_profile: "chat",
-    providers: {
-      main: {
-        backend: "openai_compatible",
-        base_url: "https://api.openai.com/v1",
-        api_key: "test",
-      },
+  connections: {
+    main: {
+      preset: "custom",
+      custom_kind: "text",
+      text_protocol: "openai_compatible",
+      base_url: "https://api.openai.com/v1",
+      api_key: "test",
     },
-    profiles: { chat: { chain: [{ provider: "main", model: "gpt-4" }] } },
   },
+  text_generate: { main: { connection: "main", model: "gpt-4" } },
 });
 
 let testDeps: RuntimeDeps;

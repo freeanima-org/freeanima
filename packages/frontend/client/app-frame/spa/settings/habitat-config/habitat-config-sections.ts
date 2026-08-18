@@ -20,19 +20,23 @@ export type HabitatConfigSectionKey =
   | "compression"
   | "memory"
   | "connections"
+  | "text_generate"
+  | "image_generate"
+  | "audio_generate"
+  | "video_generate"
+  | "embedding"
+  | "tts"
+  /** @deprecated 兼容旧书签 */
+  | "llm"
   | "dialogue"
   | "image_gen"
   | "voice"
   | "retrieval"
-  /** @deprecated 兼容旧书签 → 连接/对话面板 */
-  | "llm"
-  | "tts"
   | AdvancedSectionId;
 
 const HABITAT_CONFIG_DESCRIPTION =
   "保存在栖息地数据库，影响全体客户端；保存后立即在内存中生效，无需重启。";
 
-/** 运维段中文标题（补全原 advanced 里缺标题的项） */
 const OPS_SECTION_TITLES: Record<AdvancedSectionId, string> = {
   i18n: ADVANCED_SECTION_TITLES.i18n ?? "时区",
   gateway: ADVANCED_SECTION_TITLES.gateway ?? "网关",
@@ -40,7 +44,7 @@ const OPS_SECTION_TITLES: Record<AdvancedSectionId, string> = {
   weixin: ADVANCED_SECTION_TITLES.weixin ?? "微信",
   firecrawl: ADVANCED_SECTION_TITLES.firecrawl ?? "Firecrawl",
   browser: ADVANCED_SECTION_TITLES.browser ?? "浏览器",
-  embedding: ADVANCED_SECTION_TITLES.embedding ?? "Embedding",
+  embedding: ADVANCED_SECTION_TITLES.embedding ?? "文本嵌入",
   cjk: ADVANCED_SECTION_TITLES.cjk ?? "中文分词",
   fts: ADVANCED_SECTION_TITLES.fts ?? "全文检索",
   worlds: ADVANCED_SECTION_TITLES.worlds ?? "世界",
@@ -56,11 +60,11 @@ const HABITAT_CONFIG_SECTION_DEFS: Array<{
   { id: "compression", title: "压缩", order: 50 },
   { id: "memory", title: "语义记忆", order: 51 },
   { id: "connections", title: "连接", order: 52 },
-  { id: "dialogue", title: "对话", order: 53 },
-  { id: "image_gen", title: "图片", order: 54 },
-  { id: "voice", title: "语音", order: 55 },
-  { id: "retrieval", title: "向量检索", order: 56 },
-  // 原「高级」运维项；auto_llm / embedding / fts / cjk 已并入对话或向量检索 Tab
+  { id: "text_generate", title: "文本生成", order: 53 },
+  { id: "image_generate", title: "图片生成", order: 54 },
+  { id: "audio_generate", title: "音频生成", order: 55 },
+  { id: "video_generate", title: "视频生成", order: 56 },
+  { id: "embedding", title: "文本嵌入", order: 57 },
   ...SIDEBAR_OPS_SECTIONS.map((id, index) => ({
     id,
     title: OPS_SECTION_TITLES[id],

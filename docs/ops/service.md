@@ -46,27 +46,27 @@ Windows 源码开发走 monorepo 路径（`just dev` / `just dev habitat`）；�
 
 Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.md)。
 
-## LLM 连接（格式 / 预设）
+## 连接与能力层
 
-每个 `llm.providers.<id>` 条目是一条 **连接（Connection）**（凭证 + 端点）。概念：
+每条 `connections.<id>` 是一条 **连接**（凭证 + 端点）。内置预设可覆盖多层模态；自定义只落一层。
 
-| 概念         | 配置                | 含义                                                                  |
-| ------------ | ------------------- | --------------------------------------------------------------------- |
-| 格式         | `format`            | 线协议：`openai_compatible`、`openai_responses`、`anthropic_messages` |
-| 预设         | `preset`            | 内置配方：`deepseek`、`openrouter`、`opencode_go`，或 `custom`        |
-| 方案         | `llm.profiles.<id>` | 可复用路由（chain + 故障转移）；可选 `title` 展示名；UI「自定义」     |
-| 主场景       | `default_profile`   | 未覆盖用途时的回退方案 id                                             |
-| 用途指派     | `profile_bindings`  | 系统用途（`chat` / `summary` 等）→ 方案 id；`null`/空 = 同主场景      |
-| 连接/方案 id | map key             | 新建时自动生成；保存后只读；列表主文优先 `title`                      |
+| 概念     | 配置                    | 含义                                                                                                                 |
+| -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 连接     | `connections.<id>`      | 内置：`preset` ∈ deepseek / openrouter / opencode_go / alibaba_token_plan；自定义：`custom` + `custom_kind`          |
+| 文本协议 | `text_protocol`         | Completions / Responses / Messages；仅自定义文本层可改                                                               |
+| 能力段   | 五个顶层键              | `text_generate` / `image_generate` / `audio_generate` / `video_generate` / `embedding`                               |
+| 绑定     | `{ connection, model }` | 子场景省略或 `null` = 同 main。文本子场景：summary / reflect / goal_judge / skill_review；音频：tts / voice_realtime |
+| 视频     | `video_generate.main`   | 可配置、不接入 media / 引擎                                                                                          |
 
-设置 UI Tab：**场景 | 自定义 | 连接**（场景页只做主场景 + 系统子场景下拉指派，不改路由；按使用频率排序）。
+设置侧栏：**连接 | 文本生成 | 图片生成 | 音频生成 | 视频生成 | 文本嵌入**。无「自定义方案」Tab。
 
-- **单格式预设**（`deepseek`、`openrouter`）：固定格式 + 默认 `base_url`。
-- **多格式网关预设**（`opencode_go`）：base 为 `https://opencode.ai/zen/go/v1`；格式**按模型**选择（Chat Completions / Responses / Messages）。见 [OpenCode Go 端点](https://opencode.ai/docs/zh-cn/go#api-%E7%AB%AF%E7%82%B9)。
-- **Custom**：自行设置 `format` + `base_url`。PG `habitat_runtime_config.llm` 中遗留 `backend` 由迁移改写为 `format`；加载时 `normalizeLlmProviderRaw` 仍可消化未落库的旧 YAML。
+- **单格式预设**（`deepseek`、`openrouter`）：固定文本协议 + 默认 `base_url`（不落盘）。
+- **多格式网关预设**（`opencode_go`）：base 为 `https://opencode.ai/zen/go/v1`；格式**按模型**选择。
+- **阿里云 Token Plan**：厂商协议（`alibaba_multimodal` / `alibaba_audio`），不必 OpenAI 封装；不出现在自定义协议下拉。
+- **Custom**：只选一层通用协议 + `base_url`。无 `format` / `backend` 别名。
 - **没有**内置 `openai` 预设。
 - **API 密钥**：配置中明文，或 `vault(...)` / `env(...)` 引用。设置 UI **不会**自动掩码密钥。
-- **`summary` 用途**：会话压缩与会话标题生成共用（引擎 `PROFILE_SUMMARY`）。
+- **`summary` 子场景**：会话压缩与会话标题生成共用（引擎 `PROFILE_SUMMARY`）。
 
 ### models.dev 元数据
 
@@ -75,13 +75,13 @@ Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.
 1. **目录 enrichment** — Connection `GET /models` 之后，id 匹配时合并 context / max output / 显示名 / 每百万 token USD 成本（连接侧非默认限额优先于 models.dev）。
 2. **`getModel` 回退** — Anthropic Messages / OpenAI Responses / 不稳定的兼容网关若缺少真实目录，在 id 已知时用 models.dev，而非盲目默认 128k。
 3. **压缩 context** — 目录 `contextWindow`（可能已 enrichment）是 token 压缩预算的唯一窗口来源；lookup 失败则回退消息数模式（见 [`compression.md`](../cognition/compression.md)）。
-4. **方案模型选择器** — 设置 → 栖息地服务配置 → LLM → 自定义方案路由：经栖息地 RPC `config.listProviderModels` 浏览 / 搜索模型（优先连接目录；`/models` 为空时用 models.dev 的预设切片）。仍允许自由输入模型 id。
+4. **方案模型选择器** — 设置 → 栖息地 → 各能力层：经 RPC `config.listProviderModels` 浏览 / 搜索模型（优先连接目录；`/models` 为空时用 models.dev 的预设切片）。仍允许自由输入模型 id。
 
 **范围外：** models.dev 不替代连接凭证或端点；不计量计费；能力标志仅为提示，非运行时保证。
 
 ### 超时
 
-`llm.providers.<id>` 支持三层超时（聊天流式 / 非流式；embedding 仍只用 `timeout_ms`）：
+`connections.<id>` 支持三层超时（聊天流式 / 非流式；embedding 仍只用 `timeout_ms`）：
 
 | 字段                    | 默认                | 含义                                      |
 | ----------------------- | ------------------- | ----------------------------------------- |

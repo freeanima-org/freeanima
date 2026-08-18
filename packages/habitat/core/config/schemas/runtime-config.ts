@@ -9,7 +9,12 @@ import {
 import { notificationsConfigSchema } from "./notifications.ts";
 import { ttsConfigSchema } from "./tts.ts";
 import { worldsConfigSchema } from "./worlds.ts";
-import { llmConfigSchema } from "./llm-config.ts";
+import { connectionsConfigSchema } from "./llm-config.ts";
+import {
+  audioGenerateConfigSchema,
+  mainOnlyGenerateConfigSchema,
+  textGenerateConfigSchema,
+} from "./capability.ts";
 import { mcpServerSchema } from "./mcp.ts";
 import { fallbackProviderSchema } from "./fallback-providers.ts";
 import { firecrawlSchema } from "./firecrawl.ts";
@@ -36,7 +41,11 @@ import { BOOTSTRAP_CONFIG_KEYS, registerSection } from "@freeanima/habitat/kerne
  */
 const runtimeConfigObjectSchema = z.object({
   i18n: i18nConfigSchema,
-  llm: llmConfigSchema,
+  connections: connectionsConfigSchema.optional(),
+  text_generate: textGenerateConfigSchema.optional(),
+  image_generate: mainOnlyGenerateConfigSchema.optional(),
+  audio_generate: audioGenerateConfigSchema.optional(),
+  video_generate: mainOnlyGenerateConfigSchema.optional(),
   firecrawl: firecrawlSchema.optional(),
   browser: browserSchema.optional(),
   clarify: clarifySchema.optional(),

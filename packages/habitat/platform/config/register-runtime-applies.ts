@@ -133,7 +133,8 @@ function applyObjectStorage(config: Config): void {
 export function registerRuntimeConfigApplies(): void {
   registerRuntimeConfigSchemas();
 
-  registerSection({ key: "llm", apply: applyLlm, transferred: true, order: 10 });
+  registerSection({ key: "connections", apply: applyLlm, transferred: true, order: 9 });
+  registerSection({ key: "text_generate", apply: applyLlm, transferred: true, order: 10 });
   registerSection({ key: "i18n", apply: applyI18n, transferred: true, order: 20 });
   registerSection({ key: "embedding", apply: applyEmbedding, transferred: true, order: 30 });
   registerSection({ key: "mcp_servers", apply: applyMcp, transferred: true, order: 40 });

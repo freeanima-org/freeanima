@@ -5,7 +5,7 @@ import {
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
   resolveScene,
 } from "@freeanima/habitat/core/config";
-import { materializeConnection } from "@freeanima/habitat/core/llm/presets";
+import { connectionEndpointUrl } from "@freeanima/habitat/core/llm/presets";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
 import type { SubjectKind } from "@freeanima/habitat/core/config";
 import {
@@ -105,7 +105,7 @@ async function resolveWorld(args: ToolArgs): Promise<number | string> {
 export function registerMediaTools(toolSets: ToolSetRegistry): void {
   toolSets.registerToolSet(
     "media",
-    "Media generation (image + voice). Requires scenes.image_generate / voice_generate and matching connection protocols.",
+    "Media generation (image + voice). Requires image_generate / audio_generate.main and matching connection protocols.",
     attachToolReturns(
       [
         {
@@ -149,9 +149,7 @@ export function registerMediaTools(toolSets: ToolSetRegistry): void {
               scene = resolveScene(getActiveRuntimeConfig().data, "image_generate");
             } catch (err) {
               return toolError(
-                err instanceof Error
-                  ? err.message
-                  : "未配置图片生成场景（llm.scenes.image_generate）",
+                err instanceof Error ? err.message : "未配置图片生成（image_generate.main）",
               );
             }
 
@@ -172,7 +170,7 @@ export function registerMediaTools(toolSets: ToolSetRegistry): void {
 
             let baseUrl: string;
             try {
-              baseUrl = materializeConnection(scene.provider).baseUrl;
+              baseUrl = connectionEndpointUrl(scene.provider);
             } catch (err) {
               return toolError(err instanceof Error ? err.message : "图片生成连接 Base URL 无效");
             }

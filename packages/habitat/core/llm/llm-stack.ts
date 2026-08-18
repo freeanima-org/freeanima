@@ -1,10 +1,5 @@
-import type { RuntimeConfig, LlmConfig } from "@freeanima/habitat/core/config";
-import {
-  isLlmConfigured,
-  resolveConfiguredProfileId,
-  resolveLlmConfigView,
-  tryGetLlmConfig,
-} from "@freeanima/habitat/core/config";
+import type { RuntimeConfig } from "@freeanima/habitat/core/config";
+import { isLlmConfigured, textGenerateProfileHops } from "@freeanima/habitat/core/config";
 import {
   assertProfilesValid,
   BackendRegistry,
@@ -15,31 +10,29 @@ import {
 
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { applyLlmStackConfigurator } from "./llm-stack-configurator.ts";
+import { resolveConfiguredProfileId } from "@freeanima/habitat/core/config/llm-config.ts";
 
 export type LlmRuntime = {
   backends: BackendRegistry;
   providers: ProviderRegistry;
   profiles: ProfileRegistry;
-  /** 用途键 → 实际 profile id（含 profile_bindings / scenes） */
   resolveProfileId: (purpose?: string) => string;
 };
 
 let runtime: LlmRuntime | null = null;
-/** 构建 runtime 时的 config 快照，供 resolveProfileId 使用 */
 let runtimeConfig: RuntimeConfig | null = null;
 
-function profileDefsFromConfig(llm: LlmConfig): LlmProfileDef[] {
-  return Object.entries(llm.profiles).map(([id, profile]) =>
+function profileDefsFromConfig(cfg: RuntimeConfig): LlmProfileDef[] {
+  return textGenerateProfileHops(cfg).map((hop) =>
     omitUndefined({
-      id,
-      chain: profile.chain.slice(0, 1).map((hop) =>
+      id: hop.id,
+      chain: [
         omitUndefined({
-          provider: hop.provider,
+          provider: hop.connection,
           model: hop.model,
           params: hop.params,
         }),
-      ),
-      params: profile.params,
+      ],
     }),
   );
 }
@@ -49,7 +42,11 @@ export function createLlmRuntime(cfg: RuntimeConfig): LlmRuntime {
   const providers = new ProviderRegistry(backends);
   applyLlmStackConfigurator(cfg, backends, providers);
 
-  if (!isLlmConfigured(cfg) || !tryGetLlmConfig(cfg)) {
+  const defs = profileDefsFromConfig(cfg).filter((def) =>
+    def.chain.every((hop) => providers.has(hop.provider)),
+  );
+  const hasChat = defs.some((def) => def.id === "chat");
+  if (!isLlmConfigured(cfg) || !hasChat) {
     return {
       backends,
       providers,
@@ -58,10 +55,7 @@ export function createLlmRuntime(cfg: RuntimeConfig): LlmRuntime {
     };
   }
 
-  const llm = resolveLlmConfigView(cfg);
-  const defs = profileDefsFromConfig(llm);
-  const defaultId = llm.default_profile;
-  const profileRegistry = new ProfileRegistry(defs, defaultId, providers);
+  const profileRegistry = new ProfileRegistry(defs, "chat", providers);
   assertProfilesValid(defs, providers);
 
   return {

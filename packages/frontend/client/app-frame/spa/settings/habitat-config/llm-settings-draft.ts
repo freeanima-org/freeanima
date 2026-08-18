@@ -7,15 +7,30 @@ import {
   LLM_PRESET_OPENROUTER,
   LLM_FORMAT_OPENAI_RESPONSES,
   LLM_FORMAT_ANTHROPIC_MESSAGES,
-  normalizeLlmProviderRaw,
+  normalizeConnectionRaw,
   normalizeOptionalTitle,
   DEFAULT_EDGE_TTS_BASE_URL,
-  VOICE_PROTOCOL_EDGE_TTS,
+  AUDIO_PROTOCOL_EDGE_TTS,
+  type CustomKindId,
 } from "@freeanima/habitat/core/config";
-import { getLlmPreset, presetModalityFields } from "@freeanima/habitat/core/llm/presets";
+import {
+  getLlmPreset,
+  presetModalityFields,
+  connectionSupportsLayer,
+} from "@freeanima/habitat/core/llm/presets";
 import { readHabitatConfigRecord } from "./habitat-config-field-helpers.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
+
+export type ConnectionLayerId = CustomKindId;
+
+export const CONNECTION_LAYERS = [
+  { id: "text", label: "文本生成" },
+  { id: "image", label: "图片生成" },
+  { id: "audio", label: "音频生成" },
+  { id: "video", label: "视频生成" },
+  { id: "embeddings", label: "文本嵌入" },
+] as const satisfies ReadonlyArray<{ id: ConnectionLayerId; label: string }>;
 
 export function providersDraftToPatch(
   draft: Record<string, unknown> | null | undefined,
@@ -23,23 +38,35 @@ export function providersDraftToPatch(
   const entries = readHabitatConfigRecord(draft);
   const out: Record<string, unknown> = {};
   for (const [id, provider] of Object.entries(entries)) {
-    const normalized = normalizeLlmProviderRaw(provider) as Record<string, unknown>;
+    const normalized = normalizeConnectionRaw(provider) as Record<string, unknown>;
+    delete normalized.format;
+    delete normalized.backend;
+    delete normalized.voice_protocol;
     const preset = coerceString(normalized.preset ?? LLM_PRESET_CUSTOM);
     if (preset !== LLM_PRESET_CUSTOM) {
       const suite = presetModalityFields(preset as typeof LLM_PRESET_DEEPSEEK);
-      // 内置预设协议套件为准（覆盖遗留 null，例如语音落地前写入的 voice_protocol: null）
       for (const [k, v] of Object.entries(suite)) {
         normalized[k] = v;
       }
-      // 内置预设不落盘可改 base_url（运行时用固定根）
       delete normalized.base_url;
+      delete normalized.custom_kind;
+    } else {
+      stripProtocolsNotForKind(normalized);
     }
     out[id] = normalized;
   }
   return out;
 }
 
-/** 载入草稿时写好默认 preset/format，避免「看起来已配置、保存却没带上」 */
+function stripProtocolsNotForKind(entry: Record<string, unknown>): void {
+  const kind = coerceString(entry.custom_kind);
+  if (kind !== "text") delete entry.text_protocol;
+  if (kind !== "image") delete entry.image_protocol;
+  if (kind !== "audio") delete entry.audio_protocol;
+  if (kind !== "embeddings") delete entry.embeddings_protocol;
+  if (kind !== "video") delete entry.video_protocol;
+}
+
 export function readProvidersDraft(
   draft: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> {
@@ -60,7 +87,7 @@ export const LLM_SETTINGS_PRESETS = [
   {
     id: LLM_PRESET_ALIBABA_TOKEN_PLAN,
     label: "阿里云 Token Plan",
-    hint: "对话 + 文生图 + 语音合成（OpenAI 兼容根；Anthropic 另建连接）",
+    hint: "对话 + 文生图 + 语音合成（厂商协议，不必 OpenAI 封装）",
   },
   {
     id: LLM_PRESET_OPENCODE_GO,
@@ -70,7 +97,7 @@ export const LLM_SETTINGS_PRESETS = [
   {
     id: LLM_PRESET_CUSTOM,
     label: "自定义",
-    hint: "自行指定各模态协议与 Base URL",
+    hint: "只覆盖一层；仅该层通用协议",
   },
 ] as const;
 
@@ -80,56 +107,41 @@ export const LLM_SETTINGS_FORMATS = [
   { id: LLM_FORMAT_ANTHROPIC_MESSAGES, label: "Messages", code: "anthropic_messages" },
 ] as const;
 
-/** 对话场景族 */
-export const DIALOGUE_SCENE_ROWS = [
-  { id: "chat", label: "聊天" },
-  { id: "summary", label: "会话压缩 / 标题" },
-  { id: "reflect", label: "反思" },
-  { id: "goal_judge", label: "目标判定" },
-  { id: "skill_review", label: "技能审阅" },
+export const TEXT_GENERATE_ROWS = [
+  { id: "chat", label: "聊天", configKey: "main" },
+  { id: "summary", label: "会话压缩 / 标题", configKey: "summary" },
+  { id: "reflect", label: "反思", configKey: "reflect" },
+  { id: "goal_judge", label: "目标判定", configKey: "goal_judge" },
+  { id: "skill_review", label: "技能审阅", configKey: "skill_review" },
 ] as const;
 
-/** 文生图场景族 */
-export const IMAGE_SCENE_ROWS = [{ id: "image_generate", label: "图片生成" }] as const;
-
-/** 语音合成场景族（主：文生声；子：朗读 / 实时） */
-export const VOICE_SCENE_ROWS = [
-  { id: "voice_generate", label: "文生声" },
-  { id: "tts", label: "朗读" },
-  { id: "voice_realtime", label: "实时语音对话" },
+export const IMAGE_GENERATE_ROWS = [
+  { id: "image_generate", label: "图片生成", configKey: "main" },
 ] as const;
 
-/** 向量 / 检索场景族 */
-export const RETRIEVAL_SCENE_ROWS = [{ id: "embedding", label: "向量嵌入" }] as const;
-
-/** @deprecated 勿再用于「一张总表」；请用各族 *_SCENE_ROWS */
-export const LLM_SYSTEM_PURPOSE_ROWS = [
-  ...DIALOGUE_SCENE_ROWS,
-  ...RETRIEVAL_SCENE_ROWS,
-  ...IMAGE_SCENE_ROWS,
-  ...VOICE_SCENE_ROWS,
+export const AUDIO_GENERATE_ROWS = [
+  { id: "voice_generate", label: "文生声", configKey: "main" },
+  { id: "tts", label: "朗读", configKey: "tts" },
+  { id: "voice_realtime", label: "实时语音对话", configKey: "voice_realtime" },
 ] as const;
 
-export const LLM_SETTINGS_IMAGE_PROTOCOLS = [
-  { id: "", label: "无" },
+export const VIDEO_GENERATE_ROWS = [
+  { id: "video_generate", label: "视频生成", configKey: "main" },
+] as const;
+
+export const EMBEDDING_ROWS = [{ id: "embedding", label: "文本嵌入", configKey: "main" }] as const;
+
+export const LLM_SETTINGS_GENERIC_IMAGE_PROTOCOLS = [
   { id: "openai_images", label: "OpenAI Images", code: "openai_images" },
-  {
-    id: "alibaba_multimodal",
-    label: "阿里云多模态生成（万相/千问文生图）",
-    code: "alibaba_multimodal",
-  },
 ] as const;
 
-export const LLM_SETTINGS_EMBEDDINGS_PROTOCOLS = [
-  { id: "", label: "无" },
+export const LLM_SETTINGS_GENERIC_EMBEDDINGS_PROTOCOLS = [
   { id: "openai_embeddings", label: "OpenAI Embeddings", code: "openai_embeddings" },
 ] as const;
 
-export const LLM_SETTINGS_VOICE_PROTOCOLS = [
-  { id: "", label: "无" },
-  { id: "edge-tts", label: "Edge TTS", code: "edge-tts" },
+export const LLM_SETTINGS_GENERIC_AUDIO_PROTOCOLS = [
   { id: "openai_audio_speech", label: "OpenAI Audio Speech", code: "openai_audio_speech" },
-  { id: "alibaba_audio", label: "阿里云音频（DashScope）", code: "alibaba_audio" },
+  { id: "edge-tts", label: "Edge TTS", code: "edge-tts" },
 ] as const;
 
 export function llmEntryTitle(
@@ -151,11 +163,6 @@ export function newConnectionId(): string {
   return `c-${shortIdSuffix()}`;
 }
 
-/** 新建方案（profile）id */
-export function newSceneId(): string {
-  return `s-${shortIdSuffix()}`;
-}
-
 export function llmPresetLabel(presetId: string): string {
   return LLM_SETTINGS_PRESETS.find((p) => p.id === presetId)?.label ?? presetId;
 }
@@ -165,7 +172,6 @@ export function llmFormatLabel(formatId: string): string {
   return hit ? `${hit.label}（${hit.code}）` : formatId;
 }
 
-/** 列表副文：预设名 + URL（内置预设固定根；自定义未填则提示） */
 export function connectionListSubtitle(entry: Record<string, unknown>): string {
   const preset = coerceString(entry.preset ?? LLM_PRESET_CUSTOM);
   const label = llmPresetLabel(preset);
@@ -174,9 +180,11 @@ export function connectionListSubtitle(entry: Record<string, unknown>): string {
     const fixed = def?.defaultBaseUrl;
     return fixed ? `${label} · ${fixed}` : label;
   }
+  const kind = CONNECTION_LAYERS.find((l) => l.id === entry.custom_kind)?.label;
   const base = typeof entry.base_url === "string" ? entry.base_url.trim() : "";
-  if (base) return `${label} · ${base}`;
-  return `${label} · 未填 Base URL`;
+  const kindBit = kind ? `${label} · ${kind}` : label;
+  if (base) return `${kindBit} · ${base}`;
+  return `${kindBit} · 未填 Base URL`;
 }
 
 export function connectionDefaultBaseUrl(presetId: string): string | null {
@@ -185,18 +193,31 @@ export function connectionDefaultBaseUrl(presetId: string): string | null {
   return def?.defaultBaseUrl ?? null;
 }
 
-/** 将内置预设的全套模态协议写回连接草稿；并清除可覆盖的 base_url（运行时用预设固定根） */
+export function applyCustomKindToConnectionEntry(
+  entry: Record<string, unknown>,
+  kind: ConnectionLayerId,
+): Record<string, unknown> {
+  return applyPresetToConnectionEntry(entry, LLM_PRESET_CUSTOM, kind);
+}
+
 export function applyPresetToConnectionEntry(
   entry: Record<string, unknown>,
   presetId: string,
+  lockedKind?: ConnectionLayerId,
 ): Record<string, unknown> {
   if (presetId === LLM_PRESET_CUSTOM) {
-    return {
-      ...entry,
-      preset: LLM_PRESET_CUSTOM,
-      format: entry.format ?? LLM_FORMAT_OPENAI_COMPATIBLE,
-      text_protocol: entry.text_protocol ?? entry.format ?? LLM_FORMAT_OPENAI_COMPATIBLE,
-    };
+    const kind = (lockedKind ?? coerceString(entry.custom_kind) ?? "text") || "text";
+    const next = emptyConnectionEntry(kind as ConnectionLayerId, {
+      title: coerceString(entry.title ?? ""),
+    });
+    if (entry.api_key != null) next.api_key = entry.api_key;
+    if (entry.timeout_ms != null) next.timeout_ms = entry.timeout_ms;
+    if (entry.first_byte_timeout_ms != null) {
+      next.first_byte_timeout_ms = entry.first_byte_timeout_ms;
+    }
+    if (entry.idle_timeout_ms != null) next.idle_timeout_ms = entry.idle_timeout_ms;
+    if (entry.base_url != null && entry.base_url !== "") next.base_url = entry.base_url;
+    return next;
   }
   const modalities = presetModalityFields(presetId as typeof LLM_PRESET_DEEPSEEK);
   const next: Record<string, unknown> = {
@@ -205,25 +226,25 @@ export function applyPresetToConnectionEntry(
     ...modalities,
   };
   delete next.base_url;
+  delete next.custom_kind;
   return next;
 }
 
-function protocolLabel(kind: "text" | "image" | "embeddings" | "voice", id: string | null): string {
+function protocolLabel(kind: "text" | "image" | "embeddings" | "audio", id: string | null): string {
   if (id == null || id === "") return "无";
   if (kind === "text") {
     if (id === "gateway") return "按模型自动";
     return llmFormatLabel(id);
   }
   if (kind === "image") {
-    return LLM_SETTINGS_IMAGE_PROTOCOLS.find((p) => p.id === id)?.label ?? id;
+    return id === "alibaba_multimodal" ? "阿里云多模态生成" : "OpenAI Images";
   }
-  if (kind === "embeddings") {
-    return LLM_SETTINGS_EMBEDDINGS_PROTOCOLS.find((p) => p.id === id)?.label ?? id;
-  }
-  return LLM_SETTINGS_VOICE_PROTOCOLS.find((p) => p.id === id)?.label ?? id;
+  if (kind === "embeddings") return "OpenAI Embeddings";
+  if (id === "alibaba_audio") return "阿里云音频（DashScope）";
+  if (id === "edge-tts") return "Edge TTS";
+  return "OpenAI Audio Speech";
 }
 
-/** 预设协议套件摘要（只读展示） */
 export function presetModalitySuiteSummary(presetId: string): string | null {
   if (presetId === LLM_PRESET_CUSTOM) return null;
   const def = getLlmPreset(presetId as typeof LLM_PRESET_DEEPSEEK);
@@ -233,7 +254,8 @@ export function presetModalitySuiteSummary(presetId: string): string | null {
     `对话 ${protocolLabel("text", text)}`,
     `文生图 ${protocolLabel("image", def.modalities.image)}`,
     `向量 ${protocolLabel("embeddings", def.modalities.embeddings)}`,
-    `语音 ${protocolLabel("voice", def.modalities.voice)}`,
+    `语音 ${protocolLabel("audio", def.modalities.audio)}`,
+    `视频 ${def.modalities.video ?? "无"}`,
   ].join(" · ");
 }
 
@@ -252,7 +274,6 @@ export function readTimeoutDraft(entry: Record<string, unknown>): TimeoutDraft {
   };
 }
 
-/** 首字节 / idle 须 ≤ overall；空值跳过 */
 export function validateTimeoutDraft(draft: TimeoutDraft): string | null {
   const overall = draft.timeout_ms;
   if (overall === "") return null;
@@ -273,80 +294,150 @@ export function validateTimeoutDraft(draft: TimeoutDraft): string | null {
   return null;
 }
 
-export function emptyConnectionEntry(): Record<string, unknown> {
-  return {
+export function emptyConnectionEntry(
+  kind: ConnectionLayerId = "text",
+  extra?: { title?: string },
+): Record<string, unknown> {
+  const title = extra?.title?.trim();
+  const base: Record<string, unknown> = {
     preset: LLM_PRESET_CUSTOM,
-    format: LLM_FORMAT_OPENAI_COMPATIBLE,
-    text_protocol: LLM_FORMAT_OPENAI_COMPATIBLE,
+    custom_kind: kind,
+    ...(title ? { title } : {}),
   };
+  if (kind === "text") base.text_protocol = LLM_FORMAT_OPENAI_COMPATIBLE;
+  if (kind === "image") base.image_protocol = "openai_images";
+  if (kind === "audio") base.audio_protocol = "openai_audio_speech";
+  if (kind === "embeddings") base.embeddings_protocol = "openai_embeddings";
+  if (kind === "audio") {
+    /* default OpenAI speech; Edge 可改协议后填默认根 */
+  }
+  return base;
 }
 
-/** Edge TTS 专用连接草稿（密钥可空，base_url 默认可改） */
 export function emptyEdgeTtsConnectionEntry(): Record<string, unknown> {
   return {
     preset: LLM_PRESET_CUSTOM,
+    custom_kind: "audio",
     title: "Edge TTS",
-    voice_protocol: VOICE_PROTOCOL_EDGE_TTS,
+    audio_protocol: AUDIO_PROTOCOL_EDGE_TTS,
     base_url: DEFAULT_EDGE_TTS_BASE_URL,
     api_key: "",
   };
 }
 
-/** 场景用途按设置侧栏拆分 */
-export const LLM_PURPOSE_IDS_DIALOGUE = DIALOGUE_SCENE_ROWS.map((r) => r.id);
-export const LLM_PURPOSE_IDS_IMAGE = IMAGE_SCENE_ROWS.map((r) => r.id);
-export const LLM_PURPOSE_IDS_VOICE = VOICE_SCENE_ROWS.map((r) => r.id);
-export const LLM_PURPOSE_IDS_RETRIEVAL = RETRIEVAL_SCENE_ROWS.map((r) => r.id);
-
-export function purposeRowsForFocus(
-  focus: "connections" | "dialogue" | "image_gen" | "retrieval" | "voice" | "all",
-): ReadonlyArray<{ id: string; label: string }> {
-  if (focus === "dialogue") return DIALOGUE_SCENE_ROWS;
-  if (focus === "image_gen") return IMAGE_SCENE_ROWS;
-  if (focus === "retrieval") return RETRIEVAL_SCENE_ROWS;
-  if (focus === "voice") return VOICE_SCENE_ROWS;
-  return LLM_SYSTEM_PURPOSE_ROWS;
+export function connectionIdsForLayer(
+  layer: ConnectionLayerId,
+  connectionIds: string[],
+  providersById: Record<string, Record<string, unknown>>,
+): string[] {
+  return connectionIds.filter((id) => connectionSupportsLayer(providersById[id] ?? {}, layer));
 }
 
-export function emptySceneEntry(): Record<string, unknown> {
-  return {
-    chain: [{ provider: "", model: "" }],
-  };
-}
-
-export type RouteHop = {
-  provider: string;
+export type SceneBindingDraft = {
+  connection: string;
   model: string;
-  params?: Record<string, unknown> | undefined;
+  params?: Record<string, unknown>;
 };
 
-export function readChain(raw: unknown): RouteHop[] {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((item) => item && typeof item === "object" && !Array.isArray(item))
-    .map((item) => {
-      const hop = item as Record<string, unknown>;
-      const params =
-        hop.params && typeof hop.params === "object" && !Array.isArray(hop.params)
-          ? (hop.params as Record<string, unknown>)
-          : undefined;
-      return {
-        provider: typeof hop.provider === "string" ? hop.provider : "",
-        model: typeof hop.model === "string" ? hop.model : "",
-        ...(params ? { params } : {}),
-      };
-    });
+export function sceneDraftVoice(draft: SceneBindingDraft): string {
+  const v = draft.params?.voice;
+  return typeof v === "string" ? v.trim() : "";
 }
 
-export function normalizeHop(hop: RouteHop): RouteHop {
-  const provider = hop.provider.trim();
-  const model = hop.model.trim();
-  const params = hop.params && Object.keys(hop.params).length > 0 ? hop.params : undefined;
+export function withSceneDraftVoice(draft: SceneBindingDraft, voice: string): SceneBindingDraft {
+  const trimmed = voice.trim();
+  const nextParams: Record<string, unknown> = { ...draft.params };
+  if (trimmed) nextParams.voice = trimmed;
+  else delete nextParams.voice;
+  const params = Object.keys(nextParams).length > 0 ? nextParams : undefined;
+  if (params) return { ...draft, params };
+  const { params: _omit, ...rest } = draft;
+  return rest;
+}
+
+export function readSceneBindingDraft(raw: unknown): SceneBindingDraft | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  const connection = typeof o.connection === "string" ? o.connection.trim() : "";
+  const model = typeof o.model === "string" ? o.model.trim() : "";
+  if (!connection && !model) return null;
+  const params =
+    o.params && typeof o.params === "object" && !Array.isArray(o.params)
+      ? (o.params as Record<string, unknown>)
+      : undefined;
   return {
-    provider,
+    connection,
     model,
+    ...(params && Object.keys(params).length > 0 ? { params } : {}),
+  };
+}
+
+export type CapabilityPanelFocus =
+  | "text_generate"
+  | "image_generate"
+  | "audio_generate"
+  | "video_generate"
+  | "embedding";
+
+export function purposeRowsForFocus(
+  focus: CapabilityPanelFocus,
+): ReadonlyArray<{ id: string; label: string; configKey: string }> {
+  if (focus === "text_generate") return TEXT_GENERATE_ROWS;
+  if (focus === "image_generate") return IMAGE_GENERATE_ROWS;
+  if (focus === "audio_generate") return AUDIO_GENERATE_ROWS;
+  if (focus === "video_generate") return VIDEO_GENERATE_ROWS;
+  return EMBEDDING_ROWS;
+}
+
+export function readCapabilityUiDraft(
+  section: Record<string, unknown> | null | undefined,
+  focus: CapabilityPanelFocus,
+): Record<string, SceneBindingDraft | null> {
+  const src = section ?? {};
+  const out: Record<string, SceneBindingDraft | null> = {};
+  for (const row of purposeRowsForFocus(focus)) {
+    const raw = src[row.configKey];
+    if (row.configKey === "main") {
+      out[row.id] = readSceneBindingDraft(raw) ?? { connection: "", model: "" };
+    } else if (raw == null) {
+      out[row.id] = null;
+    } else {
+      out[row.id] = readSceneBindingDraft(raw);
+    }
+  }
+  return out;
+}
+
+function bindingPayload(v: SceneBindingDraft): Record<string, unknown> {
+  const params =
+    v.params && typeof v.params === "object" && Object.keys(v.params).length > 0
+      ? v.params
+      : undefined;
+  return {
+    connection: v.connection.trim(),
+    model: v.model.trim(),
     ...(params ? { params } : {}),
   };
+}
+
+/** 整段写入：省略的子场景键不出现（同 main） */
+export function capabilityUiDraftToSection(
+  draft: Record<string, SceneBindingDraft | null>,
+  focus: CapabilityPanelFocus,
+  extra?: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = extra ? { ...extra } : {};
+  for (const row of purposeRowsForFocus(focus)) {
+    const v = draft[row.id];
+    if (row.configKey === "main") {
+      if (v && v.connection.trim() && v.model.trim()) out.main = bindingPayload(v);
+      continue;
+    }
+    if (v != null && v.connection.trim() && v.model.trim()) {
+      out[row.configKey] = bindingPayload(v);
+    }
+  }
+  return out;
 }
 
 export type CallParamsDraft = {
@@ -354,7 +445,6 @@ export type CallParamsDraft = {
   topP: number | "";
   maxOutputTokens: number | "";
   stop: string;
-  /** 仅回写保留；UI 不编辑 */
   preservedExtra?: Record<string, unknown>;
 };
 
@@ -411,259 +501,6 @@ export function callParamsDraftToValue(
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
-/** 调用参数：UI 不编辑 extra，但回写保留已有值 */
 export function callParamsRoundTrip(raw: unknown): Record<string, unknown> | undefined {
   return callParamsDraftToValue(readCallParamsDraft(raw));
-}
-
-export function sceneListSubtitle(entry: Record<string, unknown>): string {
-  const chain = readChain(entry.chain);
-  const primary = chain[0];
-  if (!primary || (!primary.provider && !primary.model)) return "未配置路由";
-  return [primary.provider, primary.model].filter(Boolean).join(" / ");
-}
-
-function profileHasUsableChain(entry: Record<string, unknown> | undefined): boolean {
-  if (!entry) return false;
-  const chain = readChain(entry.chain);
-  const primary = chain[0];
-  return Boolean(primary?.provider && primary?.model);
-}
-
-/** 读 profile_bindings；非法结构视为空 */
-export function readProfileBindings(raw: unknown): Record<string, string | null> {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  const out: Record<string, string | null> = {};
-  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (value === null) out[key] = null;
-    else if (typeof value === "string") out[key] = value;
-  }
-  return out;
-}
-
-/**
- * 系统用途下拉回显值：
- * - 有 bindings 键：null/"" → ""（同主场景）；否则绑定 id
- * - 无键：若 profiles[purpose] 可用 → 自指该 id；否则 ""（同主场景）
- */
-export function systemPurposeSelectValue(
-  purposeId: string,
-  bindings: Record<string, string | null>,
-  profiles: Record<string, unknown>,
-): string {
-  if (Object.prototype.hasOwnProperty.call(bindings, purposeId)) {
-    const bound = bindings[purposeId];
-    if (bound == null || bound === "") return "";
-    return bound;
-  }
-  const entry = readHabitatConfigRecord(profiles)[purposeId];
-  if (profileHasUsableChain(entry)) return purposeId;
-  return "";
-}
-
-/** 保存前规范化：去掉空 hop，保留非空 params（含静默保留的 extra），trim title */
-export function profilesDraftToPatch(
-  draft: Record<string, unknown> | null | undefined,
-): Record<string, unknown> {
-  const entries = readHabitatConfigRecord(draft);
-  const out: Record<string, unknown> = {};
-  for (const [id, profile] of Object.entries(entries)) {
-    const chain = readChain(profile.chain)
-      .map(normalizeHop)
-      .filter((hop) => hop.provider && hop.model)
-      .slice(0, 1);
-    const params =
-      profile.params && typeof profile.params === "object" && !Array.isArray(profile.params)
-        ? (profile.params as Record<string, unknown>)
-        : undefined;
-    const next: Record<string, unknown> = { ...profile, chain };
-    const title = normalizeOptionalTitle(profile.title);
-    if (title) next.title = title;
-    else delete next.title;
-    if (params && Object.keys(params).length > 0) next.params = params;
-    else delete next.params;
-    out[id] = next;
-  }
-  return out;
-}
-
-/**
- * 从 profiles + bindings（及已有 scenes）合成扁平 scenes 写入。
- * 系统用途优先；其余 profile id 也落入 scenes（兼容自定义方案）。
- * @deprecated 日常场景 UI 已改为直接写 scenes；保留给遗留「自定义方案」保存路径。
- */
-export function scenesDraftFromProfilesAndBindings(opts: {
-  profiles: Record<string, unknown>;
-  bindings: Record<string, string | null>;
-  defaultProfile: string;
-  existingScenes?: Record<string, unknown>;
-}): Record<string, unknown> {
-  const profiles = readHabitatConfigRecord(opts.profiles);
-  const existing = readHabitatConfigRecord(opts.existingScenes);
-  const out: Record<string, unknown> = { ...existing };
-  const defaultId = opts.defaultProfile.trim() || "chat";
-
-  const hop0Of = (profileId: string): { connection: string; model: string } | null => {
-    const entry = profiles[profileId];
-    const hop = readChain(entry?.chain)[0];
-    if (!hop?.provider || !hop.model) return null;
-    return { connection: hop.provider, model: hop.model };
-  };
-
-  const setPurpose = (purpose: string, profileId: string) => {
-    const hop = hop0Of(profileId);
-    if (!hop) return;
-    out[purpose] = {
-      connection: hop.connection,
-      model: hop.model,
-    };
-  };
-
-  setPurpose(defaultId, defaultId);
-  setPurpose("chat", defaultId);
-
-  for (const row of LLM_SYSTEM_PURPOSE_ROWS) {
-    const purpose = row.id;
-    if (Object.prototype.hasOwnProperty.call(opts.bindings, purpose)) {
-      const bound = opts.bindings[purpose];
-      const profileId = bound == null || bound === "" ? defaultId : bound;
-      setPurpose(purpose, profileId);
-    } else if (profileHasUsableChain(profiles[purpose])) {
-      setPurpose(purpose, purpose);
-    }
-  }
-
-  for (const [id] of Object.entries(profiles)) {
-    if (!out[id]) setPurpose(id, id);
-  }
-
-  return out;
-}
-
-/** 扁平场景绑定草稿；`null` = 同主场景（不写该用途键） */
-export type SceneBindingDraft = {
-  connection: string;
-  model: string;
-  /** 场景 params（文生声音色等）；缺省不写 */
-  params?: Record<string, unknown>;
-};
-
-export function sceneDraftVoice(draft: SceneBindingDraft): string {
-  const v = draft.params?.voice;
-  return typeof v === "string" ? v.trim() : "";
-}
-
-export function withSceneDraftVoice(draft: SceneBindingDraft, voice: string): SceneBindingDraft {
-  const trimmed = voice.trim();
-  const nextParams: Record<string, unknown> = { ...draft.params };
-  if (trimmed) nextParams.voice = trimmed;
-  else delete nextParams.voice;
-  const params = Object.keys(nextParams).length > 0 ? nextParams : undefined;
-  if (params) return { ...draft, params };
-  const { params: _omit, ...rest } = draft;
-  return rest;
-}
-
-export function readSceneBindingDraft(raw: unknown): SceneBindingDraft | null {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-  const o = raw as Record<string, unknown>;
-  const connection = typeof o.connection === "string" ? o.connection.trim() : "";
-  const model = typeof o.model === "string" ? o.model.trim() : "";
-  if (!connection && !model) return null;
-  const params =
-    o.params && typeof o.params === "object" && !Array.isArray(o.params)
-      ? (o.params as Record<string, unknown>)
-      : undefined;
-  return {
-    connection,
-    model,
-    ...(params && Object.keys(params).length > 0 ? { params } : {}),
-  };
-}
-
-function hop0AsSceneBinding(
-  profile: Record<string, unknown> | undefined,
-): SceneBindingDraft | null {
-  const hop = readChain(profile?.chain)[0];
-  if (!hop?.provider || !hop.model) return null;
-  return { connection: hop.provider, model: hop.model };
-}
-
-/**
- * 从 llm 段读出场景 UI 草稿：优先 scenes；chat 可回退 profiles。
- * 子用途无独立 scenes 键 → null（同主场景）。按能力族分别读取。
- */
-export function readScenesUiDraft(
-  llm: Record<string, unknown>,
-): Record<string, SceneBindingDraft | null> {
-  const scenes = readHabitatConfigRecord(llm.scenes as Record<string, unknown> | undefined);
-  const profiles = readHabitatConfigRecord(llm.profiles as Record<string, unknown> | undefined);
-  const defaultId =
-    typeof llm.default_scene === "string" && llm.default_scene.trim()
-      ? llm.default_scene.trim()
-      : typeof llm.default_profile === "string" && llm.default_profile.trim()
-        ? llm.default_profile.trim()
-        : "chat";
-
-  const out: Record<string, SceneBindingDraft | null> = {};
-  const allRows = [
-    ...DIALOGUE_SCENE_ROWS,
-    ...IMAGE_SCENE_ROWS,
-    ...VOICE_SCENE_ROWS,
-    ...RETRIEVAL_SCENE_ROWS,
-  ];
-  for (const row of allRows) {
-    const fromScene = readSceneBindingDraft(scenes[row.id]);
-    if (fromScene?.connection && fromScene.model) {
-      out[row.id] = fromScene;
-      continue;
-    }
-    if (row.id === "chat") {
-      out.chat = hop0AsSceneBinding(profiles.chat) ??
-        hop0AsSceneBinding(profiles[defaultId]) ?? { connection: "", model: "" };
-    } else if (row.id === "voice_generate") {
-      // 遗留：仅有 tts 时在 UI 上展示为文生声主场景
-      const fromTts = readSceneBindingDraft(scenes.tts);
-      out.voice_generate = fromTts?.connection && fromTts.model ? fromTts : null;
-    } else {
-      out[row.id] = null;
-    }
-  }
-  return out;
-}
-
-/** 只更新指定用途键；null/空 → 写入 null（merge 时删除该用途，同主场景） */
-export function scenesUiDraftToPatch(
-  draft: Record<string, SceneBindingDraft | null>,
-  existingScenes: Record<string, unknown> | null | undefined,
-  purposes: readonly string[],
-): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  const existing = readHabitatConfigRecord(existingScenes);
-  for (const purpose of purposes) {
-    const v = draft[purpose];
-    if (v == null || !v.connection.trim() || !v.model.trim()) {
-      // 仅当库里已有该键时发 tombstone，避免无意义 null
-      if (Object.prototype.hasOwnProperty.call(existing, purpose)) {
-        out[purpose] = null;
-      }
-    } else {
-      const params =
-        v.params && typeof v.params === "object" && Object.keys(v.params).length > 0
-          ? v.params
-          : undefined;
-      out[purpose] = {
-        connection: v.connection.trim(),
-        model: v.model.trim(),
-        ...(params ? { params } : {}),
-      };
-    }
-  }
-  return out;
-}
-
-export function purposeIdsForFocus(
-  focus: "connections" | "dialogue" | "image_gen" | "retrieval" | "voice" | "all",
-): string[] {
-  return purposeRowsForFocus(focus).map((r) => r.id);
 }

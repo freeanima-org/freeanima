@@ -1,6 +1,4 @@
 export {
-  getLlmConfig,
-  tryGetLlmConfig,
   isLlmConfigured,
   LLM_NOT_CONFIGURED_MESSAGE,
   getDefaultProfileId,

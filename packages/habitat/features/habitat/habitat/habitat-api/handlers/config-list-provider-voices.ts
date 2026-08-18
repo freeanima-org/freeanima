@@ -41,9 +41,8 @@ export async function listProviderVoices(
     throw new ApiHandlerError(400, "provider_id 不能为空", { code: "invalid_provider_id" });
   }
 
-  const llm = asRecord(habitatCtx().engine.config.data.llm);
-  const providers = asRecord(llm.providers);
-  const raw = providers[providerId];
+  const connections = asRecord(habitatCtx().engine.config.data.connections);
+  const raw = connections[providerId];
   if (raw == null) {
     throw new ApiHandlerError(404, `连接不存在: ${providerId}`, {
       code: "provider_not_found",
@@ -62,7 +61,7 @@ export async function listProviderVoices(
 
   const protocol = effectiveProviderModalities(providerCfg).voice_protocol;
   if (!protocol) {
-    throw new ApiHandlerError(400, "该连接未配置语音协议（voice_protocol）", {
+    throw new ApiHandlerError(400, "该连接未配置语音协议（audio_protocol）", {
       code: "voice_protocol_missing",
     });
   }

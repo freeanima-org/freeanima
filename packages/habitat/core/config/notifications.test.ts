@@ -21,7 +21,7 @@ describe("resolveNotificationRecipients", () => {
       commons_world_id: 30,
     });
     const config = {
-      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      connections: {},
       worlds: { user_subject_id: 2, agent_subject_id: 1 },
     } as RuntimeConfig;
 
@@ -33,7 +33,7 @@ describe("resolveNotificationRecipients", () => {
 
   it("uses configured subject entity ids from worlds when unbound", () => {
     const config = {
-      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      connections: {},
       worlds: { user_subject_id: 2, agent_subject_id: 1 },
     } as RuntimeConfig;
 
@@ -45,7 +45,7 @@ describe("resolveNotificationRecipients", () => {
 
   it("falls back to legacy notifications section when unbound", () => {
     const config = {
-      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      connections: {},
       notifications: { user_subject_id: 3, agent_subject_id: 4 },
     } as RuntimeConfig;
 
@@ -57,7 +57,7 @@ describe("resolveNotificationRecipients", () => {
 
   it("throws when unset and unbound", () => {
     const config = {
-      llm: { default_profile: "chat", providers: {}, profiles: {} },
+      connections: {},
     } as RuntimeConfig;
 
     expect(() => resolveNotificationRecipients(config)).toThrow(/未解析/);

@@ -9,7 +9,7 @@ import {
 } from "./schemas/tts.ts";
 import { DEFAULT_EDGE_TTS_BASE_URL, VOICE_PROTOCOL_EDGE_TTS } from "./schemas/llm-config.ts";
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
-import { materializeLlmScenes, tryGetLlmConfig } from "./llm-config.ts";
+import { resolveScene } from "./llm-config.ts";
 import { effectiveProviderModalities } from "../llm/presets.ts";
 
 export type { ResolvedSpeechConfig };
@@ -41,23 +41,20 @@ function parseProvider(raw: unknown): TtsProvider {
 }
 
 /**
- * 从 llm.scenes.tts（可继承 voice_generate）+ 连接 voice_protocol=edge-tts 解析 Edge 连接。
- * 未配置时返回 null（合成仍可用库默认端点）。
+ * 从 audio_generate.tts（可继承 main）+ 连接 audio_protocol=edge-tts 解析 Edge 连接。
  */
 export function resolveEdgeTtsConnection(cfg: RuntimeConfig): ResolvedEdgeTtsConnection | null {
-  const llm = tryGetLlmConfig(cfg);
-  if (!llm) return null;
-  const scenes = materializeLlmScenes(llm);
-  const scene = scenes.tts ?? scenes.voice_generate;
-  if (!scene?.connection) return null;
-  const provider = llm.providers[scene.connection];
-  if (!provider) return null;
-  const voiceProtocol = effectiveProviderModalities(provider).voice_protocol;
-  // 显式其它语音协议 → 非 Edge；未声明时仍允许（遗留仅配 base_url 的 Edge）
+  let scene: ReturnType<typeof resolveScene>;
+  try {
+    scene = resolveScene(cfg, "tts");
+  } catch {
+    return null;
+  }
+  const voiceProtocol = effectiveProviderModalities(scene.provider).audio_protocol;
   if (voiceProtocol != null && voiceProtocol !== VOICE_PROTOCOL_EDGE_TTS) {
     return null;
   }
-  const baseUrl = (provider.base_url?.trim() || DEFAULT_EDGE_TTS_BASE_URL).replace(/\/$/, "");
+  const baseUrl = (scene.provider.base_url?.trim() || DEFAULT_EDGE_TTS_BASE_URL).replace(/\/$/, "");
   const voiceHint = scene.model?.trim() || null;
   return { baseUrl, voiceHint };
 }
@@ -76,16 +73,18 @@ export function getResolvedSpeechConfig(cfg: RuntimeConfig): ResolvedSpeechConfi
   } else if (edge || tts.provider === "edge-tts") {
     provider = "edge-tts";
   } else {
-    // 非 edge 的 Habitat 协议仍标为 edge-tts 枚举以外？ResolvedSpeechConfig.provider 仅 edge|web-speech
-    // 前端用 edge-tts 表示「走 Habitat RPC」；实际协议由 scenes.tts 决定
+    // 前端用 edge-tts 表示「走 Habitat RPC」；实际协议由 audio_generate 决定
     provider = "edge-tts";
   }
 
-  const llm = tryGetLlmConfig(cfg);
-  const scenes = llm ? materializeLlmScenes(llm) : null;
-  const voiceScene = scenes?.tts ?? scenes?.voice_generate;
-  const sceneVoice =
-    typeof voiceScene?.params?.voice === "string" ? voiceScene.params.voice.trim() : null;
+  let sceneVoice: string | null = null;
+  try {
+    const voiceScene = resolveScene(cfg, "tts");
+    sceneVoice =
+      typeof voiceScene.params?.voice === "string" ? voiceScene.params.voice.trim() : null;
+  } catch {
+    sceneVoice = null;
+  }
 
   return {
     enabled: tts.enabled !== false,

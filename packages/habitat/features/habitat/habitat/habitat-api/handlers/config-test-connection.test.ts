@@ -44,24 +44,21 @@ import { bindHabitatRuntimeContext } from "./runtime.ts";
 import { pickConfigString, testConfigConnection } from "./config-test-connection.ts";
 
 const runtimeSnapshot = {
-  llm: {
-    default_profile: "chat",
-    providers: {
-      main: {
-        backend: "openai_compatible" as const,
-        base_url: "https://api.example/v1",
-        api_key: "sk-secret",
-      },
+  connections: {
+    main: {
+      preset: "custom" as const,
+      custom_kind: "text" as const,
+      text_protocol: "openai_compatible" as const,
+      base_url: "https://api.example/v1",
+      api_key: "sk-secret",
     },
-    profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
+  text_generate: { main: { connection: "main", model: "m" } },
   firecrawl: { api_url: "https://api.firecrawl.dev", api_key: "fc-key" },
   browser: { camofox: { base_url: "http://127.0.0.1:9377" } },
   embedding: {
     enabled: true,
-    base_url: "http://127.0.0.1:11434/v1",
-    model: "bge-m3",
-    api_key: "ollama",
+    main: { connection: "emb", model: "bge-m3" },
   },
   discord: { enabled: true, token: "discord-saved-token" },
   weixin: { enabled: true, token: "weixin-saved-token", base_url: "https://ilink.test" },

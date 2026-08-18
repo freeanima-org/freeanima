@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Button } from "@freeanima/ui-kit";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@freeanima/ui-kit";
 import { Label } from "@freeanima/ui-kit/components/ui";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
+import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import {
   habitatConfigNumberField,
   habitatConfigSelectClassName,
@@ -14,21 +15,24 @@ import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { HabitatConfigConnectionTestButton } from "./HabitatConfigConnectionTestButton.tsx";
 import { LlmConnectionModelsTable } from "./LlmConnectionModelsTable.tsx";
 import {
+  applyCustomKindToConnectionEntry,
   connectionDefaultBaseUrl,
+  CONNECTION_LAYERS,
+  connectionIdsForLayer,
   LLM_SETTINGS_FORMATS,
+  LLM_SETTINGS_GENERIC_AUDIO_PROTOCOLS,
+  LLM_SETTINGS_GENERIC_EMBEDDINGS_PROTOCOLS,
+  LLM_SETTINGS_GENERIC_IMAGE_PROTOCOLS,
   LLM_SETTINGS_PRESETS,
-  LLM_SETTINGS_IMAGE_PROTOCOLS,
-  LLM_SETTINGS_EMBEDDINGS_PROTOCOLS,
-  LLM_SETTINGS_VOICE_PROTOCOLS,
   applyPresetToConnectionEntry,
   presetModalitySuiteSummary,
   purposeRowsForFocus,
-  readChain,
   readTimeoutDraft,
   sceneDraftVoice,
   validateTimeoutDraft,
   withSceneDraftVoice,
-  type RouteHop,
+  type CapabilityPanelFocus,
+  type ConnectionLayerId,
   type SceneBindingDraft,
   type TimeoutDraft,
 } from "./llm-settings-draft.ts";
@@ -39,13 +43,49 @@ import {
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_OPENCODE_GO,
-  VOICE_PROTOCOL_EDGE_TTS,
+  AUDIO_PROTOCOL_EDGE_TTS,
 } from "@freeanima/habitat/core/config";
 import {
   ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL,
   effectiveProviderModalities,
 } from "@freeanima/habitat/core/llm/presets";
 import { voiceProtocolSeparatesModelAndVoice } from "@freeanima/habitat/core/tts/voice-catalog";
+
+function LabelControlRow({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string;
+  htmlFor?: string | undefined;
+  children: ReactNode;
+}): ReactNode {
+  const compact = useCompactLayout();
+  return (
+    <div className={compact ? "space-y-1" : "flex items-start gap-3"}>
+      <Label
+        className={`text-sm ${compact ? "" : "flex h-8 w-28 shrink-0 items-center"}`}
+        {...(htmlFor ? { htmlFor } : {})}
+      >
+        {label}
+      </Label>
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  );
+}
+
+function FormGroupCard({ title, children }: { title?: string; children: ReactNode }): ReactNode {
+  return (
+    <Card className="gap-3 py-4 shadow-none">
+      {title ? (
+        <CardHeader className="px-4">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        </CardHeader>
+      ) : null}
+      <CardContent className="space-y-4 px-4">{children}</CardContent>
+    </Card>
+  );
+}
 
 function ConnectionSelect({
   value,
@@ -62,83 +102,30 @@ function ConnectionSelect({
 }) {
   const missing = value && !connectionIds.includes(value);
   return (
-    <div className="space-y-1">
-      {id !== undefined ? (
-        <Label className="text-sm" htmlFor={id}>
-          连接
-        </Label>
-      ) : (
-        <Label className="text-sm">连接</Label>
-      )}
-      <select
-        id={id}
-        className={habitatConfigSelectClassName}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        disabled={connectionIds.length === 0 && !missing}
-      >
-        <option value="">选择连接…</option>
-        {missing ? (
-          <option value={value}>{(connectionLabels?.[value] ?? value) + "（已删除）"}</option>
-        ) : null}
-        {connectionIds.map((cid) => (
-          <option key={cid} value={cid}>
-            {connectionLabels?.[cid] ?? cid}
-          </option>
-        ))}
-      </select>
-      {connectionIds.length === 0 ? (
-        <p className="text-xs text-muted-foreground">请先在「连接」页添加连接。</p>
-      ) : null}
-    </div>
-  );
-}
-
-/** 单跳路由（已取消多跳备用） */
-function LlmChainEditor({
-  chain,
-  connectionIds,
-  connectionLabels,
-  onChange,
-}: {
-  chain: RouteHop[];
-  connectionIds: string[];
-  connectionLabels?: Record<string, string>;
-  onChange: (chain: RouteHop[]) => void;
-}) {
-  const primary = chain[0] ?? { provider: "", model: "" };
-
-  const patchPrimary = (part: Partial<RouteHop>) => {
-    let next: RouteHop = { ...primary, ...part };
-    if ("params" in part && part.params === undefined) {
-      const { params: _omit, ...rest } = next;
-      void _omit;
-      next = rest;
-    }
-    onChange([next]);
-  };
-
-  return (
-    <div className="space-y-4">
+    <LabelControlRow label="连接" {...(id ? { htmlFor: id } : {})}>
       <div className="space-y-1">
-        <p className="text-sm font-medium">路由</p>
-        <p className="text-xs text-muted-foreground">选择连接与模型。</p>
+        <select
+          id={id}
+          className={habitatConfigSelectClassName}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={connectionIds.length === 0 && !missing}
+        >
+          <option value="">选择连接…</option>
+          {missing ? (
+            <option value={value}>{(connectionLabels?.[value] ?? value) + "（已删除）"}</option>
+          ) : null}
+          {connectionIds.map((cid) => (
+            <option key={cid} value={cid}>
+              {connectionLabels?.[cid] ?? cid}
+            </option>
+          ))}
+        </select>
+        {connectionIds.length === 0 ? (
+          <p className="text-xs text-muted-foreground">请先在「连接」页添加本层连接。</p>
+        ) : null}
       </div>
-      <div className="space-y-3 rounded-md border p-3">
-        <ConnectionSelect
-          id="llm-hop-conn-0"
-          value={primary.provider}
-          connectionIds={connectionIds}
-          {...(connectionLabels ? { connectionLabels } : {})}
-          onChange={(provider) => patchPrimary({ provider, model: "" })}
-        />
-        <LlmModelPicker
-          providerId={primary.provider}
-          value={primary.model}
-          onChange={(model) => patchPrimary({ model })}
-        />
-      </div>
-    </div>
+    </LabelControlRow>
   );
 }
 
@@ -200,7 +187,7 @@ function TimeoutAdvancedFields({
   );
 }
 
-/** 连接编辑表单（放在 ModalSheetPresent 内） */
+/** 连接编辑表单（放在 ModalSheetPresent 内）；新建与编辑同一面板，先选预设。 */
 export function LlmConnectionEditorForm({
   connectionId,
   entry,
@@ -217,14 +204,134 @@ export function LlmConnectionEditorForm({
   const isGateway = preset === LLM_PRESET_OPENCODE_GO;
   const isAlibabaTokenPlan = preset === LLM_PRESET_ALIBABA_TOKEN_PLAN;
   const defaultUrl = connectionDefaultBaseUrl(preset);
-  const isEdgeVoice = coerceString(entry.voice_protocol ?? "") === VOICE_PROTOCOL_EDGE_TTS;
+  const kind = (coerceString(entry.custom_kind) || "text") as ConnectionLayerId;
+  const isEdgeVoice = coerceString(entry.audio_protocol ?? "") === AUDIO_PROTOCOL_EDGE_TTS;
 
   const patch = (part: Record<string, unknown>) => {
     onChange({ ...entry, ...part });
   };
 
-  return (
-    <div className="space-y-4">
+  const presetField = (
+    <LabelControlRow label="预设" htmlFor="llm-connection-preset">
+      <select
+        id="llm-connection-preset"
+        className={habitatConfigSelectClassName}
+        value={preset}
+        onChange={(e) => {
+          onChange(applyPresetToConnectionEntry(entry, e.target.value));
+        }}
+      >
+        {LLM_SETTINGS_PRESETS.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.label} — {p.hint}
+          </option>
+        ))}
+      </select>
+    </LabelControlRow>
+  );
+
+  const kindField = isCustom ? (
+    <LabelControlRow label="能力层" htmlFor="llm-connection-kind">
+      <select
+        id="llm-connection-kind"
+        className={habitatConfigSelectClassName}
+        value={kind}
+        onChange={(e) => {
+          const layer = e.target.value as ConnectionLayerId;
+          if (!layer) return;
+          onChange(applyCustomKindToConnectionEntry(entry, layer));
+        }}
+      >
+        {CONNECTION_LAYERS.map((l) => (
+          <option key={l.id} value={l.id}>
+            {l.label}
+          </option>
+        ))}
+      </select>
+    </LabelControlRow>
+  ) : (
+    <p className="text-xs text-muted-foreground">
+      能力层由本预设的协议套件决定；一条内置连接可出现在多个能力页。
+    </p>
+  );
+
+  const protocolField =
+    isCustom && kind === "text" ? (
+      <LabelControlRow label="文本协议" htmlFor="llm-connection-format">
+        <select
+          id="llm-connection-format"
+          className={habitatConfigSelectClassName}
+          value={coerceString(entry.text_protocol ?? LLM_FORMAT_OPENAI_COMPATIBLE)}
+          onChange={(e) => patch({ text_protocol: e.target.value })}
+        >
+          {LLM_SETTINGS_FORMATS.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}（{f.code}）
+            </option>
+          ))}
+        </select>
+      </LabelControlRow>
+    ) : isCustom && kind === "image" ? (
+      <LabelControlRow label="文生图协议" htmlFor="llm-connection-image-protocol">
+        <select
+          id="llm-connection-image-protocol"
+          className={habitatConfigSelectClassName}
+          value={coerceString(entry.image_protocol ?? "openai_images")}
+          onChange={(e) => patch({ image_protocol: e.target.value })}
+        >
+          {LLM_SETTINGS_GENERIC_IMAGE_PROTOCOLS.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}（{f.code}）
+            </option>
+          ))}
+        </select>
+      </LabelControlRow>
+    ) : isCustom && kind === "embeddings" ? (
+      <LabelControlRow label="向量协议" htmlFor="llm-connection-embeddings-protocol">
+        <select
+          id="llm-connection-embeddings-protocol"
+          className={habitatConfigSelectClassName}
+          value={coerceString(entry.embeddings_protocol ?? "openai_embeddings")}
+          onChange={(e) => patch({ embeddings_protocol: e.target.value })}
+        >
+          {LLM_SETTINGS_GENERIC_EMBEDDINGS_PROTOCOLS.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}（{f.code}）
+            </option>
+          ))}
+        </select>
+      </LabelControlRow>
+    ) : isCustom && kind === "audio" ? (
+      <LabelControlRow label="语音协议" htmlFor="llm-connection-audio-protocol">
+        <select
+          id="llm-connection-audio-protocol"
+          className={habitatConfigSelectClassName}
+          value={coerceString(entry.audio_protocol ?? "openai_audio_speech")}
+          onChange={(e) => {
+            const audio_protocol = e.target.value;
+            patch({
+              audio_protocol,
+              ...(audio_protocol === AUDIO_PROTOCOL_EDGE_TTS && !coerceString(entry.base_url)
+                ? { base_url: DEFAULT_EDGE_TTS_BASE_URL }
+                : {}),
+            });
+          }}
+        >
+          {LLM_SETTINGS_GENERIC_AUDIO_PROTOCOLS.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}（{f.code}）
+            </option>
+          ))}
+        </select>
+      </LabelControlRow>
+    ) : isCustom && kind === "video" ? (
+      <p className="text-xs text-muted-foreground">
+        视频层目前只保存连接（URL / 密钥）；协议可空，不会接入调用。
+      </p>
+    ) : null;
+
+  const identityFields = (
+    <>
       {hubConfigTextField("显示名称", coerceString(entry.title ?? ""), (v) =>
         patch({ title: v.trim() ? v : undefined }),
       )}
@@ -232,43 +339,25 @@ export function LlmConnectionEditorForm({
         <Label className="text-sm">连接 id</Label>
         <p className="font-mono text-xs text-muted-foreground">{connectionId}</p>
       </div>
+    </>
+  );
 
-      <div className="space-y-1">
-        <Label className="text-sm" htmlFor="llm-connection-preset">
-          预设
-        </Label>
-        <select
-          id="llm-connection-preset"
-          className={habitatConfigSelectClassName}
-          value={preset}
-          onChange={(e) => {
-            onChange(applyPresetToConnectionEntry(entry, e.target.value));
-          }}
-        >
-          {LLM_SETTINGS_PRESETS.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.label} — {p.hint}
-            </option>
-          ))}
-        </select>
-      </div>
-
+  const builtinAlerts = (
+    <>
       {isGateway ? (
         <StatusAlert variant="info">
           多格式对话网关：同一连接按模型自动选择 Chat Completions / Responses /
           Messages。文生图/向量/语音由预设声明（本预设为无）。
         </StatusAlert>
       ) : null}
-
       {isAlibabaTokenPlan ? (
         <StatusAlert variant="info">
-          本预设使用 OpenAI 兼容根（对话 / 文生图 / 语音合成）。Anthropic Messages 在另一 API 根（
-          {ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL}
-          ），请另建「自定义」连接并选 Messages。模型名从上游目录或内置语音表拉取，不写死在预设里。
+          本预设使用厂商协议（对话 / 文生图 / 语音合成），不必是 OpenAI 封装。Anthropic Messages
+          在另一 API 根（{ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL}），请另建「自定义」文本连接并选
+          Messages。
         </StatusAlert>
       ) : null}
-
-      {!isCustom && presetModalitySuiteSummary(preset) ? (
+      {presetModalitySuiteSummary(preset) ? (
         <div className="space-y-1">
           <Label className="text-sm">协议套件</Label>
           <p className="text-xs text-muted-foreground">{presetModalitySuiteSummary(preset)}</p>
@@ -277,89 +366,12 @@ export function LlmConnectionEditorForm({
           </p>
         </div>
       ) : null}
+    </>
+  );
 
+  const endpointFields = (
+    <>
       {isCustom ? (
-        <>
-          <div className="space-y-1">
-            <Label className="text-sm" htmlFor="llm-connection-format">
-              文本协议
-            </Label>
-            <select
-              id="llm-connection-format"
-              className={habitatConfigSelectClassName}
-              value={coerceString(entry.format ?? LLM_FORMAT_OPENAI_COMPATIBLE)}
-              onChange={(e) => patch({ format: e.target.value, text_protocol: e.target.value })}
-            >
-              {LLM_SETTINGS_FORMATS.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.label}（{f.code}）
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-sm" htmlFor="llm-connection-image-protocol">
-              文生图协议
-            </Label>
-            <select
-              id="llm-connection-image-protocol"
-              className={habitatConfigSelectClassName}
-              value={coerceString(entry.image_protocol ?? "")}
-              onChange={(e) => patch({ image_protocol: e.target.value ? e.target.value : null })}
-            >
-              {LLM_SETTINGS_IMAGE_PROTOCOLS.map((f) => (
-                <option key={f.id || "none"} value={f.id}>
-                  {f.label}
-                  {"code" in f && f.code ? `（${f.code}）` : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-sm" htmlFor="llm-connection-embeddings-protocol">
-              向量协议
-            </Label>
-            <select
-              id="llm-connection-embeddings-protocol"
-              className={habitatConfigSelectClassName}
-              value={coerceString(entry.embeddings_protocol ?? "")}
-              onChange={(e) =>
-                patch({ embeddings_protocol: e.target.value ? e.target.value : null })
-              }
-            >
-              {LLM_SETTINGS_EMBEDDINGS_PROTOCOLS.map((f) => (
-                <option key={f.id || "none"} value={f.id}>
-                  {f.label}
-                  {"code" in f && f.code ? `（${f.code}）` : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <Label className="text-sm" htmlFor="llm-connection-voice-protocol">
-              语音协议
-            </Label>
-            <select
-              id="llm-connection-voice-protocol"
-              className={habitatConfigSelectClassName}
-              value={coerceString(entry.voice_protocol ?? "")}
-              onChange={(e) => patch({ voice_protocol: e.target.value ? e.target.value : null })}
-            >
-              {LLM_SETTINGS_VOICE_PROTOCOLS.map((f) => (
-                <option key={f.id || "none"} value={f.id}>
-                  {f.label}
-                  {"code" in f && f.code ? `（${f.code}）` : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-        </>
-      ) : null}
-
-      {isCustom || isEdgeVoice ? (
         hubConfigTextField(
           "Base URL",
           coerceString(entry.base_url ?? ""),
@@ -382,7 +394,6 @@ export function LlmConnectionEditorForm({
           </p>
         </div>
       )}
-
       {hubConfigVaultField(
         "API 密钥",
         coerceString(entry.api_key ?? ""),
@@ -393,68 +404,62 @@ export function LlmConnectionEditorForm({
             : "明文，或 vault(…) / env(…)；推荐从 Vault 选择写入引用",
         },
       )}
-
       <TimeoutAdvancedFields entry={entry} patch={patch} />
+    </>
+  );
 
-      <div className="space-y-4">
-        {connectionId.trim() ? (
-          <HabitatConfigConnectionTestButton
-            service="llm_provider"
-            providerId={connectionId.trim()}
-            config={entry}
-            disabled={testDisabled ?? false}
-          />
-        ) : (
-          <HabitatConfigConnectionTestButton
-            service="llm_provider"
-            config={entry}
-            disabled={testDisabled ?? false}
-          />
-        )}
-        <LlmConnectionModelsTable providerId={connectionId} disabled={testDisabled ?? false} />
-      </div>
+  const probeFields = (
+    <div className="space-y-4">
+      {connectionId.trim() ? (
+        <HabitatConfigConnectionTestButton
+          service="llm_provider"
+          providerId={connectionId.trim()}
+          config={entry}
+          disabled={testDisabled ?? false}
+        />
+      ) : (
+        <HabitatConfigConnectionTestButton
+          service="llm_provider"
+          config={entry}
+          disabled={testDisabled ?? false}
+        />
+      )}
+      <LlmConnectionModelsTable providerId={connectionId} disabled={testDisabled ?? false} />
     </div>
   );
-}
 
-/** 方案（profile）编辑表单 */
-export function LlmSceneEditorForm({
-  sceneId,
-  entry,
-  connectionIds,
-  connectionLabels,
-  onChange,
-}: {
-  sceneId: string;
-  entry: Record<string, unknown>;
-  connectionIds: string[];
-  connectionLabels?: Record<string, string>;
-  onChange: (next: Record<string, unknown>) => void;
-}) {
-  const patch = (part: Record<string, unknown>) => onChange({ ...entry, ...part });
+  if (isCustom) {
+    return (
+      <div className="space-y-4">
+        <FormGroupCard title="能力">
+          {presetField}
+          {kindField}
+          {protocolField}
+        </FormGroupCard>
+        <FormGroupCard title="接入">
+          {identityFields}
+          {endpointFields}
+        </FormGroupCard>
+        <FormGroupCard title="探测">{probeFields}</FormGroupCard>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {hubConfigTextField("显示名称", coerceString(entry.title ?? ""), (v) =>
-        patch({ title: v.trim() ? v : undefined }),
-      )}
-      <div className="space-y-1">
-        <Label className="text-sm">方案 id</Label>
-        <p className="font-mono text-xs text-muted-foreground">{sceneId}</p>
-      </div>
-      <LlmChainEditor
-        chain={readChain(entry.chain)}
-        connectionIds={connectionIds}
-        {...(connectionLabels ? { connectionLabels } : {})}
-        onChange={(chain) => patch({ chain })}
-      />
+      {presetField}
+      {kindField}
+      {identityFields}
+      {builtinAlerts}
+      {endpointFields}
+      {probeFields}
     </div>
   );
 }
 
 function connectionModalityProtocol(
   entry: Record<string, unknown> | undefined,
-  kind: "image" | "embeddings" | "voice",
+  kind: "image" | "embeddings" | "audio",
 ): string | null {
   if (!entry) return null;
   const modalities = effectiveProviderModalities(entry);
@@ -463,27 +468,18 @@ function connectionModalityProtocol(
       ? modalities.image_protocol
       : kind === "embeddings"
         ? modalities.embeddings_protocol
-        : modalities.voice_protocol;
+        : modalities.audio_protocol;
   return typeof proto === "string" && proto.length > 0 ? proto : null;
 }
 
-function connectionIdsForScenePurpose(
-  purposeId: string,
-  connectionIds: string[],
-  providersById: Record<string, Record<string, unknown>>,
-): string[] {
-  if (purposeId === "image_generate") {
-    return connectionIds.filter((id) => connectionModalityProtocol(providersById[id], "image"));
-  }
-  if (purposeId === "embedding") {
-    return connectionIds.filter((id) =>
-      connectionModalityProtocol(providersById[id], "embeddings"),
-    );
-  }
+function layerForPurpose(purposeId: string): ConnectionLayerId {
+  if (purposeId === "image_generate") return "image";
+  if (purposeId === "embedding") return "embeddings";
+  if (purposeId === "video_generate") return "video";
   if (purposeId === "voice_generate" || purposeId === "tts" || purposeId === "voice_realtime") {
-    return connectionIds.filter((id) => connectionModalityProtocol(providersById[id], "voice"));
+    return "audio";
   }
-  return connectionIds;
+  return "text";
 }
 
 function modelPurposeForScene(
@@ -520,7 +516,7 @@ function SceneConnectionModelFields({
   const isVoiceScene =
     purposeId === "voice_generate" || purposeId === "tts" || purposeId === "voice_realtime";
   const voiceProtocol = isVoiceScene
-    ? connectionModalityProtocol(providersById[value.connection], "voice")
+    ? connectionModalityProtocol(providersById[value.connection], "audio")
     : null;
   const splitVoice = voiceProtocolSeparatesModelAndVoice(voiceProtocol);
 
@@ -533,134 +529,110 @@ function SceneConnectionModelFields({
         connectionLabels={connectionLabels}
         onChange={(connection) => onChange({ connection, model: "" })}
       />
-      {isVoiceScene && voiceProtocol === VOICE_PROTOCOL_EDGE_TTS ? (
-        <LlmVoicePicker
-          providerId={value.connection}
-          value={value.model}
-          onChange={(model) => onChange({ ...value, model })}
-          label="音色"
-        />
+      {isVoiceScene && voiceProtocol === AUDIO_PROTOCOL_EDGE_TTS ? (
+        <LabelControlRow label="音色" htmlFor={`${fieldId}-voice`}>
+          <LlmVoicePicker
+            id={`${fieldId}-voice`}
+            hideLabel
+            providerId={value.connection}
+            value={value.model}
+            onChange={(model) => onChange({ ...value, model })}
+          />
+        </LabelControlRow>
       ) : (
-        <LlmModelPicker
-          providerId={value.connection}
-          value={value.model}
-          onChange={(model) => onChange({ ...value, model })}
-          {...(modelPurpose ? { purpose: modelPurpose } : {})}
-        />
+        <LabelControlRow label="模型" htmlFor={`${fieldId}-model`}>
+          <LlmModelPicker
+            id={`${fieldId}-model`}
+            hideLabel
+            providerId={value.connection}
+            value={value.model}
+            onChange={(model) => onChange({ ...value, model })}
+            {...(modelPurpose ? { purpose: modelPurpose } : {})}
+          />
+        </LabelControlRow>
       )}
       {isVoiceScene && splitVoice ? (
-        <LlmVoicePicker
-          providerId={value.connection}
-          model={value.model}
-          value={sceneDraftVoice(value)}
-          onChange={(voice) => onChange(withSceneDraftVoice(value, voice))}
-        />
+        <LabelControlRow label="音色" htmlFor={`${fieldId}-split-voice`}>
+          <LlmVoicePicker
+            id={`${fieldId}-split-voice`}
+            hideLabel
+            providerId={value.connection}
+            model={value.model}
+            value={sceneDraftVoice(value)}
+            onChange={(voice) => onChange(withSceneDraftVoice(value, voice))}
+          />
+        </LabelControlRow>
       ) : null}
     </div>
   );
 }
 
-/** 场景：直接选连接+模型，写入 llm.scenes（不再经「方案」） */
+/** 能力层：主场景 + 可选子场景（省略 = 同 main） */
 export function LlmSystemScenesPanel({
-  purposeFocus = "all",
+  purposeFocus,
   scenesDraft,
   onSceneChange,
   connectionIds,
   connectionLabels,
   providersById = {},
 }: {
-  purposeFocus?: "connections" | "dialogue" | "image_gen" | "retrieval" | "voice" | "all";
+  purposeFocus: CapabilityPanelFocus;
   scenesDraft: Record<string, SceneBindingDraft | null>;
   onSceneChange: (purposeId: string, value: SceneBindingDraft | null) => void;
   connectionIds: string[];
   connectionLabels: Record<string, string>;
-  /** 用于按协议过滤连接（图片 / 向量） */
   providersById?: Record<string, Record<string, unknown>>;
 }): ReactNode {
   const purposeRows = purposeRowsForFocus(purposeFocus);
-  const showDialogueMain = purposeFocus === "all" || purposeFocus === "dialogue";
-  const capabilityMainPurpose =
-    purposeFocus === "image_gen"
-      ? "image_generate"
-      : purposeFocus === "retrieval"
-        ? "embedding"
-        : purposeFocus === "voice"
-          ? "voice_generate"
-          : null;
-  const capabilityMainRow = capabilityMainPurpose
-    ? purposeRows.find((r) => r.id === capabilityMainPurpose)
-    : null;
-  const subsystemRows = capabilityMainPurpose
-    ? purposeRows.filter((r) => r.id !== capabilityMainPurpose)
-    : showDialogueMain
-      ? purposeRows.filter((r) => r.id !== "chat")
-      : purposeRows;
-
-  const chatDraft = scenesDraft.chat ?? { connection: "", model: "" };
-  const mainFallbackDraft =
-    capabilityMainRow != null
-      ? (scenesDraft[capabilityMainRow.id] ?? { connection: "", model: "" })
-      : chatDraft;
-
+  const mainRow = purposeRows[0];
+  if (!mainRow) return null;
+  const subsystemRows = purposeRows.slice(1);
+  const mainDraft = scenesDraft[mainRow.id] ?? { connection: "", model: "" };
   const idsFor = (purposeId: string) =>
-    connectionIdsForScenePurpose(purposeId, connectionIds, providersById);
+    connectionIdsForLayer(layerForPurpose(purposeId), connectionIds, providersById);
+
+  const mainHint =
+    purposeFocus === "text_generate"
+      ? "日常对话默认的连接与模型；子用途选「同主场景」时回退到这里。"
+      : purposeFocus === "audio_generate"
+        ? "文生声所用连接、合成模型与音色。Edge 音色写在模型字段；OpenAI / 阿里音色单独选择。"
+        : purposeFocus === "video_generate"
+          ? "仅保存配置，本轮不接入工具与引擎。"
+          : "所用连接与模型。";
 
   return (
     <div className="space-y-6">
-      {showDialogueMain ? (
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">主场景</p>
-            <p className="text-xs text-muted-foreground">
-              日常对话默认的连接与模型；子用途选「同主场景」时回退到这里。
-            </p>
-          </div>
-          <SceneConnectionModelFields
-            fieldId="llm-main-scene"
-            purposeId="chat"
-            value={chatDraft}
-            connectionIds={idsFor("chat")}
-            connectionLabels={connectionLabels}
-            providersById={providersById}
-            onChange={(v) => onSceneChange("chat", v)}
-          />
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <p className="text-sm font-medium">主场景</p>
+          <p className="text-xs text-muted-foreground">{mainHint}</p>
         </div>
-      ) : null}
-
-      {capabilityMainRow ? (
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">主场景</p>
-            <p className="text-xs text-muted-foreground">
-              {capabilityMainRow.label}
-              {capabilityMainRow.id === "voice_generate"
-                ? "所用连接、合成模型与音色；与对话主场景相互独立。Edge 音色写在模型字段；OpenAI / 阿里音色单独选择。"
-                : "所用连接与模型；与对话主场景相互独立。"}
-            </p>
-          </div>
-          <SceneConnectionModelFields
-            fieldId={`llm-purpose-main-${capabilityMainRow.id}`}
-            purposeId={capabilityMainRow.id}
-            value={mainFallbackDraft}
-            connectionIds={idsFor(capabilityMainRow.id)}
-            connectionLabels={connectionLabels}
-            providersById={providersById}
-            onChange={(v) => onSceneChange(capabilityMainRow.id, v)}
-          />
-          {idsFor(capabilityMainRow.id).length === 0 && connectionIds.length > 0 ? (
-            <StatusAlert variant="info">
-              {capabilityMainRow.id === "image_generate"
-                ? "没有带图片协议的连接。请先在「连接」中为连接启用文生图协议（如 openai_images）。"
-                : capabilityMainRow.id === "voice_generate"
-                  ? "没有带语音协议的连接。请先在「连接」中启用 voice_protocol（edge-tts / openai_audio_speech / alibaba_audio）。"
-                  : "没有带向量协议的连接。请先在「连接」中启用 embeddings 协议。"}
-            </StatusAlert>
-          ) : null}
-        </div>
-      ) : null}
+        <SceneConnectionModelFields
+          fieldId="capability-main-scene"
+          purposeId={mainRow.id}
+          value={mainDraft}
+          connectionIds={idsFor(mainRow.id)}
+          connectionLabels={connectionLabels}
+          providersById={providersById}
+          onChange={(v) => onSceneChange(mainRow.id, v)}
+        />
+        {idsFor(mainRow.id).length === 0 && connectionIds.length > 0 ? (
+          <StatusAlert variant="info">
+            {purposeFocus === "image_generate"
+              ? "没有带图片协议的连接。请先在「连接」中新建图片层连接，或使用带文生图套件的内置预设。"
+              : purposeFocus === "audio_generate"
+                ? "没有带语音协议的连接。请先在「连接」中新建音频层连接，或使用带语音套件的内置预设。"
+                : purposeFocus === "embedding"
+                  ? "没有带向量协议的连接。请先在「连接」中新建嵌入层连接，或使用带向量套件的内置预设。"
+                  : purposeFocus === "video_generate"
+                    ? "没有视频层连接。请先在「连接」中新建自定义视频连接。"
+                    : "请先在「连接」中创建文本层连接。"}
+          </StatusAlert>
+        ) : null}
+      </div>
 
       {subsystemRows.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="space-y-1">
             <p className="text-sm font-medium">系统子场景</p>
             <p className="text-xs text-muted-foreground">可单独指定连接与模型，或与主场景相同。</p>
@@ -669,13 +641,10 @@ export function LlmSystemScenesPanel({
             const binding = scenesDraft[row.id];
             const inherit = binding == null;
             return (
-              <div key={row.id} className="space-y-2 rounded-md border border-border/60 p-3">
-                <div className="space-y-1">
-                  <Label className="text-sm" htmlFor={`llm-purpose-mode-${row.id}`}>
-                    {row.label}
-                  </Label>
+              <div key={row.id} className="space-y-2">
+                <LabelControlRow label={row.label} htmlFor={`capability-purpose-mode-${row.id}`}>
                   <select
-                    id={`llm-purpose-mode-${row.id}`}
+                    id={`capability-purpose-mode-${row.id}`}
                     className={habitatConfigSelectClassName}
                     value={inherit ? "inherit" : "custom"}
                     onChange={(e) => {
@@ -683,9 +652,9 @@ export function LlmSystemScenesPanel({
                         onSceneChange(row.id, null);
                       } else {
                         onSceneChange(row.id, {
-                          connection: mainFallbackDraft.connection,
-                          model: mainFallbackDraft.model,
-                          ...(mainFallbackDraft.params ? { params: mainFallbackDraft.params } : {}),
+                          connection: mainDraft.connection,
+                          model: mainDraft.model,
+                          ...(mainDraft.params ? { params: mainDraft.params } : {}),
                         });
                       }
                     }}
@@ -693,17 +662,19 @@ export function LlmSystemScenesPanel({
                     <option value="inherit">同主场景</option>
                     <option value="custom">单独指定</option>
                   </select>
-                </div>
+                </LabelControlRow>
                 {!inherit && binding ? (
-                  <SceneConnectionModelFields
-                    fieldId={`llm-purpose-${row.id}`}
-                    purposeId={row.id}
-                    value={binding}
-                    connectionIds={idsFor(row.id)}
-                    connectionLabels={connectionLabels}
-                    providersById={providersById}
-                    onChange={(v) => onSceneChange(row.id, v)}
-                  />
+                  <FormGroupCard>
+                    <SceneConnectionModelFields
+                      fieldId={`capability-purpose-${row.id}`}
+                      purposeId={row.id}
+                      value={binding}
+                      connectionIds={idsFor(row.id)}
+                      connectionLabels={connectionLabels}
+                      providersById={providersById}
+                      onChange={(v) => onSceneChange(row.id, v)}
+                    />
+                  </FormGroupCard>
                 ) : null}
               </div>
             );
@@ -721,8 +692,6 @@ export function LlmSystemScenesPanel({
 export {
   providersDraftToPatch,
   readProvidersDraft,
-  profilesDraftToPatch,
-  sceneListSubtitle,
   llmEntryTitle,
-  systemPurposeSelectValue,
+  emptyConnectionEntry,
 } from "./llm-settings-draft.ts";

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { companionConfigSchema } from "@freeanima/habitat/core/config/schemas/companion.ts";
-import { llmConfigSchema } from "@freeanima/habitat/core/config/schemas/llm-config.ts";
+import { connectionsConfigSchema } from "@freeanima/habitat/core/config/schemas/llm-config.ts";
 import { habitatRuntimeConfig } from "@freeanima/habitat/core/db/schema";
 
 import { getDb } from "../client.ts";
@@ -34,36 +34,13 @@ function mergeSection(
       ? (document[section] as Record<string, unknown>)
       : {};
 
-  // llm.providers / scenes / profiles：条目级合并，避免只 patch 一条连接时冲掉其它条目
+  // connections：条目级合并，避免只 patch 一条连接时冲掉其它条目
   // 条目值为 null → 删除（patch 缺键仍保留，故删除必须显式传 null）
-  if (section === "llm") {
-    const next: Record<string, unknown> = { ...existing, ...patch };
-    for (const key of ["providers", "profiles", "scenes"] as const) {
-      if (patch[key] != null && typeof patch[key] === "object" && !Array.isArray(patch[key])) {
-        const base =
-          typeof existing[key] === "object" &&
-          existing[key] != null &&
-          !Array.isArray(existing[key])
-            ? (existing[key] as Record<string, unknown>)
-            : {};
-        next[key] = mergeMapEntries(base, patch[key] as Record<string, unknown>);
-      }
-    }
-    // profile_bindings：null 表示「同主场景」，需保留键，不能当删除
-    if (
-      patch.profile_bindings != null &&
-      typeof patch.profile_bindings === "object" &&
-      !Array.isArray(patch.profile_bindings)
-    ) {
-      const base =
-        typeof existing.profile_bindings === "object" &&
-        existing.profile_bindings != null &&
-        !Array.isArray(existing.profile_bindings)
-          ? (existing.profile_bindings as Record<string, unknown>)
-          : {};
-      next.profile_bindings = { ...base, ...(patch.profile_bindings as Record<string, unknown>) };
-    }
-    return { ...document, [section]: next };
+  if (section === "connections") {
+    return {
+      ...document,
+      [section]: mergeMapEntries(existing, patch),
+    };
   }
 
   return {
@@ -83,10 +60,10 @@ function replaceSection(
   };
 }
 
-/** llm 允许只 patch providers：用 schema 默认补齐 backend / 空 profiles，再落库 */
+/** connections 落盘前用 loose schema 归一（缺条目不整段冲掉） */
 function normalizeSectionValue(section: string, value: unknown): unknown {
-  if (section === "llm") {
-    return llmConfigSchema.parse(value ?? {});
+  if (section === "connections") {
+    return connectionsConfigSchema.parse(value ?? {});
   }
   if (section === "companion") {
     return companionConfigSchema.parse(value ?? {});

@@ -99,26 +99,17 @@ export async function setupPgTestDb(url: string, config: Config): Promise<PgTest
 }
 
 const INTEGRATION_LLM_YAML = `
-llm:
-  default_profile: chat
-  providers:
-    main:
-      backend: openai_compatible
-      base_url: https://api.openai.com/v1
-      api_key: test-key
-  profiles:
-    chat:
-      chain:
-        - provider: main
-          model: test-model
-    reflect:
-      chain:
-        - provider: main
-          model: test-model
-    summary:
-      chain:
-        - provider: main
-          model: test-model
+connections:
+  main:
+    preset: custom
+    custom_kind: text
+    text_protocol: openai_compatible
+    base_url: https://api.openai.com/v1
+    api_key: test-key
+text_generate:
+  main:
+    connection: main
+    model: test-model
 `;
 
 function writeDatabaseConfig(home: string, url: string, extraYaml?: string): void {

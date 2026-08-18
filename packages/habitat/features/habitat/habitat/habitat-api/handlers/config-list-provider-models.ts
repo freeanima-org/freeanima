@@ -26,7 +26,12 @@ import {
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
 
-export type ListProviderModelsPurpose = "chat" | "image_generate" | "embedding" | "voice_generate";
+export type ListProviderModelsPurpose =
+  | "chat"
+  | "image_generate"
+  | "embedding"
+  | "voice_generate"
+  | "video_generate";
 
 export type ListProviderModelsInput = {
   provider_id: string;
@@ -149,9 +154,8 @@ export async function listProviderModels(
   }
 
   const limit = input.limit ?? 200;
-  const llm = asRecord(habitatCtx().engine.config.data.llm);
-  const providers = asRecord(llm.providers);
-  const raw = providers[providerId];
+  const connections = asRecord(habitatCtx().engine.config.data.connections);
+  const raw = connections[providerId];
   if (raw == null) {
     throw new ApiHandlerError(404, `连接不存在: ${providerId}`, {
       code: "provider_not_found",

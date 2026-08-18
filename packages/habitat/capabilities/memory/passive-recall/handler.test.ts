@@ -52,13 +52,15 @@ afterAll(() => {
 const { createPassiveMemoryRecallHandler } = await import("./handler.ts");
 
 const baseConfig = {
-  llm: {
-    default_profile: "chat",
-    providers: {
-      main: { backend: "openai_compatible" as const, base_url: "https://api.example/v1" },
+  connections: {
+    main: {
+      preset: "custom" as const,
+      custom_kind: "text" as const,
+      text_protocol: "openai_compatible" as const,
+      base_url: "https://api.example/v1",
     },
-    profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
+  text_generate: { main: { connection: "main", model: "m" } },
 } as RuntimeConfig;
 
 function bindTestConfig(enabled = true): void {

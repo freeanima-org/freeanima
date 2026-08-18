@@ -9,17 +9,16 @@ import { ApiHandlerError } from "./errors.ts";
 import { getHabitatConfig, getHabitatConfigSection } from "./config.ts";
 
 const runtimeSnapshot = {
-  llm: {
-    default_profile: "chat",
-    providers: {
-      main: {
-        backend: "openai_compatible" as const,
-        base_url: "https://api.example/v1",
-        api_key: "sk-secret",
-      },
+  connections: {
+    main: {
+      preset: "custom" as const,
+      custom_kind: "text" as const,
+      text_protocol: "openai_compatible" as const,
+      base_url: "https://api.example/v1",
+      api_key: "sk-secret",
     },
-    profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
+  text_generate: { main: { connection: "main", model: "m" } },
 };
 
 function bindTestConsoleContext() {
@@ -69,16 +68,15 @@ describe("habitat config handlers", () => {
   it("getHabitatConfig 返回含密钥明文的运行时配置快照", async () => {
     bindTestConsoleContext();
     const out = await getHabitatConfig();
-    const llm = out.llm as Record<string, unknown>;
-    const providers = llm.providers as Record<string, Record<string, unknown>>;
-    expect(providers.main?.api_key).toBe("sk-secret");
-    expect(llm.default_profile).toBe("chat");
+    const connections = out.connections as Record<string, Record<string, unknown>>;
+    expect(connections.main?.api_key).toBe("sk-secret");
+    expect(out.text_generate).toEqual({ main: { connection: "main", model: "m" } });
   });
 
   it("getHabitatConfigSection 按段读取配置", async () => {
     bindTestConsoleContext();
-    const llm = (await getHabitatConfigSection("llm")) as Record<string, unknown>;
-    expect(llm.default_profile).toBe("chat");
+    const connections = (await getHabitatConfigSection("connections")) as Record<string, unknown>;
+    expect(connections.main).toMatchObject({ api_key: "sk-secret" });
   });
 
   it("getHabitatConfigSection 对未写入的已知段返回空对象", async () => {
@@ -115,15 +113,18 @@ describe("habitat config handlers", () => {
     const { reload } = bindPatchableConsoleContext({
       afterReload: {
         ...runtimeSnapshot,
-        llm: {
-          ...runtimeSnapshot.llm,
-          default_profile: "reflect",
+        text_generate: {
+          main: { connection: "main", model: "m" },
+          reflect: { connection: "main", model: "reflect-m" },
         },
       },
     });
-    const llm = (await getHabitatConfigSection("llm")) as Record<string, unknown>;
+    const textGenerate = (await getHabitatConfigSection("text_generate")) as Record<
+      string,
+      unknown
+    >;
     expect(reload).toHaveBeenCalledTimes(1);
-    expect(llm.default_profile).toBe("reflect");
+    expect(textGenerate.reflect).toEqual({ connection: "main", model: "reflect-m" });
   });
 
   it("patchable 时 get 会 reload", async () => {

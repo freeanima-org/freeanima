@@ -11,11 +11,7 @@ import {
 } from "./memory-config.ts";
 
 const base = {
-  llm: {
-    default_profile: "chat",
-    providers: {},
-    profiles: {},
-  },
+  connections: {},
 } as RuntimeConfig;
 
 describe("resolvePassiveRecallConfig", () => {
@@ -35,7 +31,7 @@ describe("resolvePassiveRecallConfig", () => {
     expect(
       resolvePassiveRecallConfig({
         ...base,
-        embedding: { model: "nomic-embed-text" },
+        embedding: { main: { connection: "main", model: "nomic-embed-text" } },
       }).use_vector,
     ).toBe(true);
   });
@@ -44,7 +40,7 @@ describe("resolvePassiveRecallConfig", () => {
     expect(
       resolvePassiveRecallConfig({
         ...base,
-        embedding: { model: "nomic-embed-text" },
+        embedding: { main: { connection: "main", model: "nomic-embed-text" } },
         memory: {
           passive_recall: {
             enabled: false,
@@ -77,7 +73,7 @@ describe("resolveMemoryClusteringConfig", () => {
   it("enabled when embedding configured", () => {
     const resolved = resolveMemoryClusteringConfig({
       ...base,
-      embedding: { model: "bge-m3" },
+      embedding: { main: { connection: "main", model: "bge-m3" } },
     });
     expect(resolved.enabled).toBe(true);
     expect(resolved.eps).toBe(DEFAULT_CLUSTERING_EPS);
@@ -88,7 +84,7 @@ describe("resolveMemoryClusteringConfig", () => {
     expect(
       resolveMemoryClusteringConfig({
         ...base,
-        embedding: { model: "bge-m3" },
+        embedding: { main: { connection: "main", model: "bge-m3" } },
         memory: {
           clustering: {
             enabled: false,
@@ -121,7 +117,7 @@ describe("resolveMemoryClusteringConfig", () => {
     expect(
       resolveMemoryClusteringConfig({
         ...base,
-        embedding: { model: "bge-m3" },
+        embedding: { main: { connection: "main", model: "bge-m3" } },
         memory: { clustering: { eps: 0.5 } },
         semantic_clustering: { eps: 0.2, peel_small: true },
       }),
@@ -131,7 +127,7 @@ describe("resolveMemoryClusteringConfig", () => {
   it("defaults peel_small false and min_samples to min_points-1", () => {
     const resolved = resolveMemoryClusteringConfig({
       ...base,
-      embedding: { model: "bge-m3" },
+      embedding: { main: { connection: "main", model: "bge-m3" } },
     });
     expect(resolved.peel_small).toBe(false);
     expect(resolved.min_samples).toBe(2);

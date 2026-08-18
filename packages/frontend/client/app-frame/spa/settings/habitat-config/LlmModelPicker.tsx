@@ -60,14 +60,20 @@ export function LlmModelPicker({
   value,
   onChange,
   purpose,
+  hideLabel = false,
+  id,
 }: {
   providerId: string;
   value: string;
   onChange: (model: string) => void;
   /** 图片场景传 image_generate，筛文生图模型 */
   purpose?: "chat" | "image_generate" | "embedding" | "voice_generate";
+  /** 由父级 LabelControlRow 画标签时隐藏内置「模型」 */
+  hideLabel?: boolean;
+  id?: string;
 }) {
-  const inputId = useId();
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -131,9 +137,11 @@ export function LlmModelPicker({
 
   return (
     <div className="space-y-1">
-      <Label htmlFor={inputId} className="text-sm">
-        模型
-      </Label>
+      {hideLabel ? null : (
+        <Label htmlFor={inputId} className="text-sm">
+          模型
+        </Label>
+      )}
       <div ref={rootRef} className="relative">
         <InputGroup>
           <InputGroupInput

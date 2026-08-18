@@ -7,16 +7,15 @@ import {
 } from "./compression-config.ts";
 
 const cfg = {
-  llm: {
-    default_profile: "chat",
-    providers: {
-      main: {
-        backend: "openai_compatible" as const,
-        base_url: "https://api.openai.com/v1",
-      },
+  connections: {
+    main: {
+      preset: "custom" as const,
+      custom_kind: "text" as const,
+      text_protocol: "openai_compatible" as const,
+      base_url: "https://api.openai.com/v1",
     },
-    profiles: { chat: { chain: [{ provider: "main", model: "m" }] } },
   },
+  text_generate: { main: { connection: "main", model: "m" } },
   compression: { reserved_tokens: 8192 },
 } as RuntimeConfig;
 

@@ -1,23 +1,20 @@
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
 import { resolveValue } from "./resolve.ts";
 
-/** Expand env/vault references in llm.providers.*.api_key */
+/** Expand env/vault references in connections.*.api_key */
 export async function resolveLlmProviderApiKeys(cfg: RuntimeConfig): Promise<RuntimeConfig> {
-  const llm = cfg.llm;
-  if (!llm?.providers) return cfg;
+  const connections = cfg.connections;
+  if (!connections) return cfg;
 
-  const providers: NonNullable<RuntimeConfig["llm"]>["providers"] = {};
-  for (const [id, provider] of Object.entries(llm.providers)) {
-    providers[id] = {
+  const next: NonNullable<RuntimeConfig["connections"]> = {};
+  for (const [id, provider] of Object.entries(connections)) {
+    next[id] = {
       ...provider,
       ...(provider.api_key ? { api_key: await resolveValue(provider.api_key) } : {}),
     };
   }
   return {
     ...cfg,
-    llm: {
-      ...llm,
-      providers,
-    },
+    connections: next,
   };
 }
