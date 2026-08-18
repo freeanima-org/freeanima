@@ -54,7 +54,7 @@ describe("mapOpenAiCompatibleError", () => {
   });
 
   it("maps LlmTimeoutError kinds to timeout (not cancelled)", () => {
-    for (const kind of ["first_byte", "overall", "idle"] as const) {
+    for (const kind of ["connect", "first_byte", "overall", "idle"] as const) {
       const err = mapOpenAiCompatibleError(new LlmTimeoutError(kind, 1000), {
         providerId: "main",
       });

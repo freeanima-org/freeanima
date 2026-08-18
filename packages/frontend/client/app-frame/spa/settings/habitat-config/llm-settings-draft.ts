@@ -261,6 +261,7 @@ export function presetModalitySuiteSummary(presetId: string): string | null {
 
 export type TimeoutDraft = {
   timeout_ms: number | "";
+  connect_timeout_ms: number | "";
   first_byte_timeout_ms: number | "";
   idle_timeout_ms: number | "";
 };
@@ -268,15 +269,25 @@ export type TimeoutDraft = {
 export function readTimeoutDraft(entry: Record<string, unknown>): TimeoutDraft {
   return {
     timeout_ms: typeof entry.timeout_ms === "number" ? entry.timeout_ms : "",
+    connect_timeout_ms:
+      typeof entry.connect_timeout_ms === "number" ? entry.connect_timeout_ms : "",
     first_byte_timeout_ms:
       typeof entry.first_byte_timeout_ms === "number" ? entry.first_byte_timeout_ms : "",
     idle_timeout_ms: typeof entry.idle_timeout_ms === "number" ? entry.idle_timeout_ms : "",
   };
 }
 
+/** 连接 / 首字节 / idle 须 ≤ overall；空值跳过 */
 export function validateTimeoutDraft(draft: TimeoutDraft): string | null {
   const overall = draft.timeout_ms;
   if (overall === "") return null;
+  if (
+    draft.connect_timeout_ms !== "" &&
+    typeof draft.connect_timeout_ms === "number" &&
+    draft.connect_timeout_ms > overall
+  ) {
+    return "连接超时须 ≤ 整体超时";
+  }
   if (
     draft.first_byte_timeout_ms !== "" &&
     typeof draft.first_byte_timeout_ms === "number" &&

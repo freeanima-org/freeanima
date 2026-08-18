@@ -39,20 +39,34 @@ describe("parseOpenAiCompatibleProviderSpec", () => {
     });
   });
 
-  it("parses first_byte and idle timeouts", () => {
+  it("parses first_byte, idle, and connect timeouts", () => {
     const spec = parseOpenAiCompatibleProviderSpec("p", {
       ...customText,
       base_url: "https://api.example.com",
       api_key: "k",
       timeout_ms: 120_000,
+      connect_timeout_ms: 8_000,
       first_byte_timeout_ms: 20_000,
       idle_timeout_ms: 60_000,
     });
     expect(spec.context).toMatchObject({
       timeoutMs: 120_000,
+      connectTimeoutMs: 8_000,
       firstByteTimeoutMs: 20_000,
       idleTimeoutMs: 60_000,
     });
+  });
+
+  it("rejects connect_timeout_ms > timeout_ms", () => {
+    expect(() =>
+      parseOpenAiCompatibleProviderSpec("p", {
+        ...customText,
+        base_url: "https://api.example.com",
+        api_key: "k",
+        timeout_ms: 10_000,
+        connect_timeout_ms: 20_000,
+      }),
+    ).toThrow();
   });
 
   it("rejects first_byte_timeout_ms > timeout_ms", () => {

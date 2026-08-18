@@ -1,5 +1,6 @@
 import {
   LlmBackend,
+  collectChatCompletion,
   type BackendContext,
   type ChatCompletion,
   type ChatRequest,
@@ -133,55 +134,6 @@ function extractToolCallsFromResponse(output: unknown): ToolCall[] {
   return calls;
 }
 
-export async function runOpenAiResponses(
-  model: string,
-  request: ChatRequest,
-  context: BackendContext,
-): Promise<ChatCompletion> {
-  const parsed = parseOpenAiCompatibleContext(context);
-  const { overallMs, firstByteMs } = resolveChatTimeouts(parsed);
-  const timeouts = createLlmTimeoutController({
-    overallMs,
-    firstByteMs,
-    idleMs: null,
-  });
-  const client = createOpenAiClient(context);
-  const started = performance.now();
-  try {
-    const response = await client.responses.create(
-      omitUndefined({
-        model,
-        input: turnsToResponseInput(request.messages, request.systemPrompt) as never,
-        max_output_tokens: request.params.maxOutputTokens,
-        tools: buildTools(request) as never,
-        temperature: request.params.temperature,
-        top_p: request.params.topP,
-        ...request.params.extra,
-      }),
-      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
-    );
-    timeouts.onFirstByte();
-    const latency_ms = Math.round(performance.now() - started);
-    const tool_calls = extractToolCallsFromResponse(response.output);
-    const content = typeof response.output_text === "string" ? response.output_text : "";
-    return {
-      content: content || (tool_calls.length > 0 ? null : ""),
-      tool_calls: tool_calls.length > 0 ? tool_calls : null,
-      finish_reason: tool_calls.length > 0 ? "tool_calls" : "stop",
-      usage: normalizeUsage(response.usage as unknown as Record<string, unknown>),
-      latency_ms,
-      model: response.model ?? model,
-    };
-  } catch (err) {
-    if (timeouts.signal.aborted && isLlmTimeoutError(timeouts.signal.reason)) {
-      throw timeouts.signal.reason;
-    }
-    return rethrowTimeout(err);
-  } finally {
-    timeouts.dispose();
-  }
-}
-
 export async function* runOpenAiResponsesStream(
   model: string,
   request: ChatRequest,
@@ -281,7 +233,7 @@ export class OpenAiResponsesBackend extends LlmBackend {
   }
 
   chat(model: string, request: ChatRequest, context: BackendContext): Promise<ChatCompletion> {
-    return runOpenAiResponses(model, request, context);
+    return collectChatCompletion(this.chatStream(model, request, context, request.signal));
   }
 
   chatStream(

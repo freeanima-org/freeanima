@@ -1,5 +1,6 @@
 import {
   LlmBackend,
+  collectChatCompletion,
   type BackendContext,
   type ChatCompletion,
   type ChatRequest,
@@ -18,7 +19,7 @@ import {
 import { loadModelCatalogCache, saveModelCatalogCache } from "./catalog-cache.ts";
 import { enrichCatalogFromModelsDev, enrichModelInfoFromModelsDev } from "./models-dev/enrich.ts";
 import { mapOpenAiCompatibleError } from "./map-error.ts";
-import { runOpenAiChat, runOpenAiChatStream } from "./openai-chat.ts";
+import { runOpenAiChatStream } from "./openai-chat.ts";
 
 /** OpenAI Chat Completions compatible backend (DeepSeek, OpenRouter compatible mode, etc.). */
 export class OpenAiCompatibleBackend extends LlmBackend {
@@ -91,7 +92,9 @@ export class OpenAiCompatibleBackend extends LlmBackend {
     context: BackendContext,
   ): Promise<ChatCompletion> {
     try {
-      return await runOpenAiChat(model, request, context);
+      return await collectChatCompletion(
+        runOpenAiChatStream(model, request, context, request.signal),
+      );
     } catch (err) {
       throw this.mapError(err, context);
     }

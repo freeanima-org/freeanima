@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   contextCacheKey,
+  DEFAULT_CONNECT_TIMEOUT_MS,
   DEFAULT_FIRST_BYTE_TIMEOUT_MS,
   DEFAULT_IDLE_TIMEOUT_MS,
   DEFAULT_OVERALL_TIMEOUT_MS,
@@ -14,6 +15,7 @@ describe("parseOpenAiCompatibleContext", () => {
       base_url: "https://api.example.com/",
       api_key: "key",
       timeout_ms: 5000,
+      connect_timeout_ms: 1500,
       first_byte_timeout_ms: 2000,
       idle_timeout_ms: 3000,
     });
@@ -21,6 +23,7 @@ describe("parseOpenAiCompatibleContext", () => {
       baseUrl: "https://api.example.com",
       apiKey: "key",
       timeoutMs: 5000,
+      connectTimeoutMs: 1500,
       firstByteTimeoutMs: 2000,
       idleTimeoutMs: 3000,
     });
@@ -39,6 +42,17 @@ describe("parseOpenAiCompatibleContext", () => {
         timeoutMs: 0,
       }),
     ).toThrow(/timeoutMs/);
+  });
+
+  it("throws when connect > overall", () => {
+    expect(() =>
+      parseOpenAiCompatibleContext({
+        baseUrl: "https://x.com",
+        apiKey: "k",
+        timeoutMs: 1000,
+        connectTimeoutMs: 2000,
+      }),
+    ).toThrow(/connectTimeoutMs/);
   });
 
   it("throws when firstByte > overall", () => {
@@ -61,6 +75,7 @@ describe("resolveChatTimeouts", () => {
       timeoutMs: 5_000,
     });
     expect(resolved.overallMs).toBe(5_000);
+    expect(resolved.connectMs).toBe(Math.min(DEFAULT_CONNECT_TIMEOUT_MS, 5_000));
     expect(resolved.firstByteMs).toBe(Math.min(DEFAULT_FIRST_BYTE_TIMEOUT_MS, 5_000));
     expect(resolved.idleMs).toBe(Math.min(DEFAULT_IDLE_TIMEOUT_MS, 5_000));
   });
@@ -72,6 +87,7 @@ describe("resolveChatTimeouts", () => {
     });
     expect(resolved).toEqual({
       overallMs: DEFAULT_OVERALL_TIMEOUT_MS,
+      connectMs: DEFAULT_CONNECT_TIMEOUT_MS,
       firstByteMs: DEFAULT_FIRST_BYTE_TIMEOUT_MS,
       idleMs: DEFAULT_IDLE_TIMEOUT_MS,
     });

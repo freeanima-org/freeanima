@@ -36,9 +36,9 @@ afterAll(() => {
   mock.module("./client.ts", () => clientOriginal);
 });
 
-const { runOpenAiChat } = await import("./openai-chat.ts");
+const { runOpenAiChatStream } = await import("./openai-chat.ts");
 
-describe("runOpenAiChat external abort", () => {
+describe("runOpenAiChatStream external abort", () => {
   it("passes merged signal to completions.create; external abort cancels", async () => {
     capturedSignal = undefined;
     const external = new AbortController();
@@ -47,12 +47,16 @@ describe("runOpenAiChat external abort", () => {
       params: {},
       signal: external.signal,
     };
-    const pending = runOpenAiChat("gpt-test", request, {
-      baseUrl: "https://example.test/v1",
-      apiKey: "k",
-      timeoutMs: 60_000,
-      firstByteTimeoutMs: 60_000,
-    });
+    const pending = (async () => {
+      for await (const _ of runOpenAiChatStream("gpt-test", request, {
+        baseUrl: "https://example.test/v1",
+        apiKey: "k",
+        timeoutMs: 60_000,
+        firstByteTimeoutMs: 60_000,
+      })) {
+        /* drain */
+      }
+    })();
     await Bun.sleep(10);
     expect(capturedSignal).toBeDefined();
     expect(capturedSignal!.aborted).toBe(false);

@@ -138,7 +138,12 @@ function TimeoutAdvancedFields({
 }) {
   const [open, setOpen] = useState(() => {
     const t = readTimeoutDraft(entry);
-    return t.timeout_ms !== "" || t.first_byte_timeout_ms !== "" || t.idle_timeout_ms !== "";
+    return (
+      t.timeout_ms !== "" ||
+      t.connect_timeout_ms !== "" ||
+      t.first_byte_timeout_ms !== "" ||
+      t.idle_timeout_ms !== ""
+    );
   });
   const draft = readTimeoutDraft(entry);
   const error = validateTimeoutDraft(draft);
@@ -146,6 +151,7 @@ function TimeoutAdvancedFields({
   const commit = (next: TimeoutDraft) => {
     patch({
       timeout_ms: next.timeout_ms === "" ? undefined : next.timeout_ms,
+      connect_timeout_ms: next.connect_timeout_ms === "" ? undefined : next.connect_timeout_ms,
       first_byte_timeout_ms:
         next.first_byte_timeout_ms === "" ? undefined : next.first_byte_timeout_ms,
       idle_timeout_ms: next.idle_timeout_ms === "" ? undefined : next.idle_timeout_ms,
@@ -160,13 +166,19 @@ function TimeoutAdvancedFields({
       {open ? (
         <div className="space-y-3 rounded-md border border-dashed p-3">
           <p className="text-xs text-muted-foreground">
-            单位毫秒；首字节 / 空闲须 ≤ 整体。留空使用服务端默认。
+            单位毫秒；连接 / 首字节 / 空闲须 ≤ 整体。留空使用服务端默认。
           </p>
           {habitatConfigNumberField(
             "整体超时",
             draft.timeout_ms,
             (timeout_ms) => commit({ ...draft, timeout_ms }),
             { hint: "默认 600000（10 分钟）" },
+          )}
+          {habitatConfigNumberField(
+            "连接超时",
+            draft.connect_timeout_ms,
+            (connect_timeout_ms) => commit({ ...draft, connect_timeout_ms }),
+            { hint: "默认 10000（直到 HTTP 响应头，不是首 token）" },
           )}
           {habitatConfigNumberField(
             "首字节超时",

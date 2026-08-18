@@ -1,6 +1,6 @@
-/** LLM chat 应用层超时：首字节 / 整体 / chunk idle */
+/** LLM chat 应用层超时：连接/响应头 / 首字节 / 整体 / chunk idle */
 
-export type LlmTimeoutKind = "first_byte" | "overall" | "idle";
+export type LlmTimeoutKind = "connect" | "first_byte" | "overall" | "idle";
 
 export class LlmTimeoutError extends Error {
   readonly kind: LlmTimeoutKind;

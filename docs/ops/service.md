@@ -81,16 +81,17 @@ Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.
 
 ### 超时
 
-`connections.<id>` 支持三层超时（聊天流式 / 非流式；embedding 仍只用 `timeout_ms`）：
+`connections.<id>` 支持四层超时（聊天走流式 HTTP；embedding 仍只用 `timeout_ms` + `connect_timeout_ms`）：
 
 | 字段                    | 默认                | 含义                                      |
 | ----------------------- | ------------------- | ----------------------------------------- |
 | `timeout_ms`            | `600000`（10 分钟） | 整体墙钟：请求开始 → 结束                 |
-| `first_byte_timeout_ms` | `30000`             | 首字节：首个流式 chunk / 非流式响应       |
+| `connect_timeout_ms`    | `10000`             | 连接 / HTTP 响应头；端点不可达快失败      |
+| `first_byte_timeout_ms` | `30000`             | 首个流式 chunk（生成开始，不是 TCP）      |
 | `idle_timeout_ms`       | `120000`            | chunk 空闲（仅流式）；必须 ≤ `timeout_ms` |
 
-`first_byte_timeout_ms` / `idle_timeout_ms` 也必须 ≤ `timeout_ms`。超时仍映射为
-`ProviderErrorCode=timeout`（消息含 `first_byte` / `overall` / `idle`）。
+`connect_timeout_ms` / `first_byte_timeout_ms` / `idle_timeout_ms` 也必须 ≤ `timeout_ms`。超时仍映射为
+`ProviderErrorCode=timeout`（消息含 `connect` / `first_byte` / `overall` / `idle`）。
 
 ## 常用命令
 

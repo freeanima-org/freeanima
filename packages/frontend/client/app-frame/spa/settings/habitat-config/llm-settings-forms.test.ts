@@ -61,16 +61,29 @@ describe("validateTimeoutDraft", () => {
     expect(
       validateTimeoutDraft({
         timeout_ms: 1000,
+        connect_timeout_ms: "",
         first_byte_timeout_ms: 2000,
         idle_timeout_ms: "",
       }),
     ).toBe("首字节超时须 ≤ 整体超时");
   });
 
+  it("连接超时超过整体时报错", () => {
+    expect(
+      validateTimeoutDraft({
+        timeout_ms: 1000,
+        connect_timeout_ms: 2000,
+        first_byte_timeout_ms: "",
+        idle_timeout_ms: "",
+      }),
+    ).toBe("连接超时须 ≤ 整体超时");
+  });
+
   it("空整体时不校验", () => {
     expect(
       validateTimeoutDraft({
         timeout_ms: "",
+        connect_timeout_ms: "",
         first_byte_timeout_ms: 2000,
         idle_timeout_ms: "",
       }),

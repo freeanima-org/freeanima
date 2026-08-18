@@ -332,6 +332,7 @@ export function providerConfigToSpec(id: string, cfg: ConnectionConfig): Provide
       baseUrl: materialized.baseUrl,
       apiKey: cfg.api_key,
       timeoutMs: cfg.timeout_ms,
+      connectTimeoutMs: cfg.connect_timeout_ms,
       firstByteTimeoutMs: cfg.first_byte_timeout_ms,
       idleTimeoutMs: cfg.idle_timeout_ms,
     }),
