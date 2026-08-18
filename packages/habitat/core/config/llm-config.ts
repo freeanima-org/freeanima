@@ -9,7 +9,7 @@ import type {
 } from "./schemas/llm-config.ts";
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import { getProviderTextProtocol } from "./schemas/llm-config.ts";
-import { materializeConnection } from "../llm/presets.ts";
+import { effectiveProviderModalities, materializeConnection } from "../llm/presets.ts";
 
 /** LLM 仅存 PG habitat_runtime_config，不在 bootstrap config.yaml */
 export const LLM_NOT_CONFIGURED_MESSAGE =
@@ -263,15 +263,16 @@ export function resolveScene(cfg: RuntimeConfig, purpose?: string): ResolvedScen
   }
   const params = scene?.params ?? hop?.params;
   const textProtocol = getProviderTextProtocol(provider);
+  const modalities = effectiveProviderModalities(provider);
   return {
     purpose: id,
     connection,
     model,
     ...(params ? { params } : {}),
     ...(textProtocol ? { textProtocol } : {}),
-    imageProtocol: provider.image_protocol ?? null,
-    embeddingsProtocol: provider.embeddings_protocol ?? null,
-    voiceProtocol: provider.voice_protocol ?? null,
+    imageProtocol: modalities.image_protocol,
+    embeddingsProtocol: modalities.embeddings_protocol,
+    voiceProtocol: modalities.voice_protocol,
     provider,
   };
 }

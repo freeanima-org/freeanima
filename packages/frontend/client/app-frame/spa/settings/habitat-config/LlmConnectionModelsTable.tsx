@@ -91,7 +91,7 @@ export function LlmConnectionModelsTable({ providerId, disabled = false }: Props
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="space-y-0.5">
+        <div className="min-w-0 flex-1 space-y-0.5">
           <p className="text-sm font-medium">模型目录</p>
           <p className="text-muted-foreground text-xs">
             {source === "provider"
@@ -108,6 +108,7 @@ export function LlmConnectionModelsTable({ providerId, disabled = false }: Props
           type="button"
           size="sm"
           variant="outline"
+          className="shrink-0"
           isDisabled={disabled || loading}
           onClick={() => void load()}
         >
@@ -130,14 +131,14 @@ export function LlmConnectionModelsTable({ providerId, disabled = false }: Props
 
       {models.length > 0 ? (
         <div className="max-h-64 overflow-auto rounded-md border border-border/60">
-          <table className="w-full min-w-[36rem] border-collapse text-left text-xs">
+          <table className="w-full min-w-[42rem] border-collapse text-left text-xs">
             <thead className="bg-muted/60 sticky top-0">
               <tr className="border-b border-border/60">
-                <th className="px-2 py-1.5 font-medium">模型 id</th>
-                <th className="px-2 py-1.5 font-medium">名称</th>
+                <th className="px-2 py-1.5 font-medium whitespace-nowrap">模型 id</th>
+                <th className="px-2 py-1.5 font-medium whitespace-nowrap">名称</th>
                 <th className="px-2 py-1.5 font-medium whitespace-nowrap">上下文</th>
                 <th className="px-2 py-1.5 font-medium whitespace-nowrap">输出上限</th>
-                <th className="px-2 py-1.5 font-medium">输入模态</th>
+                <th className="px-2 py-1.5 font-medium whitespace-nowrap">输入模态</th>
                 <th className="px-2 py-1.5 font-medium whitespace-nowrap">$/1M</th>
               </tr>
             </thead>
@@ -156,7 +157,7 @@ export function LlmConnectionModelsTable({ providerId, disabled = false }: Props
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     {formatTokens(row.maxOutputTokens)}
                   </td>
-                  <td className="px-2 py-1.5">{formatModalities(row)}</td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">{formatModalities(row)}</td>
                   <td className="px-2 py-1.5 whitespace-nowrap">{formatCost(row.cost)}</td>
                 </tr>
               ))}

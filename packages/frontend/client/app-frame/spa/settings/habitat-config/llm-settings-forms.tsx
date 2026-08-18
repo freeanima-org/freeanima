@@ -9,6 +9,7 @@ import {
   hubConfigTextField,
 } from "./habitat-config-field-helpers.tsx";
 import { LlmModelPicker } from "./LlmModelPicker.tsx";
+import { LlmVoicePicker } from "./LlmVoicePicker.tsx";
 import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { HabitatConfigConnectionTestButton } from "./HabitatConfigConnectionTestButton.tsx";
 import { LlmConnectionModelsTable } from "./LlmConnectionModelsTable.tsx";
@@ -24,7 +25,9 @@ import {
   purposeRowsForFocus,
   readChain,
   readTimeoutDraft,
+  sceneDraftVoice,
   validateTimeoutDraft,
+  withSceneDraftVoice,
   type RouteHop,
   type SceneBindingDraft,
   type TimeoutDraft,
@@ -38,7 +41,11 @@ import {
   LLM_PRESET_OPENCODE_GO,
   VOICE_PROTOCOL_EDGE_TTS,
 } from "@freeanima/habitat/core/config";
-import { ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL } from "@freeanima/habitat/core/llm/presets";
+import {
+  ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL,
+  effectiveProviderModalities,
+} from "@freeanima/habitat/core/llm/presets";
+import { voiceProtocolSeparatesModelAndVoice } from "@freeanima/habitat/core/tts/voice-catalog";
 
 function ConnectionSelect({
   value,
@@ -255,9 +262,9 @@ export function LlmConnectionEditorForm({
 
       {isAlibabaTokenPlan ? (
         <StatusAlert variant="info">
-          本预设使用 OpenAI 兼容根（对话 / 文生图）。Anthropic Messages 在另一 API 根（
+          本预设使用 OpenAI 兼容根（对话 / 文生图 / 语音合成）。Anthropic Messages 在另一 API 根（
           {ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL}
-          ），请另建「自定义」连接并选 Messages。模型名从上游目录拉取，不写死在预设里。
+          ），请另建「自定义」连接并选 Messages。模型名从上游目录或内置语音表拉取，不写死在预设里。
         </StatusAlert>
       ) : null}
 
@@ -445,28 +452,36 @@ export function LlmSceneEditorForm({
   );
 }
 
+function connectionModalityProtocol(
+  entry: Record<string, unknown> | undefined,
+  kind: "image" | "embeddings" | "voice",
+): string | null {
+  if (!entry) return null;
+  const modalities = effectiveProviderModalities(entry);
+  const proto =
+    kind === "image"
+      ? modalities.image_protocol
+      : kind === "embeddings"
+        ? modalities.embeddings_protocol
+        : modalities.voice_protocol;
+  return typeof proto === "string" && proto.length > 0 ? proto : null;
+}
+
 function connectionIdsForScenePurpose(
   purposeId: string,
   connectionIds: string[],
   providersById: Record<string, Record<string, unknown>>,
 ): string[] {
   if (purposeId === "image_generate") {
-    return connectionIds.filter((id) => {
-      const proto = providersById[id]?.image_protocol;
-      return typeof proto === "string" && proto.length > 0;
-    });
+    return connectionIds.filter((id) => connectionModalityProtocol(providersById[id], "image"));
   }
   if (purposeId === "embedding") {
-    return connectionIds.filter((id) => {
-      const proto = providersById[id]?.embeddings_protocol;
-      return typeof proto === "string" && proto.length > 0;
-    });
+    return connectionIds.filter((id) =>
+      connectionModalityProtocol(providersById[id], "embeddings"),
+    );
   }
   if (purposeId === "voice_generate" || purposeId === "tts" || purposeId === "voice_realtime") {
-    return connectionIds.filter((id) => {
-      const proto = providersById[id]?.voice_protocol;
-      return typeof proto === "string" && proto.length > 0;
-    });
+    return connectionIds.filter((id) => connectionModalityProtocol(providersById[id], "voice"));
   }
   return connectionIds;
 }
@@ -488,6 +503,7 @@ function SceneConnectionModelFields({
   value,
   connectionIds,
   connectionLabels,
+  providersById,
   onChange,
   disabled,
 }: {
@@ -496,10 +512,18 @@ function SceneConnectionModelFields({
   value: SceneBindingDraft;
   connectionIds: string[];
   connectionLabels: Record<string, string>;
+  providersById: Record<string, Record<string, unknown>>;
   onChange: (next: SceneBindingDraft) => void;
   disabled?: boolean;
 }): ReactNode {
   const modelPurpose = modelPurposeForScene(purposeId);
+  const isVoiceScene =
+    purposeId === "voice_generate" || purposeId === "tts" || purposeId === "voice_realtime";
+  const voiceProtocol = isVoiceScene
+    ? connectionModalityProtocol(providersById[value.connection], "voice")
+    : null;
+  const splitVoice = voiceProtocolSeparatesModelAndVoice(voiceProtocol);
+
   return (
     <div className={`space-y-3 ${disabled ? "pointer-events-none opacity-50" : ""}`}>
       <ConnectionSelect
@@ -509,12 +533,29 @@ function SceneConnectionModelFields({
         connectionLabels={connectionLabels}
         onChange={(connection) => onChange({ connection, model: "" })}
       />
-      <LlmModelPicker
-        providerId={value.connection}
-        value={value.model}
-        onChange={(model) => onChange({ ...value, model })}
-        {...(modelPurpose ? { purpose: modelPurpose } : {})}
-      />
+      {isVoiceScene && voiceProtocol === VOICE_PROTOCOL_EDGE_TTS ? (
+        <LlmVoicePicker
+          providerId={value.connection}
+          value={value.model}
+          onChange={(model) => onChange({ ...value, model })}
+          label="音色"
+        />
+      ) : (
+        <LlmModelPicker
+          providerId={value.connection}
+          value={value.model}
+          onChange={(model) => onChange({ ...value, model })}
+          {...(modelPurpose ? { purpose: modelPurpose } : {})}
+        />
+      )}
+      {isVoiceScene && splitVoice ? (
+        <LlmVoicePicker
+          providerId={value.connection}
+          model={value.model}
+          value={sceneDraftVoice(value)}
+          onChange={(voice) => onChange(withSceneDraftVoice(value, voice))}
+        />
+      ) : null}
     </div>
   );
 }
@@ -580,6 +621,7 @@ export function LlmSystemScenesPanel({
             value={chatDraft}
             connectionIds={idsFor("chat")}
             connectionLabels={connectionLabels}
+            providersById={providersById}
             onChange={(v) => onSceneChange("chat", v)}
           />
         </div>
@@ -591,7 +633,9 @@ export function LlmSystemScenesPanel({
             <p className="text-sm font-medium">主场景</p>
             <p className="text-xs text-muted-foreground">
               {capabilityMainRow.label}
-              所用连接与模型；与对话主场景相互独立。
+              {capabilityMainRow.id === "voice_generate"
+                ? "所用连接、合成模型与音色；与对话主场景相互独立。Edge 音色写在模型字段；OpenAI / 阿里音色单独选择。"
+                : "所用连接与模型；与对话主场景相互独立。"}
             </p>
           </div>
           <SceneConnectionModelFields
@@ -600,6 +644,7 @@ export function LlmSystemScenesPanel({
             value={mainFallbackDraft}
             connectionIds={idsFor(capabilityMainRow.id)}
             connectionLabels={connectionLabels}
+            providersById={providersById}
             onChange={(v) => onSceneChange(capabilityMainRow.id, v)}
           />
           {idsFor(capabilityMainRow.id).length === 0 && connectionIds.length > 0 ? (
@@ -640,6 +685,7 @@ export function LlmSystemScenesPanel({
                         onSceneChange(row.id, {
                           connection: mainFallbackDraft.connection,
                           model: mainFallbackDraft.model,
+                          ...(mainFallbackDraft.params ? { params: mainFallbackDraft.params } : {}),
                         });
                       }
                     }}
@@ -655,6 +701,7 @@ export function LlmSystemScenesPanel({
                     value={binding}
                     connectionIds={idsFor(row.id)}
                     connectionLabels={connectionLabels}
+                    providersById={providersById}
                     onChange={(v) => onSceneChange(row.id, v)}
                   />
                 ) : null}

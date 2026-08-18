@@ -3,12 +3,18 @@ import {
   LLM_FORMAT_ANTHROPIC_MESSAGES,
   LLM_FORMAT_OPENAI_COMPATIBLE,
   LLM_FORMAT_OPENAI_RESPONSES,
+  LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
   LLM_PRESET_OPENCODE_GO,
   llmProviderSchema,
 } from "@freeanima/habitat/core/config";
-import { materializeConnection, providerConfigToSpec, resolveOpencodeGoFormat } from "./presets.ts";
+import {
+  effectiveProviderModalities,
+  materializeConnection,
+  providerConfigToSpec,
+  resolveOpencodeGoFormat,
+} from "./presets.ts";
 
 describe("resolveOpencodeGoFormat", () => {
   it("routes known models", () => {
@@ -63,5 +69,24 @@ describe("providerConfigToSpec", () => {
     expect(spec.backendId).toBe(LLM_FORMAT_OPENAI_COMPATIBLE);
     expect(spec.resolveFormat?.("minimax-m3")).toBe(LLM_FORMAT_ANTHROPIC_MESSAGES);
     expect(spec.context.baseUrl).toBe("https://opencode.ai/zen/go/v1");
+  });
+});
+
+describe("effectiveProviderModalities", () => {
+  it("alibaba preset supplies voice even when stored voice_protocol is null", () => {
+    const m = effectiveProviderModalities({
+      preset: LLM_PRESET_ALIBABA_TOKEN_PLAN,
+      voice_protocol: null,
+    });
+    expect(m.voice_protocol).toBe("alibaba_audio");
+    expect(m.image_protocol).toBe("alibaba_multimodal");
+  });
+
+  it("custom connection reads stored fields", () => {
+    const m = effectiveProviderModalities({
+      preset: LLM_PRESET_CUSTOM,
+      voice_protocol: "edge-tts",
+    });
+    expect(m.voice_protocol).toBe("edge-tts");
   });
 });

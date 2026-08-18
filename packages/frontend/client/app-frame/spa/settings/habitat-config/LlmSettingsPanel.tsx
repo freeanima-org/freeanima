@@ -593,10 +593,12 @@ export function LlmSettingsPanel({
           open={editor != null}
           onClose={closeEditorPreservingDraft}
           aria-label={editorTitle}
-          className="sm:max-w-xl"
+          className={
+            editor?.kind === "connection" ? "max-w-3xl sm:max-w-3xl" : "max-w-xl sm:max-w-xl"
+          }
         >
           {editor ? (
-            <div className="flex max-h-[85vh] flex-col">
+            <div className="flex max-h-[85vh] min-w-0 flex-col">
               <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
                 <p className="text-sm font-semibold">{editorTitle}</p>
                 <Button
@@ -609,7 +611,7 @@ export function LlmSettingsPanel({
                   <XIcon />
                 </Button>
               </div>
-              <div className="flex-1 space-y-4 overflow-y-auto p-4">
+              <div className="min-w-0 flex-1 space-y-4 overflow-y-auto overflow-x-hidden p-4">
                 {editor.kind === "connection" ? (
                   <LlmConnectionEditorForm
                     connectionId={editor.id}

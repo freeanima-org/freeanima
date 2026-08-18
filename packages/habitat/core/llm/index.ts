@@ -23,6 +23,7 @@ export {
   getLlmPreset,
   LLM_PRESETS,
   materializeConnection,
+  effectiveProviderModalities,
   presetModalityFields,
   providerConfigToSpec,
   resolveOpencodeGoFormat,

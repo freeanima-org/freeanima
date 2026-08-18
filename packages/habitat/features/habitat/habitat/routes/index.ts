@@ -29,6 +29,7 @@ import {
 } from "../habitat-api/handlers/config.ts";
 import { testConfigConnection } from "../habitat-api/handlers/config-test-connection.ts";
 import { listProviderModels } from "../habitat-api/handlers/config-list-provider-models.ts";
+import { listProviderVoices } from "../habitat-api/handlers/config-list-provider-voices.ts";
 import {
   createConversation,
   getConversationInfo,
@@ -291,7 +292,21 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
           provider_id: string;
           query?: string;
           limit?: number;
-          purpose?: "chat" | "image_generate" | "embedding";
+          purpose?: "chat" | "image_generate" | "embedding" | "voice_generate";
+        },
+      ),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "config.listProviderVoices",
+    habitatMethodDefs["config.listProviderVoices"],
+    wrapConsoleLegacyHandler((payload) =>
+      listProviderVoices(
+        payload as {
+          provider_id: string;
+          model?: string;
+          query?: string;
+          limit?: number;
         },
       ),
     ),

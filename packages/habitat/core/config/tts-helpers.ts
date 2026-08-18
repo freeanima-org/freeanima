@@ -10,6 +10,7 @@ import {
 import { DEFAULT_EDGE_TTS_BASE_URL, VOICE_PROTOCOL_EDGE_TTS } from "./schemas/llm-config.ts";
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import { materializeLlmScenes, tryGetLlmConfig } from "./llm-config.ts";
+import { effectiveProviderModalities } from "../llm/presets.ts";
 
 export type { ResolvedSpeechConfig };
 
@@ -51,7 +52,9 @@ export function resolveEdgeTtsConnection(cfg: RuntimeConfig): ResolvedEdgeTtsCon
   if (!scene?.connection) return null;
   const provider = llm.providers[scene.connection];
   if (!provider) return null;
-  if (provider.voice_protocol != null && provider.voice_protocol !== VOICE_PROTOCOL_EDGE_TTS) {
+  const voiceProtocol = effectiveProviderModalities(provider).voice_protocol;
+  // 显式其它语音协议 → 非 Edge；未声明时仍允许（遗留仅配 base_url 的 Edge）
+  if (voiceProtocol != null && voiceProtocol !== VOICE_PROTOCOL_EDGE_TTS) {
     return null;
   }
   const baseUrl = (provider.base_url?.trim() || DEFAULT_EDGE_TTS_BASE_URL).replace(/\/$/, "");

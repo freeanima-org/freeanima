@@ -80,7 +80,7 @@ export function LlmModelPicker({
     purpose === "image_generate"
       ? "文生图模型 id，例如 qwen-image-3.0-pro"
       : purpose === "voice_generate"
-        ? "语音合成模型 / 音色 id"
+        ? "语音合成模型 id，例如 qwen-audio-3.0-tts-plus"
         : "供应方模型 id，例如 deepseek-chat";
 
   useEffect(() => {
@@ -204,7 +204,7 @@ export function LlmModelPicker({
                 {purpose === "image_generate"
                   ? "无匹配文生图模型；可手填如 qwen-image-3.0-pro / wan2.7-image。"
                   : purpose === "voice_generate"
-                    ? "无匹配语音模型；可手填如 qwen-audio-3.0-tts-plus 或 Edge 音色 ShortName。"
+                    ? "无匹配语音合成模型；可手填如 qwen-audio-3.0-tts-plus。"
                     : "无匹配模型；可继续手填任意 id。"}
               </p>
             ) : null}

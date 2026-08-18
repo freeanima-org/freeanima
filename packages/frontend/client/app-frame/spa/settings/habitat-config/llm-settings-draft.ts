@@ -27,8 +27,9 @@ export function providersDraftToPatch(
     const preset = coerceString(normalized.preset ?? LLM_PRESET_CUSTOM);
     if (preset !== LLM_PRESET_CUSTOM) {
       const suite = presetModalityFields(preset as typeof LLM_PRESET_DEEPSEEK);
+      // 内置预设协议套件为准（覆盖遗留 null，例如语音落地前写入的 voice_protocol: null）
       for (const [k, v] of Object.entries(suite)) {
-        if (!(k in normalized)) normalized[k] = v;
+        normalized[k] = v;
       }
       // 内置预设不落盘可改 base_url（运行时用固定根）
       delete normalized.base_url;
@@ -543,7 +544,25 @@ export function scenesDraftFromProfilesAndBindings(opts: {
 export type SceneBindingDraft = {
   connection: string;
   model: string;
+  /** 场景 params（文生声音色等）；缺省不写 */
+  params?: Record<string, unknown>;
 };
+
+export function sceneDraftVoice(draft: SceneBindingDraft): string {
+  const v = draft.params?.voice;
+  return typeof v === "string" ? v.trim() : "";
+}
+
+export function withSceneDraftVoice(draft: SceneBindingDraft, voice: string): SceneBindingDraft {
+  const trimmed = voice.trim();
+  const nextParams: Record<string, unknown> = { ...draft.params };
+  if (trimmed) nextParams.voice = trimmed;
+  else delete nextParams.voice;
+  const params = Object.keys(nextParams).length > 0 ? nextParams : undefined;
+  if (params) return { ...draft, params };
+  const { params: _omit, ...rest } = draft;
+  return rest;
+}
 
 export function readSceneBindingDraft(raw: unknown): SceneBindingDraft | null {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
@@ -551,7 +570,15 @@ export function readSceneBindingDraft(raw: unknown): SceneBindingDraft | null {
   const connection = typeof o.connection === "string" ? o.connection.trim() : "";
   const model = typeof o.model === "string" ? o.model.trim() : "";
   if (!connection && !model) return null;
-  return { connection, model };
+  const params =
+    o.params && typeof o.params === "object" && !Array.isArray(o.params)
+      ? (o.params as Record<string, unknown>)
+      : undefined;
+  return {
+    connection,
+    model,
+    ...(params && Object.keys(params).length > 0 ? { params } : {}),
+  };
 }
 
 function hop0AsSceneBinding(
@@ -621,9 +648,14 @@ export function scenesUiDraftToPatch(
         out[purpose] = null;
       }
     } else {
+      const params =
+        v.params && typeof v.params === "object" && Object.keys(v.params).length > 0
+          ? v.params
+          : undefined;
       out[purpose] = {
         connection: v.connection.trim(),
         model: v.model.trim(),
+        ...(params ? { params } : {}),
       };
     }
   }

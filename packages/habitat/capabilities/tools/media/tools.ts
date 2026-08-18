@@ -22,7 +22,29 @@ import { generateOpenAiImage } from "@freeanima/habitat/capabilities/llm-openai/
 import { generateAlibabaMultimodalImage } from "@freeanima/habitat/capabilities/llm-openai/images-alibaba-multimodal";
 import { synthesizeVoiceFromScene } from "@freeanima/habitat/capabilities/llm-openai/voice-synthesize";
 import { readVoiceProsodyParams } from "@freeanima/habitat/core/tts/voice-params";
+import {
+  formatVoiceIdsForToolHint,
+  OPENAI_AUDIO_VOICE_OPTIONS,
+} from "@freeanima/habitat/core/tts/voice-catalog";
+import {
+  VOICE_PROTOCOL_ALIBABA_AUDIO,
+  VOICE_PROTOCOL_EDGE_TTS,
+} from "@freeanima/habitat/core/config/schemas/llm-config";
 import { coerceString } from "@freeanima/shared/coerce-string";
+
+function voiceGenerateToolVoiceDescription(): string {
+  const edge = formatVoiceIdsForToolHint(VOICE_PROTOCOL_EDGE_TTS);
+  const oai = OPENAI_AUDIO_VOICE_OPTIONS.map((v) => v.id).join(", ");
+  const ali = formatVoiceIdsForToolHint(VOICE_PROTOCOL_ALIBABA_AUDIO, "qwen-audio-3.0-tts-plus");
+  return [
+    "Voice / timbre id. Edge: often same as scene model (e.g. zh-CN-XiaoxiaoNeural).",
+    `OpenAI examples: ${oai}.`,
+    `Alibaba (qwen-audio-3.0-tts-plus) examples: ${ali}. Required for Alibaba if scene.params.voice unset — missing voice causes CosyVoice 411.`,
+    edge ? `Edge examples: ${edge}.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 
 const MEDIA_TOOL_RETURNS = {
   image_generate: defineToolReturn({
@@ -218,12 +240,12 @@ export function registerMediaTools(toolSets: ToolSetRegistry): void {
         {
           name: "voice_generate",
           description:
-            "Synthesize speech from text via the configured voice_generate scene. Saves to object storage and returns object_file_id.",
+            "Synthesize speech from text via the configured voice_generate scene. Saves to object storage and returns object_file_id. Prefer scene params.voice; pass voice when overriding or when Alibaba scene has no default timbre.",
           parameters: {
             type: "object",
             properties: {
               text: { type: "string", description: "Text to synthesize" },
-              voice: { type: "string", description: "Optional voice id override" },
+              voice: { type: "string", description: voiceGenerateToolVoiceDescription() },
               rate: { type: "number", description: "Relative speaking rate (1.0 = default)" },
               pitch: { type: "number", description: "Relative pitch (1.0 = default)" },
               volume: { type: "number", description: "Relative volume (1.0 = default)" },

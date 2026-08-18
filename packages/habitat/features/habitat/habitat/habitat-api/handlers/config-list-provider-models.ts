@@ -2,7 +2,7 @@ import {
   llmProviderSchema,
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
 } from "@freeanima/habitat/core/config/schemas/llm-config.ts";
-import { getLlmRuntime } from "@freeanima/habitat/core/llm";
+import { effectiveProviderModalities, getLlmRuntime } from "@freeanima/habitat/core/llm";
 import {
   alibabaBuiltinImageGenerateEntries,
   filterImageGenerateCatalog,
@@ -168,10 +168,11 @@ export async function listProviderModels(
     });
   }
 
-  if (input.purpose === "image_generate" && !providerCfg.image_protocol) {
+  const modalities = effectiveProviderModalities(providerCfg);
+  if (input.purpose === "image_generate" && !modalities.image_protocol) {
     return { models: [], source: "provider" };
   }
-  if (input.purpose === "voice_generate" && !providerCfg.voice_protocol) {
+  if (input.purpose === "voice_generate" && !modalities.voice_protocol) {
     return { models: [], source: "provider" };
   }
 
