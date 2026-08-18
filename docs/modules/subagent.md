@@ -34,7 +34,7 @@ title: 子代理
 
 ## 派发
 
-- 单任务语法糖或 `tasks[]`（并行，`auto_llm.subagent.max_parallel`，默认 4）
+- 单任务用顶层 `goal`（不要包进 `tasks`）；`tasks[]` 仅并行（`auto_llm.subagent.max_parallel`，默认 4）。二者互斥。
 - `max_loop_iterations`：调用 > 配置 > `auto_llm.subagent.max_loop_iterations`（默认 20）
 - `temperature_tier`：调用 > 档案 > `auto_llm.subagent.temperature_tier` > `balanced`
 
@@ -54,9 +54,9 @@ title: 子代理
 
 默认**最小**（无自我 / 常驻 / 环境健康 / 目录 / 通道）：
 
-1. `systemPromptBuild`，`llm_kind: auto_llm`（仅注册给 `auto_llm` \| `all` 的 handler）
-2. 经 `prompt_includes` 可选旁路段：`self` \| `world` \| `time` — 实体 body + 调用参数的**并集**；默认无
-3. 角色段：具名 `content` 或临时 `instructions`
+1. `system`：共用 AutoLlm 协议 + `SUBAGENT_TASK_SPEC`（收尾为给父代理的完整答复；`{{slug}}` 挖空）
+2. `user`：可选技能 → `task_params`（slug）→ `<subagent_role>`（具名 `content` / 临时 `instructions` + `prompt_includes`）→ `<subagent_goal>`（本次 `goal` + 可选 `context`）
+3. `prompt_includes`：`self` \| `world` \| `time` — 实体 body + 调用参数的**并集**；默认无。goal **不**进 `task_spec`
 
 对话 prompt 段以 `llm_kind: conversation` 注册，不进子运行。
 
@@ -72,7 +72,7 @@ title: 子代理
 
 ## 父目录
 
-可见聊天注入简短多步指引（子代理 → 技能 → toolsets），再在技能**之前**注入 **Subagents** 段（`slug` + 摘要）（`llm_kind: conversation`）。用 `subagent_run` 派发。
+可见聊天注入简短多步指引（子代理 → 技能 → toolsets），再在技能**之前**注入 **Subagents** 段（`slug` + 摘要）（`llm_kind: conversation`）。用 `subagent_run` 派发。单任务用 `goal`（不要用 `tasks` 包一层）；临时必须 `instructions`（角色）+ `goal` + `allowed_tools`。子运行 user 层拆 `<subagent_role>` 与 `<subagent_goal>`。
 
 ## 栖息地 UI
 

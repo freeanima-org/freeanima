@@ -7,7 +7,8 @@ import type { SubagentRow } from "./types.ts";
 
 const SUBAGENTS_BODY_PREFIX =
   "For multi-step tool loops: prefer a **Subagent** first; otherwise load related **skills** and follow their workflows; freely explore **toolsets** only as a last resort.\n\n" +
-  "Named in-process subagent profiles. Dispatch with `subagent_run` (slug|id), or ephemeral (`instructions` + `allowed_tools`). Results return as the tool payload.";
+  "Named in-process subagent profiles. Dispatch with `subagent_run` (slug|id), or ephemeral (`instructions` + `allowed_tools`). Results return as the tool payload.\n\n" +
+  "单任务用 `goal`，不要用 `tasks` 包一层；`tasks` 仅并行。临时必须 `instructions`（角色）+ `goal` + `allowed_tools`。";
 
 /** 供单测 / 复用：具名档案目录正文（含策略说明；fold 外包 `<subagents>`） */
 export function formatSubagentCatalogContent(rows: readonly SubagentRow[]): string {

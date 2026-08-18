@@ -150,6 +150,7 @@ export function buildEntitySearchToolDefs() {
             component: { type: "string", description: "Must include component tag" },
             filters: {
               type: "object",
+              additionalProperties: true,
               description: "Component-specific filters (task_item: status, list_id, tags, …)",
             },
             limit: { type: "number", description: "Max results, default 10, cap 50" },

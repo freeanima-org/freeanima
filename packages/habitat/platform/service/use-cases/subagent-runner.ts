@@ -34,6 +34,7 @@ import {
 } from "@freeanima/features/subagent/domain/subagent-store.ts";
 import {
   buildSubagentOptInSections,
+  formatSubagentGoalSection,
   formatSubagentRoleSection,
   mergePromptIncludes,
 } from "@freeanima/features/subagent/domain/subagent-prompt.ts";
@@ -264,9 +265,11 @@ export async function resolveSubagentProfile(
   };
 }
 
-/** 子代理稳定任务规格（角色 / opt-in / 目标进 data 或 task_params） */
-export const SUBAGENT_TASK_SPEC = `完成下方数据层中的子任务；有限工具环；勿闲聊。
-角色说明见数据层；slug={{slug}}。`;
+/** 子代理稳定任务规格（角色 / 目标分两条数据消息；不含 run 元数据） */
+export const SUBAGENT_TASK_SPEC = `你是父代理派出的一次性子代理（slug={{slug}}）。
+角色见角色层，本次目标见任务层。
+只用已提供的工具；勿与用户闲聊、勿索取确认。
+最后一轮输出给父代理的完整答复：结论、依据、未决问题；不要只写一句总结。`;
 
 /**
  * 子代理角色 + opt-in 块（数据层，不进 task_spec）。
@@ -321,13 +324,11 @@ async function runOneTask(
   );
   const toolNames = materializeToolNames(policy, [...SUBAGENT_HARD_DENY_TOOLS]);
 
-  const goalBlock = [
-    `## Subagent task (${profile.slug})`,
-    task.goal.trim(),
-    task.context?.trim() ? `\n## Context\n${task.context.trim()}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const goalBlock = formatSubagentGoalSection({
+    slug: profile.slug,
+    goal: task.goal,
+    ...omitUndefined({ context: task.context }),
+  });
 
   const skillsText = formatSkillsPrefix(deps.engine.skills, skillNames);
   const roleData = await buildSubagentRoleData(profile);
@@ -337,8 +338,8 @@ async function runOneTask(
     taskParams: { slug: profile.slug },
     skillsText: skillsText || null,
     dataParts: [
-      ...(roleData.trim() ? [{ tag: PROMPT_XML_TAGS.sourceData, body: roleData }] : []),
-      { tag: PROMPT_XML_TAGS.sourceData, body: goalBlock },
+      ...(roleData.trim() ? [{ tag: PROMPT_XML_TAGS.subagentRole, body: roleData }] : []),
+      { tag: PROMPT_XML_TAGS.subagentGoal, body: goalBlock },
     ],
   });
 

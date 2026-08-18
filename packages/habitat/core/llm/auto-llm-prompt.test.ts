@@ -20,7 +20,8 @@ describe("composeAutoLlmPrompt", () => {
 
     expect(systemPrompt).toContain(`<${PROMPT_XML_TAGS.autoLlmProtocol}>`);
     expect(systemPrompt).toContain(AUTO_LLM_PROTOCOL_BODY.slice(0, 20));
-    expect(systemPrompt).toContain("约 20 字");
+    expect(systemPrompt).not.toContain("约 20 字");
+    expect(systemPrompt).toContain("输出形态以任务规格为准");
     expect(systemPrompt).toContain("禁止再带 tool_calls");
     expect(systemPrompt).toContain(`<${PROMPT_XML_TAGS.autoLlmTaskSpec}`);
     expect(systemPrompt).toContain('kind="cron"');
@@ -51,6 +52,24 @@ describe("composeAutoLlmPrompt", () => {
     expect(userMessages[0]).toContain("max_chars: 200");
     expect(userMessages[1]).toContain(`<${PROMPT_XML_TAGS.sourceData}>`);
     expect(userMessages[1]).toContain("material");
+  });
+
+  it("自定义 data 标签拆成独立 user 消息", () => {
+    const { userMessages } = composeAutoLlmPrompt({
+      kind: "subagent",
+      taskSpec: "完整答复。",
+      taskParams: { slug: "explorer" },
+      dataParts: [
+        { tag: PROMPT_XML_TAGS.subagentRole, body: "只读探索。" },
+        { tag: PROMPT_XML_TAGS.subagentGoal, body: "列出文件" },
+      ],
+    });
+    expect(userMessages).toHaveLength(3);
+    expect(userMessages[0]).toContain(`<${PROMPT_XML_TAGS.autoLlmTaskParams}>`);
+    expect(userMessages[1]).toContain(`<${PROMPT_XML_TAGS.subagentRole}>`);
+    expect(userMessages[1]).toContain("只读探索。");
+    expect(userMessages[2]).toContain(`<${PROMPT_XML_TAGS.subagentGoal}>`);
+    expect(userMessages[2]).toContain("列出文件");
   });
 
   it("无 skills/data 时仅 system", () => {

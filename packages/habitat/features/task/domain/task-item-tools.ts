@@ -34,6 +34,27 @@ import { resolveTaskToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts
 import type { TaskItemUpdateInput } from "./types.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
+const TASK_RECURRENCE_TOOL_SCHEMA = {
+  type: "object",
+  description:
+    "Recurrence rule: {freq, interval?, anchor?, weekdays?, until?, count?, schedule_at?} (binds plan clock)",
+  properties: {
+    freq: { type: "string", enum: ["daily", "weekly", "monthly", "yearly"] },
+    interval: { type: "integer" },
+    anchor: { type: "string", enum: ["due", "completion"] },
+    weekdays: { type: "array", items: { type: "integer" } },
+    until: { type: "string" },
+    count: { type: "integer" },
+    schedule_at: { type: "string" },
+    skip: { type: "string", enum: ["none", "weekend", "holiday", "weekend_and_holiday"] },
+    workdays_only: { type: "boolean" },
+    calendar: { type: "string", enum: ["gregorian", "lunar"] },
+    lunar_month: { type: "integer" },
+    lunar_day: { type: "integer" },
+  },
+  required: ["freq"],
+} as const;
+
 function parseRecurrenceArg(raw: unknown): TaskRecurrenceInput | null | undefined {
   if (raw === undefined) return undefined;
   if (raw == null || raw === "") return null;
@@ -449,11 +470,7 @@ export function buildTaskItemToolDefs() {
                 required: ["at"],
               },
             },
-            recurrence: {
-              type: "object",
-              description:
-                "Recurrence rule: {freq, interval?, anchor?, weekdays?, until?, count?, schedule_at?} (binds plan clock)",
-            },
+            recurrence: TASK_RECURRENCE_TOOL_SCHEMA,
           },
           required: ["subject_kind", "title"],
         },
@@ -500,8 +517,8 @@ export function buildTaskItemToolDefs() {
             },
             sort_order: { type: "integer" },
             recurrence: {
-              type: "object",
-              description: "Recurrence rule or null to clear",
+              description: "Recurrence rule or omit to leave unchanged; pass null to clear",
+              anyOf: [{ type: "null" }, TASK_RECURRENCE_TOOL_SCHEMA],
             },
             only_this: {
               type: "boolean",

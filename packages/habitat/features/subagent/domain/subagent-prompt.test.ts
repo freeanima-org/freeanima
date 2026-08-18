@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import {
   formatSubagentRoleSection,
+  formatSubagentGoalSection,
   mergePromptIncludes,
   normalizePromptIncludes,
 } from "./subagent-prompt.ts";
@@ -51,5 +52,17 @@ describe("subagent prompt helpers", () => {
         }),
       ),
     ).toContain("Critique the plan.");
+    expect(
+      formatSubagentRoleSection(
+        profile({ kind: "ephemeral", slug: "ephemeral", content: "Critique the plan." }),
+      ),
+    ).not.toContain("Complete the user task");
+  });
+
+  it("formatSubagentGoalSection puts goal in its own block", () => {
+    expect(
+      formatSubagentGoalSection({ slug: "explorer", goal: "列出文件", context: "repo" }),
+    ).toContain("列出文件");
+    expect(formatSubagentGoalSection({ slug: "explorer", goal: "列出文件" })).toContain("explorer");
   });
 });

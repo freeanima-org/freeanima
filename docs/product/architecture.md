@@ -400,7 +400,7 @@ mcp_servers:
 **对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录消息在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
 AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；带工具的 AutoLlm 循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
 
-**AutoLlm 提示：** `composeAutoLlmPrompt` 组装——`system`：`<auto_llm_protocol>` + `<auto_llm_task_spec>`（稳定，可用 `{{param}}` 挖空）；`user`：可选技能 → `<auto_llm_task_params>`（填空）→ 数据。禁止把对话 `system_prompt` 快照当作 AutoLlm system（压缩/handoff 亦然）。审计列含 `subject_id`、`max_loop_iterations`（引擎轮预算）、`max_duration_ms`（墙钟预算，可空）与实际 `duration_ms`。
+**AutoLlm 提示：** `composeAutoLlmPrompt` 组装——`system`：`<auto_llm_protocol>` + `<auto_llm_task_spec>`（稳定，可用 `{{param}}` 挖空）；`user`：可选技能 → `<auto_llm_task_params>`（填空）→ 数据。协议只禁末轮 `tool_calls`；**收尾形态在 kind 的 `task_spec`**（如 retain 约 20 字、subagent 给父代理完整答复）。禁止把对话 `system_prompt` 快照当作 AutoLlm system（压缩/handoff 亦然）。审计列含 `subject_id`、`max_loop_iterations`（引擎轮预算）、`max_duration_ms`（墙钟预算，可空）与实际 `duration_ms`。
 
 **行动主体：** `runAutoLlm` 与 `runAutoLlmChat` 都要求 `subjectId`（持久化为 `auto_llm_runs.subject_id`）。工具 world 授权用 `resolveToolCallerSubjectId()`——MCP token subject，否则 ALS `subjectId`，否则栖息地 `agent_subject_id` 回退。今日调用方传入 boot 绑定的 agent subject；多数字生命时传入 job 绑定的 anima，无需改授权路径。
 

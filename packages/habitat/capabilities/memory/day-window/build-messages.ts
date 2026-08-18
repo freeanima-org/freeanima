@@ -175,7 +175,7 @@ export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留�
 本 run 内同一 id 成功写入后勿再 create/update/deprecate（除非上次 error）。
 工具：memory_semantic_create / memory_semantic_update / memory_semantic_deprecate。
 observed_at = 事实首次被提及的消息时间；occurred_at = 内容描述的事件时间（可模糊）。
-写完后按协议输出约 20 字总结收尾，勿再调工具。`;
+写完后输出约 20 字总结收尾，勿再调工具。`;
 
 /** @deprecated 使用 RETAIN_TASK_SPEC + composeAutoLlmPrompt */
 export const RETAIN_INSTRUCTION_MESSAGE = RETAIN_TASK_SPEC;

@@ -8,6 +8,7 @@ import {
   reportToolProgress,
   resolveToolCallerSubjectId,
   setToolProgressReporter,
+  clearToolProgressReporterIf,
   ToolSetRegistry,
 } from "@freeanima/habitat/core/tool";
 
@@ -115,5 +116,57 @@ describe("tool progress reporter", () => {
       { tools: registry },
     );
     expect(seen).toEqual(['{"action":"run"}']);
+  });
+
+  it("nested setToolProgressReporter(undefined) does not clear parent sink", () => {
+    const registry = new ToolSetRegistry();
+    const seen: string[] = [];
+    runWithToolContext(
+      "conv-progress",
+      () => {
+        setToolProgressReporter((content) => {
+          seen.push(content);
+        });
+        runWithToolContext(
+          "autollm-nested",
+          () => {
+            setToolProgressReporter(undefined);
+          },
+          { tools: registry, contextKind: "auto_llm", subjectId: 1 },
+        );
+        reportToolProgress("after-child");
+      },
+      { tools: registry },
+    );
+    expect(seen).toEqual(["after-child"]);
+  });
+
+  it("clearToolProgressReporterIf only clears the matching reporter", () => {
+    const registry = new ToolSetRegistry();
+    const seen: string[] = [];
+    const parent = (content: string): void => {
+      seen.push(content);
+    };
+    runWithToolContext(
+      "conv-progress",
+      () => {
+        setToolProgressReporter(parent);
+        runWithToolContext(
+          "autollm-nested",
+          () => {
+            const child = (_content: string): void => {
+              seen.push("child");
+            };
+            setToolProgressReporter(child);
+            clearToolProgressReporterIf(child);
+            reportToolProgress("should-be-noop");
+          },
+          { tools: registry, contextKind: "auto_llm", subjectId: 1 },
+        );
+        reportToolProgress("parent-still");
+      },
+      { tools: registry },
+    );
+    expect(seen).toEqual(["parent-still"]);
   });
 });
