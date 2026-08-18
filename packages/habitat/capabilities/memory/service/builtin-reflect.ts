@@ -1,6 +1,6 @@
 /**
- * 内建 reflect：按 search_documents.cluster_id 分批巩固；结束后若全局 pin 超限再精简。
- * NULL / 超字节再切块。
+ * 内建 reflect：按 search_documents.cluster_id 分批巩固；每批并入跨族近邻。
+ * NULL / 超字节再切块。结束后若全局 pin 超限再精简。
  */
 
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
@@ -12,7 +12,10 @@ import { logCapability as logComponent } from "@freeanima/habitat/core/config/ca
 import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { listActiveSemanticMemoryClusterIds } from "@freeanima/habitat/core/db/pg/search/clustering-repo.ts";
+import {
+  listActiveSemanticMemoryClusterIds,
+  listActiveSemanticMemoryEmbeddings,
+} from "@freeanima/habitat/core/db/pg/search/clustering-repo.ts";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 
 import { cstDayRange } from "../day-window/build-messages.ts";
@@ -36,7 +39,12 @@ import {
 import { recordDeepSleepRun } from "../reflect/state.ts";
 import { isReflectLlmRegistered, runReflectLlm } from "./reflect-llm-port.ts";
 import type { ReflectEngineResult } from "./reflect.ts";
-import { partitionRowsByCluster } from "../clustering/batch.ts";
+import {
+  expandClusterBatchWithNeighbors,
+  filterDeprecatedBatchRows,
+  partitionRowsByCluster,
+  type NeighborEmbedding,
+} from "../clustering/batch.ts";
 
 export type BuiltinReflectInput = {
   conversation_ids?: string[];
@@ -180,23 +188,39 @@ export async function runBuiltinReflect(
   const changeLog = createEmptyChangeLog();
   let totalToolCalls = 0;
   let roundsExecuted = 0;
+  let embeddings: NeighborEmbedding[] | undefined;
 
   for (let bi = 0; bi < batches.length; bi++) {
     const batch = batches[bi];
     if (!batch || batch.rows.length === 0) continue;
+    // incremental：只看本族原行；近邻 updated_at 不唤醒死族
     if (!shouldConsolidateBatch(batch.rows, mode)) continue;
+
+    let working = batch;
+    if (batch.clusterId != null) {
+      if (!embeddings) {
+        embeddings = await listActiveSemanticMemoryEmbeddings();
+      }
+      working = expandClusterBatchWithNeighbors(batch, allRows, embeddings, {
+        eps: clustering.eps,
+        maxBatchBytes: clustering.max_batch_bytes,
+      });
+    }
+    const batchRows = filterDeprecatedBatchRows(working.rows, changeLog.deprecatedIds);
+    if (batchRows.length === 0) continue;
 
     logComponent("memory").info("reflect batch", {
       day,
       batchIndex: bi,
       batchCount: batches.length,
       clusterId: batch.clusterId,
-      rows: batch.rows.length,
-      bytes: batch.bytes,
+      rows: batchRows.length,
+      neighbors: Math.max(0, working.rows.length - batch.rows.length),
+      bytes: working.bytes,
       round: "consolidate",
     });
     const result = await runConsolidateBatch({
-      batchRows: batch.rows,
+      batchRows,
       changeLog,
     });
     roundsExecuted += result.roundsExecuted;

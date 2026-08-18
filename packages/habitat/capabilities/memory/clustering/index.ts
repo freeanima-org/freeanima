@@ -17,5 +17,13 @@ export {
   assignIncrementalCluster,
   type CalibrateFullResult,
 } from "./calibrate.ts";
-export { partitionRowsByCluster, type ClusterBatch } from "./batch.ts";
+export {
+  partitionRowsByCluster,
+  expandClusterBatchWithNeighbors,
+  filterDeprecatedBatchRows,
+  MAX_REFLECT_NEIGHBORS,
+  type ClusterBatch,
+  type NeighborEmbedding,
+  type ExpandNeighborsOpts,
+} from "./batch.ts";
 export { registerSemanticClusteringEmbeddingHook } from "./register-hook.ts";

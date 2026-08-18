@@ -26,7 +26,7 @@ title: 记忆维护（原睡眠机制）
 
 1. `conversation-cleanup`
 2. **Retain 缺口检查**（有缺口 → Inbox 通知；**不自动补跑**）
-3. CST 周一：`semantic-cluster-calibrate`（HDBSCAN 全量校准 `search_documents.cluster_id`）→ `reflect`（按簇分批；每批单轮有序巩固 + 同响应批量 toolcalls）→ `self-layer-refresh` → `semantic-cluster-title`（簇短标题 LLM 预热；与分族拆开，fail-open，不挡 reflect）
+3. CST 周一：`semantic-cluster-calibrate`（HDBSCAN 全量校准 `search_documents.cluster_id`）→ `reflect`（按簇分批，每批并入跨族近邻后单轮有序巩固 + 同响应批量 toolcalls）→ `self-layer-refresh` → `semantic-cluster-title`（簇短标题 LLM 预热；与分族拆开，fail-open，不挡 reflect）
 4. `temporal-summary-day` → `temporal-summary-cascade`
 
 ### 语义记忆聚类分批（#17 / #18020）
@@ -38,6 +38,8 @@ title: 记忆维护（原睡眠机制）
 - 可调参数在 **设置 → Habitat 配置 → 语义记忆**（顶层段 `passive_recall` / `semantic_clustering`，分 Tab 保存）；改完后于语义记忆页「全量聚类」生效。
 - 全量校准条数默认上限 5000（保护 2C2G）；超限 skip + soft-failure，reflect 仍可按已有簇 / NULL 分批。
 - 簇 title：维护步 `semantic-cluster-title` 预热（与校准分步）；列表页未命中缓存时懒生成。按 entity id 升序取最多 3 条样本，LLM 生成 ≤8 字短标签；Redis `anima:cache:semantic-cluster-title:v2:…` 缓存一个月。
+- **Reflect 作业集（#18063）**：分批核仍是 `cluster_id`。有簇的每批再并入**跨族近邻**（与本族任一条余弦距离 &lt; `semantic_clustering.eps`，默认 0.35；条数帽 16、且受 `max_batch_bytes` 约束），近邻与本族条目同样可 merge / split / deprecate。未分组（`NULL`）不扩张。批间丢掉本轮已 deprecate 的 id。
+- **禁止**按本族条目的 `source_conversations` 把关联对话里的全部记忆喂进该批；不喂对话正文、不给 search 工具。
 
 ## 运维 UI 挂载
 
