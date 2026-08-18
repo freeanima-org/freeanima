@@ -16,7 +16,6 @@ import {
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
 
 import { runHdbscan } from "./hdbscan.ts";
-import { warmSemanticClusterTitles } from "./cluster-title.ts";
 
 const log = logComponent("memory.clustering");
 
@@ -87,18 +86,6 @@ export async function calibrateSemanticMemoryClusters(opts?: {
     updated,
     ms: Date.now() - started,
   });
-
-  const clusterIds = [
-    ...new Set(
-      [...result.labels.values()].filter((lab): lab is number => Number.isInteger(lab) && lab >= 0),
-    ),
-  ].toSorted((a, b) => a - b);
-  try {
-    const warm = await warmSemanticClusterTitles(clusterIds);
-    log.info("cluster titles warmed", warm);
-  } catch (e) {
-    log.warn("cluster title warm skipped", { error: String(e) });
-  }
 
   return {
     ok: true,

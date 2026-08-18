@@ -132,3 +132,12 @@ export function createLlmTimeoutController(opts: {
     dispose,
   };
 }
+
+/** 合并 LLM 自身超时 signal 与调用方墙钟 / 取消 signal（任一 abort 即取消 fetch） */
+export function mergeAbortSignals(
+  timeoutSignal: AbortSignal,
+  external?: AbortSignal | null,
+): AbortSignal {
+  if (!external) return timeoutSignal;
+  return AbortSignal.any([timeoutSignal, external]);
+}

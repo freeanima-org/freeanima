@@ -31,6 +31,7 @@ import {
   createLlmTimeoutController,
   extractLlmTimeoutError,
   isLlmTimeoutError,
+  mergeAbortSignals,
 } from "../request-timeouts.ts";
 import { normalizeUsage } from "../usage.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
@@ -271,7 +272,7 @@ export async function runAnthropicMessages(
         top_p: request.params.topP,
         ...request.params.extra,
       }),
-      { signal: timeouts.signal },
+      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
     );
     timeouts.onFirstByte();
     const latency_ms = Math.round(performance.now() - started);
@@ -351,7 +352,7 @@ export async function* runAnthropicMessagesStream(
         top_p: request.params.topP,
         ...request.params.extra,
       }),
-      { signal: timeouts.signal },
+      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
     );
 
     for await (const event of stream) {
