@@ -5,6 +5,8 @@ import { initRedis, resetRedisForTest, setRedisForTest } from "./client.ts";
 import {
   DEFAULT_LOCK_TTL_MS,
   REDIS_LOCK_KEY_PREFIX,
+  forceReleaseRedisLock,
+  listRedisLocks,
   resetRedisLockWarnForTest,
   withRedisLock,
 } from "./lock.ts";
@@ -44,6 +46,17 @@ function createMockRedis() {
     return e.value;
   });
   const send = mock(async (command: string, args: string[]) => {
+    if (command === "PTTL") {
+      const key = args[0] ?? "";
+      const e = store.get(key);
+      if (!e) return -2;
+      const remaining = e.expiresAtMs - Date.now();
+      if (remaining <= 0) {
+        store.delete(key);
+        return -2;
+      }
+      return remaining;
+    }
     if (command !== "EVAL") return null;
     const script = args[0] ?? "";
     const key = args[2] ?? "";
@@ -66,13 +79,30 @@ function createMockRedis() {
     }
     return 0;
   });
+  const del = mock(async (key: string) => {
+    if (!store.has(key)) return 0;
+    store.delete(key);
+    return 1;
+  });
+  const scan = mock(async (_cursor: string | number, ...args: (string | number)[]) => {
+    const glob = String(args[1] ?? "*");
+    const prefix = glob.endsWith("*") ? glob.slice(0, -1) : glob;
+    const keys = [...store.keys()].filter((k) => {
+      if (glob === "*") return true;
+      if (glob.endsWith("*")) return k.startsWith(prefix);
+      return k === glob;
+    });
+    return ["0", keys] as [string, string[]];
+  });
 
   return {
     store,
-    client: { set, get, send } as unknown as RedisClient,
+    client: { set, get, send, del, scan } as unknown as RedisClient,
     set,
     get,
     send,
+    del,
+    scan,
   };
 }
 
@@ -227,5 +257,53 @@ describe("withRedisLock", () => {
     });
     expect(result).toEqual({ status: "ok", value: true });
     expect(mockRedis.send.mock.calls.length).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("listRedisLocks / forceReleaseRedisLock", () => {
+  afterEach(() => {
+    resetRedisForTest();
+    resetRedisLockWarnForTest();
+  });
+
+  it("returns empty when Redis is not configured", async () => {
+    resetRedisForTest();
+    await expect(listRedisLocks()).resolves.toEqual([]);
+    await expect(forceReleaseRedisLock("stale")).resolves.toBe(false);
+  });
+
+  it("lists anima:lock keys with remaining ttl", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    mockRedis.store.set(`${REDIS_LOCK_KEY_PREFIX}memory-maintenance`, {
+      value: "token",
+      expiresAtMs: Date.now() + 30_000,
+    });
+
+    const listed = await listRedisLocks();
+    expect(listed).toHaveLength(1);
+    expect(listed[0]?.key).toBe(`${REDIS_LOCK_KEY_PREFIX}memory-maintenance`);
+    expect(listed[0]?.logicalKey).toBe("memory-maintenance");
+    expect(listed[0]?.ttlMs).toBeGreaterThan(0);
+    expect(listed[0]?.ttlMs).toBeLessThanOrEqual(30_000);
+  });
+
+  it("force-deletes without matching token (logical or full key)", async () => {
+    const mockRedis = createMockRedis();
+    initRedis({ getRedisUrl: () => "redis://127.0.0.1:6379" });
+    setRedisForTest(mockRedis.client);
+
+    const key = `${REDIS_LOCK_KEY_PREFIX}fts-rebuild`;
+    mockRedis.store.set(key, { value: "foreign-token", expiresAtMs: Date.now() + 60_000 });
+
+    expect(await forceReleaseRedisLock("fts-rebuild")).toBe(true);
+    expect(mockRedis.store.has(key)).toBe(false);
+
+    mockRedis.store.set(key, { value: "again", expiresAtMs: Date.now() + 60_000 });
+    expect(await forceReleaseRedisLock(key)).toBe(true);
+    expect(mockRedis.store.has(key)).toBe(false);
+    expect(await forceReleaseRedisLock("missing")).toBe(false);
   });
 });

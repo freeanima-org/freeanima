@@ -15,10 +15,11 @@ export type InprocessBuiltinDef = {
 
 /** 与手动 memoryMaintenance API 共享的分布式锁逻辑名 */
 export const MEMORY_MAINTENANCE_LOCK_KEY = "memory-maintenance";
+/** 记忆维护租约；杀进程后卡死上限 ≈ 此时效（活任务靠 renew 续期） */
+export const MEMORY_MAINTENANCE_LOCK_TTL_MS = 30 * 60 * 1000;
 /** @deprecated 使用 MEMORY_MAINTENANCE_LOCK_KEY */
 export const SLEEP_PIPELINE_LOCK_KEY = MEMORY_MAINTENANCE_LOCK_KEY;
 
-const HOUR_MS = 60 * 60 * 1000;
 const MIN_MS = 60 * 1000;
 
 function inprocessLockOpts(id: string): {
@@ -28,15 +29,20 @@ function inprocessLockOpts(id: string): {
   mode: "try";
 } {
   if (id === "builtin-memory-maintenance") {
-    return { key: MEMORY_MAINTENANCE_LOCK_KEY, ttlMs: 3 * HOUR_MS, renew: true, mode: "try" };
+    return {
+      key: MEMORY_MAINTENANCE_LOCK_KEY,
+      ttlMs: MEMORY_MAINTENANCE_LOCK_TTL_MS,
+      renew: true,
+      mode: "try",
+    };
   }
   if (id === "builtin-temporal-summary-tick") {
-    return { key: `inprocess:${id}`, ttlMs: 25 * MIN_MS, renew: true, mode: "try" };
+    return { key: `inprocess:${id}`, ttlMs: 10 * MIN_MS, renew: true, mode: "try" };
   }
   if (id === "builtin-email-sync-all" || id === "builtin-env-health") {
     return { key: `inprocess:${id}`, ttlMs: 4 * MIN_MS, mode: "try" };
   }
-  return { key: `inprocess:${id}`, ttlMs: HOUR_MS, mode: "try" };
+  return { key: `inprocess:${id}`, ttlMs: 10 * MIN_MS, mode: "try" };
 }
 
 /** 进程内 Bun.cron：不写 cron_jobs / cron_log */

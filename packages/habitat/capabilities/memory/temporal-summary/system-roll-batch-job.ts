@@ -2,7 +2,7 @@ import { withRedisLock } from "@freeanima/habitat/core/redis";
 
 import type { SysRollKind } from "./buckets.ts";
 
-const TEMPORAL_SYSTEM_ROLL_BATCH_LOCK_TTL_MS = 2 * 60 * 60 * 1000;
+const TEMPORAL_SYSTEM_ROLL_BATCH_LOCK_TTL_MS = 15 * 60 * 1000;
 
 export const ALL_SYS_ROLL_KINDS: SysRollKind[] = ["past_days", "past_months", "past_years"];
 

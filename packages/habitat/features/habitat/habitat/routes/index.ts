@@ -54,6 +54,10 @@ import {
   startRebuildFtsIndex,
 } from "../habitat-api/handlers/fts.ts";
 import {
+  deleteHabitatRedisLock,
+  listHabitatRedisLocks,
+} from "../habitat-api/handlers/redis-locks.ts";
+import {
   countSemanticMemory,
   listSemanticMemories,
   listSemanticMemoryClusters,
@@ -546,6 +550,16 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "memoryMaintenance.startCatchUp",
     habitatMethodDefs["memoryMaintenance.startCatchUp"],
     wrapConsoleLegacyHandler(() => startMemoryMaintenanceCatchUp()),
+  ),
+  defineHabitatRouteFromDef(
+    "redisLocks.list",
+    habitatMethodDefs["redisLocks.list"],
+    wrapConsoleLegacyHandler(() => listHabitatRedisLocks()),
+  ),
+  defineHabitatRouteFromDef(
+    "redisLocks.delete",
+    habitatMethodDefs["redisLocks.delete"],
+    wrapConsoleLegacyHandler((payload) => deleteHabitatRedisLock(payload as { key: string })),
   ),
   defineHabitatRouteFromDef(
     "cronLogs.list",

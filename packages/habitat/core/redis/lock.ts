@@ -6,8 +6,8 @@ import { getRedis, isRedisConfigured } from "./client.ts";
 /** Key 前缀约定：分布式锁 */
 export const REDIS_LOCK_KEY_PREFIX = "anima:lock:";
 
-/** 未传 ttlMs 时的持有租约兜底 */
-export const DEFAULT_LOCK_TTL_MS = 60 * 60 * 1000; // 1h
+/** 未传 ttlMs 时的持有租约兜底；杀进程后卡死上限 ≈ 此时效（活任务靠 renew 续期） */
+export const DEFAULT_LOCK_TTL_MS = 10 * 60 * 1000; // 10min
 
 const DEFAULT_RETRY_INTERVAL_MS = 150;
 const DEFAULT_WAIT_MS = 30_000;
@@ -33,7 +33,7 @@ let softFailureInboxSettled = false;
 export type RedisLockAcquireOpts = {
   /** 逻辑名；自动加 `anima:lock:` 前缀 */
   key: string;
-  /** 持有租约；省略则 DEFAULT_LOCK_TTL_MS（1h） */
+  /** 持有租约；省略则 DEFAULT_LOCK_TTL_MS（10min） */
   ttlMs?: number;
   /** 长任务 watchdog 续期 */
   renew?: boolean;
@@ -270,6 +270,74 @@ export async function withRedisLock<T>(
     return { status: "ok", value: await fn() };
   } finally {
     await acquired.handle.release();
+  }
+}
+
+export type RedisLockInfo = {
+  /** 完整 Redis key（`anima:lock:…`） */
+  key: string;
+  /** 逻辑名（去掉前缀） */
+  logicalKey: string;
+  /** 剩余毫秒；-1 表示无过期 */
+  ttlMs: number;
+};
+
+async function pttlMs(key: string): Promise<number> {
+  try {
+    const result: unknown = await getRedis().send("PTTL", [key]);
+    const n = typeof result === "number" ? result : Number(result);
+    return Number.isFinite(n) ? n : -2;
+  } catch {
+    return -2;
+  }
+}
+
+/** SCAN `anima:lock:*`；Redis 未配置或失败时返回空数组。 */
+export async function listRedisLocks(): Promise<RedisLockInfo[]> {
+  if (!isRedisConfigured()) return [];
+  const results: RedisLockInfo[] = [];
+  try {
+    const redis = getRedis();
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await redis.scan(
+        cursor,
+        "MATCH",
+        `${REDIS_LOCK_KEY_PREFIX}*`,
+        "COUNT",
+        100,
+      );
+      cursor = nextCursor;
+      for (const key of keys) {
+        const ttlMs = await pttlMs(key);
+        if (ttlMs === -2) continue;
+        results.push({
+          key,
+          logicalKey: key.startsWith(REDIS_LOCK_KEY_PREFIX)
+            ? key.slice(REDIS_LOCK_KEY_PREFIX.length)
+            : key,
+          ttlMs,
+        });
+      }
+    } while (cursor !== "0");
+  } catch {
+    return [];
+  }
+  return results;
+}
+
+/**
+ * 运维强制删锁（无 token 校验）。接受逻辑名或完整 `anima:lock:…`。
+ * Redis 未配置或失败时返回 false。
+ */
+export async function forceReleaseRedisLock(key: string): Promise<boolean> {
+  if (!isRedisConfigured()) return false;
+  const fullKey = lockKey(key);
+  try {
+    const deleted = await getRedis().del(fullKey);
+    return deleted > 0;
+  } catch {
+    return false;
   }
 }
 

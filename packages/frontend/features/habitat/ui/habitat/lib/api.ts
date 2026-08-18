@@ -437,6 +437,25 @@ export async function getRebuildFtsJobStatus() {
   return hubCall(habitat().call("fts.rebuildStatus", {}));
 }
 
+export type HabitatRedisLockInfo = {
+  key: string;
+  logicalKey: string;
+  ttlMs: number;
+};
+
+export type HabitatRedisLocksSnapshot = {
+  configured: boolean;
+  locks: HabitatRedisLockInfo[];
+};
+
+export async function listRedisLocks() {
+  return hubCall(habitat().call("redisLocks.list", {})) as Promise<HabitatRedisLocksSnapshot>;
+}
+
+export async function deleteRedisLock(key: string) {
+  return hubCall(habitat().call("redisLocks.delete", { key })) as Promise<{ deleted: boolean }>;
+}
+
 export async function getSelfBlocks() {
   return hubCall(habitat().call("self.blocks", {}));
 }

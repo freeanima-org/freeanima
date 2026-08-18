@@ -18,6 +18,7 @@ import {
   temporalSystemRollBatchJobStatusSchema,
   worldEntityCreateBodySchema,
   worldEntityPatchInputSchema,
+  redisLocksDeleteBodySchema,
 } from "./schemas.ts";
 import {
   binaryHttpMeta,
@@ -449,6 +450,16 @@ export const habitatMethodDefs = {
     input: emptyInputSchema,
     output: unknownOutputSchema,
     meta: longOpMeta(false),
+  }),
+  "redisLocks.list": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "redisLocks.delete": defineHabitatMethod({
+    input: redisLocksDeleteBodySchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(false),
   }),
   "cronLogs.list": defineHabitatMethod({
     input: cronLogsQuerySchema,

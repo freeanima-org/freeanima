@@ -540,3 +540,9 @@ export const toolsStatusResponseSchema = z.object({
 
 export type ToolsStatusResponse = z.infer<typeof toolsStatusResponseSchema>;
 export type ToolsStatusToolItem = z.infer<typeof toolsStatusToolItemSchema>;
+
+export const redisLocksDeleteBodySchema = z
+  .object({
+    key: z.string().min(1),
+  })
+  .strict();
