@@ -50,7 +50,7 @@ describe("ConversationListItem", () => {
     expect(html).toContain('aria-label="取消归档"');
   });
 
-  it("pointer：无常驻归档按钮", () => {
+  it("pointer 未选中：归档按钮默认隐藏，hover/focus 才露", () => {
     const html = renderToStaticMarkup(
       createElement(ConversationListItem, {
         conversation: baseConversation,
@@ -65,7 +65,29 @@ describe("ConversationListItem", () => {
         onUnarchive: () => {},
       }),
     );
-    expect(html).not.toContain('aria-label="归档"');
+    expect(html).toContain('aria-label="归档"');
+    expect(html).toContain("opacity-0");
+    expect(html).toContain("group-hover:opacity-100");
     expect(html).not.toContain("⋯");
+  });
+
+  it("pointer 选中：归档按钮可见", () => {
+    const html = renderToStaticMarkup(
+      createElement(ConversationListItem, {
+        conversation: baseConversation,
+        label: "测试会话",
+        active: true,
+        useActionSheet: false,
+        contextMenuEnabled: true,
+        contextMenuItems: [{ label: "归档", onClick: () => {} }],
+        onNavigate: () => {},
+        onOpenMenu: () => {},
+        onArchive: () => {},
+        onUnarchive: () => {},
+      }),
+    );
+    expect(html).toContain('aria-label="归档"');
+    expect(html).toContain("opacity-100");
+    expect(html).not.toContain("opacity-0");
   });
 });
