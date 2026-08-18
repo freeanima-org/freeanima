@@ -1,11 +1,11 @@
 import OpenAI from "openai";
 import {
-  DEFAULT_OVERALL_TIMEOUT_MS,
   parseOpenAiCompatibleContext,
+  resolveChatTimeouts,
   type OpenAiCompatibleContext,
 } from "./context.ts";
 import type { BackendContext } from "@freeanima/habitat/core/provider";
-import { sdkFetchWithRetryGuard } from "./sdk-retry-guard.ts";
+import { createSdkFetch } from "./sdk-retry-guard.ts";
 
 export function createOpenAiClient(context: BackendContext): OpenAI {
   const cfg = parseOpenAiCompatibleContext(context);
@@ -13,12 +13,13 @@ export function createOpenAiClient(context: BackendContext): OpenAI {
 }
 
 export function createOpenAiClientFromParsed(context: OpenAiCompatibleContext): OpenAI {
+  const { overallMs, connectMs } = resolveChatTimeouts(context);
   return new OpenAI({
     apiKey: context.apiKey,
     baseURL: context.baseUrl,
-    /** SDK 兜底 = 整体超时；首字节 / idle 由 request-timeouts 应用层控制 */
-    timeout: context.timeoutMs ?? DEFAULT_OVERALL_TIMEOUT_MS,
-    /** 配额耗尽的超长 Retry-After 禁止 SDK 睡眠重试 */
-    fetch: sdkFetchWithRetryGuard,
+    /** SDK 兜底 = 整体超时；连接 / 首字节 / idle 由 fetch 与 request-timeouts 控制 */
+    timeout: overallMs,
+    /** 配额耗尽的超长 Retry-After 禁止 SDK 睡眠重试；connect 超时见 wrapConnectTimeout */
+    fetch: createSdkFetch(connectMs),
   });
 }

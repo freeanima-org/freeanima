@@ -3,8 +3,10 @@ import {
   MAX_PROVIDER_RETRY_AFTER_MS,
   isQuotaExhaustedText,
   parseRetryAfterHeaderMs,
+  wrapConnectTimeout,
   wrapSdkFetch,
 } from "./sdk-retry-guard.ts";
+import { extractLlmTimeoutError, LlmTimeoutError } from "./request-timeouts.ts";
 
 describe("isQuotaExhaustedText", () => {
   it("detects token-plan weekly quota body", () => {
@@ -80,6 +82,48 @@ describe("wrapSdkFetch", () => {
 
   it("does not rewrite successful responses", async () => {
     const fetchImpl = wrapSdkFetch(async () => new Response("ok", { status: 200 }));
+    const res = await fetchImpl("https://example.test/v1/models");
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("ok");
+  });
+});
+
+describe("wrapConnectTimeout", () => {
+  const hangingFetch = async (_input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    const signal = init?.signal;
+    return await new Promise<Response>((_resolve, reject) => {
+      const onAbort = () => {
+        reject(signal?.reason ?? new DOMException("Aborted", "AbortError"));
+      };
+      if (signal?.aborted) {
+        onAbort();
+        return;
+      }
+      signal?.addEventListener("abort", onAbort, { once: true });
+    });
+  };
+
+  it("aborts with LlmTimeoutError connect when headers never arrive", async () => {
+    let calls = 0;
+    const fetchImpl = wrapConnectTimeout(async (input, init) => {
+      calls += 1;
+      return hangingFetch(input, init);
+    }, 30);
+    const err = await fetchImpl("https://example.test/v1/models").catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(Error);
+    expect((err as Error).name).toBe("AbortError");
+    const llm = extractLlmTimeoutError(err);
+    expect(llm).toBeInstanceOf(LlmTimeoutError);
+    expect(llm?.kind).toBe("connect");
+    expect(llm?.timeoutMs).toBe(30);
+    expect(calls).toBe(1);
+  });
+
+  it("does not fire connect timeout after headers arrive", async () => {
+    const fetchImpl = wrapConnectTimeout(async () => {
+      await Bun.sleep(20);
+      return new Response("ok", { status: 200 });
+    }, 5_000);
     const res = await fetchImpl("https://example.test/v1/models");
     expect(res.status).toBe(200);
     expect(await res.text()).toBe("ok");

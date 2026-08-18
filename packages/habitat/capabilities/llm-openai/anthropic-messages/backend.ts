@@ -6,6 +6,7 @@ import type {
 } from "@anthropic-ai/sdk/resources/messages";
 import {
   LlmBackend,
+  collectChatCompletion,
   type BackendContext,
   type ChatCompletion,
   type ChatRequest,
@@ -35,7 +36,7 @@ import {
 } from "../request-timeouts.ts";
 import { normalizeUsage } from "../usage.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { isQuotaExhaustedText, sdkFetchWithRetryGuard } from "../sdk-retry-guard.ts";
+import { isQuotaExhaustedText, createSdkFetch } from "../sdk-retry-guard.ts";
 
 export const ANTHROPIC_MESSAGES_FORMAT_ID = LLM_FORMAT_ANTHROPIC_MESSAGES;
 
@@ -55,11 +56,12 @@ function rethrowTimeout(err: unknown): never {
 }
 
 function createAnthropicClient(context: OpenAiCompatibleContext): Anthropic {
+  const { overallMs, connectMs } = resolveChatTimeouts(context);
   return new Anthropic({
     apiKey: context.apiKey,
     baseURL: context.baseUrl,
-    timeout: context.timeoutMs,
-    fetch: sdkFetchWithRetryGuard,
+    timeout: overallMs,
+    fetch: createSdkFetch(connectMs),
   });
 }
 
@@ -239,80 +241,6 @@ function mapAnthropicError(err: unknown, meta?: { providerId?: string }): Provid
   );
 }
 
-export async function runAnthropicMessages(
-  model: string,
-  request: ChatRequest,
-  context: BackendContext,
-): Promise<ChatCompletion> {
-  const parsed = parseOpenAiCompatibleContext(context);
-  const { overallMs, firstByteMs } = resolveChatTimeouts(parsed);
-  const timeouts = createLlmTimeoutController({
-    overallMs,
-    firstByteMs,
-    idleMs: null,
-  });
-  const client = createAnthropicClient(parsed);
-  const started = performance.now();
-  try {
-    const system =
-      request.systemPrompt?.trim() ||
-      request.messages
-        .filter((m) => m.role === "system")
-        .map((m) => m.content)
-        .join("\n");
-    const max_tokens = await resolveAnthropicMaxTokens(model, request);
-    const response = await client.messages.create(
-      omitUndefined({
-        model,
-        max_tokens,
-        system: system || undefined,
-        messages: toAnthropicMessages(request.messages),
-        tools: toAnthropicTools(request),
-        temperature: request.params.temperature,
-        top_p: request.params.topP,
-        ...request.params.extra,
-      }),
-      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
-    );
-    timeouts.onFirstByte();
-    const latency_ms = Math.round(performance.now() - started);
-    const textParts: string[] = [];
-    const toolCalls: ToolCall[] = [];
-    for (const block of response.content) {
-      if (block.type === "text") textParts.push(block.text);
-      if (block.type === "tool_use") {
-        toolCalls.push({
-          id: block.id,
-          type: "function",
-          function: {
-            name: block.name,
-            arguments: JSON.stringify(block.input ?? {}),
-          },
-        });
-      }
-    }
-    return omitUndefined({
-      content: textParts.join("") || (toolCalls.length > 0 ? null : ""),
-      tool_calls: toolCalls.length > 0 ? toolCalls : null,
-      finish_reason: response.stop_reason ?? (toolCalls.length > 0 ? "tool_calls" : "stop"),
-      usage: normalizeUsage({
-        prompt_tokens: response.usage.input_tokens,
-        completion_tokens: response.usage.output_tokens,
-        total_tokens: response.usage.input_tokens + response.usage.output_tokens,
-      }),
-      latency_ms,
-      model: response.model ?? model,
-    });
-  } catch (err) {
-    if (timeouts.signal.aborted && isLlmTimeoutError(timeouts.signal.reason)) {
-      throw timeouts.signal.reason;
-    }
-    return rethrowTimeout(err);
-  } finally {
-    timeouts.dispose();
-  }
-}
-
 export async function* runAnthropicMessagesStream(
   model: string,
   request: ChatRequest,
@@ -429,7 +357,7 @@ export class AnthropicMessagesBackend extends LlmBackend {
   }
 
   chat(model: string, request: ChatRequest, context: BackendContext): Promise<ChatCompletion> {
-    return runAnthropicMessages(model, request, context);
+    return collectChatCompletion(this.chatStream(model, request, context, request.signal));
   }
 
   chatStream(

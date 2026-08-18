@@ -4,7 +4,7 @@
  * 本层在 fetch 上标 x-should-retry: false，让 SDK 立刻抛出。
  */
 
-/** 超过此时长的 Retry-After 视为配额/硬限流，不再让 SDK 睡眠重试 */
+import { LlmTimeoutError, isLlmTimeoutError } from "./request-timeouts.ts";
 export const MAX_PROVIDER_RETRY_AFTER_MS = 10_000;
 
 export function isQuotaExhaustedText(text: string): boolean {
@@ -42,6 +42,32 @@ function shouldFail429Immediately(headers: Headers, body: string): boolean {
 
 export type SdkFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
+/**
+ * 直到 HTTP 响应头：超时则 abort，reason 为 LlmTimeoutError("connect")。
+ * fetch() 在 headers 到达时即 resolve，body 慢读不会再触发本计时。
+ */
+export function wrapConnectTimeout(inner: SdkFetch, connectMs: number): SdkFetch {
+  return async (input, init) => {
+    const ac = new AbortController();
+    const timer = setTimeout(() => {
+      ac.abort(new LlmTimeoutError("connect", connectMs));
+    }, connectMs);
+    const signal = init?.signal ? AbortSignal.any([init.signal, ac.signal]) : ac.signal;
+    try {
+      return await inner(input, { ...init, signal });
+    } catch (err) {
+      if (ac.signal.aborted && isLlmTimeoutError(ac.signal.reason)) {
+        const abort = new Error("Aborted", { cause: ac.signal.reason });
+        abort.name = "AbortError";
+        throw abort;
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+}
+
 export function wrapSdkFetch(inner: SdkFetch): SdkFetch {
   return async (input, init) => {
     const response = await inner(input, init);
@@ -64,4 +90,7 @@ export function wrapSdkFetch(inner: SdkFetch): SdkFetch {
   };
 }
 
-export const sdkFetchWithRetryGuard: SdkFetch = wrapSdkFetch(fetch);
+/** 配额 429 护栏 + 连接/响应头超时（OpenAI / Anthropic SDK 共用） */
+export function createSdkFetch(connectMs: number): SdkFetch {
+  return wrapSdkFetch(wrapConnectTimeout(fetch, connectMs));
+}

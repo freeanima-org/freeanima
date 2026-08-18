@@ -114,6 +114,8 @@ const audioProtocolIdSchema = z.enum(AUDIO_PROTOCOL_IDS);
 
 const timeoutFieldsSchema = {
   timeout_ms: z.number().int().positive().optional(),
+  /** 连接 / HTTP 响应头超时（ms）；须 ≤ timeout_ms */
+  connect_timeout_ms: z.number().int().positive().optional(),
   first_byte_timeout_ms: z.number().int().positive().optional(),
   idle_timeout_ms: z.number().int().positive().optional(),
 };
@@ -121,6 +123,7 @@ const timeoutFieldsSchema = {
 function refineTimeouts(
   val: {
     timeout_ms?: number;
+    connect_timeout_ms?: number;
     first_byte_timeout_ms?: number;
     idle_timeout_ms?: number;
   },
@@ -128,6 +131,13 @@ function refineTimeouts(
 ): void {
   const overall = val.timeout_ms;
   if (overall == null) return;
+  if (val.connect_timeout_ms != null && val.connect_timeout_ms > overall) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["connect_timeout_ms"],
+      message: "connect_timeout_ms must be ≤ timeout_ms",
+    });
+  }
   if (val.first_byte_timeout_ms != null && val.first_byte_timeout_ms > overall) {
     ctx.addIssue({
       code: "custom",
@@ -216,6 +226,9 @@ function refineConnection(val: z.infer<typeof connectionObjectSchema>, ctx: z.Re
   refineTimeouts(
     {
       ...(val.timeout_ms !== undefined ? { timeout_ms: val.timeout_ms } : {}),
+      ...(val.connect_timeout_ms !== undefined
+        ? { connect_timeout_ms: val.connect_timeout_ms }
+        : {}),
       ...(val.first_byte_timeout_ms !== undefined
         ? { first_byte_timeout_ms: val.first_byte_timeout_ms }
         : {}),
@@ -403,6 +416,7 @@ export type ConnectionConfig = {
   base_url?: string | undefined;
   api_key?: string | undefined;
   timeout_ms?: number | undefined;
+  connect_timeout_ms?: number | undefined;
   first_byte_timeout_ms?: number | undefined;
   idle_timeout_ms?: number | undefined;
 };
@@ -418,6 +432,7 @@ export function connectionConfigToContext(
     baseUrl: baseUrl.replace(/\/$/, ""),
     apiKey: cfg.api_key,
     timeoutMs: cfg.timeout_ms,
+    connectTimeoutMs: cfg.connect_timeout_ms,
     firstByteTimeoutMs: cfg.first_byte_timeout_ms,
     idleTimeoutMs: cfg.idle_timeout_ms,
   });

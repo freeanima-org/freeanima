@@ -48,6 +48,7 @@ export {
 export type { ErrorClassification, ProviderErrorCode, ProviderErrorOptions } from "./errors.ts";
 
 export type { ChatCompletion, ChatRequest, ChatStreamEvent } from "./invoke.ts";
+export { collectChatCompletion } from "./collect-chat.ts";
 
 export type { BackendContext } from "./backend.ts";
 export { BackendRegistry, LlmBackend } from "./backend.ts";
