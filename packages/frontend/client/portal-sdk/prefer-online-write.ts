@@ -1,22 +1,17 @@
-import { isHabitatRpcTransportError } from "@freeanima/shared/habitat-rpc";
-
 import { isHabitatFetchAvailable, isNetworkOnline } from "./habitat-fetch-gate.ts";
+import {
+  isRecordableTransportFailure,
+  recordHabitatTransportFailure,
+  recordHabitatTransportSuccess,
+} from "./local-prefer.ts";
 
 /**
  * 在线写失败后是否应回退 outbox（仅网络/传输类）。
  * 业务校验等错误应直接抛给 UI，避免把必然失败的 op 塞进队列。
  */
 export function isRetriableOfflineWriteError(err: unknown): boolean {
-  if (isHabitatRpcTransportError(err)) return true;
-  if (!isNetworkOnline()) return true;
-  if (!(err instanceof Error)) return false;
-  const msg = err.message.toLowerCase();
-  return (
-    msg.includes("failed to fetch") ||
-    msg.includes("networkerror") ||
-    msg.includes("network request failed") ||
-    msg.includes("not connected")
-  );
+  if (isRecordableTransportFailure(err)) return true;
+  return !isNetworkOnline();
 }
 
 /**
@@ -31,9 +26,12 @@ export async function preferOnlineWrite<T>(
     return offline();
   }
   try {
-    return await online();
+    const result = await online();
+    recordHabitatTransportSuccess();
+    return result;
   } catch (err) {
     if (isRetriableOfflineWriteError(err)) {
+      recordHabitatTransportFailure();
       return offline();
     }
     throw err;

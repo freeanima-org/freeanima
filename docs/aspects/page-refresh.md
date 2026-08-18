@@ -24,15 +24,15 @@ title: 页面刷新
 
 ## 页面类别
 
-| 类别            | 页面                    | 自动                                                          | 手动                         |
-| --------------- | ----------------------- | ------------------------------------------------------------- | ---------------------------- |
-| A Stream        | 聊天室                  | SAP stream + 恢复轮询                                         | 顶栏刷新（已有）             |
-| B CRUD outbox   | 任务、项目、日记        | 挂载 / 选择 cache-first；本地写后 reload；sync → `refreshAll` | 顶栏 + 下拉刷新              |
-| C Hybrid outbox | 番茄钟                  | `pomodoro.active.changed`                                     | 离线 `refreshAll` 配置/统计  |
-| D snapshot      | 邮件、通知、梦境、Vault | 挂载 / 依赖加载                                               | 顶栏刷新（绑定列表处可下拉） |
-| E Habitat       | Ops 列表                | 进入时加载                                                    | 显式刷新（已有）             |
-| F Settings      | 壳设置                  | 打开时加载                                                    | 保存后重读                   |
-| G Shell update  | PWA / 安装器            | 更新检查                                                      | Reload / 安装 ≠ 业务刷新     |
+| 类别            | 页面                         | 自动                                                          | 手动                         |
+| --------------- | ---------------------------- | ------------------------------------------------------------- | ---------------------------- |
+| A Stream        | 聊天室                       | SAP stream + 恢复轮询                                         | 顶栏刷新（已有）             |
+| B CRUD outbox   | 任务、项目、日记、笔记、日程 | 挂载 / 选择 cache-first；本地写后 reload；sync → `refreshAll` | 顶栏 + 下拉刷新              |
+| C Hybrid outbox | 番茄钟                       | `pomodoro.active.changed`                                     | 离线 `refreshAll` 配置/统计  |
+| D snapshot      | 邮件、通知、梦境、Vault      | 挂载 / 依赖加载                                               | 顶栏刷新（绑定列表处可下拉） |
+| E Habitat       | Ops 列表                     | 进入时加载                                                    | 显式刷新（已有）             |
+| F Settings      | 壳设置                       | 打开时加载                                                    | 保存后重读                   |
+| G Shell update  | PWA / 安装器                 | 更新检查                                                      | Reload / 安装 ≠ 业务刷新     |
 
 ## 实现要点
 

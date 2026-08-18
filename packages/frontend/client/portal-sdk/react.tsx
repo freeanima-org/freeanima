@@ -37,7 +37,9 @@ export { useColorTheme, useSetColorTheme } from "./color-theme-react.tsx";
 export { useChatLlmDebugEnabled, useSetChatLlmDebugEnabled } from "./chat-prefs-react.tsx";
 export { useNetworkOnline } from "./use-network-status.ts";
 export { useHabitatConnection } from "./use-habitat-connection.ts";
+export { useLocalPrefer } from "./use-local-prefer.ts";
 export { reconnectHabitat } from "./habitat-connection.ts";
+export { clearLocalPrefer, isLocalPreferActive } from "./local-prefer.ts";
 export type { HabitatConnectionState } from "./habitat-connection.ts";
 export { useCompactImmersive, useSetCompactImmersive } from "./compact-immersive-react.tsx";
 export {

@@ -1,13 +1,32 @@
-import { describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
+import * as habitatConnection from "./habitat-connection.ts";
 import { isHabitatFetchAvailable, isNetworkOnline } from "./habitat-fetch-gate.ts";
+import { recordHabitatTransportFailure, resetLocalPreferForTests } from "./local-prefer.ts";
 
 describe("habitat-fetch-gate", () => {
+  beforeEach(() => {
+    resetLocalPreferForTests();
+  });
+
+  afterEach(() => {
+    resetLocalPreferForTests();
+    mock.restore();
+  });
+
   it("isNetworkOnline treats missing onLine as online", () => {
     expect(isNetworkOnline()).toBe(true);
   });
 
   it("isHabitatFetchAvailable is false when habitat not connected", () => {
+    expect(isHabitatFetchAvailable()).toBe(false);
+  });
+
+  it("localPrefer 开启时即使 Habitat connected 也不发起 RPC", () => {
+    spyOn(habitatConnection, "getHabitatRpcConnectionState").mockReturnValue("connected");
+    expect(isHabitatFetchAvailable()).toBe(true);
+    recordHabitatTransportFailure();
+    recordHabitatTransportFailure();
     expect(isHabitatFetchAvailable()).toBe(false);
   });
 });

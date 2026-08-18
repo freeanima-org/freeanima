@@ -11,7 +11,7 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 | 能力          | 叫法                     | 机制                      | 模块                                               |
 | ------------- | ------------------------ | ------------------------- | -------------------------------------------------- |
 | 只读本地副本  | **snapshot**（只读快照） | IndexedDB KV              | Email、Notification、Vault meta、Habitat、Dream 等 |
-| 可写 + 写队列 | **CRUD outbox**          | outbox + 乐观 KV          | Diary、Task、Project                               |
+| 可写 + 写队列 | **CRUD outbox**          | outbox + 乐观 KV          | Diary、Task、Project、Note、Calendar               |
 | 可写 + 写队列 | **Hybrid outbox**        | outbox + localStorage LWW | Pomodoro（active 计时）                            |
 | 可写 + 写队列 | **Stream outbox**        | SAP 流式 flush            | Chat send                                          |
 
@@ -19,17 +19,18 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 
 ## 词表
 
-| 概念         | 叫法                            | 代码                                                  | 含义                                        |
-| ------------ | ------------------------------- | ----------------------------------------------------- | ------------------------------------------- |
-| 只读本地副本 | snapshot                        | `offline-cache` / `withOfflineCache`                  | 栖息地不可用时只读；在线必打 Habitat 并回写 |
-| 可写离线模块 | outbox 模块 / `offlineWritable` | `registerOfflineModuleCap({ offlineWritable: true })` | 离线可改，失败入队，重连 flush              |
-| 写队列条目   | outbox                          | `offline-outbox` / `OfflineOutboxOp`                  | 待同步写操作                                |
-| 写路径形状   | CRUD / Hybrid / Stream          | `kind: "rpc"`、Pomodoro LWW、`kind: "stream"`         | 如何本地写与如何 flush                      |
-| 在线写优先   | `preferOnlineWrite`             | 同名                                                  | 在线直连 Habitat；仅传输失败回退 outbox     |
-| 推队列       | flush                           | `flushOfflineModule` / `flushAllOfflineModules`       | 把 outbox 打到 Habitat                      |
-| 重连编排     | sync                            | `offline-sync` / `OfflineSyncBootstrap`               | 重连/可见时 flush + 模块 `refreshAll`       |
-| 用户拉视图   | refresh                         | 页头刷新 / pull-to-refresh                            | 与 sync 职责分离                            |
-| 连接状态 UI  | connectivity                    | `connectivity-notice` / `ShellConnectivityBar`        | 断网 vs Habitat 未连；**不是** outbox       |
+| 概念         | 叫法                            | 代码                                                  | 含义                                                  |
+| ------------ | ------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| 只读本地副本 | snapshot                        | `offline-cache` / `withOfflineCache`                  | 栖息地不可用时只读；在线必打 Habitat 并回写           |
+| 可写离线模块 | outbox 模块 / `offlineWritable` | `registerOfflineModuleCap({ offlineWritable: true })` | 离线可改，失败入队，重连 flush                        |
+| 写队列条目   | outbox                          | `offline-outbox` / `OfflineOutboxOp`                  | 待同步写操作                                          |
+| 写路径形状   | CRUD / Hybrid / Stream          | `kind: "rpc"`、Pomodoro LWW、`kind: "stream"`         | 如何本地写与如何 flush                                |
+| 在线写优先   | `preferOnlineWrite`             | 同名                                                  | 在线直连 Habitat；仅传输失败回退 outbox               |
+| 推队列       | flush                           | `flushOfflineModule` / `flushAllOfflineModules`       | 把 outbox 打到 Habitat                                |
+| 重连编排     | sync                            | `offline-sync` / `OfflineSyncBootstrap`               | 重连/可见时 flush + 模块 `refreshAll`                 |
+| 用户拉视图   | refresh                         | 页头刷新 / pull-to-refresh                            | 与 sync 职责分离                                      |
+| 连接状态 UI  | connectivity                    | `connectivity-notice` / `ShellConnectivityBar`        | 断网 vs Habitat 未连 vs 弱网本地优先；**不是** outbox |
+| 弱网本地优先 | localPrefer                     | `local-prefer` / `isLocalPreferActive`                | 短窗连续传输失败后跳过 RPC，立刻走 snapshot / outbox  |
 
 ## 平台原语（portal-sdk）
 
@@ -44,13 +45,16 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
   并行读作失败回退）
 - `prefer-online-write` — `preferOnlineWrite()`：在线写优先 Habitat RPC；仅网络/传输失败回退
   outbox；业务错误直接抛出
-- `habitat-fetch-gate` — `isHabitatFetchAvailable()`：断网 **或** Habitat 非
-  `connected` 时不发起 Habitat RPC 读/flush，只读 IndexedDB 快照
+- `habitat-fetch-gate` — `isHabitatFetchAvailable()`：断网、Habitat 非
+  `connected`、**或弱网 localPrefer** 时不发起 Habitat RPC 读/flush，只读 IndexedDB 快照
+- `local-prefer` — 短窗内连续传输失败（超时等）后进入本地优先；壳层 toast「尝试恢复」或自动重试后退出
 
 ## 在线栖息地优先 / 离线本地优先
 
 `isHabitatFetchAvailable()` = `navigator.onLine !== false` **且**
-`getHabitatRpcConnectionState() === "connected"`。
+`getHabitatRpcConnectionState() === "connected"` **且** `!isLocalPreferActive()`。
+
+弱网时浏览器 `onLine` 与 Habitat WS 常仍为真，读/写会先卡 RPC 超时再回落。连续传输失败达到阈值后开启 **localPrefer**，后续请求立刻走 snapshot / outbox，不再空等超时。用户点连接 toast「尝试恢复」或等待自动重试后退出；退出且 Habitat `connected` 时 flush。
 
 ### 读
 
@@ -62,11 +66,11 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 
 ### 写（全体 outbox 模块：在线不入 outbox）
 
-| 形状          | 模块                   | 在线                                                                                                                      | 离线 / 传输失败                                              |
-| ------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| CRUD outbox   | Diary / Task / Project | `preferOnlineWrite` → 直连 Habitat RPC（带 `client_op_id`），响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id | 乐观 KV + outbox + `scheduleFlush`（含仍为未映射的 temp id） |
-| Hybrid outbox | Pomodoro               | `preferOnlineWrite` → Habitat RPC（config / active / session），**不入 outbox**；本地 LWW 仍即时写                        | enqueue outbox，重连 flush                                   |
-| Stream outbox | Chat                   | 栖息地可用：内存 `client_op_id` + 直发 message stream，**不入 outbox**                                                    | enqueue outbox；仅传输失败从在线直发回退入队                 |
+| 形状          | 模块                                     | 在线                                                                                                                      | 离线 / 传输失败                                              |
+| ------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| CRUD outbox   | Diary / Task / Project / Note / Calendar | `preferOnlineWrite` → 直连 Habitat RPC（带 `client_op_id`），响应回写本地 KV，**不入 outbox**；create 直接得到服务端正 id | 乐观 KV + outbox + `scheduleFlush`（含仍为未映射的 temp id） |
+| Hybrid outbox | Pomodoro                                 | `preferOnlineWrite` → Habitat RPC（config / active / session），**不入 outbox**；本地 LWW 仍即时写                        | enqueue outbox，重连 flush                                   |
+| Stream outbox | Chat                                     | 栖息地可用：内存 `client_op_id` + 直发 message stream，**不入 outbox**                                                    | enqueue outbox；仅传输失败从在线直发回退入队                 |
 
 - 业务校验 / 尾冲突等错误抛给 UI，不进「可自动重试」队列
 - 模块接线：gate / 错误分流认 sdk（`preferOnlineWrite` /

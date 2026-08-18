@@ -33,8 +33,8 @@ title: 远程访问
 - **更新**：栖息地部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效（不会自动刷新）。壳层 JS 由 Workbox precache，生产环境会定期/`visibilitychange` 时 `registration.update()`。`/web/config.json` 始终 `no-store`（栖息地 URL 动态）。Desktop/Mobile 不走 SW；升级见 Releases 安装包检测（设置 → 关于「检查更新」）。
 - **离线边界（两层）**：
   - **壳层（SW）**：仅缓存 JS/CSS/HTML 等静态资源，保证断网时页面框架可加载。
-  - **业务快照（IndexedDB）**：聊天室 / 任务 / 项目 / 通知 / 日记 / 邮件 / 梦境 / 番茄钟（config/历史）及栖息地 UI 部分只读页由 `portal-sdk/offline-cache` 做 **在线栖息地优先 / 离线 snapshot**；**outbox 模块**（日记、任务、项目）在线写直连栖息地（`preferOnlineWrite`），离线或网络失败走出盒；聊天室 send / 番茄钟仍有各自 outbox 路径；详见 [`offline-platform.md`](../aspects/offline-platform.md)（总览见 [Portal 数据面](../aspects/portal-data-plane.md)）。
-- **离线边界**：浏览器 `offline` 时 snapshot 模块只读展示快照；**offlineWritable** 模块（日记、任务、项目、聊天室、番茄钟）仍可本地编辑并排队待同步。
+  - **业务快照（IndexedDB）**：聊天室 / 任务 / 项目 / 通知 / 日记 / 笔记 / 邮件 / 梦境 / 番茄钟（config/历史）及栖息地 UI 部分只读页由 `portal-sdk/offline-cache` 做 **在线栖息地优先 / 离线 snapshot**；**outbox 模块**（日记、任务、项目、笔记、日程）在线写直连栖息地（`preferOnlineWrite`），离线或网络失败走出盒；聊天室 send / 番茄钟仍有各自 outbox 路径；详见 [`offline-platform.md`](../aspects/offline-platform.md)（总览见 [Portal 数据面](../aspects/portal-data-plane.md)）。
+- **离线边界**：浏览器 `offline` 时 snapshot 模块只读展示快照；**offlineWritable** 模块（日记、任务、项目、笔记、日程、聊天室、番茄钟）仍可本地编辑并排队待同步。弱网（WS 仍连但 RPC 连续超时）会自动进入 **localPrefer**，跳过后续 RPC 超时等待。
 - **存储**：SW 缓存、localStorage（栖息地设置）、IndexedDB（业务快照）互不冲突；清除站点数据会同时删除三者。
 
 Registry 标记 `auth: optional` 的栖息地 RPC 方法（如 `health.probe`、`tls.ca.*`）与 CORS 预检可不带 Bearer；其余 `/rpc/v1/*` 与 MCP 须 Bearer。

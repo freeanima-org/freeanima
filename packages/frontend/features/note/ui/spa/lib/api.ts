@@ -1,17 +1,32 @@
-import type {
-  NoteRowPayload,
-  NoteTextBlockPayload,
-} from "@freeanima/shared/rpc-contract/frames/note.ts";
 import type { SubjectKind } from "@freeanima/client/portal-sdk";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
 
-export type NoteRow = NoteRowPayload;
-export type NoteTextBlock = NoteTextBlockPayload;
+import {
+  offlineCreateNote,
+  offlineCreateNoteBlock,
+  offlineDeleteNote,
+  offlineDeleteNoteBlock,
+  offlineUpdateNote,
+  offlineUpdateNoteBlock,
+  reconcileServerNoteList,
+  registerNoteOfflineModule,
+  type NoteRow,
+  type NoteTextBlock,
+} from "./offline-store.ts";
+
+export type { NoteRow, NoteTextBlock };
 export type NoteSubjectKind = SubjectKind;
+
+let noteModuleRegistered = false;
+
+function ensureNoteOfflineModule(): void {
+  if (noteModuleRegistered) return;
+  registerNoteOfflineModule();
+  noteModuleRegistered = true;
+}
 
 function habitat() {
   return getTypedHabitatClient();
@@ -30,6 +45,7 @@ export async function fetchNotes(
   subjectKind: NoteSubjectKind,
   opts?: { limit?: number; offset?: number; tag_ids?: number[] },
 ): Promise<NoteRow[]> {
+  ensureNoteOfflineModule();
   const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
@@ -44,6 +60,7 @@ export async function fetchNotes(
       });
       return data.items;
     },
+    reconcile: (items) => reconcileServerNoteList(subjectKind, items),
     offlineError: "note.list unavailable offline",
   });
 }
@@ -53,6 +70,7 @@ export async function searchNotes(
   query: string,
   limit?: number,
 ): Promise<NoteRow[]> {
+  ensureNoteOfflineModule();
   const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
@@ -71,6 +89,7 @@ export async function searchNotes(
 }
 
 export async function getNote(subjectKind: NoteSubjectKind, id: number): Promise<NoteRow> {
+  ensureNoteOfflineModule();
   const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
@@ -88,16 +107,10 @@ export async function createNote(
   subjectKind: NoteSubjectKind,
   input: { title: string; content?: string; summary?: string; tag_ids?: number[] },
 ): Promise<NoteRow> {
-  const data = await habitat().call("note.create", {
-    subject_kind: subjectKind,
-    title: input.title,
-    content: input.content,
-    summary: input.summary,
-    tag_ids: input.tag_ids,
-    client_op_id: randomUuid(),
-  });
+  ensureNoteOfflineModule();
+  const item = await offlineCreateNote(subjectKind, input);
   await invalidatePortalReads(["note"]);
-  return data.item;
+  return item;
 }
 
 export async function updateNote(
@@ -105,17 +118,15 @@ export async function updateNote(
   id: number,
   patch: { title?: string; summary?: string; tag_ids?: number[] },
 ): Promise<NoteRow> {
-  const data = await habitat().call("note.patch", {
-    subject_kind: subjectKind,
-    id,
-    ...patch,
-  });
+  ensureNoteOfflineModule();
+  const item = await offlineUpdateNote(subjectKind, id, patch);
   await invalidatePortalReads(["note"]);
-  return data.item;
+  return item;
 }
 
 export async function deleteNote(subjectKind: NoteSubjectKind, id: number): Promise<void> {
-  await habitat().call("note.delete", { subject_kind: subjectKind, id });
+  ensureNoteOfflineModule();
+  await offlineDeleteNote(subjectKind, id);
   await invalidatePortalReads(["note"]);
 }
 
@@ -124,14 +135,10 @@ export async function createNoteBlock(
   parentId: number,
   content: string,
 ): Promise<NoteTextBlock> {
-  const data = await habitat().call("note.blockCreate", {
-    subject_kind: subjectKind,
-    parent_id: parentId,
-    content,
-    client_op_id: randomUuid(),
-  });
+  ensureNoteOfflineModule();
+  const item = await offlineCreateNoteBlock(subjectKind, parentId, content);
   await invalidatePortalReads(["note"]);
-  return data.item;
+  return item;
 }
 
 export async function updateNoteBlock(
@@ -139,16 +146,16 @@ export async function updateNoteBlock(
   id: number,
   patch: { content?: string; title?: string },
 ): Promise<NoteTextBlock> {
-  const data = await habitat().call("note.blockPatch", {
-    subject_kind: subjectKind,
-    id,
-    ...patch,
-  });
+  ensureNoteOfflineModule();
+  const item = await offlineUpdateNoteBlock(subjectKind, id, patch);
   await invalidatePortalReads(["note"]);
-  return data.item;
+  return item;
 }
 
 export async function deleteNoteBlock(subjectKind: NoteSubjectKind, id: number): Promise<void> {
-  await habitat().call("note.blockDelete", { subject_kind: subjectKind, id });
+  ensureNoteOfflineModule();
+  await offlineDeleteNoteBlock(subjectKind, id);
   await invalidatePortalReads(["note"]);
 }
+
+export { countNotePendingOps, registerNoteOfflineModule } from "./offline-store.ts";

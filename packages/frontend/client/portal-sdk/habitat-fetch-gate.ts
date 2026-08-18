@@ -1,4 +1,5 @@
 import { getHabitatRpcConnectionState } from "./habitat-connection.ts";
+import { isLocalPreferActive } from "./local-prefer.ts";
 
 export function isNetworkOnline(): boolean {
   if (typeof navigator === "undefined") return true;
@@ -11,9 +12,11 @@ export function isHabitatConnected(): boolean {
   return getHabitatRpcConnectionState() === "connected";
 }
 
-/** 断网或 Habitat 未连接时不应发起 Habitat RPC 读请求，只读本地缓存。 */
+/**
+ * 断网、Habitat 未连接、或弱网本地优先时不应发起 Habitat RPC 读/flush，只读本地缓存。
+ */
 export function isHabitatFetchAvailable(): boolean {
-  return isNetworkOnline() && isHabitatConnected();
+  return isNetworkOnline() && isHabitatConnected() && !isLocalPreferActive();
 }
 
 export function shellWritesDisabledFromState(input: {

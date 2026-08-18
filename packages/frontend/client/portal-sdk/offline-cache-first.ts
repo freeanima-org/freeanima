@@ -1,4 +1,9 @@
 import { isHabitatFetchAvailable } from "./habitat-fetch-gate.ts";
+import {
+  isRecordableTransportFailure,
+  recordHabitatTransportFailure,
+  recordHabitatTransportSuccess,
+} from "./local-prefer.ts";
 import { readOfflineCache, writeOfflineCache } from "./offline-cache.ts";
 
 export type WithOfflineCacheOptions<T> = {
@@ -29,12 +34,16 @@ export async function withOfflineCache<T>(opts: WithOfflineCacheOptions<T>): Pro
   const cachedPromise = readOfflineCache<T>(opts.scope, opts.namespace, opts.id);
   try {
     const fresh = await opts.fetch();
+    recordHabitatTransportSuccess();
     const next = opts.reconcile ? await opts.reconcile(fresh) : fresh;
     void writeOfflineCache(opts.scope, opts.namespace, opts.id, next);
     return next;
-  } catch {
+  } catch (err) {
+    if (isRecordableTransportFailure(err)) {
+      recordHabitatTransportFailure();
+    }
     const cached = await cachedPromise;
     if (cached != null) return cached;
-    throw new Error(opts.offlineError ?? "offline fetch failed");
+    throw new Error(opts.offlineError ?? "offline fetch failed", { cause: err });
   }
 }

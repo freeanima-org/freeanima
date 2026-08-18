@@ -22,11 +22,18 @@ afterAll(() => {
 const { withOfflineCache } = await import("./offline-cache-first.ts");
 const { setSatelliteOfflineCacheBackendForTests, writeOfflineCache, readOfflineCache } =
   await import("./offline-cache.ts");
+const { isLocalPreferActive, resetLocalPreferForTests } = await import("./local-prefer.ts");
+const { HabitatRpcTimeoutError } = await import("@freeanima/shared/habitat-rpc");
 
 describe("offline-cache-first", () => {
   beforeEach(() => {
     setSatelliteOfflineCacheBackendForTests(new Map());
     hubAvailable = true;
+    resetLocalPreferForTests();
+  });
+
+  afterAll(() => {
+    resetLocalPreferForTests();
   });
 
   it("Habitat 可用时优先 fetch，不因缓存命中短路", async () => {
@@ -81,5 +88,17 @@ describe("offline-cache-first", () => {
     });
     expect(fetched).toBe(false);
     expect(result.ok).toBe(true);
+  });
+
+  it("连续传输超时后开启本地优先", async () => {
+    const scope = "test-scope";
+    await writeOfflineCache(scope, "ns", "id", { ok: true });
+    const fetch = async () => {
+      throw new HabitatRpcTimeoutError("timed out");
+    };
+    await withOfflineCache({ scope, namespace: "ns", id: "id", fetch });
+    expect(isLocalPreferActive()).toBe(false);
+    await withOfflineCache({ scope, namespace: "ns", id: "id", fetch });
+    expect(isLocalPreferActive()).toBe(true);
   });
 });
