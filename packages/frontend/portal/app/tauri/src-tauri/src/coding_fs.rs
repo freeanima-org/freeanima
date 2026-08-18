@@ -63,6 +63,49 @@ pub fn pick_directory() -> Result<Option<String>, String> {
   Ok(picked.map(|p| p.to_string_lossy().into_owned()))
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveBlobResult {
+  pub cancelled: bool,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub path: Option<String>,
+}
+
+fn sanitize_save_filename(name: &str) -> String {
+  let trimmed = name.trim();
+  let base = Path::new(trimmed)
+    .file_name()
+    .and_then(|s| s.to_str())
+    .unwrap_or("download");
+  let cleaned: String = base
+    .chars()
+    .filter(|c| *c != '\0' && !r#"<>:"/\|?*"#.contains(*c))
+    .collect();
+  let cleaned = cleaned.trim().to_string();
+  if cleaned.is_empty() {
+    "download".into()
+  } else {
+    cleaned
+  }
+}
+
+#[tauri::command]
+pub fn save_blob(filename: String, contents: Vec<u8>) -> Result<SaveBlobResult, String> {
+  let suggested = sanitize_save_filename(&filename);
+  let picked = rfd::FileDialog::new().set_file_name(&suggested).save_file();
+  let Some(path) = picked else {
+    return Ok(SaveBlobResult {
+      cancelled: true,
+      path: None,
+    });
+  };
+  std::fs::write(&path, &contents).map_err(|e| format!("写入失败：{e}"))?;
+  Ok(SaveBlobResult {
+    cancelled: false,
+    path: Some(path.to_string_lossy().into_owned()),
+  })
+}
+
 #[tauri::command]
 pub fn workspace_fs_list_dir(path: String) -> Result<Vec<WorkspaceFsDirEntry>, String> {
   let dir = path_buf(&path)?;

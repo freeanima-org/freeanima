@@ -10,6 +10,8 @@ mod shell_icons;
 mod coding_fs;
 #[cfg(mobile)]
 mod apk_installer_plugin;
+#[cfg(mobile)]
+mod blob_saver_plugin;
 
 use serde::{Deserialize, Serialize};
 #[cfg(desktop)]
@@ -1073,6 +1075,7 @@ pub fn run() {
         probe_habitat_health,
         apply_packaged_update,
         coding_fs::pick_directory,
+        coding_fs::save_blob,
         coding_fs::workspace_fs_list_dir,
         coding_fs::workspace_fs_read_text,
         coding_fs::workspace_fs_write_text,
@@ -1149,6 +1152,7 @@ pub fn run() {
   {
     builder = builder
       .plugin(apk_installer_plugin::init())
+      .plugin(blob_saver_plugin::init())
       .invoke_handler(tauri::generate_handler![
         get_habitat_config,
         set_habitat_config,

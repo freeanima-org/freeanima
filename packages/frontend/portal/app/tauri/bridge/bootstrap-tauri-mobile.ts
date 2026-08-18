@@ -83,6 +83,10 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
     windowRole: null,
     apiOrigin: null,
     createFileInstanceStore,
+    saveBlob: async (opts) => {
+      const { saveBlobToAndroidDownloads } = await import("../lib/blob-saver.ts");
+      return saveBlobToAndroidDownloads(opts);
+    },
     openHabitatSettings: () => {
       window.location.hash = "#/settings";
     },

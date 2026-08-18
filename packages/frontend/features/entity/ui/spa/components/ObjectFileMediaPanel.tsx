@@ -1,12 +1,23 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Button, Spinner } from "@freeanima/ui-kit";
+import {
+  ActionSheet,
+  ContextMenu,
+  toast,
+  useLongPress,
+  type ActionSheetItem,
+} from "@freeanima/ui-kit/composite";
+import {
+  useActionSheetCapability,
+  useContextMenuCapability,
+} from "@freeanima/client/portal-sdk/react.tsx";
+import { hasNativeBlobSave, saveOrDownloadBlob } from "@freeanima/client/portal-sdk/save-blob.ts";
 import { Download } from "lucide-react";
 
 import {
   fetchObjectFileBlob,
   formatByteSize,
   objectFileMediaKind,
-  triggerBlobDownload,
 } from "../lib/object-file-blob.ts";
 
 type ObjectFileMediaPanelProps = {
@@ -64,20 +75,27 @@ export function ObjectFileMediaPanel({
     setDownloading(true);
     setError("");
     try {
-      if (objectUrl) {
-        const res = await fetch(objectUrl);
-        const blob = await res.blob();
-        triggerBlobDownload(blob, filename);
-        return;
+      const blob = objectUrl
+        ? await (await fetch(objectUrl)).blob()
+        : await fetchObjectFileBlob(objectFileId);
+      const result = await saveOrDownloadBlob(blob, filename);
+      if (result.native && !result.cancelled) {
+        toast("已保存");
       }
-      const blob = await fetchObjectFileBlob(objectFileId);
-      triggerBlobDownload(blob, filename);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setDownloading(false);
     }
   };
+
+  const imagePreview = objectUrl ? (
+    <img
+      src={objectUrl}
+      alt={filename}
+      className="mx-auto max-h-80 max-w-full rounded-md border object-contain"
+    />
+  ) : null;
 
   return (
     <div className="space-y-3 rounded-md border bg-muted/20 p-3">
@@ -111,12 +129,14 @@ export function ObjectFileMediaPanel({
         <div className="flex justify-center py-8">
           <Spinner className="size-5" />
         </div>
-      ) : objectUrl && kind === "image" ? (
-        <img
-          src={objectUrl}
-          alt={filename}
-          className="mx-auto max-h-80 max-w-full rounded-md border object-contain"
-        />
+      ) : objectUrl && kind === "image" && imagePreview ? (
+        hasNativeBlobSave() ? (
+          <NativeImageSaveChrome onSave={() => void onDownload()}>
+            {imagePreview}
+          </NativeImageSaveChrome>
+        ) : (
+          imagePreview
+        )
       ) : objectUrl && kind === "audio" ? (
         <audio src={objectUrl} controls className="w-full" preload="metadata">
           浏览器不支持音频预览
@@ -134,5 +154,48 @@ export function ObjectFileMediaPanel({
         <p className="text-muted-foreground text-xs">此类型不支持内嵌预览，请使用下载。</p>
       )}
     </div>
+  );
+}
+
+/** 原生壳：右键 / 长按图片「另存为」（Web 保留系统菜单） */
+function NativeImageSaveChrome({
+  children,
+  onSave,
+}: {
+  children: ReactElement;
+  onSave: () => void;
+}): ReactElement {
+  const useSheet = useActionSheetCapability();
+  const useMenu = useContextMenuCapability();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const items: ActionSheetItem[] = [{ label: "另存为", onClick: onSave }];
+  const longPress = useLongPress({
+    enabled: useSheet,
+    onTrigger: () => setSheetOpen(true),
+  });
+
+  const wrapped = useMenu ? (
+    <ContextMenu items={items}>{children}</ContextMenu>
+  ) : useSheet ? (
+    <div
+      className="contents"
+      onTouchStart={longPress.onTouchStart}
+      onTouchEnd={longPress.onTouchEnd}
+      onTouchMove={longPress.onTouchMove}
+      onContextMenu={longPress.onContextMenu}
+    >
+      {children}
+    </div>
+  ) : (
+    children
+  );
+
+  return (
+    <>
+      {wrapped}
+      {sheetOpen ? (
+        <ActionSheet title="图片" items={items} onClose={() => setSheetOpen(false)} />
+      ) : null}
+    </>
   );
 }

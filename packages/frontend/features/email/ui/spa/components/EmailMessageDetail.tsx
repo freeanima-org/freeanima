@@ -1,6 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Button, Spinner } from "@freeanima/ui-kit";
-import { EntityIdLabel } from "@freeanima/ui-kit/composite";
+import {
+  ActionSheet,
+  ContextMenu,
+  EntityIdLabel,
+  toast,
+  useLongPress,
+  type ActionSheetItem,
+} from "@freeanima/ui-kit/composite";
+import {
+  useActionSheetCapability,
+  useContextMenuCapability,
+} from "@freeanima/client/portal-sdk/react.tsx";
+import { hasNativeBlobSave, saveOrDownloadBlob } from "@freeanima/client/portal-sdk/save-blob.ts";
 
 import {
   downloadEmailAttachmentBytes,
@@ -56,20 +68,19 @@ function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[
     setError(null);
     try {
       const blob = await downloadEmailAttachmentBytes(att.object_file_id);
-      const url = URL.createObjectURL(blob);
       if (action === "download") {
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = att.filename;
-        a.click();
-        URL.revokeObjectURL(url);
-      } else {
-        setPreviewUrl((prev) => {
-          if (prev) URL.revokeObjectURL(prev);
-          return url;
-        });
-        setPreviewName(att.filename);
+        const result = await saveOrDownloadBlob(blob, att.filename);
+        if (result.native && !result.cancelled) {
+          toast("已保存");
+        }
+        return;
       }
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+      setPreviewName(att.filename);
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e);
       setError(`下载附件失败：${detail}`);
@@ -125,14 +136,79 @@ function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[
       {previewUrl ? (
         <div className="mt-2 space-y-1">
           <div className="text-muted-foreground text-xs">{previewName}</div>
-          <img
-            src={previewUrl}
-            alt={previewName ?? "预览"}
-            className="border-border max-h-80 max-w-full rounded-md border object-contain"
-          />
+          {hasNativeBlobSave() && previewName ? (
+            <NativeImageSaveChrome
+              onSave={() => {
+                void (async () => {
+                  try {
+                    const blob = await (await fetch(previewUrl)).blob();
+                    const result = await saveOrDownloadBlob(blob, previewName);
+                    if (result.native && !result.cancelled) toast("已保存");
+                  } catch (e) {
+                    setError(`下载附件失败：${e instanceof Error ? e.message : String(e)}`);
+                  }
+                })();
+              }}
+            >
+              <img
+                src={previewUrl}
+                alt={previewName ?? "预览"}
+                className="border-border max-h-80 max-w-full rounded-md border object-contain"
+              />
+            </NativeImageSaveChrome>
+          ) : (
+            <img
+              src={previewUrl}
+              alt={previewName ?? "预览"}
+              className="border-border max-h-80 max-w-full rounded-md border object-contain"
+            />
+          )}
         </div>
       ) : null}
     </div>
+  );
+}
+
+/** 原生壳：右键 / 长按图片「另存为」（Web 保留系统菜单） */
+function NativeImageSaveChrome({
+  children,
+  onSave,
+}: {
+  children: ReactElement;
+  onSave: () => void;
+}): ReactElement {
+  const useSheet = useActionSheetCapability();
+  const useMenu = useContextMenuCapability();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const items: ActionSheetItem[] = [{ label: "另存为", onClick: onSave }];
+  const longPress = useLongPress({
+    enabled: useSheet,
+    onTrigger: () => setSheetOpen(true),
+  });
+
+  const wrapped = useMenu ? (
+    <ContextMenu items={items}>{children}</ContextMenu>
+  ) : useSheet ? (
+    <div
+      className="contents"
+      onTouchStart={longPress.onTouchStart}
+      onTouchEnd={longPress.onTouchEnd}
+      onTouchMove={longPress.onTouchMove}
+      onContextMenu={longPress.onContextMenu}
+    >
+      {children}
+    </div>
+  ) : (
+    children
+  );
+
+  return (
+    <>
+      {wrapped}
+      {sheetOpen ? (
+        <ActionSheet title="图片" items={items} onClose={() => setSheetOpen(false)} />
+      ) : null}
+    </>
   );
 }
 
