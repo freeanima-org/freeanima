@@ -5,6 +5,7 @@ import { acquireRedisLock } from "@freeanima/habitat/core/redis";
 import {
   getInprocessBuiltinStatus,
   MEMORY_MAINTENANCE_LOCK_KEY,
+  MEMORY_MAINTENANCE_LOCK_TTL_MS,
 } from "@freeanima/habitat/capabilities/connectors/cron";
 import {
   buildSleepSummary,
@@ -29,8 +30,6 @@ import {
 } from "../boot/memory-maintenance.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
-
-const MEMORY_MAINTENANCE_LOCK_TTL_MS = 3 * 60 * 60 * 1000;
 
 async function acquireMemoryMaintenanceLock() {
   return acquireRedisLock({

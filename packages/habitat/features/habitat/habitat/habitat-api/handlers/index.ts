@@ -42,6 +42,7 @@ export { getMcpStatus, mcpStartAll, mcpStopAll, mcpStartServer, mcpStopServer } 
 export { getOutpostsStatus } from "./outposts.ts";
 export { iterateConversationEvents } from "./conversation-events.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
+export { listHabitatRedisLocks, deleteHabitatRedisLock } from "./redis-locks.ts";
 export {
   getMemoryMaintenanceSummary,
   listCronLogs,

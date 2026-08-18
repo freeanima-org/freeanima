@@ -23,6 +23,7 @@ import { UnlockAgentVaultDialog } from "@freeanima/features/vault/ui/spa/compone
 import { DidaImportDialog } from "@freeanima/features/task/ui/spa/components/DidaImportDialog.tsx";
 import { FtsIndexPanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/FtsIndexPanel.tsx";
 import { MemoryPipelineOpsCard } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryPipelineOpsCard.tsx";
+import { RedisLocksCard } from "@freeanima/features/habitat/ui/habitat/components/habitat/RedisLocksCard.tsx";
 
 export const Route = createFileRoute("/_sidebar/data-maintenance")({
   component: DataMaintenancePage,
@@ -40,11 +41,12 @@ function DataMaintenancePage() {
     <div className="flex w-full flex-col gap-4 p-4">
       <h1 className="text-lg font-semibold">{"🧰 数据维护"}</h1>
       <p className="text-muted-foreground text-sm">
-        {"导入、索引与记忆维护入口。密码库导入需先在「密码库」解锁用户主密码。"}
+        {"导入、索引、记忆维护与残留锁清理。密码库导入需先在「密码库」解锁用户主密码。"}
       </p>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <MemoryPipelineOpsCard />
+        <RedisLocksCard />
         <Card className="h-full">
           <CardContent className="flex h-full flex-col gap-3 py-3 px-4">
             <div className="min-h-0 flex-1">

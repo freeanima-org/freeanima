@@ -7,7 +7,7 @@ import type { FtsRebuildPhase, FtsRebuildProgress } from "./rebuild-types.ts";
 
 const log = logPgComponent("embedding");
 
-const FTS_REBUILD_LOCK_TTL_MS = 2 * 60 * 60 * 1000;
+const FTS_REBUILD_LOCK_TTL_MS = 15 * 60 * 1000;
 
 export type FtsRebuildJobStatus = {
   running: boolean;

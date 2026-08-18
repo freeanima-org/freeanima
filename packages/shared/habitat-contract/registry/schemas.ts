@@ -28,4 +28,5 @@ export {
   worldEntityCreateBodySchema,
   worldEntityPatchInputSchema,
   worldEntityUpdateBodySchema,
+  redisLocksDeleteBodySchema,
 } from "../schemas/habitat-schemas.ts";

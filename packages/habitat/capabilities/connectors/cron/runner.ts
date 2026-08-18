@@ -22,7 +22,7 @@ import { runCronBuiltinHandler } from "./builtin-handlers.ts";
 import { getCronHandleManager, isCronModuleInitialized, updateCronJobRow } from "./module.ts";
 import { getCronJob } from "@freeanima/habitat/core/db/pg/cron";
 
-const CRON_JOB_LOCK_TTL_CAP_MS = 2 * 60 * 60 * 1000;
+const CRON_JOB_LOCK_TTL_CAP_MS = 30 * 60 * 1000;
 
 function cronJobLockTtlMs(timeoutSec: number): number {
   return Math.min(CRON_JOB_LOCK_TTL_CAP_MS, Math.max(timeoutSec, 600) * 1000);

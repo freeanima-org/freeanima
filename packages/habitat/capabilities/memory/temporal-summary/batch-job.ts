@@ -1,7 +1,7 @@
 import type { TemporalSummaryWindow } from "@freeanima/habitat/core/db/schema";
 import { withRedisLock } from "@freeanima/habitat/core/redis";
 
-const TEMPORAL_BATCH_LOCK_TTL_MS = 2 * 60 * 60 * 1000;
+const TEMPORAL_BATCH_LOCK_TTL_MS = 15 * 60 * 1000;
 
 export type TemporalBatchMode = "backfill_missing" | "rebuild_range";
 
