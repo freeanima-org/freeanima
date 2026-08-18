@@ -62,6 +62,8 @@ export function createLlmTimeoutController(opts: {
   overallMs: number;
   firstByteMs: number;
   idleMs?: number | null;
+  /** 用户 interrupt；与超时任一触发即 abort，超时 reason 仍为 LlmTimeoutError */
+  external?: AbortSignal;
 }): LlmTimeoutController {
   const ac = new AbortController();
   let firstByteTimer: ReturnType<typeof setTimeout> | null = null;
@@ -74,6 +76,19 @@ export function createLlmTimeoutController(opts: {
     if (disposed || ac.signal.aborted) return;
     ac.abort(new LlmTimeoutError(kind, ms));
   };
+
+  const onExternalAbort = () => {
+    if (disposed || ac.signal.aborted) return;
+    ac.abort(opts.external?.reason);
+  };
+
+  if (opts.external) {
+    if (opts.external.aborted) {
+      onExternalAbort();
+    } else {
+      opts.external.addEventListener("abort", onExternalAbort);
+    }
+  }
 
   overallTimer = setTimeout(() => abort("overall", opts.overallMs), opts.overallMs);
   firstByteTimer = setTimeout(() => abort("first_byte", opts.firstByteMs), opts.firstByteMs);
@@ -93,6 +108,7 @@ export function createLlmTimeoutController(opts: {
 
   const dispose = () => {
     disposed = true;
+    opts.external?.removeEventListener("abort", onExternalAbort);
     clearTimer(firstByteTimer);
     clearTimer(idleTimer);
     clearTimer(overallTimer);

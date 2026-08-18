@@ -18,7 +18,10 @@ import { ProviderError } from "@freeanima/habitat/core/provider";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
-import { isInsufficientToolMessagesError } from "@freeanima/habitat/core/llm";
+import {
+  isInsufficientToolMessagesError,
+  REPAIR_REASON_INTERRUPT,
+} from "@freeanima/habitat/core/llm";
 import {
   evaluateGoalAfterTurn,
   shouldSkipGoalEvaluate,
@@ -75,6 +78,12 @@ export function streamErrorEvent(
       .error(message, { err, conversation_id: conversationId });
   }
   return { event: "error", data: { error: message } };
+}
+
+function pushInterrupted(buffer: StreamEvent[], signalReady: () => void, reason: string): void {
+  buffer.push({ event: "interrupted", data: { reason } });
+  buffer.push({ event: "done", data: { reason: "interrupted" } });
+  signalReady();
 }
 
 export function lastAssistantText(msgs: Message[]): string {
@@ -306,153 +315,216 @@ export async function* runExclusiveStreamTurn(
   };
 
   const work = conversationManager.runExclusive(conversationId, async () => {
-    let msgs: Message[];
-    let functions: string[];
-    let effective: string;
-    if (opts.fast) {
-      effective = await opts.fast();
-      buffer.push({ event: "accepted", data: {} });
-      signalReady();
-      const prepared = await opts.prepare();
-      msgs = prepared[0];
-      functions = prepared[1];
-    } else {
-      [msgs, functions, effective] = await opts.prepare();
-    }
-    const cfg = deps.engine.config.data;
-    const model = getProfileHopModel(cfg, PROFILE_CHAT);
-    const goalDeps = toGoalRuntimeDeps(deps);
+    const { signal, controller } = host.beginEngineRun(conversationId);
     let hadError = false;
-    let sawDone = false;
-    let retried = false;
+    try {
+      if (signal.aborted) {
+        pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+        return;
+      }
 
-    goalLoop: while (true) {
-      if (host.isShuttingDown?.()) break goalLoop;
-      hadError = false;
-      sawDone = false;
-      let pendingDone: StreamEvent | null = null;
-      let streamedText = false;
-      const { signal, controller } = host.beginEngineRun(conversationId);
+      let msgs: Message[];
+      let functions: string[];
+      let effective: string;
+      if (opts.fast) {
+        effective = await opts.fast();
+        if (signal.aborted) {
+          pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+          return;
+        }
+        buffer.push({ event: "accepted", data: {} });
+        signalReady();
+        const prepared = await opts.prepare();
+        if (signal.aborted) {
+          pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+          return;
+        }
+        msgs = prepared[0];
+        functions = prepared[1];
+      } else {
+        [msgs, functions, effective] = await opts.prepare();
+        if (signal.aborted) {
+          pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+          return;
+        }
+      }
+      const cfg = deps.engine.config.data;
+      const model = getProfileHopModel(cfg, PROFILE_CHAT);
+      const goalDeps = toGoalRuntimeDeps(deps);
+      let sawDone = false;
+      let retried = false;
 
-      try {
-        engineRetry: while (true) {
-          if (host.isShuttingDown?.()) break engineRetry;
-          hadError = false;
-          sawDone = false;
-          pendingDone = null;
-          streamedText = false;
+      goalLoop: while (true) {
+        if (host.isShuttingDown?.()) break goalLoop;
+        if (signal.aborted) {
+          pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+          break goalLoop;
+        }
+        hadError = false;
+        sawDone = false;
+        let pendingDone: StreamEvent | null = null;
+        let streamedText = false;
+        let sawInterrupted = false;
 
-          for await (const ev of yieldEngineStream(
-            deps,
-            host,
-            conversationId,
-            msgs,
-            model,
-            signal,
-            opts.llmDebug,
-          )) {
-            if (ev.event === "done") {
-              pendingDone = ev;
-              sawDone = true;
-              continue;
+        try {
+          engineRetry: while (true) {
+            if (host.isShuttingDown?.()) break engineRetry;
+            if (signal.aborted) {
+              pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+              break goalLoop;
             }
-            if (ev.event === "token" || ev.event === "content_replace") {
-              streamedText = true;
-            }
-            buffer.push(ev);
-            signalReady();
-            if (ev.event === "error") {
-              hadError = true;
-              if (!retried && isInsufficientToolMessagesError(ev.data.error)) {
-                const [runtimeMsgs, fn] = await host.reloadRuntimeAfterRepair(conversationId);
-                msgs = runtimeMsgs;
-                functions = fn;
-                retried = true;
-                hadError = false;
-                break;
+            hadError = false;
+            sawDone = false;
+            pendingDone = null;
+            streamedText = false;
+            sawInterrupted = false;
+
+            for await (const ev of yieldEngineStream(
+              deps,
+              host,
+              conversationId,
+              msgs,
+              model,
+              signal,
+              opts.llmDebug,
+            )) {
+              if (ev.event === "interrupted") {
+                sawInterrupted = true;
+                buffer.push(ev);
+                signalReady();
+                continue;
+              }
+              if (ev.event === "done") {
+                if (sawInterrupted) {
+                  buffer.push(ev);
+                  signalReady();
+                } else {
+                  pendingDone = ev;
+                  sawDone = true;
+                }
+                continue;
+              }
+              if (ev.event === "token" || ev.event === "content_replace") {
+                streamedText = true;
+              }
+              buffer.push(ev);
+              signalReady();
+              if (ev.event === "error") {
+                hadError = true;
+                if (!retried && isInsufficientToolMessagesError(ev.data.error)) {
+                  const [runtimeMsgs, fn] = await host.reloadRuntimeAfterRepair(conversationId);
+                  msgs = runtimeMsgs;
+                  functions = fn;
+                  retried = true;
+                  hadError = false;
+                  break;
+                }
               }
             }
-          }
-          if (retried && !sawDone && !hadError) {
-            if (host.isShuttingDown?.()) break engineRetry;
-            continue;
-          }
-          break engineRetry;
-        }
-
-        if (!hadError) {
-          const reply = lastAssistantText(msgs);
-          const displayContent = await host.onTurnAfterComplete(conversationId, msgs, reply);
-          if (displayContent !== reply) {
-            buffer.push({ event: "content_replace", data: { content: displayContent } });
-            signalReady();
-          } else if (displayContent.trim() && !streamedText) {
-            buffer.push({ event: "content_replace", data: { content: displayContent } });
-            signalReady();
-          }
-          await new Promise<void>((resolve) => {
-            setImmediate(resolve);
-          });
-          await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
-
-          scheduleSkillEvolveAfterTurn(deps, conversationId, msgs);
-          scheduleMemorySyncAfterTurn(conversationId, msgs);
-
-          let evalResult: Awaited<ReturnType<typeof evaluateGoalAfterTurn>> | undefined;
-          if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {
-            evalResult = await evaluateGoalAfterTurn(goalDeps, conversationId, msgs);
+            if (sawInterrupted) {
+              break goalLoop;
+            }
+            if (retried && !sawDone && !hadError) {
+              if (host.isShuttingDown?.()) break engineRetry;
+              continue;
+            }
+            break engineRetry;
           }
 
-          // 终态提示须在 done 之前落库+推流，否则 UI 在 done 后清空 stream / reload 会丢提示
-          if (evalResult?.displayHint && evalResult.action !== "continue") {
-            await deps.conversation.appendMessage?.(
-              { role: "assistant", content: evalResult.displayHint },
-              conversationId,
-            );
-            buffer.push({ event: "token", data: { content: `\n${evalResult.displayHint}\n` } });
-            signalReady();
-          }
+          if (!hadError) {
+            if (signal.aborted) {
+              pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+              break goalLoop;
+            }
+            const reply = lastAssistantText(msgs);
+            const displayContent = await host.onTurnAfterComplete(conversationId, msgs, reply);
+            if (displayContent !== reply) {
+              buffer.push({ event: "content_replace", data: { content: displayContent } });
+              signalReady();
+            } else if (displayContent.trim() && !streamedText) {
+              buffer.push({ event: "content_replace", data: { content: displayContent } });
+              signalReady();
+            }
+            await new Promise<void>((resolve) => {
+              setImmediate(resolve);
+            });
+            await finalizeTurn(deps, conversationId, msgs, effective, model, functions);
 
-          if (pendingDone) {
-            buffer.push(pendingDone);
-            signalReady();
-          } else if (!sawDone) {
-            buffer.push({ event: "done", data: {} });
-            signalReady();
-          }
+            scheduleSkillEvolveAfterTurn(deps, conversationId, msgs);
+            scheduleMemorySyncAfterTurn(conversationId, msgs);
 
-          if (evalResult?.action === "continue") {
-            if (evalResult.displayHint) {
+            let evalResult: Awaited<ReturnType<typeof evaluateGoalAfterTurn>> | undefined;
+            if (!(await shouldSkipGoalEvaluate(goalDeps, conversationId, msgs))) {
+              evalResult = await evaluateGoalAfterTurn(goalDeps, conversationId, msgs);
+            }
+
+            // 终态提示须在 done 之前落库+推流，否则 UI 在 done 后清空 stream / reload 会丢提示
+            if (evalResult?.displayHint && evalResult.action !== "continue") {
+              await deps.conversation.appendMessage?.(
+                { role: "assistant", content: evalResult.displayHint },
+                conversationId,
+              );
               buffer.push({ event: "token", data: { content: `\n${evalResult.displayHint}\n` } });
               signalReady();
             }
-            effective = await deps.conversation.beginTurnFast(
-              conversationId,
-              evalResult.continuePrompt,
-            );
-            const prepared = await deps.conversation.beginTurnPrepare(conversationId);
-            msgs = prepared[0];
-            functions = prepared[1];
-            retried = false;
-            continue goalLoop;
-          }
-        }
-        break goalLoop;
-      } catch (e) {
-        hadError = true;
-        buffer.push(streamErrorEvent(deps, conversationId, String(e), e));
-        signalReady();
-        break goalLoop;
-      } finally {
-        host.endEngineRun(conversationId, controller);
-      }
-    }
 
-    if (!hadError) {
-      host.emitSessionUpdated(conversationId);
+            if (pendingDone) {
+              buffer.push(pendingDone);
+              signalReady();
+            } else if (!sawDone) {
+              buffer.push({ event: "done", data: {} });
+              signalReady();
+            }
+
+            if (evalResult?.action === "continue") {
+              if (evalResult.displayHint) {
+                buffer.push({ event: "token", data: { content: `\n${evalResult.displayHint}\n` } });
+                signalReady();
+              }
+              effective = await deps.conversation.beginTurnFast(
+                conversationId,
+                evalResult.continuePrompt,
+              );
+              if (signal.aborted) {
+                pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+                break goalLoop;
+              }
+              const prepared = await deps.conversation.beginTurnPrepare(conversationId);
+              if (signal.aborted) {
+                pushInterrupted(buffer, signalReady, REPAIR_REASON_INTERRUPT);
+                break goalLoop;
+              }
+              msgs = prepared[0];
+              functions = prepared[1];
+              retried = false;
+              continue goalLoop;
+            }
+          }
+          break goalLoop;
+        } catch (e) {
+          if (e instanceof loopEngine.EngineLoopInterrupted || signal.aborted) {
+            pushInterrupted(
+              buffer,
+              signalReady,
+              e instanceof loopEngine.EngineLoopInterrupted ? e.message : REPAIR_REASON_INTERRUPT,
+            );
+            break goalLoop;
+          }
+          hadError = true;
+          buffer.push(streamErrorEvent(deps, conversationId, String(e), e));
+          signalReady();
+          break goalLoop;
+        }
+      }
+
+      if (!hadError && !signal.aborted) {
+        host.emitSessionUpdated(conversationId);
+      }
+    } finally {
+      host.endEngineRun(conversationId, controller);
+      closed = true;
+      signalReady();
     }
-    closed = true;
-    signalReady();
   });
 
   while (true) {

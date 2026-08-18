@@ -33,6 +33,7 @@ export abstract class LlmBackend {
     model: string,
     request: ChatRequest,
     context: BackendContext,
+    signal?: AbortSignal,
   ): AsyncIterable<ChatStreamEvent>;
 }
 

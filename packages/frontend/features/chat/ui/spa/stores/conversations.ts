@@ -165,24 +165,26 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       hasMoreBefore: false,
       fromPos: null,
       loadingOlder: false,
+      display: [],
     });
     const scope = resolveHabitatCacheScope();
     const cached = await readCachedMessages(scope, id);
-    if (cached) {
-      set({ display: cached });
-    }
+    if (get().currentId !== id) return;
+    set({ display: cached ?? [] });
     if (!isHabitatFetchAvailable()) {
       set({ loading: false });
       return;
     }
     try {
       const resp = await getStoredMessages(id, { limit: CHAT_MESSAGES_PAGE_SIZE });
+      if (get().currentId !== id) return;
       const page = applyMessagesPage(resp);
       set({ ...page, loading: false });
       void writeCachedMessages(scope, id, page.display);
       void get().resolveExpectedTailPos(id, true);
     } catch (e) {
       console.error("selectSession messages:", e);
+      if (get().currentId !== id) return;
       set({ loading: false });
     }
   },

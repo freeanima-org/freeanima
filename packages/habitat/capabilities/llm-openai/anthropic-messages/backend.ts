@@ -316,6 +316,7 @@ export async function* runAnthropicMessagesStream(
   model: string,
   request: ChatRequest,
   context: BackendContext,
+  signal?: AbortSignal,
 ): AsyncGenerator<ChatStreamEvent> {
   const parsed = parseOpenAiCompatibleContext(context);
   const { overallMs, firstByteMs, idleMs } = resolveChatTimeouts(parsed);
@@ -323,6 +324,7 @@ export async function* runAnthropicMessagesStream(
     overallMs,
     firstByteMs,
     idleMs,
+    ...(signal ? { external: signal } : {}),
   });
   const client = createAnthropicClient(parsed);
   const toolCallsAcc = new Map<number, { id: string; name: string; arguments: string }>();
@@ -433,7 +435,8 @@ export class AnthropicMessagesBackend extends LlmBackend {
     model: string,
     request: ChatRequest,
     context: BackendContext,
+    signal?: AbortSignal,
   ): AsyncIterable<ChatStreamEvent> {
-    return runAnthropicMessagesStream(model, request, context);
+    return runAnthropicMessagesStream(model, request, context, signal);
   }
 }

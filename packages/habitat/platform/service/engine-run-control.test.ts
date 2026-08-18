@@ -26,6 +26,42 @@ describe("EngineRunControl.abortAll", () => {
   });
 });
 
+describe("EngineRunControl cancelNextBegin", () => {
+  it("prepare 前 interrupt 使随后 beginEngineRun 的 signal 已 aborted", () => {
+    const ctrl = new EngineRunControl();
+    ctrl.interruptSessionEngine("s1");
+    const run = ctrl.beginEngineRun("s1");
+    expect(run.signal.aborted).toBe(true);
+  });
+
+  it("cancelNextBegin 只消费一次，下一轮 send 不被误杀", () => {
+    const ctrl = new EngineRunControl();
+    ctrl.interruptSessionEngine("s1");
+    const first = ctrl.beginEngineRun("s1");
+    expect(first.signal.aborted).toBe(true);
+    ctrl.endEngineRun("s1", first.controller);
+    const second = ctrl.beginEngineRun("s1");
+    expect(second.signal.aborted).toBe(false);
+  });
+
+  it("进行中 abort 不误杀随后的新一轮", () => {
+    const ctrl = new EngineRunControl();
+    const first = ctrl.beginEngineRun("s1");
+    ctrl.interruptSessionEngine("s1");
+    expect(first.signal.aborted).toBe(true);
+    ctrl.endEngineRun("s1", first.controller);
+    const second = ctrl.beginEngineRun("s1");
+    expect(second.signal.aborted).toBe(false);
+  });
+
+  it("preempt 仅结束上一轮，不取消即将 begin 的新 send", () => {
+    const ctrl = new EngineRunControl();
+    ctrl.preemptSessionEngine("s1");
+    const run = ctrl.beginEngineRun("s1");
+    expect(run.signal.aborted).toBe(false);
+  });
+});
+
 describe("EngineRunControl client_op lock", () => {
   it("同 client_op_id 第二次 tryAcquire 失败直到 release", () => {
     const ctrl = new EngineRunControl();

@@ -3,6 +3,7 @@ import {
   displayAwaitingReply,
   isStalledReply,
   resolveStalledAfterLookup,
+  shouldShowAwaitingPlaceholder,
 } from "./display-recovery.ts";
 import type { DisplayItem } from "./types.ts";
 
@@ -28,6 +29,57 @@ describe("displayAwaitingReply", () => {
 
   test("有 assistant content → false", () => {
     expect(displayAwaitingReply([user("hi"), assistant("ok")])).toBe(false);
+  });
+});
+
+describe("shouldShowAwaitingPlaceholder", () => {
+  const base = {
+    currentId: "a",
+    stalledReply: false,
+    streamVisible: false,
+    recovering: false,
+    recoveringConversationId: null as string | null,
+    messagesLoading: false,
+    displayAwaiting: false,
+    habitatConnected: true,
+    userStopped: false,
+  };
+
+  test("本会话 recovering 才占位", () => {
+    expect(
+      shouldShowAwaitingPlaceholder({
+        ...base,
+        recovering: true,
+        recoveringConversationId: "a",
+      }),
+    ).toBe(true);
+    expect(
+      shouldShowAwaitingPlaceholder({
+        ...base,
+        recovering: true,
+        recoveringConversationId: "b",
+      }),
+    ).toBe(false);
+  });
+
+  test("用户停止或 stalled 不占位", () => {
+    expect(
+      shouldShowAwaitingPlaceholder({ ...base, userStopped: true, displayAwaiting: true }),
+    ).toBe(false);
+    expect(
+      shouldShowAwaitingPlaceholder({ ...base, stalledReply: true, streamVisible: true }),
+    ).toBe(false);
+  });
+
+  test("streamVisible 占位；displayAwaiting 且已连接且非 loading 占位", () => {
+    expect(shouldShowAwaitingPlaceholder({ ...base, streamVisible: true })).toBe(true);
+    expect(shouldShowAwaitingPlaceholder({ ...base, displayAwaiting: true })).toBe(true);
+    expect(
+      shouldShowAwaitingPlaceholder({ ...base, displayAwaiting: true, messagesLoading: true }),
+    ).toBe(false);
+    expect(
+      shouldShowAwaitingPlaceholder({ ...base, displayAwaiting: true, habitatConnected: false }),
+    ).toBe(false);
   });
 });
 

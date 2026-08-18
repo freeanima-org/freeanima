@@ -83,6 +83,26 @@ describe("createLlmTimeoutController", () => {
       });
     });
   });
+
+  test("external abort 不记为 timeout", async () => {
+    const external = new AbortController();
+    const c = createLlmTimeoutController({
+      overallMs: 5_000,
+      firstByteMs: 5_000,
+      idleMs: null,
+      external: external.signal,
+    });
+    controllers.push(c);
+    await new Promise<void>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error("expected abort")), 200);
+      c.signal.addEventListener("abort", () => {
+        clearTimeout(t);
+        expect(c.signal.reason).not.toBeInstanceOf(LlmTimeoutError);
+        resolve();
+      });
+      external.abort();
+    });
+  });
 });
 
 describe("extractLlmTimeoutError", () => {

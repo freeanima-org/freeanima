@@ -27,6 +27,27 @@ export function displayAwaitingReply(display: DisplayItem[]): boolean {
 }
 
 /**
+ * 对话页底部「等待结果…／正在撰写回复…」是否显示。
+ * recovering 必须属于当前会话，避免 A 生成时 B/C 误显等待。
+ */
+export function shouldShowAwaitingPlaceholder(opts: {
+  currentId: string | null;
+  stalledReply: boolean;
+  streamVisible: boolean;
+  recovering: boolean;
+  recoveringConversationId: string | null;
+  messagesLoading: boolean;
+  displayAwaiting: boolean;
+  habitatConnected: boolean;
+  userStopped: boolean;
+}): boolean {
+  if (!opts.currentId || opts.stalledReply || opts.userStopped) return false;
+  if (opts.streamVisible) return true;
+  if (opts.recovering && opts.recoveringConversationId === opts.currentId) return true;
+  return !opts.messagesLoading && opts.displayAwaiting && opts.habitatConnected;
+}
+
+/**
  * 展示未完成，但本端未在流式且服务端无 active 流 → stalled（应出【继续】，勿伪装等待）。
  */
 export function isStalledReply(opts: {

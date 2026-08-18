@@ -92,6 +92,7 @@ export async function* runOpenAiChatStream(
   model: string,
   request: ChatRequest,
   context: BackendContext,
+  signal?: AbortSignal,
 ): AsyncGenerator<ChatStreamEvent> {
   const parsed = parseOpenAiCompatibleContext(context);
   const { overallMs, firstByteMs, idleMs } = resolveChatTimeouts(parsed);
@@ -99,6 +100,7 @@ export async function* runOpenAiChatStream(
     overallMs,
     firstByteMs,
     idleMs,
+    ...(signal ? { external: signal } : {}),
   });
   const client = createOpenAiClient(context);
 

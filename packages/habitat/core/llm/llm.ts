@@ -29,6 +29,8 @@ export type LlmInvokeOpts = {
   requestParams?: Partial<LlmCallParams>;
   /** When omitted, uses module-level runtime from initLlmRuntime() */
   runtime?: LlmRuntime;
+  /** User / engine interrupt; forwarded to the provider HTTP stream */
+  signal?: AbortSignal;
 };
 
 function resolveRuntime(opts?: LlmInvokeOpts): LlmRuntime {
@@ -86,6 +88,7 @@ export async function* chatStream(
       systemPrompt: input.systemPrompt,
       tools: opts?.tools,
       requestParams: opts?.requestParams,
+      signal: opts?.signal,
     }),
   )) {
     yield event;

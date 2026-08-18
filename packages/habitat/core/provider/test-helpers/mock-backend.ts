@@ -78,10 +78,16 @@ export class MockBackend extends LlmBackend {
     model: string,
     request: ChatRequest,
     context: BackendContext,
+    signal?: AbortSignal,
   ): AsyncIterable<ChatStreamEvent> {
     this.streamCalls.push({ model, request, context });
     if (this.streamError) throw this.streamError;
     for (const event of this.streamEvents) {
+      if (signal?.aborted) {
+        const err = new Error("aborted");
+        err.name = "AbortError";
+        throw err;
+      }
       yield event;
     }
   }
