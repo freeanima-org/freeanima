@@ -62,6 +62,15 @@ export type WorkspaceFsApi = {
   isDir: (absPath: string) => Promise<boolean>;
   /** 递归枚举文件（绝对路径）；跳过 node_modules / .git */
   walkFiles: (absRoot: string, opts?: { maxFiles?: number }) => Promise<string[]>;
+  /** 单次 IPC：walk + 内容匹配；未实现时 sandbox 回退 walkFiles + readText */
+  searchFiles?: (opts: {
+    path: string;
+    workspaceRoot: string;
+    pattern: string;
+    maxFiles?: number;
+    limit?: number;
+    outputMode?: "content" | "files_only" | "count";
+  }) => Promise<string>;
 };
 
 export type ShellRunCommandOpts = {

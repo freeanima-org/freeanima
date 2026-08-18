@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { subscribeConversationUpdates } from "@freeanima/features/chat/ui/spa/lib/api.ts";
+
 import { AgentChatPane } from "./components/AgentChatPane.tsx";
 import { AgentSessionSidebar } from "./components/AgentSessionSidebar.tsx";
 import { CodePreview } from "./components/CodePreview.tsx";
@@ -11,6 +13,7 @@ import { WorkspaceFileTree } from "./components/WorkspaceFileTree.tsx";
 import {
   archiveSession,
   createAgentSession,
+  defaultTitle,
   getActiveSession,
   listKnownWorkspaceRoots,
   loadAgentSessions,
@@ -21,7 +24,11 @@ import {
   upsertSession,
   type AgentSessionsState,
 } from "./lib/agent-sessions.ts";
-import { createProjectCodingNote, ensureCodingConversation } from "./lib/habitat-session.ts";
+import {
+  createProjectCodingNote,
+  ensureCodingConversation,
+  fetchCodingConversationTitle,
+} from "./lib/habitat-session.ts";
 import { loadProjectJsonFromWorkspace, type ParsedProjectJson } from "./lib/project-json.ts";
 import {
   discoverWorkspaceProjectContext,
@@ -281,6 +288,23 @@ export function CodingApp() {
     [activeAgent, attach.instance_id, project?.display_name, project?.stable_key],
   );
 
+  useEffect(() => {
+    const cid = activeAgent?.conversationId?.trim();
+    if (!cid) return () => {};
+    const sub = subscribeConversationUpdates(cid, () => {
+      void (async () => {
+        const title = await fetchCodingConversationTitle(cid);
+        if (!title) return;
+        setAgents((prev) => {
+          const cur = prev.sessions.find((s) => s.conversationId === cid);
+          if (!cur || cur.title === title) return prev;
+          return upsertSession(prev, patchSessionMeta(cur, { title }));
+        });
+      })();
+    });
+    return () => sub.unsubscribe();
+  }, [activeAgent?.conversationId]);
+
   const openFile = async (relPath: string) => {
     setSelectedPath(relPath);
     setContextTab("preview");
@@ -399,13 +423,12 @@ export function CodingApp() {
           onNeedConversation={bindConversation}
           onTitleHint={(text) => {
             if (!activeAgent) return;
-            if (activeAgent.title !== "无工作区" && activeAgent.workspaceRoot) return;
             const title = text.slice(0, 40).trim();
             if (!title) return;
             setAgents((prev) => {
               const cur = getActiveSession(prev);
               if (!cur || cur.id !== activeAgent.id) return prev;
-              if (cur.title !== "无工作区" && cur.workspaceRoot) return prev;
+              if (cur.title !== defaultTitle(cur.workspaceRoot)) return prev;
               return upsertSession(prev, patchSessionMeta(cur, { title }));
             });
           }}

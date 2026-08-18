@@ -5,6 +5,15 @@ const TOOLSETS_INTRO =
   "Built-in ToolSets below. MCP/Outpost sets may also appear here or only via toolset_search " +
   "(depends on visibility). Load with toolset_load; unload non-default sets with toolset_unload.";
 
+const CODING_HANDS_INTRO =
+  "编码会话的工作区 FS/终端只用已 attach 的前哨 ToolSet（remote_coding_*）；" +
+  "不要 toolset_load 栖息地本机 file / shell。";
+
+export type RenderToolsetsBodyOpts = {
+  allowedToolNames?: readonly string[] | null;
+  extraIntro?: string;
+};
+
 /** Compact tool name list for catalog density (collapse shared prefixes). */
 export function formatToolNamesForCatalog(names: readonly string[]): string {
   if (names.length === 0) return "";
@@ -31,20 +40,33 @@ export function formatToolNamesForCatalog(names: readonly string[]): string {
 }
 
 /** Inner ToolSet catalog body (intro + lines); fold wraps with `<toolsets>`. */
-export function renderToolsetsBody(registry: ToolSetRegistry): string {
+export function renderToolsetsBody(
+  registry: ToolSetRegistry,
+  opts?: RenderToolsetsBodyOpts,
+): string {
+  const allowed = opts?.allowedToolNames ? new Set(opts.allowedToolNames) : null;
   const sets = registry
     .listToolSets()
     .filter((ts) => ts.visibility === "catalog")
     .toSorted((a, b) => a.name.localeCompare(b.name));
-  if (sets.length === 0) return "";
-  const lines = sets.map((ts) => {
+  const lines = sets.flatMap((ts) => {
     const full = registry.getToolSet(ts.name);
-    const tools = full ? formatToolNamesForCatalog(full.tools.map((d) => d.name)) : "";
+    const toolNames = (full?.tools.map((d) => d.name) ?? []).filter((n) =>
+      allowed ? allowed.has(n) : true,
+    );
+    if (allowed && toolNames.length === 0) return [];
+    const tools = formatToolNamesForCatalog(toolNames);
     const desc = ts.description.trim() || "(no description)";
-    return tools ? `- ${ts.name} — ${desc} · ${tools}` : `- ${ts.name} — ${desc}`;
+    return [tools ? `- ${ts.name} — ${desc} · ${tools}` : `- ${ts.name} — ${desc}`];
   });
-  return `${TOOLSETS_INTRO}\n\n${lines.join("\n")}`;
+  if (lines.length === 0) return "";
+  const intro = opts?.extraIntro?.trim()
+    ? `${TOOLSETS_INTRO}\n${opts.extraIntro.trim()}`
+    : TOOLSETS_INTRO;
+  return `${intro}\n\n${lines.join("\n")}`;
 }
+
+export { CODING_HANDS_INTRO };
 
 /** Fully wrapped ToolSets section (for callers outside systemPromptBuild fold). */
 export function renderToolsetsSection(registry: ToolSetRegistry): string {

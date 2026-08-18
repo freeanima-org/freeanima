@@ -2,7 +2,10 @@ import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
 import { registerLlmStackConfigurator } from "@freeanima/habitat/core/llm";
 import { registerSystemPromptHookRunner } from "@freeanima/habitat/core/hooks/prompt";
 import { rebuildConversationCache } from "@freeanima/habitat/engine/conversation";
-import { registerConversationToolPolicyFilter } from "@freeanima/habitat/core/tool";
+import {
+  filterHabitatLocalHandsForCoding,
+  registerConversationToolPolicyFilter,
+} from "@freeanima/habitat/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/habitat/core/compress";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import {
@@ -33,8 +36,10 @@ export function bindEnginePorts(): void {
     return folded.text;
   });
 
-  // 可见对话不强制收窄工具；看不见场景（sleep/cron）经 CapabilityPolicy 传入 toolPolicy
-  registerConversationToolPolicyFilter((toolNames, _meta) => toolNames);
+  // 可见对话不强制收窄工具；编码会话去掉栖息地本机 file/shell（走前哨 remote_coding_*）
+  registerConversationToolPolicyFilter((toolNames, meta) =>
+    filterHabitatLocalHandsForCoding(toolNames, meta),
+  );
 
   registerCompressionSummaryPostCut(async (conversation) => {
     const { engine } = getAppRuntime();

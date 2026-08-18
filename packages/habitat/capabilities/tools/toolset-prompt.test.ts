@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
-import { formatToolNamesForCatalog, renderToolsetsSection } from "./toolset-prompt.ts";
+import {
+  formatToolNamesForCatalog,
+  renderToolsetsBody,
+  renderToolsetsSection,
+} from "./toolset-prompt.ts";
 
 describe("formatToolNamesForCatalog", () => {
   it("collapses first-segment prefixes with 2+ tools", () => {
@@ -72,6 +76,33 @@ describe("renderToolsetsSection", () => {
     expect(section).not.toContain("- ops —");
     expect(section).not.toContain("- secret —");
     expect(section.indexOf("- file")).toBeLessThan(section.indexOf("- memory"));
+  });
+
+  it("omits toolsets whose tools are all filtered", () => {
+    const registry = new ToolSetRegistry();
+    registry.registerToolSet("file", "Read and write workspace files", [
+      {
+        name: "file_read",
+        description: "Read",
+        parameters: { type: "object", properties: {} },
+        handler: () => "ok",
+      },
+    ]);
+    registry.registerToolSet("memory", "Semantic memory tools", [
+      {
+        name: "memory_semantic_search",
+        description: "Recall",
+        parameters: { type: "object", properties: {} },
+        handler: () => "ok",
+      },
+    ]);
+    const body = renderToolsetsBody(registry, {
+      allowedToolNames: ["memory_semantic_search"],
+      extraIntro: "不要 toolset_load 栖息地本机 file / shell。",
+    });
+    expect(body).toContain("不要 toolset_load");
+    expect(body).toContain("- memory —");
+    expect(body).not.toContain("- file —");
   });
 
   it("returns empty when no catalog toolsets", () => {

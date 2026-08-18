@@ -49,6 +49,11 @@ export {
   type ConversationToolPolicyFilter,
 } from "./policy-port.ts";
 export {
+  filterHabitatLocalHandsForCoding,
+  isCodingConversationMeta,
+  isHabitatLocalHandTool,
+} from "./coding-local-hands.ts";
+export {
   runWithToolContext,
   setToolProgressReporter,
   reportToolProgress,
