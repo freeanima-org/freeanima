@@ -54,6 +54,7 @@ fn main() {
         "workspace_fs_exists",
         "workspace_fs_is_dir",
         "workspace_fs_walk_files",
+        "workspace_fs_search",
         "run_command",
       ]))
       .plugin(

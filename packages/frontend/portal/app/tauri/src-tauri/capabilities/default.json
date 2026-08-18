@@ -71,6 +71,7 @@
     "allow-workspace-fs-exists",
     "allow-workspace-fs-is-dir",
     "allow-workspace-fs-walk-files",
+    "allow-workspace-fs-search",
     "allow-run-command"
   ]
 }

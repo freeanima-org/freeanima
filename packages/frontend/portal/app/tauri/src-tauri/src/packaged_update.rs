@@ -136,29 +136,21 @@ fn launch_windows_nsis_installer(installer_path: &Path) -> Result<u32, String> {
     .to_str()
     .ok_or_else(|| "安装包路径无效".to_string())?;
 
-  // 优先 cmd start 脱离进程树；失败则直接 spawn /S。
-  let com_spec = std::env::var("ComSpec").unwrap_or_else(|_| "cmd.exe".into());
-  let start = Command::new(&com_spec)
-    .args(["/d", "/c", "start", "", "/min", path_str, "/S"])
+  // NSIS setup 是 GUI 子系统：直接脱离进程树，勿经 cmd.exe（会弹控制台）。
+  // CREATE_NO_WINDOW 与 DETACHED_PROCESS 互斥，此处不要叠前者。
+  use std::os::windows::process::CommandExt;
+  const DETACHED_PROCESS: u32 = 0x00000008;
+  const CREATE_NEW_PROCESS_GROUP: u32 = 0x00000200;
+
+  let child = Command::new(path_str)
+    .arg("/S")
     .stdin(std::process::Stdio::null())
     .stdout(std::process::Stdio::null())
     .stderr(std::process::Stdio::null())
-    .spawn();
-
-  match start {
-    Ok(child) => Ok(child.id()),
-    Err(e) => {
-      eprintln!("[packaged-update] cmd start 失败 ({e})，fallback 直接 spawn /S");
-      let child = Command::new(path_str)
-        .arg("/S")
-        .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
-        .stderr(std::process::Stdio::null())
-        .spawn()
-        .map_err(|e| format!("无法启动安装程序: {e}"))?;
-      Ok(child.id())
-    }
-  }
+    .creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
+    .spawn()
+    .map_err(|e| format!("无法启动安装程序: {e}"))?;
+  Ok(child.id())
 }
 
 /// 下载并静默启动 NSIS；不在此退出应用（由 installer hooks / --quit-for-install 关闭）。

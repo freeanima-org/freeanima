@@ -133,6 +133,7 @@ CLAUDE.md                        # Claude Code 兼容
 - **新建可选已有工作区**：本地额外持久化 `knownWorkspaces`（去重工作区路径，会话删除后仍保留）；New Agent 对话框用下拉列出这些工作区，选中即复用该根新建会话（仍是独立 `workspaceRoot` 字符串），也可「选择新文件夹」或「无工作区」。
 - 栖息地 `conversation.create` 的 `workspace_root` 与本地字段一致且同样视为不可变；本地 `conversationId` 持久化后复用。
 - 左栏按 `workspaceRoot` 的 basename 分组（`null` →「无工作区」）；同仓多会话 = 同组多条（为后续同仓不同 worktree 路径留口：每条仍是独立 `workspaceRoot` 字符串）。
+- **组 = 仓名，行 = 话题标题**：本地默认 title 仅占位；`conversation.create` 不预填 title，首回合由栖息地 LLM 生成后经 `conversation.subscribe` 写回侧栏。
 - 本地存储 key `freeanima:coding:agent-sessions:v2`；从 v1 多根迁移时只保留 `activeRoot ?? workspaceRoots[0] ?? null`。
 
 ### 栏位
@@ -162,7 +163,7 @@ CLAUDE.md                        # Claude Code 兼容
 | `project_mcp_status` | 前哨管理的项目 MCP 连接状态                                 |
 | `mcp_*_*`            | 桥接的项目 MCP 工具                                         |
 
-路径沙箱在会话 `workspace_root` 下。编码会话须**默认用这些前哨工具** —— **不要**静默回退到栖息地本机 `file_*`（服务器上没有你的仓）。
+路径沙箱在会话 `workspace_root` 下。编码会话须**默认用这些前哨工具** —— **不要**静默回退到栖息地本机 `file_*`（服务器上没有你的仓）。编码会话 `toolset_load` **拒绝**栖息地 `file` / `shell`；catalog 也不再列出它们。
 
 内置 subagent `explorer` 用栖息地 `file_*`，**不是**工作区探索器。前哨只读工具请用 `coding-explorer`。
 

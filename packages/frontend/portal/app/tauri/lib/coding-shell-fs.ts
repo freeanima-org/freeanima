@@ -23,6 +23,15 @@ export function createCodingWorkspaceFsBridge(): WorkspaceFsApi {
         path: absRoot,
         maxFiles: opts?.maxFiles ?? null,
       }),
+    searchFiles: (opts) =>
+      invoke<{ result: string }>("workspace_fs_search", {
+        path: opts.path,
+        workspaceRoot: opts.workspaceRoot,
+        pattern: opts.pattern,
+        maxFiles: opts.maxFiles ?? null,
+        limit: opts.limit ?? null,
+        outputMode: opts.outputMode ?? null,
+      }).then((out) => out.result),
   };
 }
 

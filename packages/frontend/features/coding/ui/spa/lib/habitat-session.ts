@@ -72,6 +72,41 @@ async function resolveOptionalWorld(opts: {
 }
 
 /**
+ * 新建 Habitat 会话：不预填 title（仓名留给分组；话题标题由首回合 LLM 生成）。
+ */
+export function buildCodingConversationCreateInput(opts: {
+  workspaceRoot: string | null;
+  instanceId: string;
+  projectWorldId: number | null;
+}): {
+  platform: "coding";
+  scenario: "coding_agent";
+  outpost_app_id: "coding";
+  outpost_instance_id: string;
+  workspace_root?: string;
+  project_world_id?: number;
+} {
+  const instanceId = opts.instanceId.trim();
+  return {
+    platform: "coding",
+    scenario: "coding_agent",
+    outpost_app_id: "coding",
+    outpost_instance_id: instanceId,
+    ...(opts.workspaceRoot ? { workspace_root: opts.workspaceRoot } : {}),
+    ...(opts.projectWorldId != null ? { project_world_id: opts.projectWorldId } : {}),
+  };
+}
+
+export function titleFromCodingConversationList(
+  conversations: Array<{ conversation_id: string; title?: string | undefined }>,
+  conversationId: string,
+): string | null {
+  const row = conversations.find((c) => c.conversation_id === conversationId);
+  const title = row?.title?.trim();
+  return title || null;
+}
+
+/**
  * 确保会话存在：已有 conversationId 则复用（不改 workspace_root）；
  * 否则 conversation.create（可无 workspace_root）。
  */
@@ -107,18 +142,14 @@ export async function ensureCodingConversation(opts: {
     ...(opts.stableKey != null ? { stableKey: opts.stableKey } : {}),
     ...(opts.displayName != null ? { displayName: opts.displayName } : {}),
   });
-  const instanceId = opts.instanceId.trim();
-  const created = await client.call("conversation.create", {
-    platform,
-    scenario: "coding_agent",
-    outpost_app_id: "coding",
-    outpost_instance_id: instanceId,
-    ...(opts.workspaceRoot ? { workspace_root: opts.workspaceRoot } : {}),
-    ...(world.project_world_id != null ? { project_world_id: world.project_world_id } : {}),
-    ...(opts.displayName?.trim() || opts.stableKey
-      ? { title: opts.displayName?.trim() || opts.stableKey || undefined }
-      : {}),
-  });
+  const created = await client.call(
+    "conversation.create",
+    buildCodingConversationCreateInput({
+      workspaceRoot: opts.workspaceRoot,
+      instanceId: opts.instanceId,
+      projectWorldId: world.project_world_id,
+    }),
+  );
 
   return {
     conversation_id: created.conversation_id,
@@ -126,6 +157,18 @@ export async function ensureCodingConversation(opts: {
     world_created: world.world_created,
     platform,
   };
+}
+
+export async function fetchCodingConversationTitle(conversationId: string): Promise<string | null> {
+  if (!hasHabitatToken()) return null;
+  const id = conversationId.trim();
+  if (!id) return null;
+  const client = getTypedHabitatClient();
+  const out = await client.call("conversation.list", {
+    platform: "coding",
+    limit: 500,
+  });
+  return titleFromCodingConversationList(out.conversations, id);
 }
 
 /** 将理解笔记写入项目 Public World（coding_note）。 */

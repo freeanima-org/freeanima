@@ -3,8 +3,13 @@
 
 use serde::Serialize;
 use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::time::{Duration, Instant};
+use std::time::Duration;
+use tokio::io::AsyncReadExt;
+use tokio::process::Command;
+
+/// Windows GUI 父进程下隐藏子进程控制台。勿与 DETACHED_PROCESS 叠用（要 wait 收 stdout）。
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,12 +30,31 @@ pub struct RunCommandResult {
   pub timed_out: bool,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceFsSearchResult {
+  pub result: String,
+}
+
 fn path_buf(path: &str) -> Result<PathBuf, String> {
   let p = PathBuf::from(path);
   if path.trim().is_empty() {
     return Err("path is empty".into());
   }
   Ok(p)
+}
+
+fn to_posix(p: &Path) -> String {
+  p.to_string_lossy().replace('\\', "/")
+}
+
+fn hide_console(cmd: &mut Command) {
+  cmd.stdin(std::process::Stdio::null());
+  #[cfg(windows)]
+  {
+    use std::os::windows::process::CommandExt;
+    cmd.as_std_mut().creation_flags(CREATE_NO_WINDOW);
+  }
 }
 
 #[tauri::command]
@@ -144,6 +168,110 @@ fn walk_files_inner(root: &Path, dir: &Path, limit: usize, out: &mut Vec<String>
   Ok(())
 }
 
+fn rel_under_root(workspace_root: &str, abs_posix: &str) -> Option<String> {
+  let root = workspace_root.trim_end_matches('/');
+  if abs_posix == root {
+    return Some(".".into());
+  }
+  let prefix = format!("{root}/");
+  abs_posix.strip_prefix(&prefix).map(str::to_string)
+}
+
+fn should_skip_rel(rel: &str) -> bool {
+  rel.split('/').any(|p| p == "node_modules" || p == ".git")
+}
+
+fn search_files(
+  start: &Path,
+  workspace_root: &str,
+  pattern: &str,
+  max_files: usize,
+  limit: usize,
+  mode: &str,
+) -> Result<String, String> {
+  let mut files = Vec::new();
+  walk_files_inner(start, start, max_files, &mut files)?;
+  let root = to_posix(Path::new(workspace_root.trim_end_matches(['/', '\\'])));
+  let mut hits: Vec<String> = Vec::new();
+  let mut count = 0usize;
+
+  for abs in files {
+    let abs_posix = to_posix(Path::new(&abs));
+    let Some(rel) = rel_under_root(&root, &abs_posix) else {
+      continue;
+    };
+    if should_skip_rel(&rel) {
+      continue;
+    }
+    let text = match std::fs::read_to_string(&abs) {
+      Ok(t) => t,
+      Err(_) => continue,
+    };
+    if !text.contains(pattern) {
+      continue;
+    }
+    count += 1;
+    if mode == "count" {
+      continue;
+    }
+    if mode == "files_only" {
+      if hits.len() < limit {
+        hits.push(rel);
+      }
+      if hits.len() >= limit {
+        break;
+      }
+      continue;
+    }
+    for (i, line) in text.split('\n').enumerate() {
+      if !line.contains(pattern) {
+        continue;
+      }
+      if hits.len() >= limit {
+        break;
+      }
+      hits.push(format!("{}:{}:{}", rel, i + 1, line));
+    }
+    if hits.len() >= limit {
+      break;
+    }
+  }
+
+  if mode == "count" {
+    return Ok(serde_json::json!({ "count": count }).to_string());
+  }
+  Ok(hits.join("\n"))
+}
+
+#[tauri::command]
+pub fn workspace_fs_search(
+  path: String,
+  workspace_root: String,
+  pattern: String,
+  max_files: Option<usize>,
+  limit: Option<usize>,
+  output_mode: Option<String>,
+) -> Result<WorkspaceFsSearchResult, String> {
+  if pattern.is_empty() {
+    return Err("pattern 不能为空".into());
+  }
+  let start = path_buf(&path)?;
+  let root = workspace_root.trim();
+  if root.is_empty() {
+    return Err("workspace_root is empty".into());
+  }
+  let mode = output_mode.unwrap_or_else(|| "content".into());
+  let result = search_files(
+    &start,
+    root,
+    &pattern,
+    max_files.unwrap_or(5000).max(1),
+    limit.unwrap_or(50).max(1),
+    &mode,
+  )?;
+  Ok(WorkspaceFsSearchResult { result })
+}
+
 /// Quote-aware argv split（与 Habitat `splitCommandLine` 同语义；无 shell 展开）。
 fn split_command_line(command: &str) -> Vec<String> {
   let mut out: Vec<String> = Vec::new();
@@ -188,7 +316,7 @@ fn split_command_line(command: &str) -> Vec<String> {
 }
 
 #[tauri::command]
-pub fn run_command(
+pub async fn run_command(
   command: String,
   cwd: Option<String>,
   timeout_ms: Option<u64>,
@@ -225,58 +353,64 @@ pub fn run_command(
   if let Some(dir) = cwd.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
     child.current_dir(dir);
   }
+  hide_console(&mut child);
   child.stdout(std::process::Stdio::piped());
   child.stderr(std::process::Stdio::piped());
 
   let mut spawned = child.spawn().map_err(|e| e.to_string())?;
-  let started = Instant::now();
-  loop {
-    match spawned.try_wait() {
-      Ok(Some(status)) => {
-        let stdout = {
-          let mut s = String::new();
-          if let Some(mut out) = spawned.stdout.take() {
-            use std::io::Read;
-            let _ = out.read_to_string(&mut s);
-          }
-          s
-        };
-        let stderr = {
-          let mut s = String::new();
-          if let Some(mut err) = spawned.stderr.take() {
-            use std::io::Read;
-            let _ = err.read_to_string(&mut s);
-          }
-          s
-        };
-        return Ok(RunCommandResult {
-          stdout,
-          stderr,
-          exit_code: status.code().unwrap_or(-1),
-          timed_out: false,
-        });
-      }
-      Ok(None) => {
-        if started.elapsed() > timeout {
-          let _ = spawned.kill();
-          let _ = spawned.wait();
-          return Ok(RunCommandResult {
-            stdout: String::new(),
-            stderr: format!("timed out after {}ms", timeout.as_millis()),
-            exit_code: -1,
-            timed_out: true,
-          });
-        }
-        std::thread::sleep(Duration::from_millis(20));
-      }
-      Err(e) => return Err(e.to_string()),
+  let mut stdout_pipe = spawned.stdout.take();
+  let mut stderr_pipe = spawned.stderr.take();
+  let stdout_task = tokio::spawn(async move {
+    let mut s = String::new();
+    if let Some(ref mut out) = stdout_pipe {
+      let _ = out.read_to_string(&mut s).await;
+    }
+    s
+  });
+  let stderr_task = tokio::spawn(async move {
+    let mut s = String::new();
+    if let Some(ref mut err) = stderr_pipe {
+      let _ = err.read_to_string(&mut s).await;
+    }
+    s
+  });
+
+  match tokio::time::timeout(timeout, spawned.wait()).await {
+    Ok(Ok(status)) => {
+      let stdout = stdout_task.await.ok().unwrap_or_default();
+      let stderr = stderr_task.await.ok().unwrap_or_default();
+      Ok(RunCommandResult {
+        stdout,
+        stderr,
+        exit_code: status.code().unwrap_or(-1),
+        timed_out: false,
+      })
+    }
+    Ok(Err(e)) => {
+      stdout_task.abort();
+      stderr_task.abort();
+      Err(e.to_string())
+    }
+    Err(_) => {
+      let _ = spawned.start_kill();
+      let _ = spawned.wait().await;
+      stdout_task.abort();
+      stderr_task.abort();
+      Ok(RunCommandResult {
+        stdout: String::new(),
+        stderr: format!("timed out after {}ms", timeout.as_millis()),
+        exit_code: -1,
+        timed_out: true,
+      })
     }
   }
 }
 
 #[cfg(test)]
 mod tests {
-  use super::split_command_line;
+  use super::{rel_under_root, search_files, split_command_line};
+  use std::fs;
+  use std::path::Path;
 
   #[test]
   fn split_respects_double_and_single_quotes() {
@@ -308,5 +442,51 @@ mod tests {
       split_command_line(r#"echo a\ b"#),
       vec!["echo", "a b"]
     );
+  }
+
+  #[test]
+  fn rel_under_root_posix() {
+    assert_eq!(
+      rel_under_root("/tmp/ws", "/tmp/ws/README.md").as_deref(),
+      Some("README.md")
+    );
+    assert_eq!(rel_under_root("/tmp/ws", "/tmp/ws").as_deref(), Some("."));
+    assert_eq!(rel_under_root("/tmp/ws", "/tmp/other"), None);
+  }
+
+  #[test]
+  fn search_files_content_and_files_only() {
+    let dir = std::env::temp_dir().join(format!(
+      "coding-fs-search-{}",
+      std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos()
+    ));
+    fs::create_dir_all(dir.join("src")).unwrap();
+    fs::write(dir.join("README.md"), "# demo\nhello world\n").unwrap();
+    fs::write(dir.join("src/hello.ts"), "const x = 1;\n").unwrap();
+    fs::create_dir_all(dir.join("node_modules/pkg")).unwrap();
+    fs::write(dir.join("node_modules/pkg/skip.js"), "hello hidden\n").unwrap();
+    let root = super::to_posix(&dir);
+
+    let files_only = search_files(Path::new(&dir), &root, "hello", 5000, 50, "files_only").unwrap();
+    assert!(files_only.contains("README.md"));
+    assert!(!files_only.contains("node_modules"));
+
+    let content = search_files(Path::new(&dir), &root, "hello", 5000, 50, "content").unwrap();
+    assert!(content.contains("README.md:2:hello world"));
+
+    let count = search_files(Path::new(&dir), &root, "hello", 5000, 50, "count").unwrap();
+    assert!(count.contains("\"count\":"));
+    let _ = fs::remove_dir_all(&dir);
+  }
+
+  #[cfg(windows)]
+  #[test]
+  fn create_no_window_flag() {
+    assert_eq!(super::CREATE_NO_WINDOW, 0x08000000);
+    let mut c = tokio::process::Command::new("cmd");
+    super::hide_console(&mut c);
   }
 }

@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:te
 import type { ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
 import * as pg from "@freeanima/habitat/core/db/pg";
 import { ToolSetRegistry } from "./toolset.ts";
-import { unloadToolSetsFromConversation } from "./conversation-tools.ts";
+import {
+  loadToolSetsIntoConversation,
+  unloadToolSetsFromConversation,
+} from "./conversation-tools.ts";
+import { registerConversationToolPolicyFilter } from "./policy-port.ts";
+import { filterHabitatLocalHandsForCoding } from "./coding-local-hands.ts";
 
 const patchConversationMetaMock = mock(async () => {});
 
@@ -38,6 +43,14 @@ function testRegistry(): ToolSetRegistry {
     {
       name: "file_read",
       description: "read",
+      parameters: { type: "object", properties: {} },
+      handler: async () => "{}",
+    },
+  ]);
+  reg.registerToolSet("shell", "shell", [
+    {
+      name: "terminal_run",
+      description: "run",
       parameters: { type: "object", properties: {} },
       handler: async () => "{}",
     },
@@ -114,5 +127,61 @@ describe("unloadToolSetsFromConversation", () => {
     expect(result.unknown).toEqual(["missing"]);
     expect(result.revoked_tools).toEqual([]);
     expect(patchConversationMetaMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("loadToolSetsIntoConversation coding policy", () => {
+  afterEach(() => {
+    registerConversationToolPolicyFilter((names) => names);
+  });
+
+  it("denies habitat file/shell for coding_agent", async () => {
+    registerConversationToolPolicyFilter((names, meta) =>
+      filterHabitatLocalHandsForCoding(names, meta),
+    );
+    const meta = {
+      model: "m",
+      cached_toolsets: ["toolset"],
+      staged_toolsets: [],
+      functions: [],
+      timestamp: "",
+      scenario: "coding_agent" as const,
+      platform: "coding",
+    } satisfies ConversationMetaMessage;
+
+    const result = await loadToolSetsIntoConversation(
+      testRegistry(),
+      "sess-coding",
+      ["file", "shell", "memory"],
+      meta,
+    );
+    expect(result.denied.toSorted()).toEqual(["file", "shell"]);
+    expect(result.loaded).toEqual(["memory"]);
+    expect(result.unknown).toEqual([]);
+  });
+
+  it("still loads file/shell for digital_human chat", async () => {
+    registerConversationToolPolicyFilter((names, meta) =>
+      filterHabitatLocalHandsForCoding(names, meta),
+    );
+    const meta = {
+      model: "m",
+      cached_toolsets: ["toolset"],
+      staged_toolsets: [],
+      functions: [],
+      timestamp: "",
+      scenario: "digital_human" as const,
+      platform: "chat",
+    } satisfies ConversationMetaMessage;
+
+    const result = await loadToolSetsIntoConversation(
+      testRegistry(),
+      "sess-chat",
+      ["file", "shell", "memory"],
+      meta,
+    );
+    expect(result.denied).toEqual([]);
+    expect(result.loaded.toSorted()).toEqual(["file", "memory", "shell"]);
+    expect(result.unknown).toEqual([]);
   });
 });

@@ -96,6 +96,7 @@ export function createPortalShellWorkspaceBackend(): WorkspaceFsBackend | null {
   const ws = shell?.workspaceFs;
   if (!ws) return null;
   const runCommand = shell.runCommand;
+  const searchFiles = ws.searchFiles;
   return {
     listDir: (p) => ws.listDir(p),
     readText: (p) => ws.readText(p),
@@ -103,6 +104,7 @@ export function createPortalShellWorkspaceBackend(): WorkspaceFsBackend | null {
     exists: (p) => ws.exists(p),
     isDir: (p) => ws.isDir(p),
     walkFiles: (p, opts) => ws.walkFiles(p, opts),
+    ...(searchFiles ? { searchFiles: (opts) => searchFiles(opts) } : {}),
     ...(runCommand ? { runCommand: (opts) => runCommand(opts) } : {}),
   };
 }
@@ -263,6 +265,22 @@ export class WorkspaceSandbox {
     if (!start.ok) return start;
     const limit = Math.max(1, opts.limit ?? 50);
     const mode = opts.output_mode ?? "content";
+
+    if (this.backend.searchFiles) {
+      try {
+        const result = await this.backend.searchFiles({
+          path: start.abs,
+          workspaceRoot: this.workspaceRoot,
+          pattern,
+          maxFiles: 5000,
+          limit,
+          outputMode: mode,
+        });
+        return { ok: true, result };
+      } catch (e) {
+        return { ok: false, error: `search failed: ${e instanceof Error ? e.message : String(e)}` };
+      }
+    }
 
     try {
       const files = await this.backend.walkFiles(start.abs, { maxFiles: 5000 });

@@ -1079,6 +1079,7 @@ pub fn run() {
         coding_fs::workspace_fs_exists,
         coding_fs::workspace_fs_is_dir,
         coding_fs::workspace_fs_walk_files,
+        coding_fs::workspace_fs_search,
         coding_fs::run_command,
       ])
       .setup(|app| {
