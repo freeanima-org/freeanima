@@ -45,10 +45,10 @@ export function VaultRefField({
   return (
     <div className="space-y-1">
       {label ? <Label className="text-sm">{label}</Label> : null}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
         <Input
           type={inputType}
-          className="min-w-0 flex-1"
+          className="min-w-0 flex-1 basis-[12rem]"
           placeholder={placeholder}
           value={value}
           disabled={disabled}
@@ -59,6 +59,7 @@ export function VaultRefField({
           type="button"
           size="sm"
           variant="outline"
+          className="shrink-0"
           isDisabled={disabled}
           onClick={() => setOpen(true)}
         >

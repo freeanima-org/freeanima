@@ -18,6 +18,10 @@ import {
   readVoiceProsodyParams,
   type VoiceProsodyParams,
 } from "@freeanima/habitat/core/tts/voice-params";
+import {
+  defaultVoiceIdForProtocol,
+  formatVoiceIdsForToolHint,
+} from "@freeanima/habitat/core/tts/voice-catalog";
 import { synthesizeEdgeTts } from "@freeanima/habitat/core/tts/edge-synthesize";
 import { generateOpenAiSpeech } from "@freeanima/habitat/capabilities/llm-openai/audio-speech";
 import {
@@ -113,12 +117,16 @@ export async function synthesizeVoiceFromScene(
       const key = requireApiKey(scene, "文生声");
       if (typeof key === "object") return key;
       const mapped = mapVoiceProsodyToOpenAiSpeech(prosody);
+      const voice =
+        mapped.voice ??
+        defaultVoiceIdForProtocol(VOICE_PROTOCOL_OPENAI_AUDIO, scene.model) ??
+        "alloy";
       return await generateOpenAiSpeech({
         apiKey: key,
         baseUrl,
         model: scene.model,
         text,
-        ...(mapped.voice ? { voice: mapped.voice } : { voice: scene.model }),
+        voice,
         speed: mapped.speed,
         responseFormat: mapped.response_format,
         ...(scene.provider.timeout_ms != null ? { timeoutMs: scene.provider.timeout_ms } : {}),
@@ -129,12 +137,24 @@ export async function synthesizeVoiceFromScene(
       const key = requireApiKey(scene, "文生声");
       if (typeof key === "object") return key;
       const mapped = mapVoiceProsodyToAlibabaTts(prosody);
+      const voice =
+        mapped.voice ?? defaultVoiceIdForProtocol(VOICE_PROTOCOL_ALIBABA_AUDIO, scene.model);
+      if (!voice) {
+        const hint =
+          formatVoiceIdsForToolHint(VOICE_PROTOCOL_ALIBABA_AUDIO, scene.model) ||
+          formatVoiceIdsForToolHint(VOICE_PROTOCOL_ALIBABA_AUDIO);
+        return {
+          error: hint
+            ? `阿里云文生声需要音色（scenes.params.voice 或 tool.voice）。常用：${hint}`
+            : "阿里云文生声需要音色（scenes.params.voice 或 tool.voice）",
+        };
+      }
       return await synthesizeAlibabaTts({
         apiKey: key,
         baseUrl,
         model: scene.model,
         text,
-        ...(mapped.voice ? { voice: mapped.voice } : {}),
+        voice,
         rate: mapped.rate,
         pitch: mapped.pitch,
         volume: mapped.volume,

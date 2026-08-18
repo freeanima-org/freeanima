@@ -97,7 +97,7 @@ const configListProviderModelsInputSchema = z.object({
   provider_id: z.string().min(1),
   query: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(500).optional(),
-  purpose: z.enum(["chat", "image_generate", "embedding"]).optional(),
+  purpose: z.enum(["chat", "image_generate", "embedding", "voice_generate"]).optional(),
 });
 const configListProviderModelsOutputSchema = z.object({
   models: z.array(
@@ -117,6 +117,25 @@ const configListProviderModelsOutputSchema = z.object({
     }),
   ),
   source: z.enum(["provider", "models_dev", "builtin"]),
+});
+const configListProviderVoicesInputSchema = z.object({
+  provider_id: z.string().min(1),
+  /** 合成模型；阿里用于过滤与模型绑定的音色 */
+  model: z.string().optional(),
+  query: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+});
+const configListProviderVoicesOutputSchema = z.object({
+  voices: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+      lang: z.string().optional(),
+      models: z.array(z.string()).optional(),
+    }),
+  ),
+  protocol: z.enum(["openai_audio_speech", "edge-tts", "alibaba_audio"]),
+  source: z.literal("builtin"),
 });
 const sleepRunStepBodySchema = z.object({
   step_id: z.string().min(1),
@@ -247,6 +266,11 @@ export const habitatMethodDefs = {
   "config.listProviderModels": defineHabitatMethod({
     input: configListProviderModelsInputSchema,
     output: configListProviderModelsOutputSchema,
+    meta: longOpMeta(true),
+  }),
+  "config.listProviderVoices": defineHabitatMethod({
+    input: configListProviderVoicesInputSchema,
+    output: configListProviderVoicesOutputSchema,
     meta: longOpMeta(true),
   }),
   "memory.passiveRecallDebug": defineHabitatMethod({

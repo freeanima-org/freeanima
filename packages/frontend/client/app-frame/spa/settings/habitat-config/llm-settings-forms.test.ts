@@ -9,9 +9,11 @@ import {
   providersDraftToPatch,
   readProvidersDraft,
   readScenesUiDraft,
+  sceneDraftVoice,
   scenesUiDraftToPatch,
   systemPurposeSelectValue,
   validateTimeoutDraft,
+  withSceneDraftVoice,
 } from "./llm-settings-draft.ts";
 
 describe("providersDraftToPatch", () => {
@@ -183,5 +185,43 @@ describe("scenes UI draft", () => {
     expect(patched.summary).toBeNull();
     expect(patched.reflect).toBeNull();
     expect(patched.keep).toBeUndefined();
+  });
+
+  it("scenesUiDraftToPatch 保留 params.voice", () => {
+    const patched = scenesUiDraftToPatch(
+      {
+        voice_generate: {
+          connection: "ali",
+          model: "qwen-audio-3.0-tts-plus",
+          params: { voice: "longanlingxin" },
+        },
+      },
+      {},
+      ["voice_generate"],
+    );
+    expect(patched.voice_generate).toEqual({
+      connection: "ali",
+      model: "qwen-audio-3.0-tts-plus",
+      params: { voice: "longanlingxin" },
+    });
+  });
+
+  it("readScenesUiDraft 读出 params.voice", () => {
+    const draft = readScenesUiDraft({
+      scenes: {
+        voice_generate: {
+          connection: "ali",
+          model: "qwen-audio-3.0-tts-plus",
+          params: { voice: "longanlufeng" },
+        },
+      },
+    });
+    expect(draft.voice_generate).toEqual({
+      connection: "ali",
+      model: "qwen-audio-3.0-tts-plus",
+      params: { voice: "longanlufeng" },
+    });
+    expect(sceneDraftVoice(draft.voice_generate!)).toBe("longanlufeng");
+    expect(sceneDraftVoice(withSceneDraftVoice(draft.voice_generate!, ""))).toBe("");
   });
 });

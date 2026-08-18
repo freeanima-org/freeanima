@@ -5,12 +5,16 @@ import {
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
+  LLM_PRESET_IDS,
   LLM_PRESET_OPENCODE_GO,
   LLM_PRESET_OPENROUTER,
   EMBEDDINGS_PROTOCOL_OPENAI,
+  EMBEDDINGS_PROTOCOL_IDS,
   IMAGE_PROTOCOL_OPENAI,
   IMAGE_PROTOCOL_ALIBABA_MULTIMODAL,
+  IMAGE_PROTOCOL_IDS,
   VOICE_PROTOCOL_ALIBABA_AUDIO,
+  VOICE_PROTOCOL_IDS,
   type EmbeddingsProtocolId,
   type ImageProtocolId,
   type LlmFormatId,
@@ -159,6 +163,48 @@ export function presetModalityFields(presetId: LlmPresetId): Partial<{
     image_protocol: def.modalities.image,
     embeddings_protocol: def.modalities.embeddings,
     voice_protocol: def.modalities.voice,
+  };
+}
+
+function pickKnownId<T extends string>(
+  raw: string | null | undefined,
+  ids: readonly T[],
+): T | null {
+  if (raw == null) return null;
+  for (const id of ids) {
+    if (id === raw) return id;
+  }
+  return null;
+}
+
+/**
+ * 连接上生效的模态协议。
+ * 内置预设以预设声明为准（遗留连接可能尚未写回 voice_protocol 等字段）；
+ * 自定义连接读连接自身字段。
+ */
+export function effectiveProviderModalities(cfg: {
+  preset?: string | undefined;
+  image_protocol?: string | null | undefined;
+  embeddings_protocol?: string | null | undefined;
+  voice_protocol?: string | null | undefined;
+}): {
+  image_protocol: ImageProtocolId | null;
+  embeddings_protocol: EmbeddingsProtocolId | null;
+  voice_protocol: VoiceProtocolId | null;
+} {
+  const presetId = pickKnownId(cfg.preset, LLM_PRESET_IDS);
+  if (presetId != null && presetId !== LLM_PRESET_CUSTOM) {
+    const fields = presetModalityFields(presetId);
+    return {
+      image_protocol: fields.image_protocol ?? null,
+      embeddings_protocol: fields.embeddings_protocol ?? null,
+      voice_protocol: fields.voice_protocol ?? null,
+    };
+  }
+  return {
+    image_protocol: pickKnownId(cfg.image_protocol, IMAGE_PROTOCOL_IDS),
+    embeddings_protocol: pickKnownId(cfg.embeddings_protocol, EMBEDDINGS_PROTOCOL_IDS),
+    voice_protocol: pickKnownId(cfg.voice_protocol, VOICE_PROTOCOL_IDS),
   };
 }
 

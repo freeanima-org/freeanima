@@ -142,3 +142,29 @@ export async function listHabitatProviderModels(input: {
     input,
   )) as HabitatListProviderModelsResult;
 }
+
+export type HabitatProviderVoiceEntry = {
+  id: string;
+  label: string;
+  lang?: string;
+  models?: string[];
+};
+
+export type HabitatListProviderVoicesResult = {
+  voices: HabitatProviderVoiceEntry[];
+  protocol: "openai_audio_speech" | "edge-tts" | "alibaba_audio";
+  source: "builtin";
+};
+
+/** 按连接 voice_protocol 返回静态音色目录（与合成模型列表分维） */
+export async function listHabitatProviderVoices(input: {
+  provider_id: string;
+  model?: string;
+  query?: string;
+  limit?: number;
+}): Promise<HabitatListProviderVoicesResult> {
+  return (await habitatRpc().call(
+    "config.listProviderVoices",
+    input,
+  )) as HabitatListProviderVoicesResult;
+}
