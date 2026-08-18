@@ -48,6 +48,7 @@ fn main() {
         "probe_habitat_health",
         "apply_packaged_update",
         "pick_directory",
+        "save_blob",
         "workspace_fs_list_dir",
         "workspace_fs_read_text",
         "workspace_fs_write_text",
@@ -67,6 +68,12 @@ fn main() {
             "removeListener",
             "remove_listener",
           ])
+          .default_permission(tauri_build::DefaultPermissionRule::AllowAllCommands),
+      )
+      .plugin(
+        "blob-saver",
+        tauri_build::InlinedPlugin::new()
+          .commands(&["saveToDownloads"])
           .default_permission(tauri_build::DefaultPermissionRule::AllowAllCommands),
       ),
   )

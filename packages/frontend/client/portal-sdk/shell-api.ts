@@ -88,6 +88,17 @@ export type ShellRunCommandResult = {
   exitCode: number;
 };
 
+export type ShellSaveBlobOpts = {
+  filename: string;
+  bytes: Uint8Array;
+  mimeType?: string;
+};
+
+export type ShellSaveBlobResult = {
+  cancelled?: boolean;
+  path?: string;
+};
+
 /** Portal / Web 注入的 `window.portalShell` 桥接 */
 export type ShellApi = {
   /** 打包原生壳（Tauri desktop / mobile） */
@@ -140,6 +151,11 @@ export type ShellApi = {
   runCommand?: (opts: ShellRunCommandOpts) => Promise<ShellRunCommandResult>;
   /** 原生文件夹选择器；取消返回 null */
   pickDirectory?: () => Promise<string | null>;
+  /**
+   * 原生壳保存字节到本机（桌面另存对话框 / Android 系统下载目录）。
+   * Web 不注入；调用方应走 `saveOrDownloadBlob`（无此 API 时回退 `<a download>`）。
+   */
+  saveBlob?: (opts: ShellSaveBlobOpts) => Promise<ShellSaveBlobResult>;
   /** 移动端：打开 连接设置页 */
   openHabitatSettings?: () => void;
   setClickThrough?: (ignore: boolean) => Promise<void>;

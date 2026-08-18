@@ -13,6 +13,8 @@ export type {
   ShellApi,
   ShellRunCommandOpts,
   ShellRunCommandResult,
+  ShellSaveBlobOpts,
+  ShellSaveBlobResult,
   ScreenPoint,
   WorkspaceFsApi,
   WorkspaceFsDirEntry,
@@ -183,6 +185,8 @@ export {
   effectivePhaseFinishedAtMs,
 } from "./pomodoro-phase-timing.ts";
 export { getPomodoroDeviceId, clearPomodoroDeviceIdForTest } from "./pomodoro-device-id.ts";
+export { hasNativeBlobSave, saveOrDownloadBlob, triggerWebBlobDownload } from "./save-blob.ts";
+export type { SaveOrDownloadResult } from "./save-blob.ts";
 export {
   activeStateToHabitatBody,
   habitatBodyToActiveState,

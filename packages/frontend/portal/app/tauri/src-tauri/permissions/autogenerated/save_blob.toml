@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-blob"
+description = "Enables the save_blob command without any pre-configured scope."
+commands.allow = ["save_blob"]
+
+[[permission]]
+identifier = "deny-save-blob"
+description = "Denies the save_blob command without any pre-configured scope."
+commands.deny = ["save_blob"]

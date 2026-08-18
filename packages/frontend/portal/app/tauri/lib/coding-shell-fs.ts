@@ -1,12 +1,14 @@
 /**
- * Coding Outpost：portalShell.workspaceFs / runCommand / pickDirectory 桥接。
- * Rust：`coding_fs.rs`（pick_directory / workspace_fs_* / run_command）。
+ * Coding Outpost：portalShell.workspaceFs / runCommand / pickDirectory / saveBlob 桥接。
+ * Rust：`coding_fs.rs`（pick_directory / save_blob / workspace_fs_* / run_command）。
  * Dev 远程 Vite（:4186）须在 capabilities `remote.urls` 放行，否则 invoke 不可用。
  */
 import { invoke } from "@tauri-apps/api/core";
 import type {
   ShellRunCommandOpts,
   ShellRunCommandResult,
+  ShellSaveBlobOpts,
+  ShellSaveBlobResult,
   WorkspaceFsApi,
   WorkspaceFsDirEntry,
 } from "@freeanima/client/portal-sdk/shell-api.ts";
@@ -48,4 +50,11 @@ export async function codingRunCommandBridge(
 
 export async function codingPickDirectoryBridge(): Promise<string | null> {
   return invoke<string | null>("pick_directory");
+}
+
+export async function desktopSaveBlobBridge(opts: ShellSaveBlobOpts): Promise<ShellSaveBlobResult> {
+  return invoke<ShellSaveBlobResult>("save_blob", {
+    filename: opts.filename,
+    contents: Array.from(opts.bytes),
+  });
 }

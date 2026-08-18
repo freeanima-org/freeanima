@@ -18,19 +18,6 @@ export async function fetchObjectFileBlob(id: number): Promise<Blob> {
   return res.blob();
 }
 
-export function triggerBlobDownload(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  try {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename.trim() || `object_file-${Date.now()}`;
-    a.rel = "noopener";
-    a.click();
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-
 export function formatByteSize(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return "—";
   if (bytes < 1024) return `${bytes} B`;

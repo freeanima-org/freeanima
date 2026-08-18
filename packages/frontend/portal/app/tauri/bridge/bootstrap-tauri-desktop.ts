@@ -27,6 +27,7 @@ import {
   codingPickDirectoryBridge,
   codingRunCommandBridge,
   createCodingWorkspaceFsBridge,
+  desktopSaveBlobBridge,
 } from "../lib/coding-shell-fs.ts";
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
@@ -126,6 +127,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
     workspaceFs: createCodingWorkspaceFsBridge(),
     runCommand: codingRunCommandBridge,
     pickDirectory: codingPickDirectoryBridge,
+    saveBlob: desktopSaveBlobBridge,
     openHabitatSettings: () => void invoke("open_settings"),
     openSettings: () => invoke("open_settings"),
     setClickThrough: (ignore) => invoke("set_click_through", { ignore }),

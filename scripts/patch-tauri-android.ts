@@ -3,6 +3,7 @@
  * 在 `tauri android init` / gen 之后应用 Android 工程补丁（可重复执行）。
  * - network_security_config：信任用户 CA + 允许 cleartext
  * - APK 覆盖安装：FileProvider + ApkInstallerPlugin + REQUEST_INSTALL_PACKAGES
+ * - blob 保存到下载目录：BlobSaverPlugin + WRITE_EXTERNAL_STORAGE(maxSdk 28)
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -21,7 +22,9 @@ const manifestPath = join(androidMain, "AndroidManifest.xml");
 const xmlDir = join(androidMain, "res/xml");
 const nscPath = join(xmlDir, "network_security_config.xml");
 const pluginSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/apk-installer");
+const blobSaverSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/blob-saver");
 const pluginKtDest = join(androidMain, "java/com/freeanima/portal/apk/ApkInstallerPlugin.kt");
+const blobSaverKtDest = join(androidMain, "java/com/freeanima/portal/blob/BlobSaverPlugin.kt");
 const filePathsDest = join(xmlDir, "file_paths.xml");
 
 const NSC = `<?xml version="1.0" encoding="utf-8"?>
@@ -52,6 +55,15 @@ mkdirSync(dirname(pluginKtDest), { recursive: true });
 cpSync(pluginKt, pluginKtDest);
 cpSync(filePathsSrc, filePathsDest);
 console.log(`[patch-tauri-android] ApkInstallerPlugin → ${pluginKtDest}`);
+
+const blobSaverKt = join(blobSaverSrcDir, "BlobSaverPlugin.kt");
+if (!existsSync(blobSaverKt)) {
+  console.error(`[patch-tauri-android] 缺少 blob-saver 插件源：${blobSaverSrcDir}`);
+  process.exit(1);
+}
+mkdirSync(dirname(blobSaverKtDest), { recursive: true });
+cpSync(blobSaverKt, blobSaverKtDest);
+console.log(`[patch-tauri-android] BlobSaverPlugin → ${blobSaverKtDest}`);
 
 let manifest = readFileSync(manifestPath, "utf-8");
 if (!manifest.includes("networkSecurityConfig")) {
@@ -86,6 +98,21 @@ if (!manifest.includes("REQUEST_INSTALL_PACKAGES")) {
     );
   }
   console.log("[patch-tauri-android] 已添加 REQUEST_INSTALL_PACKAGES");
+}
+
+if (!manifest.includes("WRITE_EXTERNAL_STORAGE")) {
+  if (manifest.includes("<uses-permission")) {
+    manifest = manifest.replace(
+      /(<uses-permission\b[^/]*\/>)/,
+      `$1\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />`,
+    );
+  } else {
+    manifest = manifest.replace(
+      /(<manifest\b[^>]*>)/,
+      `$1\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />`,
+    );
+  }
+  console.log("[patch-tauri-android] 已添加 WRITE_EXTERNAL_STORAGE (maxSdk 28)");
 }
 
 if (!manifest.includes(".fileprovider")) {
