@@ -23,6 +23,7 @@ export {
 } from "./prompt-hooks.ts";
 export {
   formatSubagentRoleSection,
+  formatSubagentGoalSection,
   mergePromptIncludes,
   normalizePromptIncludes,
   buildSubagentOptInSections,

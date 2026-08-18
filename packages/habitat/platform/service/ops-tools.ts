@@ -234,6 +234,7 @@ export function registerOpsTools(toolSets: ToolSetRegistry): void {
               section: { type: "string", description: "Runtime config section name" },
               patch: {
                 type: "object",
+                additionalProperties: true,
                 description: "Partial section object to deep-merge",
               },
               confirm: {

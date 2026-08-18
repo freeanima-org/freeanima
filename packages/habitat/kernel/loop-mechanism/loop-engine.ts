@@ -23,6 +23,7 @@ import {
   getToolRegistry,
   isExecutableTool,
   setToolProgressReporter,
+  clearToolProgressReporterIf,
   type ToolSetRegistry,
 } from "@freeanima/habitat/core/tool";
 import { REPAIR_REASON_INTERRUPT } from "@freeanima/habitat/core/llm";
@@ -326,31 +327,40 @@ async function* runToolHandlerWithProgress(
       (value) => ({ ok: true as const, value }),
       (error: unknown) => ({ ok: false as const, error }),
     );
+    let settled: { ok: true; value: string } | { ok: false; error: unknown } | undefined;
+    void pending.then((result) => {
+      settled = result;
+      const w = wake;
+      wake = null;
+      w?.();
+    });
     while (true) {
-      const waitProgress = new Promise<void>((resolve) => {
-        if (queue.length > 0) {
-          resolve();
-          return;
-        }
-        wake = resolve;
-      });
-      const raced = await Promise.race([
-        pending.then((r) => ({ tag: "done" as const, r })),
-        waitProgress.then(() => ({ tag: "progress" as const })),
-      ]);
+      if (settled && queue.length === 0) {
+        if (!settled.ok) throw settled.error;
+        return settled.value;
+      }
+      if (queue.length === 0 && !settled) {
+        await new Promise<void>((resolve) => {
+          if (queue.length > 0 || settled) {
+            resolve();
+            return;
+          }
+          wake = resolve;
+        });
+      }
       while (queue.length > 0) {
         const content = queue.shift();
         if (content != null) {
           yield { event: "tool_progress", data: { name: fnName, content } };
         }
       }
-      if (raced.tag === "done") {
-        if (!raced.r.ok) throw raced.r.error;
-        return raced.r.value;
+      if (settled) {
+        if (!settled.ok) throw settled.error;
+        return settled.value;
       }
     }
   } finally {
-    setToolProgressReporter(undefined);
+    clearToolProgressReporterIf(report);
   }
 }
 

@@ -37,6 +37,10 @@ export const PROMPT_XML_TAGS = {
   autoLlmTaskParams: "auto_llm_task_params",
   relatedMemories: "related_memories",
   sourceData: "source_data",
+  /** 子代理角色（具名 content / 临时 instructions + opt-in） */
+  subagentRole: "subagent_role",
+  /** 子代理本次目标（goal + context） */
+  subagentGoal: "subagent_goal",
   /** Reflect 巩固：本批语义记忆清单 */
   semanticMemories: "semantic_memories",
 } as const;

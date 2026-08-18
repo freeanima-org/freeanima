@@ -36,17 +36,26 @@ export function mergePromptIncludes(
   return out;
 }
 
-/** 档案 / 临时指令 → 子 run 角色段（不含旁路） */
+/** 档案 / 临时指令 → 子 run 角色段（不含旁路；不含本次 goal） */
 export function formatSubagentRoleSection(profile: ResolvedSubagentProfile): string {
   const role =
     profile.content.trim() ||
-    (profile.kind === "ephemeral"
-      ? "You are an ephemeral subagent for a one-shot task."
-      : `You are subagent "${profile.title}" (${profile.slug}).`);
+    (profile.kind === "ephemeral" ? "" : `You are subagent "${profile.title}" (${profile.slug}).`);
+  return [role, profile.summary.trim() ? `Description: ${profile.summary.trim()}` : ""]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/** 本次任务目标 + 可选上下文（与角色分条） */
+export function formatSubagentGoalSection(input: {
+  slug: string;
+  goal: string;
+  context?: string;
+}): string {
   return [
-    role,
-    profile.summary.trim() ? `Description: ${profile.summary.trim()}` : "",
-    "Complete the user task. Return a concise final answer.",
+    `子任务（${input.slug}）`,
+    input.goal.trim(),
+    input.context?.trim() ? `\n上下文\n${input.context.trim()}` : "",
   ]
     .filter(Boolean)
     .join("\n");

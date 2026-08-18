@@ -93,6 +93,13 @@ export function setToolProgressReporter(reporter: ToolProgressReporter | undefin
   else delete store.onToolProgress;
 }
 
+/** 仅当当前 store 上的 reporter 就是该函数时才清除（避免嵌套 AutoLlm 误清父对话 sink）。 */
+export function clearToolProgressReporterIf(reporter: ToolProgressReporter): void {
+  const store = storage.getStore();
+  if (!store) return;
+  if (store.onToolProgress === reporter) delete store.onToolProgress;
+}
+
 /** Report partial tool result JSON to the parent conversation stream (no-op if unset). */
 export function reportToolProgress(content: string): void {
   storage.getStore()?.onToolProgress?.(content);

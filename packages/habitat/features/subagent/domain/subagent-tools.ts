@@ -41,6 +41,68 @@ const WORLD_ID_OPTIONAL = {
   },
 } as const;
 
+const SUBAGENT_RUN_TASK_PROPERTIES = {
+  goal: { type: "string", description: "Task goal for this child run" },
+  title: {
+    type: "string",
+    description: "Short human-readable AutoLlm run name for Habitat (prefer filling every call)",
+  },
+  slug: { type: "string", description: "Named profile slug" },
+  id: { type: "integer", description: "Named profile entity id" },
+  instructions: {
+    type: "string",
+    description: "Ephemeral role (required when slug/id omitted)",
+  },
+  allowed_tools: {
+    type: "array",
+    items: { type: "string" },
+    description:
+      "Ephemeral tool ceiling (@ToolSet or names). Required when slug/id omitted; ignored for named (cannot enlarge profile allow)",
+  },
+  context: { type: "string" },
+  skills: { type: "array", items: { type: "string" } },
+  max_loop_iterations: { type: "integer" },
+  temperature_tier: {
+    type: "string",
+    enum: [...SUBAGENT_TEMPERATURE_TIERS],
+    description:
+      "Sampling tier override: focused | balanced | creative (run > profile > config > balanced)",
+  },
+  denied_tools: {
+    type: "array",
+    items: { type: "string" },
+    description: "Extra deny (narrow only)",
+  },
+  prompt_includes: {
+    type: "array",
+    items: { type: "string", enum: ["self", "world", "time"] },
+    description: "Opt-in side sections for child system prompt (union with profile)",
+  },
+} as const;
+
+const SUBAGENT_RUN_SUGAR_KEYS = [
+  "goal",
+  "slug",
+  "id",
+  "title",
+  "instructions",
+  "allowed_tools",
+  "context",
+  "skills",
+  "max_loop_iterations",
+  "temperature_tier",
+  "denied_tools",
+  "prompt_includes",
+] as const;
+
+/** 非空 tasks[] 时禁止顶层糖字段；单任务必须用 goal。 */
+export function rejectTasksMixedWithSugar(args: Record<string, unknown>): string | null {
+  if (!Array.isArray(args.tasks) || args.tasks.length === 0) return null;
+  const extra = SUBAGENT_RUN_SUGAR_KEYS.filter((key) => args[key] != null);
+  if (extra.length === 0) return null;
+  return `tasks 与单任务字段不能同时出现（多余: ${extra.join("、")}）。单任务用 goal，并行才用 tasks。`;
+}
+
 function parseSubjectKind(raw: unknown): SubjectKind | undefined {
   if (raw === "user" || raw === "agent") return raw;
   return undefined;
@@ -367,58 +429,29 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
         {
           name: "subagent_run",
           description:
-            "Run subagent(s); returns when finished. Named: pass slug|id (tools from profile). Ephemeral: omit slug/id, pass instructions + allowed_tools (hard ceiling; empty array = no tools). Always set title for audit UI. Optional prompt_includes: self|world|time (opt-in; default none). No toolset_load. While running, child tool steps stream to the parent Chat tool strip.",
+            "Run subagent(s); returns when finished. Named: pass slug|id (tools from profile). Ephemeral: omit slug/id, pass instructions (role) + allowed_tools (hard ceiling; empty array = no tools). Single task uses goal — do not wrap in tasks. Parallel only via tasks[]. Always set title for audit UI. Optional prompt_includes: self|world|time (opt-in; default none). No toolset_load. While running, child tool steps stream to the parent Chat tool strip.",
           parameters: {
             type: "object",
             properties: {
               ...WORLD_ID_OPTIONAL,
-              goal: { type: "string", description: "Single-task sugar when tasks omitted" },
-              title: {
-                type: "string",
-                description:
-                  "Short human-readable AutoLlm run name for Habitat (prefer filling every call)",
-              },
-              slug: { type: "string", description: "Named profile slug" },
-              id: { type: "integer", description: "Named profile entity id" },
-              instructions: {
-                type: "string",
-                description: "Ephemeral role/system instructions (required when slug/id omitted)",
-              },
-              allowed_tools: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "Ephemeral tool ceiling (@ToolSet or names). Required when slug/id omitted; ignored for named (cannot enlarge profile allow)",
-              },
-              context: { type: "string" },
-              skills: { type: "array", items: { type: "string" } },
-              max_loop_iterations: { type: "integer" },
-              temperature_tier: {
-                type: "string",
-                enum: [...SUBAGENT_TEMPERATURE_TIERS],
-                description:
-                  "Sampling tier override: focused | balanced | creative (run > profile > config > balanced)",
-              },
-              denied_tools: {
-                type: "array",
-                items: { type: "string" },
-                description: "Extra deny (narrow only)",
-              },
-              prompt_includes: {
-                type: "array",
-                items: { type: "string", enum: ["self", "world", "time"] },
-                description: "Opt-in side sections for child system prompt (union with profile)",
-              },
+              ...SUBAGENT_RUN_TASK_PROPERTIES,
               tasks: {
                 type: "array",
-                items: { type: "object" },
+                items: {
+                  type: "object",
+                  properties: SUBAGENT_RUN_TASK_PROPERTIES,
+                  required: ["goal"],
+                },
                 description:
-                  "Parallel tasks; each is named (slug|id) or ephemeral (instructions+allowed_tools)",
+                  "Parallel tasks only (mutually exclusive with top-level goal/slug/instructions). Each is named (slug|id) or ephemeral (instructions+allowed_tools)",
               },
             },
             required: ["subject_kind"],
           },
           handler: async (args) => {
+            const mixed = rejectTasksMixedWithSugar(args);
+            if (mixed) return toolError(mixed);
+
             const worldId = await resolveWorld({ args });
             if (typeof worldId === "string") return worldId;
 

@@ -36,6 +36,8 @@ describe("formatSubagentCatalogContent", () => {
     expect(text).toContain("prefer a **Subagent**");
     expect(text).toContain("Named in-process subagent profiles");
     expect(text).toContain("subagent_run");
+    expect(text).toContain("单任务用 `goal`");
+    expect(text).toContain("临时必须 `instructions`");
     expect(text).toContain("- **explorer**: Read-only explore");
     expect(text).toContain("- **research**: Structured research");
     expect(text.indexOf("prefer a **Subagent**")).toBeLessThan(text.indexOf("- **explorer**"));

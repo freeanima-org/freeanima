@@ -56,6 +56,7 @@ export {
 export {
   runWithToolContext,
   setToolProgressReporter,
+  clearToolProgressReporterIf,
   reportToolProgress,
   getToolCallerAuth,
   resolveToolCallerSubjectId,

@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import type { ResolvedSubagentProfile } from "@freeanima/features/subagent/domain/types.ts";
 
-import { resolveTemperatureTier } from "./subagent-runner.ts";
+import { resolveTemperatureTier, SUBAGENT_TASK_SPEC } from "./subagent-runner.ts";
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
 
 function profile(partial: Partial<ResolvedSubagentProfile> = {}): ResolvedSubagentProfile {
@@ -59,5 +59,13 @@ describe("resolveTemperatureTier", () => {
 
   it("uses config when profile unset", () => {
     expect(resolveTemperatureTier(depsWithTier("creative"), profile())).toBe("creative");
+  });
+});
+
+describe("SUBAGENT_TASK_SPEC", () => {
+  it("asks for a full reply to the parent, not a 20-char summary", () => {
+    expect(SUBAGENT_TASK_SPEC).toContain("完整答复");
+    expect(SUBAGENT_TASK_SPEC).not.toContain("约 20 字");
+    expect(SUBAGENT_TASK_SPEC).toContain("{{slug}}");
   });
 });
