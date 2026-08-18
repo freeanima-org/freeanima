@@ -66,3 +66,7 @@ title: 笔记本
 
 - 列表：搜索 + 标签过滤 + 新建
 - 详情：标题、标签、多文本块；块为 Markdown 源码编辑 + 预览（`renderMarkdownHtml`）；标题与正文均自动保存（防抖）
+
+## 离线
+
+与日记同级 **CRUD outbox**：读走 `withOfflineCache`（`note.list` 空 blocks 不覆盖本地已缓存块）；写走 `preferOnlineWrite`（create / patch / delete / blockCreate / blockPatch / blockDelete）。弱网连续传输失败后壳层进入 **localPrefer**，立刻用本地快照与写队列，不再空等 RPC 超时。详见 [离线平台](../aspects/offline-platform.md)。

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { FileText, Plus, Search, Trash2 } from "lucide-react";
 import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { Button, Input, Spinner, Textarea } from "@freeanima/ui-kit";
 import { EmptyState, StatusAlert, PullToRefresh } from "@freeanima/ui-kit/composite";
@@ -26,6 +27,7 @@ import {
   searchNotes,
   updateNote,
   updateNoteBlock,
+  registerNoteOfflineModule,
   type NoteRow,
   type NoteTextBlock,
 } from "./lib/api.ts";
@@ -36,7 +38,7 @@ function readUrlNoteId(): number | null {
   const raw = new URLSearchParams(window.location.search).get("id");
   if (!raw) return null;
   const n = Number(raw);
-  return Number.isInteger(n) && n > 0 ? n : null;
+  return Number.isInteger(n) && n !== 0 ? n : null;
 }
 
 function useUrlNoteId(): [number | null, (id: number | null) => void] {
@@ -251,6 +253,57 @@ export function NoteApp(): JSX.Element {
   titleDraftRef.current = titleDraft;
 
   const titleById = useMemo(() => new Map(tagPool.map((t) => [t.id, t.title])), [tagPool]);
+
+  useEffect(() => {
+    registerNoteOfflineModule();
+  }, []);
+
+  useEffect(() => {
+    return subscribeIdMappings((event) => {
+      if (event.moduleId !== "note") return;
+      const { tempId, serverId } = event;
+      setItems((prev) => {
+        let changed = false;
+        const next = prev.map((row) => {
+          if (row.id === tempId) {
+            changed = true;
+            return {
+              ...row,
+              id: serverId,
+              blocks: row.blocks.map((b) => ({ ...b, parent_id: serverId })),
+            };
+          }
+          const blocks = row.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b));
+          if (blocks.some((b, i) => b.id !== row.blocks[i]?.id)) {
+            changed = true;
+            return { ...row, blocks };
+          }
+          return row;
+        });
+        return changed ? next : prev;
+      });
+      if (selectedId === tempId) setSelectedId(serverId);
+      setDetail((prev) => {
+        if (!prev) return prev;
+        if (prev.id === tempId) {
+          return {
+            ...prev,
+            id: serverId,
+            blocks: prev.blocks.map((b) =>
+              b.id === tempId
+                ? { ...b, id: serverId, parent_id: serverId }
+                : { ...b, parent_id: serverId },
+            ),
+          };
+        }
+        if (!prev.blocks.some((b) => b.id === tempId)) return prev;
+        return {
+          ...prev,
+          blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
+        };
+      });
+    });
+  }, [selectedId, setSelectedId]);
 
   const loadList = useCallback(async () => {
     setError("");

@@ -20,6 +20,7 @@ import {
   subscribeOfflineSyncTriggers,
 } from "@freeanima/client/portal-sdk/offline-sync";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
+import { subscribeLocalPrefer } from "@freeanima/client/portal-sdk/local-prefer";
 import { reconnectHabitat, useHabitatConnection } from "@freeanima/client/portal-sdk/react.tsx";
 import type { StreamFlushContext } from "@freeanima/client/portal-sdk/offline-module-types";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
@@ -66,6 +67,8 @@ function moduleLabel(moduleId: OfflineModuleId): string {
       return "项目";
     case "pomodoro":
       return "番茄钟";
+    case "note":
+      return "笔记";
     default:
       return moduleId;
   }
@@ -130,6 +133,12 @@ export function OfflineSyncBootstrap(): null {
       void runFlush();
     };
     return subscribeOfflineSyncTriggers(flush);
+  }, [runFlush]);
+
+  useEffect(() => {
+    return subscribeLocalPrefer((active) => {
+      if (!active) void runFlush();
+    });
   }, [runFlush]);
 
   useEffect(() => {

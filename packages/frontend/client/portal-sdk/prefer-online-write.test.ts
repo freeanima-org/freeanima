@@ -1,4 +1,6 @@
-import { afterAll, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
+
+import { resetLocalPreferForTests } from "./local-prefer.ts";
 
 const realGate = await import("./habitat-fetch-gate.ts");
 const gateOriginal = {
@@ -34,6 +36,11 @@ describe("isRetriableOfflineWriteError", () => {
 });
 
 describe("preferOnlineWrite", () => {
+  beforeEach(() => {
+    resetLocalPreferForTests();
+    hubAvailable = true;
+    networkOnline = true;
+  });
   it("Habitat 可用时走 online", async () => {
     hubAvailable = true;
     networkOnline = true;

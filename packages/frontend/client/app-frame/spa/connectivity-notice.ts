@@ -4,12 +4,13 @@ export type ConnectivityNoticeVariant = "info" | "warning";
 
 export type ConnectivityNotice = {
   variant: ConnectivityNoticeVariant;
-  kind: "offline" | "habitat-connecting" | "habitat-disconnected";
+  kind: "offline" | "local-prefer" | "habitat-connecting" | "habitat-disconnected";
 };
 
 export function resolveConnectivityNotice(input: {
   networkOnline: boolean;
   habitatConnection: HabitatConnectionState;
+  localPrefer?: boolean;
 }): ConnectivityNotice | null {
   if (!input.networkOnline) {
     return { variant: "warning", kind: "offline" };
@@ -19,6 +20,9 @@ export function resolveConnectivityNotice(input: {
   }
   if (input.habitatConnection === "disconnected") {
     return { variant: "warning", kind: "habitat-disconnected" };
+  }
+  if (input.localPrefer) {
+    return { variant: "warning", kind: "local-prefer" };
   }
   return null;
 }

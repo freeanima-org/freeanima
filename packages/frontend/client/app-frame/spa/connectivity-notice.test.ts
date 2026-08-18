@@ -26,6 +26,26 @@ describe("resolveConnectivityNotice", () => {
       resolveConnectivityNotice({ networkOnline: true, habitatConnection: "disconnected" }),
     ).toEqual({ variant: "warning", kind: "habitat-disconnected" });
   });
+
+  test("弱网本地优先（Habitat 仍 connected）", () => {
+    expect(
+      resolveConnectivityNotice({
+        networkOnline: true,
+        habitatConnection: "connected",
+        localPrefer: true,
+      }),
+    ).toEqual({ variant: "warning", kind: "local-prefer" });
+  });
+
+  test("真断网优先于本地优先", () => {
+    expect(
+      resolveConnectivityNotice({
+        networkOnline: false,
+        habitatConnection: "connected",
+        localPrefer: true,
+      }),
+    ).toEqual({ variant: "warning", kind: "offline" });
+  });
 });
 
 describe("shellWritesDisabled", () => {
