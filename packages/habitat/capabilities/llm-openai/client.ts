@@ -5,6 +5,7 @@ import {
   type OpenAiCompatibleContext,
 } from "./context.ts";
 import type { BackendContext } from "@freeanima/habitat/core/provider";
+import { sdkFetchWithRetryGuard } from "./sdk-retry-guard.ts";
 
 export function createOpenAiClient(context: BackendContext): OpenAI {
   const cfg = parseOpenAiCompatibleContext(context);
@@ -17,5 +18,7 @@ export function createOpenAiClientFromParsed(context: OpenAiCompatibleContext): 
     baseURL: context.baseUrl,
     /** SDK 兜底 = 整体超时；首字节 / idle 由 request-timeouts 应用层控制 */
     timeout: context.timeoutMs ?? DEFAULT_OVERALL_TIMEOUT_MS,
+    /** 配额耗尽的超长 Retry-After 禁止 SDK 睡眠重试 */
+    fetch: sdkFetchWithRetryGuard,
   });
 }

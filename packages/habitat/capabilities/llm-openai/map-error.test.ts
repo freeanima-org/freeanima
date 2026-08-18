@@ -19,6 +19,28 @@ describe("mapOpenAiCompatibleError", () => {
     expect(err.providerId).toBe("main");
   });
 
+  it("maps quota-exhausted 429 to non-retryable rate_limited", () => {
+    const err = mapOpenAiCompatibleError(
+      new APIError(
+        429,
+        {
+          error: {
+            message:
+              "Your token-plan 1-week quota has been exhausted. The quota will reset at 08-22 14:23:00 UTC.",
+            type: "insufficient_quota",
+            code: "insufficient_quota",
+          },
+        },
+        "Your token-plan 1-week quota has been exhausted. The quota will reset at 08-22 14:23:00 UTC.",
+        new Headers({ "retry-after": "390623" }),
+      ),
+      { providerId: "alibaba token plan" },
+    );
+    expect(err.code).toBe("rate_limited");
+    expect(err.retryable).toBe(false);
+    expect(err.providerId).toBe("alibaba token plan");
+  });
+
   it("recognizes timeout and Abort", () => {
     const timeout = mapOpenAiCompatibleError(new Error("request timed out"));
     expect(timeout.code).toBe("timeout");

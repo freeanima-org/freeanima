@@ -34,6 +34,7 @@ import {
 } from "../request-timeouts.ts";
 import { normalizeUsage } from "../usage.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { isQuotaExhaustedText, sdkFetchWithRetryGuard } from "../sdk-retry-guard.ts";
 
 export const ANTHROPIC_MESSAGES_FORMAT_ID = LLM_FORMAT_ANTHROPIC_MESSAGES;
 
@@ -57,6 +58,7 @@ function createAnthropicClient(context: OpenAiCompatibleContext): Anthropic {
     apiKey: context.apiKey,
     baseURL: context.baseUrl,
     timeout: context.timeoutMs,
+    fetch: sdkFetchWithRetryGuard,
   });
 }
 
@@ -189,6 +191,17 @@ function mapAnthropicError(err: unknown, meta?: { providerId?: string }): Provid
   if (err && typeof err === "object" && "status" in err) {
     const status = (err as { status?: number }).status ?? 0;
     const message = err instanceof Error ? err.message : coerceString(err);
+    if (status === 429 && isQuotaExhaustedText(message)) {
+      return new ProviderErrorClass(
+        message,
+        "rate_limited",
+        false,
+        omitUndefined({
+          providerId: meta?.providerId,
+          cause: err instanceof Error ? err : undefined,
+        }),
+      );
+    }
     return providerErrorFromHttpStatus(
       status,
       message,
