@@ -425,8 +425,10 @@ export async function* runStream(
           model,
           runtime: opts.llm,
           requestParams: opts.requestParams,
+          signal: opts.signal,
         }),
       )) {
+        checkAborted(opts.signal);
         if (chunk.type === "content") {
           buffer.push(chunk.content);
           yield { event: "token", data: { content: chunk.content } };
@@ -439,8 +441,9 @@ export async function* runStream(
         }
       }
     } catch (e) {
-      if (e instanceof EngineLoopInterrupted) {
-        yield { event: "interrupted", data: { reason: e.message } };
+      if (e instanceof EngineLoopInterrupted || opts.signal?.aborted) {
+        const reason = e instanceof EngineLoopInterrupted ? e.message : REPAIR_REASON_INTERRUPT;
+        yield { event: "interrupted", data: { reason } };
         yield { event: "done", data: { reason: "interrupted" } };
         return;
       }
@@ -533,6 +536,7 @@ export async function* runStream(
 
     try {
       for (const tc of cleanedCalls) {
+        // 工具 handler 内部不看 signal；interrupt 要等当前 handler 返回
         checkShouldStop(opts);
         const fnName = (tc.function?.name ?? "").trim() || "unknown";
         const argsResult = parseToolArgs(tc.function.arguments);

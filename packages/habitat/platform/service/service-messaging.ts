@@ -724,7 +724,7 @@ function runGoalStartStream(
 }
 
 export function interruptSessionStream(msgDeps: MessagingDeps, conversationId: string): void {
-  msgDeps.runControl.preemptSessionEngine(conversationId);
+  msgDeps.runControl.interruptSessionEngine(conversationId);
 }
 
 function runTurnStream(

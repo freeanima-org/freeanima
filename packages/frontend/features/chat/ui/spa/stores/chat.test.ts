@@ -9,6 +9,7 @@ type StreamCallbacks = {
 
 /** idle：仅挂订阅；error_then_done：模拟 bridge 先 error 再 done */
 let streamScenario: "idle" | "error_then_done" = "idle";
+let interruptHang: Promise<void> | null = null;
 
 const apiOriginal = await import("@freeanima/features/chat/ui/spa/lib/api.ts");
 const habitatRpcOriginal = await import("@freeanima/shared/habitat-rpc/bundled-browser.ts");
@@ -64,7 +65,9 @@ mock.module("@freeanima/features/chat/ui/spa/lib/api.ts", () => ({
       },
     };
   },
-  interruptMessageStream: async () => {},
+  interruptMessageStream: async () => {
+    if (interruptHang) await interruptHang;
+  },
   lookupActiveStream: async () =>
     streamScenario === "error_then_done" ? { stream_id: "stream-resume", status: "active" } : {},
 }));
@@ -86,6 +89,7 @@ const sessionStore = new Map<string, string>();
 describe("useChatStore queue", () => {
   beforeEach(() => {
     streamScenario = "idle";
+    interruptHang = null;
     sessionStore.clear();
     Object.defineProperty(globalThis, "sessionStorage", {
       configurable: true,
@@ -103,7 +107,9 @@ describe("useChatStore queue", () => {
       queue: [],
       streaming: false,
       recovering: false,
+      recoveringConversationId: null,
       streamingConversationId: null,
+      userStoppedIds: [],
       streamText: "",
     });
   });
@@ -111,6 +117,7 @@ describe("useChatStore queue", () => {
   afterEach(() => {
     sessionStore.clear();
     streamScenario = "idle";
+    interruptHang = null;
   });
 
   test("enqueue 与 peekQueue 按 conversation 隔离", () => {
@@ -200,6 +207,54 @@ describe("useChatStore queue", () => {
       },
     });
     expect(onDoneCalled).toBe(true);
+    expect(useChatStore.getState().streaming).toBe(false);
+  });
+
+  test("stop() 立即清 streaming，即使 interrupt 挂起", async () => {
+    let release = () => {};
+    interruptHang = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const sendPromise = useChatStore.getState().send("conv-1", "hi", {
+      recoverDisplay: async () => false,
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(useChatStore.getState().streaming).toBe(true);
+
+    const stopPromise = useChatStore.getState().stop("conv-1");
+    expect(useChatStore.getState().streaming).toBe(false);
+    expect(useChatStore.getState().wasUserStopped("conv-1")).toBe(true);
+
+    await Promise.race([
+      stopPromise,
+      new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("stop() hung on interrupt")), 200);
+      }),
+    ]);
+
+    release();
+    await sendPromise;
+  });
+
+  test("stop() 后 resumeIfActive 拒绝续接", async () => {
+    streamScenario = "error_then_done";
+    await useChatStore.getState().stop("conv-1");
+    const resumed = await useChatStore.getState().resumeIfActive("conv-1", {
+      recoverDisplay: async () => false,
+    });
+    expect(resumed).toBe(false);
+    expect(useChatStore.getState().streaming).toBe(false);
+  });
+
+  test("send() 后清除 userStopped 并可以再跑", async () => {
+    await useChatStore.getState().stop("conv-1");
+    expect(useChatStore.getState().wasUserStopped("conv-1")).toBe(true);
+    streamScenario = "error_then_done";
+    await useChatStore.getState().send("conv-1", "again", {
+      recoverDisplay: async () => false,
+    });
+    expect(useChatStore.getState().wasUserStopped("conv-1")).toBe(false);
     expect(useChatStore.getState().streaming).toBe(false);
   });
 });

@@ -41,6 +41,7 @@ export type ProfileBindOptions = {
 export type ProfileChatOptions = ProfileBindOptions & {
   systemPrompt?: string;
   tools?: OpenAiToolSchema[];
+  signal?: AbortSignal;
 };
 
 export function hop(
@@ -223,7 +224,7 @@ export class LlmProfile {
     try {
       for await (const event of p
         .formatForModel(this._model)
-        .chatStream(this._model, request, p.context)) {
+        .chatStream(this._model, request, p.context, opts?.signal)) {
         yield event;
       }
       p.markHealthy();

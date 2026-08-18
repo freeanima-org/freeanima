@@ -101,9 +101,10 @@ export class OpenAiCompatibleBackend extends LlmBackend {
     model: string,
     request: ChatRequest,
     context: BackendContext,
+    signal?: AbortSignal,
   ): AsyncIterable<ChatStreamEvent> {
     try {
-      yield* runOpenAiChatStream(model, request, context);
+      yield* runOpenAiChatStream(model, request, context, signal);
     } catch (err) {
       throw this.mapError(err, context);
     }

@@ -185,6 +185,7 @@ export async function* runOpenAiResponsesStream(
   model: string,
   request: ChatRequest,
   context: BackendContext,
+  signal?: AbortSignal,
 ): AsyncGenerator<ChatStreamEvent> {
   const parsed = parseOpenAiCompatibleContext(context);
   const { overallMs, firstByteMs, idleMs } = resolveChatTimeouts(parsed);
@@ -192,6 +193,7 @@ export async function* runOpenAiResponsesStream(
     overallMs,
     firstByteMs,
     idleMs,
+    ...(signal ? { external: signal } : {}),
   });
   const client = createOpenAiClient(context);
   let modelName = model;
@@ -285,7 +287,8 @@ export class OpenAiResponsesBackend extends LlmBackend {
     model: string,
     request: ChatRequest,
     context: BackendContext,
+    signal?: AbortSignal,
   ): AsyncIterable<ChatStreamEvent> {
-    return runOpenAiResponsesStream(model, request, context);
+    return runOpenAiResponsesStream(model, request, context, signal);
   }
 }

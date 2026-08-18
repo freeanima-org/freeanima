@@ -33,6 +33,7 @@ import { formatConversationIdDateTime } from "@freeanima/features/chat/ui/spa/li
 import {
   displayAwaitingReply,
   resolveStalledAfterLookup,
+  shouldShowAwaitingPlaceholder,
 } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
 import {
   readPersistedActiveStream,
@@ -212,6 +213,8 @@ export function ChatApp() {
   const streamingConversationId = useChatStore((s) => s.streamingConversationId);
   const streamText = useChatStore((s) => s.streamText);
   const recovering = useChatStore((s) => s.recovering);
+  const recoveringConversationId = useChatStore((s) => s.recoveringConversationId);
+  const userStoppedIds = useChatStore((s) => s.userStoppedIds);
   const send = useChatStore((s) => s.send);
   const continueTurn = useChatStore((s) => s.continueTurn);
   const resumeIfActive = useChatStore((s) => s.resumeIfActive);
@@ -365,6 +368,8 @@ export function ChatApp() {
   );
 
   const streamVisible = streaming && streamingConversationId === currentId;
+  const recoveringHere = recovering && recoveringConversationId === currentId;
+  const userStoppedHere = Boolean(currentId && userStoppedIds.includes(currentId));
 
   const { stopCurrentKeepEnabled, isStreamSpeaking } = useStreamAutoSpeak({
     enabled: autoSpeak && speechSupported,
@@ -435,23 +440,26 @@ export function ChatApp() {
     return [...synced, ...pendingOutbox];
   }, [currentId, display, outboxEntries]);
 
-  /** 等待助手回复：流式中 / 恢复中；stalled 时不占位（改出【继续】） */
-  const awaitingAssistant =
-    Boolean(currentId) &&
-    !stalledReply &&
-    (streamVisible ||
-      recovering ||
-      (!messagesLoading &&
-        displayAwaitingReply(mergedDisplay) &&
-        habitatConnection === "connected"));
+  /** 等待助手回复：流式中 / 恢复中；stalled 或用户停止时不占位（改出【继续】） */
+  const awaitingAssistant = shouldShowAwaitingPlaceholder({
+    currentId,
+    stalledReply,
+    streamVisible,
+    recovering,
+    recoveringConversationId,
+    messagesLoading,
+    displayAwaiting: displayAwaitingReply(mergedDisplay),
+    habitatConnected: habitatConnection === "connected",
+    userStopped: userStoppedHere,
+  });
 
   const showContinueButton =
     Boolean(currentId) &&
     !streaming &&
-    !recovering &&
+    !recoveringHere &&
     !writesDisabled &&
     canSendOnline &&
-    (stalledReply || offerContinue);
+    (stalledReply || offerContinue || userStoppedHere);
 
   const pendingOutboxKey = useMemo(
     () =>
@@ -670,9 +678,7 @@ export function ChatApp() {
     if (!awaiting && !persisted) {
       pendingRecoveryKeyRef.current = null;
       setStalledReply(false);
-      if (!useChatStore.getState().streaming) {
-        useChatStore.setState({ recovering: false });
-      }
+      useChatStore.getState().setRecovering(currentId, false);
       return () => {};
     }
 
@@ -682,18 +688,18 @@ export function ChatApp() {
 
     const baseline = display.length;
     let cancelled = false;
+    const originId = currentId;
 
-    // 核实期用 recovering 占位，勿乐观 stalled（本地 display 可能滞后于已完成的后端）
-    if (awaiting) {
-      setStalledReply(false);
-      useChatStore.setState({ recovering: true });
-    }
+    const clearRecoveringIfOrigin = () => {
+      const s = useChatStore.getState();
+      if (s.streamingConversationId === originId) return;
+      s.setRecovering(originId, false);
+    };
 
     const sub = subscribeConversationUpdates(currentId, () => {
       void refreshMessages(currentId, baseline);
     });
 
-    const originId = currentId;
     const isViewingOrigin = () => useConversationsStore.getState().currentId === originId;
     const scrollResume = () => {
       scrollApiRef.current?.scrollDown({ force: true });
@@ -715,10 +721,22 @@ export function ChatApp() {
           hasActiveStream: false,
         }),
       );
-      if (!useChatStore.getState().streaming) {
-        useChatStore.setState({ recovering: false });
-      }
+      clearRecoveringIfOrigin();
     };
+
+    if (useChatStore.getState().wasUserStopped(originId)) {
+      void applyStalledFromSyncedDisplay();
+      return () => {
+        cancelled = true;
+        sub.unsubscribe();
+      };
+    }
+
+    // 核实期用 recovering 占位，勿乐观 stalled（本地 display 可能滞后于已完成的后端）
+    if (awaiting) {
+      setStalledReply(false);
+      useChatStore.getState().setRecovering(originId, true);
+    }
 
     void (async () => {
       let looked: { stream_id?: string; status?: string } = {};
@@ -737,7 +755,7 @@ export function ChatApp() {
       }
 
       setStalledReply(false);
-      useChatStore.setState({ recovering: true });
+      useChatStore.getState().setRecovering(originId, true);
       const resumed = await resumeIfActive(originId, {
         recoverDisplay: (id) => refreshMessages(id, baseline),
         onToken: () => {
@@ -789,14 +807,13 @@ export function ChatApp() {
       await applyStalledFromSyncedDisplay();
     })().finally(() => {
       if (cancelled) return;
-      if (!useChatStore.getState().streaming) {
-        useChatStore.setState({ recovering: false });
-      }
+      clearRecoveringIfOrigin();
     });
 
     return () => {
       cancelled = true;
       sub.unsubscribe();
+      clearRecoveringIfOrigin();
     };
   }, [
     currentId,
@@ -1687,7 +1704,7 @@ export function ChatApp() {
               streamText={streamText}
               streaming={awaitingAssistant}
               streamVisible={streamVisible}
-              recovering={recovering}
+              recovering={recoveringHere}
               loadingOlder={loadingOlder}
               hasMoreBefore={hasMoreBefore}
               messagesLoading={messagesLoading}

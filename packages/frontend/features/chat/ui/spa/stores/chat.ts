@@ -48,7 +48,10 @@ export type QueuedMessage = {
 type ChatState = {
   streaming: boolean;
   recovering: boolean;
+  recoveringConversationId: string | null;
   streamingConversationId: string | null;
+  /** 用户点过停止的会话；禁止 lookup/resume 把流接回来，直到再次发送或【继续】 */
+  userStoppedIds: string[];
   streamText: string;
   queue: QueuedMessage[];
   renderMd: (text: string) => string;
@@ -56,6 +59,9 @@ type ChatState = {
   takeQueued: (id: string) => QueuedMessage | null;
   removeQueued: (id: string) => void;
   peekQueue: (conversationId: string) => QueuedMessage | null;
+  wasUserStopped: (conversationId: string) => boolean;
+  clearUserStopped: (conversationId: string) => void;
+  setRecovering: (conversationId: string, active: boolean) => void;
   stop: (conversationId: string) => Promise<void>;
   send: (
     conversationId: string,
@@ -164,13 +170,39 @@ async function tryRecoverDisplay(
   }
 }
 
+function withoutId(ids: string[], id: string): string[] {
+  return ids.filter((x) => x !== id);
+}
+
 export const useChatStore = create<ChatState>((set, get) => ({
   streaming: false,
   recovering: false,
+  recoveringConversationId: null,
   streamingConversationId: null,
+  userStoppedIds: [],
   streamText: "",
   queue: [],
   renderMd,
+
+  wasUserStopped(conversationId) {
+    return get().userStoppedIds.includes(conversationId);
+  },
+
+  clearUserStopped(conversationId) {
+    set((s) => ({ userStoppedIds: withoutId(s.userStoppedIds, conversationId) }));
+  },
+
+  setRecovering(conversationId, active) {
+    if (active) {
+      set({ recovering: true, recoveringConversationId: conversationId });
+      return;
+    }
+    const cur = get();
+    if (cur.recoveringConversationId && cur.recoveringConversationId !== conversationId) {
+      return;
+    }
+    set({ recovering: false, recoveringConversationId: null });
+  },
 
   enqueue(conversationId, text) {
     const trimmed = text.trim();
@@ -210,6 +242,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({
       streaming: false,
       recovering: false,
+      recoveringConversationId: null,
       streamingConversationId: null,
       streamText: "",
     });
@@ -217,12 +250,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   async stop(conversationId) {
     clearPersistedActiveStream(conversationId);
-    try {
-      await interruptMessageStream(conversationId);
-    } catch (e) {
+    set((s) => ({
+      userStoppedIds: s.userStoppedIds.includes(conversationId)
+        ? s.userStoppedIds
+        : [...s.userStoppedIds, conversationId],
+    }));
+    get().abortStream();
+    void interruptMessageStream(conversationId).catch((e) => {
       console.error("interrupt failed:", e);
-      get().abortStream();
-    }
+    });
   },
 
   async send(conversationId, text, callbacks = {}, sendOpts = {}) {
@@ -244,8 +280,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({
       streaming: true,
       recovering: false,
+      recoveringConversationId: null,
       streamingConversationId: conversationId,
       streamText: "",
+      userStoppedIds: withoutId(get().userStoppedIds, conversationId),
     });
 
     let streamText = "";
@@ -269,7 +307,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         conversationId,
         callbacks.recoverDisplay,
         (active) => {
-          set({ recovering: active });
+          get().setRecovering(conversationId, active);
           callbacks.onRecovering?.(active);
         },
       );
@@ -417,6 +455,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set({
           streaming: false,
           recovering: false,
+          recoveringConversationId: null,
           streamingConversationId: null,
           streamText: "",
         });
@@ -438,7 +477,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         conversationId,
         callbacks.recoverDisplay,
         (active) => {
-          set({ recovering: active });
+          get().setRecovering(conversationId, active);
           callbacks.onRecovering?.(active);
         },
       );
@@ -457,6 +496,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set({
             streaming: false,
             recovering: false,
+            recoveringConversationId: null,
             streamingConversationId: null,
             streamText: "",
           });
@@ -470,6 +510,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   async resumeIfActive(conversationId, callbacks = {}) {
+    if (get().wasUserStopped(conversationId)) return false;
     if (get().streaming && get().streamingConversationId === conversationId) {
       return true;
     }
@@ -493,6 +534,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({
       streaming: true,
       recovering: true,
+      recoveringConversationId: conversationId,
       streamingConversationId: conversationId,
       streamText: "",
     });
@@ -538,7 +580,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           const onData = (ev: StreamApiEvent) => {
             if (generation !== _streamGeneration) return;
             const result = handleStreamEvent(ev, streamText, callbacks, (partial) => {
-              set({ ...partial, recovering: false });
+              set({ ...partial, recovering: false, recoveringConversationId: null });
             });
             streamText = result.streamText;
             if (result.receivedError) {
@@ -626,7 +668,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           conversationId,
           callbacks.recoverDisplay,
           (active) => {
-            set({ recovering: active });
+            get().setRecovering(conversationId, active);
             callbacks.onRecovering?.(active);
           },
         );
@@ -649,7 +691,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           conversationId,
           callbacks.recoverDisplay,
           (active) => {
-            set({ recovering: active });
+            get().setRecovering(conversationId, active);
             callbacks.onRecovering?.(active);
           },
         );
@@ -670,6 +712,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set({
             streaming: false,
             recovering: false,
+            recoveringConversationId: null,
             streamingConversationId: null,
             streamText: "",
           });
@@ -700,8 +743,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({
       streaming: true,
       recovering: false,
+      recoveringConversationId: null,
       streamingConversationId: conversationId,
       streamText: "",
+      userStoppedIds: withoutId(get().userStoppedIds, conversationId),
     });
 
     let streamText = "";
@@ -835,7 +880,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           conversationId,
           callbacks.recoverDisplay,
           (active) => {
-            set({ recovering: active });
+            get().setRecovering(conversationId, active);
             callbacks.onRecovering?.(active);
           },
         );
@@ -860,6 +905,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           set({
             streaming: false,
             recovering: false,
+            recoveringConversationId: null,
             streamingConversationId: null,
             streamText: "",
           });
