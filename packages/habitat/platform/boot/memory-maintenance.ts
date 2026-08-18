@@ -10,6 +10,8 @@ export const MAINTENANCE_STEP_IDS = {
   semanticClusterCalibrate: "semantic-cluster-calibrate",
   reflect: "reflect",
   selfLayerRefresh: "self-layer-refresh",
+  /** 簇短标题预热（LLM）；与分族校准拆开，避免挡 reflect */
+  semanticClusterTitle: "semantic-cluster-title",
   temporalSummaryDay: "temporal-summary-day",
   temporalSummaryCascade: "temporal-summary-cascade",
 } as const;
@@ -23,6 +25,7 @@ export const MAINTENANCE_STEP_LIST: readonly MaintenanceStepId[] = [
   MAINTENANCE_STEP_IDS.semanticClusterCalibrate,
   MAINTENANCE_STEP_IDS.reflect,
   MAINTENANCE_STEP_IDS.selfLayerRefresh,
+  MAINTENANCE_STEP_IDS.semanticClusterTitle,
   MAINTENANCE_STEP_IDS.temporalSummaryDay,
   MAINTENANCE_STEP_IDS.temporalSummaryCascade,
 ];

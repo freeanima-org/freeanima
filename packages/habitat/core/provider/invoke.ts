@@ -7,6 +7,8 @@ export type ChatRequest = {
   systemPrompt?: string;
   params: LlmCallParams;
   tools?: OpenAiToolSchema[];
+  /** 调用方墙钟 / 取消；backend 与自身超时 signal 合并后传给 fetch */
+  signal?: AbortSignal;
 };
 
 export type ChatCompletion = {

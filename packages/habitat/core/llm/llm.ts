@@ -29,7 +29,7 @@ export type LlmInvokeOpts = {
   requestParams?: Partial<LlmCallParams>;
   /** When omitted, uses module-level runtime from initLlmRuntime() */
   runtime?: LlmRuntime;
-  /** User / engine interrupt; forwarded to the provider HTTP stream */
+  /** 用户中断 / 墙钟取消；下传到 Profile → provider fetch */
   signal?: AbortSignal;
 };
 
@@ -59,6 +59,7 @@ export async function chat(
       systemPrompt: input.systemPrompt,
       tools: opts?.tools,
       requestParams: opts?.requestParams,
+      signal: opts?.signal,
     }),
   );
 }

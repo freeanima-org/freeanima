@@ -13,6 +13,7 @@ import {
   createLlmTimeoutController,
   extractLlmTimeoutError,
   isLlmTimeoutError,
+  mergeAbortSignals,
 } from "./request-timeouts.ts";
 import { finalizeStreamingToolCalls, mergeStreamingToolCalls } from "./stream-tools.ts";
 import { normalizeUsage } from "./usage.ts";
@@ -40,7 +41,7 @@ export async function runOpenAiChat(
   try {
     const completion = await client.chat.completions.create(
       buildChatCompletionParams(model, request),
-      { signal: timeouts.signal },
+      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
     );
     timeouts.onFirstByte();
 
@@ -113,7 +114,7 @@ export async function* runOpenAiChatStream(
   try {
     const stream = await client.chat.completions.create(
       buildStreamingChatCompletionParams(model, request),
-      { signal: timeouts.signal },
+      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
     );
 
     for await (const chunk of stream) {

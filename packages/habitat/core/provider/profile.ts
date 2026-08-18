@@ -41,6 +41,7 @@ export type ProfileBindOptions = {
 export type ProfileChatOptions = ProfileBindOptions & {
   systemPrompt?: string;
   tools?: OpenAiToolSchema[];
+  /** 用户中断 / 墙钟取消；下传到 ChatRequest → provider fetch */
   signal?: AbortSignal;
 };
 
@@ -188,6 +189,7 @@ export class LlmProfile {
       systemPrompt: opts?.systemPrompt,
       params: this._params,
       tools: opts?.tools,
+      signal: opts?.signal,
     });
   }
 

@@ -215,6 +215,48 @@ async function runSemanticClusterCalibrateStep(): Promise<MaintenanceStepResult>
   }
 }
 
+/** 簇短标题预热：fail-open，不拖垮整周期 */
+async function runSemanticClusterTitleStep(): Promise<MaintenanceStepResult> {
+  try {
+    const { listSemanticMemoryClusterStats } =
+      await import("@freeanima/habitat/core/db/pg/search/clustering-repo.ts");
+    const { warmSemanticClusterTitles } =
+      await import("@freeanima/habitat/capabilities/memory/clustering/cluster-title.ts");
+    const stats = await listSemanticMemoryClusterStats({ status: "active" });
+    const clusterIds = stats
+      .map((s) => s.cluster_id)
+      .filter((id): id is number => id != null && Number.isInteger(id) && id >= 0)
+      .toSorted((a, b) => a - b);
+    if (clusterIds.length === 0) {
+      return {
+        ok: true,
+        step_id: MAINTENANCE_STEP_IDS.semanticClusterTitle,
+        status: "skipped",
+        skipped_reason: "empty",
+        output: { attempted: 0, ok: 0 },
+      };
+    }
+    const warm = await warmSemanticClusterTitles(clusterIds);
+    return {
+      ok: true,
+      step_id: MAINTENANCE_STEP_IDS.semanticClusterTitle,
+      status: "completed",
+      output: warm,
+    };
+  } catch (err) {
+    logComponent("memory.clustering").warn("cluster title warm step failed", {
+      error: String(err),
+    });
+    return {
+      ok: true,
+      step_id: MAINTENANCE_STEP_IDS.semanticClusterTitle,
+      status: "skipped",
+      skipped_reason: String(err),
+      output: { error: String(err) },
+    };
+  }
+}
+
 async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
   const result = await runSelfLayerRefresh();
   if (result.skipped) {
@@ -361,6 +403,9 @@ export async function runMemoryMaintenanceStep(
     case MAINTENANCE_STEP_IDS.selfLayerRefresh:
       result = await runSelfLayerRefreshStep();
       break;
+    case MAINTENANCE_STEP_IDS.semanticClusterTitle:
+      result = await runSemanticClusterTitleStep();
+      break;
     case MAINTENANCE_STEP_IDS.temporalSummaryDay:
       result = await runTemporalDayStep(ctx);
       break;
@@ -477,6 +522,14 @@ export async function runNightlyMemoryMaintenance(
       steps[self.step_id] = self;
       if (!self.ok) ok = false;
     }
+
+    // 族名预热在 reflect / self 之后：失败不影响反思；列表页仍可懒生成
+    const titles = await runMemoryMaintenanceStep(MAINTENANCE_STEP_IDS.semanticClusterTitle, {
+      day,
+      trigger,
+    });
+    steps[titles.step_id] = titles;
+    if (!titles.ok) ok = false;
   }
 
   const temporalDay = await runMemoryMaintenanceStep(MAINTENANCE_STEP_IDS.temporalSummaryDay, {

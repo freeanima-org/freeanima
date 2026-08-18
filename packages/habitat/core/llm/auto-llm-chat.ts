@@ -157,6 +157,7 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
           runtime: input.runtime,
           model: input.model,
           requestParams: input.requestParams,
+          signal,
         }),
       );
     });

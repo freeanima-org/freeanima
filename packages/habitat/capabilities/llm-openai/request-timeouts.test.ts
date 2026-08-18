@@ -4,6 +4,7 @@ import {
   createLlmTimeoutController,
   extractLlmTimeoutError,
   LlmTimeoutError,
+  mergeAbortSignals,
 } from "./request-timeouts.ts";
 
 describe("createLlmTimeoutController", () => {
@@ -102,6 +103,53 @@ describe("createLlmTimeoutController", () => {
       });
       external.abort();
     });
+  });
+});
+
+describe("mergeAbortSignals", () => {
+  test("without external returns timeout signal", () => {
+    const c = createLlmTimeoutController({
+      overallMs: 5_000,
+      firstByteMs: 5_000,
+      idleMs: null,
+    });
+    expect(mergeAbortSignals(c.signal)).toBe(c.signal);
+    expect(mergeAbortSignals(c.signal, null)).toBe(c.signal);
+    c.dispose();
+  });
+
+  test("external abort aborts merged signal", () => {
+    const c = createLlmTimeoutController({
+      overallMs: 60_000,
+      firstByteMs: 60_000,
+      idleMs: null,
+    });
+    const external = new AbortController();
+    const merged = mergeAbortSignals(c.signal, external.signal);
+    expect(merged.aborted).toBe(false);
+    external.abort(new Error("wall-clock"));
+    expect(merged.aborted).toBe(true);
+    c.dispose();
+  });
+
+  test("timeout abort aborts merged signal", async () => {
+    const c = createLlmTimeoutController({
+      overallMs: 40,
+      firstByteMs: 5_000,
+      idleMs: null,
+    });
+    c.onFirstByte();
+    const external = new AbortController();
+    const merged = mergeAbortSignals(c.signal, external.signal);
+    await new Promise<void>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error("expected merged abort")), 300);
+      merged.addEventListener("abort", () => {
+        clearTimeout(t);
+        expect(merged.aborted).toBe(true);
+        resolve();
+      });
+    });
+    c.dispose();
   });
 });
 

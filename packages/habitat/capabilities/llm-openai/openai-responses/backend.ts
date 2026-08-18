@@ -18,6 +18,7 @@ import {
   createLlmTimeoutController,
   extractLlmTimeoutError,
   isLlmTimeoutError,
+  mergeAbortSignals,
 } from "../request-timeouts.ts";
 import { mapOpenAiCompatibleError } from "../map-error.ts";
 import { defaultModelInfo, defaultModelInfoEnriched } from "../catalog.ts";
@@ -157,7 +158,7 @@ export async function runOpenAiResponses(
         top_p: request.params.topP,
         ...request.params.extra,
       }),
-      { signal: timeouts.signal },
+      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
     );
     timeouts.onFirstByte();
     const latency_ms = Math.round(performance.now() - started);
@@ -212,7 +213,7 @@ export async function* runOpenAiResponsesStream(
         top_p: request.params.topP,
         ...request.params.extra,
       }),
-      { signal: timeouts.signal },
+      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
     );
 
     for await (const event of stream as AsyncIterable<{
