@@ -1,0 +1,85 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  user-select: none;
+}
+
+#root {
+  height: 100%;
+}
+
+.pomodoro-float {
+  box-sizing: border-box;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(24, 24, 27, 0.92);
+  color: #f4f4f5;
+  backdrop-filter: blur(8px);
+}
+
+.pomodoro-float-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  cursor: grab;
+}
+
+.pomodoro-float-phase {
+  font-size: 0.7rem;
+  opacity: 0.75;
+  letter-spacing: 0.02em;
+}
+
+.pomodoro-float-clock {
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.pomodoro-float-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pomodoro-float-actions button {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border-radius: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.pomodoro-float-actions button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pomodoro-float-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.pomodoro-float-empty {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}

@@ -134,6 +134,28 @@ html[data-app-ui="1"] body {
 .app-module-rail[data-expanded="false"] .app-rail-nav-label {
   max-width: 0;
   opacity: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.app-rail-nav-pomodoro-clock {
+  display: none;
+  margin-top: 0.0625rem;
+  font-size: 0.5625rem;
+  line-height: 0.625rem;
+  letter-spacing: -0.03em;
+  color: var(--muted-foreground);
+}
+
+.app-module-rail[data-expanded="false"] .app-rail-nav-item--pomodoro-active {
+  height: auto;
+  min-height: var(--app-rail-item-h);
+  padding-block: 0.2rem;
+}
+
+.app-module-rail[data-expanded="false"] .app-rail-nav-pomodoro-clock {
+  display: block;
 }
 
 .app-rail-footer {

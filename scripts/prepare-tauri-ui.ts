@@ -3,8 +3,8 @@
  * 打包前：按 target 构建 web → `packages/frontend/portal/app/tauri/src-tauri/ui/web`。
  *
  * FREEANIMA_TAURI_TARGET=desktop|mobile（默认 desktop）
- * - desktop：dist-desktop + ui/companion + ui/coding（frontendDist，非 file:// resources）+ 启动 splash
- * - mobile：dist-mobile，无 companion / coding
+ * - desktop：dist-desktop + ui/companion + ui/coding + ui/pomodoro-float（frontendDist，非 file:// resources）+ 启动 splash
+ * - mobile：dist-mobile，无 companion / coding / pomodoro-float
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -24,6 +24,7 @@ import {
 import { resolveNativeBuildMeta } from "@freeanima/portal/app/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
 import { buildCodingApp } from "@freeanima/features/coding/lib/exports/build.ts";
+import { buildPomodoroFloatApp } from "@freeanima/features/pomodoro/build-float.ts";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -37,6 +38,7 @@ const uiRoot = join(srcTauri, "ui");
 const uiWeb = join(uiRoot, "web");
 const companionUi = join(uiRoot, "companion");
 const codingUi = join(uiRoot, "coding");
+const pomodoroFloatUi = join(uiRoot, "pomodoro-float");
 const cargoTargetDir = join(srcTauri, "target");
 /** 历史 resources 占位；desktop 已迁入 frontendDist，清理以免误用 file:// */
 const legacyCompanionResource = join(srcTauri, "companion-dist");
@@ -234,16 +236,29 @@ if (target === "desktop") {
     process.exit(1);
   }
   console.log(`[prepare-tauri] coding → ${codingUi} (frontendDist)`);
+
+  console.log("[prepare-tauri] build pomodoro-float…");
+  process.env.FREEANIMA_SHELL_TARGET = "desktop";
+  const pomodoroFloatDist = await buildPomodoroFloatApp({ minify: true });
+  if (existsSync(pomodoroFloatUi)) rmSync(pomodoroFloatUi, { recursive: true });
+  mkdirSync(dirname(pomodoroFloatUi), { recursive: true });
+  cpSync(pomodoroFloatDist, pomodoroFloatUi, { recursive: true });
+  if (!existsSync(join(pomodoroFloatUi, "index.html"))) {
+    console.error(`[prepare-tauri] missing ${pomodoroFloatUi}/index.html`);
+    process.exit(1);
+  }
+  console.log(`[prepare-tauri] pomodoro-float → ${pomodoroFloatUi} (frontendDist)`);
 } else {
   // mobile 无伴侣窗；若仍残留 companion-dist，保持空占位以免旧配置踩坑
   if (existsSync(companionUi)) rmSync(companionUi, { recursive: true });
   if (existsSync(codingUi)) rmSync(codingUi, { recursive: true });
+  if (existsSync(pomodoroFloatUi)) rmSync(pomodoroFloatUi, { recursive: true });
   if (existsSync(legacyCompanionResource)) {
     rmSync(legacyCompanionResource, { recursive: true });
     mkdirSync(legacyCompanionResource, { recursive: true });
     writeFileSync(join(legacyCompanionResource, ".gitkeep"), "");
   }
-  console.log("[prepare-tauri] skip companion/coding (mobile)");
+  console.log("[prepare-tauri] skip companion/coding/pomodoro-float (mobile)");
 }
 
 applyTauriShellIdentity({

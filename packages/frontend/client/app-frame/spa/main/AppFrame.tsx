@@ -24,6 +24,10 @@ import { NotificationReminderShellWatcher } from "@freeanima/features/notificati
 import { TaskAdvanceReminderShellWatcher } from "@freeanima/features/task/ui/spa/TaskAdvanceReminderShellWatcher.tsx";
 import { AppAttentionShellWatcher } from "./AppAttentionShellWatcher.tsx";
 import { AppNavUnreadBadge } from "./AppNavUnreadBadge.tsx";
+import {
+  AppNavPomodoroMoreLabel,
+  useAppNavPomodoroDisplayLabel,
+} from "./AppNavPomodoroCountdown.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -48,7 +52,8 @@ function AppModuleVisibilityGuard() {
 function AppBottomNavLink({ item, density }: { item: AppNavItem; density: "label" | "icon" }) {
   const active = useNavActive(item.match);
   const Icon = item.icon;
-  const label = item.label();
+  const fallback = item.label();
+  const { label, ariaLabel } = useAppNavPomodoroDisplayLabel(item.id, fallback, "compact");
 
   return (
     <Link
@@ -56,7 +61,7 @@ function AppBottomNavLink({ item, density }: { item: AppNavItem; density: "label
       className={`app-bottom-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-0 text-xs transition-colors ${
         active ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
       }`}
-      aria-label={label}
+      aria-label={ariaLabel}
       aria-current={active ? "page" : undefined}
     >
       <span className="relative inline-flex">
@@ -64,7 +69,11 @@ function AppBottomNavLink({ item, density }: { item: AppNavItem; density: "label
         <AppNavUnreadBadge moduleId={item.id} />
       </span>
       {density === "label" ? (
-        <span className="leading-none truncate max-w-full px-0.5">{label}</span>
+        <span className="leading-none truncate max-w-full px-0.5 tabular-nums">{label}</span>
+      ) : label !== fallback ? (
+        <span className="leading-none truncate max-w-full px-0.5 tabular-nums text-[10px]">
+          {label}
+        </span>
       ) : null}
     </Link>
   );
@@ -130,7 +139,7 @@ function MoreNavMenu({ items }: { items: AppNavItem[] }) {
                     <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     <AppNavUnreadBadge moduleId={item.id} />
                   </span>
-                  {item.label()}
+                  <AppNavPomodoroMoreLabel moduleId={item.id} fallback={item.label()} />
                 </button>
               );
             })}
