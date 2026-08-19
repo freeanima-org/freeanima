@@ -27,6 +27,19 @@ describe("anima-uri", () => {
     expect(formatAnimaUri({ id: 42 })).toBe("anima:42");
   });
 
+  test("habitat_instance_id round-trip", () => {
+    const formatted = formatAnimaUri({
+      id: 42,
+      habitat_instance_id: "fa_inst_V1StGXR8_Z5jdHi6B-myT",
+    });
+    expect(formatted).toBe("anima:42?habitat_instance_id=fa_inst_V1StGXR8_Z5jdHi6B-myT");
+    expect(parseAnimaUri(formatted)).toEqual({
+      ok: true,
+      ref: { id: 42, habitat_instance_id: "fa_inst_V1StGXR8_Z5jdHi6B-myT" },
+    });
+    expect(parseAnimaUri("anima:42?habitat_instance_id=").ok).toBe(false);
+  });
+
   test("rejects anima://", () => {
     expect(parseAnimaUri("anima://42").ok).toBe(false);
     expect(parseAnimaUri("anima://42?component=task_item").ok).toBe(false);

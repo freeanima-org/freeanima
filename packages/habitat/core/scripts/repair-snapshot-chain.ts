@@ -2,7 +2,7 @@
  * Repair snapshot chain for historical migrations missing snapshot.json (no new migration dir).
  * Usage: bun core/scripts/repair-snapshot-chain.ts
  */
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { coerceString } from "@freeanima/shared/coerce-string";
@@ -35,7 +35,7 @@ function nextSnap(prev: Snapshot): Snapshot {
   return {
     version: prev.version,
     dialect: prev.dialect,
-    id: randomUUID(),
+    id: randomPublicId(),
     prevIds: [prev.id],
     ddl: clone(prev).ddl,
     renames: [],

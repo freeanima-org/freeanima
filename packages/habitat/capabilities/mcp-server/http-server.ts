@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 import { readAppVersionForCapability as readAppVersion } from "@freeanima/habitat/core/config/capability-injection";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
 import {
@@ -57,7 +57,7 @@ function createMcpServer(deps: McpServerDeps, callCtx?: McpCallContext): Server 
     if (!validated.ok) {
       return handlerResultToMcpContent(toolError(validated.error));
     }
-    const sessionId = randomUUID();
+    const sessionId = randomPublicId();
     const callerAuth = callCtx?.callerAuth ?? undefined;
     const text = await runWithToolContext(
       `mcp:${sessionId}`,

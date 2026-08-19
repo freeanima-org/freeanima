@@ -1,13 +1,13 @@
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 
 /** 导入素材的稳定 ID 与磁盘路径（显示名称单独存 config，改 name 不影响文件） */
 
 export function newModelId(): string {
-  return `mdl_${randomUuid()}`;
+  return `mdl_${randomPublicId()}`;
 }
 
 export function newMotionId(): string {
-  return `mot_${randomUuid()}`;
+  return `mot_${randomPublicId()}`;
 }
 
 export function motionFileNameForId(id: string): string {

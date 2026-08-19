@@ -20,7 +20,7 @@ import {
 } from "@freeanima/habitat/core/llm/presets";
 import { readHabitatConfigRecord } from "./habitat-config-field-helpers.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
+import { randomPublicId } from "@freeanima/shared/util";
 
 export type ConnectionLayerId = CustomKindId;
 
@@ -156,7 +156,7 @@ export function llmEntryTitle(
 }
 
 function shortIdSuffix(): string {
-  return randomUuid().replace(/-/g, "").slice(0, 8);
+  return randomPublicId(8);
 }
 
 export function newConnectionId(): string {

@@ -25,7 +25,7 @@ import {
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { PullToRefresh } from "@freeanima/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -575,7 +575,7 @@ export function DiaryApp() {
             title: preset?.title ?? "",
             content: preset?.content ?? "",
             sort_order: nextOrder,
-            client_op_id: randomUuid(),
+            client_op_id: randomPublicId(),
             components: preset?.components ?? ["content_block"],
             tag_ids: preset?.tag_ids ?? [],
           },

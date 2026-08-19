@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
 import { getRedis, isRedisConfigured } from "./client.ts";
@@ -218,7 +218,7 @@ export async function acquireRedisLock(
   const key = lockKey(opts.key);
   const ttlMs = opts.ttlMs ?? DEFAULT_LOCK_TTL_MS;
   const mode = opts.mode ?? "try";
-  const token = randomUUID();
+  const token = randomPublicId();
 
   const attempt =
     mode === "wait"

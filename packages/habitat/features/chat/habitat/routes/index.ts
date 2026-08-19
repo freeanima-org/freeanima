@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { resolveNotificationRecipients } from "@freeanima/habitat/core/config";
@@ -348,7 +348,7 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
       }
     }
 
-    const streamId = randomUUID();
+    const streamId = randomPublicId();
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
     streamSessionRegistry.openSession(
       streamId,
@@ -375,7 +375,7 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   },
   "message.continue": async (deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);
-    const streamId = randomUUID();
+    const streamId = randomPublicId();
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
     streamSessionRegistry.openSession(streamId, input.conversation_id);
     void pumpContinueStream(

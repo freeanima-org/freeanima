@@ -28,7 +28,7 @@ import {
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
 
@@ -366,7 +366,7 @@ export async function offlineCreateDiaryEntry(
   return preferOnlineWrite(
     async () => {
       const scope = resolveOutboxScope();
-      const opId = randomUuid();
+      const opId = randomPublicId();
       const data = await habitat().call("diary.create", {
         subject_kind: subjectKind,
         client_op_id: opId,
@@ -379,7 +379,7 @@ export async function offlineCreateDiaryEntry(
       const scope = resolveOutboxScope();
       await ensureAllocatorSeeded(scope);
       const tempId = allocateTempId(scope, MODULE_ID);
-      const opId = randomUuid();
+      const opId = randomPublicId();
       const now = new Date().toISOString();
       const initialContent = input.content?.trim() ?? "";
       const blocks: DiaryTextBlock[] = initialContent
@@ -448,7 +448,7 @@ export async function offlineUpdateDiaryEntry(
     };
     await upsertLocalEntry(scope, subjectKind, updated);
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -470,7 +470,7 @@ export async function offlineUpdateDiaryEntry(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("diary.patch", {
       subject_kind: subjectKind,
       id: resolvedId,
@@ -515,7 +515,7 @@ export async function offlineAppendDiaryEntry(
     };
     await upsertLocalEntry(scope, subjectKind, updated);
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -537,7 +537,7 @@ export async function offlineAppendDiaryEntry(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("diary.append", {
       subject_kind: subjectKind,
       id: resolvedId,
@@ -580,7 +580,7 @@ export async function offlineCreateDiaryBlock(
     const now = new Date().toISOString();
     const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
     const tempId = allocateTempId(scope, MODULE_ID);
-    const opId = opts.client_op_id?.trim() || randomUuid();
+    const opId = opts.client_op_id?.trim() || randomPublicId();
     const block: DiaryTextBlock = {
       id: tempId,
       title: opts.title?.trim() ?? "",
@@ -624,7 +624,7 @@ export async function offlineCreateDiaryBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = opts.client_op_id?.trim() || randomUuid();
+    const opId = opts.client_op_id?.trim() || randomPublicId();
     const data = await habitat().call("diary.blockCreate", {
       subject_kind: subjectKind,
       parent_id: resolvedParentId,
@@ -687,7 +687,7 @@ export async function offlineUpdateDiaryBlock(
       updated_at: now,
     });
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -709,7 +709,7 @@ export async function offlineUpdateDiaryBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("diary.blockPatch", {
       subject_kind: subjectKind,
       id: resolvedId,
@@ -758,7 +758,7 @@ export async function offlineDeleteDiaryBlock(
       return;
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -774,7 +774,7 @@ export async function offlineDeleteDiaryBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("diary.blockDelete", {
       subject_kind: subjectKind,
       id: blockId,
@@ -811,7 +811,7 @@ export async function offlineReorderDiaryBlocks(
       .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
     await upsertLocalEntry(scope, subjectKind, { ...existing, blocks, updated_at: now });
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -869,7 +869,7 @@ export async function offlineDeleteDiaryEntry(
       return;
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -885,7 +885,7 @@ export async function offlineDeleteDiaryEntry(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("diary.delete", {
       subject_kind: subjectKind,
       id: resolvedId,

@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 import type {
   ToolDef,
   ToolHandler,
@@ -314,7 +314,7 @@ export class RemoteToolsManager {
       typeof meta?.workspace_root === "string" ? meta.workspace_root : undefined;
 
     const payload: ToolCallPayload = omitUndefined({
-      call_id: randomUUID(),
+      call_id: randomPublicId(),
       tool_name: fullName,
       local_name: localName,
       args,

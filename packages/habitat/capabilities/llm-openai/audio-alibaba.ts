@@ -1,6 +1,6 @@
 import { WebSocket, type RawData } from "ws";
 
-import { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
+import { randomPublicId } from "@freeanima/shared/util";
 
 /** OpenAI 兼容根 → DashScope 音频推理 WebSocket */
 export function alibabaAudioWsUrl(openaiCompatibleBaseUrl: string): string {
@@ -67,7 +67,7 @@ export async function synthesizeAlibabaTts(
   const wsUrl = alibabaAudioWsUrl(input.baseUrl);
   const format = input.format ?? "mp3";
   const timeoutMs = input.timeoutMs && input.timeoutMs > 0 ? input.timeoutMs : 120_000;
-  const taskId = randomUuid();
+  const taskId = randomPublicId();
   const chunks: Buffer[] = [];
 
   await new Promise<void>((resolve, reject) => {

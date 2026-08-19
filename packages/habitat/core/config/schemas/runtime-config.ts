@@ -32,6 +32,7 @@ import { sectionSchema } from "./config.ts";
 import { objectStorageConfigSchema } from "./object-storage.ts";
 import { companionConfigSchema } from "./companion.ts";
 import { promptSchema } from "./prompt.ts";
+import { identityConfigSchema } from "./identity.ts";
 import { BOOTSTRAP_CONFIG_KEYS, registerSection } from "@freeanima/habitat/kernel/config-mechanism";
 
 /**
@@ -79,6 +80,8 @@ const runtimeConfigObjectSchema = z.object({
   object_storage: objectStorageConfigSchema.optional(),
   /** 桌面伴侣模块配置（行为 / 模型与动作注册表）；字节在 object_file */
   companion: companionConfigSchema.optional(),
+  /** Habitat 实例身份与主体密钥（私钥仅服务端） */
+  identity: identityConfigSchema.optional(),
 });
 
 /** 将各产品段 Zod 挂入 kernel section 注册表（幂等合并） */

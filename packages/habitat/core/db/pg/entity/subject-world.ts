@@ -131,6 +131,25 @@ async function ensureDefaultPrivateWorldOnSubject(subject: EntityRow): Promise<n
   return worldId;
 }
 
+async function assertAtMostOneUser(excludeId?: number): Promise<void> {
+  const users = await listEntities({ type: "user", limit: 5 });
+  const others = excludeId == null ? users : users.filter((u) => u.id !== excludeId);
+  if (others.length > 0) {
+    throw new EntitySubjectBootstrapError(
+      `type=user 全局至多一个（已存在 user id=${others.map((u) => u.id).join(",")})`,
+    );
+  }
+}
+
+async function assertUserCountAtBoot(): Promise<void> {
+  const users = await listEntities({ type: "user", limit: 3 });
+  if (users.length > 1) {
+    throw new EntitySubjectBootstrapError(
+      `type=user 全局至多一个，但库中有 ${users.length} 个：${users.map((u) => u.id).join(",")}`,
+    );
+  }
+}
+
 function defaultSubjectTitle(type: "user" | "agent"): string {
   return type === "user" ? "用户" : "Agent";
 }
@@ -159,6 +178,7 @@ async function createSubjectAtId(
   type: "user" | "agent",
   title: string,
 ): Promise<EntityRow> {
+  if (type === "user") await assertAtMostOneUser();
   const created = await createSubjectRowAtId(id, type, title);
   const worldId = await createDefaultPrivateWorldForSubject(created);
   const withDefault = await updateEntity({
@@ -169,6 +189,7 @@ async function createSubjectAtId(
 }
 
 async function createSubjectNextId(type: "user" | "agent", title: string): Promise<EntityRow> {
+  if (type === "user") await assertAtMostOneUser();
   const primary = type === "agent" ? AGENT_CONFIG_COMPONENT : USER_CONFIG_COMPONENT;
   const created = await createEntity({
     type,
@@ -293,6 +314,7 @@ function readSubjectWorldId(subject: EntityRow): number {
 
 /** Habitat 启动：确保 user/agent subject、默认私有 world、以及唯一 Commons world */
 export async function ensureWorldSubjects(config: RuntimeConfig): Promise<EnsuredWorldSubjects> {
+  await assertUserCountAtBoot();
   const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
 
   const userSubject = await resolveOrCreateSubject("user", user_subject_id);
@@ -325,6 +347,7 @@ export async function createSubjectEntityRecord(input: {
   summary?: string;
   content?: string;
 }): Promise<EntityRow> {
+  if (input.type === "user") await assertAtMostOneUser();
   const created = await createSubjectNextId(
     input.type,
     input.title.trim() || defaultSubjectTitle(input.type),

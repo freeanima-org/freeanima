@@ -79,7 +79,8 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 
 - 身份由 **`type`** 加 `agent_config` 或 `user_config` 主组件构成。
 - Subject **不**以成员关系意义上的 `world_id` 限定范围；行 `world_id` 保持在引导根（`ENTITY_ROOT_WORLD_ID`）作为表占位。
-- **`agent_config` / `user_config` body**：`default_private_world_id`——该 subject 唯一的默认私有 world（创建 subject 时自动创建；可从 subject 拥有的私有 world 配置）。
+- **`agent_config` / `user_config` body**：`default_private_world_id`——该 subject 唯一的默认私有 world（创建 subject 时自动创建；可从 subject 拥有的私有 world 配置）；`public_id` / `public_key`——稳定公开身份与验签公钥（见 [`habitat-identity.md`](habitat-identity.md)）。
+- **阶段约束：** `type=user` 全局至多一个；多数字生命仅增加 `type=agent`。
 - **通知**用 subject 实体 id 作 `recipient_id`（见 [`notifications.md`](../cognition/notifications.md)）；id 来自启动时 **`ResolvedWorldContext`**（并持久化到 `habitat_runtime_config.worlds`）。
 - **Service API Token**（`service_api_tokens` 表）绑定 subject 实体 id；栖息地 REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../ops/remote-access.md)。
 

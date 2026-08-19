@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync, appendFileSync } from "node:fs";
 import { join } from "node:path";
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 import { homePath } from "@freeanima/habitat/core/config/paths";
 
 /** Max chars returned in tool content for LLM / persistence (preview). */
@@ -18,10 +18,7 @@ export function toolArtifactsDir(): string {
 /** Write full output to ~/.anima/tool-artifacts; returns absolute path. */
 export function spillToolOutputArtifact(full: string, kind: string): string {
   const safeKind = kind.replaceAll(/[^a-zA-Z0-9_-]+/g, "-").slice(0, 40) || "tool";
-  const path = join(
-    toolArtifactsDir(),
-    `${safeKind}-${Date.now()}-${randomUUID().slice(0, 8)}.txt`,
-  );
+  const path = join(toolArtifactsDir(), `${safeKind}-${Date.now()}-${randomPublicId(8)}.txt`);
   writeFileSync(path, full, "utf-8");
   return path;
 }

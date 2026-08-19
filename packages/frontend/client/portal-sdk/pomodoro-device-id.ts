@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-import { randomUuid } from "@freeanima/habitat/kernel/random-uuid.ts";
+import { randomPublicId } from "@freeanima/shared/util";
 
 const DEVICE_KEY = "freeanima.pomodoro.device_id";
 
@@ -8,7 +8,7 @@ export function getPomodoroDeviceId(): string {
   try {
     const existing = localStorage.getItem(DEVICE_KEY)?.trim();
     if (existing) return existing;
-    const id = randomUuid();
+    const id = randomPublicId();
     localStorage.setItem(DEVICE_KEY, id);
     return id;
   } catch {

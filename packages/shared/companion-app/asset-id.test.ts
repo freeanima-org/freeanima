@@ -9,9 +9,9 @@ import {
 } from "./asset-id.ts";
 
 describe("asset-id", () => {
-  test("生成带前缀的 UUID", () => {
-    expect(newMotionId()).toMatch(/^mot_[0-9a-f-]{36}$/i);
-    expect(newModelId()).toMatch(/^mdl_[0-9a-f-]{36}$/i);
+  test("生成带前缀的字母数字 id", () => {
+    expect(newMotionId()).toMatch(/^mot_[0-9A-Za-z]{21}$/);
+    expect(newModelId()).toMatch(/^mdl_[0-9A-Za-z]{21}$/);
   });
 
   test("由 id 推导磁盘路径", () => {

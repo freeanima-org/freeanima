@@ -27,7 +27,7 @@ import {
 } from "@freeanima/client/portal-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 import type {
   NoteRowPayload,
   NoteTextBlockPayload,
@@ -358,7 +358,7 @@ export async function offlineCreateNote(
   return preferOnlineWrite(
     async () => {
       const scope = resolveOutboxScope();
-      const opId = randomUuid();
+      const opId = randomPublicId();
       const data = await habitat().call("note.create", {
         subject_kind: subjectKind,
         client_op_id: opId,
@@ -371,7 +371,7 @@ export async function offlineCreateNote(
       const scope = resolveOutboxScope();
       await ensureAllocatorSeeded(scope);
       const tempId = allocateTempId(scope, MODULE_ID);
-      const opId = randomUuid();
+      const opId = randomPublicId();
       const now = new Date().toISOString();
       const blocks: NoteTextBlock[] = content
         ? [
@@ -436,7 +436,7 @@ export async function offlineUpdateNote(
     };
     await upsertLocalNote(scope, subjectKind, updated);
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -458,7 +458,7 @@ export async function offlineUpdateNote(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("note.patch", {
       subject_kind: subjectKind,
       id: resolvedId,
@@ -495,7 +495,7 @@ export async function offlineDeleteNote(subjectKind: NoteSubjectKind, id: number
       return;
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -511,7 +511,7 @@ export async function offlineDeleteNote(subjectKind: NoteSubjectKind, id: number
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("note.delete", {
       subject_kind: subjectKind,
       id: resolvedId,
@@ -537,7 +537,7 @@ export async function offlineCreateNoteBlock(
     const now = new Date().toISOString();
     const last = existing.blocks.toSorted((a, b) => a.sort_order - b.sort_order).at(-1);
     const tempId = allocateTempId(scope, MODULE_ID);
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const block: NoteTextBlock = {
       id: tempId,
       title: "",
@@ -582,7 +582,7 @@ export async function offlineCreateNoteBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("note.blockCreate", {
       subject_kind: subjectKind,
       parent_id: resolvedParentId,
@@ -651,7 +651,7 @@ export async function offlineUpdateNoteBlock(
       updated_at: now,
     });
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -673,7 +673,7 @@ export async function offlineUpdateNoteBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("note.blockPatch", {
       subject_kind: subjectKind,
       id: resolvedId,
@@ -730,7 +730,7 @@ export async function offlineDeleteNoteBlock(
       return;
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -746,7 +746,7 @@ export async function offlineDeleteNoteBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("note.blockDelete", {
       subject_kind: subjectKind,
       id: resolvedId,

@@ -7,6 +7,11 @@ export type AnimaUriRef = {
   /** Component view facet; omit → resolve primary_component when opening */
   component?: string;
   present?: AnimaPresent;
+  /**
+   * Habitat 实例 id（`fa_inst_…`）。省略 = 本机。
+   * 异机值仅保留解析结果；本切片不实现远程打开。
+   */
+  habitat_instance_id?: string;
 };
 
 export type ParseAnimaUriResult = { ok: true; ref: AnimaUriRef } | { ok: false; error: string };
@@ -39,6 +44,7 @@ export function formatAnimaUri(ref: AnimaUriRef): string {
   const params = new URLSearchParams();
   if (ref.component) params.set("component", ref.component);
   if (ref.present) params.set("present", ref.present);
+  if (ref.habitat_instance_id) params.set("habitat_instance_id", ref.habitat_instance_id);
   const qs = params.toString();
   return qs ? `${ANIMA_SCHEME}${ref.id}?${qs}` : `${ANIMA_SCHEME}${ref.id}`;
 }
@@ -90,9 +96,14 @@ export function parseAnimaUri(input: string): ParseAnimaUriResult {
       return { ok: false, error: "invalid present" };
     }
     const present = parsePresent(presentRaw);
+    const habitat_instance_id = parsed.searchParams.get("habitat_instance_id")?.trim() || undefined;
+    if (parsed.searchParams.has("habitat_instance_id") && !habitat_instance_id) {
+      return { ok: false, error: "invalid habitat_instance_id" };
+    }
     const ref: AnimaUriRef = { id };
     if (component) ref.component = component;
     if (present) ref.present = present;
+    if (habitat_instance_id) ref.habitat_instance_id = habitat_instance_id;
     return { ok: true, ref };
   }
 

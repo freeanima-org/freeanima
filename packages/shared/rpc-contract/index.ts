@@ -6,6 +6,8 @@ export {
   serializeHabitatRpcEnvelope,
 } from "./protocol.ts";
 export type { HabitatRpcEnvelope, HabitatRpcError } from "./protocol.ts";
+export { randomPublicId } from "@freeanima/shared/util/random-public-id.ts";
+/** @deprecated 新随机 id 请用 {@link randomPublicId} */
 export { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
 
 export {
