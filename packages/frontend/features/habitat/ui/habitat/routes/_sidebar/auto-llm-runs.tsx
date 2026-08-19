@@ -25,23 +25,58 @@ import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-c
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
+const RUNNING_POLL_MS = 2000;
 
-const RUN_KIND_OPTIONS = [
-  "",
-  "cron",
-  "memory-retain",
-  "memory-reflect",
-  "self-autobiography",
-  "self-layer-refresh",
-  "temporal-summary",
-  "skill-evolve",
-  "skill-maintain",
-  "conversation-title",
-  "goal-judge",
-  "compression-summary",
-  "handoff-summary",
-  "subagent",
-] as const;
+const RUN_KIND_LABELS: Record<string, string> = {
+  cron: "定时任务",
+  "memory-retain": "记忆 Retain",
+  "memory-reflect": "记忆 Reflect",
+  "self-autobiography": "自我自传",
+  "self-layer-refresh": "自我层刷新",
+  "temporal-summary": "时间摘要",
+  "skill-evolve": "技能演化",
+  "skill-maintain": "技能维护",
+  "conversation-title": "对话标题",
+  "goal-judge": "目标判定",
+  "compression-summary": "压缩摘要",
+  "handoff-summary": "交接摘要",
+  subagent: "子代理",
+  "semantic-cluster-title": "语义簇标题",
+};
+
+const RUN_KIND_OPTIONS = ["", ...Object.keys(RUN_KIND_LABELS)] as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  running: "进行中",
+  ok: "成功",
+  error: "失败",
+};
+
+const TEMPERATURE_TIER_LABELS: Record<string, string> = {
+  focused: "专注",
+  balanced: "平衡",
+  creative: "发散",
+};
+
+/** 与 run_kind 重复的布尔标记，不展示 */
+const DROPPED_META_KEYS = new Set(["retain", "reflect", "temporal_summary", "self_layer_refresh"]);
+
+const CONSUMED_META_KEYS = new Set([
+  ...DROPPED_META_KEYS,
+  "model",
+  "request_params",
+  "tool_names",
+  "temperature_tier",
+  "parent_conversation_id",
+  "job_id",
+  "slug",
+  "kind",
+  "subagent_entity_id",
+  "round",
+  "gate_reason",
+  "profile_id",
+  "format",
+]);
 
 const ALL_VALUE = "__all__";
 
@@ -58,7 +93,7 @@ type AutoLlmRunRow = {
   error: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
-  finished_at: string;
+  finished_at: string | null;
 };
 
 type AutoLlmMessageRow = {
@@ -73,10 +108,29 @@ type AutoLlmMessageRow = {
   };
 };
 
+function runKindLabel(kind: string): string {
+  return RUN_KIND_LABELS[kind] ?? kind;
+}
+
+function statusLabel(status: string): string {
+  return STATUS_LABELS[status] ?? status;
+}
+
+function temperatureTierLabel(tier: string): string {
+  return TEMPERATURE_TIER_LABELS[tier] ?? tier;
+}
+
 function formatDurationMs(ms: number): string {
   if (ms < 1000) return `${ms} ms`;
   const sec = (ms / 1000).toFixed(1);
   return `${sec} s`;
+}
+
+function rowDurationMs(row: AutoLlmRunRow, nowMs: number): number {
+  if (row.status !== "running") return row.duration_ms;
+  const start = Date.parse(row.created_at);
+  if (!Number.isFinite(start)) return row.duration_ms;
+  return Math.max(0, nowMs - start);
 }
 
 function formatMessagePreview(msg: AutoLlmMessageRow): string {
@@ -98,6 +152,196 @@ function formatMessagePreview(msg: AutoLlmMessageRow): string {
 function messageContentText(msg: AutoLlmMessageRow): string {
   const content = msg.payload.content;
   return typeof content === "string" ? content : content == null ? "" : String(content);
+}
+
+function lastSuccessfulAssistantFromMessages(msgs: AutoLlmMessageRow[]): string {
+  for (let i = msgs.length - 1; i >= 0; i--) {
+    const m = msgs[i];
+    if (m?.payload.role !== "assistant") continue;
+    if (Array.isArray(m.payload.tool_calls) && m.payload.tool_calls.length > 0) continue;
+    const content = typeof m.payload.content === "string" ? m.payload.content.trim() : "";
+    if (content) return content;
+  }
+  return "";
+}
+
+function formatMetaValue(value: unknown): string {
+  if (value == null) return "—";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "—";
+  }
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
+function asNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value)) out[k] = v;
+  return out;
+}
+
+function toolNamesFromMeta(meta: Record<string, unknown> | null): string[] {
+  const raw = meta?.tool_names;
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((n): n is string => typeof n === "string" && n.length > 0);
+}
+
+function requestParamsFromMeta(
+  meta: Record<string, unknown> | null,
+): Record<string, unknown> | null {
+  return asRecord(meta?.request_params);
+}
+
+type KvRow = { key: string; label: string; value: string };
+
+function DetailKv({ rows }: { rows: KvRow[] }) {
+  if (rows.length === 0) {
+    return <p className="text-xs text-muted-foreground">{"无"}</p>;
+  }
+  return (
+    <dl className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-3 gap-y-1 text-xs">
+      {rows.map((row) => (
+        <Fragment key={row.key}>
+          <dt className="text-muted-foreground shrink-0">{row.label}</dt>
+          <dd className="font-mono whitespace-pre-wrap break-all min-w-0">{row.value}</dd>
+        </Fragment>
+      ))}
+    </dl>
+  );
+}
+
+function buildRunInfoRows(row: AutoLlmRunRow): KvRow[] {
+  const meta = row.metadata ?? {};
+  const rows: KvRow[] = [
+    { key: "id", label: "id", value: row.id },
+    { key: "run_name", label: "运行名称", value: row.run_name },
+    { key: "run_kind", label: "运行类型", value: runKindLabel(row.run_kind) },
+    {
+      key: "subject_id",
+      label: "主体",
+      value: row.subject_id == null ? "—" : String(row.subject_id),
+    },
+  ];
+  const parentId = asString(meta.parent_conversation_id);
+  if (parentId) {
+    rows.push({ key: "parent_conversation_id", label: "关联对话", value: parentId });
+  }
+  const jobId = asString(meta.job_id);
+  if (jobId) {
+    rows.push({ key: "job_id", label: "定时任务", value: jobId });
+  }
+  const slug = asString(meta.slug);
+  if (slug) {
+    rows.push({ key: "slug", label: "子代理", value: slug });
+  }
+  const archiveBits = [
+    asString(meta.kind),
+    asNumber(meta.subagent_entity_id) != null ? `#${String(meta.subagent_entity_id)}` : undefined,
+  ].filter((v): v is string => Boolean(v));
+  if (archiveBits.length > 0) {
+    rows.push({ key: "archive", label: "档案", value: archiveBits.join(" · ") });
+  }
+  const round = asNumber(meta.round);
+  if (round != null) {
+    rows.push({ key: "round", label: "Reflect 轮次", value: String(round) });
+  }
+  const gateReason = asString(meta.gate_reason);
+  if (gateReason) {
+    rows.push({ key: "gate_reason", label: "门控原因", value: gateReason });
+  }
+  const toolNames = toolNamesFromMeta(row.metadata);
+  if (toolNames.length > 0) {
+    rows.push({ key: "tool_names", label: "允许工具", value: toolNames.join(", ") });
+  }
+  const tier = asString(meta.temperature_tier);
+  if (tier) {
+    rows.push({ key: "temperature_tier", label: "采样档位", value: temperatureTierLabel(tier) });
+  }
+  rows.push({
+    key: "max_loop_iterations",
+    label: "引擎轮预算",
+    value: row.max_loop_iterations == null ? "—" : String(row.max_loop_iterations),
+  });
+  rows.push({
+    key: "max_duration_ms",
+    label: "墙钟预算",
+    value: row.max_duration_ms == null ? "—" : formatDurationMs(row.max_duration_ms),
+  });
+  rows.push({
+    key: "created_at",
+    label: "开始时间",
+    value: formatDisplayDateTime(row.created_at),
+  });
+  rows.push({
+    key: "finished_at",
+    label: "结束时间",
+    value: row.finished_at ? formatDisplayDateTime(row.finished_at) : "—",
+  });
+
+  for (const [key, value] of Object.entries(meta)) {
+    if (CONSUMED_META_KEYS.has(key)) continue;
+    if (value == null) continue;
+    rows.push({ key: `extra:${key}`, label: key, value: formatMetaValue(value) });
+  }
+  return rows;
+}
+
+function buildCallConfigRows(row: AutoLlmRunRow): KvRow[] {
+  const meta = row.metadata ?? {};
+  const params = requestParamsFromMeta(row.metadata);
+  const rows: KvRow[] = [];
+  const model = asString(meta.model);
+  if (model) {
+    rows.push({ key: "model", label: "模型", value: model });
+  }
+  if (params) {
+    if (asNumber(params.temperature) != null) {
+      rows.push({ key: "temperature", label: "temperature", value: String(params.temperature) });
+    }
+    if (asNumber(params.topP) != null) {
+      rows.push({ key: "topP", label: "topP", value: String(params.topP) });
+    }
+    if (asNumber(params.maxOutputTokens) != null) {
+      rows.push({
+        key: "maxOutputTokens",
+        label: "maxOutputTokens",
+        value: String(params.maxOutputTokens),
+      });
+    }
+    const extra = asRecord(params.extra);
+    if (extra) {
+      if (extra.thinking != null) {
+        rows.push({ key: "thinking", label: "thinking", value: formatMetaValue(extra.thinking) });
+      }
+      if (extra.reasoning != null) {
+        rows.push({
+          key: "reasoning",
+          label: "reasoning",
+          value: formatMetaValue(extra.reasoning),
+        });
+      }
+    }
+  }
+  const profileId = asString(meta.profile_id);
+  if (profileId) {
+    rows.push({ key: "profile_id", label: "profile", value: profileId });
+  }
+  const format = asString(meta.format);
+  if (format) {
+    rows.push({ key: "format", label: "format", value: format });
+  }
+  return rows;
 }
 
 function DetailFold({
@@ -128,34 +372,6 @@ function DetailFold({
   );
 }
 
-function RequestParamsList({ row }: { row: AutoLlmRunRow }) {
-  const entries: Array<[string, string]> = [
-    ["id", row.id],
-    ["run_name", row.run_name],
-    ["run_kind", row.run_kind],
-    ["status", row.status],
-    ["subject_id", row.subject_id == null ? "—" : String(row.subject_id)],
-    ["duration_ms", String(row.duration_ms)],
-    [
-      "max_loop_iterations",
-      row.max_loop_iterations == null ? "—" : String(row.max_loop_iterations),
-    ],
-    ["max_duration_ms", row.max_duration_ms == null ? "—" : String(row.max_duration_ms)],
-    ["created_at", row.created_at],
-    ["finished_at", row.finished_at],
-  ];
-  return (
-    <dl className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-3 gap-y-1 text-xs">
-      {entries.map(([k, v]) => (
-        <Fragment key={k}>
-          <dt className="font-mono text-muted-foreground shrink-0">{k}</dt>
-          <dd className="font-mono whitespace-pre-wrap break-all min-w-0">{v}</dd>
-        </Fragment>
-      ))}
-    </dl>
-  );
-}
-
 export const Route = createFileRoute("/_sidebar/auto-llm-runs")({
   component: AutoLlmRunsPage,
 });
@@ -163,7 +379,7 @@ export const Route = createFileRoute("/_sidebar/auto-llm-runs")({
 function AutoLlmRunsPage() {
   const [runKind, setRunKind] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const { setOffset, currentPage, offsetForPage } = useHabitatOffsetPagination(PAGE_SIZE);
+  const { offset, setOffset, currentPage, offsetForPage } = useHabitatOffsetPagination(PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
@@ -172,16 +388,20 @@ function AutoLlmRunsPage() {
   const [detailMessages, setDetailMessages] = useState<AutoLlmMessageRow[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const fetchList = useCallback(
-    async (nextOffset: number) => {
-      setLoading(true);
+    async (nextOffset: number, opts?: { silent?: boolean }) => {
+      if (!opts?.silent) setLoading(true);
       setError("");
       try {
         const data = (await listAutoLlmRuns(
           omitUndefined({
             run_kind: runKind || undefined,
-            status: statusFilter === "ok" || statusFilter === "error" ? statusFilter : undefined,
+            status:
+              statusFilter === "ok" || statusFilter === "error" || statusFilter === "running"
+                ? statusFilter
+                : undefined,
             offset: nextOffset,
             limit: PAGE_SIZE,
           }),
@@ -190,11 +410,12 @@ function AutoLlmRunsPage() {
         setTotal(data.total ?? 0);
         setOffset(nextOffset);
         setLoaded(true);
+        setNowMs(Date.now());
       } catch (e) {
         logCaughtError("routes/_sidebar/auto-llm-runs", e);
         setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
-        setLoading(false);
+        if (!opts?.silent) setLoading(false);
       }
     },
     [runKind, statusFilter, setOffset],
@@ -204,22 +425,41 @@ function AutoLlmRunsPage() {
     void fetchList(0);
   }, [fetchList]);
 
-  const loadDetail = useCallback(async (id: string) => {
-    setDetailLoading(true);
-    setDetailMessages([]);
+  const loadDetail = useCallback(async (id: string, opts?: { silent?: boolean }) => {
+    if (!opts?.silent) {
+      setDetailLoading(true);
+      setDetailMessages([]);
+    }
     try {
       const data = (await getAutoLlmRun(id)) as {
         run?: AutoLlmRunRow;
         messages?: AutoLlmMessageRow[];
       } | null;
       setDetailMessages(data?.messages ?? []);
+      if (data?.run) {
+        const next = data.run;
+        setItems((prev) => prev.map((r) => (r.id === id ? { ...r, ...next } : r)));
+      }
     } catch (e) {
       logCaughtError("routes/_sidebar/auto-llm-runs/get", e);
-      setDetailMessages([]);
+      if (!opts?.silent) setDetailMessages([]);
     } finally {
-      setDetailLoading(false);
+      if (!opts?.silent) setDetailLoading(false);
     }
   }, []);
+
+  const expandedRow = expandedId ? (items.find((r) => r.id === expandedId) ?? null) : null;
+  const hasRunning = items.some((r) => r.status === "running") || expandedRow?.status === "running";
+
+  useEffect(() => {
+    if (!hasRunning) return undefined;
+    const timer = setInterval(() => {
+      setNowMs(Date.now());
+      void fetchList(offset, { silent: true });
+      if (expandedId) void loadDetail(expandedId, { silent: true });
+    }, RUNNING_POLL_MS);
+    return () => clearInterval(timer);
+  }, [hasRunning, offset, expandedId, fetchList, loadDetail]);
 
   const toggleExpand = (id: string) => {
     if (expandedId === id) {
@@ -264,8 +504,8 @@ function AutoLlmRunsPage() {
             <SelectContent>
               <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
               {RUN_KIND_OPTIONS.filter(Boolean).map((kind) => (
-                <SelectItem key={kind} id={kind}>
-                  {kind}
+                <SelectItem key={kind} id={kind} textValue={runKindLabel(kind)}>
+                  {runKindLabel(kind)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -285,6 +525,7 @@ function AutoLlmRunsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem id={ALL_VALUE}>{"全部"}</SelectItem>
+              <SelectItem id="running">{"进行中"}</SelectItem>
               <SelectItem id="ok">{"成功"}</SelectItem>
               <SelectItem id="error">{"失败"}</SelectItem>
             </SelectContent>
@@ -310,7 +551,7 @@ function AutoLlmRunsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{"时间"}</TableHead>
+                <TableHead>{"开始时间"}</TableHead>
                 <TableHead>{"运行名称"}</TableHead>
                 <TableHead>{"运行类型"}</TableHead>
                 <TableHead>{"状态"}</TableHead>
@@ -320,159 +561,164 @@ function AutoLlmRunsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {items.map((row) => (
-                <Fragment key={row.id}>
-                  <TableRow className={row.status === "ok" ? "" : "bg-destructive/10"}>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDisplayDateTime(row.finished_at)}
-                    </TableCell>
-                    <TableCell className="max-w-[12rem] truncate" title={row.run_name}>
-                      {row.run_name}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="ghost" className="text-xs font-mono">
-                        {row.run_kind}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={row.status === "ok" ? "success" : "destructive"}
-                        className="text-xs"
-                      >
-                        {row.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {formatDurationMs(row.duration_ms)}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs whitespace-nowrap">
-                      {row.max_loop_iterations != null ? `${row.max_loop_iterations} 引擎轮` : "—"}
-                      {row.max_duration_ms != null
-                        ? ` / ≤${formatDurationMs(row.max_duration_ms)}`
-                        : ""}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => toggleExpand(row.id)}
-                      >
-                        {expandedId === row.id ? "收起" : "详情"}
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                  {expandedId === row.id ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="bg-muted">
-                        {row.status === "error" && row.error ? (
-                          <pre className="text-xs text-destructive whitespace-pre-wrap break-all mb-2">
-                            {row.error}
-                          </pre>
-                        ) : null}
-                        {row.output ? (
-                          <div className="mb-2">
-                            <p className="text-xs font-semibold mb-1">{"输出"}</p>
-                            <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
-                              {row.output}
-                            </pre>
-                          </div>
-                        ) : null}
-                        <DetailFold title={"请求参数"}>
-                          <RequestParamsList row={row} />
-                        </DetailFold>
-                        <DetailFold
-                          title={"metadata"}
-                          count={
-                            row.metadata && Object.keys(row.metadata).length > 0
-                              ? Object.keys(row.metadata).length
-                              : 0
+              {items.map((row) => {
+                const displayOutput =
+                  row.output ||
+                  (expandedId === row.id
+                    ? lastSuccessfulAssistantFromMessages(detailMessages)
+                    : "");
+                return (
+                  <Fragment key={row.id}>
+                    <TableRow className={row.status === "error" ? "bg-destructive/10" : ""}>
+                      <TableCell className="whitespace-nowrap">
+                        {formatDisplayDateTime(row.created_at)}
+                      </TableCell>
+                      <TableCell className="max-w-[12rem] truncate" title={row.run_name}>
+                        {row.run_name}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="ghost" className="text-xs" title={row.run_kind}>
+                          {runKindLabel(row.run_kind)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            row.status === "ok"
+                              ? "success"
+                              : row.status === "running"
+                                ? "warning"
+                                : "destructive"
                           }
+                          className="text-xs"
+                          title={row.status}
                         >
-                          {row.metadata && Object.keys(row.metadata).length > 0 ? (
-                            <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
-                              {JSON.stringify(row.metadata, null, 2)}
-                            </pre>
-                          ) : (
-                            <p className="text-xs text-muted-foreground">{"无 metadata。"}</p>
-                          )}
-                        </DetailFold>
-                        {(() => {
-                          const systemMsgs = detailMessages.filter(
-                            (m) => m.payload.role === "system",
-                          );
-                          const otherMsgs = detailMessages.filter(
-                            (m) => m.payload.role !== "system",
-                          );
-                          return (
-                            <>
-                              <DetailFold title={"系统提示词"} count={systemMsgs.length}>
-                                {detailLoading ? (
-                                  <p className="text-xs text-muted-foreground">{"加载中…"}</p>
-                                ) : systemMsgs.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">
-                                    {"此运行无 system 消息。"}
-                                  </p>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {systemMsgs.map((m) => (
-                                      <pre
-                                        key={m.id}
-                                        className="text-xs whitespace-pre-wrap break-all max-h-64 overflow-auto"
-                                      >
-                                        {messageContentText(m) || "(空)"}
-                                      </pre>
-                                    ))}
-                                  </div>
-                                )}
-                              </DetailFold>
-                              <DetailFold title={"消息列表"} count={otherMsgs.length}>
-                                {detailLoading ? (
-                                  <p className="text-xs text-muted-foreground">{"加载中…"}</p>
-                                ) : otherMsgs.length === 0 ? (
-                                  <p className="text-xs text-muted-foreground">
-                                    {"此运行无非 system 消息。"}
-                                  </p>
-                                ) : (
-                                  <div className="space-y-1.5">
-                                    {otherMsgs.map((m) => {
-                                      const role = m.payload.role || "?";
-                                      const full = formatMessagePreview(m);
-                                      const preview =
-                                        full.length > 120 ? `${full.slice(0, 120)}…` : full;
-                                      return (
-                                        <details
-                                          key={m.id}
-                                          className="group rounded border border-border/70 bg-background/50"
-                                        >
-                                          <summary className="text-xs cursor-pointer select-none list-none flex items-start gap-2 px-2 py-1.5 [&::-webkit-details-marker]:hidden">
-                                            <span className="text-muted-foreground group-open:rotate-90 transition-transform inline-block shrink-0 mt-0.5">
-                                              ▸
-                                            </span>
-                                            <span className="font-mono shrink-0 text-muted-foreground">
-                                              {`#${String(m.pos)} ${role}`}
-                                            </span>
-                                            <span className="truncate min-w-0 text-muted-foreground font-normal">
-                                              {preview}
-                                            </span>
-                                          </summary>
-                                          <pre className="text-xs whitespace-pre-wrap break-all max-h-64 overflow-auto px-2 pb-2">
-                                            {messageContentText(m) || full || "(空)"}
-                                          </pre>
-                                        </details>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </DetailFold>
-                            </>
-                          );
-                        })()}
+                          {statusLabel(row.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {formatDurationMs(rowDurationMs(row, nowMs))}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs whitespace-nowrap">
+                        {row.max_loop_iterations != null
+                          ? `${row.max_loop_iterations} 引擎轮`
+                          : "—"}
+                        {row.max_duration_ms != null
+                          ? ` / ≤${formatDurationMs(row.max_duration_ms)}`
+                          : ""}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => toggleExpand(row.id)}
+                        >
+                          {expandedId === row.id ? "收起" : "详情"}
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  ) : null}
-                </Fragment>
-              ))}
+                    {expandedId === row.id ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="bg-muted">
+                          {row.status === "error" && row.error ? (
+                            <pre className="text-xs text-destructive whitespace-pre-wrap break-all mb-2">
+                              {row.error}
+                            </pre>
+                          ) : null}
+                          {displayOutput ? (
+                            <div className="mb-2">
+                              <p className="text-xs font-semibold mb-1">{"输出"}</p>
+                              <pre className="text-xs whitespace-pre-wrap break-all max-h-48 overflow-auto">
+                                {displayOutput}
+                              </pre>
+                            </div>
+                          ) : null}
+                          <DetailFold title={"运行信息"} defaultOpen>
+                            <DetailKv rows={buildRunInfoRows(row)} />
+                          </DetailFold>
+                          {buildCallConfigRows(row).length > 0 ? (
+                            <DetailFold title={"调用配置"}>
+                              <DetailKv rows={buildCallConfigRows(row)} />
+                            </DetailFold>
+                          ) : null}
+                          {(() => {
+                            const systemMsgs = detailMessages.filter(
+                              (m) => m.payload.role === "system",
+                            );
+                            const otherMsgs = detailMessages.filter(
+                              (m) => m.payload.role !== "system",
+                            );
+                            return (
+                              <>
+                                <DetailFold title={"系统提示词"} count={systemMsgs.length}>
+                                  {detailLoading ? (
+                                    <p className="text-xs text-muted-foreground">{"加载中…"}</p>
+                                  ) : systemMsgs.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">
+                                      {"此运行无 system 消息。"}
+                                    </p>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {systemMsgs.map((m) => (
+                                        <pre
+                                          key={m.id}
+                                          className="text-xs whitespace-pre-wrap break-all max-h-64 overflow-auto"
+                                        >
+                                          {messageContentText(m) || "(空)"}
+                                        </pre>
+                                      ))}
+                                    </div>
+                                  )}
+                                </DetailFold>
+                                <DetailFold title={"消息列表"} count={otherMsgs.length}>
+                                  {detailLoading ? (
+                                    <p className="text-xs text-muted-foreground">{"加载中…"}</p>
+                                  ) : otherMsgs.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">
+                                      {"此运行无非 system 消息。"}
+                                    </p>
+                                  ) : (
+                                    <div className="space-y-1.5">
+                                      {otherMsgs.map((m) => {
+                                        const role = m.payload.role || "?";
+                                        const full = formatMessagePreview(m);
+                                        const preview =
+                                          full.length > 120 ? `${full.slice(0, 120)}…` : full;
+                                        return (
+                                          <details
+                                            key={m.id}
+                                            className="group rounded border border-border/70 bg-background/50"
+                                          >
+                                            <summary className="text-xs cursor-pointer select-none list-none flex items-start gap-2 px-2 py-1.5 [&::-webkit-details-marker]:hidden">
+                                              <span className="text-muted-foreground group-open:rotate-90 transition-transform inline-block shrink-0 mt-0.5">
+                                                ▸
+                                              </span>
+                                              <span className="font-mono shrink-0 text-muted-foreground">
+                                                {`#${String(m.pos)} ${role}`}
+                                              </span>
+                                              <span className="truncate min-w-0 text-muted-foreground font-normal">
+                                                {preview}
+                                              </span>
+                                            </summary>
+                                            <pre className="text-xs whitespace-pre-wrap break-all max-h-64 overflow-auto px-2 pb-2">
+                                              {messageContentText(m) || full || "(空)"}
+                                            </pre>
+                                          </details>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </DetailFold>
+                              </>
+                            );
+                          })()}
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                  </Fragment>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

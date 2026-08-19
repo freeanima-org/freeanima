@@ -62,7 +62,7 @@ const cronLogsQuerySchema = z.object({
 });
 const autoLlmRunsQuerySchema = z.object({
   run_kind: z.string().optional(),
-  status: z.enum(["ok", "error"]).optional(),
+  status: z.enum(["running", "ok", "error"]).optional(),
   limit: z.coerce.number().int().min(1).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 });

@@ -1,18 +1,23 @@
-import { and, count, desc, eq, inArray, lt, asc } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, lt, ne, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
-import { autoLlmRuns, autoLlmMessages } from "@freeanima/habitat/core/db/schema";
+import { autoLlmMessages, autoLlmRuns } from "@freeanima/habitat/core/db/schema";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 import type {
+  AutoLlmMessageAppendInput,
   AutoLlmMessageRow,
   AutoLlmRunAppendInput,
   AutoLlmRunCountOpts,
+  AutoLlmRunFinishInput,
+  AutoLlmRunInsertRunningInput,
   AutoLlmRunListOpts,
   AutoLlmRunRow,
   PurgeStaleAutoLlmRunsOpts,
 } from "../types.ts";
-import { getDb } from "../../client.ts";
+import { getDb, type DbTransaction } from "../../client.ts";
 
 const OUTPUT_MAX = 10_000;
 const ERROR_MAX = 2000;
+const ORPHAN_ABORT_ERROR = "栖息地重启，运行中断";
 
 export type AutoLlmRunDbRow = typeof autoLlmRuns.$inferSelect;
 
@@ -30,8 +35,15 @@ export function mapAutoLlmRunRow(raw: AutoLlmRunDbRow): AutoLlmRunRow {
     error: raw.error,
     metadata: raw.metadata,
     created_at: String(raw.created_at),
-    finished_at: String(raw.finished_at),
+    finished_at: mapFinishedAt(raw.finished_at),
   };
+}
+
+function mapFinishedAt(value: Date | null | undefined): string | null {
+  if (value == null) return null;
+  const ms = value instanceof Date ? value.getTime() : Date.parse(String(value));
+  if (!Number.isFinite(ms) || ms === 0) return null;
+  return String(value);
 }
 
 function buildListConditions(opts?: AutoLlmRunListOpts | AutoLlmRunCountOpts) {
@@ -46,6 +58,22 @@ function buildListConditions(opts?: AutoLlmRunListOpts | AutoLlmRunCountOpts) {
   return conditions;
 }
 
+async function insertMessageRows(
+  tx: DbTransaction,
+  runId: string,
+  msgs: AutoLlmMessageAppendInput[],
+): Promise<void> {
+  if (msgs.length === 0) return;
+  await tx.insert(autoLlmMessages).values(
+    msgs.map((m) => ({
+      id: m.id ?? randomUUID(),
+      run_id: runId,
+      pos: m.pos,
+      payload: m.payload,
+    })),
+  );
+}
+
 export async function listAutoLlmRuns(opts?: AutoLlmRunListOpts): Promise<AutoLlmRunRow[]> {
   const limit = Math.max(1, Math.min(200, opts?.limit ?? 50));
   const offset = Math.max(0, opts?.offset ?? 0);
@@ -56,7 +84,10 @@ export async function listAutoLlmRuns(opts?: AutoLlmRunListOpts): Promise<AutoLl
     .select()
     .from(autoLlmRuns)
     .where(conditions.length > 0 ? and(...conditions) : undefined)
-    .orderBy(desc(autoLlmRuns.finished_at))
+    .orderBy(
+      sql`CASE WHEN ${autoLlmRuns.status} = 'running' THEN 0 ELSE 1 END`,
+      desc(autoLlmRuns.created_at),
+    )
     .offset(offset)
     .limit(limit);
   return rows.map(mapAutoLlmRunRow);
@@ -94,9 +125,8 @@ export async function listAutoLlmMessages(runId: string): Promise<AutoLlmMessage
   }));
 }
 
-export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void> {
+export async function insertRunningAutoLlmRun(row: AutoLlmRunInsertRunningInput): Promise<void> {
   const created_at = row.created_at ? new Date(row.created_at) : new Date();
-  const finished_at = row.finished_at ? new Date(row.finished_at) : created_at;
   const db = getDb();
   await db.transaction(async (tx) => {
     await tx.insert(autoLlmRuns).values({
@@ -104,27 +134,95 @@ export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void
       run_name: row.run_name,
       run_kind: row.run_kind,
       subject_id: row.subject_id ?? null,
-      output: row.output.slice(0, OUTPUT_MAX),
-      status: row.status,
-      duration_ms: row.duration_ms,
+      output: "",
+      status: "running",
+      duration_ms: 0,
       max_loop_iterations: row.max_loop_iterations,
       max_duration_ms: row.max_duration_ms ?? null,
-      error: row.error != null ? row.error.slice(0, ERROR_MAX) : null,
+      error: null,
       metadata: row.metadata ?? null,
       created_at,
-      finished_at,
+      finished_at: null,
     });
-    const msgs = row.messages ?? [];
-    if (msgs.length === 0) return;
-    await tx.insert(autoLlmMessages).values(
-      msgs.map((m) => ({
-        id: m.id ?? randomUUID(),
-        run_id: row.id,
-        pos: m.pos,
-        payload: m.payload,
-      })),
-    );
+    await insertMessageRows(tx, row.id, row.messages ?? []);
   });
+}
+
+export async function appendAutoLlmMessages(
+  runId: string,
+  msgs: AutoLlmMessageAppendInput[],
+): Promise<void> {
+  if (msgs.length === 0) return;
+  const db = getDb();
+  await db.transaction(async (tx) => {
+    await insertMessageRows(tx, runId, msgs);
+  });
+}
+
+export async function finishAutoLlmRun(row: AutoLlmRunFinishInput): Promise<void> {
+  const finished_at = row.finished_at ? new Date(row.finished_at) : new Date();
+  const db = getDb();
+  await db
+    .update(autoLlmRuns)
+    .set({
+      status: row.status,
+      output: row.output.slice(0, OUTPUT_MAX),
+      duration_ms: row.duration_ms,
+      error: row.error != null ? row.error.slice(0, ERROR_MAX) : null,
+      finished_at,
+    })
+    .where(eq(autoLlmRuns.id, row.id));
+}
+
+/** 一次插完（测试 / 兼容）；新路径用 insertRunning + append + finish */
+export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void> {
+  await insertRunningAutoLlmRun(
+    omitUndefined({
+      id: row.id,
+      run_name: row.run_name,
+      run_kind: row.run_kind,
+      subject_id: row.subject_id,
+      max_loop_iterations: row.max_loop_iterations,
+      max_duration_ms: row.max_duration_ms,
+      metadata: row.metadata,
+      created_at: row.created_at,
+      messages: row.messages,
+    }),
+  );
+  await finishAutoLlmRun(
+    omitUndefined({
+      id: row.id,
+      status: row.status,
+      output: row.output,
+      duration_ms: row.duration_ms,
+      error: row.error,
+      finished_at: row.finished_at,
+    }),
+  );
+}
+
+export async function abortOrphanAutoLlmRuns(): Promise<{ aborted: number }> {
+  const db = getDb();
+  const now = new Date();
+  const orphans = await db
+    .select({ id: autoLlmRuns.id, created_at: autoLlmRuns.created_at })
+    .from(autoLlmRuns)
+    .where(eq(autoLlmRuns.status, "running"));
+  if (orphans.length === 0) return { aborted: 0 };
+
+  for (const orphan of orphans) {
+    const duration_ms = Math.max(0, now.getTime() - orphan.created_at.getTime());
+    await db
+      .update(autoLlmRuns)
+      .set({
+        status: "error",
+        error: ORPHAN_ABORT_ERROR,
+        finished_at: now,
+        duration_ms,
+      })
+      .where(eq(autoLlmRuns.id, orphan.id));
+  }
+  return { aborted: orphans.length };
 }
 
 export async function purgeStaleAutoLlmRuns(
@@ -136,7 +234,12 @@ export async function purgeStaleAutoLlmRuns(
 
   const byAge = await db
     .delete(autoLlmRuns)
-    .where(lt(autoLlmRuns.finished_at, olderThan))
+    .where(
+      and(
+        ne(autoLlmRuns.status, "running"),
+        lt(sql`coalesce(${autoLlmRuns.finished_at}, ${autoLlmRuns.created_at})`, olderThan),
+      ),
+    )
     .returning({ id: autoLlmRuns.id });
   deleted += byAge.length;
 
@@ -148,17 +251,18 @@ export async function purgeStaleAutoLlmRuns(
     const keepRows = await db
       .select({ id: autoLlmRuns.id })
       .from(autoLlmRuns)
-      .where(eq(autoLlmRuns.run_kind, run_kind))
-      .orderBy(desc(autoLlmRuns.finished_at))
+      .where(and(eq(autoLlmRuns.run_kind, run_kind), ne(autoLlmRuns.status, "running")))
+      .orderBy(desc(autoLlmRuns.created_at))
       .limit(perKindKeep);
-    const keepIds = keepRows.map((r) => r.id);
-    if (keepIds.length === 0) continue;
+    const keepIds = new Set(keepRows.map((r) => r.id));
 
     const allRows = await db
-      .select({ id: autoLlmRuns.id })
+      .select({ id: autoLlmRuns.id, status: autoLlmRuns.status })
       .from(autoLlmRuns)
       .where(eq(autoLlmRuns.run_kind, run_kind));
-    const toDelete = allRows.map((r) => r.id).filter((id) => !keepIds.includes(id));
+    const toDelete = allRows
+      .filter((r) => r.status !== "running" && !keepIds.has(r.id))
+      .map((r) => r.id);
     if (toDelete.length === 0) continue;
 
     const extra = await db

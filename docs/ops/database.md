@@ -94,7 +94,10 @@ DATABASE_URL="postgresql://anima:…@127.0.0.1:5432/anima" \
 ## `auto_llm_runs` / `auto_llm_messages`（审计）
 
 非对话聊天 LLM（cron agent、记忆维护流水线阶段、对话标题、目标判定、压缩 / handoff 摘要）写入
-`auto_llm_runs` + `auto_llm_messages`，而不是 `conversations` / `messages`。保留策略（栖息地运行时 / 壳
+`auto_llm_runs` + `auto_llm_messages`，而不是 `conversations` / `messages`。开跑即插入
+`status=running`（`finished_at` 为空），消息随引擎轮 / 工具轮次追加；结束才 `ok` / `error`。
+栖息地启动（迁移完成后）把残留 `running` 标为 `error`（文案：栖息地重启，运行中断）——这是收尸，不是续跑。
+`output` 为最后一条成功助手正文。保留策略（栖息地运行时 / 壳
 **设置 → 栖息地服务 → 服务配置** `auto_llm`）：
 
 ```yaml
@@ -104,7 +107,8 @@ auto_llm:
   per_run_kind_keep: 100
 ```
 
-在 memory-maintenance 步骤 `conversation-cleanup`（过期对话清理之后）清理；删除 run 时
+在 memory-maintenance 步骤 `conversation-cleanup`（过期对话清理之后）清理；**不删除**仍为
+`running` 的行；年龄按 `coalesce(finished_at, created_at)`。删除 run 时
 `auto_llm_messages` 级联删除。Cron 脚本运行（`no_agent`）仅用 `cron_log`。
 
 ## 备份

@@ -2,7 +2,7 @@ import { habitatCtx } from "./runtime.ts";
 
 export async function listAutoLlmRuns(opts?: {
   run_kind?: string;
-  status?: "ok" | "error";
+  status?: "running" | "ok" | "error";
   limit?: number;
   offset?: number;
 }) {

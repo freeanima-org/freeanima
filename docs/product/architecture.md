@@ -393,14 +393,14 @@ mcp_servers:
 
 **轴：** 执行过程中是否有**用户回合**（不是谁触发的）。聊天室 LLM 请求**互斥**：要么对话路径，要么 AutoLlmRun——永不两者兼用，也无第三种孤儿 `chat()`。
 
-| 种类             | 用户回合 | PG 持久化                                                                 | 进程轨迹          | 记忆维护流水线      |
-| ---------------- | -------- | ------------------------------------------------------------------------- | ----------------- | ------------------- |
-| **Conversation** | 有       | `conversations` + `messages`                                              | 消息归档          | 参与（retain 补跑） |
-| **AutoLlmRun**   | 无       | `auto_llm_runs` + `auto_llm_messages`，经 `runAutoLlm` / `runAutoLlmChat` | 完整消息转录，TTL | 排除                |
-| **Script cron**  | 无       | 仅 `cron_log`                                                             | stdout 文件       | 排除                |
+| 种类             | 用户回合 | PG 持久化                                                                                                                                                                     | 进程轨迹          | 记忆维护流水线      |
+| ---------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------------------- |
+| **Conversation** | 有       | `conversations` + `messages`                                                                                                                                                  | 消息归档          | 参与（retain 补跑） |
+| **AutoLlmRun**   | 无       | `auto_llm_runs` + `auto_llm_messages`，经 `runAutoLlm` / `runAutoLlmChat`：开跑即 `status=running` 并逐轮追加消息；结束才 `ok` / `error`。审计面不是执行本体，**不可 resume** | 完整消息转录，TTL | 排除                |
+| **Script cron**  | 无       | 仅 `cron_log`                                                                                                                                                                 | stdout 文件       | 排除                |
 
 **对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录消息在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
-AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；带工具的 AutoLlm 循环用 `runAutoLlm`。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
+AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；带工具的 AutoLlm 循环用 `runAutoLlm`。过程中 Habitat 管理页可见 `running`；引擎仍以内存 `messages` 为下一跳输入。工具有副作用，中断后标失败，不按落库重放、不跨实例续跑。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
 
 **AutoLlm 提示：** `composeAutoLlmPrompt` 组装——`system`：`<auto_llm_protocol>` + `<auto_llm_task_spec>`（稳定，可用 `{{param}}` 挖空）；`user`：可选技能 → `<auto_llm_task_params>`（填空）→ 数据。协议只禁末轮 `tool_calls`；**收尾形态在 kind 的 `task_spec`**（如 retain 约 20 字、subagent 给父代理完整答复）。禁止把对话 `system_prompt` 快照当作 AutoLlm system（压缩/handoff 亦然）。审计列含 `subject_id`、`max_loop_iterations`（引擎轮预算）、`max_duration_ms`（墙钟预算，可空）与实际 `duration_ms`。
 

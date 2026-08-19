@@ -1,5 +1,7 @@
 import type { MessagePayload } from "@freeanima/habitat/core/db/schema";
 
+export type AutoLlmRunStatus = "running" | "ok" | "error";
+
 export type AutoLlmRunRow = {
   id: string;
   run_name: string;
@@ -13,7 +15,7 @@ export type AutoLlmRunRow = {
   error: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
-  finished_at: string;
+  finished_at: string | null;
 };
 
 export type AutoLlmMessageRow = {
@@ -29,6 +31,28 @@ export type AutoLlmMessageAppendInput = {
   payload: MessagePayload;
 };
 
+export type AutoLlmRunInsertRunningInput = {
+  id: string;
+  run_name: string;
+  run_kind: string;
+  subject_id?: number | null;
+  max_loop_iterations: number;
+  max_duration_ms?: number | null;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string;
+  messages?: AutoLlmMessageAppendInput[];
+};
+
+export type AutoLlmRunFinishInput = {
+  id: string;
+  status: "ok" | "error";
+  output: string;
+  duration_ms: number;
+  error?: string | null;
+  finished_at?: string;
+};
+
+/** @deprecated 一次插完；新路径用 insertRunning + appendMessages + finish */
 export type AutoLlmRunAppendInput = {
   id: string;
   run_name: string;
@@ -53,12 +77,12 @@ export type PurgeStaleAutoLlmRunsOpts = {
 
 export type AutoLlmRunListOpts = {
   run_kind?: string;
-  status?: "ok" | "error";
+  status?: AutoLlmRunStatus;
   limit?: number;
   offset?: number;
 };
 
 export type AutoLlmRunCountOpts = {
   run_kind?: string;
-  status?: "ok" | "error";
+  status?: AutoLlmRunStatus;
 };

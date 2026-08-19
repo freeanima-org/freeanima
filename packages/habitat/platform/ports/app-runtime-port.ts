@@ -160,7 +160,7 @@ export type AppRuntimeSleepPort = {
   >;
   listAutoLlmRuns(opts?: {
     run_kind?: string;
-    status?: "ok" | "error";
+    status?: "running" | "ok" | "error";
     limit?: number;
     offset?: number;
   }): Promise<unknown>;

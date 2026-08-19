@@ -18,7 +18,11 @@ import {
   formatGoalExhaustedMessage,
 } from "@freeanima/habitat/engine/goal";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
-import { appendAutoLlmRun } from "@freeanima/habitat/core/db/pg/auto-llm-run";
+import {
+  appendAutoLlmMessages,
+  finishAutoLlmRun,
+  insertRunningAutoLlmRun,
+} from "@freeanima/habitat/core/db/pg/auto-llm-run";
 
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import type { ResolvedCapabilityPolicy } from "@freeanima/habitat/core/capability-policy";
@@ -210,12 +214,12 @@ async function runEngineOnce(
   input: AutoLlmRunInput,
   messages: StoredMessage[],
   model: string,
-  signal?: AbortSignal,
-): Promise<{ output: string; toolCalls: number; steps: AutoLlmToolStep[] }> {
+  signal: AbortSignal | undefined,
+  onMessagesPersisted: (batch: StoredMessage[]) => Promise<void>,
+): Promise<{ toolCalls: number; steps: AutoLlmToolStep[] }> {
   const tools = deps.engine.catalog.toolSets.openaiSchemasFromNames(input.toolNames);
   const toolPolicy = runtimeToolPolicyFromResolved(input.toolPolicy ?? null);
   let toolCalls = 0;
-  const parts: string[] = [];
   const steps: AutoLlmToolStep[] = [];
 
   await runWithToolContext(
@@ -232,14 +236,11 @@ async function runEngineOnce(
         max_loop_iterations: input.maxLoopIterations,
         hookRegistry: deps.kernel.hookRegistry,
         llm_kind: "auto_llm",
+        onToolRoundComplete: onMessagesPersisted,
       })) {
         switch (ev.event) {
           case "token":
-            parts.push(ev.data.content);
-            break;
           case "content_replace":
-            parts.length = 0;
-            parts.push(ev.data.content);
             break;
           case "tool_begin": {
             toolCalls += 1;
@@ -287,8 +288,7 @@ async function runEngineOnce(
     if (step.status === "running") step.status = "done";
   }
 
-  const output = parts.join("").trim() || `Completed ${toolCalls} tool call(s)`;
-  return { output, toolCalls, steps };
+  return { toolCalls, steps };
 }
 
 function storedMessagesToPayloads(messages: StoredMessage[]): MessagePayload[] {
@@ -337,44 +337,114 @@ function storedMessagesToPayloads(messages: StoredMessage[]): MessagePayload[] {
   return payloads;
 }
 
-async function persistAutoLlmRun(
-  _deps: FullRuntimeDeps,
+/** 最后一条成功助手正文：有 content、无 tool_calls */
+export function lastSuccessfulAssistantText(messages: StoredMessage[]): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m?.role !== "assistant") continue;
+    if (m.tool_calls && m.tool_calls.length > 0) continue;
+    const content = typeof m.content === "string" ? m.content.trim() : "";
+    if (content) return content.slice(0, OUTPUT_MAX);
+  }
+  return "";
+}
+
+function buildAutoLlmMetadata(input: AutoLlmRunInput, model: string): Record<string, unknown> {
+  return omitUndefined({
+    ...input.metadata,
+    model,
+    tool_names: input.toolNames,
+    request_params: input.requestParams,
+    parent_conversation_id: input.parentConversationId,
+  });
+}
+
+type AutoLlmAudit = {
+  nextPos: number;
+};
+
+function warnAutoLlmPersist(deps: FullRuntimeDeps, err: unknown): void {
+  deps.engine.logger.with({ component: "auto-llm" }).warn("auto_llm persist failed", {
+    error: err instanceof Error ? err.message : String(err),
+  });
+}
+
+async function persistRunningStart(
+  deps: FullRuntimeDeps,
+  audit: AutoLlmAudit,
   row: {
     id: string;
     input: AutoLlmRunInput;
-    output: string;
-    status: "ok" | "error";
-    durationMs: number;
-    error?: string;
-    toolCalls: number;
+    model: string;
     startedAt: string;
-    finishedAt: string;
     messages: StoredMessage[];
   },
 ): Promise<void> {
   if (!isPostgresPrimary()) return;
-  const payloads = storedMessagesToPayloads(row.messages);
-  await appendAutoLlmRun({
-    id: row.id,
-    run_name: row.input.runName,
-    run_kind: row.input.runKind,
-    subject_id: row.input.subjectId,
-    output: row.output.slice(0, OUTPUT_MAX),
-    status: row.status,
-    duration_ms: row.durationMs,
-    max_loop_iterations: row.input.maxLoopIterations,
-    max_duration_ms: row.input.maxDurationMs ?? null,
-    error: row.error ?? null,
-    metadata: {
-      ...row.input.metadata,
-      model: row.input.model,
-      tool_calls: row.toolCalls,
-      parent_conversation_id: row.input.parentConversationId,
-    },
-    created_at: row.startedAt,
-    finished_at: row.finishedAt,
-    messages: payloads.map((payload, pos) => ({ pos, payload })),
-  });
+  try {
+    const payloads = storedMessagesToPayloads(row.messages);
+    await insertRunningAutoLlmRun({
+      id: row.id,
+      run_name: row.input.runName,
+      run_kind: row.input.runKind,
+      subject_id: row.input.subjectId,
+      max_loop_iterations: row.input.maxLoopIterations,
+      max_duration_ms: row.input.maxDurationMs ?? null,
+      metadata: buildAutoLlmMetadata(row.input, row.model),
+      created_at: row.startedAt,
+      messages: payloads.map((payload, pos) => ({ pos, payload })),
+    });
+    audit.nextPos = payloads.length;
+  } catch (err) {
+    warnAutoLlmPersist(deps, err);
+  }
+}
+
+async function persistMessageBatch(
+  deps: FullRuntimeDeps,
+  audit: AutoLlmAudit,
+  runId: string,
+  batch: StoredMessage[],
+): Promise<void> {
+  if (!isPostgresPrimary() || batch.length === 0) return;
+  try {
+    const payloads = storedMessagesToPayloads(batch);
+    if (payloads.length === 0) return;
+    const msgs = payloads.map((payload) => {
+      const pos = audit.nextPos;
+      audit.nextPos += 1;
+      return { pos, payload };
+    });
+    await appendAutoLlmMessages(runId, msgs);
+  } catch (err) {
+    warnAutoLlmPersist(deps, err);
+  }
+}
+
+async function persistRunFinish(
+  deps: FullRuntimeDeps,
+  row: {
+    id: string;
+    output: string;
+    status: "ok" | "error";
+    durationMs: number;
+    error?: string;
+    finishedAt: string;
+  },
+): Promise<void> {
+  if (!isPostgresPrimary()) return;
+  try {
+    await finishAutoLlmRun({
+      id: row.id,
+      status: row.status,
+      output: row.output,
+      duration_ms: row.durationMs,
+      finished_at: row.finishedAt,
+      ...omitUndefined({ error: row.error }),
+    });
+  } catch (err) {
+    warnAutoLlmPersist(deps, err);
+  }
 }
 
 function withWallClockSignal<T>(
@@ -393,7 +463,7 @@ function withWallClockSignal<T>(
   });
 }
 
-/** 无用户回合 LLM：不写 conversations/messages，过程写入 auto_llm_runs + auto_llm_messages */
+/** 无用户回合 LLM：不写 conversations/messages；过程写入 auto_llm_runs + auto_llm_messages */
 export async function runAutoLlm(
   deps: FullRuntimeDeps,
   input: AutoLlmRunInput,
@@ -405,14 +475,24 @@ export async function runAutoLlm(
 
   let messages = buildAutoLlmMessages(input);
   let goal = input.goal ? conversationGoalSchema.parse(input.goal) : undefined;
-  let output = "";
   let toolCalls = 0;
   let steps: AutoLlmToolStep[] = [];
   let lastErr: unknown;
+  const audit: AutoLlmAudit = { nextPos: 0 };
+
+  await persistRunningStart(deps, audit, {
+    id: runId,
+    input,
+    model,
+    startedAt,
+    messages,
+  });
+
+  const persistBatch = (batch: StoredMessage[]): Promise<void> =>
+    persistMessageBatch(deps, audit, runId, batch);
 
   try {
     for (let attempt = 0; attempt < AUTO_LLM_MAX_ATTEMPTS; attempt++) {
-      output = "";
       toolCalls = 0;
       steps = [];
       try {
@@ -425,8 +505,15 @@ export async function runAutoLlm(
                   : `AutoLlm wall-clock timeout after ${input.maxDurationMs}ms`;
               throw new Error(reason);
             }
-            const round = await runEngineOnce(deps, runId, input, messages, model, signal);
-            output = round.output;
+            const round = await runEngineOnce(
+              deps,
+              runId,
+              input,
+              messages,
+              model,
+              signal,
+              persistBatch,
+            );
             toolCalls += round.toolCalls;
             steps = [...steps, ...round.steps];
 
@@ -439,10 +526,13 @@ export async function runAutoLlm(
             );
             goal = evalResult.goal;
             if (evalResult.action !== "continue") break goalLoop;
-            messages = [
-              ...messages,
-              { role: "user", content: evalResult.continuePrompt, timestamp: formatCstIso() },
-            ];
+            const continueMsg: StoredMessage = {
+              role: "user",
+              content: evalResult.continuePrompt,
+              timestamp: formatCstIso(),
+            };
+            messages = [...messages, continueMsg];
+            await persistBatch([continueMsg]);
           }
         });
         lastErr = undefined;
@@ -457,37 +547,31 @@ export async function runAutoLlm(
 
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
-    await persistAutoLlmRun(deps, {
+    const output = lastSuccessfulAssistantText(messages);
+    await persistRunFinish(deps, {
       id: runId,
-      input,
       output,
       status: "ok",
       durationMs,
-      toolCalls,
-      startedAt,
       finishedAt,
-      messages,
     });
     return { runId, output, toolCalls, status: "ok", durationMs, steps };
   } catch (err) {
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
     const message = err instanceof Error ? err.message : String(err);
-    await persistAutoLlmRun(deps, {
+    const output = lastSuccessfulAssistantText(messages);
+    await persistRunFinish(deps, {
       id: runId,
-      input,
-      output: output || message,
+      output,
       status: "error",
       durationMs,
       error: message,
-      toolCalls,
-      startedAt,
       finishedAt,
-      messages,
     });
     return {
       runId,
-      output: output || message,
+      output,
       toolCalls,
       status: "error",
       error: message,

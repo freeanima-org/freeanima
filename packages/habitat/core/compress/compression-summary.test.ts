@@ -21,7 +21,11 @@ mock.module("@freeanima/habitat/core/db/pg", () => ({
 }));
 
 mock.module("@freeanima/habitat/core/db/pg/auto-llm-run", () => ({
+  insertRunningAutoLlmRun: mock(async () => {}),
+  appendAutoLlmMessages: mock(async () => {}),
+  finishAutoLlmRun: mock(async () => {}),
   appendAutoLlmRun: mock(async () => {}),
+  abortOrphanAutoLlmRuns: mock(async () => ({ aborted: 0 })),
   purgeStaleAutoLlmRuns: mock(async () => ({ deleted: 0 })),
   listAutoLlmRuns: mock(async () => []),
   countAutoLlmRuns: mock(async () => 0),

@@ -1,6 +1,7 @@
 # Integration CORE paths（功能变更 / bug 修复主动跑；pre-commit / pre-push 不跑）
 # 一行一个相对仓库根的路径；# 开头为注释。
 tests/integration/db/db-conversation.test.ts
+tests/integration/db/auto-llm-run-pg.test.ts
 tests/integration/db/conversation-archive.test.ts
 tests/integration/db/conversation-read-state-pg.test.ts
 tests/integration/engine/conversation.test.ts

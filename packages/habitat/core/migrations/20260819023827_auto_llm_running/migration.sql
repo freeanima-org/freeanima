@@ -1,0 +1,1 @@
+ALTER TABLE "auto_llm_runs" ALTER COLUMN "finished_at" DROP NOT NULL;
