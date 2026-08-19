@@ -1,8 +1,12 @@
 import { useState } from "react";
+import { ChevronDownIcon } from "lucide-react";
 import {
   Button,
   Card,
   CardContent,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
   Input,
   Spinner,
   Table,
@@ -11,6 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  cn,
 } from "@freeanima/ui-kit";
 import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
@@ -30,37 +35,50 @@ type DebugResult = {
 };
 
 function HitTable({ title, hits }: { title: string; hits: DebugHit[] }) {
+  const [expanded, setExpanded] = useState(false);
   return (
     <Card className="py-0">
-      <CardContent className="py-3 px-4 space-y-2">
-        <p className="text-sm font-medium">
-          {title} <span className="text-muted-foreground font-normal">({hits.length})</span>
-        </p>
-        {hits.length === 0 ? (
-          <p className="text-xs text-muted-foreground">—</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-20">ID</TableHead>
-                <TableHead className="w-24">Score</TableHead>
-                <TableHead>Preview</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {hits.map((hit) => (
-                <TableRow key={`${title}-${hit.id}-${hit.score}`}>
-                  <TableCell className="font-mono text-xs">{hit.id}</TableCell>
-                  <TableCell className="font-mono text-xs">{hit.score.toFixed(4)}</TableCell>
-                  <TableCell className="text-xs whitespace-pre-wrap">
-                    {hit.content_preview}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+      <Collapsible isExpanded={expanded} onExpandedChange={setExpanded}>
+        <CardContent className="px-4 py-0">
+          <CollapsibleTrigger className="flex w-full items-center justify-between gap-2 py-3 text-left">
+            <span className="text-sm font-medium">
+              {title} <span className="text-muted-foreground font-normal">({hits.length})</span>
+            </span>
+            <ChevronDownIcon
+              className={cn(
+                "size-4 shrink-0 text-muted-foreground transition-transform",
+                expanded && "rotate-180",
+              )}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-2 pb-3">
+            {hits.length === 0 ? (
+              <p className="text-xs text-muted-foreground">—</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-20">ID</TableHead>
+                    <TableHead className="w-24">Score</TableHead>
+                    <TableHead>Preview</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {hits.map((hit) => (
+                    <TableRow key={`${title}-${hit.id}-${hit.score}`}>
+                      <TableCell className="font-mono text-xs">{hit.id}</TableCell>
+                      <TableCell className="font-mono text-xs">{hit.score.toFixed(4)}</TableCell>
+                      <TableCell className="text-xs whitespace-pre-wrap">
+                        {hit.content_preview}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CollapsibleContent>
+        </CardContent>
+      </Collapsible>
     </Card>
   );
 }
@@ -160,7 +178,7 @@ export function PassiveRecallDebugPanel() {
 
           <div>
             <h3 className="text-sm font-semibold mb-2">{"流水线阶段"}</h3>
-            <div className="space-y-3">
+            <div key={`${debug?.query ?? ""}-${debug?.elapsed_ms ?? 0}`} className="space-y-3">
               <HitTable title="FTS" hits={debug?.fts ?? []} />
               <HitTable title="trgm" hits={debug?.trgm ?? []} />
               <HitTable title="vector" hits={debug?.vector ?? []} />
