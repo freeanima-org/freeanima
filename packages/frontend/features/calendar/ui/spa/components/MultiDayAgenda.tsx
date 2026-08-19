@@ -11,6 +11,7 @@ type MultiDayAgendaProps = {
   onOpenTask: (id: number) => void;
   onOpenProject: (id: number) => void;
   onEditEvent: (id: number) => void;
+  onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
 };
 
 export function MultiDayAgenda({
@@ -21,8 +22,9 @@ export function MultiDayAgenda({
   onOpenTask,
   onOpenProject,
   onEditEvent,
+  onOpenHoliday,
 }: MultiDayAgendaProps) {
-  const handlers = { onOpenEvent, onOpenTask, onOpenProject, onEditEvent };
+  const handlers = { onOpenEvent, onOpenTask, onOpenProject, onEditEvent, onOpenHoliday };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-auto">

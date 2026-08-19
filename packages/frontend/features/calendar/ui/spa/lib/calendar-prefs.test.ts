@@ -66,6 +66,25 @@ describe("calendar-prefs", () => {
     expect(readCalendarUiPrefs().viewMode).toBe("month");
   });
 
+  test("旧 prefs 无 builtinSources 时填默认四源", () => {
+    localStorage.setItem(
+      "freeanima.calendar.uiPrefs",
+      JSON.stringify({ expandRecurrence: true, viewMode: "month", kinds: ["event"] }),
+    );
+    const prefs = readCalendarUiPrefs();
+    expect(prefs.builtinSources).toEqual([
+      "cn_holiday",
+      "traditional",
+      "international",
+      "solar_term",
+    ]);
+  });
+
+  test("可清空 builtinSources", () => {
+    writeCalendarUiPrefs({ builtinSources: [] });
+    expect(readCalendarUiPrefs().builtinSources).toEqual([]);
+  });
+
   test("isAgendaViewMode", () => {
     expect(isAgendaViewMode("day")).toBe(true);
     expect(isAgendaViewMode("next3")).toBe(true);

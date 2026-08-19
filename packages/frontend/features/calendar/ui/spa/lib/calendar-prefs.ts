@@ -1,5 +1,12 @@
 /** 日程本机 UI 偏好（localStorage，不同步 Habitat；窄/宽布局共用） */
 
+import {
+  BUILTIN_CALENDAR_SOURCE_IDS,
+  BUILTIN_CALENDAR_SOURCE_META,
+  isBuiltinCalendarSourceId,
+  type BuiltinCalendarSourceId,
+} from "@freeanima/shared/util/builtin-calendar-sources.ts";
+
 export const CALENDAR_UI_PREFS_KEY = "freeanima.calendar.uiPrefs";
 
 /** @deprecated 迁移用；读到后写入 CALENDAR_UI_PREFS_KEY 并删除 */
@@ -29,10 +36,16 @@ export function isAgendaViewMode(mode: CalendarViewMode): boolean {
 
 export type CalendarKindPref = "event" | "task" | "project";
 
+export type { BuiltinCalendarSourceId };
+
+export const BUILTIN_SOURCE_OPTIONS = BUILTIN_CALENDAR_SOURCE_META;
+
 export type CalendarUiPrefs = {
   expandRecurrence: boolean;
   viewMode: CalendarViewMode;
   kinds: CalendarKindPref[];
+  /** 开启的内置日历源；空数组 = 不请求 holiday */
+  builtinSources: BuiltinCalendarSourceId[];
 };
 
 const ALL_KINDS: CalendarKindPref[] = ["event", "task", "project"];
@@ -41,6 +54,7 @@ const DEFAULT_PREFS: CalendarUiPrefs = {
   expandRecurrence: true,
   viewMode: "month",
   kinds: [...ALL_KINDS],
+  builtinSources: [...BUILTIN_CALENDAR_SOURCE_IDS],
 };
 
 type Listener = () => void;
@@ -75,6 +89,19 @@ function normalizeKinds(raw: unknown): CalendarKindPref[] {
   return next.length > 0 ? [...new Set(next)] : [...DEFAULT_PREFS.kinds];
 }
 
+function normalizeBuiltinSources(raw: unknown): BuiltinCalendarSourceId[] {
+  if (!Array.isArray(raw)) return [...DEFAULT_PREFS.builtinSources];
+  return [...new Set(raw.filter(isBuiltinCalendarSourceId))];
+}
+
+function clonePrefs(prefs: CalendarUiPrefs): CalendarUiPrefs {
+  return {
+    ...prefs,
+    kinds: [...prefs.kinds],
+    builtinSources: [...prefs.builtinSources],
+  };
+}
+
 function parsePrefs(raw: string | null): CalendarUiPrefs | null {
   if (raw == null || raw === "") return null;
   try {
@@ -88,6 +115,10 @@ function parsePrefs(raw: string | null): CalendarUiPrefs | null {
           : DEFAULT_PREFS.expandRecurrence,
       viewMode: normalizeViewMode(obj.viewMode),
       kinds: normalizeKinds(obj.kinds),
+      builtinSources:
+        obj.builtinSources === undefined
+          ? [...DEFAULT_PREFS.builtinSources]
+          : normalizeBuiltinSources(obj.builtinSources),
     };
   } catch {
     return null;
@@ -118,11 +149,11 @@ export function readCalendarUiPrefs(): CalendarUiPrefs {
         return migrated;
       }
     }
-    if (memoryFallback != null) return { ...memoryFallback, kinds: [...memoryFallback.kinds] };
-    return { ...DEFAULT_PREFS, kinds: [...DEFAULT_PREFS.kinds] };
+    if (memoryFallback != null) return clonePrefs(memoryFallback);
+    return clonePrefs(DEFAULT_PREFS);
   } catch {
-    if (memoryFallback != null) return { ...memoryFallback, kinds: [...memoryFallback.kinds] };
-    return { ...DEFAULT_PREFS, kinds: [...DEFAULT_PREFS.kinds] };
+    if (memoryFallback != null) return clonePrefs(memoryFallback);
+    return clonePrefs(DEFAULT_PREFS);
   }
 }
 
@@ -132,6 +163,10 @@ export function writeCalendarUiPrefs(patch: Partial<CalendarUiPrefs>): CalendarU
     expandRecurrence: patch.expandRecurrence ?? current.expandRecurrence,
     viewMode: patch.viewMode ?? current.viewMode,
     kinds: patch.kinds != null ? normalizeKinds(patch.kinds) : current.kinds,
+    builtinSources:
+      patch.builtinSources != null
+        ? normalizeBuiltinSources(patch.builtinSources)
+        : current.builtinSources,
   };
   memoryFallback = next;
   try {
@@ -166,4 +201,8 @@ export function resetCalendarPrefsForTest(): void {
     /* ignore */
   }
   notify();
+}
+
+export function builtinSourceLabel(id: BuiltinCalendarSourceId): string {
+  return BUILTIN_CALENDAR_SOURCE_META.find((s) => s.id === id)?.title ?? id;
 }

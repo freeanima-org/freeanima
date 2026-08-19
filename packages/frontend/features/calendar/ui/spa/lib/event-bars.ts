@@ -14,9 +14,9 @@ export type PackedBar = {
 /** 月/周视图每行最多展示的事件条 lane 数 */
 export const MAX_VISIBLE_BAR_LANES = 3;
 
-/** 统一 event / task / project 的日历日闭区间 */
+/** 统一 event / task / project / holiday 的日历日闭区间 */
 export function itemDayRange(item: CalendarRangeItem): DayRange | null {
-  if (item.kind === "event") {
+  if (item.kind === "event" || item.kind === "holiday") {
     const start = dayKeyFromIso(item.start_at);
     if (!start) return null;
     const end = dayKeyFromIso(item.end_at ?? item.start_at) || start;
@@ -80,7 +80,7 @@ export function packBarsForWeek(
   candidates.sort((a, b) => {
     if (a.colStart !== b.colStart) return a.colStart - b.colStart;
     if (b.colSpan !== a.colSpan) return b.colSpan - a.colSpan;
-    return a.item.id - b.item.id;
+    return String(a.item.id).localeCompare(String(b.item.id), "en");
   });
 
   const packed: PackedBar[] = [];
@@ -105,6 +105,7 @@ export function kindBarClass(kind: CalendarRangeKind, opts?: { virtual?: boolean
   }
   if (kind === "event") return "bg-primary/20 text-primary";
   if (kind === "task") return "bg-amber-500/20 text-amber-800 dark:text-amber-200";
+  if (kind === "holiday") return "bg-emerald-500/20 text-emerald-800 dark:text-emerald-200";
   return "bg-sky-500/20 text-sky-800 dark:text-sky-200";
 }
 

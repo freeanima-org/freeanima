@@ -53,7 +53,7 @@ export function isOverdueTask(item: CalendarRangeItem, todayKey: string): boolea
 }
 
 export function isEndedEvent(item: CalendarRangeItem, now: Date, todayKey: string): boolean {
-  if (item.kind !== "event") return false;
+  if (item.kind !== "event" && item.kind !== "holiday") return false;
   if (item.all_day) {
     const last = dayKeyFromIso(item.end_at ?? item.start_at);
     return last !== "" && last < todayKey;
@@ -81,7 +81,7 @@ export function filterEndedEvents(
 }
 
 export function itemOverlapsDay(item: CalendarRangeItem, day: string): boolean {
-  if (item.kind === "event") {
+  if (item.kind === "event" || item.kind === "holiday") {
     const start = dayKeyFromIso(item.start_at);
     const end = dayKeyFromIso(item.end_at ?? item.start_at);
     return start !== "" && start <= day && day <= end;

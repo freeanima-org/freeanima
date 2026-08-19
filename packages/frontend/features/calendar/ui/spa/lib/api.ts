@@ -3,6 +3,7 @@ import type {
   CalendarEventRowPayload,
   CalendarRangeItemPayload,
   CalendarRangeKind,
+  BuiltinCalendarSourceIdPayload,
 } from "@freeanima/shared/rpc-contract/frames/calendar";
 import type {
   TaskItemRowPayload,
@@ -25,6 +26,7 @@ export type SubjectKind = NotificationRecipientKind;
 export type CalendarEventRow = CalendarEventRowPayload;
 export type CalendarRangeItem = CalendarRangeItemPayload;
 export type { CalendarRangeKind };
+export type BuiltinCalendarSourceId = BuiltinCalendarSourceIdPayload;
 
 let calendarModuleRegistered = false;
 
@@ -88,20 +90,27 @@ export async function patchTaskDueAt(
 
 export async function fetchCalendarRange(
   subjectKind: SubjectKind,
-  opts: { from: string; to: string; kinds?: CalendarRangeKind[] },
+  opts: {
+    from: string;
+    to: string;
+    kinds?: CalendarRangeKind[];
+    sources?: BuiltinCalendarSourceId[];
+  },
 ): Promise<CalendarRangeItem[]> {
   const scope = resolveHabitatCacheScope();
   const kindsKey = (opts.kinds ?? []).join(",");
+  const sourcesKey = (opts.sources ?? []).join(",");
   return withOfflineCache({
     scope,
     namespace: "calendar",
-    id: `range:${opts.from}:${opts.to}:${kindsKey}`,
+    id: `range:${opts.from}:${opts.to}:${kindsKey}:${sourcesKey}`,
     fetch: async () => {
       const data = await habitat().call("calendar.range", {
         subject_kind: subjectKind,
         from: opts.from,
         to: opts.to,
         ...(opts.kinds?.length ? { kinds: opts.kinds } : {}),
+        ...(opts.sources?.length ? { sources: opts.sources } : {}),
       });
       return data.items;
     },

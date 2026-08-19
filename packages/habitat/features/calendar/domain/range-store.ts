@@ -7,20 +7,34 @@ import {
   planOverlapsRange,
 } from "@freeanima/habitat/core/db/schema/entity";
 import { searchEntities } from "@freeanima/habitat/core/db/pg/entity";
+import {
+  type BuiltinCalendarItem,
+  type BuiltinCalendarSourceId,
+  BUILTIN_CALENDAR_SOURCE_IDS,
+  dedupeBuiltinItemsByDateTitle,
+  filterBuiltinItemsByDateRange,
+  yearsOverlappingRange,
+} from "@freeanima/shared/util/builtin-calendar-sources.ts";
 
+import { getBuiltinCalendarYear, prewarmBuiltinCalendarYears } from "./builtin-year-cache.ts";
 import { expandRecurringTaskVirtuals } from "./expand-recurring-tasks.ts";
 import { listCalendarEvents } from "./event-store.ts";
 import type {
+  CalendarRangeHolidayItem,
   CalendarRangeItem,
   CalendarRangeKind,
   CalendarRangeOpts,
   CalendarStoreContext,
 } from "./types.ts";
 
-const ALL_KINDS: CalendarRangeKind[] = ["event", "task", "project"];
+const ALL_KINDS: CalendarRangeKind[] = ["event", "task", "project", "holiday"];
+
+function dayKeyFromIso(iso: string): string {
+  return iso.slice(0, 10);
+}
 
 function sortKey(item: CalendarRangeItem): number {
-  if (item.kind === "event") {
+  if (item.kind === "event" || item.kind === "holiday") {
     const ms = Date.parse(item.start_at);
     return Number.isFinite(ms) ? ms : 0;
   }
@@ -31,6 +45,44 @@ function sortKey(item: CalendarRangeItem): number {
   }
   const start = item.start_at ? Date.parse(item.start_at) : NaN;
   return Number.isFinite(start) ? start : 0;
+}
+
+function itemSortId(item: CalendarRangeItem): string {
+  return typeof item.id === "number" ? String(item.id) : item.id;
+}
+
+function resolveHolidaySources(
+  sources: BuiltinCalendarSourceId[] | undefined,
+): BuiltinCalendarSourceId[] {
+  if (sources?.length) return [...new Set(sources)];
+  return [...BUILTIN_CALENDAR_SOURCE_IDS];
+}
+
+async function listBuiltinHolidaysInRange(
+  from: string,
+  to: string,
+  sources: BuiltinCalendarSourceId[],
+): Promise<CalendarRangeHolidayItem[]> {
+  const fromDay = dayKeyFromIso(from);
+  const toDay = dayKeyFromIso(to);
+  const years = yearsOverlappingRange(from, to);
+  const collected: BuiltinCalendarItem[] = [];
+  for (const source of sources) {
+    for (const year of years) {
+      collected.push(...(await getBuiltinCalendarYear(source, year)));
+    }
+  }
+  const clipped = filterBuiltinItemsByDateRange(collected, fromDay, toDay);
+  const deduped = dedupeBuiltinItemsByDateTitle(clipped);
+  return deduped.map((it) => ({
+    kind: "holiday" as const,
+    id: it.id,
+    source: it.source,
+    title: it.title,
+    start_at: `${it.date}T00:00:00+08:00`,
+    end_at: null,
+    all_day: true as const,
+  }));
 }
 
 export async function listCalendarRange(
@@ -144,10 +196,16 @@ export async function listCalendarRange(
     }
   }
 
+  if (kindSet.has("holiday")) {
+    const sources = resolveHolidaySources(opts.sources);
+    items.push(...(await listBuiltinHolidaysInRange(opts.from, opts.to, sources)));
+    prewarmBuiltinCalendarYears(sources);
+  }
+
   return items.toSorted((a, b) => {
     const d = sortKey(a) - sortKey(b);
     if (d !== 0) return d;
     if (a.kind !== b.kind) return a.kind.localeCompare(b.kind);
-    return a.id - b.id;
+    return itemSortId(a).localeCompare(itemSortId(b));
   });
 }

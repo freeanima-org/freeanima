@@ -152,7 +152,7 @@ export function coercePayloadForSchema(
   const out: Record<string, unknown> = { ...payload };
   for (const [key, fieldSchema] of Object.entries(shape)) {
     if (!(key in out)) continue;
-    const val = out[key];
+    let val = out[key];
     const unwrapped = unwrapZodType(fieldSchema) as ZodSchema;
     // query 解码（decodeQueryScalar）会把数字/布尔样式的字符串预先转成 number/boolean，
     // 但 schema 声明为 string 时需还原为字符串（如 recipient_id="53"），否则 Zod 校验失败。
@@ -160,20 +160,30 @@ export function coercePayloadForSchema(
       out[key] = String(val);
       continue;
     }
-    if (typeof val !== "string") continue;
-    if (unwrapped.type === "number" && /^-?\d+$/.test(val)) {
-      out[key] = Number(val);
-    } else if (unwrapped.type === "boolean" && (val === "true" || val === "false")) {
-      out[key] = val === "true";
-    } else if (
-      (unwrapped.type === "object" || unwrapped.type === "array") &&
-      (val.startsWith("{") || val.startsWith("["))
-    ) {
-      try {
-        out[key] = JSON.parse(val) as unknown;
-      } catch {
-        /* keep raw string; Zod will fail with a clear error */
+    if (typeof val === "string") {
+      if (unwrapped.type === "number" && /^-?\d+$/.test(val)) {
+        out[key] = Number(val);
+        continue;
       }
+      if (unwrapped.type === "boolean" && (val === "true" || val === "false")) {
+        out[key] = val === "true";
+        continue;
+      }
+      if (
+        (unwrapped.type === "object" || unwrapped.type === "array") &&
+        (val.startsWith("{") || val.startsWith("["))
+      ) {
+        try {
+          out[key] = JSON.parse(val) as unknown;
+          val = out[key];
+        } catch {
+          /* keep raw string; Zod will fail with a clear error */
+        }
+      }
+    }
+    // GET 重复 key 仅一项时 parseQueryToPayload 得到标量；schema 为 array 时包一层。
+    if (unwrapped.type === "array" && val !== undefined && val !== null && !Array.isArray(val)) {
+      out[key] = [val];
     }
   }
   return out;

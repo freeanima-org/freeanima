@@ -11,7 +11,7 @@ import {
 import { convertCalendarEventToTaskItem } from "./convert-task-event.ts";
 import { listCalendarRange } from "./range-store.ts";
 import { resolveCalendarToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
-import type { CalendarRangeKind } from "./types.ts";
+import type { BuiltinCalendarSourceId, CalendarRangeKind } from "./types.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 async function storeContext(args: Record<string, unknown>, access: "read" | "write" = "read") {
@@ -175,12 +175,21 @@ async function handleRange(args: Record<string, unknown>): Promise<string> {
   let kinds: CalendarRangeKind[] | undefined;
   if (Array.isArray(args.kinds)) {
     kinds = args.kinds.filter(
-      (k): k is CalendarRangeKind => k === "event" || k === "task" || k === "project",
+      (k): k is CalendarRangeKind =>
+        k === "event" || k === "task" || k === "project" || k === "holiday",
+    );
+  }
+
+  let sources: BuiltinCalendarSourceId[] | undefined;
+  if (Array.isArray(args.sources)) {
+    sources = args.sources.filter(
+      (s): s is BuiltinCalendarSourceId =>
+        s === "cn_holiday" || s === "traditional" || s === "international" || s === "solar_term",
     );
   }
 
   try {
-    const items = await listCalendarRange(ctx, omitUndefined({ from, to, kinds }));
+    const items = await listCalendarRange(ctx, omitUndefined({ from, to, kinds, sources }));
     return toolResult({ ok: true, action: "range", items });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -306,7 +315,7 @@ export function buildCalendarToolDefs() {
     {
       name: "calendar_range",
       description:
-        "Unified calendar range: events, pending tasks with planned time, and projects overlapping [from, to].",
+        "Unified calendar range: events, pending tasks with planned time, projects, and builtin holiday calendars overlapping [from, to].",
       parameters: {
         type: "object",
         properties: {
@@ -315,7 +324,15 @@ export function buildCalendarToolDefs() {
           to: { type: "string", description: "ISO8601 range end" },
           kinds: {
             type: "array",
-            items: { type: "string", enum: ["event", "task", "project"] },
+            items: { type: "string", enum: ["event", "task", "project", "holiday"] },
+          },
+          sources: {
+            type: "array",
+            description: "Builtin holiday sources when kinds includes holiday",
+            items: {
+              type: "string",
+              enum: ["cn_holiday", "traditional", "international", "solar_term"],
+            },
           },
         },
         required: ["from", "to"],

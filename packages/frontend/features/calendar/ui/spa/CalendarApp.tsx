@@ -10,9 +10,11 @@ import {
   cn,
 } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
+import { toast } from "@freeanima/ui-kit/composite";
 import { ChevronDown, ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
 
 import { AgendaList } from "./components/AgendaList.tsx";
+import { CalendarDisplayPopover } from "./components/CalendarDisplayPopover.tsx";
 import { EventEditorDialog, type EventEditorTarget } from "./components/EventEditorDialog.tsx";
 import { MonthGrid } from "./components/MonthGrid.tsx";
 import { MultiDayAgenda } from "./components/MultiDayAgenda.tsx";
@@ -27,6 +29,7 @@ import {
   patchTaskDueAt,
   updateCalendarEvent,
   type CalendarEventRow,
+  type CalendarRangeItem,
   type CalendarRangeKind,
 } from "./lib/api.ts";
 import {
@@ -50,17 +53,18 @@ import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
 import {
   CALENDAR_VIEW_MODE_LABEL,
   CALENDAR_VIEW_MODES,
+  builtinSourceLabel,
   isAgendaViewMode,
   readCalendarUiPrefs,
   writeCalendarUiPrefs,
+  type BuiltinCalendarSourceId,
+  type CalendarKindPref,
   type CalendarViewMode,
 } from "./lib/calendar-prefs.ts";
 import { readCalendarEventFromUrl, writeCalendarEventToUrl } from "./lib/calendar-event-url.ts";
 import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 
 registerCalendarOfflineModule();
-
-const KIND_OPTIONS: CalendarRangeKind[] = ["event", "task", "project"];
 
 /** 日程暂只看用户视图，不暴露 subject 切换 */
 const CALENDAR_SUBJECT = "user" as const;
@@ -84,7 +88,8 @@ export function CalendarApp() {
   });
   const [selectedDay, setSelectedDay] = useState(today);
   const [prefs, setPrefs] = useState(() => readCalendarUiPrefs());
-  const kinds = prefs.kinds as CalendarRangeKind[];
+  const kinds = prefs.kinds;
+  const builtinSources = prefs.builtinSources;
   const viewMode = prefs.viewMode;
   const expandRecurrence = prefs.expandRecurrence;
   const agendaMode = isAgendaViewMode(viewMode);
@@ -113,20 +118,37 @@ export function CalendarApp() {
     return monthRangeIso(cursor.year, cursor.monthIndex);
   }, [cursor.monthIndex, cursor.year, selectedDay, today, viewMode, weekAnchor]);
 
+  const rangeKinds = useMemo((): CalendarRangeKind[] => {
+    const next: CalendarRangeKind[] = [...kinds];
+    if (builtinSources.length > 0) next.push("holiday");
+    return next;
+  }, [builtinSources.length, kinds]);
+
   const dueFilters = useMemo(
     () => (kinds.includes("task") ? dueFiltersForAgenda(viewMode, selectedDay, today) : null),
     [kinds, selectedDay, today, viewMode],
   );
 
-  const kindsKey = kinds.toSorted().join(",");
+  const kindsKey = rangeKinds.toSorted().join(",");
+  const sourcesKey = builtinSources.toSorted().join(",");
   const dueKey = dueFilters ? JSON.stringify(dueFilters) : "";
   const query = usePortalRead({
-    queryKey: ["calendar", "range", CALENDAR_SUBJECT, range.from, range.to, kindsKey, dueKey],
+    queryKey: [
+      "calendar",
+      "range",
+      CALENDAR_SUBJECT,
+      range.from,
+      range.to,
+      kindsKey,
+      sourcesKey,
+      dueKey,
+    ],
     queryFn: async () => {
       const rangeItems = await fetchCalendarRange(CALENDAR_SUBJECT, {
         from: range.from,
         to: range.to,
-        kinds,
+        kinds: rangeKinds,
+        ...(builtinSources.length > 0 ? { sources: builtinSources } : {}),
       });
       if (!dueFilters) return rangeItems;
       const dueItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, dueFilters);
@@ -169,14 +191,31 @@ export function CalendarApp() {
   }, [items]);
 
   const toggleKind = useCallback(
-    (kind: CalendarRangeKind) => {
+    (kind: CalendarKindPref) => {
       const prev = prefs.kinds;
       const next = prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind];
-      if (next.length === 0) return;
+      if (next.length === 0 && prefs.builtinSources.length === 0) return;
       patchPrefs({ kinds: next });
     },
-    [patchPrefs, prefs.kinds],
+    [patchPrefs, prefs.builtinSources.length, prefs.kinds],
   );
+
+  const toggleBuiltinSource = useCallback(
+    (source: BuiltinCalendarSourceId) => {
+      const prev = prefs.builtinSources;
+      const next = prev.includes(source) ? prev.filter((s) => s !== source) : [...prev, source];
+      if (next.length === 0 && prefs.kinds.length === 0) return;
+      patchPrefs({ builtinSources: next });
+    },
+    [patchPrefs, prefs.builtinSources, prefs.kinds.length],
+  );
+
+  const openHoliday = useCallback((item: Extract<CalendarRangeItem, { kind: "holiday" }>) => {
+    toast(item.title, {
+      description: builtinSourceLabel(item.source),
+      duration: 2500,
+    });
+  }, []);
 
   const setViewMode = useCallback(
     (next: CalendarViewMode) => {
@@ -362,27 +401,16 @@ export function CalendarApp() {
         <Button type="button" variant="outline" size="sm" onPress={() => applyDay(today)}>
           {"今天"}
         </Button>
-        <Button
-          type="button"
-          size={toggleSize}
-          variant={expandRecurrence ? "default" : "outline"}
-          onPress={() => patchPrefs({ expandRecurrence: !expandRecurrence })}
-        >
-          重复展开
-        </Button>
-        <div className="flex flex-wrap gap-1">
-          {KIND_OPTIONS.map((kind) => (
-            <Button
-              key={kind}
-              type="button"
-              size={toggleSize}
-              variant={kinds.includes(kind) ? "default" : "outline"}
-              onPress={() => toggleKind(kind)}
-            >
-              {kind === "event" ? "事件" : kind === "task" ? "任务" : "项目"}
-            </Button>
-          ))}
-        </div>
+        <CalendarDisplayPopover
+          compact={compact}
+          toggleSize={toggleSize}
+          kinds={kinds}
+          builtinSources={builtinSources}
+          expandRecurrence={expandRecurrence}
+          onToggleKind={toggleKind}
+          onToggleSource={toggleBuiltinSource}
+          onToggleExpandRecurrence={(next) => patchPrefs({ expandRecurrence: next })}
+        />
         <div className="ml-auto flex items-center gap-2">
           <Button
             type="button"
@@ -420,6 +448,7 @@ export function CalendarApp() {
             onEditEvent={openEvent}
             onOpenTask={openTask}
             onOpenProject={openProject}
+            onOpenHoliday={openHoliday}
           />
         </section>
       ) : (
@@ -441,6 +470,7 @@ export function CalendarApp() {
                 onOpenEvent={openEvent}
                 onOpenTask={openTask}
                 onOpenProject={openProject}
+                onOpenHoliday={openHoliday}
                 onDropTaskDue={(taskId, day) => {
                   void patchTaskDueAt(CALENDAR_SUBJECT, taskId, day).then(() => refresh());
                 }}
@@ -456,6 +486,7 @@ export function CalendarApp() {
                 onOpenEvent={openEvent}
                 onOpenTask={openTask}
                 onOpenProject={openProject}
+                onOpenHoliday={openHoliday}
               />
             )}
           </section>
@@ -469,6 +500,7 @@ export function CalendarApp() {
                 onEditEvent={openEvent}
                 onOpenTask={openTask}
                 onOpenProject={openProject}
+                onOpenHoliday={openHoliday}
               />
             </div>
           </section>
