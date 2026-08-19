@@ -85,6 +85,24 @@ export async function createConversation() {
   return { conversation_id: result.conversation_id };
 }
 
+export type ConversationShareTtl = "1h" | "1d" | "1w" | "1mo";
+
+export async function createConversationShare(input: {
+  conversationId: string;
+  ttl?: ConversationShareTtl;
+  posList?: number[];
+}): Promise<{ id: string; expires_at: string; url_path: string }> {
+  requireHabitatFetch("conversation.share.create");
+  return habitat().call(
+    "conversation.share.create",
+    omitUndefined({
+      conversation_id: input.conversationId,
+      ttl: input.ttl,
+      pos_list: input.posList,
+    }),
+  );
+}
+
 export async function getConversationTail(conversationId: string) {
   requireHabitatFetch("conversation.tail");
   return habitat().call("conversation.tail", { conversation_id: conversationId });

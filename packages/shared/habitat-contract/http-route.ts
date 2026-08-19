@@ -29,6 +29,7 @@ export function resolveHttpResponseEncoding(http: HttpRouteMeta): HttpResponseEn
 export const HTTP_ROUTE_OVERRIDES: Partial<Record<string, Partial<HttpRouteMeta>>> = {
   "conversation.messages": { pathParams: ["conversation_id"] },
   "conversation.tail": { pathParams: ["conversation_id"] },
+  "conversation.share.get": { pathParams: ["id"] },
   "vault.get": { verb: "POST" },
   "vault.crypto.get": { verb: "POST" },
 };

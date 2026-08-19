@@ -94,8 +94,22 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
+const shareRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/share/$shareId",
+  component: asRouteComponent(
+    shellLazyRoute(() =>
+      import("@freeanima/features/chat/ui/spa/ShareView.tsx").then(async (mod) => {
+        await import("@freeanima/features/chat/ui/spa/styles.css");
+        return { default: mod.ShareView };
+      }),
+    ),
+  ),
+});
+
 const routeTree = rootRoute.addChildren([
   setupAliasRoute,
+  shareRoute,
   mainLayoutRoute.addChildren([
     indexRoute,
     ...featureRoutes,

@@ -28,6 +28,8 @@ export type DisplayMessageItem = {
   role: "user" | "assistant";
   content: string;
   attachments?: DisplayAttachment[];
+  /** 源消息 pos；多选分享与分页锚点 */
+  pos?: number;
 };
 
 export type DisplayToolBlockItem = {
