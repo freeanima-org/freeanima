@@ -3,7 +3,11 @@ import { omitUndefined, CST_OFFSET_MS, formatCstIso } from "@freeanima/habitat/c
 import type { MessagePayload } from "@freeanima/habitat/core/db/schema";
 import type { LlmCallParams } from "@freeanima/habitat/core/provider";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
-import { appendAutoLlmRun } from "@freeanima/habitat/core/db/pg/auto-llm-run";
+import {
+  appendAutoLlmMessages,
+  finishAutoLlmRun,
+  insertRunningAutoLlmRun,
+} from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { chat, type LlmResponse } from "./llm.ts";
 import type { LlmRuntime } from "./llm-stack.ts";
 import type { SimpleChatMessage } from "./llm-adapt.ts";
@@ -49,9 +53,9 @@ export function generateAutoLlmRunId(): string {
   return `autollm_${ts}_${randomBytes(2).toString("hex")}`;
 }
 
-function toPayloads(messages: AutoLlmChatMessage[], assistantContent: string): MessagePayload[] {
+function toInputPayloads(messages: AutoLlmChatMessage[]): MessagePayload[] {
   const now = formatCstIso();
-  const payloads: MessagePayload[] = messages.map((m) => {
+  return messages.map((m) => {
     if (m.role === "system") {
       return { role: "system", content: m.content, timestamp: now };
     }
@@ -60,46 +64,75 @@ function toPayloads(messages: AutoLlmChatMessage[], assistantContent: string): M
     }
     return { role: "user", content: m.content, timestamp: now };
   });
-  payloads.push({ role: "assistant", content: assistantContent, timestamp: now });
-  return payloads;
 }
 
-async function persistChatRun(row: {
+function assistantPayload(content: string): MessagePayload {
+  return { role: "assistant", content, timestamp: formatCstIso() };
+}
+
+function buildChatMetadata(input: AutoLlmChatInput): Record<string, unknown> {
+  return omitUndefined({
+    ...input.metadata,
+    model: input.model,
+    request_params: input.requestParams,
+    parent_conversation_id: input.parentConversationId,
+    profile_id: input.profileId,
+  });
+}
+
+async function persistChatStart(row: {
   id: string;
   input: AutoLlmChatInput;
-  output: string;
-  status: "ok" | "error";
-  durationMs: number;
-  error?: string;
   startedAt: string;
-  finishedAt: string;
-  messagePayloads: MessagePayload[];
+  inputPayloads: MessagePayload[];
 }): Promise<void> {
   try {
     if (!isPostgresPrimary()) return;
-    await appendAutoLlmRun({
+    await insertRunningAutoLlmRun({
       id: row.id,
       run_name: row.input.runName,
       run_kind: row.input.runKind,
       subject_id: row.input.subjectId,
-      output: row.output.slice(0, OUTPUT_MAX),
-      status: row.status,
-      duration_ms: row.durationMs,
       max_loop_iterations: row.input.maxLoopIterations ?? 1,
       max_duration_ms: row.input.maxDurationMs ?? null,
-      error: row.error ?? null,
-      metadata: {
-        ...row.input.metadata,
-        model: row.input.model,
-        parent_conversation_id: row.input.parentConversationId,
-        profile_id: row.input.profileId,
-      },
+      metadata: buildChatMetadata(row.input),
       created_at: row.startedAt,
-      finished_at: row.finishedAt,
-      messages: row.messagePayloads.map((payload, pos) => ({ pos, payload })),
+      messages: row.inputPayloads.map((payload, pos) => ({ pos, payload })),
     });
   } catch {
-    // 落库失败不得掩盖 chat 结果（单测 mock.module 污染 isPostgresPrimary 时尤甚）
+    // 落库失败不得掩盖 chat 结果
+  }
+}
+
+async function persistChatAssistant(runId: string, pos: number, content: string): Promise<void> {
+  try {
+    if (!isPostgresPrimary()) return;
+    await appendAutoLlmMessages(runId, [{ pos, payload: assistantPayload(content) }]);
+  } catch {
+    // ignore
+  }
+}
+
+async function persistChatFinish(row: {
+  id: string;
+  output: string;
+  status: "ok" | "error";
+  durationMs: number;
+  error?: string;
+  finishedAt: string;
+}): Promise<void> {
+  try {
+    if (!isPostgresPrimary()) return;
+    await finishAutoLlmRun({
+      id: row.id,
+      status: row.status,
+      output: row.output.slice(0, OUTPUT_MAX),
+      duration_ms: row.durationMs,
+      finished_at: row.finishedAt,
+      ...omitUndefined({ error: row.error }),
+    });
+  } catch {
+    // ignore
   }
 }
 
@@ -140,6 +173,8 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
   const runId = generateAutoLlmRunId();
   const startedAt = formatCstIso();
   const startMs = Date.now();
+  const inputPayloads = toInputPayloads(input.messages);
+  await persistChatStart({ id: runId, input, startedAt, inputPayloads });
 
   try {
     const completion = await withWallClockSignal(input.maxDurationMs, async (signal) => {
@@ -164,15 +199,15 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
     const output = (completion.content ?? "").trim();
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
-    await persistChatRun({
+    if (output) {
+      await persistChatAssistant(runId, inputPayloads.length, output);
+    }
+    await persistChatFinish({
       id: runId,
-      input,
-      output: output || "(empty)",
+      output,
       status: "ok",
       durationMs,
-      startedAt,
       finishedAt,
-      messagePayloads: toPayloads(input.messages, output || "(empty)"),
     });
     return omitUndefined({
       runId,
@@ -185,20 +220,17 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
     const message = err instanceof Error ? err.message : String(err);
-    await persistChatRun({
+    await persistChatFinish({
       id: runId,
-      input,
-      output: message,
+      output: "",
       status: "error",
       durationMs,
       error: message,
-      startedAt,
       finishedAt,
-      messagePayloads: toPayloads(input.messages, message),
     });
     return {
       runId,
-      output: message,
+      output: "",
       status: "error",
       error: message,
       durationMs,

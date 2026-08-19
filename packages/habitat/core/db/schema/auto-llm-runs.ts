@@ -20,7 +20,8 @@ export const autoLlmRuns = pgTable(
     error: text("error"),
     metadata: jsonb("metadata").$type<Record<string, unknown> | null>(),
     created_at: pgTimestamptz("created_at").notNull(),
-    finished_at: pgTimestamptz("finished_at").notNull(),
+    /** 结束时刻；`status=running` 时为空 */
+    finished_at: pgTimestamptz("finished_at"),
   },
   (t) => [
     index("idx_auto_llm_runs_kind_finished").on(t.run_kind, t.finished_at),

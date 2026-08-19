@@ -1,9 +1,13 @@
 export * from "./types.ts";
 export {
+  abortOrphanAutoLlmRuns,
+  appendAutoLlmMessages,
   appendAutoLlmRun,
-  purgeStaleAutoLlmRuns,
-  listAutoLlmRuns,
   countAutoLlmRuns,
+  finishAutoLlmRun,
   getAutoLlmRun,
+  insertRunningAutoLlmRun,
   listAutoLlmMessages,
+  listAutoLlmRuns,
+  purgeStaleAutoLlmRuns,
 } from "./repos/auto-llm-run-repo.ts";

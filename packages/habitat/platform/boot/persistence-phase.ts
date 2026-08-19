@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { closeDb, getDb, initDatabase } from "@freeanima/habitat/core/db/pg";
+import { abortOrphanAutoLlmRuns } from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { formatPgStartupError } from "@freeanima/habitat/core/db/pg/startup-error.ts";
 import { initRedis, withRedisLock } from "@freeanima/habitat/core/redis";
 import { runMigrations } from "@freeanima/habitat/core/db";
@@ -62,6 +63,17 @@ export async function bootPersistencePhase(): Promise<PersistencePhaseResult> {
     throw formatPgStartupError(err, { databaseUrl: dbUrl });
   }
   startupLog("Database migrations complete");
+
+  try {
+    const { aborted } = await abortOrphanAutoLlmRuns();
+    if (aborted > 0) {
+      startupLog(`Aborted ${String(aborted)} orphan AutoLlm run(s)`);
+    }
+  } catch (err) {
+    startupLog(
+      `abort orphan AutoLlm runs failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
 
   startupLog("Loading runtime config from database…");
   const config = await RuntimeConfigStore.open();

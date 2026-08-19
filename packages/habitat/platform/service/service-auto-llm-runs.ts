@@ -34,7 +34,7 @@ export async function listAutoLlmRuns(
   _deps: RuntimeDeps,
   opts?: {
     run_kind?: string;
-    status?: "ok" | "error";
+    status?: "running" | "ok" | "error";
     offset?: number;
     limit?: number;
   },
