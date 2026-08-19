@@ -121,9 +121,10 @@ export type MessageTextItem = {
   message_id: string;
   role: "user" | "assistant";
   content: string;
+  timestamp?: string;
 };
 
-/** 按传入 messageIds 顺序返回 user/assistant 非空正文（含 role）。 */
+/** 按传入 messageIds 顺序返回 user/assistant 非空正文（含 role / timestamp）。 */
 export async function getMessageTextItemsByIds(
   conversation_id: string,
   messageIds: string[],
@@ -141,10 +142,12 @@ export async function getMessageTextItemsByIds(
     if (payload.role !== "assistant" && payload.role !== "user") continue;
     const raw = payload.content;
     if (typeof raw === "string" && raw.trim()) {
+      const timestamp = payload.timestamp?.trim();
       byId.set(row.id, {
         message_id: row.id,
         role: payload.role,
         content: raw,
+        ...(timestamp ? { timestamp } : {}),
       });
     }
   }

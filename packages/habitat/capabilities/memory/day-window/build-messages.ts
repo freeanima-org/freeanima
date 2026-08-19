@@ -7,6 +7,11 @@ import { CST_OFFSET_MS } from "@freeanima/habitat/core/util";
 import type { LimbicMemoryRow, SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 import { getConversationMetaLite, listMessages } from "@freeanima/habitat/core/db/pg/conversation";
 import { listLimbicMemoryBySession } from "@freeanima/habitat/core/db/pg/limbic-memory";
+import {
+  ORGANIZE_MEMORY_FIELDS,
+  renderSemanticMemoryList,
+  toSemanticMemoryPromptItem,
+} from "@freeanima/habitat/core/hooks/prompt";
 import { filterRecallableMessages } from "../message-filter.ts";
 
 /** @deprecated 历史名；语义为 CST 日窗 */
@@ -149,22 +154,9 @@ export function formatDialogueMessage(blocks: LightSleepConversationBlock[]): {
 }
 
 export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string {
-  if (rows.length === 0) return "(No existing active memories overlapping these sessions)";
-  const lines = [
-    `Related existing memories (${rows.length}, pre-filtered by source_conversations)`,
-  ];
-  for (const row of rows) {
-    const sources =
-      row.source_conversations.length > 0 ? `[${row.source_conversations.join(", ")}]` : "[]";
-    const observed = row.observed_at?.toISOString().slice(0, 19) ?? "?";
-    const occurred = row.occurred_at?.trim() ? ` occurred=${row.occurred_at}` : "";
-    lines.push(
-      `[${row.id}] (${row.type}) sources=${sources} observed=${observed}${occurred}${row.pinned ? " 📌" : ""}`,
-    );
-    lines.push(row.content);
-    lines.push("");
-  }
-  return lines.join("\n").trim();
+  return renderSemanticMemoryList(rows.map(toSemanticMemoryPromptItem), {
+    fields: ORGANIZE_MEMORY_FIELDS,
+  }).text;
 }
 
 /** retain 任务规格（层 2）；独立抽取任务，非对话人设 */
@@ -174,7 +166,9 @@ export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留�
 去重：仅与相关既有记忆比较；更准则跳过或更新；补充则 update；不再适用则 deprecate；全新则 create。
 本 run 内同一 id 成功写入后勿再 create/update/deprecate（除非上次 error）。
 工具：memory_semantic_create / memory_semantic_update / memory_semantic_deprecate。
-observed_at = 事实首次被提及的消息时间；occurred_at = 内容描述的事件时间（可模糊）。
+对话消息带 role（user/assistant）与 t（发送时间）：按说话人区分人物归属，勿把 assistant 的话当成用户事实（除非明确在描述用户）。
+observed_at = 事实首次被提及的消息时间（可参考 t）；occurred_at = 内容描述的事件时间（可模糊）。
+既有记忆以 <memory> 属性为准（id / type / sources / observed / occurred）。
 写完后输出约 20 字总结收尾，勿再调工具。`;
 
 /** @deprecated 使用 RETAIN_TASK_SPEC + composeAutoLlmPrompt */

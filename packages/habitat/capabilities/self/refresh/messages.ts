@@ -4,6 +4,11 @@ import {
   type SelfBlockMaintainableKey,
 } from "@freeanima/habitat/core/db/pg/self-layer/types";
 import { formatMemoryReferenceMarker } from "@freeanima/habitat/core/db/pg/memory-reference/markers";
+import {
+  SELF_LAYER_MEMORY_FIELDS,
+  renderSemanticMemoryList,
+  toSemanticMemoryPromptItem,
+} from "@freeanima/habitat/core/hooks/prompt";
 import { SELF_BLOCK_HEADINGS } from "../blocks.ts";
 import type { SelfBlockView } from "../compose.ts";
 
@@ -12,7 +17,7 @@ export const SELF_LAYER_PROPOSAL_TITLE = "自我层维护建议";
 
 export const SELF_LAYER_REFRESH_INSTRUCTION = `You maintain a digital life's self layer (who I am), not episodic logs.
 
-Evidence below is **high-survival resident semantic memory** only (pinned and/or highly referenced, status=active). Do **not** invent facts; cite evidence with [[anima:id]] markers.
+Evidence below is **high-survival resident semantic memory** only (pinned and/or highly referenced, status=active). Do **not** invent facts; cite evidence by <memory id> (JSON evidence_ids are those numeric ids).
 
 Decide whether any of these four blocks should change:
 - self_model
@@ -32,13 +37,9 @@ or
 
 export function formatEvidenceLines(facts: SemanticMemoryRow[]): string {
   if (facts.length === 0) return "(No resident semantic memory)";
-  return facts
-    .map((f) => {
-      const pin = f.pinned ? "pinned" : "refs";
-      const refs = f.reference_count ?? 0;
-      return `- ${formatMemoryReferenceMarker(f.id)} [${pin} refs=${refs}] ${f.content.trim()}`;
-    })
-    .join("\n");
+  return renderSemanticMemoryList(facts.map(toSemanticMemoryPromptItem), {
+    fields: SELF_LAYER_MEMORY_FIELDS,
+  }).text;
 }
 
 export function formatMaintainableBlocks(views: SelfBlockView[]): string {

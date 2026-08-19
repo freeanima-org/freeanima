@@ -42,6 +42,8 @@ describe("temporal-summary tick material bounds", () => {
       { t: "2026-07-31T09:00:00+08:00", role: "user" as const, content: "before" },
       { t: "2026-07-31T10:00:00+08:00", role: "user" as const, content: "after" },
     ];
-    expect(formatMessagesForSummary(msgs, after)).toBe("2026-07-31T10:00:00 user: after");
+    expect(formatMessagesForSummary(msgs, after)).toBe(
+      '<message role="user" t="2026-07-31T10:00:00">after</message>',
+    );
   });
 });

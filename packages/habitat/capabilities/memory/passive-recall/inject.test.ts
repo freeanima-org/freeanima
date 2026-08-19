@@ -41,7 +41,8 @@ describe("stripTimePrefixFromUserContent", () => {
 describe("passive recall inject", () => {
   it("formats memory block with citation markers", () => {
     const block = formatPassiveMemoryBlock([sampleHit(4057, "Alice lives in Shanghai")], 500);
-    expect(block).toContain("[[anima:4057]] Alice lives in Shanghai");
+    expect(block).toContain('<memory id="4057">Alice lives in Shanghai</memory>');
+    expect(block).not.toContain("[[anima:4057]]");
     expect(block).toContain("<passive_memory>");
     expect(block).toContain("</passive_memory>");
   });

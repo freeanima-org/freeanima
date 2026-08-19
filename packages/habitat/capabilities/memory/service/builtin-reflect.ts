@@ -70,7 +70,13 @@ async function runConsolidateBatch(opts: {
   const { systemPrompt, userMessages } = composeAutoLlmPrompt({
     kind: "memory-reflect",
     taskSpec: REFLECT_CONSOLIDATE_TASK_SPEC,
-    dataParts: [{ tag: PROMPT_XML_TAGS.semanticMemories, body: text }],
+    dataParts: [
+      {
+        tag: PROMPT_XML_TAGS.semanticMemories,
+        body: text,
+        attrs: { count: String(batchRows.length) },
+      },
+    ],
   });
 
   const llm = await runReflectLlm({
@@ -102,7 +108,13 @@ async function runPinTrimBatch(opts: {
     kind: "memory-reflect",
     taskSpec: REFLECT_CONSOLIDATE_PIN_TASK_SPEC,
     taskParams: { pinned_count: pinnedCount, pinned_max: pinnedMax },
-    dataParts: [{ tag: PROMPT_XML_TAGS.semanticMemories, body: text }],
+    dataParts: [
+      {
+        tag: PROMPT_XML_TAGS.semanticMemories,
+        body: text,
+        attrs: { count: String(batchRows.length) },
+      },
+    ],
   });
 
   const llm = await runReflectLlm({

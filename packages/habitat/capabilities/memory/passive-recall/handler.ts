@@ -8,6 +8,7 @@ import { isCronSession } from "@freeanima/habitat/core/db/pg/conversation";
 import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { isFtsQueryError } from "@freeanima/habitat/core/util";
 
+import { parseRenderedMemoryIds } from "@freeanima/habitat/core/hooks/prompt";
 import { previewPassiveContent, type PassiveRecallDebugTrace } from "./debug-types.ts";
 import {
   formatPassiveMemoryBlock,
@@ -136,9 +137,7 @@ export function createPassiveMemoryRecallHandler() {
     }
 
     const block = formatPassiveMemoryBlock(hits, config.max_chars);
-    const injectedIds = new Set(
-      [...block.matchAll(/\[\[anima:(\d+)\]\]/g)].map((m) => Number(m[1])),
-    );
+    const injectedIds = new Set(parseRenderedMemoryIds(block));
     if (debug) {
       debug.injected = hits
         .filter((h) => injectedIds.has(h.semantic_memory_id))

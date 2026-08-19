@@ -30,6 +30,23 @@ export {
   type PromptXmlTag,
   type WrapPromptXmlOptions,
 } from "./xml-wrap.ts";
+export {
+  ORGANIZE_MEMORY_FIELDS,
+  CONVERSATION_MEMORY_FIELDS,
+  RESIDENT_MEMORY_FIELDS,
+  SELF_LAYER_MEMORY_FIELDS,
+  formatPromptAttrTimestamp,
+  parseRenderedMemoryIds,
+  renderConversationMessage,
+  renderConversationMessageList,
+  renderSemanticMemoryItem,
+  renderSemanticMemoryList,
+  toSemanticMemoryPromptItem,
+  type ConversationMessagePromptItem,
+  type MemoryPromptField,
+  type RenderedMemoryList,
+  type SemanticMemoryPromptItem,
+} from "./semantic-memory-render.ts";
 export { materializeSystemPromptSection } from "./fold.ts";
 export {
   USER_TIME_PREFIX_RE,

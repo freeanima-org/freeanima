@@ -91,8 +91,11 @@ describe("buildSelfLayerRefreshDataMessage", () => {
         },
       ],
     );
-    expect(msg).toContain("[[anima:9]]");
+    expect(msg).toContain('<memory id="9"');
+    expect(msg).toContain('pinned="true"');
+    expect(msg).toContain('refs="5"');
     expect(msg).toContain("Partner prefers direct answers");
+    expect(msg).not.toContain("[[anima:9]]");
     expect(msg).toContain("I am a helper.");
     expect(msg).not.toContain(SELF_LAYER_REFRESH_INSTRUCTION);
   });
@@ -119,7 +122,8 @@ describe("buildSelfLayerRefreshUserMessage", () => {
         },
       ],
     );
-    expect(msg).toContain("[[anima:9]]");
+    expect(msg).toContain('<memory id="9"');
+    expect(msg).not.toContain("[[anima:9]]");
     expect(msg).toContain(SELF_LAYER_REFRESH_INSTRUCTION);
   });
 });

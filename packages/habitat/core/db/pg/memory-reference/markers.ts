@@ -39,7 +39,7 @@ export function parseMemoryReferenceMarkers(content: string): number[] {
 
 /** System prompt rule: cite semantic memories used in assistant replies */
 export const MEMORY_REFERENCE_CITATION_RULE =
-  "When your reply uses semantic memory—whether from the resident memory list (inline `[[anima:id]]`), " +
+  "When your reply uses semantic memory—whether from the resident or passive list (`<memory id>`), " +
   "`memory_semantic_search` results (`semantic_memory_id`), or prior message markers—" +
   "append each cited `[[anima:id]]` at the end of your reply. " +
   "Do not use this marker for conversation, limbic, or autobiographical search hits.";

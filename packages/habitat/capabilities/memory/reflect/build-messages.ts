@@ -1,23 +1,12 @@
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 import { listActiveSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
+import {
+  ORGANIZE_MEMORY_FIELDS,
+  renderSemanticMemoryList,
+  toSemanticMemoryPromptItem,
+} from "@freeanima/habitat/core/hooks/prompt";
 
-// ── semantic_memories：本批精简 JSON ──
-
-/** Serialize each memory as compact JSON（仅巩固有用字段） */
-export function rowToJsonCompact(row: SemanticMemoryRow): string {
-  return JSON.stringify({
-    id: row.id,
-    type: row.type,
-    content: row.content,
-    source_conversations: row.source_conversations,
-    observed: row.observed_at?.toISOString().slice(0, 19) ?? null,
-    occurred: row.occurred_at ?? null,
-  });
-}
-
-const FULL_JSON_WARN = 10_000;
-const FULL_JSON_BATCH = 100_000;
-const FULL_JSON_LIMIT = 300_000;
+// ── semantic_memories：本批 XML 清单 ──
 
 export function formatAllMemoriesMessage(rows: SemanticMemoryRow[]): {
   text: string;
@@ -27,14 +16,16 @@ export function formatAllMemoriesMessage(rows: SemanticMemoryRow[]): {
   if (rows.length === 0) {
     return { text: "(Semantic memory store is empty)", bytes: 0, truncated: false };
   }
-  const lines: string[] = [`# All semantic memories (${rows.length} active entries)`];
-  for (const row of rows) {
-    lines.push(rowToJsonCompact(row));
-  }
-  const text = lines.join("\n");
+  const { text } = renderSemanticMemoryList(rows.map(toSemanticMemoryPromptItem), {
+    fields: ORGANIZE_MEMORY_FIELDS,
+  });
   const bytes = Buffer.byteLength(text, "utf-8");
   return { text, bytes, truncated: false };
 }
+
+const FULL_JSON_WARN = 10_000;
+const FULL_JSON_BATCH = 100_000;
+const FULL_JSON_LIMIT = 300_000;
 
 export function checkJsonSize(bytes: number): "ok" | "warn" | "batch" | "error" {
   if (bytes < FULL_JSON_WARN) return "ok";

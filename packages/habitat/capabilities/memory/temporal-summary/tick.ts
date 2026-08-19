@@ -11,6 +11,7 @@ import {
   listMessages,
 } from "@freeanima/habitat/core/db/pg/conversation";
 import type { TemporalDayChunk, TemporalDayJson } from "@freeanima/habitat/core/db/schema";
+import { renderConversationMessageList } from "@freeanima/habitat/core/hooks/prompt";
 import { filterRecallableMessages } from "../message-filter.ts";
 import {
   cstDateString,
@@ -59,11 +60,13 @@ export function formatMessagesForSummary(
   msgs: ReturnType<typeof filterRecallableMessages>,
   afterAt?: string,
 ): string {
-  const lines: string[] = [];
-  for (const msg of filterMessagesAfterAt(msgs, afterAt)) {
-    lines.push(`${msg.t.slice(0, 19)} ${msg.role}: ${msg.content}`);
-  }
-  return lines.join("\n");
+  return renderConversationMessageList(
+    filterMessagesAfterAt(msgs, afterAt).map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+      t: msg.t,
+    })),
+  );
 }
 
 export async function runTemporalSummaryTick(opts: {
