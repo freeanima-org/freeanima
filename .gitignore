@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# direnv / nix develop 本地缓存
+.direnv/
+
 # Local runtime config (never commit)
 config.yaml
 *.local.yaml
