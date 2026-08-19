@@ -1,3 +1,7 @@
+---
+title: 番茄钟
+---
+
 # 番茄钟
 
 本机专注计时（Habitat `pomodoro.*` + 本地 active）。
