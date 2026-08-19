@@ -346,7 +346,7 @@ export async function listSemanticMemoryClusters(
 ): Promise<{ items: Array<{ cluster_id: number | null; count: number; title: string | null }> }> {
   const { listSemanticMemoryClusterStats } =
     await import("@freeanima/habitat/core/db/pg/search/clustering-repo.ts");
-  const { ensureSemanticClusterTitle } =
+  const { peekSemanticClusterTitle } =
     await import("@freeanima/habitat/capabilities/memory/clustering/cluster-title.ts");
   const stats = await listSemanticMemoryClusterStats({ status: "active" });
   const items: Array<{ cluster_id: number | null; count: number; title: string | null }> = [];
@@ -354,7 +354,7 @@ export async function listSemanticMemoryClusters(
     let title: string | null = null;
     if (row.cluster_id != null) {
       try {
-        title = await ensureSemanticClusterTitle(row.cluster_id);
+        title = await peekSemanticClusterTitle(row.cluster_id);
       } catch {
         title = null;
       }

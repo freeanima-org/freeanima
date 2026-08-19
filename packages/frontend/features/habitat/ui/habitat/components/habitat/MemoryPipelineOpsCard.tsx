@@ -5,7 +5,7 @@ import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx
 import { omitUndefined } from "@freeanima/features/habitat/ui/habitat/lib/omit-undefined.ts";
 import { useMemoryPipeline } from "@freeanima/features/habitat/ui/habitat/lib/use-memory-pipeline.ts";
 
-/** 数据维护网格：会话清理 + 完整维护周期 */
+/** 数据维护网格：会话清理、补全分族名称、完整维护周期 */
 export function MemoryPipelineOpsCard() {
   const [pipelineDay, setPipelineDay] = useState("");
 
@@ -55,6 +55,15 @@ export function MemoryPipelineOpsCard() {
             }
           >
             {runningStepId === "conversation-cleanup" ? "清理中…" : "会话清理"}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            isDisabled={pipelineBusy}
+            onClick={() => void startStep("semantic-cluster-title")}
+          >
+            {runningStepId === "semantic-cluster-title" ? "补全中…" : "补全分族名称"}
           </Button>
           <Button
             type="button"

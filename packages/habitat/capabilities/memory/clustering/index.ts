@@ -7,6 +7,7 @@ export {
 } from "./dbscan.ts";
 export { runHdbscan, type HdbscanOptions } from "./hdbscan.ts";
 export {
+  peekSemanticClusterTitle,
   ensureSemanticClusterTitle,
   warmSemanticClusterTitles,
   sanitizeSemanticClusterTitle,

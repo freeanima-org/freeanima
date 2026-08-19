@@ -191,6 +191,46 @@ describe("maybeGenerateConversationTitleAsync", () => {
     expect(setTitle).toHaveBeenCalledTimes(1);
   });
 
+  it("serializes title LLM across different conversations", async () => {
+    const deps = bindTestDeps();
+    const getTitle = spyOn(deps.conversation, "getConversationTitle").mockResolvedValue("");
+    const userCount = spyOn(deps.conversation, "countUserMessages").mockResolvedValue(1);
+    const resolvers: Array<(v: { ok: true; title: string }) => void> = [];
+    const gen = spyOn(sessionTitleLlm, "generateConversationTitle").mockImplementation(
+      () =>
+        new Promise<{ ok: true; title: string }>((resolve) => {
+          resolvers.push(resolve);
+        }),
+    );
+    const setTitle = spyOn(deps.conversation, "setConversationTitle").mockResolvedValue();
+    restores.push(getTitle, userCount, gen, setTitle);
+
+    maybeGenerateConversationTitleAsync(deps, "sid-a", "alpha");
+    maybeGenerateConversationTitleAsync(deps, "sid-b", "beta");
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
+
+    expect(gen).toHaveBeenCalledTimes(1);
+    expect(resolvers).toHaveLength(1);
+
+    resolvers[0]!({ ok: true, title: "A" });
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
+
+    expect(gen).toHaveBeenCalledTimes(2);
+    expect(resolvers).toHaveLength(2);
+
+    resolvers[1]!({ ok: true, title: "B" });
+    await new Promise((r) => {
+      setTimeout(r, 0);
+    });
+
+    expect(setTitle).toHaveBeenCalledWith("sid-a", "A");
+    expect(setTitle).toHaveBeenCalledWith("sid-b", "B");
+  });
+
   it("does not overwrite when title appears before LLM returns", async () => {
     const deps = bindTestDeps();
     let titleReads = 0;
