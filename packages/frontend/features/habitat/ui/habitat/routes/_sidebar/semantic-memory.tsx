@@ -549,7 +549,7 @@ function SemanticMemoryPage() {
         isOpen={passiveOpen}
         onOpenChange={setPassiveSheetOpen}
         side="right"
-        className="w-full sm:max-w-xl md:max-w-2xl gap-0 p-0 overflow-hidden"
+        className="w-full gap-0 p-0 overflow-hidden data-[side=right]:w-full data-[side=right]:sm:max-w-4xl data-[side=right]:lg:max-w-5xl"
       >
         <SheetHeader className="border-b shrink-0 px-4 py-3">
           <SheetTitle>{"🔎 被动召回调试"}</SheetTitle>
