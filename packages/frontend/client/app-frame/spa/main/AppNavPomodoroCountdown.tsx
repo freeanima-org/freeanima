@@ -7,7 +7,7 @@ export function AppNavPomodoroCollapsedClock({ moduleId }: { moduleId: ShellModu
   const { clock } = usePomodoroNavCountdown();
   if (moduleId !== "pomodoro" || !clock) return null;
   return (
-    <span className="app-rail-nav-pomodoro-clock tabular-nums" aria-hidden>
+    <span className="app-rail-nav-pomodoro-clock text-muted-foreground tabular-nums" aria-hidden>
       {clock}
     </span>
   );

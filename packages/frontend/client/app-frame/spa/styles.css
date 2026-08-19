@@ -145,7 +145,6 @@ html[data-app-ui="1"] body {
   font-size: 0.5625rem;
   line-height: 0.625rem;
   letter-spacing: -0.03em;
-  color: var(--muted-foreground);
 }
 
 .app-module-rail[data-expanded="false"] .app-rail-nav-item--pomodoro-active {
