@@ -325,7 +325,7 @@ export async function listConversationIds(
     })
     .from(conversations)
     .where(where)
-    .orderBy(desc(conversations.updated_at));
+    .orderBy(...conversationListOrderBy());
   return rows.map((r) => r.id);
 }
 
@@ -370,6 +370,15 @@ function buildConversationListWhere(platform?: string | null, includeArchived?: 
   return and(...conds);
 }
 
+/** 置顶优先，再按 pinned_at / updated_at 降序（NULL pinned 排在未置顶组） */
+function conversationListOrderBy() {
+  return [
+    sql`(CASE WHEN ${conversations.pinned_at} IS NULL THEN 0 ELSE 1 END) DESC`,
+    desc(conversations.pinned_at),
+    desc(conversations.updated_at),
+  ] as const;
+}
+
 function mapConversationSummaryRow(row: {
   id: string;
   title: string | null;
@@ -377,6 +386,7 @@ function mapConversationSummaryRow(row: {
   created_at: Date;
   updated_at: Date;
   archived_at?: Date | null;
+  pinned_at?: Date | null;
   unread?: boolean | null;
 }): ConversationSummaryRow {
   const raw = row.platform_info?.platform;
@@ -387,6 +397,7 @@ function mapConversationSummaryRow(row: {
     updated_at: row.updated_at,
     platform: typeof raw === "string" ? raw : "",
     archived_at: row.archived_at ?? null,
+    pinned_at: row.pinned_at ?? null,
     ...(row.unread === true ? { unread: true } : row.unread === false ? { unread: false } : {}),
   };
 }
@@ -425,11 +436,12 @@ export async function listConversationSummaries(
       created_at: conversations.created_at,
       updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
+      pinned_at: conversations.pinned_at,
       ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)
     .where(where)
-    .orderBy(desc(conversations.updated_at));
+    .orderBy(...conversationListOrderBy());
   return rows.map(mapConversationSummaryRow);
 }
 
@@ -463,11 +475,12 @@ export async function listConversationSummariesPage(opts?: {
       created_at: conversations.created_at,
       updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
+      pinned_at: conversations.pinned_at,
       ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)
     .where(where)
-    .orderBy(desc(conversations.updated_at))
+    .orderBy(...conversationListOrderBy())
     .limit(limit)
     .offset(offset);
 
@@ -505,6 +518,23 @@ export async function unarchiveConversation(conversation_id: string): Promise<vo
   await db
     .update(conversations)
     .set({ archived_at: null, updated_at: pgNow() })
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function pinConversation(conversation_id: string): Promise<void> {
+  const db = getDb();
+  const now = pgNow();
+  await db
+    .update(conversations)
+    .set({ pinned_at: now, updated_at: now })
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function unpinConversation(conversation_id: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set({ pinned_at: null, updated_at: pgNow() })
     .where(eq(conversations.id, conversation_id));
 }
 

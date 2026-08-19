@@ -3,6 +3,7 @@
 tests/integration/db/db-conversation.test.ts
 tests/integration/db/auto-llm-run-pg.test.ts
 tests/integration/db/conversation-archive.test.ts
+tests/integration/db/conversation-pin.test.ts
 tests/integration/db/conversation-read-state-pg.test.ts
 tests/integration/engine/conversation.test.ts
 tests/integration/engine/conversation-origin.test.ts

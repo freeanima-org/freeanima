@@ -13,6 +13,8 @@ export type ConversationSummaryRow = {
   updated_at: Date;
   platform: string;
   archived_at?: Date | null;
+  /** 置顶时间；非空表示已置顶 */
+  pinned_at?: Date | null;
   /** 用户未读：存在 pos > last_read_pos 的 assistant 消息 */
   unread?: boolean;
 };

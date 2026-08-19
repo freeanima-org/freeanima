@@ -23,6 +23,8 @@ import type {
   ConversationPatchTitleInput,
   ConversationArchiveInput,
   ConversationUnarchiveInput,
+  ConversationPinInput,
+  ConversationUnpinInput,
   ConversationDeleteInput,
   ConversationMutateOutput,
   ConversationSubscribeInput,
@@ -273,6 +275,8 @@ export const RPC_PROTOCOL_METHODS = [
   "conversation.patchTitle",
   "conversation.archive",
   "conversation.unarchive",
+  "conversation.pin",
+  "conversation.unpin",
   "conversation.delete",
   "conversation.rollbackBeforeLastUser",
   "conversation.subscribe",
@@ -401,6 +405,8 @@ export type RpcRouterInputs = {
   "conversation.patchTitle": ConversationPatchTitleInput;
   "conversation.archive": ConversationArchiveInput;
   "conversation.unarchive": ConversationUnarchiveInput;
+  "conversation.pin": ConversationPinInput;
+  "conversation.unpin": ConversationUnpinInput;
   "conversation.delete": ConversationDeleteInput;
   "conversation.rollbackBeforeLastUser": ConversationDeleteInput;
   "conversation.subscribe": ConversationSubscribeInput;
@@ -532,6 +538,8 @@ export type RpcRouterOutputs = {
   "conversation.patchTitle": { ok: true };
   "conversation.archive": ConversationMutateOutput;
   "conversation.unarchive": ConversationMutateOutput;
+  "conversation.pin": ConversationMutateOutput;
+  "conversation.unpin": ConversationMutateOutput;
   "conversation.delete": ConversationMutateOutput;
   "conversation.rollbackBeforeLastUser": ConversationMutateOutput;
   "conversation.subscribe": { ok: true };

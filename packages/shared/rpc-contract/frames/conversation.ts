@@ -37,6 +37,8 @@ export const conversationSummarySchema = z.object({
   platform: z.string().optional(),
   updated_at: z.string().optional(),
   archived_at: z.string().nullable().optional(),
+  /** 置顶时间；非空表示已置顶 */
+  pinned_at: z.string().nullable().optional(),
   /** 用户未读：存在尚未读到的 assistant 回复 */
   unread: z.boolean().optional(),
 });
@@ -122,6 +124,18 @@ export const conversationUnarchiveInputSchema = z.object({
 });
 
 export type ConversationUnarchiveInput = z.infer<typeof conversationUnarchiveInputSchema>;
+
+export const conversationPinInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type ConversationPinInput = z.infer<typeof conversationPinInputSchema>;
+
+export const conversationUnpinInputSchema = z.object({
+  conversation_id: z.string().min(1),
+});
+
+export type ConversationUnpinInput = z.infer<typeof conversationUnpinInputSchema>;
 
 export const conversationDeleteInputSchema = z.object({
   conversation_id: z.string().min(1),

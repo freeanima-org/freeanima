@@ -37,6 +37,7 @@ export const conversationSelectSchema = z.object({
   functions: conversationFunctionsSchema,
   debug: z.boolean(),
   archived_at: z.coerce.date().nullable().optional(),
+  pinned_at: z.coerce.date().nullable().optional(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
 });
@@ -64,6 +65,7 @@ export const conversationInsertSchema = z.object({
   functions: conversationFunctionsSchema,
   debug: z.boolean().optional(),
   archived_at: z.coerce.date().nullable().optional(),
+  pinned_at: z.coerce.date().nullable().optional(),
   created_at: z.coerce.date(),
   updated_at: z.coerce.date(),
 });

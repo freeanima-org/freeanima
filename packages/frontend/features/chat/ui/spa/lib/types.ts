@@ -35,6 +35,8 @@ export type ConversationListItem = {
   created: string;
   platform: string;
   archivedAt?: string | null;
+  /** 置顶时间；非空表示已置顶 */
+  pinnedAt?: string | null;
   /** 用户未读 */
   unread?: boolean;
 };

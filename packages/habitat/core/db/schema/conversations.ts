@@ -53,12 +53,15 @@ export const conversations = pgTable(
     functions: jsonb("functions").$type<ConversationFunctionsJson>().notNull().default([]),
     debug: boolean("debug").notNull().default(false),
     archived_at: pgTimestamptz("archived_at"),
+    /** 置顶时间；非空表示已置顶，列表优先排在前面 */
+    pinned_at: pgTimestamptz("pinned_at"),
     created_at: pgTimestamptz("created_at").notNull(),
     updated_at: pgTimestamptz("updated_at").notNull(),
   },
   (t) => [
     index("idx_conversations_updated_at").on(t.updated_at.desc()),
     index("idx_conversations_archived_updated").on(t.archived_at, t.updated_at.desc()),
+    index("idx_conversations_pinned_updated").on(t.pinned_at, t.updated_at.desc()),
     // platform_info->>'platform' 表达式索引：见 migrations 追加 SQL
   ],
 );

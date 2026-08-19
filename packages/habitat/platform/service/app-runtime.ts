@@ -340,6 +340,14 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return conversations.unarchiveConversation(this.runtimeDeps(), conversationId, platform);
   }
 
+  pinConversation(conversationId: string, platform = ""): Promise<{ ok: boolean }> {
+    return conversations.pinConversation(this.runtimeDeps(), conversationId, platform);
+  }
+
+  unpinConversation(conversationId: string, platform = ""): Promise<{ ok: boolean }> {
+    return conversations.unpinConversation(this.runtimeDeps(), conversationId, platform);
+  }
+
   deleteConversation(conversationId: string, platform = ""): Promise<{ ok: boolean }> {
     return conversations.deleteConversation(this.runtimeDeps(), conversationId, platform);
   }

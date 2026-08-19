@@ -195,6 +195,8 @@ export function ChatApp() {
   const setShowArchived = useConversationsStore((s) => s.setShowArchived);
   const archiveConversationFn = useConversationsStore((s) => s.archiveConversation);
   const unarchiveConversationFn = useConversationsStore((s) => s.unarchiveConversation);
+  const pinConversationFn = useConversationsStore((s) => s.pinConversation);
+  const unpinConversationFn = useConversationsStore((s) => s.unpinConversation);
   const deleteConversationFn = useConversationsStore((s) => s.deleteConversation);
   const appendItem = useConversationsStore((s) => s.appendItem);
   const appendItemForConversation = useConversationsStore((s) => s.appendItemForConversation);
@@ -908,6 +910,16 @@ export function ChatApp() {
     await unarchiveConversationFn(id);
   };
 
+  const handlePin = async (id: string) => {
+    closeConversationMenu();
+    await pinConversationFn(id);
+  };
+
+  const handleUnpin = async (id: string) => {
+    closeConversationMenu();
+    await unpinConversationFn(id);
+  };
+
   const toggleShowArchived = () => {
     void setShowArchived(!showArchived);
   };
@@ -916,6 +928,9 @@ export function ChatApp() {
     const conv = conversations.find((s) => s.id === id);
     return [
       { label: "✏️ 重命名", onClick: () => startRename(id) },
+      ...(conv?.pinnedAt
+        ? [{ label: "取消置顶", onClick: () => void handleUnpin(id) }]
+        : [{ label: "置顶", onClick: () => void handlePin(id) }]),
       ...(conv?.archivedAt
         ? [{ label: "取消归档", onClick: () => void handleUnarchive(id) }]
         : [{ label: "归档", onClick: () => void handleArchive(id) }]),

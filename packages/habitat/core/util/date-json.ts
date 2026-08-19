@@ -11,6 +11,7 @@ export const DATE_JSON_KEYS = new Set([
   "finished_at",
   "started_at",
   "archived_at",
+  "pinned_at",
   "observed_at",
   "timestamp",
   "last_used_at",

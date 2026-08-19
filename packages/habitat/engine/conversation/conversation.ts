@@ -38,6 +38,8 @@ export {
   setConversationTitle,
   archiveConversation,
   unarchiveConversation,
+  pinConversation,
+  unpinConversation,
   deleteUserConversation,
   getConversationTitle,
   getConversationCwd,

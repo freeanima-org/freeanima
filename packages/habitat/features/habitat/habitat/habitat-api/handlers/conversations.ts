@@ -34,6 +34,7 @@ export async function listConversations(
       platform: s.platform,
       updated_at: s.updated_at,
       archived_at: s.archived_at ?? null,
+      pinned_at: s.pinned_at ?? null,
     })),
   };
 }
