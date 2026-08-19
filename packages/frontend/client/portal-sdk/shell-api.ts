@@ -172,6 +172,11 @@ export type ShellApi = {
   /** Coding 前哨窗显隐（hide 保 attach） */
   getCodingVisible?: () => Promise<boolean>;
   setCodingVisible?: (visible: boolean) => Promise<void>;
+  /** 番茄迷你置顶窗显隐（会话驱动；hide 不 close） */
+  getPomodoroFloatVisible?: () => Promise<boolean>;
+  setPomodoroFloatVisible?: (visible: boolean) => Promise<void>;
+  /** 聚焦主窗并打开番茄钟页 */
+  openPomodoro?: () => Promise<void>;
   /** 设置页 → overlay：入队文字气泡（测试 / 调试） */
   enqueueCompanionBubble?: (text: string) => Promise<void>;
   /** overlay：监听入队气泡请求 */

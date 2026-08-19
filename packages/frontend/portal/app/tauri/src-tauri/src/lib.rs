@@ -35,6 +35,10 @@ const COMPANION_H: f64 = 260.0;
 const CODING_W: f64 = 1280.0;
 #[cfg(desktop)]
 const CODING_H: f64 = 800.0;
+#[cfg(desktop)]
+const POMODORO_FLOAT_W: f64 = 220.0;
+#[cfg(desktop)]
+const POMODORO_FLOAT_H: f64 = 88.0;
 const DEFAULT_HABITAT: &str = "http://127.0.0.1:2658";
 const SHELL_PREFS_FILE: &str = "desktop-shell.json";
 
@@ -57,7 +61,7 @@ fn argv_has_quit_for_install(args: impl IntoIterator<Item = impl AsRef<str>>) ->
 #[cfg(desktop)]
 fn quit_for_install(app: &AppHandle) {
   IS_QUITTING.store(true, Ordering::SeqCst);
-  for label in ["main", "companion", "coding"] {
+  for label in ["main", "companion", "coding", "pomodoro-float"] {
     if let Some(w) = app.get_webview_window(label) {
       let _ = w.hide();
       let _ = w.close();
@@ -286,6 +290,9 @@ struct ShellState {
   companion_visible: Mutex<bool>,
   #[cfg(desktop)]
   coding_visible: Mutex<bool>,
+  /// 番茄迷你窗显隐（会话驱动，不持久化）
+  #[cfg(desktop)]
+  pomodoro_float_visible: Mutex<bool>,
   #[cfg(desktop)]
   clickthrough: Mutex<bool>,
   #[cfg(desktop)]
@@ -319,6 +326,8 @@ impl Default for ShellState {
       companion_visible: Mutex::new(prefs.companion_visible),
       #[cfg(desktop)]
       coding_visible: Mutex::new(prefs.coding_visible),
+      #[cfg(desktop)]
+      pomodoro_float_visible: Mutex::new(false),
       #[cfg(desktop)]
       clickthrough: Mutex::new(false),
       #[cfg(desktop)]
@@ -375,6 +384,41 @@ fn ensure_coding(app: &AppHandle) -> Result<(), String> {
     .min_inner_size(800.0, 560.0)
     .resizable(true)
     .decorations(true)
+    .visible(false);
+  #[cfg(windows)]
+  {
+    builder = builder.additional_browser_args(webview_browser_args());
+  }
+  builder.build().map_err(|e| e.to_string())?;
+  Ok(())
+}
+
+#[cfg(desktop)]
+fn pomodoro_float_url(_app: &AppHandle) -> WebviewUrl {
+  if let Ok(url) = std::env::var("POMODORO_FLOAT_WINDOW_URL") {
+    let trimmed = url.trim();
+    if !trimmed.is_empty() {
+      if let Ok(parsed) = trimmed.parse() {
+        return WebviewUrl::External(parsed);
+      }
+    }
+  }
+  WebviewUrl::App(std::path::PathBuf::from("pomodoro-float/index.html"))
+}
+
+#[cfg(desktop)]
+fn ensure_pomodoro_float(app: &AppHandle) -> Result<(), String> {
+  if app.get_webview_window("pomodoro-float").is_some() {
+    return Ok(());
+  }
+  let url = pomodoro_float_url(app);
+  let mut builder = WebviewWindowBuilder::new(app, "pomodoro-float", url)
+    .title("番茄钟")
+    .inner_size(POMODORO_FLOAT_W, POMODORO_FLOAT_H)
+    .resizable(false)
+    .decorations(false)
+    .always_on_top(true)
+    .skip_taskbar(true)
     .visible(false);
   #[cfg(windows)]
   {
@@ -684,6 +728,44 @@ fn set_coding_visible(app: AppHandle, state: State<'_, ShellState>, visible: boo
 
 #[cfg(desktop)]
 #[tauri::command]
+fn get_pomodoro_float_visible(state: State<'_, ShellState>) -> bool {
+  *state.pomodoro_float_visible.lock().expect("pfv")
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn set_pomodoro_float_visible(
+  app: AppHandle,
+  state: State<'_, ShellState>,
+  visible: bool,
+) -> Result<(), String> {
+  *state.pomodoro_float_visible.lock().expect("pfv") = visible;
+  if visible {
+    ensure_pomodoro_float(&app)?;
+    if let Some(win) = app.get_webview_window("pomodoro-float") {
+      win.show().map_err(|e| e.to_string())?;
+      let _ = app.emit("shell:config-changed", ());
+    }
+  } else if let Some(win) = app.get_webview_window("pomodoro-float") {
+    // hide 不 close，避免反复重建
+    let _ = win.hide();
+  }
+  Ok(())
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+fn open_pomodoro(app: AppHandle) -> Result<(), String> {
+  if let Some(main) = app.get_webview_window("main") {
+    let _ = main.show();
+    let _ = main.set_focus();
+    let _ = main.eval("window.location.hash = '#/pomodoro'");
+  }
+  Ok(())
+}
+
+#[cfg(desktop)]
+#[tauri::command]
 fn report_remote_tools_status(state: State<'_, ShellState>, status: RemoteToolsStatus) {
   *state.remote_tools.lock().expect("rt") = status;
 }
@@ -987,7 +1069,7 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
       }
       "quit" => {
         IS_QUITTING.store(true, Ordering::SeqCst);
-        for label in ["main", "companion", "coding"] {
+        for label in ["main", "companion", "coding", "pomodoro-float"] {
           if let Some(w) = app.get_webview_window(label) {
             let _ = w.hide();
             let _ = w.close();
@@ -1060,6 +1142,9 @@ pub fn run() {
         set_companion_visible,
         get_coding_visible,
         set_coding_visible,
+        get_pomodoro_float_visible,
+        set_pomodoro_float_visible,
+        open_pomodoro,
         report_remote_tools_status,
         get_remote_tools_status,
         report_companion_model_status,
@@ -1110,7 +1195,8 @@ pub fn run() {
         Ok(())
       })
       .on_window_event(|window, event| {
-        if window.label() == "main" || window.label() == "coding" {
+        if window.label() == "main" || window.label() == "coding" || window.label() == "pomodoro-float"
+        {
           if let tauri::WindowEvent::CloseRequested { api, .. } = event {
             if !IS_QUITTING.load(Ordering::SeqCst) {
               api.prevent_close();
@@ -1118,6 +1204,10 @@ pub fn run() {
               if window.label() == "coding" {
                 let state = window.app_handle().state::<ShellState>();
                 *state.coding_visible.lock().expect("coding_vis") = false;
+              }
+              if window.label() == "pomodoro-float" {
+                let state = window.app_handle().state::<ShellState>();
+                *state.pomodoro_float_visible.lock().expect("pfv") = false;
               }
             }
           }

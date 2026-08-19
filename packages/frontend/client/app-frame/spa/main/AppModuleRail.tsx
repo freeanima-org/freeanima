@@ -14,6 +14,10 @@ import {
   writeAppRailExpanded,
 } from "../lib/app-rail-prefs.ts";
 import { AppNavUnreadBadge } from "./AppNavUnreadBadge.tsx";
+import {
+  AppNavPomodoroCollapsedClock,
+  useAppNavPomodoroDisplayLabel,
+} from "./AppNavPomodoroCountdown.tsx";
 
 function useAppRailExpanded(): [boolean, () => void] {
   const expanded = useSyncExternalStore(subscribeAppRailExpanded, readAppRailExpanded, () => false);
@@ -29,7 +33,12 @@ function useNavActive(match: string): boolean {
 function RailNavLink({ item, expanded }: { item: AppNavItem; expanded: boolean }) {
   const active = useNavActive(item.match);
   const Icon = item.icon;
-  const label = item.label();
+  const fallback = item.label();
+  const { label, ariaLabel, hasActive } = useAppNavPomodoroDisplayLabel(
+    item.id,
+    fallback,
+    "expanded",
+  );
 
   return (
     <Link
@@ -37,16 +46,18 @@ function RailNavLink({ item, expanded }: { item: AppNavItem; expanded: boolean }
       className={cn(
         "app-rail-nav-item hover:bg-accent hover:text-accent-foreground",
         active && "bg-secondary font-semibold",
+        !expanded && hasActive && "app-rail-nav-item--pomodoro-active",
       )}
-      aria-label={expanded ? undefined : label}
-      title={expanded ? undefined : label}
+      aria-label={expanded ? undefined : ariaLabel}
+      title={expanded ? undefined : ariaLabel}
       aria-current={active ? "page" : undefined}
     >
-      <span className="relative inline-flex shrink-0">
+      <span className="relative inline-flex shrink-0 flex-col items-center">
         <Icon className="app-rail-nav-icon" aria-hidden />
         <AppNavUnreadBadge moduleId={item.id} />
+        {!expanded ? <AppNavPomodoroCollapsedClock moduleId={item.id} /> : null}
       </span>
-      <span className="app-rail-nav-label">{label}</span>
+      <span className={cn("app-rail-nav-label", hasActive && "tabular-nums")}>{label}</span>
     </Link>
   );
 }

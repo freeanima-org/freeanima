@@ -14,6 +14,7 @@ const tauriDir = join(root, "packages/frontend/portal/app/tauri");
 
 process.env.COMPANION_OVERLAY_URL ??= "http://127.0.0.1:4176/?view=overlay";
 process.env.CODING_WINDOW_URL ??= "http://127.0.0.1:4186/";
+process.env.POMODORO_FLOAT_WINDOW_URL ??= "http://127.0.0.1:4196/";
 
 const identity = applyTauriShellIdentity({ target: "desktop" });
 process.env.FREEANIMA_BUILD_CHANNEL ??= identity.channel;
@@ -34,6 +35,16 @@ const coding = spawn(
   },
 );
 
+const pomodoroFloat = spawn(
+  "bun",
+  ["x", "vite", "--config", "packages/frontend/features/pomodoro/vite.float.config.ts"],
+  {
+    cwd: root,
+    stdio: "inherit",
+    env: process.env,
+  },
+);
+
 const tauri = spawn("bun", ["x", "tauri", "dev", "--config", identity.configArg], {
   cwd: tauriDir,
   stdio: "inherit",
@@ -44,6 +55,7 @@ const tauri = spawn("bun", ["x", "tauri", "dev", "--config", identity.configArg]
 function shutdown() {
   companion.kill("SIGTERM");
   coding.kill("SIGTERM");
+  pomodoroFloat.kill("SIGTERM");
   tauri.kill("SIGTERM");
   process.exit(0);
 }
@@ -53,5 +65,6 @@ process.on("SIGTERM", shutdown);
 tauri.on("exit", (code) => {
   companion.kill("SIGTERM");
   coding.kill("SIGTERM");
+  pomodoroFloat.kill("SIGTERM");
   process.exit(code ?? 0);
 });

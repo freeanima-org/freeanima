@@ -135,6 +135,35 @@ export function PomodoroShellWatcher() {
     return () => clearInterval(id);
   }, [subjectKind]);
 
+  /** 桌面：有进行中会话则显示番茄迷你窗；结束后 hide */
+  useEffect(() => {
+    const shell = window.portalShell;
+    if (!shell?.setPomodoroFloatVisible) return () => {};
+    let lastVisible: boolean | null = null;
+    const syncFloat = () => {
+      const active =
+        getPomodoroSyncSnapshot(subjectKind).active ??
+        readPomodoroActiveState(undefined, subjectKind);
+      const visible =
+        active != null && (active.runState === "running" || active.runState === "paused");
+      if (lastVisible === visible) return;
+      lastVisible = visible;
+      void shell.setPomodoroFloatVisible?.(visible).catch(() => undefined);
+    };
+    const unsub = subscribePomodoroSync(syncFloat);
+    const onCustom = (event: Event) => {
+      const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
+      if (detail?.subjectKind === subjectKind) syncFloat();
+    };
+    window.addEventListener("freeanima:pomodoro-active-changed", onCustom);
+    syncFloat();
+    return () => {
+      unsub();
+      window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
+      void shell.setPomodoroFloatVisible?.(false).catch(() => undefined);
+    };
+  }, [subjectKind]);
+
   return null;
 }
 

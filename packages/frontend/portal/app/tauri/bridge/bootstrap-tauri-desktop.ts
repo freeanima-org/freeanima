@@ -147,6 +147,11 @@ export async function bootstrapTauriBridge(): Promise<void> {
       await invoke("set_coding_visible", { visible });
       notifyShellConfigChanged();
     },
+    getPomodoroFloatVisible: () => invoke<boolean>("get_pomodoro_float_visible"),
+    setPomodoroFloatVisible: async (visible) => {
+      await invoke("set_pomodoro_float_visible", { visible });
+    },
+    openPomodoro: () => invoke("open_pomodoro"),
     enqueueCompanionBubble: async (text) => {
       await emit("companion:enqueue-bubble", { text });
     },
