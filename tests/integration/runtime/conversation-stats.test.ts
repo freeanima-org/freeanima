@@ -57,7 +57,9 @@ describePg("conversation-stats", () => {
   it("computeStats empty session", async () => {
     const stats = await computeStats(deps(), "no_such_session_xyz");
     expect(stats.message_count).toBe(0);
-    expect(stats.input_tokens).toBeNull();
+    expect(stats.cached_input_tokens).toBe(0);
+    expect(stats.uncached_input_tokens).toBe(0);
+    expect(stats.output_tokens).toBe(0);
   });
 
   it("computeStats with usage and latency", async () => {
@@ -77,14 +79,15 @@ describePg("conversation-stats", () => {
         role: "assistant",
         content: "hello",
         timestamp: "2026-05-01T10:00:05+08:00",
-        usage: { prompt_tokens: 10, completion_tokens: 5 },
+        usage: { prompt_tokens: 10, completion_tokens: 5, cached_tokens: 3 },
         latency_ms: 500,
       },
       sid,
     );
     const stats = await computeStats(deps(), sid);
     expect(stats.message_count).toBe(2);
-    expect(stats.input_tokens).toBe(10);
+    expect(stats.cached_input_tokens).toBe(3);
+    expect(stats.uncached_input_tokens).toBe(7);
     expect(stats.output_tokens).toBe(5);
     expect(stats.avg_tps).toBeGreaterThan(0);
   });
@@ -105,7 +108,7 @@ describePg("conversation-stats", () => {
     expect(estimateMessagesTokens([{ role: "user", content: "hello world" }])).toBeGreaterThan(0);
   });
 
-  it("computeStats estimates when no usage in messages", async () => {
+  it("computeStats does not estimate billed usage when archive has none", async () => {
     const c = testConv();
     const sid = await c.newConversation(TEST_SAP_CHAT_PLATFORM);
     await c.updateConversationMetaField(sid, { compression: { l2: 0, l3: 2 } });
@@ -128,9 +131,10 @@ describePg("conversation-stats", () => {
       sid,
     );
     const stats = await computeStats(deps(), sid);
-    expect(stats.estimated_usage).toBe(true);
-    expect(stats.input_tokens).not.toBeNull();
-    expect(stats.output_tokens).not.toBeNull();
+    expect(stats.cached_input_tokens).toBe(0);
+    expect(stats.uncached_input_tokens).toBe(0);
+    expect(stats.output_tokens).toBe(0);
+    expect(stats.usage_turns).toBe(0);
     expect(stats.compression_l3).toBe(2);
     const report = await statsReport(deps(), sid);
     expect(report).toContain("Session compression:");

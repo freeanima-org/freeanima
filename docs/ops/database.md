@@ -97,7 +97,9 @@ DATABASE_URL="postgresql://anima:…@127.0.0.1:5432/anima" \
 `auto_llm_runs` + `auto_llm_messages`，而不是 `conversations` / `messages`。开跑即插入
 `status=running`（`finished_at` 为空），消息随引擎轮 / 工具轮次追加；结束才 `ok` / `error`。
 栖息地启动（迁移完成后）把残留 `running` 标为 `error`（文案：栖息地重启，运行中断）——这是收尸，不是续跑。
-`output` 为最后一条成功助手正文。保留策略（栖息地运行时 / 壳
+`output` 为最后一条成功助手正文。助手消息 `payload.usage` 只存供应商用量
+（prompt / cached / completion tokens）；tokenx 估算仅用于事前上下文窗口，不落库。
+保留策略（栖息地运行时 / 壳
 **设置 → 栖息地服务 → 服务配置** `auto_llm`）：
 
 ```yaml

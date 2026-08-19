@@ -23,6 +23,13 @@ import { getAutoLlmRun, listAutoLlmRuns } from "@freeanima/features/habitat/ui/h
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
+import {
+  emptyLlmUsageTotals,
+  formatTokenK,
+  formatUsageTriplet,
+  usageRecordToTotals,
+  type LlmUsageTotals,
+} from "@freeanima/shared/llm-usage";
 
 const PAGE_SIZE = 20;
 const RUNNING_POLL_MS = 2000;
@@ -94,6 +101,7 @@ type AutoLlmRunRow = {
   metadata: Record<string, unknown> | null;
   created_at: string;
   finished_at: string | null;
+  usage?: LlmUsageTotals;
 };
 
 type AutoLlmMessageRow = {
@@ -105,6 +113,7 @@ type AutoLlmMessageRow = {
     content?: string | null;
     tool_call_id?: string;
     tool_calls?: Array<{ id?: string; function?: { name?: string } }>;
+    usage?: Record<string, number>;
   };
 };
 
@@ -124,6 +133,16 @@ function formatDurationMs(ms: number): string {
   if (ms < 1000) return `${ms} ms`;
   const sec = (ms / 1000).toFixed(1);
   return `${sec} s`;
+}
+
+function rowUsage(row: AutoLlmRunRow): LlmUsageTotals {
+  return row.usage ?? emptyLlmUsageTotals();
+}
+
+function messageUsageLabel(msg: AutoLlmMessageRow): string | null {
+  if (msg.payload.role !== "assistant") return null;
+  const totals = usageRecordToTotals(msg.payload.usage);
+  return totals ? formatUsageTriplet(totals) : null;
 }
 
 function rowDurationMs(row: AutoLlmRunRow, nowMs: number): number {
@@ -384,6 +403,7 @@ function AutoLlmRunsPage() {
   const [error, setError] = useState("");
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<AutoLlmRunRow[]>([]);
+  const [usageTotals, setUsageTotals] = useState<LlmUsageTotals>(() => emptyLlmUsageTotals());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [detailMessages, setDetailMessages] = useState<AutoLlmMessageRow[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -405,9 +425,10 @@ function AutoLlmRunsPage() {
             offset: nextOffset,
             limit: PAGE_SIZE,
           }),
-        )) as { items: AutoLlmRunRow[]; total: number };
+        )) as { items: AutoLlmRunRow[]; total: number; usage_totals?: LlmUsageTotals };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);
+        setUsageTotals(data.usage_totals ?? emptyLlmUsageTotals());
         setOffset(nextOffset);
         setLoaded(true);
         setNowMs(Date.now());
@@ -546,6 +567,12 @@ function AutoLlmRunsPage() {
         <p className="text-sm text-muted-foreground">{"尚无 AutoLlmRun 记录。"}</p>
       ) : null}
 
+      {loaded ? (
+        <p className="text-xs text-muted-foreground mb-2 font-mono">
+          {`当前筛选合计：${formatUsageTriplet(usageTotals)}`}
+        </p>
+      ) : null}
+
       {items.length > 0 ? (
         <div className="overflow-x-auto">
           <Table>
@@ -557,6 +584,9 @@ function AutoLlmRunsPage() {
                 <TableHead>{"状态"}</TableHead>
                 <TableHead>{"时长"}</TableHead>
                 <TableHead>{"限额"}</TableHead>
+                <TableHead className="text-right">{"缓存入"}</TableHead>
+                <TableHead className="text-right">{"未缓存入"}</TableHead>
+                <TableHead className="text-right">{"出"}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -607,6 +637,15 @@ function AutoLlmRunsPage() {
                           ? ` / ≤${formatDurationMs(row.max_duration_ms)}`
                           : ""}
                       </TableCell>
+                      <TableCell className="font-mono text-xs text-right">
+                        {formatTokenK(rowUsage(row).cached_input_tokens)}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-right">
+                        {formatTokenK(rowUsage(row).uncached_input_tokens)}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-right">
+                        {formatTokenK(rowUsage(row).output_tokens)}
+                      </TableCell>
                       <TableCell>
                         <Button
                           type="button"
@@ -620,7 +659,7 @@ function AutoLlmRunsPage() {
                     </TableRow>
                     {expandedId === row.id ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="bg-muted">
+                        <TableCell colSpan={10} className="bg-muted">
                           {row.status === "error" && row.error ? (
                             <pre className="text-xs text-destructive whitespace-pre-wrap break-all mb-2">
                               {row.error}
@@ -637,6 +676,9 @@ function AutoLlmRunsPage() {
                           <DetailFold title={"运行信息"} defaultOpen>
                             <DetailKv rows={buildRunInfoRows(row)} />
                           </DetailFold>
+                          <p className="text-xs text-muted-foreground font-mono mb-2">
+                            {`合计 ${formatUsageTriplet(rowUsage(row))}`}
+                          </p>
                           {buildCallConfigRows(row).length > 0 ? (
                             <DetailFold title={"调用配置"}>
                               <DetailKv rows={buildCallConfigRows(row)} />
@@ -685,6 +727,7 @@ function AutoLlmRunsPage() {
                                         const full = formatMessagePreview(m);
                                         const preview =
                                           full.length > 120 ? `${full.slice(0, 120)}…` : full;
+                                        const usageLabel = messageUsageLabel(m);
                                         return (
                                           <details
                                             key={m.id}
@@ -697,6 +740,11 @@ function AutoLlmRunsPage() {
                                               <span className="font-mono shrink-0 text-muted-foreground">
                                                 {`#${String(m.pos)} ${role}`}
                                               </span>
+                                              {usageLabel ? (
+                                                <span className="font-mono shrink-0 text-[10px] text-muted-foreground">
+                                                  {usageLabel}
+                                                </span>
+                                              ) : null}
                                               <span className="truncate min-w-0 text-muted-foreground font-normal">
                                                 {preview}
                                               </span>

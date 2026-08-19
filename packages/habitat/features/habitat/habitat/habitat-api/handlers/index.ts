@@ -52,6 +52,7 @@ export {
   startMemoryMaintenanceCatchUp,
 } from "./memory-maintenance.ts";
 export { listAutoLlmRuns, getAutoLlmRun } from "./auto-llm-runs.ts";
+export { getUsageToday } from "./llm-usage.ts";
 export {
   listWorldEntities,
   getWorldEntity,

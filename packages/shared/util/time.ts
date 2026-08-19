@@ -167,6 +167,29 @@ export function formatCstWeekdayZh(date: Date): string {
   }).format(date);
 }
 
+export function hostCalendarDay(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: getConfiguredHostTimeZone(),
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+/** Host-TZ 自然日 [fromIso, toIso) 的 UTC ISO 边界 */
+export function hostDayBoundsIso(date: Date = new Date()): {
+  day: string;
+  fromIso: string;
+  toIso: string;
+} {
+  const day = hostCalendarDay(date);
+  const tz = getConfiguredHostTimeZone();
+  const offset = formatOffsetIso(timeZoneOffsetMs(tz, new Date(`${day}T12:00:00Z`)));
+  const start = new Date(`${day}T00:00:00${offset}`);
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  return { day, fromIso: start.toISOString(), toIso: end.toISOString() };
+}
+
 /** Whether a YYYY-MM-DD calendar day is Monday in host TZ */
 export function isCstMonday(day: string): boolean {
   const match = CST_DAY_RE.exec(day.trim());

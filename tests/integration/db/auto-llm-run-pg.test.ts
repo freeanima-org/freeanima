@@ -9,6 +9,8 @@ import {
   listAutoLlmMessages,
   listAutoLlmRuns,
   purgeStaleAutoLlmRuns,
+  sumAutoLlmUsageByRunIds,
+  sumAutoLlmUsageFiltered,
 } from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -83,6 +85,47 @@ describePg("auto_llm_runs process persist", () => {
     expect(msgs).toHaveLength(3);
     expect(msgs[2]?.payload.role).toBe("assistant");
     expect(msgs[2]?.payload.role === "assistant" && msgs[2].payload.content).toBe("done");
+  });
+
+  it("sums cached/uncached/output from assistant usage", async () => {
+    const id = `autollm_usage_${randomUUID()}`;
+    const started = isoMinutesAgo(1);
+    await insertRunningAutoLlmRun({
+      id,
+      run_name: "usage-run",
+      run_kind: "cron",
+      subject_id: 2,
+      max_loop_iterations: 1,
+      created_at: started,
+    });
+    await appendAutoLlmMessages(id, [
+      {
+        pos: 0,
+        payload: {
+          role: "assistant",
+          content: "a",
+          timestamp: started,
+          usage: { prompt_tokens: 20, completion_tokens: 5, cached_tokens: 8 },
+        },
+      },
+      {
+        pos: 1,
+        payload: {
+          role: "assistant",
+          content: "b",
+          timestamp: started,
+          usage: { prompt_tokens: 10, completion_tokens: 2 },
+        },
+      },
+    ]);
+    const byId = await sumAutoLlmUsageByRunIds([id]);
+    expect(byId.get(id)).toEqual({
+      cached_input_tokens: 8,
+      uncached_input_tokens: 22,
+      output_tokens: 7,
+    });
+    const filtered = await sumAutoLlmUsageFiltered({ run_kind: "cron" });
+    expect(filtered.output_tokens).toBeGreaterThanOrEqual(7);
   });
 
   it("abortOrphanAutoLlmRuns marks leftover running as error", async () => {

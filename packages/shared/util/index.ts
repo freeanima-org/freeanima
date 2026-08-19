@@ -14,6 +14,8 @@ export {
   resetHostTimeZoneProviderForTests,
   setHostTimeZoneProvider,
   timeZoneOffsetMs,
+  hostCalendarDay,
+  hostDayBoundsIso,
   type FormatCstDisplayOpts,
   type HostTimeZoneProvider,
 } from "./time.ts";

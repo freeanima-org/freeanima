@@ -8,5 +8,6 @@ export { REPO_ROOT, HABITAT_BASE_PATH } from "./repo-paths.ts";
 export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
 export * from "./service-prompt-debug.ts";
+export * from "./service-llm-usage.ts";
 export { ANIMA_VERSION } from "./version.ts";
 export { getRepoRoot, readAppVersion, writeRootVersion } from "./root-version.ts";

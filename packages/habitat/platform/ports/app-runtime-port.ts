@@ -165,6 +165,7 @@ export type AppRuntimeSleepPort = {
     offset?: number;
   }): Promise<unknown>;
   getAutoLlmRun(id: string): Promise<unknown>;
+  getUsageToday(): Promise<unknown>;
 };
 
 /** Habitat / Gateway 完整运行时 API 契约（域 port 组合） */

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
+import { afterEach, afterAll, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 import {
   Config,
   bindActiveRuntimeConfig,
@@ -13,11 +13,20 @@ import type { CompressionState } from "@freeanima/habitat/core/db/domain";
 
 const patchCalls: CompressionState[] = [];
 
+const realPg = await import("@freeanima/habitat/core/db/pg");
+const pgOriginal = { ...realPg };
+const realAutoLlmRun = await import("@freeanima/habitat/core/db/pg/auto-llm-run");
+const autoLlmRunOriginal = { ...realAutoLlmRun };
+const realConversation = await import("@freeanima/habitat/core/db/pg/conversation");
+const conversationOriginal = { ...realConversation };
+
 mock.module("@freeanima/habitat/core/db/pg", () => ({
+  ...pgOriginal,
   isPostgresPrimary: () => true,
 }));
 
 mock.module("@freeanima/habitat/core/db/pg/auto-llm-run", () => ({
+  ...autoLlmRunOriginal,
   insertRunningAutoLlmRun: mock(async () => {}),
   appendAutoLlmMessages: mock(async () => {}),
   finishAutoLlmRun: mock(async () => {}),
@@ -31,6 +40,7 @@ mock.module("@freeanima/habitat/core/db/pg/auto-llm-run", () => ({
 }));
 
 mock.module("@freeanima/habitat/core/db/pg/conversation", () => ({
+  ...conversationOriginal,
   listMessagesByPosRange: mock(async () => [
     { role: "user", content: "hello", pos: 2 },
     { role: "assistant", content: "world", pos: 3 },
@@ -39,6 +49,12 @@ mock.module("@freeanima/habitat/core/db/pg/conversation", () => ({
     if (patch.compression) patchCalls.push(patch.compression);
   }),
 }));
+
+afterAll(() => {
+  mock.module("@freeanima/habitat/core/db/pg", () => pgOriginal);
+  mock.module("@freeanima/habitat/core/db/pg/auto-llm-run", () => autoLlmRunOriginal);
+  mock.module("@freeanima/habitat/core/db/pg/conversation", () => conversationOriginal);
+});
 
 import {
   abandonCompressionSummaries,

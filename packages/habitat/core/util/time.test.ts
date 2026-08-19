@@ -7,6 +7,7 @@ import {
   formatCstDisplayFromMs,
   formatCstIso,
   formatCstWeekdayZh,
+  hostDayBoundsIso,
   isCstMonday,
 } from "./time.ts";
 
@@ -52,6 +53,15 @@ describe("formatCstWeekdayZh", () => {
     expect(formatCstWeekdayZh(new Date("2026-05-20T08:02:00+08:00"))).toBe("周三");
     expect(formatCstWeekdayZh(new Date("2026-05-21T09:15:00+08:00"))).toBe("周四");
     expect(formatCstWeekdayZh(new Date("2026-06-07T17:45:00+08:00"))).toBe("周日");
+  });
+});
+
+describe("hostDayBoundsIso", () => {
+  test("returns host calendar day and 24h UTC bounds", () => {
+    const { day, fromIso, toIso } = hostDayBoundsIso(new Date("2026-08-19T12:00:00+08:00"));
+    expect(day).toBe("2026-08-19");
+    expect(Date.parse(toIso) - Date.parse(fromIso)).toBe(24 * 60 * 60 * 1000);
+    expect(new Date(fromIso).toISOString()).toBe(fromIso);
   });
 });
 

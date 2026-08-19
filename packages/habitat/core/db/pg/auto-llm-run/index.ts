@@ -10,4 +10,7 @@ export {
   listAutoLlmMessages,
   listAutoLlmRuns,
   purgeStaleAutoLlmRuns,
+  sumAutoLlmUsageBetween,
+  sumAutoLlmUsageByRunIds,
+  sumAutoLlmUsageFiltered,
 } from "./repos/auto-llm-run-repo.ts";

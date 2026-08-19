@@ -1,3 +1,5 @@
+import type { ConversationContextUsage, LlmUsageTotals } from "@freeanima/shared/llm-usage";
+
 /** Habitat message display view（UI + host 共用；无 React） */
 
 export type DisplayToolCall = {
@@ -47,4 +49,8 @@ export type MessagesDisplay = {
   to_pos?: number;
   /** 是否还有更早消息可加载 */
   has_more_before?: boolean;
+  /** 会话账单合计（供应商 usage） */
+  usage?: LlmUsageTotals;
+  /** 当前 runtime 上下文（tokenx，不落库）；翻页 before_pos 时省略 */
+  context?: ConversationContextUsage;
 };

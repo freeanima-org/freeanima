@@ -1,3 +1,17 @@
+export {
+  addLlmUsageTotals,
+  contextUsageRatio,
+  emptyLlmUsageTotals,
+  emptyRuntimeContextBreakdown,
+  formatTokenK,
+  formatUsageTriplet,
+  sumUsageFromRecords,
+  usageRecordToTotals,
+  type ConversationContextUsage,
+  type LlmUsageTotals,
+  type RuntimeContextBreakdown,
+} from "@freeanima/shared/llm-usage";
+
 /** Normalize vendor usage to stable fields (aligned with legacy llm.normalizeUsage) */
 export function normalizeUsage(
   raw: Record<string, unknown> | null | undefined,

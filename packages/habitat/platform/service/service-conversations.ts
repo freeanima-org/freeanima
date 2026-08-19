@@ -10,7 +10,9 @@ import type { MessagesDisplay } from "@freeanima/habitat/platform/schemas/displa
 import type { ConversationSummary } from "@freeanima/habitat/platform/schemas/snapshot";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { buildMessagesDisplay } from "./build-messages-display.ts";
-import { statsReport } from "./conversation-stats.ts";
+import { statsReport, billedUsageFromStats, computeStats } from "./conversation-stats.ts";
+import { computeConversationContextUsage } from "./runtime-context-stats.ts";
+import { sumConversationUsage } from "@freeanima/habitat/core/db/pg/conversation";
 import { originLockKey, runExclusiveOrigin } from "./origin-lock.ts";
 
 export async function resolveMessagingPlatform(
@@ -125,7 +127,15 @@ export async function getConversationInfo(
     throw new Error(`Conversation not found: ${conversationId}`);
   }
   await checkPlatform(deps, { platform }, conversationId);
-  return { conversation_id: conversationId, stats: await statsReport(deps, conversationId) };
+  const [statsText, stats] = await Promise.all([
+    statsReport(deps, conversationId),
+    computeStats(deps, conversationId),
+  ]);
+  return {
+    conversation_id: conversationId,
+    stats: statsText,
+    usage: billedUsageFromStats(stats),
+  };
 }
 
 export async function getMessages(
@@ -171,6 +181,15 @@ export async function getMessages(
       : false;
 
   const full = buildMessagesDisplay(page);
+  const usage = await sumConversationUsage(conversationId);
+  let context: MessagesDisplay["context"];
+  if (opts?.before_pos == null) {
+    try {
+      context = await computeConversationContextUsage(deps, conversationId);
+    } catch {
+      context = undefined;
+    }
+  }
   return omitUndefined({
     conversation_id: conversationId,
     display: full,
@@ -180,6 +199,8 @@ export async function getMessages(
     from_pos: from_pos ?? undefined,
     to_pos: to_pos ?? undefined,
     has_more_before,
+    usage,
+    context,
   });
 }
 

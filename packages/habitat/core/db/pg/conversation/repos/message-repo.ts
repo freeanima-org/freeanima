@@ -10,6 +10,8 @@ import { recordMessageReferences } from "../../memory-reference/repos/memory-ref
 import { isCronSession, touchConversationUpdatedAt } from "./conversation-repo.ts";
 import { getDb } from "../../client.ts";
 import { messageToInsert, rowToMessage } from "../message-transform.ts";
+import { coerceLlmUsageTotals, llmUsageSumSelect } from "../../utils/llm-usage-sql.ts";
+import type { LlmUsageTotals } from "@freeanima/shared/llm-usage";
 
 function extractIndexableContent(payload: { role: string; content?: string | null }): string {
   if (payload.role !== "user" && payload.role !== "assistant") return "";
@@ -552,4 +554,39 @@ export async function getEarliestMessageDay(): Promise<string | null> {
     );
   const day = rows[0]?.day?.trim();
   return day || null;
+}
+
+export async function sumConversationUsage(conversationId: string): Promise<LlmUsageTotals> {
+  const db = getDb();
+  const rows = await db
+    .select(llmUsageSumSelect(messages.payload))
+    .from(messages)
+    .where(
+      and(
+        eq(messages.conversation_id, conversationId),
+        sql`${messages.payload}->>'role' = 'assistant'`,
+      ),
+    );
+  return coerceLlmUsageTotals(rows[0] ?? {});
+}
+
+export async function sumConversationUsageBetween(
+  fromIso: string,
+  toIso: string,
+): Promise<LlmUsageTotals> {
+  const db = getDb();
+  const msgTs = sql`(nullif(btrim(${messages.payload}->>'timestamp'), ''))::timestamptz`;
+  const rows = await db
+    .select(llmUsageSumSelect(messages.payload))
+    .from(messages)
+    .innerJoin(conversations, eq(messages.conversation_id, conversations.id))
+    .where(
+      sql`${conversations.debug} = false
+        AND COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'
+        AND ${messages.payload}->>'role' = 'assistant'
+        AND ${msgTs} IS NOT NULL
+        AND ${msgTs} >= ${fromIso}::timestamptz
+        AND ${msgTs} < ${toIso}::timestamptz`,
+    );
+  return coerceLlmUsageTotals(rows[0] ?? {});
 }

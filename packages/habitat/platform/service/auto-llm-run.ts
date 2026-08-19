@@ -321,6 +321,8 @@ function storedMessagesToPayloads(messages: StoredMessage[]): MessagePayload[] {
           model: msg.model,
           finish_reason: msg.finish_reason,
           reasoning: msg.reasoning,
+          usage: msg.usage,
+          latency_ms: msg.latency_ms,
         }),
       });
       continue;

@@ -131,7 +131,12 @@ describe("runAutoLlm", () => {
 
   it("does not write conversation; inserts running then appends and finishes", async () => {
     const streamSpy = spyOn(loopEngine, "runStream").mockImplementation((messages, opts) => {
-      const assistant: StoredMessage = { role: "assistant", content: "cron done" };
+      const assistant: StoredMessage = {
+        role: "assistant",
+        content: "cron done",
+        usage: { prompt_tokens: 8, completion_tokens: 3, cached_tokens: 2 },
+        latency_ms: 15,
+      };
       messages.push(assistant);
       async function* fakeStream() {
         await opts?.onToolRoundComplete?.([assistant]);
@@ -169,6 +174,14 @@ describe("runAutoLlm", () => {
 
     expect(appendCalls.length).toBeGreaterThan(0);
     expect(appendCalls.some((c) => c.msgs.some((m) => m.payload.role === "assistant"))).toBe(true);
+    const assistantPayload = appendCalls
+      .flatMap((c) => c.msgs)
+      .find((m) => m.payload.role === "assistant")?.payload;
+    expect(assistantPayload).toMatchObject({
+      role: "assistant",
+      usage: { prompt_tokens: 8, completion_tokens: 3, cached_tokens: 2 },
+      latency_ms: 15,
+    });
 
     expect(finishCalls.length).toBe(1);
     expect(finishCalls[0]?.status).toBe("ok");

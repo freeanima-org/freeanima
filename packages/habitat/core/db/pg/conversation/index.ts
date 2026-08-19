@@ -67,5 +67,7 @@ export {
   listMessagesByPosRange,
   listMessagesPage,
   getEarliestMessageDay,
+  sumConversationUsage,
+  sumConversationUsageBetween,
 } from "./repos/message-repo.ts";
 export { searchMessagesFts, countSearchableMessages } from "./repos/message-fts-repo.ts";

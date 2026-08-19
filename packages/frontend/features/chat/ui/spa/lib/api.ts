@@ -1,4 +1,5 @@
 import type { ConversationListItem, DisplayItem, StreamApiEvent } from "./types.ts";
+import type { ConversationContextUsage, LlmUsageTotals } from "@freeanima/shared/llm-usage";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
@@ -125,6 +126,8 @@ export type StoredMessagesResponse = {
   from_pos?: number;
   to_pos?: number;
   has_more_before?: boolean;
+  usage?: LlmUsageTotals;
+  context?: ConversationContextUsage;
 };
 
 /** Chat 消息分页：不传 offset（服务端尾页）；向上加载传 before_pos */

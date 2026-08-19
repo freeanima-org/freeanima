@@ -2,6 +2,7 @@ import type {
   ConversationSummary,
   ServiceSnapshot,
 } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
+import type { LlmUsageTotals } from "@freeanima/shared/llm-usage";
 import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client/bundled-browser.ts";
 import { resolveCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
@@ -135,6 +136,17 @@ export async function getStatus(): Promise<ServiceSnapshot> {
     fetch: async () => (await hubCall(habitat().call("status.get", {}))) as ServiceSnapshot,
     offlineError: "status.get unavailable offline",
   });
+}
+
+export type UsageTodayResult = {
+  day: string;
+  conversation: LlmUsageTotals;
+  auto_llm: LlmUsageTotals;
+  total: LlmUsageTotals;
+};
+
+export async function getUsageToday(): Promise<UsageTodayResult> {
+  return hubCall(habitat().call("usage.today", {})) as Promise<UsageTodayResult>;
 }
 
 export async function getToolsStatus(scope?: "default" | "all") {
