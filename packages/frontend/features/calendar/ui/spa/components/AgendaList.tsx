@@ -4,6 +4,7 @@ import { formatDueChip } from "@freeanima/ui-kit/lib/datetime-local.ts";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
 import { calendarItemKey, itemOverlapsDay } from "../lib/agenda-items.ts";
+import { builtinSourceLabel } from "../lib/calendar-prefs.ts";
 import { isoToTimeLocalValue } from "../lib/format-calendar.ts";
 
 type AgendaListProps = {
@@ -15,11 +16,13 @@ type AgendaListProps = {
   onOpenTask: (id: number) => void;
   onOpenProject: (id: number) => void;
   onEditEvent: (id: number) => void;
+  onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
 };
 
-function kindLabel(kind: CalendarRangeItem["kind"]): string {
-  if (kind === "event") return "事件";
-  if (kind === "task") return "任务";
+function kindLabel(item: CalendarRangeItem): string {
+  if (item.kind === "event") return "事件";
+  if (item.kind === "task") return "任务";
+  if (item.kind === "holiday") return builtinSourceLabel(item.source);
   return "项目";
 }
 
@@ -28,6 +31,7 @@ function itemTime(item: CalendarRangeItem): string {
     if (item.all_day) return "全天";
     return isoToTimeLocalValue(item.start_at) || "—";
   }
+  if (item.kind === "holiday") return "全天";
   if (item.kind === "task") {
     const start = isoToTimeLocalValue(item.start_at ?? null);
     const end = isoToTimeLocalValue(item.end_at ?? null);
@@ -50,6 +54,7 @@ export function AgendaList({
   onOpenTask,
   onOpenProject,
   onEditEvent,
+  onOpenHoliday,
 }: AgendaListProps) {
   const dayItems = day == null ? items : items.filter((item) => itemOverlapsDay(item, day));
 
@@ -70,6 +75,7 @@ export function AgendaList({
               onPress={() => {
                 if (item.kind === "event") onEditEvent(item.id);
                 else if (item.kind === "task") onOpenTask(item.id);
+                else if (item.kind === "holiday") onOpenHoliday(item);
                 else onOpenProject(item.id);
               }}
             >
@@ -89,9 +95,11 @@ export function AgendaList({
                   item.kind === "event" && "bg-primary/15 text-primary",
                   item.kind === "task" && "bg-amber-500/15 text-amber-700 dark:text-amber-300",
                   item.kind === "project" && "bg-sky-500/15 text-sky-700 dark:text-sky-300",
+                  item.kind === "holiday" &&
+                    "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
                 )}
               >
-                {kindLabel(item.kind)}
+                {kindLabel(item)}
               </span>
               <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>
               {dueChip?.overdue ? (

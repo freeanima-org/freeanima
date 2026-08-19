@@ -7,6 +7,7 @@ import {
   listCalendarRange,
   resolveCalendarWorldId,
   updateCalendarEvent,
+  type BuiltinCalendarSourceId,
   type CalendarRangeKind,
   type CalendarSubjectKind,
 } from "../domain/index.ts";
@@ -141,6 +142,7 @@ export async function serviceCalendarRange(
     from: string;
     to: string;
     kinds?: CalendarRangeKind[];
+    sources?: BuiltinCalendarSourceId[];
   },
 ) {
   assertPg(deps);
@@ -151,6 +153,7 @@ export async function serviceCalendarRange(
       from: input.from,
       to: input.to,
       kinds: input.kinds,
+      sources: input.sources,
     }),
   );
   return { items };

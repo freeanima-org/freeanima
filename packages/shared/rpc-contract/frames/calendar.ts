@@ -121,8 +121,16 @@ export const calendarConvertToTaskOutputSchema = z.object({
 });
 export type CalendarConvertToTaskOutput = z.infer<typeof calendarConvertToTaskOutputSchema>;
 
-export const calendarRangeKindSchema = z.enum(["event", "task", "project"]);
+export const calendarRangeKindSchema = z.enum(["event", "task", "project", "holiday"]);
 export type CalendarRangeKind = z.infer<typeof calendarRangeKindSchema>;
+
+export const builtinCalendarSourceIdSchema = z.enum([
+  "cn_holiday",
+  "traditional",
+  "international",
+  "solar_term",
+]);
+export type BuiltinCalendarSourceIdPayload = z.infer<typeof builtinCalendarSourceIdSchema>;
 
 export const calendarRangeEventItemSchema = z.object({
   kind: z.literal("event"),
@@ -163,10 +171,22 @@ export const calendarRangeProjectItemSchema = z.object({
   status: z.string(),
 });
 
+/** 内置日历源合成项（只读；id 为稳定 slug，非 entity） */
+export const calendarRangeHolidayItemSchema = z.object({
+  kind: z.literal("holiday"),
+  id: z.string().min(1),
+  source: builtinCalendarSourceIdSchema,
+  title: z.string(),
+  start_at: z.string(),
+  end_at: z.string().nullable(),
+  all_day: z.literal(true),
+});
+
 export const calendarRangeItemSchema = z.discriminatedUnion("kind", [
   calendarRangeEventItemSchema,
   calendarRangeTaskItemSchema,
   calendarRangeProjectItemSchema,
+  calendarRangeHolidayItemSchema,
 ]);
 export type CalendarRangeItemPayload = z.infer<typeof calendarRangeItemSchema>;
 
@@ -175,6 +195,8 @@ export const calendarRangeInputSchema = z.object({
   from: z.string().min(1),
   to: z.string().min(1),
   kinds: z.array(calendarRangeKindSchema).optional(),
+  /** kinds 含 holiday 时有效；缺省 = 全部已实现内置源 */
+  sources: z.array(builtinCalendarSourceIdSchema).optional(),
 });
 export type CalendarRangeInput = z.infer<typeof calendarRangeInputSchema>;
 export const calendarRangeOutputSchema = z.object({
