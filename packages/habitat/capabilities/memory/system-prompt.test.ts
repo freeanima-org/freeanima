@@ -67,7 +67,8 @@ describe("system-prompt", () => {
     expect(parts.resident).toContain("<resident_memory>");
     expect(parts.resident).toContain("</resident_memory>");
     expect(parts.resident).not.toContain("```md");
-    expect(parts.resident).toContain("- 📌 [[anima:42]] I like testing");
+    expect(parts.resident).toContain('<memory id="42" pinned="true">I like testing</memory>');
+    expect(parts.resident).not.toContain("[[anima:42]]");
     expect(parts.resident).not.toContain(MEMORY_REFERENCE_CITATION_RULE);
   });
 

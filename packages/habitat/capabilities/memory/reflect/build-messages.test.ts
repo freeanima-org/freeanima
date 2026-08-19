@@ -6,7 +6,6 @@ import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 import {
   fetchAllActiveMemories,
   formatAllMemoriesMessage,
-  rowToJsonCompact,
   hasRecentMemoryUpdates,
   isMemoryUpdatedSince,
   shouldTrimPinned,
@@ -48,13 +47,15 @@ describe("reflect build-messages", () => {
     listActiveSemanticMemoryMock.mockClear();
   });
 
-  it("formatAllMemoriesMessage reports active row count in heading", () => {
+  it("formatAllMemoriesMessage emits XML memory items with organize fields", () => {
     const active = [makeRow(96085, "active"), makeRow(14119, "active")];
     const { text } = formatAllMemoriesMessage(active);
-    expect(text).toContain("# All semantic memories (2 active entries)");
+    expect(text).toContain('<memory id="96085"');
+    expect(text).toContain('<memory id="14119"');
+    expect(text).not.toContain("# All semantic memories");
   });
 
-  it("rowToJsonCompact only includes consolidate-useful fields", () => {
+  it("organize XML includes type/sources/observed/occurred and omits pinned", () => {
     const row = makeRow(7, "active", {
       pinned: true,
       source_conversations: ["c1"],
@@ -63,22 +64,12 @@ describe("reflect build-messages", () => {
       source: { conversation_id: "c1", message_ids: ["m1"] },
       links: [{ type: "merged_from", memory_id: 1 }],
     });
-    const json = JSON.parse(rowToJsonCompact(row)) as Record<string, unknown>;
-    expect(json).toEqual({
-      id: 7,
-      type: "world",
-      content: "memory 7",
-      source_conversations: ["c1"],
-      observed: "2026-06-12T10:00:00",
-      occurred: "2024 summer",
-    });
-    expect(json).not.toHaveProperty("pinned");
-    expect(json).not.toHaveProperty("updated_at");
-    expect(json).not.toHaveProperty("created_at");
-    expect(json).not.toHaveProperty("reference_count");
-    expect(json).not.toHaveProperty("sources");
-    expect(json).not.toHaveProperty("source");
-    expect(json).not.toHaveProperty("links");
+    const { text } = formatAllMemoriesMessage([row]);
+    expect(text).toContain(
+      '<memory id="7" type="world" sources="c1" observed="2026-06-12T10:00:00" occurred="2024 summer">memory 7</memory>',
+    );
+    expect(text).not.toContain("pinned");
+    expect(text).not.toContain("refs=");
   });
 
   it("fetchAllActiveMemories uses listActive and excludes deprecated rows", async () => {
@@ -92,7 +83,8 @@ describe("reflect build-messages", () => {
     expect(result.every((r) => r.status === "active")).toBe(true);
 
     const { text } = formatAllMemoriesMessage(result);
-    expect(text).toContain("# All semantic memories (2 active entries)");
+    expect(text).toContain('<memory id="96085"');
+    expect(text).toContain('<memory id="14119"');
   });
 
   it("REFLECT_CONSOLIDATE_TASK_SPEC has ordered steps and forbids adding pins", () => {

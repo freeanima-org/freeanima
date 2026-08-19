@@ -120,11 +120,13 @@ LLM **没有** `memory_recall` 跨类型工具。程序侧 `MemoryService.recall
 
 面向用户回合前注入语义命中（`passive_memory_context`）。配置：`memory.passive_recall`。细节与 jieba/vector boost 行为见历史实现；索引旁表 `search_documents`。
 
-retain 热路径复用同一 hybrid，但按本 **回合** 内各条 user/assistant 正文分别召回，user/assistant 两侧分配额后去重合并；环内不再调用 `memory_semantic_search`。
+retain 热路径复用同一 hybrid，但按本 **回合** 内各条 user/assistant 正文分别召回，user/assistant 两侧分配额后去重合并；环内不再调用 `memory_semantic_search`。注入清单为 `<memory id type sources observed occurred>`（与 related 同源 renderer）。
+
+对话素材进 retain 的 `source_data` 为 `<message role t>`：`role` 区分 user/assistant（风巢 #18799），`t` 为消息发送时间。
 
 ### 常驻记忆
 
-置顶 + 高引用；标记 `[[anima:id]]`。装配目标走 `assembleResidentBlock`（迁移期 `system-prompt.ts` 仍可直接 listResident）。条数 / 置顶上限：`memory.resident.top_n` / `pinned_max`（默认 20 / 20）；cite 权重窗口：`memory.reference.*`。详见 [`context-management.md`](context-management.md)。
+置顶 + 高引用。Working 注入为 `<memory id>`（置顶加 `pinned="true"`）；装配走 `assembleResidentBlock`（迁移期 `system-prompt.ts` 仍可直接 listResident）。条数 / 置顶上限：`memory.resident.top_n` / `pinned_max`（默认 20 / 20）；cite 权重窗口：`memory.reference.*`。详见 [`context-management.md`](context-management.md)。
 
 ### 引用
 

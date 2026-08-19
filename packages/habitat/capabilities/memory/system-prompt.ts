@@ -3,9 +3,13 @@ import {
   resolveMemoryResidentConfig,
 } from "@freeanima/habitat/core/config";
 import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
-import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/habitat/core/hooks/prompt";
-
-import { formatResidentMemoryLine } from "./memory-reference.ts";
+import {
+  PROMPT_XML_TAGS,
+  RESIDENT_MEMORY_FIELDS,
+  renderSemanticMemoryItem,
+  toSemanticMemoryPromptItem,
+  wrapPromptXmlSection,
+} from "@freeanima/habitat/core/hooks/prompt";
 
 /** Outer second-person frame for the resident-memory system prompt segment */
 export const RESIDENT_MEMORY_SYSTEM_FRAME =
@@ -21,7 +25,12 @@ export async function renderResidentMemoryBody(): Promise<string> {
   const { top_n } = resolveMemoryResidentConfig(peekActiveRuntimeConfig()?.data);
   const facts = await listResidentSemanticMemory(top_n);
   if (facts.length === 0) return "";
-  return facts.map((f) => formatResidentMemoryLine(f.content, f.id, f.pinned)).join("\n");
+  return facts
+    .map((f) =>
+      renderSemanticMemoryItem(toSemanticMemoryPromptItem(f), { fields: RESIDENT_MEMORY_FIELDS }),
+    )
+    .filter(Boolean)
+    .join("\n");
 }
 
 async function renderResidentMemory(): Promise<string> {

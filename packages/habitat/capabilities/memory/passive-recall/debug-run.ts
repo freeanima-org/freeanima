@@ -3,6 +3,7 @@ import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semant
 import { isFtsQueryError } from "@freeanima/habitat/core/util";
 import type { PassiveRecallDebugTrace } from "@freeanima/shared/rpc-contract/frames/message";
 
+import { parseRenderedMemoryIds } from "@freeanima/habitat/core/hooks/prompt";
 import { previewPassiveContent } from "./debug-types.ts";
 import { formatPassiveMemoryBlock, wrapPassiveMemoryContext } from "./inject.ts";
 import { focusPassiveRecallQuery, stripTimePrefixFromUserContent } from "./query.ts";
@@ -121,7 +122,7 @@ export async function runPassiveRecallDebug(opts: {
   }
 
   const block = formatPassiveMemoryBlock(hits, config.max_chars);
-  const injectedIds = new Set([...block.matchAll(/\[\[anima:(\d+)\]\]/g)].map((m) => Number(m[1])));
+  const injectedIds = new Set(parseRenderedMemoryIds(block));
   debug.injected = hits
     .filter((h) => injectedIds.has(h.semantic_memory_id))
     .map((h) => ({

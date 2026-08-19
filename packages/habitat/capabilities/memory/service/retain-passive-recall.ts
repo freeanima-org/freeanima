@@ -12,6 +12,8 @@ import { semanticPassiveRecallSearch } from "../passive-recall/search.ts";
 export type RetainTextItem = {
   role: "user" | "assistant";
   content: string;
+  /** 消息 timestamp，供 AutoLlm `<message t>` */
+  t?: string | null;
 };
 
 export type RetainPassiveRecallQuotas = {

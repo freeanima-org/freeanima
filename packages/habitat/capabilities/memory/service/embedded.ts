@@ -8,10 +8,14 @@ import {
 } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
 import { getMessageTextItemsByIds } from "@freeanima/habitat/core/db/pg/conversation";
-import { PROMPT_XML_TAGS, wrapPromptXmlSection } from "@freeanima/habitat/core/hooks/prompt";
+import {
+  PROMPT_XML_TAGS,
+  RESIDENT_MEMORY_FIELDS,
+  renderSemanticMemoryItem,
+  toSemanticMemoryPromptItem,
+  wrapPromptXmlSection,
+} from "@freeanima/habitat/core/hooks/prompt";
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
-
-import { formatResidentMemoryLine } from "../memory-reference.ts";
 import { RESIDENT_MEMORY_SYSTEM_FRAME } from "../system-prompt.ts";
 import { bumpReferenceCountsFromTexts } from "./cite.ts";
 import type { MemoryService } from "./memory-service.ts";
@@ -312,7 +316,9 @@ export function createEmbeddedMemoryService(
         conversation_id,
         message_ids,
         texts,
-        text_items: textItems.map((i) => ({ role: i.role, content: i.content })),
+        text_items: textItems.map((i) =>
+          omitUndefined({ role: i.role, content: i.content, t: i.timestamp }),
+        ),
         source,
       });
 
@@ -402,7 +408,12 @@ export function createEmbeddedMemoryService(
       const records = await service.listResident(residentOpts);
       if (records.length === 0) return "";
       const body = records
-        .map((r) => formatResidentMemoryLine(r.content, r.id, r.pinned))
+        .map((r) =>
+          renderSemanticMemoryItem(toSemanticMemoryPromptItem(r), {
+            fields: RESIDENT_MEMORY_FIELDS,
+          }),
+        )
+        .filter(Boolean)
         .join("\n");
       return wrapPromptXmlSection(PROMPT_XML_TAGS.residentMemory, body, {
         frame: RESIDENT_MEMORY_SYSTEM_FRAME,

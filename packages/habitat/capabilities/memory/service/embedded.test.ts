@@ -82,8 +82,9 @@ describe("MemoryService embedded shell", () => {
     expect(resident.map((r) => r.id)).toEqual([1]);
 
     const block = await svc.assembleResidentBlock();
-    expect(block).toContain("[[anima:1]]");
+    expect(block).toContain('<memory id="1"');
     expect(block).toContain("Alice lives in Shanghai");
+    expect(block).not.toContain("[[anima:1]]");
   });
 
   test("unimplemented methods removed — recall uses search when available", async () => {

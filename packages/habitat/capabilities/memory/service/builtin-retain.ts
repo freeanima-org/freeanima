@@ -6,12 +6,21 @@
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { listSemanticMemoryBySourceSessions } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { updateSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
-import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
-import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
+import {
+  ORGANIZE_MEMORY_FIELDS,
+  PROMPT_XML_TAGS,
+  renderConversationMessageList,
+  renderSemanticMemoryList,
+  toSemanticMemoryPromptItem,
+} from "@freeanima/habitat/core/hooks/prompt";
+import {
+  composeAutoLlmPrompt,
+  type AutoLlmDataPart,
+} from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { getActiveRuntimeConfig, resolvePassiveRecallConfig } from "@freeanima/habitat/core/config";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import { RETAIN_TASK_SPEC, formatExistingMemoriesMessage } from "../day-window/build-messages.ts";
-import { formatPassiveMemoryBlock } from "../passive-recall/inject.ts";
 
 import { withRetainProvenance } from "./retain-context.ts";
 import { isRetainLlmRegistered, runRetainLlm } from "./retain-llm-port.ts";
@@ -24,10 +33,7 @@ const RETAIN_TOOL_NAMES = [
   "memory_semantic_deprecate",
 ] as const;
 
-function formatDialogueFromTexts(texts: string[]): string {
-  const lines = texts.map((t, i) => `### turn ${i + 1}\n${t.trim()}`).filter((l) => l.length > 10);
-  return lines.join("\n\n");
-}
+const RETAIN_PASSIVE_MAX_CHARS = 6_000;
 
 export type BuiltinRetainInput = {
   conversation_id: string;
@@ -51,7 +57,13 @@ export type BuiltinRetainResult = {
 function resolveTextItems(input: BuiltinRetainInput): RetainTextItem[] {
   if (input.text_items && input.text_items.length > 0) {
     return input.text_items
-      .map((i) => ({ role: i.role, content: i.content.trim() }))
+      .map((i) =>
+        omitUndefined({
+          role: i.role,
+          content: i.content.trim(),
+          t: i.t,
+        }),
+      )
       .filter((i) => i.content.length > 0);
   }
   return (input.texts ?? [])
@@ -77,20 +89,24 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
   const related = await listSemanticMemoryBySourceSessions([input.conversation_id]);
   const relatedIds = new Set(related.map((r) => r.id));
 
-  const dataParts: { tag?: string; body: string }[] = [];
+  const dataParts: AutoLlmDataPart[] = [];
   if (related.length > 0) {
     dataParts.push({
       tag: PROMPT_XML_TAGS.relatedMemories,
       body: formatExistingMemoriesMessage(related),
+      attrs: { count: String(related.length), filter: "source_conversations" },
     });
   }
 
   try {
     const config = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
     const hits = await collectRetainPassiveHits(textItems, relatedIds, config);
-    const block = formatPassiveMemoryBlock(hits, 6_000);
-    if (block) {
-      dataParts.push({ body: block, tag: "" });
+    const { text } = renderSemanticMemoryList(
+      hits.map((h) => toSemanticMemoryPromptItem(h)),
+      { fields: ORGANIZE_MEMORY_FIELDS, maxChars: RETAIN_PASSIVE_MAX_CHARS },
+    );
+    if (text) {
+      dataParts.push({ tag: PROMPT_XML_TAGS.passiveMemory, body: text });
     }
   } catch (e) {
     logComponent("memory").warn("retain passive-style recall failed", {
@@ -100,7 +116,7 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
 
   dataParts.push({
     tag: PROMPT_XML_TAGS.sourceData,
-    body: formatDialogueFromTexts(texts),
+    body: renderConversationMessageList(textItems),
   });
 
   const { systemPrompt, userMessages } = composeAutoLlmPrompt({
