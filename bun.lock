@@ -101,7 +101,7 @@
         "@modelcontextprotocol/sdk": "^1.30.0",
         "@noble/hashes": "^2.3.0",
         "@node-rs/jieba": "^2.0.2",
-        "@opencode-ai/models": "^0.0.43",
+        "@opencode-ai/models": "^0.0.44",
         "@sinclair/typebox": "^0.34.52",
         "acme-client": "^5.4.0",
         "commander": "^15.0.0",
@@ -742,7 +742,7 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "https://registry.npmmirror.com/@nodelib/fs.walk/-/fs.walk-1.2.8.tgz", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
-    "@opencode-ai/models": ["@opencode-ai/models@0.0.43", "https://registry.npmmirror.com/@opencode-ai/models/-/models-0.0.43.tgz", { "peerDependencies": { "effect": "4.0.0-beta.83" }, "optionalPeers": ["effect"] }, "sha512-94uR9jewAxFqd0A3azZHHX6sDDq/AmlbifxlUZ4XGDFPAiBzrn4NuZn0kgLssZMxXYQmLxaI3+/hVazowRUFCg=="],
+    "@opencode-ai/models": ["@opencode-ai/models@0.0.44", "", { "peerDependencies": { "effect": "4.0.0-beta.83" }, "optionalPeers": ["effect"] }, "sha512-sXwrC9ZuGQdnrVaij6VqXFd+AGTVx6CXqGD45LSVsTbESq0u2xIGo3fFBA7nkx4Qbygz814wardG9aMUMgFIVg=="],
 
     "@oslojs/encoding": ["@oslojs/encoding@1.1.0", "https://registry.npmmirror.com/@oslojs/encoding/-/encoding-1.1.0.tgz", {}, "sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ=="],
 
