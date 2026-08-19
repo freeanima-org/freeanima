@@ -30,6 +30,7 @@ import * as fts from "./service-fts.ts";
 import * as promptDebug from "./service-prompt-debug.ts";
 import * as memoryMaintenance from "./service-memory-maintenance.ts";
 import * as autoLlmRuns from "./service-auto-llm-runs.ts";
+import * as llmUsage from "./service-llm-usage.ts";
 import * as messaging from "./service-messaging.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -551,6 +552,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   getAutoLlmRun(id: string) {
     return autoLlmRuns.getAutoLlmRunDetail(this.runtimeDeps(), id);
+  }
+
+  getUsageToday() {
+    return llmUsage.getUsageToday(this.runtimeDeps());
   }
 
   ensureBuiltinCronJobs(): Promise<void> {

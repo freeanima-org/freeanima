@@ -1,8 +1,23 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterAll, describe, expect, it, mock } from "bun:test";
 
 import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
+import { emptyLlmUsageTotals } from "@freeanima/shared/llm-usage";
 import type { RuntimeDeps } from "./runtime-deps.ts";
-import { getMessages } from "./service-conversations.ts";
+
+const realConversation = await import("@freeanima/habitat/core/db/pg/conversation");
+const conversationOriginal = { ...realConversation };
+
+mock.module("@freeanima/habitat/core/db/pg/conversation", () => ({
+  ...conversationOriginal,
+  sumConversationUsage: mock(async () => emptyLlmUsageTotals()),
+  sumConversationUsageBetween: mock(async () => emptyLlmUsageTotals()),
+}));
+
+afterAll(() => {
+  mock.module("@freeanima/habitat/core/db/pg/conversation", () => conversationOriginal);
+});
+
+const { getMessages } = await import("./service-conversations.ts");
 
 function msg(pos: number, role: "user" | "assistant" | "tool", content: string): StoredMessage {
   if (role === "tool") {
@@ -46,6 +61,7 @@ describe("getMessages pagination", () => {
     expect(page.has_more_before).toBe(true);
     expect(page.total).toBe(10);
     expect(page.offset).toBe(7);
+    expect(page.usage).toEqual(emptyLlmUsageTotals());
   });
 
   it("offset path keeps Habitat head pagination", async () => {
@@ -67,6 +83,7 @@ describe("getMessages pagination", () => {
     expect(page.from_pos).toBe(5);
     expect(page.to_pos).toBe(7);
     expect(page.has_more_before).toBe(true);
+    expect(page.context).toBeUndefined();
   });
 
   it("expands leading orphan tool rows", async () => {

@@ -14,6 +14,12 @@ import type {
   PurgeStaleAutoLlmRunsOpts,
 } from "../types.ts";
 import { getDb, type DbTransaction } from "../../client.ts";
+import {
+  coerceLlmUsageTotals,
+  emptyUsageTotals,
+  llmUsageSumSelect,
+} from "../../utils/llm-usage-sql.ts";
+import type { LlmUsageTotals } from "@freeanima/shared/llm-usage";
 
 const OUTPUT_MAX = 10_000;
 const ERROR_MAX = 2000;
@@ -273,4 +279,68 @@ export async function purgeStaleAutoLlmRuns(
   }
 
   return { deleted };
+}
+
+export async function sumAutoLlmUsageByRunIds(
+  runIds: string[],
+): Promise<Map<string, LlmUsageTotals>> {
+  const out = new Map<string, LlmUsageTotals>();
+  if (runIds.length === 0) return out;
+  const db = getDb();
+  const rows = await db
+    .select({
+      run_id: autoLlmMessages.run_id,
+      ...llmUsageSumSelect(autoLlmMessages.payload),
+    })
+    .from(autoLlmMessages)
+    .where(
+      and(
+        inArray(autoLlmMessages.run_id, runIds),
+        sql`${autoLlmMessages.payload}->>'role' = 'assistant'`,
+      ),
+    )
+    .groupBy(autoLlmMessages.run_id);
+  for (const row of rows) {
+    out.set(row.run_id, coerceLlmUsageTotals(row));
+  }
+  return out;
+}
+
+export async function sumAutoLlmUsageFiltered(opts?: AutoLlmRunCountOpts): Promise<LlmUsageTotals> {
+  const conditions = buildListConditions(opts);
+  const db = getDb();
+  const rows = await db
+    .select(llmUsageSumSelect(autoLlmMessages.payload))
+    .from(autoLlmMessages)
+    .innerJoin(autoLlmRuns, eq(autoLlmMessages.run_id, autoLlmRuns.id))
+    .where(
+      and(
+        sql`${autoLlmMessages.payload}->>'role' = 'assistant'`,
+        ...(conditions.length > 0 ? conditions : []),
+      ),
+    );
+  return coerceLlmUsageTotals(rows[0] ?? {});
+}
+
+export async function sumAutoLlmUsageBetween(
+  fromIso: string,
+  toIso: string,
+): Promise<LlmUsageTotals> {
+  const db = getDb();
+  const rows = await db
+    .select(llmUsageSumSelect(autoLlmMessages.payload))
+    .from(autoLlmMessages)
+    .innerJoin(autoLlmRuns, eq(autoLlmMessages.run_id, autoLlmRuns.id))
+    .where(
+      and(
+        sql`${autoLlmMessages.payload}->>'role' = 'assistant'`,
+        sql`${autoLlmRuns.created_at} >= ${fromIso}::timestamptz`,
+        sql`${autoLlmRuns.created_at} < ${toIso}::timestamptz`,
+      ),
+    );
+  return coerceLlmUsageTotals(rows[0] ?? {});
+}
+
+export function usageOrEmpty(usage: LlmUsageTotals | undefined): LlmUsageTotals {
+  return usage ?? emptyUsageTotals();
 }

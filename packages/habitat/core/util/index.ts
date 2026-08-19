@@ -10,6 +10,8 @@ export {
   formatCstIsoFromEpoch,
   formatCstWeekdayZh,
   isCstMonday,
+  hostCalendarDay,
+  hostDayBoundsIso,
   type FormatCstDisplayOpts,
 } from "./time.ts";
 export { isEnabledByDefault } from "./config.ts";

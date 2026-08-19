@@ -21,6 +21,7 @@ import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 
 import { authHasScope, type ServiceAuthContext } from "../habitat-api/auth-context.ts";
 import { listAutoLlmRuns, getAutoLlmRun } from "../habitat-api/handlers/auto-llm-runs.ts";
+import { getUsageToday } from "../habitat-api/handlers/llm-usage.ts";
 import {
   getHabitatConfig,
   getHabitatConfigSection,
@@ -579,6 +580,11 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "autoLlmRuns.get",
     habitatMethodDefs["autoLlmRuns.get"],
     wrapConsoleLegacyHandler((payload) => getAutoLlmRun(payload as { id: string })),
+  ),
+  defineHabitatRouteFromDef(
+    "usage.today",
+    habitatMethodDefs["usage.today"],
+    wrapConsoleLegacyHandler(() => getUsageToday()),
   ),
   defineHabitatRouteFromDef(
     "worlds.context",

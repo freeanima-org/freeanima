@@ -9,21 +9,17 @@ import {
 } from "@freeanima/habitat/core/compress";
 import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
+import { lookupCatalogContextWindow } from "@freeanima/habitat/core/config";
 import { loadSelfLayerPrompt } from "@freeanima/habitat/capabilities/self";
 import { renderToolsetsSection } from "@freeanima/habitat/capabilities/tools/toolset-prompt";
+import {
+  type ConversationContextUsage,
+  type RuntimeContextBreakdown,
+} from "@freeanima/shared/llm-usage";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
-export type RuntimeContextBreakdown = {
-  /** View sent to LLM (post-compression + summary injection), not full archive */
-  system_self: number;
-  system_agents: number;
-  system_resident: number;
-  system_toolsets: number;
-  summary: number;
-  messages: number;
-  tools: number;
-  total: number;
-};
+export type { ConversationContextUsage, RuntimeContextBreakdown };
+export { formatTokenK } from "@freeanima/shared/llm-usage";
 
 /** Estimate tokens by breakdown from runtime message list (same basis as compress decisions) */
 export async function computeRuntimeContextBreakdown(
@@ -84,10 +80,12 @@ export async function computeRuntimeContextBreakdown(
   };
 }
 
-/** Format as k tokens display (1 decimal; use tokens when <1000) */
-export function formatTokenK(tokens: number): string {
-  if (tokens <= 0) return "0";
-  if (tokens < 1000) return `${tokens}`;
-  const k = tokens / 1000;
-  return k >= 10 ? `${Math.round(k)}k` : `${k.toFixed(1)}k`;
+export async function computeConversationContextUsage(
+  deps: RuntimeDeps,
+  conversationId: string,
+): Promise<ConversationContextUsage> {
+  const breakdown = await computeRuntimeContextBreakdown(deps, conversationId);
+  const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
+  const window = model ? ((await lookupCatalogContextWindow(model)) ?? null) : null;
+  return { used: breakdown.total, window, breakdown };
 }

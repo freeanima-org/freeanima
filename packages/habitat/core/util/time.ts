@@ -8,6 +8,8 @@ export {
   formatCstWeekdayZh,
   getConfiguredHostTimeZone,
   hostTimeZoneId,
+  hostCalendarDay,
+  hostDayBoundsIso,
   isCstMonday,
   resetHostTimeZoneProviderForTests,
   setHostTimeZoneProvider,

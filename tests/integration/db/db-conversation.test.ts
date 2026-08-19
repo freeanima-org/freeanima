@@ -1,4 +1,5 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
+import { randomUUID } from "node:crypto";
 import type { ConversationMessage } from "@freeanima/habitat/core/db/domain";
 import { pingDatabase } from "@freeanima/habitat/core/db/pg";
 import {
@@ -7,6 +8,7 @@ import {
   listMessages,
   nextMessagePos,
   shiftMessagePositions,
+  sumConversationUsage,
   updateCompression,
   upsertConversationMeta,
 } from "@freeanima/habitat/core/db/pg/conversation";
@@ -76,6 +78,42 @@ describePg("db conversation (PostgreSQL)", () => {
     await updateCompression(conversationId, { l2: 1, l3: 2 });
     const meta2 = await getConversationMeta(conversationId);
     expect(meta2?.compression).toEqual({ l2: 1, l3: 2 });
+  });
+
+  it("sums cached/uncached/output from assistant usage", async () => {
+    const conversationId = `20260819_usage_${randomUUID()}`;
+    await upsertConversationMeta(conversationId, {
+      model: "test-model",
+      cached_toolsets: [],
+      functions: [],
+      timestamp: new Date().toISOString(),
+      platform: TEST_SAP_CHAT_PLATFORM,
+    });
+    await appendMessage(conversationId, {
+      role: "user",
+      content: "hi",
+      pos: 1,
+      timestamp: "2026-08-19T10:00:00+08:00",
+    });
+    await appendMessage(conversationId, {
+      role: "assistant",
+      content: "a",
+      pos: 2,
+      timestamp: "2026-08-19T10:00:01+08:00",
+      usage: { prompt_tokens: 20, completion_tokens: 5, cached_tokens: 8 },
+    });
+    await appendMessage(conversationId, {
+      role: "assistant",
+      content: "b",
+      pos: 3,
+      timestamp: "2026-08-19T10:00:02+08:00",
+      usage: { prompt_tokens: 10, completion_tokens: 2 },
+    });
+    expect(await sumConversationUsage(conversationId)).toEqual({
+      cached_input_tokens: 8,
+      uncached_input_tokens: 22,
+      output_tokens: 7,
+    });
   });
 
   it("JSONB assistant tool_calls round-trip", async () => {

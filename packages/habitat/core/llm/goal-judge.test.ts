@@ -1,4 +1,4 @@
-import { describe, it, expect, spyOn, afterEach, beforeEach, mock } from "bun:test";
+import { describe, it, expect, spyOn, afterEach, beforeEach, afterAll, mock } from "bun:test";
 import * as llm from "./llm.ts";
 import {
   bindResolvedWorldContext,
@@ -7,11 +7,18 @@ import {
 import { GOAL_JUDGE_REQUEST_PARAMS, judgeGoal, parseGoalJudgeOutput } from "./goal-judge.ts";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/habitat/core/provider";
 
+const realPg = await import("@freeanima/habitat/core/db/pg");
+const pgOriginal = { ...realPg };
+const realAutoLlmRun = await import("@freeanima/habitat/core/db/pg/auto-llm-run");
+const autoLlmRunOriginal = { ...realAutoLlmRun };
+
 mock.module("@freeanima/habitat/core/db/pg", () => ({
+  ...pgOriginal,
   isPostgresPrimary: () => true,
 }));
 
 mock.module("@freeanima/habitat/core/db/pg/auto-llm-run", () => ({
+  ...autoLlmRunOriginal,
   insertRunningAutoLlmRun: mock(async () => {}),
   appendAutoLlmMessages: mock(async () => {}),
   finishAutoLlmRun: mock(async () => {}),
@@ -23,6 +30,11 @@ mock.module("@freeanima/habitat/core/db/pg/auto-llm-run", () => ({
   getAutoLlmRun: mock(async () => null),
   listAutoLlmMessages: mock(async () => []),
 }));
+
+afterAll(() => {
+  mock.module("@freeanima/habitat/core/db/pg", () => pgOriginal);
+  mock.module("@freeanima/habitat/core/db/pg/auto-llm-run", () => autoLlmRunOriginal);
+});
 
 describe("parseGoalJudgeOutput", () => {
   it("parses plain JSON", () => {

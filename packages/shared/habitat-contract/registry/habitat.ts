@@ -478,6 +478,11 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
+  "usage.today": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
   "worlds.context": defineHabitatMethod({
     input: emptyInputSchema,
     output: unknownOutputSchema,

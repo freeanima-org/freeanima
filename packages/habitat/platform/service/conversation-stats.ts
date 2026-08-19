@@ -5,37 +5,38 @@ import {
   analyzeCompression,
   buildCompressOptionsResolved,
   formatCompressionDiagnostics,
-  formatTokenK,
   getCompressionConfig,
   isCompressed,
   parseCompressionState,
 } from "@freeanima/habitat/core/compress";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
-import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
+import { PROFILE_CHAT, normalizeUsage } from "@freeanima/habitat/core/provider";
 import {
   computeRuntimeContextBreakdown,
   type RuntimeContextBreakdown,
 } from "./runtime-context-stats.ts";
-import { estimateTokens, messageTextForEstimate } from "@freeanima/habitat/core/compress";
-import { normalizeUsage } from "@freeanima/habitat/core/llm";
 import { findMessagePos } from "@freeanima/habitat/core/db/pg/conversation";
 import { getRetainWatermark } from "@freeanima/habitat/capabilities/memory/service";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
+import {
+  formatTokenK,
+  usageRecordToTotals,
+  type LlmUsageTotals,
+} from "@freeanima/shared/llm-usage";
 
 export type ConversationStats = {
   conversation: string;
   message_count: number;
   assistant_turns: number;
   usage_turns: number;
-  input_tokens: number | null;
-  output_tokens: number | null;
-  cached_tokens: number | null;
+  cached_input_tokens: number;
+  uncached_input_tokens: number;
+  output_tokens: number;
   avg_tps: number | null;
   duration_seconds: number | null;
   throughput_tpm: number | null;
   partial_usage: boolean;
   partial_cached: boolean;
-  estimated_usage: boolean;
   compression_enabled: boolean;
   compression_mode: "token" | "messages";
   compression_l2: number | null;
@@ -82,12 +83,6 @@ function usageFromMessage(msg: StoredMessage): Record<string, number> | null {
   }
   return null;
 }
-
-export {
-  estimateMessagesTokens,
-  estimateTokens,
-  messageTextForEstimate,
-} from "@freeanima/habitat/core/compress";
 
 function emptyBreakdown(): RuntimeContextBreakdown {
   return {
@@ -220,21 +215,6 @@ async function readCompressionAndContextFields(
   };
 }
 
-function estimateUsageFromMessages(
-  assistantMsgs: Record<string, unknown>[],
-  model: string,
-): {
-  input_tokens: number;
-  output_tokens: number;
-} {
-  let output = 0;
-  for (const msg of assistantMsgs) {
-    output += estimateTokens(messageTextForEstimate(msg), model);
-  }
-  const input = Math.round(output * 2.5);
-  return { input_tokens: input, output_tokens: output };
-}
-
 export async function computeStats(
   deps: RuntimeDeps,
   conversationId: string,
@@ -243,11 +223,10 @@ export async function computeStats(
   const messages = message_count > 0 ? await deps.conversation.load(conversationId) : [];
   const assistant_msgs = messages.filter((m) => m.role === "assistant");
   const assistant_turns = assistant_msgs.length;
-  const model = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
 
-  let input_tokens = 0;
+  let cached_input_tokens = 0;
+  let uncached_input_tokens = 0;
   let output_tokens = 0;
-  let cached_tokens = 0;
   let usage_turns = 0;
   let cached_records = 0;
   let latency_total_ms = 0;
@@ -260,14 +239,13 @@ export async function computeStats(
     if (msg.role !== "assistant") continue;
 
     const usage = usageFromMessage(msg);
-    if (usage) {
+    const billed = usageRecordToTotals(usage);
+    if (billed) {
       usage_turns += 1;
-      if (usage.prompt_tokens != null) input_tokens += usage.prompt_tokens;
-      if (usage.completion_tokens != null) output_tokens += usage.completion_tokens;
-      if (usage.cached_tokens != null) {
-        cached_tokens += usage.cached_tokens;
-        cached_records += 1;
-      }
+      cached_input_tokens += billed.cached_input_tokens;
+      uncached_input_tokens += billed.uncached_input_tokens;
+      output_tokens += billed.output_tokens;
+      if (usage?.cached_tokens != null) cached_records += 1;
     }
 
     const latency_ms = msg.latency_ms;
@@ -302,38 +280,19 @@ export async function computeStats(
     throughput_tpm = output_tokens / (duration_seconds / 60);
   }
 
-  let estimated_usage = false;
-  if (usage_turns === 0 && assistant_turns > 0) {
-    const est = estimateUsageFromMessages(assistant_msgs, model);
-    input_tokens = est.input_tokens;
-    output_tokens = est.output_tokens;
-    estimated_usage = true;
-    if (output_tokens > 0) {
-      if (latency_total_ms > 0) {
-        avg_tps = output_tokens / (latency_total_ms / 1000);
-      } else if (duration_seconds && duration_seconds > 0) {
-        avg_tps = output_tokens / duration_seconds;
-      }
-      if (duration_seconds && duration_seconds > 0) {
-        throughput_tpm = output_tokens / (duration_seconds / 60);
-      }
-    }
-  }
-
   return {
     conversation: conversationId,
     message_count,
     assistant_turns,
     usage_turns,
-    input_tokens: usage_turns || estimated_usage ? input_tokens : null,
-    output_tokens: usage_turns || estimated_usage ? output_tokens : null,
-    cached_tokens: cached_records ? cached_tokens : null,
+    cached_input_tokens,
+    uncached_input_tokens,
+    output_tokens,
     avg_tps,
     duration_seconds,
     throughput_tpm,
     partial_usage,
     partial_cached,
-    estimated_usage,
     ...(await readCompressionAndContextFields(deps, conversationId, messages)),
   };
 }
@@ -346,15 +305,14 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
       message_count: 0,
       assistant_turns: 0,
       usage_turns: 0,
-      input_tokens: null,
-      output_tokens: null,
-      cached_tokens: null,
+      cached_input_tokens: 0,
+      uncached_input_tokens: 0,
+      output_tokens: 0,
       avg_tps: null,
       duration_seconds: null,
       throughput_tpm: null,
       partial_usage: false,
       partial_cached: false,
-      estimated_usage: false,
       compression_enabled: false,
       compression_mode: "messages",
       compression_l2: null,
@@ -386,13 +344,9 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
   const message_count = items.reduce((s, i) => s + i.message_count, 0);
   const assistant_turns = items.reduce((s, i) => s + i.assistant_turns, 0);
   const usage_turns = items.reduce((s, i) => s + i.usage_turns, 0);
-
-  const has_usage = items.some((s) => s.input_tokens != null || s.output_tokens != null);
-  const input_tokens = has_usage ? items.reduce((s, i) => s + (i.input_tokens ?? 0), 0) : null;
-  const output_tokens = has_usage ? items.reduce((s, i) => s + (i.output_tokens ?? 0), 0) : null;
-
-  const has_cached = items.some((s) => s.cached_tokens != null);
-  const cached_tokens = has_cached ? items.reduce((s, i) => s + (i.cached_tokens ?? 0), 0) : null;
+  const cached_input_tokens = items.reduce((s, i) => s + i.cached_input_tokens, 0);
+  const uncached_input_tokens = items.reduce((s, i) => s + i.uncached_input_tokens, 0);
+  const output_tokens = items.reduce((s, i) => s + i.output_tokens, 0);
 
   const duration_values = items
     .map((s) => s.duration_seconds)
@@ -437,15 +391,14 @@ export function mergeStats(items: ConversationStats[], label = "Summary"): Conve
     message_count,
     assistant_turns,
     usage_turns,
-    input_tokens,
+    cached_input_tokens,
+    uncached_input_tokens,
     output_tokens,
-    cached_tokens,
     avg_tps,
     duration_seconds,
     throughput_tpm,
     partial_usage: items.some((s) => s.partial_usage),
     partial_cached: items.some((s) => s.partial_cached),
-    estimated_usage: items.some((s) => s.estimated_usage),
     compression_enabled: items.some((s) => s.compression_enabled),
     compression_mode: items[0]?.compression_mode ?? "messages",
     compression_l2: null,
@@ -591,16 +544,20 @@ function formatUsageNote(stats: ConversationStats): string | null {
     }
     return null;
   }
-  if (stats.estimated_usage) {
-    return `usage records: 0/${stats.assistant_turns} turns (no API usage in archive; estimates below from content)`;
-  }
   return `usage records: 0/${stats.assistant_turns} turns`;
+}
+
+export function billedUsageFromStats(stats: ConversationStats): LlmUsageTotals {
+  return {
+    cached_input_tokens: stats.cached_input_tokens,
+    uncached_input_tokens: stats.uncached_input_tokens,
+    output_tokens: stats.output_tokens,
+  };
 }
 
 export function formatStats(stats: ConversationStats): string {
   const usageOpts = {
     partial: stats.partial_usage,
-    estimated: stats.estimated_usage,
   };
   const lines = [
     `Conversation: ${stats.conversation}`,
@@ -608,16 +565,16 @@ export function formatStats(stats: ConversationStats): string {
     `assistant turns: ${stats.assistant_turns}`,
     formatCompression(stats),
     ...formatContextBreakdown(stats),
-    `Input tokens: ${formatNumber(stats.input_tokens, usageOpts)}`,
+    `Cached input tokens: ${formatNumber(stats.cached_input_tokens, { partial: stats.partial_cached })}`,
+    `Uncached input tokens: ${formatNumber(stats.uncached_input_tokens, usageOpts)}`,
     `Output tokens: ${formatNumber(stats.output_tokens, usageOpts)}`,
-    `Cached tokens: ${formatNumber(stats.cached_tokens, { partial: stats.partial_cached })}`,
-    `Avg tps: ${formatNumber(stats.avg_tps, { digits: 1, estimated: stats.estimated_usage })}`,
+    `Avg tps: ${formatNumber(stats.avg_tps, { digits: 1 })}`,
     `Conversation duration: ${formatDuration(stats.duration_seconds)}`,
-    `Throughput: ${formatNumber(stats.throughput_tpm, { digits: 1, estimated: stats.estimated_usage })} token/min`,
+    `Throughput: ${formatNumber(stats.throughput_tpm, { digits: 1 })} token/min`,
   ];
   const usageNote = formatUsageNote(stats);
   if (usageNote) {
-    const tokenIdx = lines.findIndex((l) => l.startsWith("Input tokens:"));
+    const tokenIdx = lines.findIndex((l) => l.startsWith("Cached input tokens:"));
     lines.splice(tokenIdx >= 0 ? tokenIdx : lines.length, 0, usageNote);
   }
   return lines.join("\n");

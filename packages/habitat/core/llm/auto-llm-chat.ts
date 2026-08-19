@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { omitUndefined, CST_OFFSET_MS, formatCstIso } from "@freeanima/habitat/core/util";
 import type { MessagePayload } from "@freeanima/habitat/core/db/schema";
-import type { LlmCallParams } from "@freeanima/habitat/core/provider";
+import { normalizeUsage, type LlmCallParams } from "@freeanima/habitat/core/provider";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import {
   appendAutoLlmMessages,
@@ -66,8 +66,22 @@ function toInputPayloads(messages: AutoLlmChatMessage[]): MessagePayload[] {
   });
 }
 
-function assistantPayload(content: string): MessagePayload {
-  return { role: "assistant", content, timestamp: formatCstIso() };
+function assistantPayload(
+  content: string,
+  completion?: LlmResponse,
+  latencyMs?: number,
+): MessagePayload {
+  const usage = completion?.usage ? normalizeUsage(completion.usage) : null;
+  return {
+    role: "assistant",
+    content,
+    timestamp: formatCstIso(),
+    ...omitUndefined({
+      usage: usage ?? undefined,
+      latency_ms: latencyMs,
+      model: completion?.model,
+    }),
+  };
 }
 
 function buildChatMetadata(input: AutoLlmChatInput): Record<string, unknown> {
@@ -104,10 +118,18 @@ async function persistChatStart(row: {
   }
 }
 
-async function persistChatAssistant(runId: string, pos: number, content: string): Promise<void> {
+async function persistChatAssistant(
+  runId: string,
+  pos: number,
+  content: string,
+  completion: LlmResponse,
+  latencyMs: number,
+): Promise<void> {
   try {
     if (!isPostgresPrimary()) return;
-    await appendAutoLlmMessages(runId, [{ pos, payload: assistantPayload(content) }]);
+    await appendAutoLlmMessages(runId, [
+      { pos, payload: assistantPayload(content, completion, latencyMs) },
+    ]);
   } catch {
     // ignore
   }
@@ -200,7 +222,11 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
     const durationMs = Date.now() - startMs;
     const finishedAt = formatCstIso();
     if (output) {
-      await persistChatAssistant(runId, inputPayloads.length, output);
+      const latencyMs =
+        typeof completion.latency_ms === "number" && Number.isFinite(completion.latency_ms)
+          ? completion.latency_ms
+          : durationMs;
+      await persistChatAssistant(runId, inputPayloads.length, output, completion, latencyMs);
     }
     await persistChatFinish({
       id: runId,

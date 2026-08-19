@@ -28,6 +28,7 @@ import { sortConversationsByUpdatedAt } from "@freeanima/features/chat/ui/spa/li
 import { useChatStore } from "@freeanima/features/chat/ui/spa/stores/chat.ts";
 import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
 import { toast } from "@freeanima/ui-kit/composite";
+import type { ConversationContextUsage, LlmUsageTotals } from "@freeanima/shared/llm-usage";
 
 /** Chat 首屏 / 向上加载每页原始消息条数 */
 export const CHAT_MESSAGES_PAGE_SIZE = 100;
@@ -40,6 +41,8 @@ type ConversationsState = {
   loadingOlder: boolean;
   hasMoreBefore: boolean;
   fromPos: number | null;
+  billedUsage: LlmUsageTotals | null;
+  contextUsage: ConversationContextUsage | null;
   showArchived: boolean;
   tailPosByConversation: Record<string, number>;
   fetchConversations: () => Promise<ConversationListItem[]>;
@@ -67,11 +70,16 @@ type ConversationsState = {
 
 function applyMessagesPage(
   resp: StoredMessagesResponse,
-): Pick<ConversationsState, "display" | "hasMoreBefore" | "fromPos"> {
+): Pick<
+  ConversationsState,
+  "display" | "hasMoreBefore" | "fromPos" | "billedUsage" | "contextUsage"
+> {
   return {
     display: resp.display ?? [],
     hasMoreBefore: resp.has_more_before === true,
     fromPos: typeof resp.from_pos === "number" ? resp.from_pos : null,
+    billedUsage: resp.usage ?? null,
+    contextUsage: resp.context ?? null,
   };
 }
 
@@ -111,6 +119,8 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
   loadingOlder: false,
   hasMoreBefore: false,
   fromPos: null,
+  billedUsage: null,
+  contextUsage: null,
   showArchived: false,
   tailPosByConversation: {},
 
@@ -166,6 +176,8 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       fromPos: null,
       loadingOlder: false,
       display: [],
+      billedUsage: null,
+      contextUsage: null,
     });
     const scope = resolveHabitatCacheScope();
     const cached = await readCachedMessages(scope, id);

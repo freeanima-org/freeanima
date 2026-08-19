@@ -58,7 +58,12 @@ describe("runAutoLlmChat", () => {
   });
 
   it("inserts running then appends assistant and finishes ok", async () => {
-    const chatSpy = spyOn(llm, "chat").mockResolvedValue({ content: "hello title" });
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({
+      content: "hello title",
+      usage: { prompt_tokens: 12, completion_tokens: 4, cached_tokens: 3 },
+      latency_ms: 42,
+      model: "test-model",
+    });
     restores.push(chatSpy);
 
     const result = await runAutoLlmChat({
@@ -78,6 +83,13 @@ describe("runAutoLlmChat", () => {
     expect(insertCalls[0]?.messages?.length).toBe(2);
     expect(appendCalls.length).toBe(1);
     expect(appendCalls[0]?.msgs[0]?.payload.role).toBe("assistant");
+    expect(appendCalls[0]?.msgs[0]?.payload).toMatchObject({
+      role: "assistant",
+      content: "hello title",
+      usage: { prompt_tokens: 12, completion_tokens: 4, cached_tokens: 3 },
+      latency_ms: 42,
+      model: "test-model",
+    });
     expect(finishCalls.length).toBe(1);
     expect(finishCalls[0]?.status).toBe("ok");
     expect(finishCalls[0]?.output).toBe("hello title");

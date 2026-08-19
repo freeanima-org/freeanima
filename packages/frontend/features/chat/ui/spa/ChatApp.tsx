@@ -19,6 +19,7 @@ import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/compone
 import { ConversationTranscript } from "@freeanima/features/chat/ui/spa/components/ConversationTranscript.tsx";
 import { ChatComposeForm } from "@freeanima/features/chat/ui/spa/components/ChatComposeForm.tsx";
 import type { ChatComposeSendPayload } from "@freeanima/features/chat/ui/spa/components/ChatComposeForm.tsx";
+import { ChatContextUsageButton } from "@freeanima/features/chat/ui/spa/components/ChatContextUsage.tsx";
 import { uploadChatAttachmentDrafts } from "@freeanima/features/chat/ui/spa/lib/attachments.ts";
 import type { TranscriptScrollApi } from "@freeanima/features/chat/ui/spa/hooks/useStickToBottomScroll.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
@@ -183,6 +184,8 @@ export function ChatApp() {
   const messagesLoading = useConversationsStore((s) => s.loading);
   const loadingOlder = useConversationsStore((s) => s.loadingOlder);
   const hasMoreBefore = useConversationsStore((s) => s.hasMoreBefore);
+  const billedUsage = useConversationsStore((s) => s.billedUsage);
+  const contextUsage = useConversationsStore((s) => s.contextUsage);
   const loadOlderMessages = useConversationsStore((s) => s.loadOlderMessages);
   const fetchConversations = useConversationsStore((s) => s.fetchConversations);
   const selectConversation = useConversationsStore((s) => s.selectConversation);
@@ -1695,205 +1698,212 @@ export function ChatApp() {
               </div>
             ) : null}
 
-            <ConversationTranscript
-              display={mergedDisplay}
-              conversationKey={currentId}
-              scrollContainerRef={msgAreaRef}
-              scrollApiRef={scrollApiRef}
-              readSentinelRef={readSentinelRef}
-              streamText={streamText}
-              streaming={awaitingAssistant}
-              streamVisible={streamVisible}
-              recovering={recoveringHere}
-              loadingOlder={loadingOlder}
-              hasMoreBefore={hasMoreBefore}
-              messagesLoading={messagesLoading}
-              onLoadOlder={loadOlderMessages}
-              onAnimaUriClick={(uri) => {
-                void openEntityResource(uri).then((r) => {
-                  if (!r.ok) toast(r.error, { duration: 4000 });
-                });
-              }}
-              speech={{
-                supported: speechSupported,
-                unsupportedReason: speechUnsupportedReason,
-                isSpeaking,
-                toggle: toggleSpeech,
-                stopKeepEnabled: stopCurrentKeepEnabled,
-                isStreamSpeaking,
-              }}
-              canEditUser={(i, item) => {
-                if (
-                  item.clientOpId &&
-                  (item.sendStatus === "pending" || item.sendStatus === "failed")
-                ) {
-                  return true;
-                }
-                if (item.sendStatus) return false;
-                for (let j = mergedDisplay.length - 1; j >= 0; j--) {
-                  const row = mergedDisplay[j];
-                  if (row?.type === "message" && row.role === "user") return j === i;
-                }
-                return false;
-              }}
-              onEditUser={(i, item) => {
-                if (
-                  item.clientOpId &&
-                  (item.sendStatus === "pending" || item.sendStatus === "failed")
-                ) {
-                  startEditOutboxMessage(i, item.clientOpId, item.content);
-                  return;
-                }
-                startReeditUserMessage(i, item.content);
-              }}
-              renderUserMessage={({ index: i }) => {
-                if (editingUserIndex !== i) return null;
-                return (
-                  <div className="flex justify-end min-w-0 max-w-full">
-                    <div className="chat-bubble chat-bubble-user w-full max-w-full space-y-2">
-                      <Textarea
-                        value={editDraft}
-                        onChange={(e) => setEditDraft(e.target.value)}
-                        rows={3}
-                        className="min-h-[4rem] w-full resize-y bg-background/10 text-primary-foreground"
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-primary-foreground"
-                          onClick={() => {
-                            setEditingUserIndex(null);
-                            setEditingOutboxOpId(null);
-                            setEditDraft("");
-                          }}
-                        >
-                          {"取消"}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-7"
-                          isDisabled={
-                            !editDraft.trim() || (editingOutboxOpId ? false : writesDisabled)
-                          }
-                          onClick={() =>
-                            void (editingOutboxOpId
-                              ? confirmEditOutboxMessage()
-                              : confirmReeditUserMessage())
-                          }
-                        >
-                          {"确定"}
-                        </Button>
+            <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+              <ConversationTranscript
+                display={mergedDisplay}
+                conversationKey={currentId}
+                scrollContainerRef={msgAreaRef}
+                scrollApiRef={scrollApiRef}
+                readSentinelRef={readSentinelRef}
+                streamText={streamText}
+                streaming={awaitingAssistant}
+                streamVisible={streamVisible}
+                recovering={recoveringHere}
+                loadingOlder={loadingOlder}
+                hasMoreBefore={hasMoreBefore}
+                messagesLoading={messagesLoading}
+                onLoadOlder={loadOlderMessages}
+                onAnimaUriClick={(uri) => {
+                  void openEntityResource(uri).then((r) => {
+                    if (!r.ok) toast(r.error, { duration: 4000 });
+                  });
+                }}
+                speech={{
+                  supported: speechSupported,
+                  unsupportedReason: speechUnsupportedReason,
+                  isSpeaking,
+                  toggle: toggleSpeech,
+                  stopKeepEnabled: stopCurrentKeepEnabled,
+                  isStreamSpeaking,
+                }}
+                canEditUser={(i, item) => {
+                  if (
+                    item.clientOpId &&
+                    (item.sendStatus === "pending" || item.sendStatus === "failed")
+                  ) {
+                    return true;
+                  }
+                  if (item.sendStatus) return false;
+                  for (let j = mergedDisplay.length - 1; j >= 0; j--) {
+                    const row = mergedDisplay[j];
+                    if (row?.type === "message" && row.role === "user") return j === i;
+                  }
+                  return false;
+                }}
+                onEditUser={(i, item) => {
+                  if (
+                    item.clientOpId &&
+                    (item.sendStatus === "pending" || item.sendStatus === "failed")
+                  ) {
+                    startEditOutboxMessage(i, item.clientOpId, item.content);
+                    return;
+                  }
+                  startReeditUserMessage(i, item.content);
+                }}
+                renderUserMessage={({ index: i }) => {
+                  if (editingUserIndex !== i) return null;
+                  return (
+                    <div className="flex justify-end min-w-0 max-w-full">
+                      <div className="chat-bubble chat-bubble-user w-full max-w-full space-y-2">
+                        <Textarea
+                          value={editDraft}
+                          onChange={(e) => setEditDraft(e.target.value)}
+                          rows={3}
+                          className="min-h-[4rem] w-full resize-y bg-background/10 text-primary-foreground"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-primary-foreground"
+                            onClick={() => {
+                              setEditingUserIndex(null);
+                              setEditingOutboxOpId(null);
+                              setEditDraft("");
+                            }}
+                          >
+                            {"取消"}
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-7"
+                            isDisabled={
+                              !editDraft.trim() || (editingOutboxOpId ? false : writesDisabled)
+                            }
+                            onClick={() =>
+                              void (editingOutboxOpId
+                                ? confirmEditOutboxMessage()
+                                : confirmReeditUserMessage())
+                            }
+                          >
+                            {"确定"}
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              }}
-              renderAfterUser={({ item }) => {
-                if (
-                  !item.clientOpId ||
-                  (item.sendStatus !== "pending" &&
-                    item.sendStatus !== "failed" &&
-                    item.sendStatus !== "stale")
-                ) {
-                  return null;
-                }
-                return (
-                  <div className="mt-1 flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const opId = item.clientOpId;
-                        if (!opId) return;
-                        void outboxDiscard(opId).then(() => {
-                          removeDisplayByClientOpId(opId);
-                        });
-                      }}
-                    >
-                      {"丢弃"}
-                    </Button>
-                    {item.sendStatus === "stale" ? (
+                  );
+                }}
+                renderAfterUser={({ item }) => {
+                  if (
+                    !item.clientOpId ||
+                    (item.sendStatus !== "pending" &&
+                      item.sendStatus !== "failed" &&
+                      item.sendStatus !== "stale")
+                  ) {
+                    return null;
+                  }
+                  return (
+                    <div className="mt-1 flex gap-2">
                       <Button
                         type="button"
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => {
                           const opId = item.clientOpId;
-                          if (!opId || !currentId) return;
-                          void (async () => {
-                            sendingRef.current = true;
-                            try {
-                              await dispatchSend(item.content, currentId, {
-                                clientOpId: opId,
-                                expectedTailPos: outboxEntries[opId]?.expectedTailPos ?? 0,
-                                forceTail: true,
-                              });
-                            } finally {
-                              sendingRef.current = false;
-                            }
-                          })();
+                          if (!opId) return;
+                          void outboxDiscard(opId).then(() => {
+                            removeDisplayByClientOpId(opId);
+                          });
                         }}
                       >
-                        {"仍然发送"}
+                        {"丢弃"}
                       </Button>
-                    ) : null}
+                      {item.sendStatus === "stale" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const opId = item.clientOpId;
+                            if (!opId || !currentId) return;
+                            void (async () => {
+                              sendingRef.current = true;
+                              try {
+                                await dispatchSend(item.content, currentId, {
+                                  clientOpId: opId,
+                                  expectedTailPos: outboxEntries[opId]?.expectedTailPos ?? 0,
+                                  forceTail: true,
+                                });
+                              } finally {
+                                sendingRef.current = false;
+                              }
+                            })();
+                          }}
+                        >
+                          {"仍然发送"}
+                        </Button>
+                      ) : null}
+                    </div>
+                  );
+                }}
+                empty={
+                  !currentId ? (
+                    <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
+                      <p>{"选择一个会话开始对话"}</p>
+                      <Button
+                        type="button"
+                        size="sm"
+                        isDisabled={writesDisabled}
+                        onClick={startConversation}
+                      >
+                        {"＋ 新会话"}
+                      </Button>
+                    </div>
+                  ) : display.length === 0 && !awaitingAssistant ? (
+                    <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
+                      {"发送第一条消息"}
+                    </div>
+                  ) : null
+                }
+                loading={
+                  <div className="flex h-full items-center justify-center">
+                    <Spinner className="size-6" />
                   </div>
-                );
-              }}
-              empty={
-                !currentId ? (
-                  <div className="flex flex-col items-center justify-center h-full gap-3 text-foreground/40 text-sm">
-                    <p>{"选择一个会话开始对话"}</p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      isDisabled={writesDisabled}
-                      onClick={startConversation}
-                    >
-                      {"＋ 新会话"}
-                    </Button>
-                  </div>
-                ) : display.length === 0 && !awaitingAssistant ? (
-                  <div className="flex items-center justify-center h-full text-foreground/40 text-sm">
-                    {"发送第一条消息"}
-                  </div>
-                ) : null
-              }
-              loading={
-                <div className="flex h-full items-center justify-center">
-                  <Spinner className="size-6" />
+                }
+                footer={
+                  clarifyPending ? (
+                    <Alert variant="info" className="shadow-sm">
+                      <AlertDescription className="w-full space-y-2">
+                        <p className="font-medium">
+                          {"需要你确认（一条消息回复全部，或发送 /cancel）"}
+                        </p>
+                        {clarifyPending.items.map((item, ci) => (
+                          <div key={ci} className="text-sm">
+                            <p>
+                              {ci + 1}. {item.question}
+                            </p>
+                            {item.choices?.length ? (
+                              <ul className="text-muted-foreground ml-2 list-inside list-disc">
+                                {item.choices.map((choice, chi) => (
+                                  <li key={chi}>{choice}</li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </div>
+                        ))}
+                      </AlertDescription>
+                    </Alert>
+                  ) : null
+                }
+              />
+              <div className="pointer-events-none absolute right-2 bottom-2 z-10">
+                <div className="pointer-events-auto">
+                  <ChatContextUsageButton context={contextUsage} usage={billedUsage} />
                 </div>
-              }
-              footer={
-                clarifyPending ? (
-                  <Alert variant="info" className="shadow-sm">
-                    <AlertDescription className="w-full space-y-2">
-                      <p className="font-medium">
-                        {"需要你确认（一条消息回复全部，或发送 /cancel）"}
-                      </p>
-                      {clarifyPending.items.map((item, ci) => (
-                        <div key={ci} className="text-sm">
-                          <p>
-                            {ci + 1}. {item.question}
-                          </p>
-                          {item.choices?.length ? (
-                            <ul className="text-muted-foreground ml-2 list-inside list-disc">
-                              {item.choices.map((choice, chi) => (
-                                <li key={chi}>{choice}</li>
-                              ))}
-                            </ul>
-                          ) : null}
-                        </div>
-                      ))}
-                    </AlertDescription>
-                  </Alert>
-                ) : null
-              }
-            />
+              </div>
+            </div>
 
             <div
               className={[

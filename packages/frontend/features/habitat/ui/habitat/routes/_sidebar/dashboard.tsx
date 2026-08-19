@@ -6,7 +6,13 @@ import type {
 import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
 import { ConfirmDialog, showAlert, StatusAlert } from "@freeanima/ui-kit/composite";
 import { useState } from "react";
-import { getStatus, restartService } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
+import {
+  getStatus,
+  getUsageToday,
+  restartService,
+  type UsageTodayResult,
+} from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
+import { formatUsageTriplet } from "@freeanima/shared/llm-usage";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { translateApiPayload } from "@freeanima/features/habitat/ui/habitat/lib/api-errors.ts";
 import { dependencyStatusLabel } from "@freeanima/features/habitat/ui/habitat/lib/habitat-status.ts";
@@ -17,8 +23,11 @@ import {
 
 export const Route = createFileRoute("/_sidebar/dashboard")({
   loader: async () => {
-    const status = await getStatus().catch(catchWithFallback("dashboard/getStatus", null));
-    return { status };
+    const [status, usageToday] = await Promise.all([
+      getStatus().catch(catchWithFallback("dashboard/getStatus", null)),
+      getUsageToday().catch(catchWithFallback("dashboard/getUsageToday", null)),
+    ]);
+    return { status, usageToday };
   },
   component: DashboardPage,
 });
@@ -65,7 +74,7 @@ function dependencyBadge(dep: DependencyStatus | undefined, name: string) {
 }
 
 function DashboardPage() {
-  const { status } = Route.useLoaderData();
+  const { status, usageToday } = Route.useLoaderData();
   const [restarting, setRestarting] = useState(false);
   const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
@@ -187,6 +196,11 @@ function DashboardPage() {
               <p className="text-xs text-muted-foreground">{"全平台"}</p>
             </StatCard>
           </div>
+        </section>
+
+        <section>
+          <h3 className="text-sm font-semibold text-muted-foreground mb-1.5">{"用量"}</h3>
+          <UsageTodayCard usageToday={usageToday} />
         </section>
 
         <section>
@@ -360,6 +374,27 @@ function ConversationStatCard({
         )}
       </div>
     </div>
+  );
+}
+
+function UsageTodayCard({ usageToday }: { usageToday: UsageTodayResult | null }) {
+  if (!usageToday) {
+    return (
+      <StatCard title={"今日用量"}>
+        <p className="text-xs text-muted-foreground mt-1">{"加载失败"}</p>
+      </StatCard>
+    );
+  }
+  return (
+    <StatCard title={`今日用量（${usageToday.day}）`}>
+      <p className="text-sm font-mono mt-1">{formatUsageTriplet(usageToday.total)}</p>
+      <p className="text-xs text-muted-foreground mt-1">
+        {`对话 ${formatUsageTriplet(usageToday.conversation)}`}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        {`Auto LLM ${formatUsageTriplet(usageToday.auto_llm)}`}
+      </p>
+    </StatCard>
   );
 }
 

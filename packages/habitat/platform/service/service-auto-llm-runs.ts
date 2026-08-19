@@ -9,18 +9,24 @@ import {
   getAutoLlmRun,
   listAutoLlmMessages,
   listAutoLlmRuns as listPgAutoLlmRuns,
+  sumAutoLlmUsageByRunIds,
+  sumAutoLlmUsageFiltered,
 } from "@freeanima/habitat/core/db/pg/auto-llm-run";
+import { emptyLlmUsageTotals, type LlmUsageTotals } from "@freeanima/shared/llm-usage";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
+export type AutoLlmRunWithUsage = AutoLlmRunRow & { usage: LlmUsageTotals };
+
 export type AutoLlmRunListResult = {
-  items: AutoLlmRunRow[];
+  items: AutoLlmRunWithUsage[];
   total: number;
   offset: number;
   limit: number;
+  usage_totals: LlmUsageTotals;
 };
 
 export type AutoLlmRunGetResult = {
-  run: AutoLlmRunRow;
+  run: AutoLlmRunWithUsage;
   messages: AutoLlmMessageRow[];
 };
 
@@ -28,6 +34,10 @@ function clampPagination(offset?: number, limit?: number) {
   const safeLimit = Math.max(1, Math.min(100, limit ?? 20));
   const safeOffset = Math.max(0, offset ?? 0);
   return { offset: safeOffset, limit: safeLimit };
+}
+
+function withUsage(row: AutoLlmRunRow, usage: LlmUsageTotals | undefined): AutoLlmRunWithUsage {
+  return { ...row, usage: usage ?? emptyLlmUsageTotals() };
 }
 
 export async function listAutoLlmRuns(
@@ -40,7 +50,13 @@ export async function listAutoLlmRuns(
   },
 ): Promise<AutoLlmRunListResult> {
   if (!isPostgresPrimary()) {
-    return { items: [], total: 0, offset: 0, limit: opts?.limit ?? 20 };
+    return {
+      items: [],
+      total: 0,
+      offset: 0,
+      limit: opts?.limit ?? 20,
+      usage_totals: emptyLlmUsageTotals(),
+    };
   }
 
   const { offset, limit } = clampPagination(opts?.offset, opts?.limit);
@@ -48,11 +64,19 @@ export async function listAutoLlmRuns(
     run_kind: opts?.run_kind?.trim() || undefined,
     status: opts?.status,
   });
-  const [items, total] = await Promise.all([
+  const [items, total, usage_totals] = await Promise.all([
     listPgAutoLlmRuns({ ...filter, offset, limit }),
     countAutoLlmRuns(filter),
+    sumAutoLlmUsageFiltered(filter),
   ]);
-  return { items, total, offset, limit };
+  const usageById = await sumAutoLlmUsageByRunIds(items.map((row) => row.id));
+  return {
+    items: items.map((row) => withUsage(row, usageById.get(row.id))),
+    total,
+    offset,
+    limit,
+    usage_totals,
+  };
 }
 
 export async function getAutoLlmRunDetail(
@@ -62,6 +86,9 @@ export async function getAutoLlmRunDetail(
   if (!isPostgresPrimary()) return null;
   const run = await getAutoLlmRun(id);
   if (!run) return null;
-  const messages = await listAutoLlmMessages(id);
-  return { run, messages };
+  const [messages, usageById] = await Promise.all([
+    listAutoLlmMessages(id),
+    sumAutoLlmUsageByRunIds([id]),
+  ]);
+  return { run: withUsage(run, usageById.get(id)), messages };
 }
