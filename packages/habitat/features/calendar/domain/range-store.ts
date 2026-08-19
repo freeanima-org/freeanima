@@ -4,7 +4,7 @@ import {
   asProject,
   asTaskItem,
   hasTaskPlan,
-  taskPlanClock,
+  planOverlapsRange,
 } from "@freeanima/habitat/core/db/schema/entity";
 import { searchEntities } from "@freeanima/habitat/core/db/pg/entity";
 
@@ -31,28 +31,6 @@ function sortKey(item: CalendarRangeItem): number {
   }
   const start = item.start_at ? Date.parse(item.start_at) : NaN;
   return Number.isFinite(start) ? start : 0;
-}
-
-function planOverlapsRange(
-  startAt: string | null,
-  endAt: string | null,
-  from: string,
-  to: string,
-): boolean {
-  const clock = taskPlanClock({ start_at: startAt, end_at: endAt });
-  if (clock == null) return false;
-  const startMs = startAt ? Date.parse(startAt) : Date.parse(clock);
-  const endMs = endAt ? Date.parse(endAt) : startMs;
-  const fromMs = Date.parse(from);
-  const toMs = Date.parse(to);
-  return (
-    Number.isFinite(startMs) &&
-    Number.isFinite(endMs) &&
-    Number.isFinite(fromMs) &&
-    Number.isFinite(toMs) &&
-    startMs <= toMs &&
-    endMs >= fromMs
-  );
 }
 
 export async function listCalendarRange(

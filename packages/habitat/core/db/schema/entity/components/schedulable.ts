@@ -78,6 +78,29 @@ export function hasTaskScheduleTime(input: {
   return hasTaskPlan(input) || hasTaskDeadline(input);
 }
 
+/** 计划时段（单点视为零宽）是否与 [from, to] 相交。无计划时钟则 false（仅 deadline 不进 range）。 */
+export function planOverlapsRange(
+  startAt: string | null,
+  endAt: string | null,
+  from: string,
+  to: string,
+): boolean {
+  const clock = taskPlanClock({ start_at: startAt, end_at: endAt });
+  if (clock == null) return false;
+  const startMs = startAt ? Date.parse(startAt) : Date.parse(clock);
+  const endMs = endAt ? Date.parse(endAt) : startMs;
+  const fromMs = Date.parse(from);
+  const toMs = Date.parse(to);
+  return (
+    Number.isFinite(startMs) &&
+    Number.isFinite(endMs) &&
+    Number.isFinite(fromMs) &&
+    Number.isFinite(toMs) &&
+    startMs <= toMs &&
+    endMs >= fromMs
+  );
+}
+
 /**
  * 读路径兼容：旧「start+due 当计划时段 / 仅 due 当计划点」→ 新模型。
  * 返回是否发生了重塑。
