@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, inArray, lt, ne, sql } from "drizzle-orm";
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 import { autoLlmMessages, autoLlmRuns } from "@freeanima/habitat/core/db/schema";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type {
@@ -72,7 +72,7 @@ async function insertMessageRows(
   if (msgs.length === 0) return;
   await tx.insert(autoLlmMessages).values(
     msgs.map((m) => ({
-      id: m.id ?? randomUUID(),
+      id: m.id ?? randomPublicId(),
       run_id: runId,
       pos: m.pos,
       payload: m.payload,

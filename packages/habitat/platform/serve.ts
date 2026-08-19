@@ -92,6 +92,8 @@ export async function serve(
     }
     await configPhase.run();
     const { config } = await persistencePhase.run();
+    const { bootIdentityPhase } = await import("./boot/identity-phase.ts");
+    await bootIdentityPhase(config);
     const { bootWorldSubjectsPhase } = await import("./boot/world-subjects-phase.ts");
     await bootWorldSubjectsPhase(config);
     const { bootConfigSecretsPhase } = await import("./boot/config-secrets-phase.ts");

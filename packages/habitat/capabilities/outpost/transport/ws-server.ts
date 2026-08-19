@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { RemoteToolsServerDeps } from "./types.ts";
 export type { RemoteToolsServerDeps } from "./types.ts";
@@ -124,7 +124,7 @@ export function attachSapWebSocket(
 
   const createRemoteToolsSendRequest = () => {
     return async (method: string, payload: unknown): Promise<unknown> => {
-      const id = randomUUID();
+      const id = randomPublicId();
       return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
           if (!satellitePendingRequests.has(id)) return;
@@ -182,7 +182,7 @@ export function attachSapWebSocket(
       }
       connAuth = verified;
       rpcConnected = true;
-      hubSessionId = randomUUID();
+      hubSessionId = randomPublicId();
       deps.hubSessionRegistry.register(hubSessionId, {
         auth: verified,
         sendEvent(method, payload) {

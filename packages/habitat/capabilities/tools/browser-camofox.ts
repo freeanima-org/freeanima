@@ -1,9 +1,10 @@
 import { toolError, toolResult } from "@freeanima/habitat/core/tool";
+import { randomPublicId } from "@freeanima/shared/util";
 import type { Config } from "@freeanima/habitat/core/config";
 import { homePath } from "@freeanima/habitat/core/config/paths";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -279,7 +280,7 @@ function getSession(conversationId: string): CamofoxSession {
     };
   } else {
     session = {
-      userId: `anima_${randomUUID().replace(/-/g, "").slice(0, 10)}`,
+      userId: `anima_${randomPublicId(10)}`,
       tabId: null,
       sessionKey: `task_${conversationId.slice(0, 16)}`,
       managed: false,
@@ -599,7 +600,7 @@ export async function camofoxVision(
     const png = await getRaw(`/tabs/${session.tabId}/screenshot`, { userId: session.userId });
     const dir = homePath("browser_screenshots");
     mkdirSync(dir, { recursive: true });
-    const screenshotPath = `${dir}/browser_screenshot_${randomUUID().slice(0, 8)}.png`;
+    const screenshotPath = `${dir}/browser_screenshot_${randomPublicId(8)}.png`;
     writeFileSync(screenshotPath, Buffer.from(png));
 
     const payload: Record<string, unknown> = {

@@ -1,4 +1,4 @@
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 import { omitUndefined } from "@freeanima/shared/util";
 import {
   enqueueOutboxOp,
@@ -88,7 +88,7 @@ export async function enqueueChatSend(
   opts?: { clientOpId?: string; scope?: string },
 ): Promise<ChatOutboxEntry> {
   const scope = opts?.scope ?? resolveOutboxScope();
-  const clientOpId = opts?.clientOpId ?? randomUuid();
+  const clientOpId = opts?.clientOpId ?? randomPublicId();
   const createdAt = new Date().toISOString();
   const payload: ChatSendOutboxPayload = {
     conversation_id: conversationId,
@@ -123,7 +123,7 @@ export function createEphemeralChatSend(
   expectedTailPos: number,
   opts?: { clientOpId?: string },
 ): ChatOutboxEntry {
-  const clientOpId = opts?.clientOpId ?? randomUuid();
+  const clientOpId = opts?.clientOpId ?? randomPublicId();
   return {
     clientOpId,
     conversationId,

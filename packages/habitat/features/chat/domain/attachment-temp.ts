@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, unlinkSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import { PATHS } from "@freeanima/habitat/core/config/paths.ts";
 import type { MessageAttachmentMeta } from "@freeanima/shared/pg-shapes/jsonb/message-payload.ts";
@@ -39,7 +39,7 @@ export function putChatAttachmentTemp(input: {
   if (input.bytes.byteLength > CHAT_ATTACHMENT_MAX_BYTES) {
     throw new Error(`附件过大：最大 ${CHAT_ATTACHMENT_MAX_BYTES / (1024 * 1024)} MiB`);
   }
-  const temp_id = randomUUID();
+  const temp_id = randomPublicId();
   const created_at_ms = Date.now();
   const path = bytesPath(temp_id);
   writeFileSync(path, input.bytes);

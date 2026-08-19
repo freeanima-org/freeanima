@@ -30,13 +30,17 @@ import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import {
   createSubjectEntity,
+  getHabitatIdentityPublic,
   listSubjectEntities,
   listWorldEntities,
   updateSubjectEntity,
   type EntityRow,
+  type HabitatIdentityPublic,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { SubjectApiTokensModal } from "./subject-api-tokens-modal.tsx";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
+import { formatAnimaUri } from "@freeanima/client/portal-sdk/anima-uri.ts";
 
 export const Route = createFileRoute("/_sidebar/subjects")({
   component: SubjectsPage,
@@ -61,6 +65,52 @@ const EMPTY_FORM: SubjectFormState = {
 function readDefaultPrivateWorldId(row: EntityRow): number | null {
   const id = row.body?.default_private_world_id;
   return typeof id === "number" && id > 0 ? id : null;
+}
+
+function readSubjectPublicId(row: EntityRow): string {
+  const v = row.body?.public_id;
+  return typeof v === "string" ? v.trim() : "";
+}
+
+function readSubjectPublicKey(row: EntityRow): string {
+  const v = row.body?.public_key;
+  return typeof v === "string" ? v.trim() : "";
+}
+
+function CopyableMono({ label, value }: { label: string; value: string }) {
+  const [hint, setHint] = useState("");
+  if (!value) {
+    return (
+      <div className="space-y-1">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-sm text-muted-foreground">{"（尚未生成）"}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-1 min-w-0">
+      <div className="flex items-center gap-2">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-6 px-1.5 text-xs"
+          onClick={() => {
+            void (async () => {
+              const ok = await copyText(value);
+              setHint(ok ? "已复制" : "复制失败");
+              setTimeout(() => setHint(""), 1500);
+            })();
+          }}
+        >
+          {"复制"}
+        </Button>
+        {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
+      </div>
+      <p className="font-mono text-xs break-all select-all">{value}</p>
+    </div>
+  );
 }
 
 function isPrivateWorldOwnedBySubject(world: EntityRow, subjectId: number): boolean {
@@ -97,6 +147,10 @@ function SubjectEditModal({
   mode,
   initial,
   candidateWorlds,
+  entityId,
+  identityPublicId,
+  identityPublicKey,
+  habitatInstanceId,
   saving,
   error,
   onClose,
@@ -105,6 +159,10 @@ function SubjectEditModal({
   mode: "create" | "edit";
   initial: SubjectFormState;
   candidateWorlds: EntityRow[];
+  entityId?: number;
+  identityPublicId?: string;
+  identityPublicKey?: string;
+  habitatInstanceId?: string;
   saving: boolean;
   error: string;
   onClose: () => void;
@@ -123,6 +181,11 @@ function SubjectEditModal({
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  const crossUri =
+    mode === "edit" && entityId != null && habitatInstanceId
+      ? formatAnimaUri({ id: entityId, habitat_instance_id: habitatInstanceId })
+      : "";
 
   return (
     <Dialog
@@ -188,31 +251,40 @@ function SubjectEditModal({
           />
         </FormField>
         {mode === "edit" ? (
-          <FormField label={"默认私有世界"} className="text-xs">
-            {candidateWorlds.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">{"该主体暂无私有世界。"}</p>
-            ) : (
-              <Select
-                selectedKey={form.default_private_world_id}
-                onSelectionChange={(key) => {
-                  if (key != null) {
-                    setForm((f) => ({ ...f, default_private_world_id: String(key) }));
-                  }
-                }}
-              >
-                <SelectTrigger size="sm" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {candidateWorlds.map((w) => (
-                    <SelectItem key={w.id} id={String(w.id)}>
-                      {worldOptionLabel(w)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </FormField>
+          <>
+            <FormField label={"默认私有世界"} className="text-xs">
+              {candidateWorlds.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">{"该主体暂无私有世界。"}</p>
+              ) : (
+                <Select
+                  selectedKey={form.default_private_world_id}
+                  onSelectionChange={(key) => {
+                    if (key != null) {
+                      setForm((f) => ({ ...f, default_private_world_id: String(key) }));
+                    }
+                  }}
+                >
+                  <SelectTrigger size="sm" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {candidateWorlds.map((w) => (
+                      <SelectItem key={w.id} id={String(w.id)}>
+                        {worldOptionLabel(w)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </FormField>
+            <div className="rounded-md border border/60 bg-muted/40 p-3 space-y-3">
+              <p className="text-xs font-medium">{"公开身份（只读）"}</p>
+              <CopyableMono label="实体 id" value={entityId != null ? String(entityId) : ""} />
+              <CopyableMono label="public_id" value={identityPublicId ?? ""} />
+              <CopyableMono label="公钥" value={identityPublicKey ?? ""} />
+              {crossUri ? <CopyableMono label="跨机引用" value={crossUri} /> : null}
+            </div>
+          </>
         ) : (
           <p className="text-xs text-muted-foreground">{"将自动创建默认私有世界。"}</p>
         )}
@@ -243,6 +315,7 @@ function subjectTypeLabel(type: string): string {
 function SubjectsPage() {
   const [items, setItems] = useState<EntityRow[]>([]);
   const [worlds, setWorlds] = useState<EntityRow[]>([]);
+  const [habitatIdentity, setHabitatIdentity] = useState<HabitatIdentityPublic | null>(null);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -267,13 +340,18 @@ function SubjectsPage() {
     setLoading(true);
     setError("");
     try {
-      const [subjectData, worldData] = await Promise.all([
+      const [subjectData, worldData, identity] = await Promise.all([
         listSubjectEntities(),
         listWorldEntities(),
+        getHabitatIdentityPublic().catch((e) => {
+          logCaughtError("routes/_sidebar/subjects/identity", e);
+          return null;
+        }),
       ]);
       setItems(subjectData.items);
       setTotal(subjectData.total);
       setWorlds(worldData.items);
+      setHabitatIdentity(identity);
     } catch (e) {
       logCaughtError("routes/_sidebar/subjects", e);
       setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
@@ -385,6 +463,32 @@ function SubjectsPage() {
         </StatusAlert>
       ) : null}
 
+      {!loading ? (
+        <Card className="bg-muted mb-4 py-0">
+          <CardContent className="p-4 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold">{"栖息地实例身份"}</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {"只读公开信息；私钥仅服务端保存，不下发到壳。"}
+              </p>
+            </div>
+            {habitatIdentity ? (
+              <>
+                <CopyableMono
+                  label="habitat_instance_id"
+                  value={habitatIdentity.habitat_instance_id}
+                />
+                <CopyableMono label="公钥" value={habitatIdentity.public_key} />
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {"尚未生成（需栖息地完成 identity boot）。"}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
+
       {loading ? (
         <div className="flex justify-center py-8">
           <Spinner />
@@ -400,53 +504,63 @@ function SubjectsPage() {
                   <TableHead>{"ID"}</TableHead>
                   <TableHead>{"类型"}</TableHead>
                   <TableHead>{"标题"}</TableHead>
+                  <TableHead>{"public_id"}</TableHead>
                   <TableHead>{"默认私有世界"}</TableHead>
                   <TableHead>{"时间"}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="font-mono text-xs">{row.id}</TableCell>
-                    <TableCell>
-                      <Badge variant="ghost" className="text-xs">
-                        {subjectTypeLabel(row.type)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-[12rem] truncate">
-                      {row.title || "（无标题）"}
-                    </TableCell>
-                    <TableCell className="text-xs max-w-[12rem] truncate">
-                      {worldTitleById(readDefaultPrivateWorldId(row))}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDisplayDateTime(row.updated_at)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => openEdit(row)}
-                        >
-                          {"编辑"}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs"
-                          onClick={() => setTokensSubject(row)}
-                        >
-                          {"API 令牌"}
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {items.map((row) => {
+                  const publicId = readSubjectPublicId(row);
+                  return (
+                    <TableRow key={row.id}>
+                      <TableCell className="font-mono text-xs">{row.id}</TableCell>
+                      <TableCell>
+                        <Badge variant="ghost" className="text-xs">
+                          {subjectTypeLabel(row.type)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[10rem] truncate">
+                        {row.title || "（无标题）"}
+                      </TableCell>
+                      <TableCell
+                        className="font-mono text-xs max-w-[9rem] truncate"
+                        title={publicId || undefined}
+                      >
+                        {publicId || "—"}
+                      </TableCell>
+                      <TableCell className="text-xs max-w-[10rem] truncate">
+                        {worldTitleById(readDefaultPrivateWorldId(row))}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {formatDisplayDateTime(row.updated_at)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => openEdit(row)}
+                          >
+                            {"编辑"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => setTokensSubject(row)}
+                          >
+                            {"API 令牌"}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
             <div className="px-4 py-2 text-xs text-muted-foreground border-t border/50">
@@ -461,6 +575,16 @@ function SubjectsPage() {
           mode={modal.mode}
           initial={modalInitial}
           candidateWorlds={modalCandidateWorlds}
+          {...(modal.row
+            ? {
+                entityId: modal.row.id,
+                identityPublicId: readSubjectPublicId(modal.row),
+                identityPublicKey: readSubjectPublicKey(modal.row),
+              }
+            : {})}
+          {...(habitatIdentity?.habitat_instance_id
+            ? { habitatInstanceId: habitatIdentity.habitat_instance_id }
+            : {})}
           saving={saving}
           error={modalError}
           onClose={closeModal}

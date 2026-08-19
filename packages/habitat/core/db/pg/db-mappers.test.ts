@@ -63,9 +63,7 @@ describe("db transforms", () => {
       timestamp: "2026-01-01T00:00:00.000Z",
     });
     expect(userInsert.pos).toBe(1);
-    expect(userInsert.id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
+    expect(userInsert.id).toMatch(/^[0-9A-Za-z]{21}$/);
     expect(userInsert.payload).toMatchObject({ role: "user", content: "hi" });
     expect(userInsert.payload).not.toHaveProperty("pos");
     const user = rowToMessage({

@@ -10,6 +10,8 @@
     "./rpc-contract/*": "./rpc-contract/*",
     "./util": "./util/index.ts",
     "./util/*": "./util/*",
+    "./identity": "./identity/index.ts",
+    "./identity/*": "./identity/*",
     "./vault-crypto": "./vault-crypto/index.ts",
     "./vault-crypto/*": "./vault-crypto/*",
     "./task/*": "./task/*",
@@ -18,11 +20,13 @@
     "./companion-app/*": "./companion-app/*"
   },
   "dependencies": {
+    "@noble/ed25519": "^2",
     "@noble/hashes": "^2.3.0",
-    "otpauth": "^9.5.1",
-    "zod": "^4.4.3",
     "chinese-days": "^1.5.9",
-    "lunar-javascript": "^1.7.7"
+    "lunar-javascript": "^1.7.7",
+    "nanoid": "^5",
+    "otpauth": "^9.5.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {}
 }

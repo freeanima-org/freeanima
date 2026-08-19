@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import {
   notifications,
@@ -45,7 +45,7 @@ export async function createNotification(input: NotificationCreateInput): Promis
   const rows = await db
     .insert(notifications)
     .values({
-      id: randomUUID(),
+      id: randomPublicId(),
       recipient_kind,
       recipient_id: normalizeRecipientId(input.recipient_id),
       title,

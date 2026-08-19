@@ -628,3 +628,18 @@ export async function updateSubjectApiTokenName(tokenId: number, name: string) {
     token: ServiceApiTokenPublic;
   }>;
 }
+
+export type HabitatIdentityPublic = {
+  habitat_instance_id: string;
+  public_key: string;
+};
+
+/** 栖息地实例公开身份（无私钥） */
+export async function getHabitatIdentityPublic(): Promise<HabitatIdentityPublic | null> {
+  const raw = await hubCall(habitat().call("config.getSection", { section: "identity" }));
+  const habitat_instance_id =
+    typeof raw.habitat_instance_id === "string" ? raw.habitat_instance_id.trim() : "";
+  const public_key = typeof raw.public_key === "string" ? raw.public_key.trim() : "";
+  if (!habitat_instance_id || !public_key) return null;
+  return { habitat_instance_id, public_key };
+}

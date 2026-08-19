@@ -39,6 +39,7 @@ const PARSE_ERROR_ZH: Record<string, string> = {
   "invalid id": "无效的实体 id",
   "invalid component": "无效的 component",
   "invalid present": "无效的 present",
+  "invalid habitat_instance_id": "无效的 habitat_instance_id",
   "unsupported uri": "不支持的链接格式",
   "invalid shell path": "无效的路径",
   "invalid item id": "无效的任务 id",
@@ -79,6 +80,10 @@ export async function openEntityResource(
   const parsed =
     typeof input === "string" ? parseAnimaUri(input) : ({ ok: true as const, ref: input } as const);
   if (!parsed.ok) return { ok: false, error: zhParseError(parsed.error) };
+
+  if (parsed.ref.habitat_instance_id) {
+    return { ok: false, error: "跨栖息地实体引用暂不支持在本机打开" };
+  }
 
   const component = (await resolveComponent(parsed.ref))?.trim() || "";
   const present = parsed.ref.present ?? defaultPresentForComponent(component || undefined);

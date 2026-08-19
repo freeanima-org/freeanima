@@ -11,7 +11,18 @@ export { CONFIG_MASKED_SECRET, isConfigSecretKey, findForbiddenLlmConfigPatchPat
 
 /** Runtime config snapshot for HTTP / Habitat（密钥明文；含 MCP env/headers） */
 export function sanitizeConfigForApi(cfg: RuntimeConfig): Record<string, unknown> {
-  return sanitizeConfigForApiKernel(cfg);
+  const out = sanitizeConfigForApiKernel(cfg);
+  // identity 私钥 / subject_keys 永不经 Habitat 配置 API 下发
+  if (out.identity != null && typeof out.identity === "object" && !Array.isArray(out.identity)) {
+    const id = out.identity as Record<string, unknown>;
+    out.identity = {
+      ...(typeof id.habitat_instance_id === "string"
+        ? { habitat_instance_id: id.habitat_instance_id }
+        : {}),
+      ...(typeof id.public_key === "string" ? { public_key: id.public_key } : {}),
+    };
+  }
+  return out;
 }
 
 /** Runtime config snapshot for LLM tools（密钥与 MCP env/headers 掩码） */

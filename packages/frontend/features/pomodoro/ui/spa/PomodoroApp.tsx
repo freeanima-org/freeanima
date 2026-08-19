@@ -35,7 +35,7 @@ import {
   createAutoPersistScheduler,
 } from "@freeanima/ui-kit/lib/auto-persist-schedule.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import { TaskPickerDialog } from "./components/TaskPickerDialog.tsx";
 import {
@@ -310,7 +310,7 @@ export function PomodoroApp() {
       void applyPomodoroActive(
         createInitialActiveState(config, {
           taskItemId: launch.taskId,
-          sessionLocalId: randomUuid(),
+          sessionLocalId: randomPublicId(),
         }),
         subjectKind,
         { alertConfig: config },
@@ -356,7 +356,7 @@ export function PomodoroApp() {
     void applyPomodoroActive(
       createInitialActiveState(config, {
         taskItemId,
-        sessionLocalId: randomUuid(),
+        sessionLocalId: randomPublicId(),
       }),
       subjectKind,
       { alertConfig: config },

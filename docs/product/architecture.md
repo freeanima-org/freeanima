@@ -174,7 +174,7 @@ Working 组装（fold / 压缩四段 / 被动召回）与业界对照见 [`../co
 
 ### Anima URI（壳定位器）
 
-实体深链 / 浮层 / 剪贴板使用 **Anima URI**（`anima:{id}?component=…&present=…`）。结构化持久化仍用数字实体 id。见 [`anima-uri.md`](anima-uri.md)。
+实体深链 / 浮层 / 剪贴板使用 **Anima URI**（`anima:{id}?component=…&present=…`；跨机可加 `habitat_instance_id=fa_inst_…`）。结构化持久化仍用数字实体 id。见 [`anima-uri.md`](anima-uri.md)、[`habitat-identity.md`](habitat-identity.md)。
 
 ### 仓库布局（Phase 1 — host/client）
 

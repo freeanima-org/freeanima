@@ -29,4 +29,5 @@ export * from "./schemas/worlds.ts";
 export * from "./schemas/memory-config.ts";
 export * from "./schemas/object-storage.ts";
 export * from "./schemas/companion.ts";
+export * from "./schemas/identity.ts";
 export * from "./world-context.ts";

@@ -76,6 +76,21 @@ describe("sanitizeConfigForApi", () => {
       },
     });
   });
+
+  it("identity 仅保留公开字段", () => {
+    const out = sanitizeConfigForApi({
+      identity: {
+        habitat_instance_id: "fa_inst_abc",
+        public_key: "pub",
+        private_key: "priv",
+        subject_keys: { s1: { public_key: "sp", private_key: "sk" } },
+      },
+    });
+    expect(out.identity).toEqual({
+      habitat_instance_id: "fa_inst_abc",
+      public_key: "pub",
+    });
+  });
 });
 
 describe("maskConfigSecretsForLlm", () => {

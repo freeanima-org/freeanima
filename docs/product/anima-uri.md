@@ -26,11 +26,12 @@ anima:42?component=task_item&present=overlay
 anima:{id}[?component={component}][&present=navigate|overlay]
 ```
 
-| 部分        | 含义                                                                                                    |
-| ----------- | ------------------------------------------------------------------------------------------------------- |
-| `id`        | `entities.id`（正整数）                                                                                 |
-| `component` | 作为**视图切面**的组件标签（哪个浮层 / 模块映射）。可选；省略时打开会解析 **`primary_component`**       |
-| `present`   | `navigate` = 切换壳模块并选中；`overlay` = 打开已注册浮层。默认依组件而定（如 `task_item` → `overlay`） |
+| 部分                  | 含义                                                                                                                               |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                  | `entities.id`（正整数）                                                                                                            |
+| `component`           | 作为**视图切面**的组件标签（哪个浮层 / 模块映射）。可选；省略时打开会解析 **`primary_component`**                                  |
+| `present`             | `navigate` = 切换壳模块并选中；`overlay` = 打开已注册浮层。默认依组件而定（如 `task_item` → `overlay`）                            |
+| `habitat_instance_id` | 可选。Habitat 实例 id（`fa_inst_…`）。省略 = 本机；异机值仅保留解析，暂不远程打开。见 [`habitat-identity.md`](habitat-identity.md) |
 
 **无短别名**（如 `task` 无效）。取值必须是完整组件名。
 

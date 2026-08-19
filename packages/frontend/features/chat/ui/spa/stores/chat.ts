@@ -4,7 +4,7 @@ import type {
   StreamApiEvent,
 } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { pollUntilAssistantReply } from "@freeanima/features/chat/ui/spa/lib/display-recovery.ts";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 import { subscribeHabitatRpcConnectionState } from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 import { renderMarkdownHtml } from "@freeanima/ui-kit/lib/markdown.ts";
 import { create } from "zustand";
@@ -208,7 +208,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const trimmed = text.trim();
     if (!trimmed) return;
     const item: QueuedMessage = {
-      id: randomUuid(),
+      id: randomPublicId(),
       conversationId,
       text: trimmed,
     };

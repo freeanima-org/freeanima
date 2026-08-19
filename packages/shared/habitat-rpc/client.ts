@@ -1,4 +1,4 @@
-import { randomUuid } from "@freeanima/shared/util/random-uuid.ts";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import {
   HABITAT_RPC_CONNECT_TIMEOUT_MS,
@@ -222,7 +222,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
 
     request<T = unknown>(method: string, payload?: unknown, opts?: RpcRequestOptions): Promise<T> {
       const timeoutMs = resolveRequestTimeoutMs(opts);
-      const id = randomUuid();
+      const id = randomPublicId();
       const requestPromise = new Promise<T>((resolve, reject) => {
         const entry: PendingRequest = {
           resolve: resolve as (value: unknown) => void,

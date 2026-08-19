@@ -28,7 +28,7 @@ import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-wr
 import { formatCstIso } from "@freeanima/shared/util";
 import { omitUndefined } from "@freeanima/shared/util";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 import { readOfflineCache, writeOfflineCache } from "@freeanima/client/portal-sdk/offline-cache";
 
 import type { CalendarEventRow, SubjectKind } from "./api.ts";
@@ -188,7 +188,7 @@ export async function offlineCreateCalendarEvent(
 ): Promise<CalendarEventRow> {
   const scope = resolveOutboxScope();
   await ensureAllocatorSeeded(scope);
-  const clientOpId = input.client_op_id ?? randomUuid();
+  const clientOpId = input.client_op_id ?? randomPublicId();
 
   return preferOnlineWrite(
     async () => {
@@ -301,7 +301,7 @@ export async function offlineUpdateCalendarEvent(
         updated_at: formatCstIso(),
       };
       await upsertLocalEvent(scope, item);
-      const opId = randomUuid();
+      const opId = randomPublicId();
       await enqueueOutboxOp(scope, {
         id: opId,
         moduleId: MODULE_ID,
@@ -348,7 +348,7 @@ export async function offlineDeleteCalendarEvent(
         }
         return;
       }
-      const opId = randomUuid();
+      const opId = randomPublicId();
       await enqueueOutboxOp(scope, {
         id: opId,
         moduleId: MODULE_ID,

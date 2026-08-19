@@ -7,7 +7,7 @@ import {
 } from "@freeanima/client/portal-sdk/offline-outbox";
 
 import type { PomodoroActiveStatePayload } from "@freeanima/shared/rpc-contract/frames/pomodoro";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import type { PhaseEndPayload } from "./runtime.ts";
 import type { PomodoroConfigRow, PomodoroSubjectKind } from "./api.ts";
@@ -36,7 +36,7 @@ async function enqueueOp(
   if (COMPACT_METHODS.has(method)) {
     await removeCompactPeers(scope, method);
   }
-  const id = opId ?? randomUuid();
+  const id = opId ?? randomPublicId();
   const op: OfflineOutboxOp = {
     id,
     moduleId: MODULE_ID,

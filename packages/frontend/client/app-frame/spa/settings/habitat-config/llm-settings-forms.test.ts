@@ -125,7 +125,7 @@ describe("llmEntryTitle / ids", () => {
   });
 
   it("自动生成连接 id 前缀", () => {
-    expect(newConnectionId()).toMatch(/^c-[0-9a-f]{8}$/);
+    expect(newConnectionId()).toMatch(/^c-[0-9A-Za-z]{8}$/);
   });
 
   it("emptyConnectionEntry 按层只带一层协议", () => {

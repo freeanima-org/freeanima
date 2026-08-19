@@ -26,7 +26,7 @@ import { formatCstIso } from "@freeanima/shared/util";
 import { omitUndefined } from "@freeanima/shared/util";
 import { nextPrependSortOrder } from "@freeanima/shared/task/sort-order.ts";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
-import { randomUuid } from "@freeanima/shared/rpc-contract";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import type { ProjectFolderRow, ProjectRow, TaskItemRow } from "./api.ts";
 import {
@@ -584,7 +584,7 @@ export async function offlineCreateProjectFolder(input: {
     const scope = resolveOutboxScope();
     await ensureAllocatorSeeded(scope);
     const tempId = allocateTempId(scope, MODULE_ID);
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const now = new Date().toISOString();
     const row: ProjectFolderRow = {
       id: tempId,
@@ -629,7 +629,7 @@ export async function offlineCreateProjectFolder(input: {
 
   return preferOnlineWrite(async () => {
     const scope = resolveOutboxScope();
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call(
       "projectfolder.create",
       omitUndefined({
@@ -662,7 +662,7 @@ export async function offlineUpdateProjectFolder(
     const updated: ProjectFolderRow = { ...existing, ...patch, updated_at: now };
     await upsertLocalFolder(scope, updated);
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -687,7 +687,7 @@ export async function offlineUpdateProjectFolder(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call(
       "projectfolder.patch",
       omitUndefined({
@@ -725,7 +725,7 @@ export async function offlineDeleteProjectFolder(id: number): Promise<void> {
       return;
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -741,7 +741,7 @@ export async function offlineDeleteProjectFolder(id: number): Promise<void> {
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("projectfolder.delete", {
       ...subjectPayload(),
       id: resolvedId,
@@ -766,7 +766,7 @@ export async function offlineCreateProject(input: {
     const scope = resolveOutboxScope();
     await ensureAllocatorSeeded(scope);
     const tempId = allocateTempId(scope, MODULE_ID);
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const now = new Date().toISOString();
     const content = input.content?.trim() ?? "";
     const row: ProjectRow = {
@@ -821,7 +821,7 @@ export async function offlineCreateProject(input: {
 
   return preferOnlineWrite(async () => {
     const scope = resolveOutboxScope();
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const content = input.content?.trim() ?? "";
     const data = await habitat().call(
       "project.create",
@@ -870,7 +870,7 @@ export async function offlineUpdateProject(
     };
     await upsertLocalProject(scope, updated);
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -895,7 +895,7 @@ export async function offlineUpdateProject(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call(
       "project.patch",
       omitUndefined({
@@ -934,7 +934,7 @@ export async function offlineDeleteProject(id: number): Promise<void> {
       return;
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -950,7 +950,7 @@ export async function offlineDeleteProject(id: number): Promise<void> {
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("project.delete", {
       ...subjectPayload(),
       id: resolvedId,
@@ -980,7 +980,7 @@ export async function offlineCreateProjectTask(input: {
     const scope = resolveOutboxScope();
     await ensureAllocatorSeeded(scope);
     const tempId = allocateTempId(scope, MODULE_ID);
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const now = new Date().toISOString();
     const sort_order = autoPrepend
       ? await localNextPrependSortOrder(scope, input.project_id)
@@ -1036,7 +1036,7 @@ export async function offlineCreateProjectTask(input: {
 
   return preferOnlineWrite(async () => {
     const scope = resolveOutboxScope();
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("project.item.create", {
       ...subjectPayload(),
       client_op_id: opId,
@@ -1122,7 +1122,7 @@ export async function offlineUpdateProjectTask(
           ? "task.uncomplete"
           : "task.patch";
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     if (method === "task.complete" || method === "task.uncomplete") {
       await enqueueOutboxOp(scope, {
         id: opId,
@@ -1155,7 +1155,7 @@ export async function offlineUpdateProjectTask(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const method =
       patch.status === "completed"
         ? "task.complete"
@@ -1218,7 +1218,7 @@ export async function offlineDeleteProjectTask(id: number): Promise<void> {
       return;
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -1234,7 +1234,7 @@ export async function offlineDeleteProjectTask(id: number): Promise<void> {
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("task.delete", {
       ...subjectPayload(),
       id: resolvedId,
@@ -1262,7 +1262,7 @@ export async function offlineMoveProjectTaskToList(taskId: number, listId: numbe
       await adjustProjectTaskCount(scope, found.projectId, -1);
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
@@ -1283,7 +1283,7 @@ export async function offlineMoveProjectTaskToList(taskId: number, listId: numbe
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     await habitat().call("task.moveToList", {
       ...subjectPayload(),
       id: resolvedId,
@@ -1345,7 +1345,7 @@ export async function offlineMoveTaskToProject(
       await adjustProjectTaskCount(scope, projectId, 1);
     }
 
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const baseOp = {
       id: opId,
       moduleId: MODULE_ID,
@@ -1380,7 +1380,7 @@ export async function offlineMoveTaskToProject(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomUuid();
+    const opId = randomPublicId();
     const data = await habitat().call("task.moveToProject", {
       ...subjectPayload(),
       id: resolvedTaskId,

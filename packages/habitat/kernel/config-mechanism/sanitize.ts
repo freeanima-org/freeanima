@@ -5,7 +5,7 @@ export const CONFIG_MASKED_SECRET = "***";
 
 /** Sanitize entire value when key name matches (case-insensitive) */
 const SECRET_KEY_PATTERN =
-  /(?:^|_)(api[_-]?key|token|secret|password|pushkey|push_key|auth|credential)(?:$|_)/i;
+  /(?:^|_)(api[_-]?key|token|secret|password|pushkey|push_key|auth|credential|private[_-]?key)(?:$|_)/i;
 
 export function isConfigSecretKey(key: string): boolean {
   return SECRET_KEY_PATTERN.test(key);

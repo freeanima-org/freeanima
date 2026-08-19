@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomPublicId } from "@freeanima/shared/util";
 
 import {
   conversationMessageSchema,
@@ -13,7 +13,7 @@ import {
 import { type MessageInsert, messageSelectSchema } from "@freeanima/habitat/core/db/schema";
 
 export function newMessageGlobalId(): string {
-  return randomUUID();
+  return randomPublicId();
 }
 
 function assertConversationMessage(msg: StoredMessage): ConversationMessage {
