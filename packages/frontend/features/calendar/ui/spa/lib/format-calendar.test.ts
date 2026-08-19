@@ -1,29 +1,39 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
-import { buildMonthGrid, dayKeyFromIso, monthRangeIso, shiftMonth } from "./format-calendar.ts";
+import {
+  dayHeadingLabel,
+  dayRangeIso,
+  listDayKeys,
+  nDayRangeIso,
+  shiftDayKey,
+} from "./format-calendar.ts";
 
-describe("format-calendar", () => {
-  it("dayKeyFromIso uses CST calendar day", () => {
-    expect(dayKeyFromIso("2026-07-31T09:00:00+08:00")).toBe("2026-07-31");
-    // 本地/UTC 存盘常见：次日 00:00 CST = 前日 16:00Z
-    expect(dayKeyFromIso("2026-08-01T16:00:00.000Z")).toBe("2026-08-02");
-    expect(dayKeyFromIso("2026-07-31T16:00:00.000Z")).toBe("2026-08-01");
-    expect(dayKeyFromIso("2026-08-02")).toBe("2026-08-02");
+describe("format-calendar day windows", () => {
+  test("shiftDayKey 前一天后一天", () => {
+    expect(shiftDayKey("2026-08-19", 1)).toBe("2026-08-20");
+    expect(shiftDayKey("2026-08-19", 2)).toBe("2026-08-21");
+    expect(shiftDayKey("2026-08-19", -1)).toBe("2026-08-18");
+    expect(shiftDayKey("2026-08-01", -1)).toBe("2026-07-31");
+    expect(shiftDayKey("bad", 1)).toBeNull();
   });
 
-  it("monthRangeIso covers CST month bounds", () => {
-    const range = monthRangeIso(2026, 6);
-    expect(range.from).toBe("2026-07-01T00:00:00+08:00");
-    expect(range.to).toBe("2026-07-31T23:59:59+08:00");
+  test("listDayKeys 近三天/近七天", () => {
+    expect(listDayKeys("2026-08-19", 3)).toEqual(["2026-08-19", "2026-08-20", "2026-08-21"]);
+    expect(listDayKeys("2026-08-19", 7)).toHaveLength(7);
+    expect(listDayKeys("2026-08-19", 7)[6]).toBe("2026-08-25");
   });
 
-  it("shiftMonth wraps year", () => {
-    expect(shiftMonth(2026, 11, 1)).toEqual({ year: 2027, monthIndex: 0 });
+  test("nDayRangeIso 含起止日", () => {
+    const three = nDayRangeIso("2026-08-19", 3);
+    expect(three.from.startsWith("2026-08-19T00:00:00")).toBe(true);
+    expect(three.to.startsWith("2026-08-21T23:59:59")).toBe(true);
+    const one = dayRangeIso("2026-08-20");
+    expect(one.from.startsWith("2026-08-20T00:00:00")).toBe(true);
+    expect(one.to.startsWith("2026-08-20T23:59:59")).toBe(true);
   });
 
-  it("buildMonthGrid pads to weeks", () => {
-    const cells = buildMonthGrid(2026, 6);
-    expect(cells.length % 7).toBe(0);
-    expect(cells.filter(Boolean).length).toBe(31);
+  test("dayHeadingLabel", () => {
+    expect(dayHeadingLabel("2026-08-19", "2026-08-19")).toBe("今天 8月19日");
+    expect(dayHeadingLabel("2026-08-20", "2026-08-19")).toBe("8月20日");
   });
 });

@@ -5,12 +5,10 @@ export type TaskModuleSelection =
   | { kind: "list"; id: number }
   | { kind: "search" };
 
-export const DEFAULT_SMART_LIST_KEY = "due_today";
-
 export function smartListRowKey(row: Pick<SmartListRow, "id" | "preset">): string {
   if (row.preset) return row.preset;
   if (row.id != null) return `id:${row.id}`;
-  return DEFAULT_SMART_LIST_KEY;
+  return "";
 }
 
 export function findSmartListRowByKey(rows: SmartListRow[], key: string): SmartListRow | undefined {

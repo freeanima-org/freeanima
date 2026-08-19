@@ -1,12 +1,16 @@
 import { Button, cn } from "@freeanima/ui-kit";
 import { PRIORITY_LABEL, priorityToneBg } from "@freeanima/ui-kit/lib/task-item-display.ts";
+import { formatDueChip } from "@freeanima/ui-kit/lib/datetime-local.ts";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
-import { dayKeyFromIso, isoToTimeLocalValue } from "../lib/format-calendar.ts";
+import { calendarItemKey, itemOverlapsDay } from "../lib/agenda-items.ts";
+import { isoToTimeLocalValue } from "../lib/format-calendar.ts";
 
 type AgendaListProps = {
-  day: string;
+  day?: string;
   items: CalendarRangeItem[];
+  emptyLabel?: string;
+  showDueChip?: boolean;
   onOpenEvent: (id: number) => void;
   onOpenTask: (id: number) => void;
   onOpenProject: (id: number) => void;
@@ -30,7 +34,9 @@ function itemTime(item: CalendarRangeItem): string {
     if (item.start_at && item.end_at && start && end && start !== end) {
       return `${start}–${end}`;
     }
-    return start || "—";
+    if (start) return start;
+    if (item.due_at) return isoToTimeLocalValue(item.due_at) || "截止";
+    return "截止";
   }
   return isoToTimeLocalValue(item.start_at) || "—";
 }
@@ -38,88 +44,73 @@ function itemTime(item: CalendarRangeItem): string {
 export function AgendaList({
   day,
   items,
+  emptyLabel = "当天暂无条目",
+  showDueChip = false,
   onOpenEvent,
   onOpenTask,
   onOpenProject,
   onEditEvent,
 }: AgendaListProps) {
-  const dayItems = items.filter((item) => {
-    if (item.kind === "event") {
-      const start = dayKeyFromIso(item.start_at);
-      const end = dayKeyFromIso(item.end_at ?? item.start_at);
-      return start <= day && day <= end;
-    }
-    if (item.kind === "task") {
-      if (!item.start_at) return false;
-      const start = dayKeyFromIso(item.start_at);
-      if (!start) return false;
-      const end = (item.end_at ? dayKeyFromIso(item.end_at) : start) || start;
-      return start <= day && day <= end;
-    }
-    const start = dayKeyFromIso(item.start_at ?? "");
-    const end = dayKeyFromIso(item.end_at ?? item.start_at ?? "");
-    if (!start) return false;
-    return start <= day && day <= (end || start);
-  });
+  const dayItems = day == null ? items : items.filter((item) => itemOverlapsDay(item, day));
 
   if (dayItems.length === 0) {
-    return <p className="text-sm text-muted-foreground px-1 py-4">{"当天暂无条目"}</p>;
+    return <p className="text-sm text-muted-foreground px-1 py-4">{emptyLabel}</p>;
   }
 
   return (
     <ul className="flex flex-col gap-2">
-      {dayItems.map((item) => (
-        <li
-          key={
-            item.kind === "task"
-              ? `${item.kind}-${item.id}-${item.end_at ?? item.start_at ?? item.due_at ?? ""}-${item.virtual ? "v" : "l"}`
-              : `${item.kind}-${item.id}`
-          }
-        >
-          <Button
-            type="button"
-            variant="outline"
-            className={cn("h-auto w-full justify-start gap-3 px-3 py-2 text-left")}
-            onPress={() => {
-              if (item.kind === "event") onEditEvent(item.id);
-              else if (item.kind === "task") onOpenTask(item.id);
-              else onOpenProject(item.id);
-            }}
-          >
-            {item.kind === "task" ? (
-              <span
-                className={cn("size-2 shrink-0 rounded-full", priorityToneBg(item.priority))}
-                title={PRIORITY_LABEL[item.priority]}
-                aria-hidden
-              />
-            ) : (
-              <span className="size-2 shrink-0" aria-hidden />
-            )}
-            <span className="w-12 shrink-0 text-xs text-muted-foreground">{itemTime(item)}</span>
-            <span
-              className={cn(
-                "rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide",
-                item.kind === "event" && "bg-primary/15 text-primary",
-                item.kind === "task" && "bg-amber-500/15 text-amber-700 dark:text-amber-300",
-                item.kind === "project" && "bg-sky-500/15 text-sky-700 dark:text-sky-300",
-              )}
-            >
-              {kindLabel(item.kind)}
-            </span>
-            <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>
-          </Button>
-          {item.kind === "event" ? (
-            <button
+      {dayItems.map((item) => {
+        const dueChip = showDueChip && item.kind === "task" ? formatDueChip(item.due_at) : null;
+        return (
+          <li key={calendarItemKey(item)}>
+            <Button
               type="button"
-              className="sr-only"
-              onClick={() => onOpenEvent(item.id)}
-              tabIndex={-1}
+              variant="outline"
+              className={cn("h-auto w-full justify-start gap-3 px-3 py-2 text-left")}
+              onPress={() => {
+                if (item.kind === "event") onEditEvent(item.id);
+                else if (item.kind === "task") onOpenTask(item.id);
+                else onOpenProject(item.id);
+              }}
             >
-              open
-            </button>
-          ) : null}
-        </li>
-      ))}
+              {item.kind === "task" ? (
+                <span
+                  className={cn("size-2 shrink-0 rounded-full", priorityToneBg(item.priority))}
+                  title={PRIORITY_LABEL[item.priority]}
+                  aria-hidden
+                />
+              ) : (
+                <span className="size-2 shrink-0" aria-hidden />
+              )}
+              <span className="w-12 shrink-0 text-xs text-muted-foreground">{itemTime(item)}</span>
+              <span
+                className={cn(
+                  "rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide",
+                  item.kind === "event" && "bg-primary/15 text-primary",
+                  item.kind === "task" && "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+                  item.kind === "project" && "bg-sky-500/15 text-sky-700 dark:text-sky-300",
+                )}
+              >
+                {kindLabel(item.kind)}
+              </span>
+              <span className="min-w-0 flex-1 truncate font-medium">{item.title}</span>
+              {dueChip?.overdue ? (
+                <span className="shrink-0 text-xs text-destructive">{dueChip.label}</span>
+              ) : null}
+            </Button>
+            {item.kind === "event" ? (
+              <button
+                type="button"
+                className="sr-only"
+                onClick={() => onOpenEvent(item.id)}
+                tabIndex={-1}
+              >
+                open
+              </button>
+            ) : null}
+          </li>
+        );
+      })}
     </ul>
   );
 }

@@ -69,7 +69,6 @@ export { listTaskListStats, listSmartListStats } from "./stats-store.ts";
 
 export {
   BUILTIN_SMART_LIST_DEFINITIONS,
-  DEFAULT_SMART_LIST_PRESET,
   findBuiltinSmartListByPreset,
   listBuiltinSmartListRows,
   type SmartListPreset,

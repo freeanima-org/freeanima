@@ -4,6 +4,10 @@ import type {
   CalendarRangeItemPayload,
   CalendarRangeKind,
 } from "@freeanima/shared/rpc-contract/frames/calendar";
+import type {
+  TaskItemRowPayload,
+  TaskItemSearchFiltersPayload,
+} from "@freeanima/shared/rpc-contract/frames/task.ts";
 
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
@@ -32,6 +36,39 @@ function ensureCalendarOfflineModule(): void {
 
 function habitat() {
   return getTypedHabitatClient();
+}
+
+function taskRowToRangeItem(row: TaskItemRowPayload): CalendarRangeItem {
+  return {
+    kind: "task",
+    id: row.id,
+    title: row.title,
+    start_at: row.start_at ?? null,
+    end_at: row.end_at ?? null,
+    due_at: row.due_at,
+    status: row.status === "completed" ? "completed" : "pending",
+    priority: row.priority ?? "none",
+    project_id: row.project_id ?? null,
+    list_id: row.list_id ?? null,
+  };
+}
+
+/** 议程用：按截止日拉取 pending 根任务（含仅有 due_at、无计划） */
+export async function fetchDueTasksForAgenda(
+  subjectKind: SubjectKind,
+  filters: TaskItemSearchFiltersPayload,
+): Promise<CalendarRangeItem[]> {
+  try {
+    const data = await habitat().call("tasklist.item.list", {
+      subject_kind: subjectKind,
+      filters,
+      roots_only: true,
+      limit: 500,
+    });
+    return data.items.map(taskRowToRangeItem);
+  } catch {
+    return [];
+  }
 }
 
 /** 日历拖拽改任务 due（仅此一次） */

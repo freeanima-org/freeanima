@@ -46,14 +46,7 @@ export const taskItemSearchFiltersSchema = z
 
 export type TaskItemSearchFiltersPayload = z.infer<typeof taskItemSearchFiltersSchema>;
 
-const smartListPresetSchema = z.enum([
-  "due_today",
-  "due_tomorrow",
-  "due_next_7d",
-  "done_today",
-  "done_yesterday",
-  "done_last_7d",
-]);
+const smartListPresetSchema = z.enum(["done_today", "done_yesterday", "done_last_7d"]);
 
 export const taskListRowSchema = z.object({
   id: z.number().int().positive(),

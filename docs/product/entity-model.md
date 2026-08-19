@@ -240,7 +240,7 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 事件位于各 subject 的默认私有 world。Body：`start_at`（必填）、`end_at`、`all_day`、`remind_at` / `last_notified_at`（可调度）、`client_op_id`。标题/备注在实体列。
 
 - **SAP：** `calendar.list` / `create` / `get` / `patch` / `delete` + `calendar.range`（聚合 event + task due + project 区间）
-- **UI：** 壳 `/calendar` — 月视图 + 日议程
+- **UI：** 壳 `/calendar` — 日/近三天/近七天议程 + 周/月网格
 - **LLM：** ToolSet `calendar`
 
 见 [`docs/modules/calendar.md`](../modules/calendar.md)。

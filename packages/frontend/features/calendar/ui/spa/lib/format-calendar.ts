@@ -39,16 +39,59 @@ export function dayKeyFromIso(iso: string): string {
   return cstDayKey(new Date(ms));
 }
 
-/** Host 日键加一天；非法输入返回 null */
-export function nextDayKey(day: string): string | null {
+/** Host 日键加减天数；非法输入返回 null */
+export function shiftDayKey(day: string, delta: number): string | null {
   const parts = day.split("-").map(Number);
   const y = parts[0];
   const mo = parts[1];
   const d = parts[2];
   if (y == null || mo == null || d == null) return null;
   if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(d)) return null;
-  const next = new Date(Date.UTC(y, mo - 1, d + 1));
+  const next = new Date(Date.UTC(y, mo - 1, d + delta));
   return `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`;
+}
+
+/** Host 日键加一天；非法输入返回 null */
+export function nextDayKey(day: string): string | null {
+  return shiftDayKey(day, 1);
+}
+
+export function dayRangeIso(day: string): { from: string; to: string } {
+  const offset = hostOffsetSuffix();
+  return {
+    from: `${day}T00:00:00${offset}`,
+    to: `${day}T23:59:59${offset}`,
+  };
+}
+
+/** 从 startDay 起连续 dayCount 个自然日的查询窗（含起止日） */
+export function nDayRangeIso(startDay: string, dayCount: number): { from: string; to: string } {
+  const last = shiftDayKey(startDay, Math.max(dayCount, 1) - 1) ?? startDay;
+  const offset = hostOffsetSuffix();
+  return {
+    from: `${startDay}T00:00:00${offset}`,
+    to: `${last}T23:59:59${offset}`,
+  };
+}
+
+export function listDayKeys(startDay: string, dayCount: number): string[] {
+  const days: string[] = [];
+  let current: string | null = startDay;
+  for (let i = 0; i < dayCount && current; i += 1) {
+    days.push(current);
+    current = shiftDayKey(current, 1);
+  }
+  return days;
+}
+
+/** 工具栏 / 分组标题：今天带「今天」前缀 */
+export function dayHeadingLabel(day: string, today: string): string {
+  const parts = day.split("-").map(Number);
+  const mo = parts[1];
+  const d = parts[2];
+  if (mo == null || d == null) return day;
+  const date = `${mo}月${d}日`;
+  return day === today ? `今天 ${date}` : date;
 }
 
 export function monthLabel(year: number, monthIndex: number): string {

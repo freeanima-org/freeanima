@@ -32,8 +32,8 @@ describe("listSmartListsMerged", () => {
     const { listSmartListsMerged } = await import("./smart-list-store.ts");
     const rows = await listSmartListsMerged(1);
 
-    expect(rows.length).toBe(7);
-    expect(rows.filter((r) => r.preset != null).length).toBe(6);
+    expect(rows.length).toBe(4);
+    expect(rows.filter((r) => r.preset != null).length).toBe(3);
     expect(rows.find((r) => r.id === 42)?.filters).toEqual({
       status: "pending",
       priority: "high",
