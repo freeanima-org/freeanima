@@ -1,13 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
-import { Button, Spinner, cn } from "@freeanima/ui-kit";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Spinner,
+  cn,
+} from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
-import { ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
 
 import { AgendaList } from "./components/AgendaList.tsx";
 import { EventEditorDialog, type EventEditorTarget } from "./components/EventEditorDialog.tsx";
 import { MonthGrid } from "./components/MonthGrid.tsx";
+import { MultiDayAgenda } from "./components/MultiDayAgenda.tsx";
 import { WeekGrid, weekStartMonday } from "./components/WeekGrid.tsx";
 import {
   createCalendarEvent,
@@ -15,14 +23,38 @@ import {
   deleteCalendarEvent,
   fetchCalendarEventById,
   fetchCalendarRange,
+  fetchDueTasksForAgenda,
   patchTaskDueAt,
   updateCalendarEvent,
   type CalendarEventRow,
   type CalendarRangeKind,
 } from "./lib/api.ts";
-import { cstDayKey, monthLabel, monthRangeIso, shiftMonth } from "./lib/format-calendar.ts";
+import {
+  dueFiltersForAgenda,
+  filterEndedEvents,
+  mergeCalendarItems,
+  shouldHideEndedEvents,
+} from "./lib/agenda-items.ts";
+import {
+  cstDayKey,
+  dayHeadingLabel,
+  dayRangeIso,
+  listDayKeys,
+  monthLabel,
+  monthRangeIso,
+  nDayRangeIso,
+  shiftDayKey,
+  shiftMonth,
+} from "./lib/format-calendar.ts";
 import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
-import { readCalendarUiPrefs, writeCalendarUiPrefs } from "./lib/calendar-prefs.ts";
+import {
+  CALENDAR_VIEW_MODE_LABEL,
+  CALENDAR_VIEW_MODES,
+  isAgendaViewMode,
+  readCalendarUiPrefs,
+  writeCalendarUiPrefs,
+  type CalendarViewMode,
+} from "./lib/calendar-prefs.ts";
 import { readCalendarEventFromUrl, writeCalendarEventToUrl } from "./lib/calendar-event-url.ts";
 import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 
@@ -32,6 +64,14 @@ const KIND_OPTIONS: CalendarRangeKind[] = ["event", "task", "project"];
 
 /** 日程暂只看用户视图，不暴露 subject 切换 */
 const CALENDAR_SUBJECT = "user" as const;
+
+function openTask(id: number) {
+  void openEntityResource({ id, component: "task_item", present: "overlay" });
+}
+
+function openProject(id: number) {
+  void openEntityResource({ id, component: "project", present: "overlay" });
+}
 
 export function CalendarApp() {
   const compact = useCompactLayout();
@@ -47,6 +87,7 @@ export function CalendarApp() {
   const kinds = prefs.kinds as CalendarRangeKind[];
   const viewMode = prefs.viewMode;
   const expandRecurrence = prefs.expandRecurrence;
+  const agendaMode = isAgendaViewMode(viewMode);
   const [editor, setEditor] = useState<EventEditorTarget | null>(null);
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
   const [refreshing, setRefreshing] = useState(false);
@@ -55,38 +96,57 @@ export function CalendarApp() {
     setPrefs(writeCalendarUiPrefs(patch));
   }, []);
 
+  const applyDay = useCallback((day: string) => {
+    setSelectedDay(day);
+    const parts = day.split("-").map(Number);
+    const y = parts[0];
+    const mo = parts[1];
+    if (y != null && mo != null) setCursor({ year: y, monthIndex: mo - 1 });
+    setWeekAnchor(weekStartMonday(day));
+  }, []);
+
   const range = useMemo(() => {
-    if (viewMode === "week") {
-      const end = (() => {
-        const parts = weekAnchor.split("-").map(Number);
-        const y = parts[0] ?? 1970;
-        const mo = parts[1] ?? 1;
-        const d = parts[2] ?? 1;
-        const next = new Date(Date.UTC(y, mo - 1, d + 6));
-        const day = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`;
-        return `${day}T23:59:59+08:00`;
-      })();
-      return { from: `${weekAnchor}T00:00:00+08:00`, to: end };
-    }
+    if (viewMode === "week") return nDayRangeIso(weekAnchor, 7);
+    if (viewMode === "day") return dayRangeIso(selectedDay);
+    if (viewMode === "next3") return nDayRangeIso(today, 3);
+    if (viewMode === "next7") return nDayRangeIso(today, 7);
     return monthRangeIso(cursor.year, cursor.monthIndex);
-  }, [cursor.monthIndex, cursor.year, viewMode, weekAnchor]);
+  }, [cursor.monthIndex, cursor.year, selectedDay, today, viewMode, weekAnchor]);
+
+  const dueFilters = useMemo(
+    () => (kinds.includes("task") ? dueFiltersForAgenda(viewMode, selectedDay, today) : null),
+    [kinds, selectedDay, today, viewMode],
+  );
 
   const kindsKey = kinds.toSorted().join(",");
+  const dueKey = dueFilters ? JSON.stringify(dueFilters) : "";
   const query = usePortalRead({
-    queryKey: ["calendar", "range", CALENDAR_SUBJECT, range.from, range.to, kindsKey],
-    queryFn: () =>
-      fetchCalendarRange(CALENDAR_SUBJECT, {
+    queryKey: ["calendar", "range", CALENDAR_SUBJECT, range.from, range.to, kindsKey, dueKey],
+    queryFn: async () => {
+      const rangeItems = await fetchCalendarRange(CALENDAR_SUBJECT, {
         from: range.from,
         to: range.to,
         kinds,
-      }),
+      });
+      if (!dueFilters) return rangeItems;
+      const dueItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, dueFilters);
+      return mergeCalendarItems(rangeItems, dueItems);
+    },
   });
 
   const items = query.data ?? [];
-  const visibleItems = useMemo(
-    () => filterVisibleCalendarItems(items, expandRecurrence),
-    [expandRecurrence, items],
-  );
+  const visibleItems = useMemo(() => {
+    const visible = filterVisibleCalendarItems(items, expandRecurrence);
+    if (!shouldHideEndedEvents(viewMode, selectedDay, today)) return visible;
+    return filterEndedEvents(visible, new Date(), today);
+  }, [expandRecurrence, items, selectedDay, today, viewMode]);
+
+  const agendaDays = useMemo(() => {
+    if (viewMode === "day") return [selectedDay];
+    if (viewMode === "next3") return listDayKeys(today, 3);
+    if (viewMode === "next7") return listDayKeys(today, 7);
+    return [];
+  }, [selectedDay, today, viewMode]);
 
   const eventsById = useMemo(() => {
     const map = new Map<number, CalendarEventRow>();
@@ -118,6 +178,14 @@ export function CalendarApp() {
     [patchPrefs, prefs.kinds],
   );
 
+  const setViewMode = useCallback(
+    (next: CalendarViewMode) => {
+      patchPrefs({ viewMode: next });
+      if (next === "week") setWeekAnchor(weekStartMonday(selectedDay));
+    },
+    [patchPrefs, selectedDay],
+  );
+
   /** 窄布局（手机）工具栏开关加大触控命中；宽布局保持 sm */
   const toggleSize = compact ? "default" : "sm";
 
@@ -134,6 +202,14 @@ export function CalendarApp() {
       setRefreshing(false);
     }
   }, [refresh, refreshing]);
+
+  const shiftSelectedDay = useCallback(
+    (delta: number) => {
+      const next = shiftDayKey(selectedDay, delta);
+      if (next) applyDay(next);
+    },
+    [applyDay, selectedDay],
+  );
 
   const appliedEventUrlRef = useRef<number | null>(null);
 
@@ -160,69 +236,131 @@ export function CalendarApp() {
       if (row) {
         setEditor({ mode: "edit", event: row });
         const day = row.start_at.slice(0, 10);
-        if (/^\d{4}-\d{2}-\d{2}$/.test(day)) {
-          setSelectedDay(day);
-          const parts = day.split("-").map(Number);
-          const y = parts[0];
-          const mo = parts[1];
-          if (y != null && mo != null) {
-            setCursor({ year: y, monthIndex: mo - 1 });
-          }
-        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(day)) applyDay(day);
       }
       writeCalendarEventToUrl(null);
     });
     return () => {
       cancelled = true;
     };
-  }, [eventsById]);
+  }, [applyDay, eventsById]);
+
+  const openEvent = (id: number) => {
+    const ev = eventsById.get(id);
+    if (ev) setEditor({ mode: "edit", event: ev });
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
       <header className="flex flex-wrap items-center gap-2">
         <h1 className="text-lg font-semibold">{"日程"}</h1>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={"上一月"}
-          onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, -1))}
-        >
-          <ChevronLeft className="size-4" />
-        </Button>
-        <span className="min-w-24 text-center font-medium">
-          {monthLabel(cursor.year, cursor.monthIndex)}
-        </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={"下一月"}
-          onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, 1))}
-        >
-          <ChevronRight className="size-4" />
-        </Button>
-        <Button type="button" variant="outline" size="sm" onPress={() => setSelectedDay(today)}>
+        <DropdownMenuTrigger>
+          <Button
+            type="button"
+            size={toggleSize}
+            variant="outline"
+            className={cn("min-w-24", compact && "min-h-11")}
+            aria-label="切换视图"
+          >
+            {CALENDAR_VIEW_MODE_LABEL[viewMode]}
+            <ChevronDown className="size-4" />
+          </Button>
+          <DropdownMenu>
+            {CALENDAR_VIEW_MODES.map((mode) => (
+              <DropdownMenuItem
+                key={mode}
+                id={mode}
+                {...(compact ? { className: "min-h-11" } : {})}
+                onAction={() => setViewMode(mode)}
+              >
+                {CALENDAR_VIEW_MODE_LABEL[mode]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenu>
+        </DropdownMenuTrigger>
+        {viewMode === "month" ? (
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={"上一月"}
+              onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, -1))}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="min-w-24 text-center font-medium">
+              {monthLabel(cursor.year, cursor.monthIndex)}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={"下一月"}
+              onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, 1))}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </>
+        ) : null}
+        {viewMode === "week" ? (
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="上一周"
+              onPress={() => {
+                const prev = shiftDayKey(weekAnchor, -7);
+                if (prev) setWeekAnchor(prev);
+              }}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="min-w-24 text-center font-medium">{weekAnchor}</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="下一周"
+              onPress={() => {
+                const next = shiftDayKey(weekAnchor, 7);
+                if (next) setWeekAnchor(next);
+              }}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </>
+        ) : null}
+        {viewMode === "day" ? (
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={compact ? "size-11" : undefined}
+              aria-label="前一天"
+              onPress={() => shiftSelectedDay(-1)}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="min-w-28 text-center font-medium">
+              {dayHeadingLabel(selectedDay, today)}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={compact ? "size-11" : undefined}
+              aria-label="后一天"
+              onPress={() => shiftSelectedDay(1)}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </>
+        ) : null}
+        <Button type="button" variant="outline" size="sm" onPress={() => applyDay(today)}>
           {"今天"}
-        </Button>
-        <Button
-          type="button"
-          size={toggleSize}
-          variant={viewMode === "month" ? "default" : "outline"}
-          onPress={() => patchPrefs({ viewMode: "month" })}
-        >
-          月
-        </Button>
-        <Button
-          type="button"
-          size={toggleSize}
-          variant={viewMode === "week" ? "default" : "outline"}
-          onPress={() => {
-            patchPrefs({ viewMode: "week" });
-            setWeekAnchor(weekStartMonday(selectedDay));
-          }}
-        >
-          周
         </Button>
         <Button
           type="button"
@@ -232,46 +370,6 @@ export function CalendarApp() {
         >
           重复展开
         </Button>
-        {viewMode === "week" ? (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="上一周"
-              onPress={() => {
-                const parts = weekAnchor.split("-").map(Number);
-                const y = parts[0] ?? 1970;
-                const mo = parts[1] ?? 1;
-                const d = parts[2] ?? 1;
-                const prev = new Date(Date.UTC(y, mo - 1, d - 7));
-                setWeekAnchor(
-                  `${prev.getUTCFullYear()}-${String(prev.getUTCMonth() + 1).padStart(2, "0")}-${String(prev.getUTCDate()).padStart(2, "0")}`,
-                );
-              }}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="下一周"
-              onPress={() => {
-                const parts = weekAnchor.split("-").map(Number);
-                const y = parts[0] ?? 1970;
-                const mo = parts[1] ?? 1;
-                const d = parts[2] ?? 1;
-                const next = new Date(Date.UTC(y, mo - 1, d + 7));
-                setWeekAnchor(
-                  `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`,
-                );
-              }}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </>
-        ) : null}
         <div className="flex flex-wrap gap-1">
           {KIND_OPTIONS.map((kind) => (
             <Button
@@ -312,6 +410,18 @@ export function CalendarApp() {
         <div className="flex flex-1 items-center justify-center">
           <Spinner />
         </div>
+      ) : agendaMode ? (
+        <section className="flex min-h-0 flex-1 flex-col rounded-lg border border-border/60 p-3">
+          <MultiDayAgenda
+            days={agendaDays}
+            today={today}
+            items={visibleItems}
+            onOpenEvent={openEvent}
+            onEditEvent={openEvent}
+            onOpenTask={openTask}
+            onOpenProject={openProject}
+          />
+        </section>
       ) : (
         <div
           className={cn(
@@ -327,17 +437,10 @@ export function CalendarApp() {
                 weekStartDay={weekAnchor}
                 today={today}
                 items={visibleItems}
-                onSelectDay={setSelectedDay}
-                onOpenEvent={(id) => {
-                  const ev = eventsById.get(id);
-                  if (ev) setEditor({ mode: "edit", event: ev });
-                }}
-                onOpenTask={(id) => {
-                  void openEntityResource({ id, component: "task_item", present: "overlay" });
-                }}
-                onOpenProject={(id) => {
-                  void openEntityResource({ id, component: "project", present: "overlay" });
-                }}
+                onSelectDay={applyDay}
+                onOpenEvent={openEvent}
+                onOpenTask={openTask}
+                onOpenProject={openProject}
                 onDropTaskDue={(taskId, day) => {
                   void patchTaskDueAt(CALENDAR_SUBJECT, taskId, day).then(() => refresh());
                 }}
@@ -349,17 +452,10 @@ export function CalendarApp() {
                 selectedDay={selectedDay}
                 today={today}
                 items={visibleItems}
-                onSelectDay={setSelectedDay}
-                onOpenEvent={(id) => {
-                  const ev = eventsById.get(id);
-                  if (ev) setEditor({ mode: "edit", event: ev });
-                }}
-                onOpenTask={(id) => {
-                  void openEntityResource({ id, component: "task_item", present: "overlay" });
-                }}
-                onOpenProject={(id) => {
-                  void openEntityResource({ id, component: "project", present: "overlay" });
-                }}
+                onSelectDay={applyDay}
+                onOpenEvent={openEvent}
+                onOpenTask={openTask}
+                onOpenProject={openProject}
               />
             )}
           </section>
@@ -369,20 +465,10 @@ export function CalendarApp() {
               <AgendaList
                 day={selectedDay}
                 items={visibleItems}
-                onOpenEvent={(id) => {
-                  const ev = eventsById.get(id);
-                  if (ev) setEditor({ mode: "edit", event: ev });
-                }}
-                onEditEvent={(id) => {
-                  const ev = eventsById.get(id);
-                  if (ev) setEditor({ mode: "edit", event: ev });
-                }}
-                onOpenTask={(id) => {
-                  void openEntityResource({ id, component: "task_item", present: "overlay" });
-                }}
-                onOpenProject={(id) => {
-                  void openEntityResource({ id, component: "project", present: "overlay" });
-                }}
+                onOpenEvent={openEvent}
+                onEditEvent={openEvent}
+                onOpenTask={openTask}
+                onOpenProject={openProject}
               />
             </div>
           </section>

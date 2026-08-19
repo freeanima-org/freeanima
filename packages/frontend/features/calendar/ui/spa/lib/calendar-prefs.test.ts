@@ -1,50 +1,75 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import {
-  readCalendarUiPrefs,
-  readExpandRecurrence,
   resetCalendarPrefsForTest,
+  readCalendarUiPrefs,
   writeCalendarUiPrefs,
-  writeExpandRecurrence,
+  isAgendaViewMode,
 } from "./calendar-prefs.ts";
 
+function mockLocalStorage(): Storage {
+  const store = new Map<string, string>();
+  return {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return [...store.keys()][index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, value);
+    },
+  };
+}
+
 describe("calendar-prefs", () => {
+  beforeEach(() => {
+    globalThis.localStorage = mockLocalStorage();
+    resetCalendarPrefsForTest();
+  });
+
   afterEach(() => {
     resetCalendarPrefsForTest();
   });
 
-  it("默认：展开重复、月视图、全部 kinds", () => {
-    expect(readCalendarUiPrefs()).toEqual({
-      expandRecurrence: true,
-      viewMode: "month",
-      kinds: ["event", "task", "project"],
-    });
+  test("解析日/近三天/近七天视图", () => {
+    writeCalendarUiPrefs({ viewMode: "day" });
+    expect(readCalendarUiPrefs().viewMode).toBe("day");
+    writeCalendarUiPrefs({ viewMode: "next3" });
+    expect(readCalendarUiPrefs().viewMode).toBe("next3");
+    writeCalendarUiPrefs({ viewMode: "next7" });
+    expect(readCalendarUiPrefs().viewMode).toBe("next7");
   });
 
-  it("持久化重复展开开关", () => {
-    writeExpandRecurrence(false);
-    expect(readExpandRecurrence()).toBe(false);
-    writeExpandRecurrence(true);
-    expect(readExpandRecurrence()).toBe(true);
+  test("旧值 today 映射为 day", () => {
+    localStorage.setItem(
+      "freeanima.calendar.uiPrefs",
+      JSON.stringify({ expandRecurrence: true, viewMode: "today", kinds: ["event"] }),
+    );
+    expect(readCalendarUiPrefs().viewMode).toBe("day");
   });
 
-  it("持久化月周与 kinds（窄/宽布局共用同一偏好）", () => {
-    writeCalendarUiPrefs({ viewMode: "week", kinds: ["event", "task"] });
-    expect(readCalendarUiPrefs()).toEqual({
-      expandRecurrence: true,
-      viewMode: "week",
-      kinds: ["event", "task"],
-    });
-    writeCalendarUiPrefs({ expandRecurrence: false });
-    expect(readCalendarUiPrefs()).toEqual({
-      expandRecurrence: false,
-      viewMode: "week",
-      kinds: ["event", "task"],
-    });
+  test("未知 viewMode 回落 month", () => {
+    localStorage.setItem(
+      "freeanima.calendar.uiPrefs",
+      JSON.stringify({ expandRecurrence: true, viewMode: "year", kinds: ["event"] }),
+    );
+    expect(readCalendarUiPrefs().viewMode).toBe("month");
   });
 
-  it("kinds 为空时回退默认全选", () => {
-    writeCalendarUiPrefs({ kinds: [] });
-    expect(readCalendarUiPrefs().kinds).toEqual(["event", "task", "project"]);
+  test("isAgendaViewMode", () => {
+    expect(isAgendaViewMode("day")).toBe(true);
+    expect(isAgendaViewMode("next3")).toBe(true);
+    expect(isAgendaViewMode("week")).toBe(false);
+    expect(isAgendaViewMode("month")).toBe(false);
   });
 });

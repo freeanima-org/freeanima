@@ -1,22 +1,21 @@
 import { describe, expect, test } from "bun:test";
 
-import {
-  DEFAULT_SMART_LIST_PRESET,
-  findBuiltinSmartListByPreset,
-  listBuiltinSmartListRows,
-} from "./smart-list-presets.ts";
+import { findBuiltinSmartListByPreset, listBuiltinSmartListRows } from "./smart-list-presets.ts";
 
 describe("smart-list-presets", () => {
-  test("内置 preset 均含 filters", () => {
+  test("内置 preset 仅保留完成类", () => {
     const rows = listBuiltinSmartListRows();
-    expect(rows.length).toBe(6);
+    expect(rows.map((row) => row.preset)).toEqual(["done_today", "done_yesterday", "done_last_7d"]);
     for (const row of rows) {
       expect(row.filters).toBeDefined();
       expect(Object.keys(row.filters).length).toBeGreaterThan(0);
+      expect(row.filters.status).toBe("completed");
     }
   });
 
-  test("默认回退 preset 存在", () => {
-    expect(findBuiltinSmartListByPreset(DEFAULT_SMART_LIST_PRESET)?.preset).toBe("due_today");
+  test("到期类 preset 已移除", () => {
+    expect(findBuiltinSmartListByPreset("due_today")).toBeUndefined();
+    expect(findBuiltinSmartListByPreset("due_tomorrow")).toBeUndefined();
+    expect(findBuiltinSmartListByPreset("due_next_7d")).toBeUndefined();
   });
 });

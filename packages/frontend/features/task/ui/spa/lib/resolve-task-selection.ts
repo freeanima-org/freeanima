@@ -1,9 +1,5 @@
 import type { SmartListRow } from "./api.ts";
-import {
-  DEFAULT_SMART_LIST_KEY,
-  findSmartListRowByKey,
-  type TaskModuleSelection,
-} from "./task-smart-list-utils.ts";
+import { findSmartListRowByKey, type TaskModuleSelection } from "./task-smart-list-utils.ts";
 import { readTaskSelectionFromUrl } from "./task-selection-url.ts";
 import { resolveDefaultListId } from "./resolve-list.ts";
 import type { TaskListRow } from "./api.ts";
@@ -41,16 +37,10 @@ export function resolveTaskSelection(
     if (resolved) return resolved;
   }
 
-  const fallbackSmart = tryResolveCandidate(lists, smartLists, {
-    kind: "smart_list",
-    key: DEFAULT_SMART_LIST_KEY,
-  });
-  if (fallbackSmart) return fallbackSmart;
-
   const defaultListId = resolveDefaultListId(lists);
   if (defaultListId != null) return { kind: "list", id: defaultListId };
 
-  return { kind: "smart_list", key: DEFAULT_SMART_LIST_KEY };
+  return { kind: "search" };
 }
 
 export function parseStoredTaskSelection(raw: unknown): TaskModuleSelection | null {

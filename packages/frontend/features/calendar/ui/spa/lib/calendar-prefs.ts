@@ -5,7 +5,28 @@ export const CALENDAR_UI_PREFS_KEY = "freeanima.calendar.uiPrefs";
 /** @deprecated 迁移用；读到后写入 CALENDAR_UI_PREFS_KEY 并删除 */
 export const CALENDAR_EXPAND_RECURRENCE_KEY = "freeanima.calendar.expandRecurrence";
 
-export type CalendarViewMode = "month" | "week";
+export type CalendarViewMode = "day" | "next3" | "next7" | "week" | "month";
+
+export const CALENDAR_VIEW_MODES: readonly CalendarViewMode[] = [
+  "day",
+  "next3",
+  "next7",
+  "week",
+  "month",
+];
+
+export const CALENDAR_VIEW_MODE_LABEL: Record<CalendarViewMode, string> = {
+  day: "日",
+  next3: "近三天",
+  next7: "近七天",
+  week: "周",
+  month: "月",
+};
+
+export function isAgendaViewMode(mode: CalendarViewMode): boolean {
+  return mode === "day" || mode === "next3" || mode === "next7";
+}
+
 export type CalendarKindPref = "event" | "task" | "project";
 
 export type CalendarUiPrefs = {
@@ -36,7 +57,12 @@ function storage(): Storage | null {
 }
 
 function isViewMode(v: unknown): v is CalendarViewMode {
-  return v === "month" || v === "week";
+  return v === "day" || v === "next3" || v === "next7" || v === "week" || v === "month";
+}
+
+function normalizeViewMode(v: unknown): CalendarViewMode {
+  if (v === "today") return "day";
+  return isViewMode(v) ? v : DEFAULT_PREFS.viewMode;
 }
 
 function isKind(v: unknown): v is CalendarKindPref {
@@ -60,7 +86,7 @@ function parsePrefs(raw: string | null): CalendarUiPrefs | null {
         typeof obj.expandRecurrence === "boolean"
           ? obj.expandRecurrence
           : DEFAULT_PREFS.expandRecurrence,
-      viewMode: isViewMode(obj.viewMode) ? obj.viewMode : DEFAULT_PREFS.viewMode,
+      viewMode: normalizeViewMode(obj.viewMode),
       kinds: normalizeKinds(obj.kinds),
     };
   } catch {

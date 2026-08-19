@@ -5,10 +5,10 @@ import { resolveTaskSelection } from "./resolve-task-selection.ts";
 
 const smartLists: SmartListRow[] = [
   {
-    preset: "due_today",
-    title: "今天",
+    preset: "done_today",
+    title: "今日完成",
     sort_order: 0,
-    filters: { status: "pending", has_due_at: true, due_on_or_before_days: 0 },
+    filters: { status: "completed", completed_on: "today" },
   },
   {
     id: 9,
@@ -48,13 +48,22 @@ const lists: TaskListRow[] = [
 ];
 
 describe("resolveTaskSelection", () => {
-  test("无存储时回退今天", () => {
+  test("无存储时回退收件箱", () => {
     const sel = resolveTaskSelection(lists, smartLists, {
       stored: null,
       urlSelection: null,
       preferUrl: false,
     });
-    expect(sel).toEqual({ kind: "smart_list", key: "due_today" });
+    expect(sel).toEqual({ kind: "list", id: 1 });
+  });
+
+  test("已删除的到期智能清单回退收件箱", () => {
+    const sel = resolveTaskSelection(lists, smartLists, {
+      stored: { kind: "smart_list", key: "due_today" },
+      urlSelection: null,
+      preferUrl: false,
+    });
+    expect(sel).toEqual({ kind: "list", id: 1 });
   });
 
   test("恢复 smart_list key", () => {
@@ -66,22 +75,22 @@ describe("resolveTaskSelection", () => {
     expect(sel).toEqual({ kind: "smart_list", key: "id:9" });
   });
 
-  test("无效 smart_list key 回退今天", () => {
+  test("无效 smart_list key 回退收件箱", () => {
     const sel = resolveTaskSelection(lists, smartLists, {
       stored: { kind: "smart_list", key: "missing" },
       urlSelection: null,
       preferUrl: false,
     });
-    expect(sel).toEqual({ kind: "smart_list", key: "due_today" });
+    expect(sel).toEqual({ kind: "list", id: 1 });
   });
 
-  test("无效 list 回退今天", () => {
+  test("无效 list 回退收件箱", () => {
     const sel = resolveTaskSelection(lists, smartLists, {
       stored: { kind: "list", id: 999 },
       urlSelection: null,
       preferUrl: false,
     });
-    expect(sel).toEqual({ kind: "smart_list", key: "due_today" });
+    expect(sel).toEqual({ kind: "list", id: 1 });
   });
 
   test("preferUrl 时恢复 search", () => {
@@ -93,12 +102,12 @@ describe("resolveTaskSelection", () => {
     expect(sel).toEqual({ kind: "search" });
   });
 
-  test("stored 为 search 时忽略并回退", () => {
+  test("stored 为 search 时忽略并回退收件箱", () => {
     const sel = resolveTaskSelection(lists, smartLists, {
       stored: { kind: "search" },
       urlSelection: null,
       preferUrl: false,
     });
-    expect(sel).toEqual({ kind: "smart_list", key: "due_today" });
+    expect(sel).toEqual({ kind: "list", id: 1 });
   });
 });
