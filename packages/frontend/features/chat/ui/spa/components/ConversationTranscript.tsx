@@ -31,6 +31,27 @@ import { markdownToPlainText } from "../lib/speech/plain-text.ts";
 import { createSpeechPlaceholders } from "../lib/speech/speech-placeholders.ts";
 import type { DisplayItem, DisplayMessageItem } from "../lib/types.ts";
 
+function SelectionDot({ selected, onToggle }: { selected: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      className={`mt-2 size-5 shrink-0 rounded-full border text-[10px] leading-none ${
+        selected
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-muted-foreground/40 bg-background text-transparent"
+      }`}
+      aria-label={selected ? "取消选择" : "选择"}
+      aria-pressed={selected}
+      onClick={(e) => {
+        e.stopPropagation();
+        onToggle();
+      }}
+    >
+      ✓
+    </button>
+  );
+}
+
 export type TranscriptSpeechApi = {
   supported: boolean;
   unsupportedReason?: SpeechUnsupportedReason | null;
@@ -86,6 +107,11 @@ export type ConversationTranscriptProps = {
   scrollApiRef?: MutableRefObject<TranscriptScrollApi | null>;
   scrollContainerRef?: RefObject<HTMLDivElement | null>;
   readSentinelRef?: RefObject<HTMLDivElement | null>;
+
+  /** 多选分享：仅可选带 pos 的 message */
+  selectionMode?: boolean;
+  selectedPosSet?: ReadonlySet<number>;
+  onToggleSelectPos?: (pos: number) => void;
 };
 
 function onMdClick(e: MouseEvent<HTMLDivElement>, onAnimaUriClick?: (uri: string) => void): void {
@@ -128,6 +154,9 @@ export const ConversationTranscript = memo(function ConversationTranscript({
   scrollApiRef,
   scrollContainerRef: externalScrollRef,
   readSentinelRef,
+  selectionMode = false,
+  selectedPosSet,
+  onToggleSelectPos,
 }: ConversationTranscriptProps) {
   const internalScrollRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = externalScrollRef ?? internalScrollRef;
@@ -204,59 +233,84 @@ export const ConversationTranscript = memo(function ConversationTranscript({
           const editAllowed =
             onEditUser &&
             (canEditUser ? canEditUser(i, item) : i === lastUserIndex && !item.sendStatus);
+          const messagePos = typeof item.pos === "number" ? item.pos : null;
+          const canSelect = selectionMode && messagePos != null;
+          const selected = messagePos != null && !!selectedPosSet?.has(messagePos);
           return (
-            <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-end">
-              <ChatMessageBubble
-                align="end"
-                className={`chat-bubble-user${
-                  item.sendStatus === "pending" || item.sendStatus === "sending"
-                    ? " opacity-70"
-                    : item.sendStatus === "stale" || item.sendStatus === "failed"
-                      ? " border border-warning"
-                      : ""
-                }`}
-              >
-                <div
-                  className="md-content min-w-0 max-w-full"
-                  dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                  onClick={(e) => onMdClick(e, onAnimaUriClick)}
-                />
-                {item.attachments && item.attachments.length > 0 ? (
-                  <ul className="mt-2 flex flex-wrap gap-2" aria-label="附件">
-                    {item.attachments.map((att, ai) => (
-                      <ChatAttachmentThumb key={`${att.filename}-${ai}`} att={att} />
-                    ))}
-                  </ul>
+            <div
+              key={`d${i}`}
+              className={`flex min-w-0 max-w-full flex-col items-end ${canSelect ? "cursor-pointer" : ""}`}
+              onClick={
+                messagePos != null && canSelect
+                  ? () => {
+                      onToggleSelectPos?.(messagePos);
+                    }
+                  : undefined
+              }
+            >
+              <div className="flex w-full max-w-full items-start justify-end gap-2">
+                {messagePos != null && canSelect ? (
+                  <SelectionDot
+                    selected={selected}
+                    onToggle={() => onToggleSelectPos?.(messagePos)}
+                  />
                 ) : null}
-                {item.sendStatus === "pending" ? (
-                  <p className="mt-1 text-xs opacity-70">{"待发送"}</p>
-                ) : null}
-                {item.sendStatus === "stale" ? (
-                  <>
-                    <p className="mt-1 text-xs text-warning">{"已过期"}</p>
-                    <p className="text-xs text-warning/80">{"对话已在其他设备上继续"}</p>
-                  </>
-                ) : null}
-                {item.sendStatus === "failed" ? (
-                  <p className="mt-1 text-xs text-warning">{"发送失败"}</p>
-                ) : null}
-              </ChatMessageBubble>
-              {renderAfterUser?.({ item, index: i })}
-              <MessageActionBar
-                align="end"
-                copyContent={item.content}
-                speechText={speechText}
-                speaking={!!conversationKey && !!speech?.isSpeaking(speechKey)}
-                speechSupported={speech?.supported ?? false}
-                {...(speech?.unsupportedReason != null
-                  ? { speechUnsupportedReason: speech.unsupportedReason }
-                  : {})}
-                onToggleSpeech={() => {
-                  if (!conversationKey || !speech) return;
-                  speech.toggle(speechKey, speechText);
-                }}
-                {...(editAllowed ? { onEdit: () => onEditUser?.(i, item) } : {})}
-              />
+                <div className="flex min-w-0 max-w-full flex-col items-end">
+                  <ChatMessageBubble
+                    align="end"
+                    className={`chat-bubble-user${
+                      item.sendStatus === "pending" || item.sendStatus === "sending"
+                        ? " opacity-70"
+                        : item.sendStatus === "stale" || item.sendStatus === "failed"
+                          ? " border border-warning"
+                          : ""
+                    }`}
+                  >
+                    <div
+                      className="md-content min-w-0 max-w-full"
+                      dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                      onClick={(e) => onMdClick(e, onAnimaUriClick)}
+                    />
+                    {item.attachments && item.attachments.length > 0 ? (
+                      <ul className="mt-2 flex flex-wrap gap-2" aria-label="附件">
+                        {item.attachments.map((att, ai) => (
+                          <ChatAttachmentThumb key={`${att.filename}-${ai}`} att={att} />
+                        ))}
+                      </ul>
+                    ) : null}
+                    {item.sendStatus === "pending" ? (
+                      <p className="mt-1 text-xs opacity-70">{"待发送"}</p>
+                    ) : null}
+                    {item.sendStatus === "stale" ? (
+                      <>
+                        <p className="mt-1 text-xs text-warning">{"已过期"}</p>
+                        <p className="text-xs text-warning/80">{"对话已在其他设备上继续"}</p>
+                      </>
+                    ) : null}
+                    {item.sendStatus === "failed" ? (
+                      <p className="mt-1 text-xs text-warning">{"发送失败"}</p>
+                    ) : null}
+                  </ChatMessageBubble>
+                  {renderAfterUser?.({ item, index: i })}
+                  {!selectionMode ? (
+                    <MessageActionBar
+                      align="end"
+                      copyContent={item.content}
+                      speechText={speechText}
+                      speaking={!!conversationKey && !!speech?.isSpeaking(speechKey)}
+                      speechSupported={speech?.supported ?? false}
+                      {...(speech?.unsupportedReason != null
+                        ? { speechUnsupportedReason: speech.unsupportedReason }
+                        : {})}
+                      onToggleSpeech={() => {
+                        if (!conversationKey || !speech) return;
+                        speech.toggle(speechKey, speechText);
+                      }}
+                      {...(editAllowed ? { onEdit: () => onEditUser?.(i, item) } : {})}
+                    />
+                  ) : null}
+                </div>
+              </div>
             </div>
           );
         }
@@ -268,41 +322,66 @@ export const ConversationTranscript = memo(function ConversationTranscript({
             !!speech?.isStreamSpeaking && !streamIsVisible && i === lastAssistantIndex;
           const speaking =
             (!!conversationKey && !!speech?.isSpeaking(messageKey)) || speakingAsStream;
+          const messagePos = typeof item.pos === "number" ? item.pos : null;
+          const canSelect = selectionMode && messagePos != null;
+          const selected = messagePos != null && !!selectedPosSet?.has(messagePos);
           return (
-            <div key={`d${i}`} className="flex min-w-0 max-w-full flex-col items-start">
-              <ChatMessageBubble align="start" className="chat-bubble-assistant">
-                <div
-                  className="md-content min-w-0 max-w-full"
-                  dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
-                  onClick={(e) => onMdClick(e, onAnimaUriClick)}
-                />
-                {item.attachments && item.attachments.length > 0 ? (
-                  <ul className="mt-2 flex flex-wrap gap-2" aria-label="附件">
-                    {item.attachments.map((att, ai) => (
-                      <ChatAttachmentThumb key={`${att.filename}-${ai}`} att={att} />
-                    ))}
-                  </ul>
+            <div
+              key={`d${i}`}
+              className={`flex min-w-0 max-w-full flex-col items-start ${canSelect ? "cursor-pointer" : ""}`}
+              onClick={
+                messagePos != null && canSelect
+                  ? () => {
+                      onToggleSelectPos?.(messagePos);
+                    }
+                  : undefined
+              }
+            >
+              <div className="flex w-full max-w-full items-start gap-2">
+                {messagePos != null && canSelect ? (
+                  <SelectionDot
+                    selected={selected}
+                    onToggle={() => onToggleSelectPos?.(messagePos)}
+                  />
                 ) : null}
-              </ChatMessageBubble>
-              {renderAfterAssistant?.({ item, index: i })}
-              <MessageActionBar
-                align="start"
-                copyContent={item.content}
-                speechText={speechText}
-                speaking={speaking}
-                speechSupported={speech?.supported ?? false}
-                {...(speech?.unsupportedReason != null
-                  ? { speechUnsupportedReason: speech.unsupportedReason }
-                  : {})}
-                onToggleSpeech={() => {
-                  if (!conversationKey || !speech) return;
-                  if (speakingAsStream || speech.isSpeaking(streamKey(conversationKey))) {
-                    speech.stopKeepEnabled?.();
-                    return;
-                  }
-                  speech.toggle(messageKey, speechText);
-                }}
-              />
+                <div className="flex min-w-0 max-w-full flex-col items-start">
+                  <ChatMessageBubble align="start" className="chat-bubble-assistant">
+                    <div
+                      className="md-content min-w-0 max-w-full"
+                      dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
+                      onClick={(e) => onMdClick(e, onAnimaUriClick)}
+                    />
+                    {item.attachments && item.attachments.length > 0 ? (
+                      <ul className="mt-2 flex flex-wrap gap-2" aria-label="附件">
+                        {item.attachments.map((att, ai) => (
+                          <ChatAttachmentThumb key={`${att.filename}-${ai}`} att={att} />
+                        ))}
+                      </ul>
+                    ) : null}
+                  </ChatMessageBubble>
+                  {renderAfterAssistant?.({ item, index: i })}
+                  {!selectionMode ? (
+                    <MessageActionBar
+                      align="start"
+                      copyContent={item.content}
+                      speechText={speechText}
+                      speaking={speaking}
+                      speechSupported={speech?.supported ?? false}
+                      {...(speech?.unsupportedReason != null
+                        ? { speechUnsupportedReason: speech.unsupportedReason }
+                        : {})}
+                      onToggleSpeech={() => {
+                        if (!conversationKey || !speech) return;
+                        if (speakingAsStream || speech.isSpeaking(streamKey(conversationKey))) {
+                          speech.stopKeepEnabled?.();
+                          return;
+                        }
+                        speech.toggle(messageKey, speechText);
+                      }}
+                    />
+                  ) : null}
+                </div>
+              </div>
             </div>
           );
         }

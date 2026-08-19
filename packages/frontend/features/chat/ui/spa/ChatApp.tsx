@@ -13,8 +13,9 @@ import {
   Textarea,
   Toggle,
 } from "@freeanima/ui-kit";
-import { ConfirmDialog, ActionSheet, toast } from "@freeanima/ui-kit/composite";
+import { ConfirmDialog, ActionSheet, ModalSheetPresent, toast } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { SlashCommandResultPanel } from "@freeanima/features/chat/ui/spa/components/SlashCommandResultPanel.tsx";
 import { ConversationTranscript } from "@freeanima/features/chat/ui/spa/components/ConversationTranscript.tsx";
 import { ChatComposeForm } from "@freeanima/features/chat/ui/spa/components/ChatComposeForm.tsx";
@@ -41,6 +42,7 @@ import {
   clearPersistedActiveStream,
 } from "@freeanima/features/chat/ui/spa/lib/active-stream-persist.ts";
 import {
+  createConversationShare,
   fetchLlmDebug,
   listConversationCommands,
   loadConfig,
@@ -49,6 +51,7 @@ import {
   runConversationCommand,
   subscribeConversationUpdates,
   subscribeConversationInbox,
+  type ConversationShareTtl,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-unread.ts";
 import { useViewportConversationRead } from "@freeanima/features/chat/ui/spa/hooks/use-viewport-conversation-read.ts";
@@ -65,6 +68,7 @@ import {
   useNetworkOnline,
   useOpenHabitatSettingsCapability,
   useSetCompactImmersive,
+  shouldUseNativeShellNavigation,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   getChatRpcStreamClient,
@@ -142,6 +146,23 @@ function getPortalShell() {
 
 function openHabitatSettingsIfAvailable(): void {
   getPortalShell()?.openHabitatSettings?.();
+}
+
+const SHARE_TTL_OPTIONS: Array<{ value: ConversationShareTtl; label: string }> = [
+  { value: "1h", label: "1 小时" },
+  { value: "1d", label: "1 天" },
+  { value: "1w", label: "1 周" },
+  { value: "1mo", label: "1 个月" },
+];
+
+function absoluteShareUrl(urlPath: string): string {
+  if (shouldUseNativeShellNavigation()) {
+    const base = window.location.href.split("#")[0] ?? window.location.origin;
+    return `${base}#${urlPath}`;
+  }
+  const raw = (import.meta.env?.BASE_URL ?? "/").replace(/\/$/, "");
+  const basepath = raw && raw !== "." && raw.startsWith("/") ? raw : "";
+  return `${window.location.origin}${basepath}${urlPath}`;
 }
 
 function isTransportFailureMessage(msg: string): boolean {
@@ -270,6 +291,14 @@ export function ChatApp() {
   const [llmDebugLoading, setLlmDebugLoading] = useState(false);
   const [llmDebugSnapshots, setLlmDebugSnapshots] = useState<LlmDebugSnapshots | null>(null);
   const [autoSpeak, setAutoSpeak] = useState(() => loadAutoSpeakPref());
+  const [shareSheetOpen, setShareSheetOpen] = useState(false);
+  const [shareTtl, setShareTtl] = useState<ConversationShareTtl>("1h");
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareResultUrl, setShareResultUrl] = useState<string | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPosSet, setSelectedPosSet] = useState<Set<number>>(() => new Set());
+  const [selectionShareTtl, setSelectionShareTtl] = useState<ConversationShareTtl>("1h");
+  const [selectionShareBusy, setSelectionShareBusy] = useState(false);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const mobileLayout = useCompactLayout();
   const canOpenHabitatSettingsUi = useOpenHabitatSettingsCapability();
@@ -607,6 +636,83 @@ export function ChatApp() {
   useEffect(() => {
     stopSpeech();
   }, [currentId, stopSpeech]);
+
+  const exitSelectionMode = useCallback(() => {
+    setSelectionMode(false);
+    setSelectedPosSet(new Set());
+    setSelectionShareBusy(false);
+  }, []);
+
+  const toggleSelectPos = useCallback((pos: number) => {
+    setSelectedPosSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(pos)) next.delete(pos);
+      else next.add(pos);
+      return next;
+    });
+  }, []);
+
+  const runCreateShare = useCallback(
+    async (opts: { ttl: ConversationShareTtl; posList?: number[] }) => {
+      if (!currentId) return null;
+      const result = await createConversationShare({
+        conversationId: currentId,
+        ttl: opts.ttl,
+        ...(opts.posList?.length ? { posList: opts.posList } : {}),
+      });
+      return absoluteShareUrl(result.url_path);
+    },
+    [currentId],
+  );
+
+  const handleShareEntireConversation = useCallback(async () => {
+    if (!currentId || shareBusy) return;
+    setShareBusy(true);
+    setShareResultUrl(null);
+    try {
+      const url = await runCreateShare({ ttl: shareTtl });
+      if (!url) return;
+      setShareResultUrl(url);
+      const copied = await copyText(url);
+      toast(copied ? "分享链接已复制" : "分享链接已生成", { duration: 3000 });
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "分享失败", { duration: 4000 });
+    } finally {
+      setShareBusy(false);
+    }
+  }, [currentId, runCreateShare, shareBusy, shareTtl]);
+
+  const handleShareSelectedMessages = useCallback(async () => {
+    if (!currentId || selectionShareBusy || selectedPosSet.size === 0) return;
+    setSelectionShareBusy(true);
+    try {
+      const url = await runCreateShare({
+        ttl: selectionShareTtl,
+        posList: Array.from(selectedPosSet).toSorted((a, b) => a - b),
+      });
+      if (!url) return;
+      const copied = await copyText(url);
+      toast(copied ? "分享链接已复制" : "分享链接已生成", { duration: 3000 });
+      exitSelectionMode();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "分享失败", { duration: 4000 });
+    } finally {
+      setSelectionShareBusy(false);
+    }
+  }, [
+    currentId,
+    exitSelectionMode,
+    runCreateShare,
+    selectedPosSet,
+    selectionShareBusy,
+    selectionShareTtl,
+  ]);
+
+  useEffect(() => {
+    exitSelectionMode();
+    setShareSheetOpen(false);
+    setShareResultUrl(null);
+  }, [currentId, exitSelectionMode]);
 
   useEffect(() => {
     if (!llmDebugEnabled) {
@@ -1619,17 +1725,23 @@ export function ChatApp() {
         >
           {"＋ 新会话"}
         </Button>
-        {canOpenHabitatSettingsUi ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 px-2"
-            onClick={openHabitatSettingsIfAvailable}
-          >
-            Habitat
-          </Button>
-        ) : null}
+        <Button
+          type="button"
+          variant={selectionMode || shareSheetOpen ? "secondary" : "ghost"}
+          size="sm"
+          className="h-7 px-2"
+          isDisabled={!currentId}
+          onClick={() => {
+            if (selectionMode) {
+              exitSelectionMode();
+              return;
+            }
+            setShareResultUrl(null);
+            setShareSheetOpen(true);
+          }}
+        >
+          {"分享"}
+        </Button>
         {llmDebugEnabled ? (
           <Button
             type="button"
@@ -1728,6 +1840,9 @@ export function ChatApp() {
                 hasMoreBefore={hasMoreBefore}
                 messagesLoading={messagesLoading}
                 onLoadOlder={loadOlderMessages}
+                selectionMode={selectionMode}
+                selectedPosSet={selectedPosSet}
+                onToggleSelectPos={toggleSelectPos}
                 onAnimaUriClick={(uri) => {
                   void openEntityResource(uri).then((r) => {
                     if (!r.ok) toast(r.error, { duration: 4000 });
@@ -1927,55 +2042,169 @@ export function ChatApp() {
               ].join(" ")}
               style={composeLift > 0 ? { transform: `translateY(-${composeLift}px)` } : undefined}
             >
-              {showContinueButton ? (
-                <div className="mb-2 flex justify-center">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="shadow-sm"
-                    isDisabled={streaming}
-                    onClick={() => void dispatchContinue()}
+              {selectionMode ? (
+                <div className="flex flex-col gap-2">
+                  <div
+                    className="flex flex-wrap items-center gap-2"
+                    role="radiogroup"
+                    aria-label="链接有效期"
                   >
-                    {"继续"}
-                  </Button>
-                </div>
-              ) : null}
-              {speechPlaybackError ? (
-                <p className="mb-2 text-xs text-destructive">{speechPlaybackError}</p>
-              ) : null}
-              {messageQueue.length > 0 ? (
-                <ul className="mb-2 space-y-1">
-                  {messageQueue.map((item) => (
-                    <li
-                      key={item.id}
-                      className="flex items-center gap-2 text-sm bg-muted/60 rounded-lg px-2 py-1.5"
+                    <span className="text-muted-foreground text-xs">有效期</span>
+                    {SHARE_TTL_OPTIONS.map((opt) => (
+                      <Toggle
+                        key={opt.value}
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2"
+                        isSelected={selectionShareTtl === opt.value}
+                        onChange={(selected) => {
+                          if (selected) setSelectionShareTtl(opt.value);
+                        }}
+                      >
+                        {opt.label}
+                      </Toggle>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button type="button" size="sm" variant="ghost" onPress={exitSelectionMode}>
+                      {"取消"}
+                    </Button>
+                    <span className="text-muted-foreground flex-1 text-xs">
+                      {`已选 ${selectedPosSet.size} 条`}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      isDisabled={selectedPosSet.size === 0 || selectionShareBusy}
+                      onPress={() => void handleShareSelectedMessages()}
                     >
-                      <span className="flex-1 truncate text-muted-foreground">{item.text}</span>
+                      {selectionShareBusy ? "生成中…" : "分享所选"}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {showContinueButton ? (
+                    <div className="mb-2 flex justify-center">
                       <Button
                         type="button"
                         size="sm"
-                        className="h-7 shrink-0 px-2"
-                        onClick={() => void sendQueuedNow(item.id)}
+                        variant="outline"
+                        className="shadow-sm"
+                        isDisabled={streaming}
+                        onClick={() => void dispatchContinue()}
                       >
-                        {"立即发送"}
+                        {"继续"}
                       </Button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              <ChatComposeForm
-                conversationId={currentId}
-                commandList={commandList}
-                menuInFlow={mobileLayout}
-                streamVisible={streamVisible}
-                canSendOnline={canSendOnline}
-                onSend={sendMessage}
-                onStopStreaming={() => void stopStreaming()}
-              />
+                    </div>
+                  ) : null}
+                  {speechPlaybackError ? (
+                    <p className="mb-2 text-xs text-destructive">{speechPlaybackError}</p>
+                  ) : null}
+                  {messageQueue.length > 0 ? (
+                    <ul className="mb-2 space-y-1">
+                      {messageQueue.map((item) => (
+                        <li
+                          key={item.id}
+                          className="flex items-center gap-2 text-sm bg-muted/60 rounded-lg px-2 py-1.5"
+                        >
+                          <span className="flex-1 truncate text-muted-foreground">{item.text}</span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-7 shrink-0 px-2"
+                            onClick={() => void sendQueuedNow(item.id)}
+                          >
+                            {"立即发送"}
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <ChatComposeForm
+                    conversationId={currentId}
+                    commandList={commandList}
+                    menuInFlow={mobileLayout}
+                    streamVisible={streamVisible}
+                    canSendOnline={canSendOnline}
+                    onSend={sendMessage}
+                    onStopStreaming={() => void stopStreaming()}
+                  />
+                </>
+              )}
             </div>
           </ListDetailLayout>
         </div>
+        <ModalSheetPresent
+          open={shareSheetOpen}
+          onClose={() => {
+            if (!shareBusy) setShareSheetOpen(false);
+          }}
+          aria-label="分享对话"
+          showCloseButton
+          className="p-4"
+        >
+          <div className="space-y-4">
+            <h2 className="text-base font-medium">{"分享"}</h2>
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-xs">{"链接有效期（默认 1 小时）"}</p>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="链接有效期">
+                {SHARE_TTL_OPTIONS.map((opt) => (
+                  <Toggle
+                    key={opt.value}
+                    size="sm"
+                    variant="outline"
+                    className="h-8 px-2.5"
+                    isSelected={shareTtl === opt.value}
+                    onChange={(selected) => {
+                      if (selected) setShareTtl(opt.value);
+                    }}
+                  >
+                    {opt.label}
+                  </Toggle>
+                ))}
+              </div>
+            </div>
+            {shareResultUrl ? (
+              <div className="space-y-2">
+                <p className="text-muted-foreground break-all text-xs">{shareResultUrl}</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  onPress={() => {
+                    void copyText(shareResultUrl).then((ok) => {
+                      toast(ok ? "已复制" : "复制失败", { duration: 2000 });
+                    });
+                  }}
+                >
+                  {"复制链接"}
+                </Button>
+              </div>
+            ) : null}
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                isDisabled={!currentId || shareBusy}
+                onPress={() => void handleShareEntireConversation()}
+              >
+                {shareBusy ? "生成中…" : "分享整个对话"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                isDisabled={!currentId || shareBusy}
+                onPress={() => {
+                  setShareSheetOpen(false);
+                  setSelectedPosSet(new Set());
+                  setSelectionShareTtl(shareTtl);
+                  setSelectionMode(true);
+                }}
+              >
+                {"选择消息后分享"}
+              </Button>
+            </div>
+          </div>
+        </ModalSheetPresent>
         <LlmDebugPanel
           open={debugViewerOpen}
           onClose={() => setDebugViewerOpen(false)}

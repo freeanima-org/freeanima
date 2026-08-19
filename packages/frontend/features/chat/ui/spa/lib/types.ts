@@ -13,6 +13,8 @@ export type DisplayMessageItem = {
   content: string;
   clientOpId?: string;
   sendStatus?: "pending" | "sending" | "failed" | "stale";
+  /** 源消息 pos；多选分享锚点 */
+  pos?: number;
   attachments?: Array<{
     filename: string;
     mime_type: string;

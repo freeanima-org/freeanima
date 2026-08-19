@@ -23,6 +23,7 @@ export function habitatNavGroups(): HabitatNavGroup[] {
         { to: "/semantic-memory", label: "📝 语义记忆" },
         { to: "/temporal-summary", label: "⏳ 时间摘要" },
         { to: "/conversations", label: "💬 对话" },
+        { to: "/conversation-shares", label: "🔗 临时分享" },
         { to: "/auto-llm-runs", label: "🤖 自动 LLM 运行" },
       ],
     },

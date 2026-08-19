@@ -242,4 +242,16 @@ describe("buildMessagesDisplay", () => {
       expect(assistant.content).toBe("[[anima:7]]");
     }
   });
+
+  it("projects source message pos onto display messages", () => {
+    const msgs: StoredMessage[] = [
+      { role: "user", content: "hi", pos: 10 },
+      { role: "assistant", content: "hello", pos: 11 },
+    ];
+    const display = buildMessagesDisplay(msgs);
+    expect(display).toEqual([
+      { type: "message", role: "user", content: "hi", pos: 10 },
+      { type: "message", role: "assistant", content: "hello", pos: 11 },
+    ]);
+  });
 });

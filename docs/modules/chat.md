@@ -118,6 +118,16 @@ Outbox 布局与
   `play()` 恢复。
 - **Web Speech** 后台行为依赖浏览器/WebView，不保证切应用后继续；切模块仍不会主动 `cancel`。
 
+## 临时公开分享
+
+Chat 顶栏「分享」可生成**临时公开只读链接**（访问者无需登录 / Bearer）：
+
+- **范围**：整个对话，或进入多选后合并所选消息（仅 `message` 气泡，按源 `pos`）。
+- **TTL**：默认 1 小时；可选 1 天 / 1 周 / 1 个月。到期后链接不可读。
+- **快照**：创建时将 display 固化到 **Redis SETEX**（不写 PG）；原会话后续改写不影响已分享内容。Redis 未配置时创建失败并提示。
+- **URL**：壳路径 `/share/:id`（Web 即 `/web/share/:id`）；公开读 `GET /rpc/v1/conversation/share/get/:id`（`publicHttpMeta`）。
+- **管理**：栖息地侧栏「临时分享」（`/habitat/conversation-shares`）可列出仍有效的链接并手动删除（`conversation.share.list` / `.delete`，需登录）。
+
 ## 工具活动条
 
 连续工具调用（同一**工具轮次**，以及中间无助手正文的多个工具轮次）投影为单个 `tool_block`，由 `ToolBlockBubble` 渲染：

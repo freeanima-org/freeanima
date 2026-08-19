@@ -125,6 +125,7 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
     content: string,
     attachments: DisplayAttachment[] | undefined,
     extraIds: number[] = [],
+    pos?: number,
   ): void => {
     const folded = foldObjectFileAttachmentsIntoContent(content, attachments);
     const withGenerated = appendObjectFileAnimaMarkers(folded.content, extraIds);
@@ -134,12 +135,14 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
         role,
         content: withGenerated,
         attachments: folded.attachments,
+        pos: typeof pos === "number" ? pos : undefined,
       }),
     );
   };
 
   for (const msg of all) {
     const role = msg.role;
+    const msgPos = typeof msg.pos === "number" ? msg.pos : undefined;
 
     if ((role === "user" && msg.content) || (role === "user" && msg.attachments?.length)) {
       flushPendingBlock();
@@ -148,6 +151,8 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
         "user",
         msg.content ?? "",
         msg.attachments?.length ? msg.attachments.map(mapAttachmentMeta) : undefined,
+        [],
+        msgPos,
       );
       continue;
     }
@@ -172,6 +177,7 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
           msg.content,
           msg.attachments?.length ? msg.attachments.map(mapAttachmentMeta) : undefined,
           takeGeneratedFileIds(),
+          msgPos,
         );
         pendingBlock = { type: "tool_block", calls };
       } else if (pendingBlock) {
@@ -208,6 +214,7 @@ export function buildMessagesDisplay(all: StoredMessage[]): DisplayItem[] {
         msg.content ?? "",
         msg.attachments?.length ? msg.attachments.map(mapAttachmentMeta) : undefined,
         takeGeneratedFileIds(),
+        msgPos,
       );
     }
   }

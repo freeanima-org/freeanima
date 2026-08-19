@@ -25,6 +25,16 @@ import {
   conversationCommandOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/conversation";
 import {
+  conversationShareCreateInputSchema,
+  conversationShareCreateOutputSchema,
+  conversationShareDeleteInputSchema,
+  conversationShareDeleteOutputSchema,
+  conversationShareGetInputSchema,
+  conversationShareGetOutputSchema,
+  conversationShareListInputSchema,
+  conversationShareListOutputSchema,
+} from "@freeanima/shared/rpc-contract/frames/conversation-share";
+import {
   chatAttachmentUploadInputSchema,
   chatAttachmentUploadOutputSchema,
   llmDebugGetInputSchema,
@@ -48,6 +58,7 @@ import {
   longOpMeta,
   wsOnlyMeta,
   binaryHttpMeta,
+  publicHttpMeta,
 } from "@freeanima/shared/habitat-contract";
 import { HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
 
@@ -141,6 +152,26 @@ export const chatMethodDefs = {
     output: conversationCommandOutputSchema,
     // 与 conversation.commands 一致走 HTTP，避免卫星默认 WS 时调试困难
     meta: dualTransportMeta(true),
+  }),
+  "conversation.share.create": defineHabitatMethod({
+    input: conversationShareCreateInputSchema,
+    output: conversationShareCreateOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "conversation.share.get": defineHabitatMethod({
+    input: conversationShareGetInputSchema,
+    output: conversationShareGetOutputSchema,
+    meta: publicHttpMeta(),
+  }),
+  "conversation.share.list": defineHabitatMethod({
+    input: conversationShareListInputSchema,
+    output: conversationShareListOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "conversation.share.delete": defineHabitatMethod({
+    input: conversationShareDeleteInputSchema,
+    output: conversationShareDeleteOutputSchema,
+    meta: dualTransportMeta(false),
   }),
   "message.send": defineHabitatMethod({
     input: messageSendInputSchema,

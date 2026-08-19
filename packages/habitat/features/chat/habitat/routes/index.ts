@@ -27,6 +27,16 @@ import {
 } from "../stream.ts";
 import { streamSessionRegistry } from "../stream-session-registry.ts";
 import { sweepExpiredChatAttachmentTemps } from "../../domain/attachment-temp.ts";
+import {
+  deleteConversationShare,
+  filterDisplayByPosList,
+  getConversationShare,
+  listConversationShares,
+  newConversationShareId,
+  putConversationShare,
+  ttlSecondsFor,
+} from "../../domain/conversation-share.ts";
+import { buildMessagesDisplay } from "@freeanima/habitat/platform/service/build-messages-display.ts";
 
 sweepExpiredChatAttachmentTemps();
 
@@ -254,6 +264,78 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         },
       }),
     );
+  },
+  "conversation.share.create": async (deps, input) => {
+    await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    const conv = depsOf(deps).runtime.runtimeDeps().conversation;
+    if (!(await conv.conversationExists(input.conversation_id))) {
+      throw new Error(`Conversation not found: ${input.conversation_id}`);
+    }
+    const messages = await conv.load(input.conversation_id);
+    const displayFull = buildMessagesDisplay(messages);
+    const posList = input.pos_list;
+    const scope = posList?.length ? ("selected" as const) : ("full" as const);
+    const display =
+      scope === "selected" && posList ? filterDisplayByPosList(displayFull, posList) : displayFull;
+    if (display.length === 0) {
+      throw new Error("没有可分享的消息");
+    }
+    const ttl = input.ttl ?? "1h";
+    const ttlSeconds = ttlSecondsFor(ttl);
+    const createdAt = new Date();
+    const expiresAt = new Date(createdAt.getTime() + ttlSeconds * 1000);
+    const title = (await conv.getConversationTitle(input.conversation_id)) || undefined;
+    const id = newConversationShareId();
+    const ok = await putConversationShare(
+      id,
+      omitUndefined({
+        conversation_id: input.conversation_id,
+        scope,
+        title,
+        display,
+        created_at: createdAt.toISOString(),
+        expires_at: expiresAt.toISOString(),
+      }),
+      ttlSeconds,
+    );
+    if (!ok) {
+      throw new Error("临时分享需要 Redis，当前未配置或写入失败");
+    }
+    return {
+      id,
+      expires_at: expiresAt.toISOString(),
+      url_path: `/share/${id}`,
+    };
+  },
+  "conversation.share.get": async (_deps, input) => {
+    const snapshot = await getConversationShare(input.id);
+    if (!snapshot) {
+      throw new Error("分享链接已失效或不存在");
+    }
+    return omitUndefined({
+      id: input.id,
+      conversation_id: snapshot.conversation_id,
+      scope: snapshot.scope,
+      title: snapshot.title,
+      display: snapshot.display,
+      created_at: snapshot.created_at,
+      expires_at: snapshot.expires_at,
+    });
+  },
+  "conversation.share.list": async () => {
+    const items = await listConversationShares();
+    return { items };
+  },
+  "conversation.share.delete": async (_deps, input) => {
+    const existing = await getConversationShare(input.id);
+    if (!existing) {
+      throw new Error("分享链接已失效或不存在");
+    }
+    const ok = await deleteConversationShare(input.id);
+    if (!ok) {
+      throw new Error("删除失败：Redis 未配置或写入失败");
+    }
+    return { ok: true as const };
   },
   "message.send": async (deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);

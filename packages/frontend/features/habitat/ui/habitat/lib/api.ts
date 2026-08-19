@@ -336,6 +336,26 @@ export async function getAutoLlmRun(id: string) {
   return hubCall(habitat().call("autoLlmRuns.get", { id }));
 }
 
+export async function listConversationShares() {
+  return hubCall(habitat().call("conversation.share.list", {})) as Promise<{
+    items: Array<{
+      id: string;
+      conversation_id: string;
+      scope: "full" | "selected";
+      title?: string;
+      created_at: string;
+      expires_at: string;
+      message_count: number;
+      ttl_remaining_seconds: number | null;
+      url_path: string;
+    }>;
+  }>;
+}
+
+export async function deleteConversationShare(id: string) {
+  return hubCall(habitat().call("conversation.share.delete", { id })) as Promise<{ ok: true }>;
+}
+
 export async function restartService() {
   return hubCall(habitat().call("status.restart", {}));
 }

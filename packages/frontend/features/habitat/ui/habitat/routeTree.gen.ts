@@ -27,6 +27,7 @@ import { Route as SidebarDashboardRouteImport } from "./routes/_sidebar/dashboar
 import { Route as SidebarCronRouteImport } from "./routes/_sidebar/cron";
 import { Route as SidebarCommandsRouteImport } from "./routes/_sidebar/commands";
 import { Route as SidebarAutoLlmRunsRouteImport } from "./routes/_sidebar/auto-llm-runs";
+import { Route as SidebarConversationSharesRouteImport } from "./routes/_sidebar/conversation-shares";
 import { Route as SidebarSubagentsRouteImport } from "./routes/_sidebar/subagents";
 import { Route as SidebarSkillsRouteRouteImport } from "./routes/_sidebar/skills/route";
 import { Route as SidebarSkillsIndexRouteImport } from "./routes/_sidebar/skills/index";
@@ -124,6 +125,11 @@ const SidebarAutoLlmRunsRoute = SidebarAutoLlmRunsRouteImport.update({
   path: "/auto-llm-runs",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
+const SidebarConversationSharesRoute = SidebarConversationSharesRouteImport.update({
+  id: "/conversation-shares",
+  path: "/conversation-shares",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
 const SidebarSubagentsRoute = SidebarSubagentsRouteImport.update({
   id: "/subagents",
   path: "/subagents",
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   "/conversations": typeof SidebarConversationsRouteRouteWithChildren;
   "/subagents": typeof SidebarSubagentsRoute;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
+  "/conversation-shares": typeof SidebarConversationSharesRoute;
   "/commands": typeof SidebarCommandsRoute;
   "/cron": typeof SidebarCronRoute;
   "/dashboard": typeof SidebarDashboardRoute;
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   "/workshop": typeof WorkshopRouteWithChildren;
   "/subagents": typeof SidebarSubagentsRoute;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
+  "/conversation-shares": typeof SidebarConversationSharesRoute;
   "/commands": typeof SidebarCommandsRoute;
   "/cron": typeof SidebarCronRoute;
   "/dashboard": typeof SidebarDashboardRoute;
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   "/_sidebar/conversations": typeof SidebarConversationsRouteRouteWithChildren;
   "/_sidebar/subagents": typeof SidebarSubagentsRoute;
   "/_sidebar/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
+  "/_sidebar/conversation-shares": typeof SidebarConversationSharesRoute;
   "/_sidebar/commands": typeof SidebarCommandsRoute;
   "/_sidebar/cron": typeof SidebarCronRoute;
   "/_sidebar/dashboard": typeof SidebarDashboardRoute;
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | "/conversations"
     | "/subagents"
     | "/auto-llm-runs"
+    | "/conversation-shares"
     | "/commands"
     | "/cron"
     | "/dashboard"
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | "/workshop"
     | "/subagents"
     | "/auto-llm-runs"
+    | "/conversation-shares"
     | "/commands"
     | "/cron"
     | "/dashboard"
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | "/_sidebar/conversations"
     | "/_sidebar/subagents"
     | "/_sidebar/auto-llm-runs"
+    | "/_sidebar/conversation-shares"
     | "/_sidebar/commands"
     | "/_sidebar/cron"
     | "/_sidebar/dashboard"
@@ -474,6 +486,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarAutoLlmRunsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
+    "/_sidebar/conversation-shares": {
+      id: "/_sidebar/conversation-shares";
+      path: "/conversation-shares";
+      fullPath: "/conversation-shares";
+      preLoaderRoute: typeof SidebarConversationSharesRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
     "/_sidebar/subagents": {
       id: "/_sidebar/subagents";
       path: "/subagents";
@@ -537,6 +556,7 @@ interface SidebarRouteRouteChildren {
   SidebarConversationsRouteRoute: typeof SidebarConversationsRouteRouteWithChildren;
   SidebarSubagentsRoute: typeof SidebarSubagentsRoute;
   SidebarAutoLlmRunsRoute: typeof SidebarAutoLlmRunsRoute;
+  SidebarConversationSharesRoute: typeof SidebarConversationSharesRoute;
   SidebarCommandsRoute: typeof SidebarCommandsRoute;
   SidebarCronRoute: typeof SidebarCronRoute;
   SidebarDashboardRoute: typeof SidebarDashboardRoute;
@@ -557,6 +577,7 @@ const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarConversationsRouteRoute: SidebarConversationsRouteRouteWithChildren,
   SidebarSubagentsRoute: SidebarSubagentsRoute,
   SidebarAutoLlmRunsRoute: SidebarAutoLlmRunsRoute,
+  SidebarConversationSharesRoute: SidebarConversationSharesRoute,
   SidebarCommandsRoute: SidebarCommandsRoute,
   SidebarCronRoute: SidebarCronRoute,
   SidebarDashboardRoute: SidebarDashboardRoute,
