@@ -11,6 +11,17 @@ export type SessionTitleNotify = {
 };
 
 const titleGenerationInFlight = new Set<string>();
+/** 跨会话串行：多会话首条消息时避免并行打 summary 触发 429 */
+let titleGenerationTail: Promise<void> = Promise.resolve();
+
+function enqueueTitleGeneration<T>(fn: () => Promise<T>): Promise<T> {
+  const run = titleGenerationTail.then(fn);
+  titleGenerationTail = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
 
 function emitSessionTitleUpdated(notify: SessionTitleNotify, conversationId: string): void {
   if (notify.emitSessionUpdated) {
@@ -28,6 +39,7 @@ function emitSessionTitleUpdated(notify: SessionTitleNotify, conversationId: str
 /** @internal test hook */
 export function resetConversationTitleGenerationForTests(): void {
   titleGenerationInFlight.clear();
+  titleGenerationTail = Promise.resolve();
 }
 
 export type ConversationTitleGenOpts = {
@@ -77,38 +89,40 @@ export function maybeGenerateConversationTitleAsync(
           if (userCount !== 1) return;
         }
 
-        const log = deps.engine.logger.with({ component: "conversation-title" });
-        const gen = await generateConversationTitle(userText, {
-          runtime: deps.engine.llm,
-          parentConversationId: conversationId,
-        });
-        let title = gen.ok ? gen.title : "";
-        if (!title) {
-          const fallback = fallbackConversationTitle(userText);
-          if (!gen.ok) {
-            log.warn("LLM title failed, using text fallback", {
-              conversation_id: conversationId,
-              error: gen.error,
-              fallback_title: fallback || undefined,
-              model: gen.model,
-              finish_reason: gen.finish_reason ?? undefined,
-              had_reasoning: gen.had_reasoning,
-            });
-          }
-          title = fallback;
-        }
-        if (!title) {
-          log.warn("conversation title unavailable: empty user text", {
-            conversation_id: conversationId,
+        await enqueueTitleGeneration(async () => {
+          const log = deps.engine.logger.with({ component: "conversation-title" });
+          const gen = await generateConversationTitle(userText, {
+            runtime: deps.engine.llm,
+            parentConversationId: conversationId,
           });
-          return;
-        }
+          let title = gen.ok ? gen.title : "";
+          if (!title) {
+            const fallback = fallbackConversationTitle(userText);
+            if (!gen.ok) {
+              log.warn("LLM title failed, using text fallback", {
+                conversation_id: conversationId,
+                error: gen.error,
+                fallback_title: fallback || undefined,
+                model: gen.model,
+                finish_reason: gen.finish_reason ?? undefined,
+                had_reasoning: gen.had_reasoning,
+              });
+            }
+            title = fallback;
+          }
+          if (!title) {
+            log.warn("conversation title unavailable: empty user text", {
+              conversation_id: conversationId,
+            });
+            return;
+          }
 
-        const stillEmpty = !(await deps.conversation.getConversationTitle(conversationId)).trim();
-        if (stillEmpty) {
-          await deps.conversation.setConversationTitle(conversationId, title);
-          if (notify) emitSessionTitleUpdated(notify, conversationId);
-        }
+          const stillEmpty = !(await deps.conversation.getConversationTitle(conversationId)).trim();
+          if (stillEmpty) {
+            await deps.conversation.setConversationTitle(conversationId, title);
+            if (notify) emitSessionTitleUpdated(notify, conversationId);
+          }
+        });
       } finally {
         titleGenerationInFlight.delete(conversationId);
       }
