@@ -13,8 +13,10 @@ import {
   type StoredMessagesResponse,
   interruptMessageStream,
   listConversations,
+  pinConversation as pinConversationApi,
   setConversationTitle,
   unarchiveConversation as unarchiveConversationApi,
+  unpinConversation as unpinConversationApi,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
 import {
   readCachedConversations,
@@ -52,6 +54,8 @@ type ConversationsState = {
   renameConversation: (conversationId: string, newTitle: string) => Promise<void>;
   archiveConversation: (conversationId: string) => Promise<string | null>;
   unarchiveConversation: (conversationId: string) => Promise<string | null>;
+  pinConversation: (conversationId: string) => Promise<void>;
+  unpinConversation: (conversationId: string) => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<string | null>;
   appendItem: (item: DisplayItem) => void;
   appendItemForConversation: (conversationId: string, item: DisplayItem) => void;
@@ -250,6 +254,24 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
     } catch (e) {
       console.error("unarchiveConversation:", e);
       return get().currentId;
+    }
+  },
+
+  async pinConversation(conversationId) {
+    try {
+      await pinConversationApi(conversationId);
+      await get().fetchConversations();
+    } catch (e) {
+      console.error("pinConversation:", e);
+    }
+  },
+
+  async unpinConversation(conversationId) {
+    try {
+      await unpinConversationApi(conversationId);
+      await get().fetchConversations();
+    } catch (e) {
+      console.error("unpinConversation:", e);
     }
   },
 

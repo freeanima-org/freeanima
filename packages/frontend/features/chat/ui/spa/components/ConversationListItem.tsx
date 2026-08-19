@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from "react";
-import { ArchiveIcon, ArchiveRestoreIcon } from "lucide-react";
+import { ArchiveIcon, ArchiveRestoreIcon, PinIcon } from "lucide-react";
 
 import { Button, cn } from "@freeanima/ui-kit";
 import { ListRow } from "@freeanima/ui-kit/composite";
@@ -36,6 +36,7 @@ export function ConversationListItem({
   onUnarchive,
 }: ConversationListItemProps) {
   const archived = conversation.archivedAt != null;
+  const pinned = conversation.pinnedAt != null;
   const archiveLabel = archived ? "取消归档" : "归档";
   /** pointer：仅 hover / active / focus-within 露出；touch：常驻 */
   const archiveReveal = useActionSheet
@@ -63,6 +64,7 @@ export function ConversationListItem({
       )}
       onClick={() => onNavigate(conversation.id)}
     >
+      {pinned ? <PinIcon className="text-primary size-3.5 shrink-0" aria-label="已置顶" /> : null}
       <div
         className={cn(
           "min-w-0 flex-1 truncate",

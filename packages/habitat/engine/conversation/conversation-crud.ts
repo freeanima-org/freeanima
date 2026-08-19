@@ -44,6 +44,8 @@ import {
   pgWriteDeleteConversation,
   pgArchiveConversation,
   pgUnarchiveConversation,
+  pgPinConversation,
+  pgUnpinConversation,
   pgWriteMessage,
   pgWriteMeta,
   pgWritePatchMeta,
@@ -574,6 +576,14 @@ export async function archiveConversation(conversationId: string): Promise<void>
 
 export async function unarchiveConversation(conversationId: string): Promise<void> {
   await pgUnarchiveConversation(conversationId);
+}
+
+export async function pinConversation(conversationId: string): Promise<void> {
+  await pgPinConversation(conversationId);
+}
+
+export async function unpinConversation(conversationId: string): Promise<void> {
+  await pgUnpinConversation(conversationId);
 }
 
 export async function deleteUserConversation(conversationId: string): Promise<void> {

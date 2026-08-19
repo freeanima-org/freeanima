@@ -32,6 +32,24 @@ describe("ConversationListItem", () => {
     expect(html).not.toContain("⋯");
   });
 
+  it("置顶会话显示图钉标记", () => {
+    const html = renderToStaticMarkup(
+      createElement(ConversationListItem, {
+        conversation: { ...baseConversation, pinnedAt: "2026-01-02T00:00:00.000Z" },
+        label: "置顶会话",
+        active: false,
+        useActionSheet: true,
+        contextMenuEnabled: false,
+        contextMenuItems: [],
+        onNavigate: () => {},
+        onOpenMenu: () => {},
+        onArchive: () => {},
+        onUnarchive: () => {},
+      }),
+    );
+    expect(html).toContain('aria-label="已置顶"');
+  });
+
   it("touch 已归档：取消归档按钮", () => {
     const html = renderToStaticMarkup(
       createElement(ConversationListItem, {

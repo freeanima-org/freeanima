@@ -22,6 +22,7 @@ function mapConversationList(raw: {
     platform?: string | undefined;
     updated_at?: string | undefined;
     archived_at?: string | null | undefined;
+    pinned_at?: string | null | undefined;
     unread?: boolean | undefined;
   }>;
 }): { conversations: ConversationListItem[] } {
@@ -32,6 +33,7 @@ function mapConversationList(raw: {
       platform: s.platform ?? "",
       created: s.updated_at ?? "",
       archivedAt: s.archived_at ?? null,
+      pinnedAt: s.pinned_at ?? null,
       ...(s.unread === true ? { unread: true } : {}),
     })),
   };
@@ -158,6 +160,16 @@ export async function archiveConversation(conversationId: string) {
 
 export async function unarchiveConversation(conversationId: string) {
   await habitat().call("conversation.unarchive", { conversation_id: conversationId });
+  return { ok: true as const };
+}
+
+export async function pinConversation(conversationId: string) {
+  await habitat().call("conversation.pin", { conversation_id: conversationId });
+  return { ok: true as const };
+}
+
+export async function unpinConversation(conversationId: string) {
+  await habitat().call("conversation.unpin", { conversation_id: conversationId });
   return { ok: true as const };
 }
 

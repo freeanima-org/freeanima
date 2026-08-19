@@ -40,6 +40,13 @@ describe("conversationSelectSchema", () => {
     ).not.toThrow();
   });
 
+  it("accepts pinnedAt null / string", () => {
+    expect(() => conversationSelectSchema.parse({ ...baseRow, pinned_at: null })).not.toThrow();
+    expect(() =>
+      conversationSelectSchema.parse({ ...baseRow, pinned_at: "2026-01-02T00:00:00Z" }),
+    ).not.toThrow();
+  });
+
   it("accepts flat companion platform_info on select", () => {
     const parsed = conversationSelectSchema.parse({
       ...baseRow,

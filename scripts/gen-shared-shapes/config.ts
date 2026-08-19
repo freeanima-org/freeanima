@@ -122,6 +122,10 @@ export const TABLE_SPECS: TableGenSpec[] = [
         expr: "z.coerce.date().nullable().optional()",
         imports: [],
       },
+      pinned_at: {
+        expr: "z.coerce.date().nullable().optional()",
+        imports: [],
+      },
       created_at: {
         expr: "z.coerce.date()",
         imports: [],

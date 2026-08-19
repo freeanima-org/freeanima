@@ -29,6 +29,8 @@ import {
   shiftMessagePositions,
   truncateMessagesAfter,
   unarchiveConversation,
+  pinConversation,
+  unpinConversation,
   upsertConversationMeta,
   lastMessageTimestamp,
 } from "@freeanima/habitat/core/db/pg/conversation";
@@ -78,6 +80,14 @@ export async function pgArchiveConversation(conversationId: string): Promise<voi
 
 export async function pgUnarchiveConversation(conversationId: string): Promise<void> {
   await unarchiveConversation(conversationId);
+}
+
+export async function pgPinConversation(conversationId: string): Promise<void> {
+  await pinConversation(conversationId);
+}
+
+export async function pgUnpinConversation(conversationId: string): Promise<void> {
+  await unpinConversation(conversationId);
 }
 
 export async function conversationExistsWithRouting(conversationId: string): Promise<boolean> {
@@ -188,6 +198,7 @@ export async function pgListConversationSummaries(
     updated_at: Date;
     platform: string;
     archived_at?: Date | null;
+    pinned_at?: Date | null;
   }>
 > {
   return listConversationSummaries(platform, opts);
@@ -207,6 +218,7 @@ export async function pgListConversationSummariesPage(opts?: {
     updated_at: Date;
     platform: string;
     archived_at?: Date | null;
+    pinned_at?: Date | null;
     unread?: boolean;
   }>;
   total: number;

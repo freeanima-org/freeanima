@@ -106,6 +106,7 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
           platform: s.platform,
           updated_at: s.updated_at.toISOString(),
           archived_at: s.archived_at?.toISOString() ?? null,
+          pinned_at: s.pinned_at?.toISOString() ?? null,
           unread: s.unread === true ? true : s.unread === false ? false : undefined,
         }),
       ),
@@ -172,6 +173,18 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   "conversation.unarchive": async (deps, input) => {
     const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
     await depsOf(deps).runtime.unarchiveConversation(input.conversation_id, platform);
+    depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
+    return { ok: true as const };
+  },
+  "conversation.pin": async (deps, input) => {
+    const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    await depsOf(deps).runtime.pinConversation(input.conversation_id, platform);
+    depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
+    return { ok: true as const };
+  },
+  "conversation.unpin": async (deps, input) => {
+    const platform = await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    await depsOf(deps).runtime.unpinConversation(input.conversation_id, platform);
     depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
     return { ok: true as const };
   },

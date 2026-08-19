@@ -1,0 +1,2 @@
+ALTER TABLE "conversations" ADD COLUMN "pinned_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "idx_conversations_pinned_updated" ON "conversations" ("pinned_at","updated_at" DESC NULLS LAST);

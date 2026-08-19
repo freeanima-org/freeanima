@@ -9,6 +9,8 @@ export {
   deleteConversation,
   archiveConversation,
   unarchiveConversation,
+  pinConversation,
+  unpinConversation,
   listConversationIds,
   listDebugConversationIds,
   listConversationSummaries,
