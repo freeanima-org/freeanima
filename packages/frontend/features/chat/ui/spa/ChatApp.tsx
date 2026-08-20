@@ -165,6 +165,12 @@ function absoluteShareUrl(urlPath: string): string {
   return `${window.location.origin}${basepath}${urlPath}`;
 }
 
+function resolveShareCopyUrl(result: { url?: string; url_path: string }): string {
+  const absolute = result.url?.trim();
+  if (absolute) return absolute;
+  return absoluteShareUrl(result.url_path);
+}
+
 function isTransportFailureMessage(msg: string): boolean {
   return (
     /timed out|websocket|habitat_rpc_timeout|habitat_rpc_timeout|网络错误/i.test(msg) ||
@@ -660,7 +666,7 @@ export function ChatApp() {
         ttl: opts.ttl,
         ...(opts.posList?.length ? { posList: opts.posList } : {}),
       });
-      return absoluteShareUrl(result.url_path);
+      return resolveShareCopyUrl(result);
     },
     [currentId],
   );

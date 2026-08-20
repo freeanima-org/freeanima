@@ -33,6 +33,7 @@ import { objectStorageConfigSchema } from "./object-storage.ts";
 import { companionConfigSchema } from "./companion.ts";
 import { promptSchema } from "./prompt.ts";
 import { identityConfigSchema } from "./identity.ts";
+import { publicConfigSchema } from "./public.ts";
 import { BOOTSTRAP_CONFIG_KEYS, registerSection } from "@freeanima/habitat/kernel/config-mechanism";
 
 /**
@@ -82,6 +83,8 @@ const runtimeConfigObjectSchema = z.object({
   companion: companionConfigSchema.optional(),
   /** Habitat 实例身份与主体密钥（私钥仅服务端） */
   identity: identityConfigSchema.optional(),
+  /** 对外访问根（临时分享等）；不改监听 / 证书 / habitat_url */
+  public: publicConfigSchema,
 });
 
 /** 将各产品段 Zod 挂入 kernel section 注册表（幂等合并） */

@@ -1,7 +1,7 @@
 import { randomPublicId } from "@freeanima/shared/util";
 
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { resolveNotificationRecipients } from "@freeanima/habitat/core/config";
+import { parsePublicOrigin, resolveNotificationRecipients } from "@freeanima/habitat/core/config";
 import {
   countUnreadConversations,
   getConversationLastReadPos,
@@ -28,6 +28,8 @@ import {
 import { streamSessionRegistry } from "../stream-session-registry.ts";
 import { sweepExpiredChatAttachmentTemps } from "../../domain/attachment-temp.ts";
 import {
+  buildConversationSharePublicUrl,
+  conversationShareUrlPath,
   deleteConversationShare,
   filterDisplayByPosList,
   getConversationShare,
@@ -48,6 +50,15 @@ function depsOf(deps: unknown): ChatHubDeps {
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
   return ctx as RemoteToolsRequestContext;
+}
+
+function readConfiguredPublicOrigin(deps: ChatHubDeps): string | undefined {
+  const section = deps.runtime.getConfig().config.public;
+  if (section == null || typeof section !== "object" || Array.isArray(section)) {
+    return undefined;
+  }
+  const origin = (section as { origin?: unknown }).origin;
+  return typeof origin === "string" ? parsePublicOrigin(origin) : undefined;
 }
 
 function resolveUserSubjectId(deps: ChatHubDeps): number {
@@ -301,11 +312,13 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     if (!ok) {
       throw new Error("临时分享需要 Redis，当前未配置或写入失败");
     }
-    return {
+    const publicOrigin = readConfiguredPublicOrigin(depsOf(deps));
+    return omitUndefined({
       id,
       expires_at: expiresAt.toISOString(),
-      url_path: `/share/${id}`,
-    };
+      url_path: conversationShareUrlPath(id),
+      url: publicOrigin ? buildConversationSharePublicUrl(id, publicOrigin) : undefined,
+    });
   },
   "conversation.share.get": async (_deps, input) => {
     const snapshot = await getConversationShare(input.id);
@@ -322,9 +335,17 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
       expires_at: snapshot.expires_at,
     });
   },
-  "conversation.share.list": async () => {
+  "conversation.share.list": async (deps) => {
+    const publicOrigin = readConfiguredPublicOrigin(depsOf(deps));
     const items = await listConversationShares();
-    return { items };
+    return {
+      items: items.map((item) =>
+        omitUndefined({
+          ...item,
+          url: publicOrigin ? buildConversationSharePublicUrl(item.id, publicOrigin) : undefined,
+        }),
+      ),
+    };
   },
   "conversation.share.delete": async (_deps, input) => {
     const existing = await getConversationShare(input.id);
