@@ -57,4 +57,16 @@ export const entityHabitatRoutes = bindHabitatRouteHandlers(entityMethodDefs, {
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "entity.addComponent": async (deps, input, ctx) =>
+    service.serviceEntityAddComponent(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
+  "entity.setPrimaryComponent": async (deps, input, ctx) =>
+    service.serviceEntitySetPrimaryComponent(
+      depsOf(deps).runtime.runtimeDeps(),
+      omitUndefined(input),
+      ctxAuth(ctx),
+    ),
 });

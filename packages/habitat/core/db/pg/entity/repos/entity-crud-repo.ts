@@ -25,6 +25,7 @@ import type {
   EntityListOpts,
   EntityRow,
   EntityUpdateInput,
+  PromoteEntityComponentInput,
   ReplacePrimaryComponentInput,
 } from "../types.ts";
 
@@ -571,6 +572,60 @@ export async function addEntityComponent(
       components,
       primary_component: nextPrimary,
       body,
+      updated_at: now,
+    })
+    .where(eq(entities.id, input.id))
+    .returning(entityRowSelectColumns);
+  if (row) {
+    await indexEntitySearchDoc({
+      id: row.id,
+      world_id: row.world_id,
+      primary_component: row.primary_component,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      deleted_at: row.deleted_at,
+      indexText,
+      clearEmbeddingFirst: true,
+    });
+  }
+  return row ? mapRow(row) : null;
+}
+
+/**
+ * 升主（promote）：同 id 将 primary 改指向已有 components 成员；不改 components / body。
+ * 已是 primary 时幂等返回原行。对称于 attach 的 promote_primary，但适用于事后升主。
+ */
+export async function promoteEntityComponent(
+  input: PromoteEntityComponentInput,
+): Promise<EntityRow | null> {
+  if (!isKnownComponent(input.component)) {
+    throw new EntityDeleteError(`unknown component: ${input.component}`);
+  }
+  const component = primaryComponentSchema.parse(input.component);
+  const existing = await getEntity(input.id);
+  if (!existing) return null;
+  if (!existing.components.includes(component)) {
+    throw new EntityDeleteError(`component not present: ${component}`);
+  }
+  if (existing.primary_component === component) {
+    return existing;
+  }
+
+  const now = new Date();
+  const indexText = entitySearchTextForWrite({
+    title: existing.title,
+    summary: existing.summary,
+    content: existing.content,
+    body: existing.body,
+    primary_component: component,
+  });
+
+  const db = getDb();
+  const [row] = await db
+    .update(entities)
+    .set({
+      primary_component: component,
       updated_at: now,
     })
     .where(eq(entities.id, input.id))

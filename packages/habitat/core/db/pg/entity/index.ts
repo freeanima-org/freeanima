@@ -13,6 +13,7 @@ export {
   deleteEntityComponent,
   replacePrimaryComponent,
   addEntityComponent,
+  promoteEntityComponent,
   collectEntityReferences,
   EntityDeleteError,
   deleteTaskItemsByListId,

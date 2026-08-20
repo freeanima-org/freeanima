@@ -61,6 +61,12 @@ export type AddEntityComponentInput = {
   promote_primary?: boolean;
 };
 
+/** 升主：仅改 primary_component 指针；保留 components 与 body。 */
+export type PromoteEntityComponentInput = {
+  id: number;
+  component: string;
+};
+
 export type EntityDeletedFilter = "alive" | "deleted" | "all";
 
 export type EntityListOpts = {

@@ -103,3 +103,23 @@ export const entityDeleteComponentInputSchema = z.object({
 export type EntityDeleteComponentInput = z.infer<typeof entityDeleteComponentInputSchema>;
 export const entityDeleteComponentOutputSchema = z.object({ item: entityAdminRowSchema });
 export type EntityDeleteComponentOutput = z.infer<typeof entityDeleteComponentOutputSchema>;
+
+export const entityAddComponentInputSchema = z.object({
+  subject_kind: entitySubjectKindSchema,
+  id: z.number().int().positive(),
+  component: z.string().min(1),
+  body: z.record(z.string(), z.unknown()).optional(),
+  promote_primary: z.boolean().optional(),
+});
+export type EntityAddComponentInput = z.infer<typeof entityAddComponentInputSchema>;
+export const entityAddComponentOutputSchema = z.object({ item: entityAdminRowSchema });
+export type EntityAddComponentOutput = z.infer<typeof entityAddComponentOutputSchema>;
+
+export const entitySetPrimaryComponentInputSchema = z.object({
+  subject_kind: entitySubjectKindSchema,
+  id: z.number().int().positive(),
+  component: z.string().min(1),
+});
+export type EntitySetPrimaryComponentInput = z.infer<typeof entitySetPrimaryComponentInputSchema>;
+export const entitySetPrimaryComponentOutputSchema = z.object({ item: entityAdminRowSchema });
+export type EntitySetPrimaryComponentOutput = z.infer<typeof entitySetPrimaryComponentOutputSchema>;

@@ -1,11 +1,18 @@
 import { describe, expect, test } from "bun:test";
 
-import { mergeComponentBody, validateEntityBody, validatePrimaryComponentBody } from "./body.ts";
+import {
+  mergeComponentBody,
+  stripRemovedComponentBodyFields,
+  validateEntityBody,
+  validatePrimaryComponentBody,
+} from "./body.ts";
 import { CONTENT_BLOCK_COMPONENT } from "./components/content-block.ts";
 import { DIARY_BLOCK_TEMPLATE_COMPONENT } from "./components/diary-block-template.ts";
+import { DIARY_ENTRY_COMPONENT } from "./components/diary-entry.ts";
 import { DREAM_COMPONENT } from "./components/dream.ts";
 import { LIMBIC_COMPONENT } from "./components/limbic.ts";
 import { NARRATIVE_COMPONENT } from "./components/narrative.ts";
+import { NOTE_COMPONENT } from "./components/note.ts";
 import { SEMANTIC_REF_COMPONENT } from "./components/semantic-ref.ts";
 import { TASK_ITEM_COMPONENT } from "./components/task-item.ts";
 import { TEMPORAL_SUMMARY_COMPONENT } from "./components/temporal-summary.ts";
@@ -139,5 +146,27 @@ describe("validateEntityBody", () => {
         period_start: "2026-07-18",
       }),
     ).toMatchObject({ window: "day", period_start: "2026-07-18" });
+  });
+});
+
+describe("stripRemovedComponentBodyFields", () => {
+  test("note+diary_entry: detach note keeps shared client_op_id and diary entry_at", () => {
+    const body = {
+      entry_at: "2026-08-19T00:00:00.000+08:00",
+      client_op_id: "op-shared",
+    };
+    const next = stripRemovedComponentBodyFields(body, NOTE_COMPONENT, [DIARY_ENTRY_COMPONENT]);
+    expect(next.entry_at).toBe(body.entry_at);
+    expect(next.client_op_id).toBe("op-shared");
+  });
+
+  test("note+diary_entry: detach diary_entry drops entry_at but keeps client_op_id for note", () => {
+    const body = {
+      entry_at: "2026-08-19T00:00:00.000+08:00",
+      client_op_id: "op-shared",
+    };
+    const next = stripRemovedComponentBodyFields(body, DIARY_ENTRY_COMPONENT, [NOTE_COMPONENT]);
+    expect(next.entry_at).toBeUndefined();
+    expect(next.client_op_id).toBe("op-shared");
   });
 });
