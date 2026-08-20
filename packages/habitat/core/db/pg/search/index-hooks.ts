@@ -1,4 +1,4 @@
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
+import { tryGetResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
 import { worldConfigBodySchema } from "@freeanima/habitat/core/db/schema";
 import { getEntity } from "../entity/repos/entity-crud-repo.ts";
 import { resolveDefaultPrivateWorldForSubject } from "../entity/tool-world-access.ts";
@@ -38,7 +38,8 @@ export async function indexEntitySearchDoc(input: {
     if (subject_id == null) {
       subject_id =
         (await resolveWorldOwnerSubjectId(input.world_id)) ??
-        getResolvedWorldContext().agent_subject_id;
+        tryGetResolvedWorldContext()?.agent_subject_id ??
+        null;
     }
     await backend.upsert([
       entityToSearchDoc({

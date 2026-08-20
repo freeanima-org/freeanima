@@ -5,8 +5,6 @@ import {
   conversationSelectSchema,
   messageInsertSchema,
   messageSelectSchema,
-  selfBlocksInsertSchema,
-  selfBlocksSelectSchema,
 } from "./index.ts";
 
 describe("pg-shapes generated rows", () => {
@@ -81,14 +79,5 @@ describe("pg-shapes generated rows", () => {
       goal: null,
     });
     expect(r.success).toBe(true);
-  });
-
-  test("self_blocks insert optional for defaulted columns", () => {
-    expect(
-      selfBlocksInsertSchema.safeParse({
-        block_key: "self_model",
-      }).success,
-    ).toBe(true);
-    expect(selfBlocksSelectSchema.safeParse({ block_key: "self_model" }).success).toBe(false);
   });
 });

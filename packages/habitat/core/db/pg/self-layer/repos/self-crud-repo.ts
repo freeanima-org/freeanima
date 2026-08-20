@@ -1,5 +1,13 @@
-import { eq, notInArray } from "drizzle-orm";
-import { selfBlockKeySchema, selfBlocks } from "@freeanima/habitat/core/db/schema";
+import { and, eq, isNull, sql } from "drizzle-orm";
+import {
+  SELF_BLOCK_COMPONENT,
+  entities,
+  selfBlockBodySchema,
+  selfBlockKeySchema,
+} from "@freeanima/habitat/core/db/schema";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { createEntity, updateEntity } from "@freeanima/habitat/core/db/pg/entity";
+import { pgTextArray } from "@freeanima/habitat/core/db/pg/utils/pg-sql.ts";
 import type {
   SelfBlockKey,
   SelfBlockRow,
@@ -18,32 +26,112 @@ function normalizeBlockKey(raw: string): SelfBlockKey {
   return parsed.data;
 }
 
+function agentWorldId(): number {
+  return getResolvedWorldContext().agent_world_id;
+}
+
 const PLACEHOLDER_EPOCH = new Date(0);
+
+function mapRow(row: {
+  content: string | null;
+  body: unknown;
+  created_at: Date;
+  updated_at: Date;
+}): SelfBlockRow {
+  const body = selfBlockBodySchema.parse(row.body ?? {});
+  return {
+    block_key: body.block_key,
+    content: row.content ?? "",
+    locked: body.locked,
+    version: body.version,
+    updated_by: body.updated_by ?? null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+function blockTitle(block_key: SelfBlockKey): string {
+  return `self ${block_key}`;
+}
+
+type StoredSelfBlock = SelfBlockRow & { id: number };
+
+async function getStoredSelfBlock(key: SelfBlockKey): Promise<StoredSelfBlock | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: entities.id,
+      content: entities.content,
+      body: entities.body,
+      created_at: entities.created_at,
+      updated_at: entities.updated_at,
+    })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.primary_component, SELF_BLOCK_COMPONENT),
+        eq(entities.world_id, agentWorldId()),
+        isNull(entities.deleted_at),
+        sql`${entities.body}->>'block_key' = ${key}`,
+      ),
+    )
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  return { id: row.id, ...mapRow(row) };
+}
 
 /** Drop legacy keys (e.g. autobiography_summary) left after five-block migration */
 export async function purgeOrphanSelfBlocks(): Promise<number> {
   const db = getDb();
   const deleted = await db
-    .delete(selfBlocks)
-    .where(notInArray(selfBlocks.block_key, [...SELF_BLOCK_KEYS]))
-    .returning({ block_key: selfBlocks.block_key });
+    .delete(entities)
+    .where(
+      and(
+        eq(entities.primary_component, SELF_BLOCK_COMPONENT),
+        eq(entities.world_id, agentWorldId()),
+        sql`NOT (${entities.body}->>'block_key' = ANY(${pgTextArray([...SELF_BLOCK_KEYS])}))`,
+      ),
+    )
+    .returning({ id: entities.id });
   return deleted.length;
 }
 
 export async function getSelfBlock(key: SelfBlockKey): Promise<SelfBlockRow | null> {
-  const db = getDb();
-  const rows = await db.select().from(selfBlocks).where(eq(selfBlocks.block_key, key)).limit(1);
-  return rows[0] ?? null;
+  const stored = await getStoredSelfBlock(key);
+  if (!stored) return null;
+  return {
+    block_key: stored.block_key,
+    content: stored.content,
+    locked: stored.locked,
+    version: stored.version,
+    updated_by: stored.updated_by,
+    created_at: stored.created_at,
+    updated_at: stored.updated_at,
+  };
 }
 
 export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
   const db = getDb();
-  const rows = await db.select().from(selfBlocks);
+  const rows = await db
+    .select({
+      content: entities.content,
+      body: entities.body,
+      created_at: entities.created_at,
+      updated_at: entities.updated_at,
+    })
+    .from(entities)
+    .where(
+      and(
+        eq(entities.primary_component, SELF_BLOCK_COMPONENT),
+        eq(entities.world_id, agentWorldId()),
+        isNull(entities.deleted_at),
+      ),
+    );
   const byKey = new Map<SelfBlockKey, SelfBlockRow>();
   for (const row of rows) {
-    const parsed = selfBlockKeySchema.safeParse(row.block_key);
-    if (!parsed.success) continue;
-    byKey.set(parsed.data, { ...row, block_key: parsed.data });
+    const mapped = mapRow(row);
+    byKey.set(mapped.block_key, mapped);
   }
   return SELF_BLOCK_KEYS.map((key) => {
     const existing = byKey.get(key);
@@ -62,34 +150,37 @@ export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
 
 export async function upsertSelfBlock(input: SelfBlockUpsertInput): Promise<void> {
   const block_key = normalizeBlockKey(input.block_key);
-  const now = new Date();
   const locked = input.locked ?? block_key === "existence_anchor";
-
-  const db = getDb();
-  const existing = await getSelfBlock(block_key);
+  const existing = await getStoredSelfBlock(block_key);
   const version = existing ? existing.version + 1 : 1;
-
-  await db
-    .insert(selfBlocks)
-    .values({
-      block_key,
+  const body = selfBlockBodySchema.parse({
+    block_key,
+    locked,
+    version,
+    updated_by: input.updated_by ?? null,
+  }) as Record<string, unknown>;
+  const title = blockTitle(block_key);
+  const summary = input.content.slice(0, 200);
+  if (existing) {
+    await updateEntity({
+      id: existing.id,
+      title,
       content: input.content,
-      locked,
-      version,
-      updated_by: input.updated_by ?? null,
-      created_at: now,
-      updated_at: now,
-    })
-    .onConflictDoUpdate({
-      target: selfBlocks.block_key,
-      set: {
-        content: input.content,
-        locked,
-        version,
-        updated_by: input.updated_by ?? null,
-        updated_at: now,
-      },
+      summary,
+      body,
     });
+    return;
+  }
+  await createEntity({
+    type: "content",
+    world_id: agentWorldId(),
+    components: [SELF_BLOCK_COMPONENT],
+    primary_component: SELF_BLOCK_COMPONENT,
+    title,
+    summary,
+    content: input.content,
+    body,
+  });
 }
 
 export async function updateSelfBlock(
@@ -97,7 +188,7 @@ export async function updateSelfBlock(
   opts?: { force?: boolean },
 ): Promise<void> {
   const block_key = normalizeBlockKey(input.block_key);
-  const existing = await getSelfBlock(block_key);
+  const existing = await getStoredSelfBlock(block_key);
   if (!existing) {
     throw new Error(`self block not found: ${block_key}`);
   }
@@ -105,15 +196,21 @@ export async function updateSelfBlock(
     throw new Error(`self block is locked: ${block_key}`);
   }
 
-  const now = new Date();
-  const patch: Partial<typeof selfBlocks.$inferInsert> = {
-    updated_at: now,
+  const locked = input.locked !== undefined ? input.locked : existing.locked;
+  const content = input.content !== undefined ? input.content : existing.content;
+  const updated_by = input.updated_by !== undefined ? input.updated_by : existing.updated_by;
+  const body = selfBlockBodySchema.parse({
+    block_key,
+    locked,
     version: existing.version + 1,
-  };
-  if (input.content !== undefined) patch.content = input.content;
-  if (input.locked !== undefined) patch.locked = input.locked;
-  if (input.updated_by !== undefined) patch.updated_by = input.updated_by;
+    updated_by,
+  }) as Record<string, unknown>;
 
-  const db = getDb();
-  await db.update(selfBlocks).set(patch).where(eq(selfBlocks.block_key, block_key));
+  await updateEntity({
+    id: existing.id,
+    title: blockTitle(block_key),
+    content,
+    summary: content.slice(0, 200),
+    body,
+  });
 }

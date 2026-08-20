@@ -8,6 +8,7 @@ export type { ResolvedWorldContext, SubjectKind } from "./resolved-world-context
 export {
   bindResolvedWorldContext,
   getResolvedWorldContext,
+  tryGetResolvedWorldContext,
   resetResolvedWorldContextForTest,
   resolveSubjectWorldId,
 } from "./resolved-world-context.ts";

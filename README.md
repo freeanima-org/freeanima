@@ -27,7 +27,7 @@ The technical stack (layered memory, self layer, flat tool registry, Gateway, Va
 | Area            | Highlights                                                                                              |
 | --------------- | ------------------------------------------------------------------------------------------------------- |
 | **Memory**      | Conversation archive → retain/reflect → semantic + limbic (parked writes); PG FTS / hybrid recall       |
-| **Self layer**  | Six-block persistent identity (`self_blocks`)                                                           |
+| **Self layer**  | Five-block persistent identity (`primary_component=self_block`)                                         |
 | **Tools**       | Flat registry: local / MCP / ACP; Capability Policy (skill allow + caller deny)                         |
 | **Gateway**     | Discord · WeChat · Chat                                                                                 |
 | **Credentials** | Vault (User/Agent libraries); runtime `vault()` / `env()`; LLM sees metadata, not values                |

@@ -160,8 +160,8 @@ async function generateTable(spec: TableGenSpec): Promise<string> {
   const selectType = `${capitalize(spec.exportPrefix)}Select`;
   const insertType = `${capitalize(spec.exportPrefix)}Insert`;
 
-  const selectTypeName = spec.exportPrefix === "selfBlocks" ? "SelfBlocksSelect" : selectType;
-  const insertTypeName = spec.exportPrefix === "selfBlocks" ? "SelfBlocksInsert" : insertType;
+  const selectTypeName = selectType;
+  const insertTypeName = insertType;
 
   return `${GENERATED_BANNER}${importLines.join("\n")}
 

@@ -28,6 +28,11 @@ export function getResolvedWorldContext(): ResolvedWorldContext {
   return resolvedWorldContext;
 }
 
+/** Bootstrap / early createEntity may run before world context is bound. */
+export function tryGetResolvedWorldContext(): ResolvedWorldContext | null {
+  return resolvedWorldContext;
+}
+
 export function resetResolvedWorldContextForTest(): void {
   resolvedWorldContext = null;
 }

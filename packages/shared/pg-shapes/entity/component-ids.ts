@@ -23,6 +23,7 @@ export const DREAM_COMPONENT = "dream" as const;
 export const SEMANTIC_MEMORY_COMPONENT = "semantic_memory" as const;
 export const SEMANTIC_REF_COMPONENT = "semantic_ref" as const;
 export const TEMPORAL_SUMMARY_COMPONENT = "temporal_summary" as const;
+export const SELF_BLOCK_COMPONENT = "self_block" as const;
 export const EMAIL_ACCOUNT_COMPONENT = "email_account" as const;
 export const EMAIL_THREAD_COMPONENT = "email_thread" as const;
 export const EMAIL_MESSAGE_COMPONENT = "email_message" as const;
@@ -63,6 +64,7 @@ export const COMPONENT_IDS = [
   SEMANTIC_MEMORY_COMPONENT,
   SEMANTIC_REF_COMPONENT,
   TEMPORAL_SUMMARY_COMPONENT,
+  SELF_BLOCK_COMPONENT,
   EMAIL_ACCOUNT_COMPONENT,
   EMAIL_THREAD_COMPONENT,
   EMAIL_MESSAGE_COMPONENT,

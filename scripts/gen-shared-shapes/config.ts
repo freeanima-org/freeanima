@@ -136,19 +136,4 @@ export const TABLE_SPECS: TableGenSpec[] = [
       },
     },
   },
-  {
-    fileBase: "self-blocks",
-    exportPrefix: "selfBlocks",
-    tableExport: "selfBlocks",
-    tableModule: "packages/habitat/core/db/schema/self-layer.ts",
-    comments: {
-      block_key: "Self-layer five blocks (one row per block_key)",
-    },
-    overrides: {
-      block_key: {
-        expr: "selfBlockKeySchema",
-        imports: [{ from: "../entity/enums.ts", names: ["selfBlockKeySchema"] }],
-      },
-    },
-  },
 ];

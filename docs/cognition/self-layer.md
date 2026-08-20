@@ -21,7 +21,10 @@ FreeAnima Storage Architecture
 │
 └── Self Layer — this document
     └── Five blocks defining "who I am"
+        (entities, primary_component=self_block, agent default private world)
 ```
+
+**存储：** 每块一条 `type=content` 实体；正文在 `entities.content`；`body` 含 `block_key` / `locked` / `version` / `updated_by`。归属 agent 默认私有 world（与语义记忆、时间摘要一致）。见 [`entity-model.md`](../product/entity-model.md)。
 
 **设计原则：**
 
