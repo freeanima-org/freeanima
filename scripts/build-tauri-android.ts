@@ -12,6 +12,7 @@ import { tryAdbInstallApk } from "./try-adb-install-apk.ts";
 import { ensureApkSigned } from "./sign-android-apk.ts";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 import { emitPackArtifact } from "./emit-pack-artifact.ts";
+import { resolveAndroidPackAbis, tauriAndroidTargetArgs } from "./android-pack-targets.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "packages/frontend/portal/app/tauri");
@@ -99,9 +100,15 @@ const buildEnv = {
   FREEANIMA_BUILD_CHANNEL: identity.channel,
 };
 
+const abis = resolveAndroidPackAbis(buildEnv);
+const targetArgs = tauriAndroidTargetArgs(abis);
+console.log(
+  `[pack tauri-android] ABI: ${abis.join(", ")}（FREEANIMA_ANDROID_TARGETS 可覆盖，all=四 ABI）`,
+);
+
 const build = spawnSync(
   "bun",
-  ["x", "tauri", "android", "build", "--apk", "--config", identity.configArg],
+  ["x", "tauri", "android", "build", "--apk", "--config", identity.configArg, ...targetArgs],
   {
     cwd: tauriDir,
     stdio: "inherit",

@@ -6,22 +6,29 @@
  *   bun scripts/install-android-tauri-deps.ts
  *   bun scripts/install-android-tauri-deps.ts --init   # 缺失时执行 tauri android init
  *   bun scripts/install-android-tauri-deps.ts --check
+ *   bun scripts/install-android-tauri-deps.ts --all-targets  # 安装四 ABI rustup targets
+ *
+ * 默认只装 `FREEANIMA_ANDROID_TARGETS`（缺省 aarch64）对应 targets。
  */
 import { existsSync, readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  ANDROID_NDK_PACKAGE,
+  resolveAndroidPackAbis,
+  rustTargetsForAbis,
+} from "./android-pack-targets.ts";
+
 const checkOnly = process.argv.includes("--check");
 const doInit = process.argv.includes("--init");
 const HINT = "just install tauri-android\n  # 缺工程：just install tauri-android -- --init";
 
-const ANDROID_TARGETS = [
-  "aarch64-linux-android",
-  "armv7-linux-androideabi",
-  "i686-linux-android",
-  "x86_64-linux-android",
-];
+/** 安装/校验所需 rustup targets（默认 aarch64；`--all-targets` 或 FREEANIMA_ANDROID_TARGETS=all） */
+const ANDROID_TARGETS = process.argv.includes("--all-targets")
+  ? rustTargetsForAbis(resolveAndroidPackAbis({ FREEANIMA_ANDROID_TARGETS: "all" }))
+  : rustTargetsForAbis(resolveAndroidPackAbis());
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const tauriDir = join(root, "packages/frontend/portal/app/tauri");
@@ -116,14 +123,14 @@ if (!ndkPresent()) {
     console.error("[install-android-tauri] 未找到 sdkmanager。请先：just install android");
     process.exit(1);
   }
-  // 安装较新的 NDK；具体版本由 sdkmanager 解析
+  // 版本与 scripts/setup-android-sdk.sh / cache-android-sdk key 对齐
   run(
     "bash",
     [
       "-c",
-      `yes | "${sdkmanager}" --licenses >/dev/null 2>&1 || true; "${sdkmanager}" "ndk;27.0.12077973" || "${sdkmanager}" ndk`,
+      `yes | "${sdkmanager}" --licenses >/dev/null 2>&1 || true; "${sdkmanager}" "${ANDROID_NDK_PACKAGE}" || "${sdkmanager}" ndk`,
     ],
-    "sdkmanager install NDK",
+    `sdkmanager install ${ANDROID_NDK_PACKAGE}`,
   );
 } else {
   console.log("[install-android-tauri] Android NDK 已就绪");

@@ -108,6 +108,8 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 
 - portal `[profile.release]`：`lto = false`、`codegen-units = 16`、`opt-level = 2`、`strip = true`（canary/release 共用）
 - Linux 只打 AppImage、Windows 只打 NSIS（脚本 `--bundles`）
+- **Android 默认只编 `aarch64`**（`FREEANIMA_ANDROID_TARGETS`，见 `scripts/android-pack-targets.ts`）；`all` 恢复四 ABI（模拟器/旧机）
+- Android SDK 缓存含 **NDK 27.0.12077973**；Gradle 显式缓存 `~/.gradle`（勿依赖 `gen/android` 路径，其 gitignore）
 - 三端 job 均挂 `Swatinem/rust-cache`，**`key` 按平台区分**（`tauri-linux` / `tauri-windows-xwin` / `tauri-android`），避免并行覆盖
 - Windows 交叉另缓存 `cargo-xwin` 与 `~/.xwin`
 
