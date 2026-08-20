@@ -21,8 +21,11 @@ function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
   return { subject_kind: getSubjectKind(), ...payload };
 }
 
+/** 写入 method 默认 WS；显式 http 以便浏览器扩展（不连 Habitat WS）也能建签/改签 */
+const httpOnly = { transport: "http" as const };
+
 export async function fetchTags(): Promise<TagRow[]> {
-  const data = await habitat().call("tag.list", withSubjectKind({}));
+  const data = await habitat().call("tag.list", withSubjectKind({}), httpOnly);
   return data.tags;
 }
 
@@ -33,6 +36,7 @@ export async function searchTags(query: string, opts?: { limit?: number }): Prom
       query,
       ...(opts?.limit != null ? { limit: opts.limit } : {}),
     }),
+    httpOnly,
   );
   return data.tags;
 }
@@ -48,12 +52,13 @@ export async function suggestTags(
       ...(opts?.query != null ? { query: opts.query } : {}),
       ...(opts?.limit != null ? { limit: opts.limit } : {}),
     }),
+    httpOnly,
   );
   return data.items;
 }
 
 export async function createTag(title: string): Promise<TagRow> {
-  const data = await habitat().call("tag.create", withSubjectKind({ title }));
+  const data = await habitat().call("tag.create", withSubjectKind({ title }), httpOnly);
   return data.item;
 }
 
@@ -61,6 +66,7 @@ export async function setEntityTagIds(entityId: number, tagIds: number[]): Promi
   const data = await habitat().call(
     "tag.setOnEntity",
     withSubjectKind({ entity_id: entityId, tag_ids: tagIds }),
+    httpOnly,
   );
   return data.tag_ids;
 }
