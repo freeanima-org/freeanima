@@ -209,7 +209,7 @@ export async function pgListConversationSummariesPage(opts?: {
   offset?: number;
   limit?: number;
   includeArchived?: boolean;
-  user_subject_id?: string;
+  user_subject_id?: number;
 }): Promise<{
   items: Array<{
     id: string;

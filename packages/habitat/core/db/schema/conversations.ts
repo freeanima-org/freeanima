@@ -1,6 +1,7 @@
-import { boolean, index, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+import { bigint, boolean, index, jsonb, pgTable, text } from "drizzle-orm/pg-core";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
+import { entities } from "./entity/entity.ts";
 
 import type { PlatformInfo } from "./jsonb/platform-info.ts";
 import type {
@@ -32,6 +33,10 @@ export const conversations = pgTable(
      * `digital_human` | `coding_agent`；NULL = digital_human（兼容旧行）。
      */
     scenario: text("scenario"),
+    /** 会话绑定的 agent subject（entities.id） */
+    agent_subject_id: bigint("agent_subject_id", { mode: "number" })
+      .notNull()
+      .references(() => entities.id),
     compression: jsonb("compression").$type<CompressionJson | null>(),
     /** 当天对话级时间摘要 chunks（操作态，不可引用） */
     temporal_day: jsonb("temporal_day").$type<TemporalDayJson | null>(),
@@ -62,6 +67,7 @@ export const conversations = pgTable(
     index("idx_conversations_updated_at").on(t.updated_at.desc()),
     index("idx_conversations_archived_updated").on(t.archived_at, t.updated_at.desc()),
     index("idx_conversations_pinned_updated").on(t.pinned_at, t.updated_at.desc()),
+    index("idx_conversations_agent_subject_id").on(t.agent_subject_id),
     // platform_info->>'platform' 表达式索引：见 migrations 追加 SQL
   ],
 );

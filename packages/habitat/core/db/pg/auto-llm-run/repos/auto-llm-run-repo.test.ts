@@ -29,10 +29,10 @@ describe("mapAutoLlmRunRow", () => {
   });
 
   test("透传运行字段并把 Date 列转成字符串", () => {
-    const row = mapAutoLlmRunRow(rawRun({ subject_id: null, max_duration_ms: 1000 }));
+    const row = mapAutoLlmRunRow(rawRun({ subject_id: 7, max_duration_ms: 1000 }));
     expect(row.id).toBe("run-1");
     expect(row.status).toBe("ok");
-    expect(row.subject_id).toBeNull();
+    expect(row.subject_id).toBe(7);
     expect(row.max_duration_ms).toBe(1000);
     expect(typeof row.created_at).toBe("string");
   });

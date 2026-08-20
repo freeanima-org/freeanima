@@ -9,13 +9,11 @@ export type NotificationReadFilter = (typeof NOTIFICATION_READ_FILTERS)[number];
 export const NOTIFICATION_SOURCE_KINDS = ["system", "cron", "acp", "tool"] as const;
 export type NotificationSourceKind = (typeof NOTIFICATION_SOURCE_KINDS)[number];
 
-export const DEFAULT_NOTIFICATION_RECIPIENT_ID = "default";
-
 export type { NotificationRow };
 
 export type NotificationCreateInput = {
   recipient_kind: NotificationRecipientKind;
-  recipient_id?: string;
+  recipient_id: number;
   title: string;
   body: string;
   payload?: Record<string, unknown> | null;
@@ -25,7 +23,7 @@ export type NotificationCreateInput = {
 
 export type NotificationListOpts = {
   recipient_kind: NotificationRecipientKind;
-  recipient_id?: string;
+  recipient_id: number;
   read_filter?: NotificationReadFilter;
   offset?: number;
   limit?: number;

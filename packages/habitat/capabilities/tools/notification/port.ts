@@ -7,7 +7,7 @@ import type { NotificationRow } from "@freeanima/habitat/core/db/schema/rows";
 
 export type NotificationRecipientRef = {
   kind: NotificationRecipientKind;
-  id: string;
+  id: number;
 };
 
 export type NotificationPort = {

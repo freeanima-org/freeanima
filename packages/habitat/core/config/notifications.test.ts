@@ -26,8 +26,8 @@ describe("resolveNotificationRecipients", () => {
     } as RuntimeConfig;
 
     expect(resolveNotificationRecipients(config)).toEqual({
-      user: { kind: "user", id: "10" },
-      agent: { kind: "agent", id: "20" },
+      user: { kind: "user", id: 10 },
+      agent: { kind: "agent", id: 20 },
     });
   });
 
@@ -38,8 +38,8 @@ describe("resolveNotificationRecipients", () => {
     } as RuntimeConfig;
 
     expect(resolveNotificationRecipients(config)).toEqual({
-      user: { kind: "user", id: "2" },
-      agent: { kind: "agent", id: "1" },
+      user: { kind: "user", id: 2 },
+      agent: { kind: "agent", id: 1 },
     });
   });
 
@@ -50,8 +50,8 @@ describe("resolveNotificationRecipients", () => {
     } as RuntimeConfig;
 
     expect(resolveNotificationRecipients(config)).toEqual({
-      user: { kind: "user", id: "3" },
-      agent: { kind: "agent", id: "4" },
+      user: { kind: "user", id: 3 },
+      agent: { kind: "agent", id: 4 },
     });
   });
 

@@ -40,19 +40,28 @@ describePg("auto_llm_runs process persist", () => {
 
   it("insert running, append messages, finish", async () => {
     const id = `autollm_test_${randomUUID()}`;
+    const subjectId = 2;
     const started = isoMinutesAgo(1);
     await insertRunningAutoLlmRun({
       id,
       run_name: "test-cron",
       run_kind: "cron",
-      subject_id: 2,
+      subject_id: subjectId,
       max_loop_iterations: 5,
       max_duration_ms: 60_000,
       metadata: { tool_names: ["web_search"], job_id: "job-1" },
       created_at: started,
       messages: [
-        { pos: 0, payload: { role: "system", content: "sys", timestamp: started } },
-        { pos: 1, payload: { role: "user", content: "do", timestamp: started } },
+        {
+          pos: 0,
+          subject_id: subjectId,
+          payload: { role: "system", content: "sys", timestamp: started },
+        },
+        {
+          pos: 1,
+          subject_id: subjectId,
+          payload: { role: "user", content: "do", timestamp: started },
+        },
       ],
     });
 
@@ -65,6 +74,7 @@ describePg("auto_llm_runs process persist", () => {
     await appendAutoLlmMessages(id, [
       {
         pos: 2,
+        subject_id: subjectId,
         payload: { role: "assistant", content: "done", timestamp: new Date().toISOString() },
       },
     ]);
@@ -89,18 +99,20 @@ describePg("auto_llm_runs process persist", () => {
 
   it("sums cached/uncached/output from assistant usage", async () => {
     const id = `autollm_usage_${randomUUID()}`;
+    const subjectId = 2;
     const started = isoMinutesAgo(1);
     await insertRunningAutoLlmRun({
       id,
       run_name: "usage-run",
       run_kind: "cron",
-      subject_id: 2,
+      subject_id: subjectId,
       max_loop_iterations: 1,
       created_at: started,
     });
     await appendAutoLlmMessages(id, [
       {
         pos: 0,
+        subject_id: subjectId,
         payload: {
           role: "assistant",
           content: "a",
@@ -110,6 +122,7 @@ describePg("auto_llm_runs process persist", () => {
       },
       {
         pos: 1,
+        subject_id: subjectId,
         payload: {
           role: "assistant",
           content: "b",

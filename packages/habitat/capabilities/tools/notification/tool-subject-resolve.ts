@@ -6,7 +6,7 @@ import { coerceString } from "@freeanima/shared/coerce-string";
 
 export type ResolvedNotificationSubject = {
   recipient_kind: NotificationRecipientKind;
-  recipient_id: string;
+  recipient_id: number;
 };
 
 export const SUBJECT_ID_TOOL_PROPERTY = {
@@ -40,7 +40,7 @@ async function resolveExplicitSubject(
 
   return {
     recipient_kind: row.type,
-    recipient_id: String(subjectId),
+    recipient_id: subjectId,
   };
 }
 
@@ -64,14 +64,14 @@ export async function resolveNotificationSendTargets(
 
   const ctx = getResolvedWorldContext();
   if (target === "user") {
-    return [{ recipient_kind: "user", recipient_id: String(ctx.user_subject_id) }];
+    return [{ recipient_kind: "user", recipient_id: ctx.user_subject_id }];
   }
   if (target === "agent") {
-    return [{ recipient_kind: "agent", recipient_id: String(ctx.agent_subject_id) }];
+    return [{ recipient_kind: "agent", recipient_id: ctx.agent_subject_id }];
   }
   return [
-    { recipient_kind: "user", recipient_id: String(ctx.user_subject_id) },
-    { recipient_kind: "agent", recipient_id: String(ctx.agent_subject_id) },
+    { recipient_kind: "user", recipient_id: ctx.user_subject_id },
+    { recipient_kind: "agent", recipient_id: ctx.agent_subject_id },
   ];
 }
 
@@ -94,6 +94,6 @@ export async function resolveNotificationListSubject(
   const ctx = getResolvedWorldContext();
   return {
     recipient_kind: recipientKind,
-    recipient_id: String(recipientKind === "user" ? ctx.user_subject_id : ctx.agent_subject_id),
+    recipient_id: recipientKind === "user" ? ctx.user_subject_id : ctx.agent_subject_id,
   };
 }

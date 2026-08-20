@@ -1,5 +1,6 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { countNotifications } from "@freeanima/habitat/core/db/pg/notifications";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
@@ -39,9 +40,11 @@ describePg("notifications PG", () => {
 
   it("create, list unread, markRead", async () => {
     const deps = testRuntimeDeps();
+    const { user_subject_id, agent_subject_id } = getResolvedWorldContext();
 
     const created = await createNotification(deps, {
       recipient_kind: "user",
+      recipient_id: user_subject_id,
       title: "测试通知",
       body: "正文",
       source_kind: "system",
@@ -50,12 +53,14 @@ describePg("notifications PG", () => {
 
     await createNotification(deps, {
       recipient_kind: "agent",
+      recipient_id: agent_subject_id,
       title: "Agent 通知",
       body: "agent body",
     });
 
     const userUnread = await listNotifications(deps, {
       recipient_kind: "user",
+      recipient_id: user_subject_id,
       read_filter: "unread",
     });
     expect(userUnread.total).toBe(1);
@@ -66,12 +71,14 @@ describePg("notifications PG", () => {
 
     const stillUnread = await listNotifications(deps, {
       recipient_kind: "user",
+      recipient_id: user_subject_id,
       read_filter: "unread",
     });
     expect(stillUnread.total).toBe(0);
 
     const all = await listNotifications(deps, {
       recipient_kind: "user",
+      recipient_id: user_subject_id,
       read_filter: "all",
     });
     expect(all.total).toBe(1);
@@ -79,6 +86,7 @@ describePg("notifications PG", () => {
 
     const agentUnread = await countNotifications({
       recipient_kind: "agent",
+      recipient_id: agent_subject_id,
       read_filter: "unread",
     });
     expect(agentUnread).toBe(1);

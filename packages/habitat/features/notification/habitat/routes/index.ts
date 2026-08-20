@@ -40,11 +40,14 @@ function serializeNotificationRow(row: PgNotificationRow): NotificationRow {
 
 export const notificationHabitatRoutes = bindHabitatRouteHandlers(notificationMethodDefs, {
   "notification.list": async (deps, input) => {
+    const { user } = resolveNotificationRecipients(
+      depsOf(deps).runtime.runtimeDeps().engine.config.data,
+    );
     const result = await service.listNotifications(
       depsOf(deps).runtime.runtimeDeps(),
       omitUndefined({
         recipient_kind: input.recipient_kind,
-        recipient_id: input.recipient_id,
+        recipient_id: input.recipient_id ?? user.id,
         read_filter: input.read_filter,
         offset: input.offset,
         limit: input.limit,

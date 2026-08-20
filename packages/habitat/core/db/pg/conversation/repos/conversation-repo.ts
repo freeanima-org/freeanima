@@ -88,6 +88,7 @@ export async function getConversationMetaLite(
       system_prompt_built_at: conversations.system_prompt_built_at,
       platform_info: conversations.platform_info,
       scenario: conversations.scenario,
+      agent_subject_id: conversations.agent_subject_id,
       compression: conversations.compression,
       temporal_day: conversations.temporal_day,
       todos: conversations.todos,
@@ -422,12 +423,15 @@ export async function getConversationUpdatedAt(conversation_id: string): Promise
 
 export async function listConversationSummaries(
   platform?: string | null,
-  opts?: { includeArchived?: boolean; user_subject_id?: string },
+  opts?: { includeArchived?: boolean; user_subject_id?: number },
 ): Promise<ConversationSummaryRow[]> {
   const db = getDb();
   const where = buildConversationListWhere(platform, opts?.includeArchived);
-  const userSubjectId = opts?.user_subject_id?.trim();
-  const unreadExpr = userSubjectId ? conversationUnreadExistsSql(userSubjectId) : undefined;
+  const userSubjectId = opts?.user_subject_id;
+  const unreadExpr =
+    userSubjectId != null && userSubjectId > 0
+      ? conversationUnreadExistsSql(userSubjectId)
+      : undefined;
   const rows = await db
     .select({
       id: conversations.id,
@@ -451,15 +455,18 @@ export async function listConversationSummariesPage(opts?: {
   limit?: number;
   includeArchived?: boolean;
   /** 若提供，则为用户视角计算 unread */
-  user_subject_id?: string;
+  user_subject_id?: number;
 }): Promise<{ items: ConversationSummaryRow[]; total: number }> {
   const offset = Math.max(0, opts?.offset ?? 0);
   const limit = Math.min(500, Math.max(1, opts?.limit ?? 20));
   const platform = opts?.platform;
   const db = getDb();
   const where = buildConversationListWhere(platform, opts?.includeArchived);
-  const userSubjectId = opts?.user_subject_id?.trim();
-  const unreadExpr = userSubjectId ? conversationUnreadExistsSql(userSubjectId) : undefined;
+  const userSubjectId = opts?.user_subject_id;
+  const unreadExpr =
+    userSubjectId != null && userSubjectId > 0
+      ? conversationUnreadExistsSql(userSubjectId)
+      : undefined;
 
   const countRows = await db
     .select({ count: sql<number>`count(*)::int` })

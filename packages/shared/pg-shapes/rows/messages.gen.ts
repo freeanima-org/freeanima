@@ -6,6 +6,7 @@ export const messageSelectSchema = z.object({
   /** Globally unique row id (PG PK; compression points to pos, not this column) */
   id: z.string(),
   conversation_id: z.string(),
+  subject_id: z.number(),
   /** Monotonic in-conversation sequence (compression l2/l3 point here; domain Message.pos) */
   pos: z.number(),
   payload: messagePayloadSchema,
@@ -15,6 +16,7 @@ export const messageInsertSchema = z.object({
   /** Globally unique row id (PG PK; compression points to pos, not this column) */
   id: z.string(),
   conversation_id: z.string(),
+  subject_id: z.number(),
   /** Monotonic in-conversation sequence (compression l2/l3 point here; domain Message.pos) */
   pos: z.number(),
   payload: messagePayloadSchema,

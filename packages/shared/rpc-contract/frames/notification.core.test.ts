@@ -18,7 +18,7 @@ describe("notification SAP frames", () => {
         {
           id: "n-1",
           recipient_kind: "user",
-          recipient_id: "default",
+          recipient_id: 1,
           title: "hello",
           body: "world",
           payload: null,
@@ -40,7 +40,7 @@ describe("notification SAP frames", () => {
       notification: {
         id: "n-1",
         recipient_kind: "agent",
-        recipient_id: "default",
+        recipient_id: 2,
         title: "t",
         body: "b",
         payload: null,

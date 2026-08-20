@@ -111,7 +111,11 @@ async function persistChatStart(row: {
       max_duration_ms: row.input.maxDurationMs ?? null,
       metadata: buildChatMetadata(row.input),
       created_at: row.startedAt,
-      messages: row.inputPayloads.map((payload, pos) => ({ pos, payload })),
+      messages: row.inputPayloads.map((payload, pos) => ({
+        pos,
+        payload,
+        subject_id: row.input.subjectId,
+      })),
     });
   } catch {
     // 落库失败不得掩盖 chat 结果
@@ -120,6 +124,7 @@ async function persistChatStart(row: {
 
 async function persistChatAssistant(
   runId: string,
+  subjectId: number,
   pos: number,
   content: string,
   completion: LlmResponse,
@@ -128,7 +133,7 @@ async function persistChatAssistant(
   try {
     if (!isPostgresPrimary()) return;
     await appendAutoLlmMessages(runId, [
-      { pos, payload: assistantPayload(content, completion, latencyMs) },
+      { pos, payload: assistantPayload(content, completion, latencyMs), subject_id: subjectId },
     ]);
   } catch {
     // ignore
@@ -226,7 +231,14 @@ export async function runAutoLlmChat(input: AutoLlmChatInput): Promise<AutoLlmCh
         typeof completion.latency_ms === "number" && Number.isFinite(completion.latency_ms)
           ? completion.latency_ms
           : durationMs;
-      await persistChatAssistant(runId, inputPayloads.length, output, completion, latencyMs);
+      await persistChatAssistant(
+        runId,
+        input.subjectId,
+        inputPayloads.length,
+        output,
+        completion,
+        latencyMs,
+      );
     }
     await persistChatFinish({
       id: runId,

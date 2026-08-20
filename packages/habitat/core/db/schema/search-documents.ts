@@ -16,6 +16,8 @@ export const searchDocuments = pgTable(
     resource: text("resource").notNull(),
     source_id: text("source_id").notNull(),
     world_id: bigint("world_id", { mode: "number" }),
+    /** 索引行所属主体（entities.id）；entity 从 world owner 派生，message 从 messages.subject_id */
+    subject_id: bigint("subject_id", { mode: "number" }),
     primary_component: text("primary_component"),
     conversation_id: text("conversation_id"),
     message_role: text("message_role"),
@@ -59,6 +61,7 @@ export const searchDocuments = pgTable(
   (t) => [
     index("idx_search_documents_resource_source").on(t.resource, t.source_id),
     index("idx_search_documents_world_primary").on(t.world_id, t.primary_component),
+    index("idx_search_documents_subject_id").on(t.subject_id),
     index("idx_search_documents_conversation").on(t.conversation_id),
     index("idx_search_documents_search_fts").using("gin", t.search_fts),
     index("idx_search_documents_deleted_at").on(t.deleted_at),

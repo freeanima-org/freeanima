@@ -16,6 +16,8 @@ export type CronJobCreateInput = {
   context_from?: string[];
   timeout_sec?: number;
   builtin?: boolean;
+  /** 行动主体 entities.id；缺省由调用方填 boot agent */
+  subject_id: number;
   repeat?: number | null;
   run_count?: number;
   paused?: boolean;
@@ -36,6 +38,7 @@ export type CronJobBuiltinUpsertInput = {
   prompt?: string;
   no_agent?: boolean;
   timeout_sec?: number;
+  subject_id: number;
 };
 
 /** Overlay update: only passed fields change */

@@ -36,6 +36,7 @@ async function upsertOne(doc: SearchDoc): Promise<void> {
     resource: doc.resource,
     source_id: doc.source_id,
     world_id: doc.world_id ?? null,
+    subject_id: doc.subject_id ?? null,
     primary_component: doc.primary_component ?? null,
     conversation_id: doc.conversation_id ?? null,
     message_role: doc.message_role ?? null,
@@ -54,6 +55,7 @@ async function upsertOne(doc: SearchDoc): Promise<void> {
       target: searchDocuments.doc_key,
       set: {
         world_id: values.world_id,
+        subject_id: values.subject_id,
         primary_component: values.primary_component,
         conversation_id: values.conversation_id,
         message_role: values.message_role,

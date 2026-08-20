@@ -5,7 +5,7 @@ import { resolveWorldSubjectIds } from "./worlds.ts";
 
 export type NotificationRecipientRef = {
   kind: NotificationRecipientKind;
-  id: string;
+  id: number;
 };
 
 export type ResolvedNotificationRecipients = {
@@ -20,8 +20,8 @@ export function resolveNotificationRecipients(
   try {
     const ctx = getResolvedWorldContext();
     return {
-      user: { kind: "user", id: String(ctx.user_subject_id) },
-      agent: { kind: "agent", id: String(ctx.agent_subject_id) },
+      user: { kind: "user", id: ctx.user_subject_id },
+      agent: { kind: "agent", id: ctx.agent_subject_id },
     };
   } catch {
     /* WorldContext 尚未 bind：回退到配置 */
@@ -34,7 +34,7 @@ export function resolveNotificationRecipients(
     );
   }
   return {
-    user: { kind: "user", id: String(user_subject_id) },
-    agent: { kind: "agent", id: String(agent_subject_id) },
+    user: { kind: "user", id: user_subject_id },
+    agent: { kind: "agent", id: agent_subject_id },
   };
 }

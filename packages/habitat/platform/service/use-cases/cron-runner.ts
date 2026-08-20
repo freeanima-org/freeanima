@@ -20,6 +20,7 @@ export type CronEngineJobInput = {
   skills: string[];
   allowed_tools?: string[];
   denied_tools?: string[];
+  subject_id?: number;
 };
 
 /**
@@ -69,7 +70,7 @@ export async function runCronEngineTurn(
     omitUndefined({
       runName,
       runKind: "cron",
-      subjectId: getResolvedWorldContext().agent_subject_id,
+      subjectId: job.subject_id ?? getResolvedWorldContext().agent_subject_id,
       systemPrompt,
       userMessages,
       model,

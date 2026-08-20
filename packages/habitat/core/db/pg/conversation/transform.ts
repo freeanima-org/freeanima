@@ -7,6 +7,7 @@ import {
   type ConversationMetaMessage,
   type ConversationTodoStore,
 } from "@freeanima/habitat/core/db/domain";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
 import {
   conversationCachedToolsetsSchema,
   conversationFunctionsSchema,
@@ -53,6 +54,7 @@ const META_KNOWN_KEYS = new Set([
   "debug",
   "timestamp",
   "gateway_tool_display",
+  "agent_subject_id",
 ]);
 
 function parseConversationScenario(
@@ -120,6 +122,7 @@ export function conversationMetaToInsert(
       Object.keys(extra).length > 0 ? extra : undefined,
     ),
     scenario: meta.scenario ?? null,
+    agent_subject_id: meta.agent_subject_id ?? getResolvedWorldContext().agent_subject_id,
     compression: compressionParsed,
     temporal_day: null,
     todos,
@@ -161,6 +164,7 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
     model: parsed.model,
     platform,
     ...(scenario ? { scenario } : {}),
+    agent_subject_id: parsed.agent_subject_id,
     title: parsed.title ?? undefined,
     cwd: parsed.cwd ?? undefined,
     system_prompt: parsed.system_prompt ?? undefined,

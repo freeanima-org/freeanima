@@ -6,7 +6,7 @@ export type AutoLlmRunRow = {
   id: string;
   run_name: string;
   run_kind: string;
-  subject_id: number | null;
+  subject_id: number;
   output: string;
   status: string;
   duration_ms: number;
@@ -21,12 +21,14 @@ export type AutoLlmRunRow = {
 export type AutoLlmMessageRow = {
   id: string;
   run_id: string;
+  subject_id: number;
   pos: number;
   payload: MessagePayload;
 };
 
 export type AutoLlmMessageAppendInput = {
   id?: string;
+  subject_id: number;
   pos: number;
   payload: MessagePayload;
 };
@@ -35,7 +37,7 @@ export type AutoLlmRunInsertRunningInput = {
   id: string;
   run_name: string;
   run_kind: string;
-  subject_id?: number | null;
+  subject_id: number;
   max_loop_iterations: number;
   max_duration_ms?: number | null;
   metadata?: Record<string, unknown> | null;
@@ -57,7 +59,7 @@ export type AutoLlmRunAppendInput = {
   id: string;
   run_name: string;
   run_kind: string;
-  subject_id?: number | null;
+  subject_id: number;
   output: string;
   status: "ok" | "error";
   duration_ms: number;

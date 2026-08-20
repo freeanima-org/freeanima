@@ -32,7 +32,7 @@ export function mapAutoLlmRunRow(raw: AutoLlmRunDbRow): AutoLlmRunRow {
     id: raw.id,
     run_name: raw.run_name,
     run_kind: raw.run_kind,
-    subject_id: raw.subject_id ?? null,
+    subject_id: raw.subject_id,
     output: raw.output,
     status: raw.status,
     duration_ms: raw.duration_ms,
@@ -74,6 +74,7 @@ async function insertMessageRows(
     msgs.map((m) => ({
       id: m.id ?? randomPublicId(),
       run_id: runId,
+      subject_id: m.subject_id,
       pos: m.pos,
       payload: m.payload,
     })),
@@ -126,6 +127,7 @@ export async function listAutoLlmMessages(runId: string): Promise<AutoLlmMessage
   return rows.map((raw) => ({
     id: raw.id,
     run_id: raw.run_id,
+    subject_id: raw.subject_id,
     pos: raw.pos,
     payload: raw.payload,
   }));
@@ -139,7 +141,7 @@ export async function insertRunningAutoLlmRun(row: AutoLlmRunInsertRunningInput)
       id: row.id,
       run_name: row.run_name,
       run_kind: row.run_kind,
-      subject_id: row.subject_id ?? null,
+      subject_id: row.subject_id,
       output: "",
       status: "running",
       duration_ms: 0,

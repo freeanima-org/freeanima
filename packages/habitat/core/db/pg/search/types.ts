@@ -7,6 +7,7 @@ export type SearchChannel = "fts" | "trgm" | "vector";
 export type SearchFilters = {
   resource: SearchResource;
   world_id?: number;
+  subject_id?: number;
   primary_component?: string;
   conversation_id?: string;
   include_deleted?: boolean;
@@ -21,6 +22,7 @@ export type SearchDoc = {
   resource: SearchResource;
   source_id: string;
   world_id?: number | null;
+  subject_id?: number | null;
   primary_component?: string | null;
   conversation_id?: string | null;
   message_role?: string | null;

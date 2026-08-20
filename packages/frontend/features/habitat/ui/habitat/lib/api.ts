@@ -488,6 +488,24 @@ export async function deleteRedisLock(key: string) {
   return hubCall(habitat().call("redisLocks.delete", { key })) as Promise<{ deleted: boolean }>;
 }
 
+export type DataIntegrityIssue = {
+  code: string;
+  message: string;
+  entity_id?: number;
+};
+
+export type DataIntegrityReport = {
+  ok: boolean;
+  entity_count: number;
+  issue_count: number;
+  truncated: boolean;
+  issues: DataIntegrityIssue[];
+};
+
+export async function runDataIntegrityCheck() {
+  return hubCall(habitat().call("dataIntegrity.run", {})) as Promise<DataIntegrityReport>;
+}
+
 export async function getSelfBlocks() {
   return hubCall(habitat().call("self.blocks", {}));
 }

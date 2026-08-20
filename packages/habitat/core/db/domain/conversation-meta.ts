@@ -129,6 +129,8 @@ export const conversationMetaSchema = z
     acp_tasks_handled_at: z.string().optional(),
     gateway_tool_display: z.string().optional(),
     goal: z.unknown().optional(),
+    /** 会话绑定的 agent subject（entities.id）；写入时缺省取 ResolvedWorldContext */
+    agent_subject_id: z.number().int().positive().optional(),
   })
   .passthrough();
 

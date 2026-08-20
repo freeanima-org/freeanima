@@ -42,6 +42,7 @@ export async function createCronJob(row: CronJobCreateInput): Promise<void> {
     context_from: normalizeStringArray(row.context_from),
     timeout_sec: row.timeout_sec ?? 300,
     builtin: row.builtin ?? false,
+    subject_id: row.subject_id,
     repeat: row.repeat ?? null,
     run_count: row.run_count ?? 0,
     paused: row.paused ?? false,
@@ -71,6 +72,7 @@ export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Prom
       no_agent: row.no_agent ?? true,
       builtin: true,
       timeout_sec: row.timeout_sec ?? 1800,
+      subject_id: row.subject_id,
       created_at: now,
       updated_at: now,
     })
@@ -83,6 +85,7 @@ export async function upsertBuiltinCronJob(row: CronJobBuiltinUpsertInput): Prom
         builtin: true,
         no_agent: row.no_agent ?? true,
         timeout_sec: row.timeout_sec ?? 1800,
+        subject_id: row.subject_id,
         updated_at: now,
       },
     });

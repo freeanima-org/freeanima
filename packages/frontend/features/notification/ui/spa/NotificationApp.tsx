@@ -22,7 +22,7 @@ import { useNotificationUnreadStore } from "./stores/notification-unread.ts";
 
 const PAGE_SIZE = 20;
 
-type RecipientIds = { user: string; agent: string };
+type RecipientIds = { user: number; agent: number };
 type ReadFilter = "all" | "unread";
 
 async function resolveRecipientIds(cached: RecipientIds | null): Promise<RecipientIds> {

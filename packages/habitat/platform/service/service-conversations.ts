@@ -45,7 +45,7 @@ export async function listConversations(
     offset?: number;
     limit?: number;
     includeArchived?: boolean;
-    user_subject_id?: string;
+    user_subject_id?: number;
   },
 ): Promise<{ conversations: ConversationSummary[]; total: number }> {
   const p = platform === "" ? null : platform;

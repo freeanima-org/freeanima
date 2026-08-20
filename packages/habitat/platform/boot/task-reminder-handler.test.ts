@@ -118,13 +118,13 @@ describe("calendarEventReminderSourceRef", () => {
 
 describe("recipientForTaskWorld", () => {
   const port = {
-    getUserRecipient: () => ({ kind: "user" as const, id: "1" }),
-    getAgentRecipient: () => ({ kind: "agent" as const, id: "2" }),
+    getUserRecipient: () => ({ kind: "user" as const, id: 1 }),
+    getAgentRecipient: () => ({ kind: "agent" as const, id: 2 }),
   };
 
   it("maps user and agent worlds", () => {
-    expect(recipientForTaskWorld(10, port)).toEqual({ kind: "user", id: "1" });
-    expect(recipientForTaskWorld(20, port)).toEqual({ kind: "agent", id: "2" });
+    expect(recipientForTaskWorld(10, port)).toEqual({ kind: "user", id: 1 });
+    expect(recipientForTaskWorld(20, port)).toEqual({ kind: "agent", id: 2 });
   });
 
   it("returns null for unknown world", () => {
@@ -143,8 +143,8 @@ describe("runTaskReminderScan", () => {
     });
     searchSpy.mockClear();
     spyOn(notificationMod, "getNotificationPort").mockReturnValue({
-      getUserRecipient: () => ({ kind: "user" as const, id: "1" }),
-      getAgentRecipient: () => ({ kind: "agent" as const, id: "2" }),
+      getUserRecipient: () => ({ kind: "user" as const, id: 1 }),
+      getAgentRecipient: () => ({ kind: "agent" as const, id: 2 }),
       create: async () => ({ id: "n1" }),
     } as never);
 

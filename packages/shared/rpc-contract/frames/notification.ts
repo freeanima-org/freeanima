@@ -12,7 +12,7 @@ export type NotificationSourceKind = z.infer<typeof notificationSourceKindSchema
 export const notificationRowSchema = z.object({
   id: z.string(),
   recipient_kind: notificationRecipientKindSchema,
-  recipient_id: z.string(),
+  recipient_id: z.number().int().positive(),
   title: z.string(),
   body: z.string(),
   payload: z.record(z.string(), z.unknown()).nullable(),
@@ -26,7 +26,7 @@ export type NotificationRow = z.infer<typeof notificationRowSchema>;
 
 export const notificationListInputSchema = z.object({
   recipient_kind: notificationRecipientKindSchema,
-  recipient_id: z.string().min(1).optional(),
+  recipient_id: z.number().int().positive().optional(),
   read_filter: notificationReadFilterSchema.optional(),
   offset: z.number().int().min(0).optional(),
   limit: z.number().int().min(1).max(100).optional(),
@@ -57,8 +57,8 @@ export const notificationMarkReadOutputSchema = z.object({
 export type NotificationMarkReadOutput = z.infer<typeof notificationMarkReadOutputSchema>;
 
 export const notificationRecipientsOutputSchema = z.object({
-  user_subject_id: z.string(),
-  agent_subject_id: z.string(),
+  user_subject_id: z.number().int().positive(),
+  agent_subject_id: z.number().int().positive(),
 });
 
 export type NotificationRecipientsOutput = z.infer<typeof notificationRecipientsOutputSchema>;

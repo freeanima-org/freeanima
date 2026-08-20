@@ -334,6 +334,7 @@ async function rebuildMessagesFtsSegmented(
       .select({
         id: messages.id,
         conversation_id: messages.conversation_id,
+        subject_id: messages.subject_id,
         role: drizzleSql<string>`${messages.payload}->>'role'`,
         content: drizzleSql<string | null>`${messages.payload}->>'content'`,
       })
@@ -353,6 +354,7 @@ async function rebuildMessagesFtsSegmented(
           conversation_id: row.conversation_id,
           role: row.role,
           content,
+          subject_id: row.subject_id,
           fts_segmented,
         }),
       ]);
@@ -465,6 +467,7 @@ async function rebuildMessagesEmbeddings(
       .select({
         id: messages.id,
         conversation_id: messages.conversation_id,
+        subject_id: messages.subject_id,
         role: drizzleSql<string>`${messages.payload}->>'role'`,
         content: drizzleSql<string | null>`${messages.payload}->>'content'`,
       })
@@ -483,6 +486,7 @@ async function rebuildMessagesEmbeddings(
         conversation_id: row.conversation_id,
         role: row.role,
         content: row.content ?? "",
+        subject_id: row.subject_id,
       }),
     ]);
     const stored = await embedRebuildRow(

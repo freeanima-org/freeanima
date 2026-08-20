@@ -463,6 +463,11 @@ export const habitatMethodDefs = {
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),
+  "dataIntegrity.run": defineHabitatMethod({
+    input: emptyInputSchema,
+    output: unknownOutputSchema,
+    meta: longOpMeta(true),
+  }),
   "cronLogs.list": defineHabitatMethod({
     input: cronLogsQuerySchema,
     output: unknownOutputSchema,

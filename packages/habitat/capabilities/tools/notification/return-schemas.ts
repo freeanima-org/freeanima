@@ -6,7 +6,7 @@ const notificationSendReturnSchema = z.object({
     z.object({
       id: z.string(),
       recipient_kind: z.enum(["user", "agent"]),
-      recipient_id: z.string(),
+      recipient_id: z.number().int().positive(),
     }),
   ),
 });
@@ -47,7 +47,7 @@ export const NOTIFICATION_TOOL_RETURNS: Record<string, ToolReturnContractFields>
     schema: notificationSendReturnSchema,
     example: {
       ok: true,
-      notifications: [{ id: "n-1", recipient_kind: "agent", recipient_id: "1" }],
+      notifications: [{ id: "n-1", recipient_kind: "agent", recipient_id: 1 }],
     },
   }),
   notification_list: defineToolReturn({
