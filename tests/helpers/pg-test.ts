@@ -25,6 +25,7 @@ import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
 import { type Config } from "@freeanima/habitat/platform/config";
 import { bindActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context";
 import { ensureWorldSubjects } from "@freeanima/habitat/core/db/pg/entity/subject-world";
 import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
 import type { StoredMessage, ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
@@ -166,6 +167,24 @@ export function appendIntegrationConfig(home: string, yaml: string): void {
   }
 }
 
+/**
+ * 补齐 PG messages 写入所需的 subject_id（与 engine conversation.appendMessage 默认一致）。
+ * 直接调 core/db appendMessage 的集成测应经此函数或 appendTestMessage。
+ */
+export function withTestSubjectId(msg: StoredMessage): StoredMessage {
+  if (msg.subject_id != null) return msg;
+  const ctx = getResolvedWorldContext();
+  if (msg.role === "user") {
+    return { ...msg, subject_id: ctx.user_subject_id };
+  }
+  return { ...msg, subject_id: ctx.agent_subject_id };
+}
+
+/** PG 层 appendMessage，自动补 subject_id */
+export async function appendTestMessage(conversationId: string, msg: StoredMessage): Promise<void> {
+  await appendMessage(conversationId, withTestSubjectId(msg));
+}
+
 /** Write conversation fixture via PG conversation API */
 export async function seedSession(
   _engine: Engine,
@@ -175,7 +194,7 @@ export async function seedSession(
 ): Promise<void> {
   await upsertConversationMeta(conversationId, meta);
   for (const msg of messages) {
-    await appendMessage(conversationId, msg);
+    await appendTestMessage(conversationId, msg);
   }
 }
 

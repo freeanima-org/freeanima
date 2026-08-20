@@ -4,7 +4,6 @@ import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { conversations, messages } from "@freeanima/habitat/core/db/schema";
 import { getDb } from "@freeanima/habitat/core/db/pg";
 import {
-  appendMessage,
   getConversationMetaLite,
   upsertConversationMeta,
 } from "@freeanima/habitat/core/db/pg/conversation";
@@ -18,6 +17,7 @@ import {
   unarchiveConversation,
 } from "@freeanima/habitat/engine/conversation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
+import { appendTestMessage } from "../../helpers/pg-test.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
@@ -81,7 +81,7 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
     await seedMeta(newerId);
     await backdateSession(olderId);
 
-    await appendMessage(newerId, {
+    await appendTestMessage(newerId, {
       role: "user",
       content: "bump",
       pos: 1,
@@ -129,7 +129,7 @@ describePg("conversation archive/delete (PostgreSQL)", () => {
 
     const conversationId = "archive_delete_me";
     await seedMeta(conversationId);
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "user",
       content: "hello",
       pos: 1,

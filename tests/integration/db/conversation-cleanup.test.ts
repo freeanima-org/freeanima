@@ -8,12 +8,12 @@ import {
   STALE_SESSION_MIN_AGE_MS,
 } from "@freeanima/habitat/engine/conversation";
 import {
-  appendMessage,
   conversationExists,
   listStaleConversationIdsForCleanup,
   upsertConversationMeta,
 } from "@freeanima/habitat/core/db/pg/conversation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
+import { appendTestMessage } from "../../helpers/pg-test.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
@@ -67,7 +67,7 @@ describePg("session cleanup (PostgreSQL)", () => {
     await backdateSession(emptyId);
 
     await seedMeta(singleUserId);
-    await appendMessage(singleUserId, {
+    await appendTestMessage(singleUserId, {
       role: "user",
       content: "orphan user",
       pos: 1,
@@ -76,7 +76,7 @@ describePg("session cleanup (PostgreSQL)", () => {
     await backdateSession(singleUserId);
 
     await seedMeta(singleAssistantId);
-    await appendMessage(singleAssistantId, {
+    await appendTestMessage(singleAssistantId, {
       role: "assistant",
       content: "handoff summary",
       pos: 1,
@@ -85,13 +85,13 @@ describePg("session cleanup (PostgreSQL)", () => {
     await backdateSession(singleAssistantId);
 
     await seedMeta(multiUserId);
-    await appendMessage(multiUserId, {
+    await appendTestMessage(multiUserId, {
       role: "user",
       content: "u1",
       pos: 1,
       timestamp: new Date().toISOString(),
     });
-    await appendMessage(multiUserId, {
+    await appendTestMessage(multiUserId, {
       role: "user",
       content: "u2",
       pos: 2,
@@ -100,13 +100,13 @@ describePg("session cleanup (PostgreSQL)", () => {
     await backdateSession(multiUserId);
 
     await seedMeta(healthyId);
-    await appendMessage(healthyId, {
+    await appendTestMessage(healthyId, {
       role: "user",
       content: "hello",
       pos: 1,
       timestamp: new Date().toISOString(),
     });
-    await appendMessage(healthyId, {
+    await appendTestMessage(healthyId, {
       role: "assistant",
       content: "hi",
       pos: 2,
