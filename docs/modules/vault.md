@@ -61,7 +61,7 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - 能力：按 URL 匹配填充（同分按 `last_used_at`）、弹窗列表（`vault.search`
   对齐壳检索）、**新建/编辑/删除**（与 Shell 同表单）、保存提示、密码生成、右键菜单、快捷键、卡片/身份填充
 - 保存提示：提交登录表单时，若同用户名且 URI 匹配（与自动填充相同的 domain/host/… 语义）已有 login
-  则**不弹**确认框；离线不弹保存提示
+  且密码未变则**不弹**确认框；密码与库内不同则提示是否更新；离线不弹保存提示
 - 本地缓存：`chrome.storage.local` 存放**主密钥 AES-GCM 加密**的条目副本；另存 User 库
   `salt`/`verifier`（非主密钥）以支持冷启动离线解锁；须解锁（主密码）后方可解密条目缓存；锁定仅清内存明文与 session
 - 离线：对齐壳 Vault **snapshot
@@ -70,8 +70,9 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - 填充后：扩展乐观更新本地 `last_used_at`，并调用 `vault.touch` 写回 Habitat；复制用户名/密码/TOTP
   **不**计次
 - 弹窗列表：行外常显「自动填充」与「复制密码」
-- 页内：聚焦密码框，或可识别的用户名框（关键词 / `autocomplete` / `type=email`，或同表单·邻近有 password）时
-  Shadow DOM 浮层列出匹配登录项（类 Bitwarden），并提供填充 / 复制密码按钮；搜索/OTP 等非登录框不弹出
+- 页内：聚焦密码框、可识别的用户名框（关键词 / `autocomplete` / `type=email`，或同表单·邻近有 password）、
+  或 TOTP/身份验证器框时，Shadow DOM 浮层列出匹配登录项（类 Bitwarden），并提供填充 / 复制密码（TOTP 焦点为「填充验证码」）；
+  搜索、图形验证码、短信/手机验证码等非登录框不弹出
 - content script：原生 DOM 填充（不挂 React）
 
 ## 相关

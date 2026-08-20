@@ -1,6 +1,6 @@
 import type { ExtVaultListItem, FillPayload } from "../../runtime/messages.ts";
 import { sendBg } from "../../runtime/messages.ts";
-import { fillLogin, isLoginCredentialField } from "./dom-fill.ts";
+import { fillInputElement, fillLogin, isLoginCredentialField, isTotpField } from "./dom-fill.ts";
 
 const HOST_ID = "freeanima-vault-page-ui";
 
@@ -116,7 +116,19 @@ async function applyFill(itemId: number): Promise<void> {
   clearUi();
 }
 
-function renderList(wrap: HTMLElement, items: ExtVaultListItem[]): void {
+async function applyTotpFill(itemId: number): Promise<void> {
+  const fillRes = await deps.send({ type: "get_fill_payload", item_id: itemId });
+  if (!fillRes.ok || !("fill" in fillRes) || !fillRes.fill.totp) return;
+  if (activeInput) fillInputElement(activeInput, fillRes.fill.totp);
+  void deps.send({ type: "record_fill_used", item_id: itemId });
+  clearUi();
+}
+
+function renderList(
+  wrap: HTMLElement,
+  items: ExtVaultListItem[],
+  opts?: { totpOnly?: boolean },
+): void {
   const list = document.createElement("div");
   list.className = "fa-list";
   list.addEventListener("mousedown", (e) => e.preventDefault());
@@ -141,7 +153,8 @@ function renderList(wrap: HTMLElement, items: ExtVaultListItem[]): void {
       item.matched ? '<span class="fa-badge">匹配</span>' : ""
     }</div><div class="fa-sub">${escapeHtml(item.username ?? item.url ?? "")}</div>`;
     btn.addEventListener("click", () => {
-      void applyFill(item.id);
+      if (opts?.totpOnly) void applyTotpFill(item.id);
+      else void applyFill(item.id);
     });
     list.appendChild(btn);
   }
@@ -159,6 +172,7 @@ function escapeHtml(s: string): string {
 async function showForInput(input: HTMLInputElement): Promise<void> {
   cancelHide();
   activeInput = input;
+  const totpMode = isTotpField(input);
   const status = await deps.send({ type: "get_status" });
   if (!status.ok || !("unlocked" in status) || !status.unlocked) {
     clearUi();
@@ -191,26 +205,36 @@ async function showForInput(input: HTMLInputElement): Promise<void> {
   const fillBtn = document.createElement("button");
   fillBtn.type = "button";
   fillBtn.className = "fa-btn";
-  fillBtn.title = "自动填充";
-  fillBtn.textContent = "填充";
-  fillBtn.disabled = !preferred;
-  fillBtn.addEventListener("click", () => {
-    if (preferred) void applyFill(preferred.id);
-  });
+  if (totpMode) {
+    fillBtn.title = "填充验证码";
+    fillBtn.textContent = "填充验证码";
+    fillBtn.disabled = !preferred;
+    fillBtn.addEventListener("click", () => {
+      if (preferred) void applyTotpFill(preferred.id);
+    });
+    actions.append(fillBtn);
+  } else {
+    fillBtn.title = "自动填充";
+    fillBtn.textContent = "填充";
+    fillBtn.disabled = !preferred;
+    fillBtn.addEventListener("click", () => {
+      if (preferred) void applyFill(preferred.id);
+    });
 
-  const copyBtn = document.createElement("button");
-  copyBtn.type = "button";
-  copyBtn.className = "fa-btn";
-  copyBtn.title = "复制密码";
-  copyBtn.textContent = "复制密码";
-  copyBtn.disabled = !preferred;
-  copyBtn.addEventListener("click", () => {
-    if (preferred) void copyPassword(preferred.id);
-  });
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "fa-btn";
+    copyBtn.title = "复制密码";
+    copyBtn.textContent = "复制密码";
+    copyBtn.disabled = !preferred;
+    copyBtn.addEventListener("click", () => {
+      if (preferred) void copyPassword(preferred.id);
+    });
+    actions.append(fillBtn, copyBtn);
+  }
 
-  actions.append(fillBtn, copyBtn);
   wrap.appendChild(actions);
-  renderList(wrap, items);
+  renderList(wrap, items, totpMode ? { totpOnly: true } : undefined);
   root.appendChild(wrap);
 }
 

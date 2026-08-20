@@ -29,3 +29,15 @@ export function findExistingLogin(
   if (bestId == null) return undefined;
   return candidates.find((i) => i.id === bestId);
 }
+
+/**
+ * 库内密码可解时：与表单密码不同则需提示更新。
+ * 无密文可解时保守返回 false（不弹更新提示）。
+ */
+export function needsPasswordUpdate(
+  storedPassword: string | undefined,
+  formPassword: string,
+): boolean {
+  if (storedPassword === undefined) return false;
+  return storedPassword !== formPassword;
+}
