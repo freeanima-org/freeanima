@@ -1,5 +1,7 @@
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 import {
+  entityAddComponentInputSchema,
+  entityAddComponentOutputSchema,
   entityDeleteComponentInputSchema,
   entityDeleteComponentOutputSchema,
   entityDeleteInputSchema,
@@ -10,6 +12,8 @@ import {
   entityListOutputSchema,
   entityRestoreInputSchema,
   entityRestoreOutputSchema,
+  entitySetPrimaryComponentInputSchema,
+  entitySetPrimaryComponentOutputSchema,
   entityTrashListInputSchema,
   entityTrashListOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/entity";
@@ -43,6 +47,16 @@ export const entityMethodDefs = {
   "entity.deleteComponent": defineHabitatMethod({
     input: entityDeleteComponentInputSchema,
     output: entityDeleteComponentOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "entity.addComponent": defineHabitatMethod({
+    input: entityAddComponentInputSchema,
+    output: entityAddComponentOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "entity.setPrimaryComponent": defineHabitatMethod({
+    input: entitySetPrimaryComponentInputSchema,
+    output: entitySetPrimaryComponentOutputSchema,
     meta: dualTransportMeta(false),
   }),
 } as const;

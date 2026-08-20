@@ -21,6 +21,20 @@ const searchEntitiesMock = mock(async () => ({
   count: 0,
   results: [] as EntityRow[],
 }));
+const addEntityComponentMock = mock(
+  async (_input: {
+    id: number;
+    component: string;
+    body: Record<string, unknown>;
+    promote_primary?: boolean;
+  }) => null as EntityRow | null,
+);
+const promoteEntityComponentMock = mock(
+  async (_input: { id: number; component: string }) => null as EntityRow | null,
+);
+const deleteEntityComponentMock = mock(
+  async (_id: number, _component: string) => null as EntityRow | null,
+);
 
 // 先捕获真实实现，mock 后在 afterAll 恢复，避免 mock.module 全局泄漏污染其他测试文件。
 const realPg = await import("@freeanima/habitat/core/db/pg");
@@ -50,7 +64,9 @@ mock.module("@freeanima/habitat/core/db/pg/entity", () => ({
   collectEntityReferences: async () => [],
   deleteEntity: async () => true,
   restoreEntity: async () => null,
-  deleteEntityComponent: async () => null,
+  deleteEntityComponent: deleteEntityComponentMock,
+  addEntityComponent: addEntityComponentMock,
+  promoteEntityComponent: promoteEntityComponentMock,
 }));
 
 afterAll(() => {
@@ -59,7 +75,13 @@ afterAll(() => {
   mock.module("@freeanima/habitat/core/db/pg/entity", () => entityOriginal);
 });
 
-import { serviceEntityGet, serviceEntityList, serviceEntityTrashList } from "./service.ts";
+import {
+  serviceEntityAddComponent,
+  serviceEntityGet,
+  serviceEntityList,
+  serviceEntitySetPrimaryComponent,
+  serviceEntityTrashList,
+} from "./service.ts";
 
 function auth(): VerifiedServiceApiToken {
   return { subject_id: 1, subject_type: "user" } as VerifiedServiceApiToken;
@@ -370,5 +392,156 @@ describe("serviceEntityGet", () => {
     await serviceEntityGet(testDeps(), { id: 7, include_deleted: true }, auth());
 
     expect(getEntityMock).toHaveBeenCalledWith(7, { include_deleted: true });
+  });
+});
+
+describe("serviceEntityAddComponent / setPrimaryComponent", () => {
+  beforeEach(() => {
+    bindWorlds();
+    getEntityMock.mockReset();
+    addEntityComponentMock.mockReset();
+    promoteEntityComponentMock.mockReset();
+  });
+
+  afterEach(() => {
+    resetResolvedWorldContextForTest();
+  });
+
+  it("attaches without changing primary by default", async () => {
+    const existing = row({
+      id: 5,
+      primary_component: "note",
+      components: ["note"],
+      body: { client_op_id: null },
+    });
+    getEntityMock.mockImplementation(async () => existing);
+    addEntityComponentMock.mockImplementation(
+      async (input: {
+        id: number;
+        component: string;
+        body: Record<string, unknown>;
+        promote_primary?: boolean;
+      }) =>
+        row({
+          id: 5,
+          primary_component: "note",
+          components: ["note", input.component],
+          body: { ...existing.body, ...input.body },
+        }),
+    );
+
+    const result = await serviceEntityAddComponent(
+      testDeps(),
+      {
+        subject_kind: "user",
+        id: 5,
+        component: "diary_entry",
+        body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
+      },
+      auth(),
+    );
+
+    expect(result.item.primary_component).toBe("note");
+    expect(result.item.components).toEqual(["note", "diary_entry"]);
+    expect(addEntityComponentMock).toHaveBeenCalledWith({
+      id: 5,
+      component: "diary_entry",
+      body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
+    });
+  });
+
+  it("passes promote_primary when requested", async () => {
+    const existing = row({
+      id: 5,
+      primary_component: "note",
+      components: ["note"],
+    });
+    getEntityMock.mockImplementation(async () => existing);
+    addEntityComponentMock.mockImplementation(async () =>
+      row({
+        id: 5,
+        primary_component: "diary_entry",
+        components: ["note", "diary_entry"],
+      }),
+    );
+
+    await serviceEntityAddComponent(
+      testDeps(),
+      {
+        subject_kind: "user",
+        id: 5,
+        component: "diary_entry",
+        body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
+        promote_primary: true,
+      },
+      auth(),
+    );
+
+    expect(addEntityComponentMock).toHaveBeenCalledWith({
+      id: 5,
+      component: "diary_entry",
+      body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
+      promote_primary: true,
+    });
+  });
+
+  it("rejects attach of identity component", async () => {
+    getEntityMock.mockImplementation(async () =>
+      row({ id: 5, primary_component: "note", components: ["note"] }),
+    );
+    await expect(
+      serviceEntityAddComponent(
+        testDeps(),
+        { subject_kind: "user", id: 5, component: "agent_config", body: {} },
+        auth(),
+      ),
+    ).rejects.toThrow(/identity/);
+    expect(addEntityComponentMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects attach on non-content", async () => {
+    getEntityMock.mockImplementation(async () =>
+      row({
+        id: 5,
+        type: "world",
+        primary_component: "world_config",
+        components: ["world_config"],
+      }),
+    );
+    await expect(
+      serviceEntityAddComponent(
+        testDeps(),
+        { subject_kind: "user", id: 5, component: "note", body: {} },
+        auth(),
+      ),
+    ).rejects.toThrow(/content/);
+  });
+
+  it("promotes secondary component", async () => {
+    const existing = row({
+      id: 5,
+      primary_component: "note",
+      components: ["note", "diary_entry"],
+      body: { entry_at: "2026-08-19T00:00:00.000+08:00", client_op_id: "x" },
+    });
+    getEntityMock.mockImplementation(async () => existing);
+    promoteEntityComponentMock.mockImplementation(async () =>
+      row({
+        id: 5,
+        primary_component: "diary_entry",
+        components: ["note", "diary_entry"],
+        body: existing.body,
+      }),
+    );
+
+    const result = await serviceEntitySetPrimaryComponent(
+      testDeps(),
+      { subject_kind: "user", id: 5, component: "diary_entry" },
+      auth(),
+    );
+
+    expect(result.item.primary_component).toBe("diary_entry");
+    expect(result.item.components).toEqual(["note", "diary_entry"]);
+    expect(promoteEntityComponentMock).toHaveBeenCalledWith({ id: 5, component: "diary_entry" });
   });
 });

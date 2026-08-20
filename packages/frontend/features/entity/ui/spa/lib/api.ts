@@ -65,3 +65,28 @@ export async function deleteEntityComponent(
   const data = await habitat().call("entity.deleteComponent", withSubjectKind({ id, component }));
   return data.item;
 }
+
+export async function addEntityComponent(
+  id: number,
+  component: string,
+  opts?: { body?: Record<string, unknown>; promotePrimary?: boolean },
+): Promise<EntityAdminRow> {
+  const data = await habitat().call(
+    "entity.addComponent",
+    withSubjectKind({
+      id,
+      component,
+      ...(opts?.body != null ? { body: opts.body } : {}),
+      ...(opts?.promotePrimary === true ? { promote_primary: true } : {}),
+    }),
+  );
+  return data.item;
+}
+
+export async function setPrimaryComponent(id: number, component: string): Promise<EntityAdminRow> {
+  const data = await habitat().call(
+    "entity.setPrimaryComponent",
+    withSubjectKind({ id, component }),
+  );
+  return data.item;
+}

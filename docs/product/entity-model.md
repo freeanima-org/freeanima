@@ -60,11 +60,14 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 
 与上表正交；**勿**用新建行冒充「邮件变任务」：
 
-| 操作       | 含义                                                                                         | 典型 API / 产品入口                                                                             |
-| ---------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| **retype** | 同 `entities.id`：换 `primary_component` + `components=[to]` + **整表替换** body（非 merge） | `replacePrimaryComponent`；`task.convertToEvent` / `calendar.convertToTask`                     |
-| **attach** | 同 id：`components` **追加**组件 + merge 该组件 body；默认 **不改** primary                  | `addEntityComponent`；`email.message.attachTask`（邮件上挂 `task_item`）                        |
-| **detach** | 去掉附加组件（即 deleteComponent）；载体实体保留                                             | `deleteEntityComponent`；`email.message.detachTask`；或 `task.delete` 在 primary≠`task_item` 时 |
+| 操作        | 含义                                                                                         | 典型 API / 产品入口                                                                                                                                                                       |
+| ----------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **retype**  | 同 `entities.id`：换 `primary_component` + `components=[to]` + **整表替换** body（非 merge） | `replacePrimaryComponent`；`task.convertToEvent` / `calendar.convertToTask`                                                                                                               |
+| **attach**  | 同 id：`components` **追加**组件 + merge 该组件 body；默认 **不改** primary                  | `addEntityComponent`；`entity.addComponent` / `entity_attach_component`；`email.message.attachTask`（邮件上挂 `task_item`）                                                               |
+| **detach**  | 去掉附加组件（即 deleteComponent）；载体实体保留；**body 共用键保留**                        | `deleteEntityComponent` → `stripRemovedComponentBodyFields`；`entity.deleteComponent` / `entity_detach_component`；`email.message.detachTask`；或 `task.delete` 在 primary≠`task_item` 时 |
+| **promote** | 同 id：仅改 `primary_component` 指向已有 `components` 成员；**不改** components / body       | `promoteEntityComponent`；`entity.setPrimaryComponent` / `entity_promote_component`                                                                                                       |
+
+`entities.body` 为**扁平 merge**（非按组件嵌套）。多组件可声明同一键（如 `note` 与 `diary_entry` 共用 `client_op_id`）。**detach** 仅删除「剩余组件 schema 不再需要」的键，禁止按卸下组件整表清字段。**promote** 零 body 变更；**attach** 时 patch 同键覆盖，调用方应尽量只传新组件字段。
 
 补充规则：
 

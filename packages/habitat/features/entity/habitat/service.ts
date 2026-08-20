@@ -7,6 +7,8 @@ import {
   countEntities,
   deleteEntity,
   deleteEntityComponent,
+  addEntityComponent,
+  promoteEntityComponent,
   getEntity,
   isUserAgentPrivateWorldPassthrough,
   listEntities,
@@ -26,6 +28,7 @@ import type {
 } from "@freeanima/shared/rpc-contract/frames/entity";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
+import { assertAttachAllowed, assertPromoteAllowed } from "../domain/attach-policy.ts";
 import { parseEntityListQueryId } from "./parse-entity-list-query-id.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
@@ -282,6 +285,45 @@ export async function serviceEntityDeleteComponent(
   const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
   await assertEntityInWorld(input.id, world_id);
   const row = await deleteEntityComponent(input.id, input.component);
+  if (!row) throw new Error("entity not found");
+  return { item: toAdminRow(row) };
+}
+
+export async function serviceEntityAddComponent(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind?: SubjectKind;
+    id: number;
+    component: string;
+    body?: Record<string, unknown>;
+    promote_primary?: boolean;
+  },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const existing = await assertEntityInWorld(input.id, world_id);
+  assertAttachAllowed(existing, input.component);
+  const row = await addEntityComponent({
+    id: input.id,
+    component: input.component,
+    body: input.body ?? {},
+    ...(input.promote_primary === true ? { promote_primary: true } : {}),
+  });
+  if (!row) throw new Error("entity not found");
+  return { item: toAdminRow(row) };
+}
+
+export async function serviceEntitySetPrimaryComponent(
+  deps: RuntimeDeps,
+  input: { subject_kind?: SubjectKind; id: number; component: string },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const existing = await assertEntityInWorld(input.id, world_id);
+  assertPromoteAllowed(existing, input.component);
+  const row = await promoteEntityComponent({ id: input.id, component: input.component });
   if (!row) throw new Error("entity not found");
   return { item: toAdminRow(row) };
 }

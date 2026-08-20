@@ -34,14 +34,20 @@ title: 实体模块
 
 ## 栖息地 RPC
 
-| 方法                     | 作用                                                            |
-| ------------------------ | --------------------------------------------------------------- |
-| `entity.list`            | 存活实体分页；可选 `type` / `primary_component` / `query`       |
-| `entity.trash.list`      | 回收站分页；入参同 `entity.list`                                |
-| `entity.get`             | 单条详情（含 summary/content/body）；回收站需 `include_deleted` |
-| `entity.delete`          | 软删；无 `force` 且存在引用时返回 `references`                  |
-| `entity.restore`         | 从回收站恢复                                                    |
-| `entity.deleteComponent` | 删除单个 component                                              |
+| 方法                         | 作用                                                               |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `entity.list`                | 存活实体分页；可选 `type` / `primary_component` / `query`          |
+| `entity.trash.list`          | 回收站分页；入参同 `entity.list`                                   |
+| `entity.get`                 | 单条详情（含 summary/content/body）；回收站需 `include_deleted`    |
+| `entity.delete`              | 软删；无 `force` 且存在引用时返回 `references`                     |
+| `entity.restore`             | 从回收站恢复                                                       |
+| `entity.deleteComponent`     | Morph detach：删除单个 component（共用 body 键保留）               |
+| `entity.addComponent`        | Morph attach：追加 component + merge body；可选 `promote_primary`  |
+| `entity.setPrimaryComponent` | Morph promote：把已有次要组件升为 `primary_component`（不改 body） |
+
+LLM ToolSet `entity`（经 `toolset_load`）：`entity_get` / `entity_search`，以及 Morph 工具
+`entity_attach_component` / `entity_detach_component` / `entity_promote_component`（另含 tag 工具）。
+Morph 细节与 body 扁平共享见 [`entity-model.md`](../product/entity-model.md)。
 
 `entity.list` / `entity.trash.list` 入参：`subject_kind`、`limit`、`offset`，以及可选
 `type`、`primary_component`、`query`。有 `query` 时：id/`anima:` 捷径走

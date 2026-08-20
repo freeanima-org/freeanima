@@ -77,6 +77,9 @@ describe("registerServiceTools", () => {
     expect(toolSets.getToolSet("terminal") == null).toBe(true);
     expect(toolSets.getToolSet("code") == null).toBe(true);
     expect(names.has("entity_get")).toBe(true);
+    expect(names.has("entity_attach_component")).toBe(true);
+    expect(names.has("entity_detach_component")).toBe(true);
+    expect(names.has("entity_promote_component")).toBe(true);
     expect(names.has("tag_list")).toBe(true);
     expect(toolSets.getToolSet("entity") != null).toBe(true);
     expect(toolSets.getToolSet("tag") == null).toBe(true);
