@@ -24,18 +24,27 @@ function which(cmd: string): boolean {
 function ensureCrossWindowsToolchain(): void {
   const missing: string[] = [];
 
-  const xwin = spawnSync("cargo", ["xwin", "--version"], { stdio: "ignore", shell: true });
-  if (xwin.status !== 0) {
-    missing.push("cargo-xwin（安装：cargo install --locked cargo-xwin）");
+  if (!which("cargo-xwin")) {
+    const xwin = spawnSync("cargo", ["xwin", "--version"], { stdio: "ignore", shell: false });
+    if (xwin.status !== 0) {
+      missing.push("cargo-xwin（安装：cargo install --locked cargo-xwin，或 nix develop）");
+    }
   }
 
-  const targets = spawnSync("rustup", ["target", "list", "--installed"], {
-    encoding: "utf-8",
-    shell: true,
-  });
-  const installed = targets.stdout ?? "";
-  if (!installed.includes(TARGET)) {
-    missing.push(`rust target ${TARGET}（安装：rustup target add ${TARGET}）`);
+  const rustupTargets = which("rustup")
+    ? (spawnSync("rustup", ["target", "list", "--installed"], {
+        encoding: "utf-8",
+        shell: false,
+      }).stdout ?? "")
+    : "";
+  const sysroot = (
+    spawnSync("rustc", ["--print", "sysroot"], { encoding: "utf-8", shell: false }).stdout ?? ""
+  ).trim();
+  const hasTarget =
+    rustupTargets.includes(TARGET) ||
+    Boolean(sysroot && existsSync(join(sysroot, "lib", "rustlib", TARGET)));
+  if (!hasTarget) {
+    missing.push(`rust target ${TARGET}（安装：rustup target add ${TARGET}，或 nix develop）`);
   }
 
   if (process.platform === "linux" || process.platform === "darwin") {

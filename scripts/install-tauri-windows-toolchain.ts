@@ -6,6 +6,8 @@
  *   bun scripts/install-tauri-windows-toolchain.ts --apt     # 含 sudo apt
  *   bun scripts/install-tauri-windows-toolchain.ts --check   # 仅校验（供 just pack 依赖）
  */
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const TARGET = "x86_64-pc-windows-msvc";
@@ -19,6 +21,28 @@ function which(cmd: string): boolean {
 
 function ok(cmd: string, args: string[]): boolean {
   return spawnSync(cmd, args, { stdio: "ignore", shell: false }).status === 0;
+}
+
+/** nixpkgs / PATH 上的 `cargo-xwin` 即可，不必 `cargo install`。 */
+function hasCargoXwin(): boolean {
+  return which("cargo-xwin") || ok("cargo", ["xwin", "--version"]);
+}
+
+/** rustup target，或 rust-overlay / nix rustc 的 sysroot 里已带该 target。 */
+function hasWindowsMsvcTarget(): boolean {
+  if (which("rustup")) {
+    const list = spawnSync("rustup", ["target", "list", "--installed"], {
+      encoding: "utf-8",
+      shell: false,
+    });
+    if ((list.stdout ?? "").includes(TARGET)) return true;
+  }
+  const sysroot = spawnSync("rustc", ["--print", "sysroot"], {
+    encoding: "utf-8",
+    shell: false,
+  });
+  const root = (sysroot.stdout ?? "").trim();
+  return Boolean(root && existsSync(join(root, "lib", "rustlib", TARGET)));
 }
 
 /** cc-rs 交叉编 MSVC 目标需要 `llvm-lib`；apt 的 llvm 常只装版本化名。 */
@@ -56,14 +80,10 @@ function failCheck(msg: string): never {
 
 function listMissing(): string[] {
   const missing: string[] = [];
-  if (!which("rustup") || !which("cargo")) missing.push("rustup/cargo");
+  if (!which("cargo")) missing.push("cargo");
   else {
-    const list = spawnSync("rustup", ["target", "list", "--installed"], {
-      encoding: "utf-8",
-      shell: false,
-    });
-    if (!(list.stdout ?? "").includes(TARGET)) missing.push(`rust target ${TARGET}`);
-    if (!ok("cargo", ["xwin", "--version"])) missing.push("cargo-xwin");
+    if (!hasWindowsMsvcTarget()) missing.push(`rust target ${TARGET}`);
+    if (!hasCargoXwin()) missing.push("cargo-xwin");
   }
   if (!which("makensis")) missing.push("nsis/makensis");
   if (!which("clang")) missing.push("clang");
@@ -82,28 +102,30 @@ if (checkOnly) {
 
 console.log("[install-tauri-windows] 开始安装交叉编译工具链…");
 
-if (!which("rustup") || !which("cargo")) {
+if (!which("cargo")) {
   console.error(
-    "[install-tauri-windows] 未找到 rustup/cargo。请先安装 Rust：\n" +
+    "[install-tauri-windows] 未找到 cargo。请先安装 Rust：\n" +
       "  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\n" +
-      '  source "$HOME/.cargo/env"',
+      '  source "$HOME/.cargo/env"\n' +
+      "  或进入本仓库 nix develop / direnv（flake 提供 rustc/cargo）",
   );
   process.exit(1);
 }
 
-{
-  const list = spawnSync("rustup", ["target", "list", "--installed"], {
-    encoding: "utf-8",
-    shell: false,
-  });
-  if ((list.stdout ?? "").includes(TARGET)) {
-    console.log(`[install-tauri-windows] rust target ${TARGET} 已安装`);
-  } else {
-    run("rustup", ["target", "add", TARGET], `rustup target add ${TARGET}`);
-  }
+if (hasWindowsMsvcTarget()) {
+  console.log(`[install-tauri-windows] rust target ${TARGET} 已安装`);
+} else if (which("rustup")) {
+  run("rustup", ["target", "add", TARGET], `rustup target add ${TARGET}`);
+} else {
+  console.error(
+    `[install-tauri-windows] 未找到 rust target ${TARGET}。请执行：\n` +
+      `  rustup target add ${TARGET}\n` +
+      "  或使用本仓库 flake（rust-overlay 已带该 target）",
+  );
+  process.exit(1);
 }
 
-if (ok("cargo", ["xwin", "--version"])) {
+if (hasCargoXwin()) {
   console.log("[install-tauri-windows] cargo-xwin 已安装");
 } else {
   run("cargo", ["install", "--locked", "cargo-xwin"], "cargo install --locked cargo-xwin");
