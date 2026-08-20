@@ -33,6 +33,8 @@ export const emailMessageRowSchema = z.object({
   from: z.string(),
   to: z.string(),
   cc: z.string().nullable(),
+  from_contact_id: z.number().int().positive().nullable().optional(),
+  to_contact_ids: z.array(z.number().int().positive()).optional(),
   sent_at: z.string(),
   unread: z.boolean(),
   flagged: z.boolean().optional(),

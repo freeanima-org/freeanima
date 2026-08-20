@@ -16,3 +16,4 @@ export * from "../frames/notification.ts";
 export * from "../frames/companion.ts";
 export * from "../frames/coding.ts";
 export * from "../frames/bookmark.ts";
+export * from "../frames/contact.ts";

@@ -30,6 +30,7 @@ import {
   OBJECT_FOLDER_COMPONENT,
   SUBAGENT_COMPONENT,
   BOOKMARK_COMPONENT,
+  CONTACT_COMPONENT,
   calendarEventBodySchema,
   calendarUiPrefsBodySchema,
   contentBlockBodySchema,
@@ -58,6 +59,7 @@ import {
   objectFolderBodySchema,
   subagentBodySchema,
   bookmarkBodySchema,
+  contactBodySchema,
   type CalendarEventBody,
   type CalendarUiPrefsBody,
   type ContentBlockBody,
@@ -86,6 +88,7 @@ import {
   type ObjectFolderBody,
   type SubagentBody,
   type BookmarkBody,
+  type ContactBody,
 } from "./components/index.ts";
 import { parseEntityRevisions, type EntityRevision } from "./revisions.ts";
 
@@ -422,6 +425,33 @@ export function asBookmark(row: EntityRow):
         title: row.title,
         content: row.content,
         deleted_at: row.deleted_at,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        ...parsed.data,
+      }
+    : null;
+}
+
+export function asContact(row: EntityRow):
+  | (ContactBody & {
+      id: number;
+      title: string;
+      summary: string;
+      content: string;
+      world_id: number;
+      created_at: Date;
+      updated_at: Date;
+    })
+  | null {
+  if (row.primary_component !== CONTACT_COMPONENT) return null;
+  const parsed = contactBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        content: row.content,
+        world_id: row.world_id,
         created_at: row.created_at,
         updated_at: row.updated_at,
         ...parsed.data,

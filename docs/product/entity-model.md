@@ -171,6 +171,7 @@ LLM ToolSets：`@freeanima/feature-task/domain` — `task`（条目 CRUD + `task
 | `/calendar`      | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
 | `/projects`      | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
 | `/email`         | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
+| `/contacts`      | **Commons**（不跟私有 world 切换）          | 无                         |
 | `/notifications` | `recipient_kind` + subject 实体 id          | 无（继承顶栏）             |
 | `/diary`         | 经 `subject_kind` 的 subject 默认私有 world | 无（继承顶栏）             |
 | `/vault`         | 默认 **user** 库；可选 Agent 视图           | User：主密码锁             |
@@ -212,6 +213,20 @@ SAP 任务/邮件方法接受可选 `subject_kind`（默认：任务 `user`，�
 `task_item.body.project_id` 把条目链到项目。可选项目背景说明用实体 `content`（非 `body`）。任务模块智能清单默认只含无 `project_id` 的任务。壳路由 `/projects`；栖息地 RPC `projectfolder.*`、`project.*`、`project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
 
 完整规格：[`docs/modules/project.md`](../modules/project.md)。
+
+## 通讯录模块
+
+Commons 内的联系人（识别用，非 Subject）：
+
+| 概念   | 实体           | 组件      |
+| ------ | -------------- | --------- |
+| 联系人 | `type=content` | `contact` |
+
+- 固定 `world_id = commons_world_id`；**写**仍靠 Commons 手动 write grant（不改公开 world access 规则）
+- Body：`emails` / `phones` / `addresses` / `wechats` 通道数组；`identity_key` 值须实例内该通道全局唯一；`addresses` 禁止 identity_key
+- 可选 `subject_id` 挂本机 user/agent；邮件 `from_contact_id` / `to_contact_ids` 可选关联
+
+见 [`docs/modules/contact.md`](../modules/contact.md)。
 
 ## 邮件模块（资源层）
 
