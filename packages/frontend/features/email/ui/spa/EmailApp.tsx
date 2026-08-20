@@ -1207,17 +1207,6 @@ export function EmailApp() {
                     onReply: () => setReplyMessage(detail),
                     onCopyId: () => copyMessageId(detail),
                     onDelete: () => setDeleteMessageTarget(detail),
-                    onContactLinked: (next) => {
-                      setDetail((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              from_contact_id: next.from_contact_id,
-                              to_contact_ids: next.to_contact_ids,
-                            }
-                          : prev,
-                      );
-                    },
                     ...(detail.unread
                       ? { onMarkRead: () => onMarkRead(detail) }
                       : { onMarkUnread: () => onMarkUnread(detail) }),

@@ -45,6 +45,10 @@ export async function getSubjectWorldAccessLevel(
   subjectId: number,
   worldId: number,
 ): Promise<SubjectWorldAccessLevel> {
+  const subject = await getEntity(subjectId);
+  // 主人（全局唯一 type=user）对任意 world 满权限，不依赖 grants
+  if (subject?.type === "user") return "write";
+
   const row = await getEntity(worldId);
   if (!row || row.type !== "world") {
     throw new ToolWorldAccessError(`world not found: ${worldId}`);
@@ -122,7 +126,20 @@ export async function resolveToolWorld(opts: ResolveToolWorldOpts): Promise<numb
   return resolveDefaultPrivateWorldForSubject(callerSubjectId);
 }
 
-/** 供搜索列举：subject 可读的全部 world */
+/** 供搜索列举：subject 可读的全部 world（user 返回全部 world，可超过 500） */
 export async function listWorldIdsAccessibleBySubject(subjectId: number): Promise<number[]> {
+  const subject = await getEntity(subjectId);
+  if (subject?.type === "user") {
+    const ids: number[] = [];
+    let offset = 0;
+    for (;;) {
+      const batch = await listEntities({ type: "world", limit: 500, offset });
+      if (batch.length === 0) break;
+      ids.push(...batch.map((row) => row.id));
+      if (batch.length < 500) break;
+      offset += 500;
+    }
+    return ids;
+  }
   return resolveWorldsAccessibleBySubject({ list: listEntities }, subjectId);
 }

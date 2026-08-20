@@ -906,6 +906,24 @@ export async function listEntities(
   return rows.map(mapRow);
 }
 
+/** 全库 `world_config.common=true`（按 id 升序）；不受 listEntities limit 500 截断 */
+export async function listCommonWorldEntities(session?: DbSession): Promise<EntityRow[]> {
+  const db = session ?? getDb();
+  const rows = await db
+    .select(entityRowSelectColumns)
+    .from(entities)
+    .where(
+      and(
+        eq(entities.type, "world"),
+        eq(entities.primary_component, "world_config"),
+        isNull(entities.deleted_at),
+        sql`${entities.body}->>'common' = 'true'`,
+      ),
+    )
+    .orderBy(asc(entities.id));
+  return rows.map(mapRow);
+}
+
 export async function countEntities(
   opts?: Omit<EntityListOpts, "offset" | "limit" | "order_by" | "order_dir">,
 ): Promise<number> {

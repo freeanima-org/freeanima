@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
@@ -7,69 +8,108 @@ import {
   attachAddressRemote,
   createFromAddressRemote,
   getContactRemote,
-  linkMessageContactRemote,
+  patchContactRemote,
   resolveContactsByAddress,
   type ContactRow,
 } from "@freeanima/features/contact/ui/spa/lib/api.ts";
 
-type Role = "from" | "to";
-
-type EmailContactLinkPanelProps = {
-  messageId: number;
-  role: Role;
+type EmailContactMailboxProps = {
   addressRaw: string;
-  linkedContactId: number | null;
   writesDisabled?: boolean;
-  onLinked: (next: { from_contact_id: number | null; to_contact_ids: number[] }) => void;
 };
 
-export function EmailContactLinkPanel({
-  messageId,
-  role,
+/** `Name <a@b.com>` / 多地址串 → 第一个邮箱（小写）。 */
+function extractEmailAddress(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const angle = trimmed.match(/<([^>]+)>/);
+  if (angle?.[1]) {
+    const inner = angle[1].trim();
+    if (inner.includes("@")) return inner.toLowerCase();
+  }
+  const bare = trimmed.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return bare?.[0]?.toLowerCase() ?? null;
+}
+
+/**
+ * 邮件头展示：按通讯录邮箱实时 resolve（不落 email_message FK）。
+ * 已有联系人 → `显示名 <email>`；否则原样头字段 +「关联」。
+ */
+export function EmailContactMailbox({
   addressRaw,
-  linkedContactId,
   writesDisabled = false,
-  onLinked,
-}: EmailContactLinkPanelProps) {
+}: EmailContactMailboxProps) {
   const { kind: subjectKind } = useSubjectScope();
   const [linked, setLinked] = useState<ContactRow | null>(null);
   const [candidates, setCandidates] = useState<ContactRow[]>([]);
   const [busy, setBusy] = useState(false);
+  const [resolving, setResolving] = useState(true);
   const [error, setError] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [showPanel, setShowPanel] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    if (linkedContactId == null) {
+  const email = extractEmailAddress(addressRaw);
+
+  const refresh = useCallback(async () => {
+    if (!email) {
       setLinked(null);
-    } else {
-      void getContactRemote(subjectKind, linkedContactId)
-        .then((row) => {
-          if (!cancelled) setLinked(row);
-        })
-        .catch(() => {
-          if (!cancelled) setLinked(null);
-        });
+      setResolving(false);
+      return;
     }
-    return () => {
-      cancelled = true;
-    };
-  }, [linkedContactId, subjectKind]);
+    setResolving(true);
+    setError("");
+    try {
+      const items = await resolveContactsByAddress(subjectKind, email);
+      setLinked(items[0] ?? null);
+    } catch (e) {
+      setLinked(null);
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setResolving(false);
+    }
+  }, [email, subjectKind]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
 
   const openResolve = async () => {
+    if (!email) return;
     setShowPanel(true);
     setBusy(true);
     setError("");
     try {
-      const items = await resolveContactsByAddress(subjectKind, addressRaw);
+      const items = await resolveContactsByAddress(subjectKind, email);
       setCandidates(items);
-      const guess =
-        addressRaw.match(/"([^"]+)"/)?.[1] ||
-        addressRaw.split("<")[0]?.trim() ||
-        addressRaw.split("@")[0] ||
-        "";
-      setNewTitle(guess.replace(/^"|"$/g, "").trim());
+      const angleName = addressRaw.match(/"([^"]+)"/)?.[1];
+      const beforeAngle = addressRaw.includes("<")
+        ? (addressRaw.split("<")[0]?.trim().replace(/^"|"$/g, "") ?? "")
+        : "";
+      const guess = angleName || beforeAngle || email.split("@")[0] || "";
+      setNewTitle(guess.trim());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const afterMutate = async () => {
+    setShowPanel(false);
+    await refresh();
+  };
+
+  const attachAndShow = async (contactId: number) => {
+    if (!email) return;
+    setBusy(true);
+    setError("");
+    try {
+      await attachAddressRemote(subjectKind, {
+        contact_id: contactId,
+        address: email,
+        identity_key: false,
+      });
+      await afterMutate();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -78,15 +118,12 @@ export function EmailContactLinkPanel({
   };
 
   const linkExisting = async (contactId: number) => {
+    // 候选已含该邮箱：仅刷新展示（身份键命中）
     setBusy(true);
     setError("");
     try {
-      const result = await linkMessageContactRemote(subjectKind, {
-        message_id: messageId,
-        role,
-        contact_id: contactId,
-      });
-      onLinked(result);
+      const row = await getContactRemote(subjectKind, contactId);
+      setLinked(row);
       setShowPanel(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -95,46 +132,17 @@ export function EmailContactLinkPanel({
     }
   };
 
-  const attachAndLink = async (contactId: number) => {
+  const createAndShow = async () => {
+    if (!email) return;
     setBusy(true);
     setError("");
     try {
-      await attachAddressRemote(subjectKind, {
-        contact_id: contactId,
-        address: addressRaw,
-        identity_key: false,
-      });
-      const result = await linkMessageContactRemote(subjectKind, {
-        message_id: messageId,
-        role,
-        contact_id: contactId,
-      });
-      onLinked(result);
-      setShowPanel(false);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const createAndLink = async () => {
-    setBusy(true);
-    setError("");
-    try {
-      const item = await createFromAddressRemote(subjectKind, {
+      await createFromAddressRemote(subjectKind, {
         title: newTitle.trim() || "未命名联系人",
-        address: addressRaw,
+        address: email,
         identity_key: true,
-        message_id: messageId,
-        link_role: role,
       });
-      if (role === "from") {
-        onLinked({ from_contact_id: item.id, to_contact_ids: [] });
-      } else {
-        onLinked({ from_contact_id: null, to_contact_ids: [item.id] });
-      }
-      setShowPanel(false);
+      await afterMutate();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -142,17 +150,16 @@ export function EmailContactLinkPanel({
     }
   };
 
-  const clearLink = async () => {
+  /** 从该联系人移除本邮箱通道（展示侧即不再命中）。 */
+  const detachEmail = async () => {
+    if (!linked || !email) return;
     setBusy(true);
     setError("");
     try {
-      const result = await linkMessageContactRemote(subjectKind, {
-        message_id: messageId,
-        role,
-        contact_id: null,
-        ...(role === "to" ? { to_contact_ids: [] } : {}),
-      });
-      onLinked(result);
+      const nextEmails = linked.emails.filter((e) => e.value.trim().toLowerCase() !== email);
+      await patchContactRemote(subjectKind, linked.id, { emails: nextEmails });
+      setLinked(null);
+      await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -161,37 +168,52 @@ export function EmailContactLinkPanel({
   };
 
   return (
-    <div className="mt-1 space-y-1 text-xs">
-      {linked ? (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground">联系人：</span>
-          <a className="text-primary underline" href="/contacts">
-            {linked.title}
-          </a>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            isDisabled={writesDisabled || busy}
-            onClick={() => void clearLink()}
-          >
-            解除关联
-          </Button>
-        </div>
-      ) : (
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          isDisabled={writesDisabled || busy}
-          onClick={() => void openResolve()}
-        >
-          关联通讯录
-        </Button>
-      )}
+    <div className="inline-flex max-w-full flex-col gap-1 text-sm">
+      <span className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1">
+        {resolving ? (
+          <Spinner className="size-3.5" />
+        ) : linked && email ? (
+          <>
+            <Link
+              to={"/contacts" as never}
+              search={{ id: linked.id } as never}
+              className="text-foreground font-medium underline-offset-2 hover:underline"
+            >
+              {linked.title}
+            </Link>
+            <span className="text-muted-foreground wrap-break-word">&lt;{email}&gt;</span>
+            <Button
+              type="button"
+              size="xs"
+              variant="ghost"
+              className="text-muted-foreground h-6 px-1.5"
+              isDisabled={writesDisabled || busy}
+              onClick={() => void detachEmail()}
+            >
+              解除
+            </Button>
+          </>
+        ) : (
+          <>
+            <span className="text-foreground wrap-break-word">{addressRaw || "—"}</span>
+            {email ? (
+              <Button
+                type="button"
+                size="xs"
+                variant="ghost"
+                className="text-muted-foreground h-6 px-1.5"
+                isDisabled={writesDisabled || busy}
+                onClick={() => void openResolve()}
+              >
+                关联
+              </Button>
+            ) : null}
+          </>
+        )}
+      </span>
 
       {showPanel ? (
-        <div className="border-border bg-muted/30 mt-2 space-y-2 rounded-md border p-2">
+        <div className="border-border bg-muted/30 space-y-2 rounded-md border p-2 text-xs">
           {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
           {busy ? <Spinner className="size-4" /> : null}
           {candidates.length > 0 ? (
@@ -205,16 +227,16 @@ export function EmailContactLinkPanel({
                     isDisabled={busy || writesDisabled}
                     onClick={() => void linkExisting(c.id)}
                   >
-                    关联
+                    选用
                   </Button>
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
                     isDisabled={busy || writesDisabled}
-                    onClick={() => void attachAndLink(c.id)}
+                    onClick={() => void attachAndShow(c.id)}
                   >
-                    并入邮箱并关联
+                    并入邮箱
                   </Button>
                 </li>
               ))}
@@ -230,10 +252,10 @@ export function EmailContactLinkPanel({
             <Button
               type="button"
               size="sm"
-              isDisabled={busy || writesDisabled}
-              onClick={() => void createAndLink()}
+              isDisabled={busy || writesDisabled || !email}
+              onClick={() => void createAndShow()}
             >
-              新建并关联
+              新建
             </Button>
             <Button type="button" size="sm" variant="ghost" onClick={() => setShowPanel(false)}>
               关闭
@@ -244,3 +266,6 @@ export function EmailContactLinkPanel({
     </div>
   );
 }
+
+/** @deprecated 使用 EmailContactMailbox */
+export const EmailContactLinkPanel = EmailContactMailbox;

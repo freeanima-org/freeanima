@@ -11,9 +11,11 @@ function grantLevel(permission: WorldGrantPermission): SubjectWorldAccessLevel {
 }
 
 /**
- * 按 world_config body 判定 subject 对本 world 的访问级别。
+ * 按 world_config body 判定 subject 对本 world 的访问级别（**不含** user 主人旁路）。
  * - public：全员至少 read；write 需 owner 或 write grant
  * - private：owner 满权限；其余靠 grants（write ⊃ read）
+ *
+ * `type=user` 对任意 world 满权限见 {@link getSubjectWorldAccessLevel}。
  */
 export function subjectWorldAccessLevel(
   body: WorldConfigBody | Record<string, unknown>,

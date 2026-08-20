@@ -52,8 +52,6 @@ function toMessageRow(
     from: row.from,
     to: row.to,
     cc: row.cc ?? null,
-    from_contact_id: row.from_contact_id ?? null,
-    to_contact_ids: row.to_contact_ids ?? [],
     sent_at: row.sent_at,
     unread: row.unread ?? false,
     flags: row.flags ?? [],
@@ -145,11 +143,6 @@ export async function upsertEmailMessage(input: EmailMessageUpsertInput): Promis
     ...(input.text != null ? { text: input.text } : {}),
     ...(input.headers != null ? { headers: input.headers } : {}),
     ...(input.attachments != null ? { attachments: input.attachments } : {}),
-    // 同步更新时保留已有联系人关联
-    ...(existing?.from_contact_id != null ? { from_contact_id: existing.from_contact_id } : {}),
-    ...(existing?.to_contact_ids != null && existing.to_contact_ids.length > 0
-      ? { to_contact_ids: existing.to_contact_ids }
-      : {}),
   };
 
   const tagIds = input.tag_ids !== undefined ? normalizeTagIds(input.tag_ids) : undefined;

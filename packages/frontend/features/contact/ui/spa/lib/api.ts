@@ -129,8 +129,6 @@ export async function createFromAddressRemote(
     title: string;
     address: string;
     identity_key?: boolean;
-    message_id?: number;
-    link_role?: "from" | "to";
   },
 ): Promise<ContactRow> {
   const data = await habitat().call("contact.createFromAddress", {
@@ -139,21 +137,4 @@ export async function createFromAddressRemote(
   });
   await invalidatePortalReads(["contact", "email"]);
   return data.item;
-}
-
-export async function linkMessageContactRemote(
-  subjectKind: SubjectKind,
-  input: {
-    message_id: number;
-    role: "from" | "to";
-    contact_id: number | null;
-    to_contact_ids?: number[];
-  },
-): Promise<{ from_contact_id: number | null; to_contact_ids: number[] }> {
-  const data = await habitat().call("contact.linkMessage", {
-    subject_kind: subjectKind,
-    ...input,
-  });
-  await invalidatePortalReads(["email", "contact"]);
-  return data;
 }
