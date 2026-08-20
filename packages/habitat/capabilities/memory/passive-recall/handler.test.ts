@@ -142,4 +142,54 @@ describe("createPassiveMemoryRecallHandler", () => {
     await createPassiveMemoryRecallHandler()({ conversationId: "cron-session", messages });
     expect(semanticPassiveRecallSearchDetailed).not.toHaveBeenCalled();
   });
+
+  it("excludes hits sourced from the current conversation", async () => {
+    bindTestConfig(true);
+    semanticPassiveRecallSearchDetailed.mockResolvedValueOnce({
+      hits: [
+        {
+          memory_type: "semantic" as const,
+          score: 0.9,
+          semantic_memory_id: 10,
+          type: "preference",
+          pinned: false,
+          content: "from this chat",
+          source_conversations: ["c1"],
+          observed_at: null,
+          occurred_at: null,
+          status: "active",
+        },
+        {
+          memory_type: "semantic" as const,
+          score: 0.8,
+          semantic_memory_id: 11,
+          type: "preference",
+          pinned: false,
+          content: "from other chat",
+          source_conversations: ["other"],
+          observed_at: null,
+          occurred_at: null,
+          status: "active",
+        },
+      ],
+    });
+    const messages: StoredMessage[] = [{ role: "user", content: "hello" }];
+    const llmDebugExtras: Record<string, unknown> = {};
+    await createPassiveMemoryRecallHandler()({
+      conversationId: "c1",
+      messages,
+      llm_debug: true,
+      llmDebugExtras,
+    });
+
+    expect(messages).toHaveLength(2);
+    const injected = messages[0];
+    expect(injected?.role).toBe("assistant");
+    if (injected?.role === "assistant") {
+      expect(injected.content).toContain('id="11"');
+      expect(injected.content).not.toContain('id="10"');
+    }
+    const trace = llmDebugExtras.passive_recall as { excluded_current_conversation_ids?: number[] };
+    expect(trace.excluded_current_conversation_ids).toEqual([10]);
+  });
 });

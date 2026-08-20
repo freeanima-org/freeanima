@@ -82,6 +82,7 @@ export type LlmDebugSnapshotPayload = {
     after_score_filter: Array<{ id: number; score: number; content_preview: string }>;
     after_resident_filter: Array<{ id: number; score: number; content_preview: string }>;
     excluded_resident_ids: number[];
+    excluded_current_conversation_ids?: number[];
     injected: Array<{ id: number; score: number; content_preview: string }>;
     skipped_reason?: string;
     elapsed_ms: number;

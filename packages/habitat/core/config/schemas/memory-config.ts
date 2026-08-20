@@ -10,6 +10,8 @@ export const passiveRecallConfigSchema = z.object({
   min_relative_score: z.number().min(0).max(1).optional(),
   max_chars: z.number().int().positive().optional(),
   exclude_resident: z.boolean().optional(),
+  /** 排除 source_conversations 含当前会话的命中（避免与对话原文重复） */
+  exclude_current_conversation: z.boolean().optional(),
   /**
    * When true (and embedding configured), passive recall RRF-includes vector as boost-only.
    * Default: true when embedding is enabled.
@@ -104,6 +106,7 @@ export type ResolvedPassiveRecallConfig = {
   min_relative_score: number;
   max_chars: number;
   exclude_resident: boolean;
+  exclude_current_conversation: boolean;
   use_vector: boolean;
 };
 
@@ -196,6 +199,7 @@ export function resolvePassiveRecallConfig(cfg: RuntimeConfig): ResolvedPassiveR
     min_relative_score: raw?.min_relative_score ?? DEFAULT_PASSIVE_RECALL_MIN_RELATIVE_SCORE,
     max_chars: raw?.max_chars ?? 2000,
     exclude_resident: raw?.exclude_resident ?? true,
+    exclude_current_conversation: raw?.exclude_current_conversation ?? true,
     use_vector: raw?.use_vector ?? embeddingOn,
   };
 }

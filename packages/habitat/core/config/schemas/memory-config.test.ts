@@ -23,6 +23,7 @@ describe("resolvePassiveRecallConfig", () => {
       min_relative_score: 0.55,
       max_chars: 2000,
       exclude_resident: true,
+      exclude_current_conversation: true,
       use_vector: false,
     });
   });
@@ -49,6 +50,7 @@ describe("resolvePassiveRecallConfig", () => {
             min_relative_score: 0.7,
             max_chars: 500,
             exclude_resident: false,
+            exclude_current_conversation: false,
             use_vector: false,
           },
         },
@@ -60,6 +62,7 @@ describe("resolvePassiveRecallConfig", () => {
       min_relative_score: 0.7,
       max_chars: 500,
       exclude_resident: false,
+      exclude_current_conversation: false,
       use_vector: false,
     });
   });

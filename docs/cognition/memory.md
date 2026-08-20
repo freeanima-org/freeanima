@@ -41,16 +41,16 @@ Memory
 
 实现：`@freeanima/habitat/capabilities/memory` → `createEmbeddedMemoryService`（及日后 remote client）。
 
-| 方法                                                                   | 角色                                                                                                                                                                                                                                                              |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `syncTurn`                                                             | 回合入口：切片 + **内建 cite** + 触发 retain                                                                                                                                                                                                                      |
-| `retain`                                                               | 可重放抽取；默认 user/assistant **正文**为素材（无思考链/tool 角色）；自身经 AutoLlm 调 `memory_semantic_*`，过程仅见 `auto_llm_*`；协议禁止末轮 tool_calls，约 20 字总结在 retain 的 task_spec；语义相关按本回合各条 user/assistant 分别 hybrid 召回后分配额合并 |
-| `recall` / `search`                                                    | 委托 SearchBackend hybrid；scope 分召回                                                                                                                                                                                                                           |
-| `reflect`                                                              | **巩固作业**（按 `search_documents.cluster_id` 分批；每批并入跨族近邻后单轮有序巩固；**不**按关联对话全量喂料）                                                                                                                                                   |
-| `remember` / `update` / `deprecate` / `get` / `list` / `pin` / `unpin` | CRUD                                                                                                                                                                                                                                                              |
-| `cite`                                                                 | 热度（主路径在 syncTurn；显式 API 备用）                                                                                                                                                                                                                          |
-| `listResident` / `assembleResidentBlock`                               | 常驻系统提示                                                                                                                                                                                                                                                      |
-| `temporal.*`                                                           | list / get / 可选 search / regenerate                                                                                                                                                                                                                             |
+| 方法                                                                   | 角色                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `syncTurn`                                                             | 回合入口：切片 + **内建 cite** + 触发 retain（回合后异步；按 watermark 批量，非每条消息一次 LLM）                                                                                                                                                                     |
+| `retain`                                                               | **抽取 + 防重复轻对照**（非整表整理）。素材为 user/assistant **正文**；对照集为本对话策展 related（近期 3 ∪ 今日会话内语义 ≤5 → 时间倒序取 5）+ 跨会话 hybrid（**更高**阈值）；create/update 为主；全量合并归 `reflect`。AutoLlm 调 `memory_semantic_*`，约 20 字收尾 |
+| `recall` / `search`                                                    | 委托 SearchBackend hybrid；scope 分召回                                                                                                                                                                                                                               |
+| `reflect`                                                              | **巩固作业**（按 `search_documents.cluster_id` 分批；每批并入跨族近邻后单轮有序巩固；**不**按关联对话全量喂料）                                                                                                                                                       |
+| `remember` / `update` / `deprecate` / `get` / `list` / `pin` / `unpin` | CRUD                                                                                                                                                                                                                                                                  |
+| `cite`                                                                 | 热度（主路径在 syncTurn；显式 API 备用）                                                                                                                                                                                                                              |
+| `listResident` / `assembleResidentBlock`                               | 常驻系统提示                                                                                                                                                                                                                                                          |
+| `temporal.*`                                                           | list / get / 可选 search / regenerate                                                                                                                                                                                                                                 |
 
 配置：`memory.deployment`（默认 `embedded`）。
 
@@ -118,11 +118,17 @@ LLM **没有** `memory_recall` 跨类型工具。程序侧 `MemoryService.recall
 
 ### 被动语义召回
 
-面向用户回合前注入语义命中（`passive_memory_context`）。配置：`memory.passive_recall`。细节与 jieba/vector boost 行为见历史实现；索引旁表 `search_documents`。
+面向用户回合前注入语义命中（`passive_memory_context`）。配置：`passive_recall` / `memory.passive_recall`。细节与 jieba/vector boost 行为见历史实现；索引旁表 `search_documents`。
 
-retain 热路径复用同一 hybrid，但按本 **回合** 内各条 user/assistant 正文分别召回，user/assistant 两侧分配额后去重合并；环内不再调用 `memory_semantic_search`。注入清单为 `<memory id type sources observed occurred>`（与 related 同源 renderer）。
+默认 **排除常驻**（`exclude_resident`）与 **本会话来源**（`exclude_current_conversation`：`source_conversations` 含当前会话则不注入），避免与对话 raw/slim 原文重复占窗口。
 
-对话素材进 retain 的 `source_data` 为 `<message role t>`：`role` 区分 user/assistant（风巢 #18799），`t` 为消息发送时间。
+### retain 热路径（抽取 + 防重复）
+
+- **时机**：`syncTurn` 后异步；watermark 切片批量；夜间不自动补跑。
+- **本对话 related**：近期 `updated_at` 前 3 ∪ 今日（CST）会话内 hybrid（略低阈值）最多 5 → merge 去重 → 时间倒序取 5（稀疏允许 3+1 / 2+1 等）。
+- **跨会话语义相关**：同 hybrid，按本回合各条 user/assistant 分侧配额；**更高** `min_score` / `min_relative_score`（不改 Working 被动默认）。
+- 环内不再调用 `memory_semantic_search`。整理字段清单为 `<memory id type sources observed occurred>`。
+- 对话素材 `source_data` 为 `<message role t>`：`role` 区分 user/assistant（风巢 #18799），`t` 为消息发送时间。
 
 ### 常驻记忆
 

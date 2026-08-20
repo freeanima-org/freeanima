@@ -32,6 +32,7 @@ function emptyDebug(query: string): PassiveRecallDebugTrace {
     after_score_filter: [],
     after_resident_filter: [],
     excluded_resident_ids: [],
+    excluded_current_conversation_ids: [],
     injected: [],
     elapsed_ms: 0,
   };
@@ -106,6 +107,10 @@ export function createPassiveMemoryRecallHandler() {
       throw e;
     }
 
+    if (ctx.llm_debug === true && !debug) {
+      debug = emptyDebug(query);
+    }
+
     let excludedResidentIds: number[] = [];
     if (config.exclude_resident && hits.length > 0) {
       const resident = await listResidentSemanticMemory();
@@ -117,6 +122,15 @@ export function createPassiveMemoryRecallHandler() {
         .map((hit) => hit.semantic_memory_id);
     }
 
+    let excludedCurrentConversationIds: number[] = [];
+    if (config.exclude_current_conversation && hits.length > 0) {
+      const before = hits;
+      hits = hits.filter((hit) => !hit.source_conversations.includes(conversationId));
+      excludedCurrentConversationIds = before
+        .filter((hit) => hit.source_conversations.includes(conversationId))
+        .map((hit) => hit.semantic_memory_id);
+    }
+
     if (debug) {
       debug.after_resident_filter = hits.map((h) => ({
         id: h.semantic_memory_id,
@@ -124,6 +138,7 @@ export function createPassiveMemoryRecallHandler() {
         content_preview: previewPassiveContent(h.content),
       }));
       debug.excluded_resident_ids = excludedResidentIds;
+      debug.excluded_current_conversation_ids = excludedCurrentConversationIds;
       debug.elapsed_ms = Math.round(performance.now() - started);
     }
 
