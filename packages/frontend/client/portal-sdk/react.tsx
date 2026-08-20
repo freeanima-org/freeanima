@@ -35,6 +35,7 @@ export {
 } from "./shell-module-primary-count-react.tsx";
 export { useColorTheme, useSetColorTheme } from "./color-theme-react.tsx";
 export { useChatLlmDebugEnabled, useSetChatLlmDebugEnabled } from "./chat-prefs-react.tsx";
+export { useShellQuickEntries, useShellQuickIdSet } from "./shell-quick-react.tsx";
 export { useNetworkOnline } from "./use-network-status.ts";
 export { useHabitatConnection } from "./use-habitat-connection.ts";
 export { useLocalPrefer } from "./use-local-prefer.ts";

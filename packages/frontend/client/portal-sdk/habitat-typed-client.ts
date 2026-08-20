@@ -28,6 +28,7 @@ import { mcpMethodDefs } from "@freeanima/features/mcp/habitat/method-defs.ts";
 import { notificationMethodDefs } from "@freeanima/features/notification/habitat/method-defs.ts";
 import { objectStorageMethodDefs } from "@freeanima/features/object-storage/habitat/method-defs.ts";
 import { pomodoroMethodDefs } from "@freeanima/features/pomodoro/habitat/method-defs.ts";
+import { shellQuickMethodDefs } from "@freeanima/features/shell-quick/habitat/method-defs.ts";
 import { projectMethodDefs } from "@freeanima/features/project/habitat/method-defs.ts";
 import { tagMethodDefs } from "@freeanima/features/tag/habitat/method-defs.ts";
 import { subagentMethodDefs } from "@freeanima/features/subagent/habitat/method-defs.ts";
@@ -52,6 +53,7 @@ export const FEATURE_METHOD_DEFS = {
   ...noteMethodDefs,
   ...calendarMethodDefs,
   ...pomodoroMethodDefs,
+  ...shellQuickMethodDefs,
   ...notificationMethodDefs,
   ...companionMethodDefs,
   ...objectStorageMethodDefs,

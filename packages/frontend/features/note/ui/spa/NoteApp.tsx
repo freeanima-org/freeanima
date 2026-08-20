@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { FileText, Plus, Search, Trash2 } from "lucide-react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  useSubjectScope,
+  SubjectScopeToggle,
+  useShellQuickIdSet,
+} from "@freeanima/client/portal-sdk/react.tsx";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { Button, Input, Spinner, Textarea } from "@freeanima/ui-kit";
@@ -237,6 +242,7 @@ function MarkdownBlockEditor({
 
 export function NoteApp(): JSX.Element {
   const { kind: subjectKind } = useSubjectScope();
+  const quickIds = useShellQuickIdSet();
   const [selectedId, setSelectedId] = useUrlNoteId();
   const [items, setItems] = useState<NoteRow[]>([]);
   const [detail, setDetail] = useState<NoteRow | null>(null);
@@ -450,20 +456,34 @@ export function NoteApp(): JSX.Element {
         defaultListWidthPx={280}
         detailActions={
           detail ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                void (async () => {
-                  await deleteNote(subjectKind, detail.id);
-                  setSelectedId(null);
-                  await loadList();
-                })();
-              }}
-            >
-              删除
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void toggleShellQuick(detail.id).catch(() => {
+                    /* ignore */
+                  });
+                }}
+              >
+                {quickIds.has(detail.id) ? "移出快捷" : "加入快捷"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void (async () => {
+                    await deleteNote(subjectKind, detail.id);
+                    setSelectedId(null);
+                    await loadList();
+                  })();
+                }}
+              >
+                删除
+              </Button>
+            </div>
           ) : null
         }
         list={(ctx) => (

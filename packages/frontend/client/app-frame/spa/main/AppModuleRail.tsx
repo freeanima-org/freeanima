@@ -18,6 +18,7 @@ import {
   AppNavPomodoroCollapsedClock,
   useAppNavPomodoroDisplayLabel,
 } from "./AppNavPomodoroCountdown.tsx";
+import { ShellQuickRailSection } from "./ShellQuickNav.tsx";
 
 function useAppRailExpanded(): [boolean, () => void] {
   const expanded = useSyncExternalStore(subscribeAppRailExpanded, readAppRailExpanded, () => false);
@@ -84,6 +85,8 @@ export function AppModuleRail() {
           <RailNavLink key={item.to} item={item} expanded={expanded} />
         ))}
       </nav>
+
+      <ShellQuickRailSection expanded={expanded} />
 
       <div className="app-rail-footer">
         <button

@@ -11,7 +11,9 @@ import {
   setCompactImmersive,
   useActionSheetCapability,
   useContextMenuCapability,
+  useShellQuickIdSet,
 } from "@freeanima/client/portal-sdk/react.tsx";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
 import {
   Button,
@@ -118,6 +120,7 @@ export function ProjectApp() {
   const useActionSheet = useActionSheetCapability();
   const useDrawer = useDrawerNav();
   const layoutMode = useThreeColumnLayoutMode();
+  const quickIds = useShellQuickIdSet();
 
   useEffect(() => {
     registerProjectOfflineModule();
@@ -761,17 +764,7 @@ export function ProjectApp() {
   };
 
   const openProjectMenuSheet = (project: ProjectRow) => {
-    setSheetItems(
-      menuToSheet(
-        buildProjectMenuItems(project, {
-          onEdit: openProjectEditor,
-          onDelete: (p) => setDeleteProjectTarget(p),
-          onStatusChange: (p, status) => void handleProjectStatus(p.id, status),
-          hideCompleted,
-          onToggleHideCompleted: toggleHideCompleted,
-        }),
-      ),
-    );
+    setSheetItems(contextMenuItemsForProject(project));
   };
 
   const openTaskMenuSheet = (item: TaskItemRow) => {
@@ -787,8 +780,8 @@ export function ProjectApp() {
       }),
     );
 
-  const contextMenuItemsForProject = (project: ProjectRow): ActionSheetItem[] =>
-    menuToSheet(
+  const contextMenuItemsForProject = (project: ProjectRow): ActionSheetItem[] => {
+    const items = menuToSheet(
       buildProjectMenuItems(project, {
         onEdit: openProjectEditor,
         onDelete: (p) => setDeleteProjectTarget(p),
@@ -797,6 +790,17 @@ export function ProjectApp() {
         onToggleHideCompleted: toggleHideCompleted,
       }),
     );
+    const attached = quickIds.has(project.id);
+    items.push({
+      label: attached ? "移出快捷" : "加入快捷",
+      onClick: () => {
+        void toggleShellQuick(project.id).catch(() => {
+          /* ignore */
+        });
+      },
+    });
+    return items;
+  };
 
   const contextMenuItemsForItem = (item: TaskItemRow): ActionSheetItem[] =>
     menuToSheet(buildTaskMenuForItem(item));

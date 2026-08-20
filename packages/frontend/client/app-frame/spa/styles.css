@@ -90,6 +90,14 @@ html[data-app-ui="1"] body {
   padding: 0 0.5rem;
 }
 
+.app-rail-quick {
+  max-height: 40%;
+}
+
+.app-rail-quick-nav {
+  max-height: 100%;
+}
+
 .app-rail-nav-item {
   display: flex;
   align-items: center;

@@ -77,6 +77,7 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 - 空壳由主人在 Entity 模块或工具侧决定：补组件、或 `deleteEntity`。
 - 壳 **Entity** 模块（[`docs/modules/entity.md`](../modules/entity.md)）：分页列出存活实体（`updated_at` 倒序）+ 回收站。
 - **任务 facet**：清单 / complete / 提醒扫描认 `components` **包含** `task_item`（不要求 primary）；primary 仍为 `email_message` 的挂载任务可进 Inbox。对挂载体执行 `task.delete` → **detach**，禁止误删邮件。
+- **壳快捷**：应用布局 Rail /「更多」直达入口 = 在实体上 **attach** `shell_quick_entry`（不改 primary；body 仅 `quick_sort_order`）；列举经 `component=shell_quick_entry`；RPC `shell_quick.list|attach|detach`。
 
 ## Subject（`agent` / `user`）
 
