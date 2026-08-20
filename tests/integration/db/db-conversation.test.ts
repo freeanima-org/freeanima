@@ -3,7 +3,6 @@ import { randomUUID } from "node:crypto";
 import type { ConversationMessage } from "@freeanima/habitat/core/db/domain";
 import { pingDatabase } from "@freeanima/habitat/core/db/pg";
 import {
-  appendMessage,
   getConversationMeta,
   listMessages,
   nextMessagePos,
@@ -14,6 +13,7 @@ import {
 } from "@freeanima/habitat/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
+import { appendTestMessage } from "../../helpers/pg-test.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
@@ -54,13 +54,13 @@ describePg("db conversation (PostgreSQL)", () => {
     expect(meta?.model).toBe("test-model");
     expect(meta?.platform).toBe(TEST_SAP_CHAT_PLATFORM);
 
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "user",
       content: "hello",
       pos: 1,
       timestamp: new Date().toISOString(),
     });
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: "hi",
       pos: 2,
@@ -89,20 +89,20 @@ describePg("db conversation (PostgreSQL)", () => {
       timestamp: new Date().toISOString(),
       platform: TEST_SAP_CHAT_PLATFORM,
     });
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "user",
       content: "hi",
       pos: 1,
       timestamp: "2026-08-19T10:00:00+08:00",
     });
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: "a",
       pos: 2,
       timestamp: "2026-08-19T10:00:01+08:00",
       usage: { prompt_tokens: 20, completion_tokens: 5, cached_tokens: 8 },
     });
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: "b",
       pos: 3,
@@ -126,7 +126,7 @@ describePg("db conversation (PostgreSQL)", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: "",
       pos: 1,
@@ -160,7 +160,7 @@ describePg("db conversation (PostgreSQL)", () => {
 
     await Promise.all(
       Array.from({ length: 8 }, (_, i) =>
-        appendMessage(conversationId, {
+        appendTestMessage(conversationId, {
           role: "user",
           content: `msg-${i}`,
           pos: i + 1,
@@ -183,13 +183,13 @@ describePg("db conversation (PostgreSQL)", () => {
       platform: TEST_SAP_CHAT_PLATFORM,
     });
 
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "user",
       content: "u1",
       pos: 489,
       timestamp: new Date().toISOString(),
     });
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: null,
       pos: 490,
@@ -198,13 +198,13 @@ describePg("db conversation (PostgreSQL)", () => {
         { id: "call_1", type: "function", function: { name: "file_read", arguments: "{}" } },
       ],
     } as never);
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "user",
       content: "u2",
       pos: 491,
       timestamp: new Date().toISOString(),
     });
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: "done",
       pos: 500,
@@ -212,7 +212,7 @@ describePg("db conversation (PostgreSQL)", () => {
     });
 
     await shiftMessagePositions(conversationId, 490, 1);
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "tool",
       tool_call_id: "call_1",
       name: "file_read",

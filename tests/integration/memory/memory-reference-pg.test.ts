@@ -6,7 +6,6 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import {
-  appendMessage,
   deleteConversation,
   upsertConversationMeta,
 } from "@freeanima/habitat/core/db/pg/conversation";
@@ -21,6 +20,7 @@ import {
   getSemanticMemory,
   listResidentSemanticMemory,
 } from "@freeanima/habitat/core/db/pg/semantic-memory";
+import { appendTestMessage } from "../../helpers/pg-test.ts";
 
 async function seedSessionMeta(conversationId: string): Promise<void> {
   await upsertConversationMeta(conversationId, {
@@ -53,13 +53,13 @@ describePg("memory_references PG", () => {
     await seedSessionMeta(conversationId);
 
     const marker = formatMemoryReferenceMarker(memoryId);
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: `See ${marker} for details`,
       pos: 1,
       timestamp: new Date().toISOString(),
     });
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: `Again ${marker}`,
       pos: 2,
@@ -84,7 +84,7 @@ describePg("memory_references PG", () => {
 
     const conversationId = "memref-resident";
     await seedSessionMeta(conversationId);
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "assistant",
       content: formatMemoryReferenceMarker(hotId),
       pos: 1,
@@ -131,7 +131,7 @@ describePg("memory_references PG", () => {
     const memoryId = await createSemanticMemory({ content: "session reference pending delete" });
     const conversationId = "memref-delete";
     await seedSessionMeta(conversationId);
-    await appendMessage(conversationId, {
+    await appendTestMessage(conversationId, {
       role: "user",
       content: formatMemoryReferenceMarker(memoryId),
       pos: 1,
