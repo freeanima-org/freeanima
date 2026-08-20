@@ -21,7 +21,7 @@ tauri-windows *args: _deps
 android *args: _deps
   {{ bun }} scripts/install-android-deps.ts {{args}}
 
-# Tauri Android：Rust targets + NDK + gen（缺工程：--init）
+# Tauri Android：Rust targets + NDK + gen（缺工程：--init；全 ABI：--all-targets）
 [no-cd]
 tauri-android *args: _deps
   {{ bun }} scripts/install-android-tauri-deps.ts {{args}}

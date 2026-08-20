@@ -1,5 +1,5 @@
 name: Cache Android SDK
-description: 缓存 ~/Android/Sdk（API 35 / build-tools 35.0.0 / cmdline-tools），避免 CI 冷装
+description: 缓存 ~/Android/Sdk（API 35 / build-tools 35.0.0 / cmdline-tools / NDK 27），避免 CI 冷装
 runs:
   using: composite
   steps:
@@ -8,7 +8,8 @@ runs:
       with:
         # 与 scripts/setup-android-sdk.sh 在 GITHUB_ACTIONS 下的安装路径一致（勿用 ~，避免未展开）
         path: /home/runner/Android/Sdk
-        # 与 scripts/setup-android-sdk.sh 安装的包/cmdline-tools 版本对齐；升级 SDK 时改此 key
-        key: android-sdk-${{ runner.os }}-api35-bt35.0.0-cmdline11076708
+        # 与 scripts/setup-android-sdk.sh 安装的包/cmdline-tools/NDK 版本对齐；升级 SDK/NDK 时改此 key
+        key: android-sdk-${{ runner.os }}-api35-bt35.0.0-cmdline11076708-ndk27.0.12077973
         restore-keys: |
+          android-sdk-${{ runner.os }}-api35-bt35.0.0-cmdline11076708-ndk27.0.12077973
           android-sdk-${{ runner.os }}-
