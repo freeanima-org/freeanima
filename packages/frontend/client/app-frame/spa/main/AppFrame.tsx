@@ -28,6 +28,8 @@ import {
   AppNavPomodoroMoreLabel,
   useAppNavPomodoroDisplayLabel,
 } from "./AppNavPomodoroCountdown.tsx";
+import { ShellQuickMoreSection } from "./ShellQuickNav.tsx";
+import { useShellQuickEntries } from "@freeanima/client/portal-sdk/react.tsx";
 
 function useNavActive(match: string): boolean {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -83,6 +85,7 @@ function MoreNavMenu({ items }: { items: AppNavItem[] }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const quickEntries = useShellQuickEntries();
   const moreActive = useMemo(
     () => items.some((item) => pathname.startsWith(item.match)),
     [items, pathname],
@@ -113,12 +116,13 @@ function MoreNavMenu({ items }: { items: AppNavItem[] }) {
           />
           <div
             role="menu"
-            className="fixed z-[70] min-w-40 rounded-lg border border bg-background shadow-lg py-1"
+            className="fixed z-[70] min-w-40 max-h-[70vh] overflow-y-auto rounded-lg border border bg-background shadow-lg py-1"
             style={{
               right: "max(0.75rem, var(--sar))",
               bottom: "calc(var(--app-bottom-nav-h) + var(--sab) + 0.5rem)",
             }}
           >
+            <ShellQuickMoreSection onNavigate={() => setOpen(false)} />
             {items.map((item) => {
               const Icon = item.icon;
               return (
@@ -143,6 +147,9 @@ function MoreNavMenu({ items }: { items: AppNavItem[] }) {
                 </button>
               );
             })}
+            {items.length === 0 && quickEntries.length === 0 ? (
+              <div className="px-4 py-2 text-sm text-muted-foreground">暂无更多</div>
+            ) : null}
           </div>
         </>
       ) : null}
@@ -170,6 +177,8 @@ function CompactAppFrame() {
   const immersive = useCompactImmersive();
   const navItems = useMemo(() => orderedVisibleAppNavItems(visible, order), [order, visible]);
   const { bar, more, density } = useAppBottomNavLayout(navItems, primaryCount);
+  const quickEntries = useShellQuickEntries();
+  const showMore = more.length > 0 || quickEntries.length > 0;
 
   return (
     <div className="app-module-layout app-layout-compact h-full flex flex-col bg-background text-foreground">
@@ -184,7 +193,7 @@ function CompactAppFrame() {
           {bar.map((item) => (
             <AppBottomNavLink key={item.to} item={item} density={density} />
           ))}
-          {more.length > 0 ? <MoreNavMenu items={more} /> : null}
+          {showMore ? <MoreNavMenu items={more} /> : null}
         </nav>
       )}
     </div>

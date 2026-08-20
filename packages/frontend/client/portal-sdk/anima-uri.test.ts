@@ -59,6 +59,8 @@ describe("anima-uri", () => {
     expect(defaultPresentForComponent("calendar_event")).toBe("overlay");
     expect(defaultPresentForComponent("project")).toBe("overlay");
     expect(defaultPresentForComponent("note")).toBe("navigate");
+    expect(defaultPresentForComponent("diary_entry")).toBe("navigate");
+    expect(defaultPresentForComponent("email_account")).toBe("navigate");
   });
 
   test("animaUriToShellPath and shell path parse", () => {
@@ -69,6 +71,8 @@ describe("anima-uri", () => {
     expect(animaUriToShellPath({ id: 11, component: "project" })).toBe("/projects?project=11");
     expect(animaUriToShellPath({ id: 22, component: "calendar_event" })).toBe("/calendar?event=22");
     expect(animaUriToShellPath({ id: 88, component: "note" })).toBe("/note?id=88");
+    expect(animaUriToShellPath({ id: 5, component: "diary_entry" })).toBe("/diary?id=5");
+    expect(animaUriToShellPath({ id: 3, component: "email_account" })).toBe("/email?account=3");
     expect(animaUriToShellPath({ id: 42 })).toBeNull();
 
     expect(parseAnimaUri("/tasks?item=42&present=overlay")).toEqual({
@@ -90,6 +94,14 @@ describe("anima-uri", () => {
     expect(parseAnimaUri("/note?id=88")).toEqual({
       ok: true,
       ref: { id: 88, component: "note", present: "navigate" },
+    });
+    expect(parseAnimaUri("/diary?id=5")).toEqual({
+      ok: true,
+      ref: { id: 5, component: "diary_entry", present: "navigate" },
+    });
+    expect(parseAnimaUri("/email?account=3")).toEqual({
+      ok: true,
+      ref: { id: 3, component: "email_account", present: "navigate" },
     });
   });
 

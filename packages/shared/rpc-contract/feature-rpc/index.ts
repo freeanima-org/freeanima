@@ -10,6 +10,7 @@ export * from "../frames/diary.ts";
 export * from "../frames/note.ts";
 export * from "../frames/calendar.ts";
 export * from "../frames/pomodoro.ts";
+export * from "../frames/shell-quick.ts";
 export * from "../frames/email.ts";
 export * from "../frames/notification.ts";
 export * from "../frames/companion.ts";

@@ -214,6 +214,18 @@ export {
   parseAnimaUri,
 } from "./anima-uri.ts";
 
+export type { ShellQuickEntry } from "./shell-quick.ts";
+export {
+  attachShellQuick,
+  detachShellQuick,
+  ensureShellQuickEntries,
+  getShellQuickEntriesSnapshot,
+  isShellQuickAttached,
+  refreshShellQuickEntries,
+  subscribeShellQuickEntries,
+  toggleShellQuick,
+} from "./shell-quick.ts";
+
 export {
   createTypedHabitatClient,
   getTypedHabitatClient,

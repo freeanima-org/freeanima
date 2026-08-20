@@ -9,6 +9,7 @@ import { notificationPlugin } from "@freeanima/features/notification/plugin";
 import { companionPlugin } from "@freeanima/features/companion/plugin";
 import { codingPlugin } from "@freeanima/features/coding/plugin";
 import { pomodoroPlugin } from "@freeanima/features/pomodoro/plugin";
+import { shellQuickPlugin } from "@freeanima/features/shell-quick/plugin";
 import { taskPlugin } from "@freeanima/features/task/plugin";
 import { projectPlugin } from "@freeanima/features/project/plugin";
 import { tagPlugin } from "@freeanima/features/tag/plugin";
@@ -35,5 +36,6 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   notePlugin,
   calendarPlugin,
   pomodoroPlugin,
+  shellQuickPlugin,
   emailPlugin,
 ];

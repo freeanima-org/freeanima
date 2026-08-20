@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  useSubjectScope,
+  SubjectScopeToggle,
+  useShellQuickIdSet,
+} from "@freeanima/client/portal-sdk/react.tsx";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { usePortalInfiniteQuery } from "@freeanima/client/portal-sdk/portal-query";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
@@ -62,6 +67,23 @@ function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
 
 const DIARY_PAGE_SIZE = 20;
 
+function readUrlDiaryId(): number | null {
+  const raw = new URLSearchParams(window.location.search).get("id");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+function writeUrlDiaryId(id: number | null): void {
+  const url = new URL(window.location.href);
+  if (id == null) url.searchParams.delete("id");
+  else url.searchParams.set("id", String(id));
+  const next = `${url.pathname}${url.search}`;
+  if (next !== `${window.location.pathname}${window.location.search}`) {
+    window.history.replaceState({}, "", next);
+  }
+}
+
 function applyEntryToList(prev: DiaryEntryRow[], item: DiaryEntryRow): DiaryEntryRow[] {
   const next = prev.filter((e) => e.id !== item.id);
   next.push(item);
@@ -70,9 +92,10 @@ function applyEntryToList(prev: DiaryEntryRow[], item: DiaryEntryRow): DiaryEntr
 
 export function DiaryApp() {
   const { kind: subjectKind } = useSubjectScope();
+  const quickIds = useShellQuickIdSet();
   const [pendingOps, setPendingOps] = useState(0);
   const writesDisabled = false;
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedIdState] = useState<number | null>(() => readUrlDiaryId());
   const [draft, setDraft] = useState<EntryDraft | null>(null);
   const [draftBaseline, setDraftBaseline] = useState<EntryDraft | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,8 +109,26 @@ export function DiaryApp() {
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectedIdRef = useRef<number | null>(null);
   const initialTodayOpenedRef = useRef(false);
+  const urlOpenAttemptedRef = useRef(false);
+
+  const setSelectedId = useCallback(
+    (next: number | null | ((prev: number | null) => number | null)) => {
+      setSelectedIdState((prev) => {
+        const resolved = typeof next === "function" ? next(prev) : next;
+        writeUrlDiaryId(resolved);
+        return resolved;
+      });
+    },
+    [],
+  );
 
   selectedIdRef.current = selectedId;
+
+  useEffect(() => {
+    const onPop = () => setSelectedIdState(readUrlDiaryId());
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const searchTrimmed = searchQuery.trim();
   const diaryListQuery = usePortalInfiniteQuery<DiaryEntryRow[]>({
@@ -265,7 +306,8 @@ export function DiaryApp() {
     setDraft(null);
     setDraftBaseline(null);
     initialTodayOpenedRef.current = false;
-  }, [subjectKind]);
+    urlOpenAttemptedRef.current = false;
+  }, [subjectKind, setSelectedId]);
 
   useEffect(() => {
     return () => {
@@ -487,6 +529,10 @@ export function DiaryApp() {
     if (searchQuery.trim()) return;
     if (selectedId != null) {
       initialTodayOpenedRef.current = true;
+      if (!urlOpenAttemptedRef.current && draft == null) {
+        urlOpenAttemptedRef.current = true;
+        void openEntryById(selectedId);
+      }
       return;
     }
     if (initialTodayOpenedRef.current) return;
@@ -512,6 +558,7 @@ export function DiaryApp() {
     })();
   }, [
     creating,
+    draft,
     entries,
     loading,
     openEntryById,
@@ -683,6 +730,18 @@ export function DiaryApp() {
         ) : saveStatus === "error" ? (
           <span className="text-destructive text-xs">保存失败</span>
         ) : null}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            void toggleShellQuick(selectedEntry.id).catch(() => {
+              /* ignore */
+            });
+          }}
+        >
+          {quickIds.has(selectedEntry.id) ? "移出快捷" : "加入快捷"}
+        </Button>
         <EntryTagAddMenu
           subjectKind={subjectKind}
           tagIds={draft.tag_ids}

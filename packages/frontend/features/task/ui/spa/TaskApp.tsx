@@ -11,7 +11,9 @@ import {
   useSubjectScope,
   SubjectScopeToggle,
   setCompactImmersive,
+  useShellQuickIdSet,
 } from "@freeanima/client/portal-sdk/react.tsx";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import {
   Alert,
   AlertDescription,
@@ -131,6 +133,7 @@ export function TaskApp() {
   const useDrawer = useDrawerNav();
   const layoutMode = useTaskLayoutMode();
   const webShell = isWebShell();
+  const quickIds = useShellQuickIdSet();
   const selectionAnchorRef = useRef<number | null>(null);
   const itemsLoadGenRef = useRef(0);
 
@@ -1323,10 +1326,26 @@ export function TaskApp() {
     </>
   );
 
+  const listMenuWithQuick = (list: TaskListRow): ActionSheetItem[] => {
+    const menuItems = [...buildListMenuItems(list, menuHandlers)];
+    if (!list.is_folder) {
+      const attached = quickIds.has(list.id);
+      menuItems.push({
+        label: attached ? "移出快捷" : "加入快捷",
+        onClick: () => {
+          void toggleShellQuick(list.id).catch(() => {
+            /* ignore */
+          });
+        },
+      });
+    }
+    return menuItems;
+  };
+
   const openListMenuSheet = (list: TaskListRow) => {
     setSheetMenu({
       title: list.name,
-      items: buildListMenuItems(list, menuHandlers),
+      items: listMenuWithQuick(list),
     });
   };
 
@@ -1346,8 +1365,7 @@ export function TaskApp() {
     });
   };
 
-  const contextMenuItemsForList = (list: TaskListRow): ActionSheetItem[] =>
-    buildListMenuItems(list, menuHandlers);
+  const contextMenuItemsForList = (list: TaskListRow): ActionSheetItem[] => listMenuWithQuick(list);
 
   const contextMenuItemsForSmartList = (row: SmartListRow): ActionSheetItem[] =>
     buildSmartListMenuItems(row, smartListMenuHandlers);

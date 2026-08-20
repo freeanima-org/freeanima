@@ -60,6 +60,9 @@ Anima URI 是**壳 / UI 定位协议**，不是数据库外键。用户撰写的
 | `task_list`      | `/tasks?list={id}`           |
 | `project`        | `/projects?project={id}`     |
 | `calendar_event` | `/calendar?event={id}`       |
+| `note`           | `/note?id={id}`              |
+| `diary_entry`    | `/diary?id={id}`             |
+| `email_account`  | `/email?account={id}`        |
 
 ## 暂不在范围
 
