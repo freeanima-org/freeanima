@@ -3,10 +3,12 @@ import {
   createCalendarEvent,
   deleteCalendarEvent,
   getCalendarEvent,
+  getCalendarUiPrefs,
   listCalendarEvents,
   listCalendarRange,
   resolveCalendarWorldId,
   updateCalendarEvent,
+  updateCalendarUiPrefs,
   type BuiltinCalendarSourceId,
   type CalendarRangeKind,
   type CalendarSubjectKind,
@@ -15,6 +17,7 @@ import {
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { CalendarUiPrefsPatch } from "../domain/prefs-store.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
   if (!isPostgresPrimary()) {
@@ -143,6 +146,7 @@ export async function serviceCalendarRange(
     to: string;
     kinds?: CalendarRangeKind[];
     sources?: BuiltinCalendarSourceId[];
+    include_completed?: boolean;
   },
 ) {
   assertPg(deps);
@@ -154,7 +158,38 @@ export async function serviceCalendarRange(
       to: input.to,
       kinds: input.kinds,
       sources: input.sources,
+      include_completed: input.include_completed,
     }),
   );
   return { items };
+}
+
+export async function serviceCalendarPrefsGet(
+  deps: RuntimeDeps,
+  input: { subject_kind: CalendarSubjectKind },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const prefs = await getCalendarUiPrefs(ctx);
+  return { prefs };
+}
+
+export async function serviceCalendarPrefsUpdate(
+  deps: RuntimeDeps,
+  input: {
+    subject_kind: CalendarSubjectKind;
+    viewMode?: CalendarUiPrefsPatch["viewMode"];
+    byView?: CalendarUiPrefsPatch["byView"];
+  },
+) {
+  assertPg(deps);
+  const ctx = await storeContext(deps, input.subject_kind);
+  const prefs = await updateCalendarUiPrefs(
+    ctx,
+    omitUndefined({
+      viewMode: input.viewMode,
+      byView: input.byView,
+    }),
+  );
+  return { prefs };
 }

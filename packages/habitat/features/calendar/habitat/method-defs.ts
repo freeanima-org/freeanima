@@ -11,6 +11,10 @@ import {
   calendarListOutputSchema,
   calendarPatchInputSchema,
   calendarPatchOutputSchema,
+  calendarPrefsGetInputSchema,
+  calendarPrefsGetOutputSchema,
+  calendarPrefsUpdateInputSchema,
+  calendarPrefsUpdateOutputSchema,
   calendarRangeInputSchema,
   calendarRangeOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/calendar";
@@ -52,5 +56,15 @@ export const calendarMethodDefs = {
     input: calendarRangeInputSchema,
     output: calendarRangeOutputSchema,
     meta: dualTransportMeta(true),
+  }),
+  "calendar.prefs.get": defineHabitatMethod({
+    input: calendarPrefsGetInputSchema,
+    output: calendarPrefsGetOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "calendar.prefs.update": defineHabitatMethod({
+    input: calendarPrefsUpdateInputSchema,
+    output: calendarPrefsUpdateOutputSchema,
+    meta: dualTransportMeta(false),
   }),
 } as const;

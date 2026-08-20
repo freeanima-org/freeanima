@@ -6,11 +6,16 @@ import type { TaskItemRow } from "./types.ts";
 
 function isCompletedActivityFilter(filters: TaskItemSearchFilters): boolean {
   if (filters.status !== "completed") return false;
-  return filters.completed_on != null || filters.completed_on_or_after_days != null;
+  return (
+    filters.completed_on != null ||
+    filters.completed_on_or_after_days != null ||
+    filters.completed_after != null ||
+    filters.completed_before != null
+  );
 }
 
 /**
- * 智能清单「已完成」：普通 completed task_item ∪ task_occurrence。
+ * 智能清单「已完成」/ 日程完成回顾：普通 completed task_item ∪ task_occurrence。
  * occurrence 行：id = series_task_id（点开 live）；occurrence_id 标明历史快照。
  */
 export async function listCompletedActivity(
@@ -26,6 +31,10 @@ export async function listCompletedActivity(
   if (filters.completed_on != null) occurrenceFilters.completed_on = filters.completed_on;
   if (filters.completed_on_or_after_days != null) {
     occurrenceFilters.completed_on_or_after_days = filters.completed_on_or_after_days;
+  }
+  if (filters.completed_after != null) occurrenceFilters.completed_after = filters.completed_after;
+  if (filters.completed_before != null) {
+    occurrenceFilters.completed_before = filters.completed_before;
   }
   if (filters.in_backlog === true) occurrenceFilters.in_backlog = true;
   if (filters.list_id != null) occurrenceFilters.list_id = filters.list_id;

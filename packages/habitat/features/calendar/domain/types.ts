@@ -86,6 +86,8 @@ export type CalendarRangeTaskItem = {
   project_id: number | null;
   list_id: number | null;
   virtual?: boolean;
+  completed_at?: string | null;
+  occurrence_id?: number;
 };
 
 export type CalendarRangeProjectItem = {
@@ -119,4 +121,5 @@ export type CalendarRangeOpts = {
   kinds?: CalendarRangeKind[];
   /** kinds 含 holiday 时有效；缺省全部内置源 */
   sources?: BuiltinCalendarSourceId[];
+  include_completed?: boolean;
 };

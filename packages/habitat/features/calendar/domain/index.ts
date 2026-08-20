@@ -9,6 +9,7 @@ export {
   updateCalendarEvent,
 } from "./event-store.ts";
 export { listCalendarRange } from "./range-store.ts";
+export { getCalendarUiPrefs, updateCalendarUiPrefs } from "./prefs-store.ts";
 export {
   convertCalendarEventToTaskItem,
   convertTaskItemToCalendarEvent,

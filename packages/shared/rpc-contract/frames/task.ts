@@ -37,6 +37,8 @@ export const taskItemSearchFiltersSchema = z
     due_on_or_before_days: z.number().int().nonnegative().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     completed_on_or_after_days: z.number().int().nonnegative().optional(),
+    completed_after: z.string().optional(),
+    completed_before: z.string().optional(),
     project_id: z.number().int().positive().optional(),
     in_backlog: z.boolean().optional(),
     parent_id: z.number().int().positive().optional(),

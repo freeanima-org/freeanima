@@ -33,6 +33,7 @@ export const POMODORO_CONFIG_COMPONENT = "pomodoro_config" as const;
 export const POMODORO_SESSION_COMPONENT = "pomodoro_session" as const;
 export const POMODORO_TASK_FOCUS_COMPONENT = "pomodoro_task_focus" as const;
 export const POMODORO_ACTIVE_COMPONENT = "pomodoro_active" as const;
+export const CALENDAR_UI_PREFS_COMPONENT = "calendar_ui_prefs" as const;
 export const COMPANION_PROFILE_COMPONENT = "companion_profile" as const;
 export const OBJECT_FILE_COMPONENT = "object_file" as const;
 export const OBJECT_FOLDER_COMPONENT = "object_folder" as const;
@@ -74,6 +75,7 @@ export const COMPONENT_IDS = [
   POMODORO_SESSION_COMPONENT,
   POMODORO_TASK_FOCUS_COMPONENT,
   POMODORO_ACTIVE_COMPONENT,
+  CALENDAR_UI_PREFS_COMPONENT,
   COMPANION_PROFILE_COMPONENT,
   OBJECT_FILE_COMPONENT,
   OBJECT_FOLDER_COMPONENT,

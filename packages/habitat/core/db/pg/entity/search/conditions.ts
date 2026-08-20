@@ -220,6 +220,18 @@ function buildTaskItemBodyConditions(
         AND (${entities.body}->>'completed_at')::timestamptz::date >= ${CST_TODAY} - ${filters.completed_on_or_after_days}`,
     );
   }
+  if (filters.completed_after != null) {
+    conditions.push(
+      sql`(${entities.body}->>'completed_at')::timestamptz IS NOT NULL
+        AND (${entities.body}->>'completed_at')::timestamptz >= ${filters.completed_after}::timestamptz`,
+    );
+  }
+  if (filters.completed_before != null) {
+    conditions.push(
+      sql`(${entities.body}->>'completed_at')::timestamptz IS NOT NULL
+        AND (${entities.body}->>'completed_at')::timestamptz < ${filters.completed_before}::timestamptz`,
+    );
+  }
   if (filters.project_id != null) {
     conditions.push(sql`${entities.body}->>'project_id' = ${String(filters.project_id)}`);
   }
@@ -278,6 +290,18 @@ function buildTaskOccurrenceBodyConditions(
     conditions.push(
       sql`(${entities.body}->>'completed_at')::timestamptz IS NOT NULL
         AND (${entities.body}->>'completed_at')::timestamptz::date >= ${CST_TODAY} - ${filters.completed_on_or_after_days}`,
+    );
+  }
+  if (filters.completed_after != null) {
+    conditions.push(
+      sql`(${entities.body}->>'completed_at')::timestamptz IS NOT NULL
+        AND (${entities.body}->>'completed_at')::timestamptz >= ${filters.completed_after}::timestamptz`,
+    );
+  }
+  if (filters.completed_before != null) {
+    conditions.push(
+      sql`(${entities.body}->>'completed_at')::timestamptz IS NOT NULL
+        AND (${entities.body}->>'completed_at')::timestamptz < ${filters.completed_before}::timestamptz`,
     );
   }
   if (filters.client_op_id) {

@@ -12,6 +12,10 @@ export const taskOccurrenceSearchFiltersSchema = z
     in_backlog: z.boolean().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     completed_on_or_after_days: z.number().int().nonnegative().optional(),
+    /** 绝对完成时间下界（含）；ISO8601 */
+    completed_after: z.string().optional(),
+    /** 绝对完成时间上界（不含）；ISO8601 */
+    completed_before: z.string().optional(),
     client_op_id: z.string().min(1).optional(),
   })
   .strict();
