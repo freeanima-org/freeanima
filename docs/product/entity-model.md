@@ -4,7 +4,7 @@ title: 实体模型
 
 # 统一实体模型（v0.8）
 
-逸灵风把多数结构化业务数据存入单一 **`entities`** 表。自我层仍物理隔离在 [`self_blocks`](../cognition/self-layer.md)。
+逸灵风把多数结构化业务数据存入单一 **`entities`** 表。自我层五块亦为 content 实体（`primary_component=self_block`），见 [`self-layer.md`](../cognition/self-layer.md)。
 
 ## 层级：subject → world → content
 
@@ -93,7 +93,7 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
   - `cron_jobs.subject_id` — 定时任务行动主体
   - `search_documents.subject_id`（+ 既有 `world_id`）— 检索旁表归属；entity 从 world owner 派生，message 从 `messages.subject_id` + 主体默认私有 world
   - `conversation_read_state.subject_id` — 用户已读水位
-- **未按 subject 分片（刻意）：** `self_blocks` 仍为实例单例自我层（多数字生命自我层另议）。
+- **自我层：** `primary_component=self_block`，正文在 `content`，`body.block_key` 区分五块；落在 **agent 默认私有 world**（多数字生命多份自我层另议）。
 - Content 实体**不**另加 `subject_id` 列；归属经 `world_id` → `world_config.owner_subject_id`。
 
 ### 启动时 ensure（`worlds` 配置）
@@ -383,6 +383,7 @@ FTS 运算符语法见 [`memory.md`](../cognition/memory.md) 记忆混合搜索�
 | 全局时间摘要                   | `primary_component=temporal_summary`（day/month/year；见 [`temporal-summary.md`](../cognition/temporal-summary.md)）       |
 | `tasks`（遗留）                | `task_item`（显式迁移时）                                                                                                  |
 | `config.yaml email.accounts`   | `email_account`（见 [`scripts/archive/migrate-email-to-entities.ts`](../../scripts/archive/migrate-email-to-entities.ts)） |
+| `self_blocks`                  | `primary_component=self_block`（agent 默认私有 world；**已完成**）                                                         |
 | `memory_references`            | 关系表（未来）                                                                                                             |
 
 认知层上下文见 [`architecture.md`](architecture.md)。

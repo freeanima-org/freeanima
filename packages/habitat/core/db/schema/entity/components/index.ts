@@ -40,6 +40,7 @@ import { PROJECT_FOLDER_COMPONENT, projectFolderBodySchema } from "./project-fol
 import { PROJECT_COMPONENT, projectBodySchema } from "./project.ts";
 import { TAG_COMPONENT, tagBodySchema } from "./tag.ts";
 import { TEMPORAL_SUMMARY_COMPONENT, temporalSummaryBodySchema } from "./temporal-summary.ts";
+import { SELF_BLOCK_COMPONENT, selfBlockBodySchema } from "./self-block.ts";
 import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
 import { CODING_NOTE_COMPONENT, codingNoteBodySchema } from "./coding-note.ts";
@@ -80,6 +81,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [SEMANTIC_MEMORY_COMPONENT]: 80,
   [SEMANTIC_REF_COMPONENT]: 81,
   [TEMPORAL_SUMMARY_COMPONENT]: 85,
+  [SELF_BLOCK_COMPONENT]: 86,
   [EMAIL_ACCOUNT_COMPONENT]: 90,
   [EMAIL_THREAD_COMPONENT]: 91,
   [EMAIL_MESSAGE_COMPONENT]: 92,
@@ -140,6 +142,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [SEMANTIC_MEMORY_COMPONENT]: semanticMemoryBodySchema,
   [SEMANTIC_REF_COMPONENT]: semanticRefBodySchema,
   [TEMPORAL_SUMMARY_COMPONENT]: temporalSummaryBodySchema,
+  [SELF_BLOCK_COMPONENT]: selfBlockBodySchema,
   [EMAIL_ACCOUNT_COMPONENT]: emailAccountBodySchema,
   [EMAIL_THREAD_COMPONENT]: emailThreadBodySchema,
   [EMAIL_MESSAGE_COMPONENT]: emailMessageBodySchema,
@@ -190,6 +193,7 @@ export * from "./narrative.ts";
 export * from "./semantic-ref.ts";
 export * from "./semantic-memory.ts";
 export * from "./temporal-summary.ts";
+export * from "./self-block.ts";
 export * from "./email-account.ts";
 export * from "./email-thread.ts";
 export * from "./email-message.ts";

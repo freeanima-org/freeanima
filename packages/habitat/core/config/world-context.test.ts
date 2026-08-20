@@ -4,6 +4,7 @@ import { resolveWorldSubjectIds } from "./worlds.ts";
 import {
   bindResolvedWorldContext,
   getResolvedWorldContext,
+  tryGetResolvedWorldContext,
   resetResolvedWorldContextForTest,
   resolveSubjectWorldId,
 } from "./resolved-world-context.ts";
@@ -64,6 +65,18 @@ describe("ResolvedWorldContext", () => {
 
   it("throws when unbound", () => {
     expect(() => getResolvedWorldContext()).toThrow(/not bound/);
+  });
+
+  it("tryGet returns null when unbound", () => {
+    expect(tryGetResolvedWorldContext()).toBeNull();
+    bindResolvedWorldContext({
+      user_subject_id: 1,
+      agent_subject_id: 2,
+      user_world_id: 10,
+      agent_world_id: 20,
+      commons_world_id: 30,
+    });
+    expect(tryGetResolvedWorldContext()?.agent_subject_id).toBe(2);
   });
 
   it("resolveSubjectWorldId maps user and agent", () => {

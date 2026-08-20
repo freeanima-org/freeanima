@@ -166,7 +166,7 @@ Working 组装（fold / 压缩四段 / 被动召回）与业界对照见 [`../co
 
 ### 统一实体存储（v0.8）
 
-结构化业务数据（任务、笔记、邮件账户/消息、未来记忆迁移）收敛到单一 PostgreSQL **`entities`** 表，带组件标签（`task_list`、`task_item`、`email_account`、…）。自我层 [`self_blocks`](../cognition/self-layer.md) 保持物理隔离。见 [`entity-model.md`](entity-model.md)（remove / deleteComponent / deleteEntity 软删与回收站；壳 Entity 模块见 [`../modules/entity.md`](../modules/entity.md)）。
+结构化业务数据（任务、笔记、邮件账户/消息、记忆组件、自我层五块等）收敛到单一 PostgreSQL **`entities`** 表，带组件标签（`task_list`、`task_item`、`self_block`、…）。自我层见 [`self-layer.md`](../cognition/self-layer.md)。见 [`entity-model.md`](entity-model.md)（remove / deleteComponent / deleteEntity 软删与回收站；壳 Entity 模块见 [`../modules/entity.md`](../modules/entity.md)）。
 
 **搜索索引：** 可重建的 FTS/embedding 数据存于 `search_documents`（可插拔 `SearchBackend`：默认 `PgSearchIndex`，可选 `PgBusinessScan`）。业务表只保留真相；见 [`memory.md`](../cognition/memory.md) §IV。
 

@@ -24,7 +24,7 @@ describePg("self layer PG", () => {
     await restoreIntegrationHome(prev);
   });
 
-  it("self_blocks CRUD + locked existence_anchor", async () => {
+  it("self_block entities CRUD + locked existence_anchor", async () => {
     await upsertSelfBlock({
       block_key: "self_model",
       content: "I am a test agent.",

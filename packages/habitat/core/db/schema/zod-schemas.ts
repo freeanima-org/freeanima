@@ -9,10 +9,6 @@ export {
   messageInsertSchema,
   type MessageSelect,
   type MessageInsert,
-  selfBlocksSelectSchema,
-  selfBlocksInsertSchema,
-  type SelfBlocksSelect,
-  type SelfBlocksInsert,
 } from "@freeanima/shared/pg-shapes/rows/index.ts";
 
 import {

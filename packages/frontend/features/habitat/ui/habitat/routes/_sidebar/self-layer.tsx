@@ -35,7 +35,7 @@ function SelfLayerPage() {
           <h2 className="mb-1 text-lg font-bold">{"🪞 自我层"}</h2>
           <p className="text-muted-foreground text-sm">
             {
-              "PG self_blocks 五块只读展示；维护请用 self_update_block，或每周 Inbox 提议经伙伴确认。"
+              "entities 上 primary=self_block 五块只读展示；维护请用 self_update_block，或每周 Inbox 提议经伙伴确认。"
             }{" "}
             <code className="text-xs">update_self_block</code>
           </p>
