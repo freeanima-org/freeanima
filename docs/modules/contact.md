@@ -18,7 +18,9 @@ Commons 内的**联系人**实体：识别「这是谁」，不是行动者 Subj
 
 - 实体固定在 **Commons**（`world_config.common`，`commons_world_id`）
 - **读**：公开 world，全员可读
-- **写**：不改 access 规则；须在 Worlds UI 给 Commons 配 **write grant** 后，对应 subject 才能创建/修改/删除
+- **写**：
+  - **user**（主人 / 壳侧 token）：免 Commons write grant，可直接维护通讯录（与伴侣资源写入 Commons 同惯例；**不**改全局 `subject-world-access`）
+  - **agent**：须在 Worlds UI 给 Commons 配 **write grant**
 
 ## Body 通道
 

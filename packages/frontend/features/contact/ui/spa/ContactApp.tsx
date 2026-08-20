@@ -154,7 +154,7 @@ export function ContactApp() {
         <div>
           <h1 className="text-lg font-semibold">通讯录</h1>
           <p className="text-sm text-muted-foreground">
-            Commons 共享联系人；写入需对 Commons 有 write grant。
+            Commons 共享联系人；主人可直接维护，agent 写入需 Commons write grant。
           </p>
         </div>
         <Button type="button" onClick={startCreate}>

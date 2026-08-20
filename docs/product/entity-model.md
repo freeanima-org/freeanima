@@ -222,7 +222,7 @@ Commons 内的联系人（识别用，非 Subject）：
 | ------ | -------------- | --------- |
 | 联系人 | `type=content` | `contact` |
 
-- 固定 `world_id = commons_world_id`；**写**仍靠 Commons 手动 write grant（不改公开 world access 规则）
+- 固定 `world_id = commons_world_id`；**user** 维护免 Commons write grant；**agent** 仍须手动 write grant（不改全局 access 规则）
 - Body：`emails` / `phones` / `addresses` / `wechats` 通道数组；`identity_key` 值须实例内该通道全局唯一；`addresses` 禁止 identity_key
 - 可选 `subject_id` 挂本机 user/agent；邮件 `from_contact_id` / `to_contact_ids` 可选关联
 

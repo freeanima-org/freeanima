@@ -23,7 +23,7 @@ import {
   type ContactAddressEntry,
   type ContactChannelEntry,
 } from "../domain/index.ts";
-import { resolveContactWorldId } from "../domain/contact-world.ts";
+import { assertContactWorldAccess } from "../domain/contact-world.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
 function assertPg(_deps: RuntimeDeps): void {
@@ -52,12 +52,11 @@ async function contactWorldIdForAuth(
 ): Promise<number> {
   const kind = resolveSubjectKind(subject_kind);
   assertSubjectKindMatches(auth, kind);
-  const worldId = resolveContactWorldId();
-  if (isUserAgentPrivateWorldPassthrough(auth.subject_type, worldId)) {
-    // Commons 不是 agent private；此旁路不适用，继续走 grant
-  }
-  await assertSubjectCanAccessWorld(auth.subject_id, worldId, { access });
-  return worldId;
+  return assertContactWorldAccess({
+    subjectId: auth.subject_id,
+    subjectType: auth.subject_type,
+    access,
+  });
 }
 
 function mapIdentityError(e: unknown): never {
