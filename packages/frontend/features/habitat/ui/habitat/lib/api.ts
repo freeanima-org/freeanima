@@ -3,6 +3,7 @@ import type {
   ServiceSnapshot,
 } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import type { LlmUsageTotals } from "@freeanima/shared/llm-usage";
+import type { ServiceApiTokenAuthorization } from "@freeanima/shared/service-api-auth";
 import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client/bundled-browser.ts";
 import { resolveCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
@@ -612,7 +613,7 @@ export type ServiceApiTokenPublic = {
   subject_id: number;
   name: string;
   prefix: string;
-  scopes: string[];
+  authorization: ServiceApiTokenAuthorization;
   created_at: Date;
   expires_at: Date | null;
   last_used_at: Date | null;
@@ -626,9 +627,27 @@ export async function listSubjectApiTokens(subjectId: number) {
   }>;
 }
 
-export async function createSubjectApiToken(subjectId: number, body: { name: string }) {
+export async function getSubjectEntity(id: number) {
+  return hubCall(habitat().call("entity.subjectsGet", { id: String(id) })) as Promise<EntityRow>;
+}
+
+export async function createSubjectApiToken(
+  subjectId: number,
+  body: {
+    name: string;
+    preset?: "full" | "app" | "extension" | "mcp";
+    world_ids?: number[];
+    authorization?: ServiceApiTokenAuthorization;
+  },
+) {
   return hubCall(
-    habitat().call("tokens.createForSubject", { id: subjectId, name: body.name }),
+    habitat().call("tokens.createForSubject", {
+      id: subjectId,
+      name: body.name,
+      ...(body.preset ? { preset: body.preset } : {}),
+      ...(body.world_ids && body.world_ids.length > 0 ? { world_ids: body.world_ids } : {}),
+      ...(body.authorization ? { authorization: body.authorization } : {}),
+    }),
   ) as Promise<{ token: ServiceApiTokenPublic; plaintext: string }>;
 }
 

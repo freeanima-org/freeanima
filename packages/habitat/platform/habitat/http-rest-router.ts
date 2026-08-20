@@ -19,7 +19,7 @@ import type {
   RemoteToolsRequestContext,
 } from "@freeanima/shared/rpc-contract";
 
-import { habitatDispatch } from "./dispatch.ts";
+import { habitatDispatch, TokenAuthorizationError } from "./dispatch.ts";
 import { jsonResponseWithConditionalGet } from "./http-conditional.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types.ts";
 
@@ -137,6 +137,9 @@ export function mapHabitatRestHandlerError(e: unknown): Response {
   if (e instanceof z.ZodError) {
     return jsonError(400, "invalid_input", e.message);
   }
+  if (e instanceof TokenAuthorizationError) {
+    return jsonError(e.httpStatus, e.code, e.message);
+  }
   if (e instanceof HabitatRestHandlerError) {
     return jsonError(e.status, e.code, e.message);
   }
@@ -176,7 +179,7 @@ function ctxFor(
     token_id: 0,
     subject_id: 0,
     subject_type: "user",
-    scopes: [],
+    authorization: { full: true },
   };
   return {
     app_id: "",

@@ -58,6 +58,7 @@ export {
 export {
   resolveDefaultPrivateWorldForSubject,
   assertSubjectCanAccessWorld,
+  assertCallerTokenComponent,
   getSubjectWorldAccessLevel,
   resolveWorldFromEntityId,
   resolveDefaultWorldForToolCaller,

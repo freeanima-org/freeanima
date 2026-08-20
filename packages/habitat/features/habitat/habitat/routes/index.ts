@@ -18,6 +18,11 @@ import {
   type HabitatRouteHandler,
 } from "@freeanima/shared/habitat-contract/route.ts";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
+import {
+  expandTokenPreset,
+  FULL_TOKEN_AUTHORIZATION,
+  parseServiceApiTokenAuthorization,
+} from "@freeanima/shared/service-api-auth";
 
 import { authHasScope, type ServiceAuthContext } from "../habitat-api/auth-context.ts";
 import { listAutoLlmRuns, getAutoLlmRun } from "../habitat-api/handlers/auto-llm-runs.ts";
@@ -639,15 +644,36 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     habitatMethodDefs["tokens.createForSubject"],
     async (_deps, payload, ctx) => {
       requireFullAuth(ctx);
-      const { id, name } = payload as { id: number; name: string };
+      const {
+        id,
+        name,
+        preset,
+        world_ids,
+        authorization: authzInput,
+      } = payload as {
+        id: number;
+        name: string;
+        preset?: "full" | "app" | "extension" | "mcp";
+        world_ids?: number[];
+        authorization?: import("@freeanima/shared/service-api-auth").ServiceApiTokenAuthorization;
+      };
       await getSubjectEntity(id);
       const trimmed = name.trim();
       if (!trimmed) {
         throw new ApiHandlerError(400, "name is required", { code: "token_name_required" });
       }
+      const authorization = authzInput
+        ? parseServiceApiTokenAuthorization(authzInput)
+        : !preset || preset === "full"
+          ? FULL_TOKEN_AUTHORIZATION
+          : expandTokenPreset(
+              preset,
+              world_ids && world_ids.length > 0 ? { worldIds: world_ids } : undefined,
+            );
       const result = await createServiceApiTokenWithSecret({
         subject_id: id,
         name: trimmed,
+        authorization,
       });
       return { token: result.token, plaintext: result.plaintext };
     },

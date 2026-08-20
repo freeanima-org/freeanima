@@ -1,5 +1,5 @@
-import { omitUndefined } from "../../lib/omit-undefined.ts";
-import { createFileRoute } from "@tanstack/react-router";
+import { omitUndefined } from "@freeanima/features/habitat/ui/habitat/lib/omit-undefined.ts";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Badge,
@@ -38,11 +38,10 @@ import {
   type HabitatIdentityPublic,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
-import { SubjectApiTokensModal } from "./subject-api-tokens-modal.tsx";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 import { formatAnimaUri } from "@freeanima/client/portal-sdk/anima-uri.ts";
 
-export const Route = createFileRoute("/_sidebar/subjects")({
+export const Route = createFileRoute("/_sidebar/subjects/")({
   component: SubjectsPage,
 });
 
@@ -323,7 +322,6 @@ function SubjectsPage() {
     mode: "create" | "edit";
     row?: EntityRow;
   } | null>(null);
-  const [tokensSubject, setTokensSubject] = useState<EntityRow | null>(null);
   const [modalError, setModalError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -547,15 +545,13 @@ function SubjectsPage() {
                           >
                             {"编辑"}
                           </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs"
-                            onClick={() => setTokensSubject(row)}
+                          <Link
+                            to="/subjects/$subjectId/tokens"
+                            params={{ subjectId: String(row.id) }}
+                            className="inline-flex h-7 items-center rounded-md px-2 text-xs text-foreground hover:bg-muted"
                           >
                             {"API 令牌"}
-                          </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -590,10 +586,6 @@ function SubjectsPage() {
           onClose={closeModal}
           onSave={(form) => void onSave(form)}
         />
-      ) : null}
-
-      {tokensSubject ? (
-        <SubjectApiTokensModal subject={tokensSubject} onClose={() => setTokensSubject(null)} />
       ) : null}
     </div>
   );

@@ -144,7 +144,7 @@ export function attachSapWebSocket(
       subject_id: 0,
       subject_type: "user",
       token_id: 0,
-      scopes: [],
+      authorization: { full: true },
     },
     sendEvent(method, payload) {
       sendEnvelope({ kind: "evt", method, payload });

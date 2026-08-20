@@ -63,7 +63,7 @@ describePg("tasks tool (enhanced)", () => {
           token_id: 1,
           subject_id: agentSubjectId,
           subject_type: "agent",
-          scopes: ["full"],
+          authorization: { full: true as const },
         },
       },
     );

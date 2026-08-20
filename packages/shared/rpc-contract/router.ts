@@ -673,11 +673,13 @@ export type RemoteToolsServerHandlers = {
   ): Promise<RpcRouterOutputs[RpcMethod]> | RpcRouterOutputs[RpcMethod];
 };
 
+import type { ServiceApiTokenAuthorization } from "@freeanima/shared/service-api-auth";
+
 export type RpcRequestAuthContext = {
   subject_id: number;
   subject_type: "user" | "agent";
   token_id: number;
-  scopes: string[];
+  authorization: ServiceApiTokenAuthorization;
 };
 
 export type RemoteToolsRequestContext = {

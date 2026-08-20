@@ -43,7 +43,7 @@ function userCallerAuth() {
     token_id: 1,
     subject_id: getResolvedWorldContext().user_subject_id,
     subject_type: "user" as const,
-    scopes: ["full"],
+    authorization: { full: true as const },
   };
 }
 

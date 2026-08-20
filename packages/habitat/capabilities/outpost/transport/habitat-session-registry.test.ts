@@ -9,13 +9,13 @@ describe("HabitatSessionRegistry", () => {
     const agentEvents: Array<{ method: string; payload: unknown }> = [];
 
     registry.register("u1", {
-      auth: { subject_id: 1, subject_type: "user", token_id: 1, scopes: [] },
+      auth: { subject_id: 1, subject_type: "user", token_id: 1, authorization: { full: true } },
       sendEvent: (method, payload) => {
         userEvents.push({ method, payload });
       },
     });
     registry.register("a1", {
-      auth: { subject_id: 2, subject_type: "agent", token_id: 2, scopes: [] },
+      auth: { subject_id: 2, subject_type: "agent", token_id: 2, authorization: { full: true } },
       sendEvent: (method, payload) => {
         agentEvents.push({ method, payload });
       },
@@ -33,13 +33,13 @@ describe("HabitatSessionRegistry", () => {
     const registry = new HabitatSessionRegistry();
     const received: string[] = [];
     registry.register("writer", {
-      auth: { subject_id: 1, subject_type: "user", token_id: 1, scopes: [] },
+      auth: { subject_id: 1, subject_type: "user", token_id: 1, authorization: { full: true } },
       sendEvent: () => {
         received.push("writer");
       },
     });
     registry.register("peer", {
-      auth: { subject_id: 1, subject_type: "user", token_id: 3, scopes: [] },
+      auth: { subject_id: 1, subject_type: "user", token_id: 3, authorization: { full: true } },
       sendEvent: () => {
         received.push("peer");
       },
@@ -53,7 +53,7 @@ describe("HabitatSessionRegistry", () => {
     const registry = new HabitatSessionRegistry();
     let count = 0;
     registry.register("s1", {
-      auth: { subject_id: 1, subject_type: "user", token_id: 1, scopes: [] },
+      auth: { subject_id: 1, subject_type: "user", token_id: 1, authorization: { full: true } },
       sendEvent: () => {
         count += 1;
       },

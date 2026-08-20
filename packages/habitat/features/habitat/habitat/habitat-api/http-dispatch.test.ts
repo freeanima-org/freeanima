@@ -88,7 +88,7 @@ describe("http-dispatch", () => {
             token_id: 1,
             subject_id: 53,
             subject_type: "user",
-            scopes: ["full"],
+            authorization: { full: true },
           },
         };
       },
@@ -105,7 +105,7 @@ describe("http-dispatch", () => {
       token_id: 1,
       subject_id: 53,
       subject_type: "user",
-      scopes: ["full"],
+      authorization: { full: true },
     });
     expect(result.req.headers.get("x-anima-remote-address")).toBe("127.0.0.1");
   });

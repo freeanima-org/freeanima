@@ -50,7 +50,7 @@ export async function createServiceApiToken(input: CreateServiceApiTokenInput) {
       prefix: input.prefix,
       token_hash: input.token_hash,
       token_secret: input.token_secret ?? null,
-      scopes: input.scopes ?? ["full"],
+      authorization: input.authorization ?? { full: true },
       created_at: new Date(),
       expires_at: input.expires_at ?? null,
       last_used_at: null,

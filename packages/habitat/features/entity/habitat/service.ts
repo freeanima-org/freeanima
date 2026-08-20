@@ -2,6 +2,7 @@ import type { SubjectKind } from "@freeanima/habitat/core/config";
 import { resolveSubjectWorldId } from "@freeanima/habitat/core/config/world-context";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import {
+  assertCallerTokenComponent,
   assertSubjectCanAccessWorld,
   collectEntityReferences,
   countEntities,
@@ -151,6 +152,13 @@ async function serviceEntityAdminList(
   const primary_component = input?.primary_component?.trim() || undefined;
   const query = input?.query?.trim() || undefined;
 
+  if (primary_component) {
+    assertCallerTokenComponent(primary_component, "read");
+  } else {
+    // 未指定组件的宽查：要求 component:*
+    assertCallerTokenComponent("*", "read");
+  }
+
   if (query) {
     const id = parseEntityListQueryId(query);
     if (id != null) {
@@ -232,6 +240,16 @@ export async function serviceEntityGet(
   if (!isUserAgentPrivateWorldPassthrough(auth.subject_type, row.world_id)) {
     try {
       await assertSubjectCanAccessWorld(auth.subject_id, row.world_id, { access: "read" });
+    } catch (e) {
+      if (e instanceof ToolWorldAccessError) {
+        throw new Error("entity not found", { cause: e });
+      }
+      throw e;
+    }
+  }
+  if (row.primary_component) {
+    try {
+      assertCallerTokenComponent(row.primary_component, "read");
     } catch (e) {
       if (e instanceof ToolWorldAccessError) {
         throw new Error("entity not found", { cause: e });
