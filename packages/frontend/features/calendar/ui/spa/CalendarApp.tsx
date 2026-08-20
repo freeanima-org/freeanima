@@ -34,7 +34,12 @@ import {
   type CalendarRangeItem,
   type CalendarRangeKind,
 } from "./lib/api.ts";
-import { dueFiltersForAgenda, filterEndedEvents, mergeCalendarItems } from "./lib/agenda-items.ts";
+import {
+  dueFiltersForAgenda,
+  filterEndedEvents,
+  mergeCalendarItems,
+  planOverdueFiltersForAgenda,
+} from "./lib/agenda-items.ts";
 import {
   cstDayKey,
   dayHeadingLabel,
@@ -159,10 +164,16 @@ export function CalendarApp() {
     () => (kinds.includes("task") ? dueFiltersForAgenda(viewMode, selectedDay, today) : null),
     [kinds, selectedDay, today, viewMode],
   );
+  const planOverdueFilters = useMemo(
+    () =>
+      kinds.includes("task") ? planOverdueFiltersForAgenda(viewMode, selectedDay, today) : null,
+    [kinds, selectedDay, today, viewMode],
+  );
 
   const kindsKey = rangeKinds.toSorted().join(",");
   const sourcesKey = builtinSources.toSorted().join(",");
   const dueKey = dueFilters ? JSON.stringify(dueFilters) : "";
+  const planOverdueKey = planOverdueFilters ? JSON.stringify(planOverdueFilters) : "";
   const query = usePortalRead({
     queryKey: [
       "calendar",
@@ -173,6 +184,7 @@ export function CalendarApp() {
       kindsKey,
       sourcesKey,
       dueKey,
+      planOverdueKey,
       showCompleted ? "1" : "0",
     ],
     queryFn: async () => {
@@ -183,9 +195,16 @@ export function CalendarApp() {
         ...(builtinSources.length > 0 ? { sources: builtinSources } : {}),
         ...(showCompleted ? { include_completed: true } : {}),
       });
-      if (!dueFilters) return rangeItems;
-      const dueItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, dueFilters);
-      return mergeCalendarItems(rangeItems, dueItems);
+      let merged = rangeItems;
+      if (dueFilters) {
+        const dueItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, dueFilters);
+        merged = mergeCalendarItems(merged, dueItems);
+      }
+      if (planOverdueFilters) {
+        const planItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, planOverdueFilters);
+        merged = mergeCalendarItems(merged, planItems);
+      }
+      return merged;
     },
   });
 

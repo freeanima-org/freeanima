@@ -28,6 +28,15 @@ describe("taskItemSearchFilters 日期字段", () => {
     expect(parsed.completed_on_or_after_days).toBe(6);
   });
 
+  test("解析 plan_before / has_start_at", () => {
+    const parsed = parseTaskItemSearchFilters({
+      plan_before: "2026-08-19T00:00:00+08:00",
+      has_start_at: true,
+    });
+    expect(parsed.plan_before).toBe("2026-08-19T00:00:00+08:00");
+    expect(parsed.has_start_at).toBe(true);
+  });
+
   test("拒绝负数天数", () => {
     expect(() => parseTaskItemSearchFilters({ due_on_or_before_days: -1 })).toThrow(
       /invalid task_item filters/,

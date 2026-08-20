@@ -7,10 +7,13 @@ export function dueFiltersForAgenda(
   selectedDay: string,
   today: string,
 ): TaskItemSearchFiltersPayload | null {
+  // 显式 in_backlog:false：与 calendar.range / 文档一致，含项目内仅有截止的任务；
+  // 否则 tasklist.item.list 会默认注入 in_backlog:true，逾期区只剩清单内任务。
   const base: TaskItemSearchFiltersPayload = {
     status: "pending",
     has_due_at: true,
     roots_only: true,
+    in_backlog: false,
   };
   if (viewMode === "day") {
     if (selectedDay === today) return { ...base, due_on_or_before_days: 0 };
@@ -20,6 +23,23 @@ export function dueFiltersForAgenda(
   if (viewMode === "next3") return { ...base, due_on_or_before_days: 2 };
   if (viewMode === "next7") return { ...base, due_on_or_before_days: 6 };
   return null;
+}
+
+/** 议程今日「逾期」区：计划已结束（结束日早于今天）的 pending 根任务 */
+export function planOverdueFiltersForAgenda(
+  viewMode: string,
+  selectedDay: string,
+  today: string,
+): TaskItemSearchFiltersPayload | null {
+  const showsTodayOverdue =
+    viewMode === "next3" || viewMode === "next7" || (viewMode === "day" && selectedDay === today);
+  if (!showsTodayOverdue) return null;
+  return {
+    status: "pending",
+    roots_only: true,
+    in_backlog: false,
+    plan_before: dayRangeIso(today).from,
+  };
 }
 
 export function calendarItemKey(item: CalendarRangeItem): string {
@@ -45,12 +65,21 @@ export function mergeCalendarItems(
   return out;
 }
 
+/** 计划时钟日历日（COALESCE(end_at, start_at)） */
+function taskPlanEndDay(item: Extract<CalendarRangeItem, { kind: "task" }>): string {
+  const clock = item.end_at ?? item.start_at;
+  return clock ? dayKeyFromIso(clock) : "";
+}
+
 export function isOverdueTask(item: CalendarRangeItem, todayKey: string): boolean {
   if (item.kind !== "task" || item.virtual) return false;
   if (item.status === "completed") return false;
-  if (!item.due_at) return false;
-  const dueDay = dayKeyFromIso(item.due_at);
-  return dueDay !== "" && dueDay < todayKey;
+  if (item.due_at) {
+    const dueDay = dayKeyFromIso(item.due_at);
+    if (dueDay !== "" && dueDay < todayKey) return true;
+  }
+  const planDay = taskPlanEndDay(item);
+  return planDay !== "" && planDay < todayKey;
 }
 
 export function isEndedEvent(item: CalendarRangeItem, now: Date, todayKey: string): boolean {

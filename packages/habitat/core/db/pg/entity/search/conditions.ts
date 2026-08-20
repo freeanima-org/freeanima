@@ -211,6 +211,24 @@ function buildTaskItemBodyConditions(
         AND (${entities.body}->>'due_at')::timestamptz::date <= ${CST_TODAY} + ${filters.due_on_or_before_days}`,
     );
   }
+  if (filters.has_start_at) {
+    conditions.push(
+      sql`${entities.body}->>'start_at' IS NOT NULL AND ${entities.body}->>'start_at' <> ''`,
+    );
+  }
+  if (filters.plan_before) {
+    // 计划时钟 = COALESCE(end_at, start_at)，与 taskPlanClock 一致
+    conditions.push(
+      sql`COALESCE(
+          NULLIF(${entities.body}->>'end_at', ''),
+          NULLIF(${entities.body}->>'start_at', '')
+        ) IS NOT NULL
+        AND COALESCE(
+          NULLIF(${entities.body}->>'end_at', ''),
+          NULLIF(${entities.body}->>'start_at', '')
+        )::timestamptz < ${filters.plan_before}::timestamptz`,
+    );
+  }
   if (filters.completed_on != null) {
     conditions.push(buildTaskItemCompletedOnCondition(filters.completed_on));
   }

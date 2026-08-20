@@ -21,6 +21,13 @@ export const taskItemSearchFiltersSchema = z
     due_on: taskRelativeDaySchema.optional(),
     /** 相对今天（CST）的天数上限；0 = 今天及已过期 */
     due_on_or_before_days: z.number().int().nonnegative().optional(),
+    /** 有计划开始（start_at） */
+    has_start_at: z.boolean().optional(),
+    /**
+     * 计划结束时刻上界（不含）：COALESCE(end_at, start_at) < plan_before。
+     * 议程「计划逾期」常用今天 00:00。
+     */
+    plan_before: z.string().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     /** 相对今天（CST）向前 N 天起（含今天）；6 = 最近 7 个自然日 */
     completed_on_or_after_days: z.number().int().nonnegative().optional(),

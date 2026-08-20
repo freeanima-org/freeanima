@@ -36,7 +36,7 @@ export function MultiDayAgenda({
               {dayHeadingLabel(day, today)}
             </h2>
             {overdue.length > 0 ? (
-              <div className="flex flex-col gap-2">
+              <div className="mb-4 flex flex-col gap-2">
                 <h3 className="text-xs font-medium text-destructive">逾期</h3>
                 <AgendaList items={overdue} showDueChip emptyLabel="无逾期任务" {...handlers} />
               </div>
