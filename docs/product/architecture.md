@@ -260,14 +260,15 @@ FTS 索引维护在数据维护（资源组）下。记忆巩固手动入口在�
 | **技能（Skill）**                      | 声明技法需要什么       | `tools.allowed`（白名单）；`tools.denied` 少见 |
 | **调用方**（cron、记忆维护、subagent） | 声明本场景不得触碰什么 | `tools.denied`（可选）；`tools.allowed` 可选   |
 
-伞状形状（实现可存扁平 `allowed_tools` / `denied_tools`）：
+伞状形状（工具维已落地；数据维类型与 Service API Token `authorization.data` 同形）：
 
 ```text
 CapabilityPolicy
-├── tools.allowed / tools.denied   ← 已交付方向
-└── data.allowed / data.denied     ← 预留；运行时尚未落地
+├── tools.allowed_tools / denied_tools   ← 运行时已消费
+└── data?: DataCapabilityFragment        ← 类型已定（component / world / access）；resolve/loop 本轮不消费
 ```
 
+`DataCapabilityFragment` SSOT：`@freeanima/shared/service-api-auth`。Service API Token 表列 `authorization`（jsonb）在非 `full` 时内嵌同一 `data` 形状，并在 RPC / world / entity 路径强制。
 **合并：** allow 取并集，deny 取并集，deny 优先；`@ToolSet` 名称按今日工具过滤展开。同一技能可跨场景复用——调用方改 deny 列表，而非分叉技能变体。
 
 **可见性：**

@@ -46,7 +46,20 @@ Registry 标记 `auth: optional` 的栖息地 RPC 方法（如 `health.probe`、
 anima token create --subject-id 1 --name bootstrap
 # 终端打印 fa_at_... → 填入客户端 Habitat 设置
 # 之后可用 anima token reveal <id> 再次输出明文
+
+# 细粒度预设（防其它 agent/工具越权；默认仍为 full）
+anima token create --subject-id 1 --name mcp --preset mcp --world-id 12
+anima token create --subject-id 1 --name ext --preset extension
 ```
+
+`authorization`（jsonb，取代旧 `scopes`）语义：
+
+| 形态                                             | 含义                                                                                                   |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `{ "full": true }`                               | 全部权限（boot / 主人级；管理 `tokens.*` 必须）                                                        |
+| `{ "full": false, "portal", "modules", "data" }` | 凭证维（入口/模块）+ 数据维（component / world / read\|write）；`data` 与 `CapabilityPolicy.data` 同形 |
+
+预设：`full`（默认）/ `app` / `extension` / `mcp`。数据维再与 subject 的 world **grants** 求交。
 
 列出 / 再次复制 / 改名 / 撤销：
 
@@ -57,10 +70,10 @@ anima token rename <token_id> --name desktop
 anima token revoke <token_id>
 ```
 
-栖息地 RPC REST（需已认证 `full` token）：
+栖息地 RPC REST（需已认证 **full** token）：
 
-- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `createTypedHabitatClient().call("tokens.listForSubject", { id })`）— 项含 `revealable`（旧行无存档 secret 时为 `false`）
-- `POST /rpc/v1/tokens/createForSubject` — body `{ "id": <subject_id>, "name": "desktop" }`，响应含 `plaintext`（同时存档 secret，可再次 reveal）
+- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `createTypedHabitatClient().call("tokens.listForSubject", { id })`）— 项含 `revealable`、`authorization`
+- `POST /rpc/v1/tokens/createForSubject` — body `{ "id", "name", "preset?", "world_ids?" }`，响应含 `plaintext`
 - `POST /rpc/v1/tokens/reveal` — body `{ "id": <token_id> }`，响应 `{ "plaintext": "fa_at_…" }`
 - `POST /rpc/v1/tokens/updateName` — body `{ "id": <token_id>, "name": "desktop" }`
 - `POST /rpc/v1/tokens/revoke` — body `{ "id": <token_id> }`

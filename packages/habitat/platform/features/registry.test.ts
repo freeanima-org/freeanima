@@ -30,7 +30,7 @@ describe("registerFeatures", () => {
         subject_id: 1,
         subject_type: "user" as const,
         token_id: 1,
-        scopes: [],
+        authorization: { full: true },
       },
       sendEvent: () => {},
     } satisfies RemoteToolsRequestContext;

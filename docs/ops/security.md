@@ -72,20 +72,20 @@ title: 安全
 
 ## 已有措施
 
-| 措施                | 说明                                                                                                                             |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 同源 RPC            | TanStack Start server functions 默认同源，无需 CORS 白名单                                                                       |
-| 配置 API 密钥       | 栖息地 config GET 以明文返回密钥（`api_key`、MCP `env` / `headers` 等）。写回时遗留 `"***"` 经 `restoreMaskedSecrets` 恢复       |
-| MCP 配置            | `sanitizeConfigForApi` 保留 MCP `env` / `headers` 明文，便于栖息地 MCP 页来回编辑                                                |
-| 文件路径策略        | `file_*` 工具共用 `path-policy`：`/etc`、vault、ssh 私钥、`/proc`/`/sys`、阻断设备                                               |
-| 终端 shell 默认关闭 | `terminal_run` 默认 `shell=false`；仅在需要管道/重定向时传 `shell=true`（摩擦，非沙箱）                                          |
-| 终端命令硬拒绝      | 常开灾难性命令策略（`terminal-command-policy`）；不能用 env 关闭                                                                 |
-| Slash 命令          | 白名单路由；每条命令须产生用户可见反馈；长命令先立即 ack 再给最终结果                                                            |
-| MCP 默认 stdio      | 降低端口暴露                                                                                                                     |
-| Vault 隔离          | LLM 只见 vault 条目元数据，不见解密字段                                                                                          |
-| Service API Token   | 栖息地 RPC REST `/rpc/v1/*` 路由需要 `Authorization: Bearer fa_at_…`（`service_api_tokens` PG 表）；health 探测/CORS/echo 豁免。 |
-| CI 密钥扫描         | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）                           |
-| `.gitignore`        | `.env.*`、`config.yaml`、私钥后缀                                                                                                |
+| 措施                | 说明                                                                                                                                                                                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 同源 RPC            | TanStack Start server functions 默认同源，无需 CORS 白名单                                                                                                                                                                       |
+| 配置 API 密钥       | 栖息地 config GET 以明文返回密钥（`api_key`、MCP `env` / `headers` 等）。写回时遗留 `"***"` 经 `restoreMaskedSecrets` 恢复                                                                                                       |
+| MCP 配置            | `sanitizeConfigForApi` 保留 MCP `env` / `headers` 明文，便于栖息地 MCP 页来回编辑                                                                                                                                                |
+| 文件路径策略        | `file_*` 工具共用 `path-policy`：`/etc`、vault、ssh 私钥、`/proc`/`/sys`、阻断设备                                                                                                                                               |
+| 终端 shell 默认关闭 | `terminal_run` 默认 `shell=false`；仅在需要管道/重定向时传 `shell=true`（摩擦，非沙箱）                                                                                                                                          |
+| 终端命令硬拒绝      | 常开灾难性命令策略（`terminal-command-policy`）；不能用 env 关闭                                                                                                                                                                 |
+| Slash 命令          | 白名单路由；每条命令须产生用户可见反馈；长命令先立即 ack 再给最终结果                                                                                                                                                            |
+| MCP 默认 stdio      | 降低端口暴露                                                                                                                                                                                                                     |
+| Vault 隔离          | LLM 只见 vault 条目元数据，不见解密字段                                                                                                                                                                                          |
+| Service API Token   | 栖息地 RPC REST `/rpc/v1/*` 须 Bearer `fa_at_…`（`service_api_tokens.authorization` jsonb；`full` 或 portal/modules/data 细粒度）。health/CORS/echo 豁免。管理 `tokens.*` 须 `full`。见 [`remote-access.md`](remote-access.md)。 |
+| CI 密钥扫描         | `.github/workflows/security.yml`（Gitleaks）；GitHub Secret scanning + Push protection（公开仓库免费）                                                                                                                           |
+| `.gitignore`        | `.env.*`、`config.yaml`、私钥后缀                                                                                                                                                                                                |
 
 ## 已知缺口（文档 ≠ 已完全实现）
 

@@ -1,3 +1,5 @@
+import type { DataCapabilityFragment } from "@freeanima/shared/service-api-auth";
+
 /** 策略片段：技能或调用方声明的工具允许/禁止列表 */
 export type CapabilityPolicyFragment = {
   allowed_tools: readonly string[];
@@ -11,10 +13,11 @@ export type ResolvedCapabilityPolicy = {
 };
 
 /**
- * 能力策略伞形（data 层预留，本期不实现）。
+ * 能力策略伞形。
  * 运行时仅消费 tools.* → flat allowed_tools / denied_tools。
+ * `data` 与 token.authorization.data 同形，**本轮 resolve/loop 不读不写**。
  */
 export type CapabilityPolicy = {
   tools: CapabilityPolicyFragment;
-  data?: CapabilityPolicyFragment;
+  data?: DataCapabilityFragment;
 };

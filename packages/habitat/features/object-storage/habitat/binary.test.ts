@@ -49,7 +49,7 @@ function ctx(partial: {
       token_id: 1,
       subject_id: partial.subject_id,
       subject_type: partial.subject_type,
-      scopes: [],
+      authorization: { full: true },
     },
     sendEvent() {},
   };

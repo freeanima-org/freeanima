@@ -1,7 +1,14 @@
 import type { SubjectKind } from "@freeanima/habitat/core/config";
 import { resolveSubjectWorldId } from "@freeanima/habitat/core/config";
 import { subjectConfigBodySchema } from "@freeanima/habitat/core/db/schema";
+import {
+  assertDataCapability,
+  DataCapabilityError,
+  filterWorldIdsByDataCapability,
+  tokenDataCapability,
+} from "@freeanima/shared/service-api-auth";
 import { resolveToolCallerSubjectId } from "@freeanima/habitat/core/tool";
+import { getActiveServiceApiAuth } from "../service-api-token/service-auth-als.ts";
 
 import { getEntity, listEntities } from "./repos/entity-crud-repo.ts";
 import { resolveWorldsAccessibleBySubject } from "./search/accessible-worlds.ts";
@@ -70,6 +77,42 @@ export async function assertSubjectCanAccessWorld(
         : `subject ${subjectId} cannot access world ${worldId}`,
     );
   }
+  assertCallerTokenWorld(worldId, required);
+}
+
+/** Service API token 数据维 ∩ world（无 callerAuth 则跳过） */
+function assertCallerTokenWorld(worldId: number, access: "read" | "write"): void {
+  const auth = getActiveServiceApiAuth();
+  if (!auth) return;
+  const data = tokenDataCapability(auth.authorization);
+  if (!data) return;
+  try {
+    assertDataCapability(data, { worldId, access });
+  } catch (e) {
+    if (e instanceof DataCapabilityError) {
+      throw new ToolWorldAccessError(e.message);
+    }
+    throw e;
+  }
+}
+
+/** Service API token 组件维（无 callerAuth / full 则跳过） */
+export function assertCallerTokenComponent(
+  component: string,
+  access: "read" | "write" = "read",
+): void {
+  const auth = getActiveServiceApiAuth();
+  if (!auth) return;
+  const data = tokenDataCapability(auth.authorization);
+  if (!data) return;
+  try {
+    assertDataCapability(data, { component, access });
+  } catch (e) {
+    if (e instanceof DataCapabilityError) {
+      throw new ToolWorldAccessError(e.message);
+    }
+    throw e;
+  }
 }
 
 export async function resolveWorldFromEntityId(entityId: number): Promise<number> {
@@ -126,11 +169,12 @@ export async function resolveToolWorld(opts: ResolveToolWorldOpts): Promise<numb
   return resolveDefaultPrivateWorldForSubject(callerSubjectId);
 }
 
-/** 供搜索列举：subject 可读的全部 world（user 返回全部 world，可超过 500） */
+/** 供搜索列举：subject 可读的全部 world（user 可超过 500；再与 token data 求交） */
 export async function listWorldIdsAccessibleBySubject(subjectId: number): Promise<number[]> {
   const subject = await getEntity(subjectId);
+  let ids: number[];
   if (subject?.type === "user") {
-    const ids: number[] = [];
+    ids = [];
     let offset = 0;
     for (;;) {
       const batch = await listEntities({ type: "world", limit: 500, offset });
@@ -139,7 +183,12 @@ export async function listWorldIdsAccessibleBySubject(subjectId: number): Promis
       if (batch.length < 500) break;
       offset += 500;
     }
-    return ids;
+  } else {
+    ids = await resolveWorldsAccessibleBySubject({ list: listEntities }, subjectId);
   }
-  return resolveWorldsAccessibleBySubject({ list: listEntities }, subjectId);
+  const auth = getActiveServiceApiAuth();
+  if (!auth) return ids;
+  const data = tokenDataCapability(auth.authorization);
+  if (!data) return ids;
+  return filterWorldIdsByDataCapability(ids, data);
 }
