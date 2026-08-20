@@ -15,7 +15,7 @@
     "@clack/prompts": "^1.7.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@node-rs/jieba": "^2.0.2",
-    "@opencode-ai/models": "^0.0.43",
+    "@opencode-ai/models": "^0.0.45",
     "@sinclair/typebox": "^0.34.52",
     "acme-client": "^5.4.0",
     "commander": "^15.0.0",
