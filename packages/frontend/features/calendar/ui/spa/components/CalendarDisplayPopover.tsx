@@ -19,9 +19,13 @@ type CalendarDisplayPopoverProps = {
   kinds: CalendarKindPref[];
   builtinSources: BuiltinCalendarSourceId[];
   expandRecurrence: boolean;
+  showCompleted: boolean;
+  showEndedEvents: boolean;
   onToggleKind: (kind: CalendarKindPref) => void;
   onToggleSource: (source: BuiltinCalendarSourceId) => void;
   onToggleExpandRecurrence: (next: boolean) => void;
+  onToggleShowCompleted: (next: boolean) => void;
+  onToggleShowEndedEvents: (next: boolean) => void;
 };
 
 function SectionLabel({ children }: { children: string }) {
@@ -58,9 +62,13 @@ export function CalendarDisplayPopover({
   kinds,
   builtinSources,
   expandRecurrence,
+  showCompleted,
+  showEndedEvents,
   onToggleKind,
   onToggleSource,
   onToggleExpandRecurrence,
+  onToggleShowCompleted,
+  onToggleShowEndedEvents,
 }: CalendarDisplayPopoverProps) {
   return (
     <PopoverTrigger>
@@ -101,14 +109,27 @@ export function CalendarDisplayPopover({
                 />
               ))}
             </section>
-            <div className="border-border/60 border-t pt-2">
+            <section className="flex flex-col gap-0.5 border-border/60 border-t pt-2">
+              <SectionLabel>本视图</SectionLabel>
               <ToggleRow
                 compact={compact}
                 label="重复展开"
                 selected={expandRecurrence}
                 onChange={onToggleExpandRecurrence}
               />
-            </div>
+              <ToggleRow
+                compact={compact}
+                label="显示已完成任务"
+                selected={showCompleted}
+                onChange={onToggleShowCompleted}
+              />
+              <ToggleRow
+                compact={compact}
+                label="显示已过期事件"
+                selected={showEndedEvents}
+                onChange={onToggleShowEndedEvents}
+              />
+            </section>
           </div>
         </PopoverDialog>
       </Popover>

@@ -6,7 +6,7 @@ describe("listSmartListsMerged", () => {
     mock.restore();
   });
 
-  test("合并内置 preset 与自定义 entity，均含 filters", async () => {
+  test("仅合并自定义 entity（内置完成类 preset 已退役）", async () => {
     const entityMod = await import("@freeanima/habitat/core/db/pg/entity");
     spyOn(entityMod, "listEntities").mockImplementation(async () => [
       {
@@ -32,8 +32,8 @@ describe("listSmartListsMerged", () => {
     const { listSmartListsMerged } = await import("./smart-list-store.ts");
     const rows = await listSmartListsMerged(1);
 
-    expect(rows.length).toBe(4);
-    expect(rows.filter((r) => r.preset != null).length).toBe(3);
+    expect(rows.length).toBe(1);
+    expect(rows.filter((r) => r.preset != null).length).toBe(0);
     expect(rows.find((r) => r.id === 42)?.filters).toEqual({
       status: "pending",
       priority: "high",

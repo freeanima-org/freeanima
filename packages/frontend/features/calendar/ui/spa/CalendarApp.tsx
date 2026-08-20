@@ -24,20 +24,17 @@ import {
   convertCalendarEventToTask,
   deleteCalendarEvent,
   fetchCalendarEventById,
+  fetchCalendarPrefs,
   fetchCalendarRange,
   fetchDueTasksForAgenda,
   patchTaskDueAt,
   updateCalendarEvent,
+  updateCalendarPrefs,
   type CalendarEventRow,
   type CalendarRangeItem,
   type CalendarRangeKind,
 } from "./lib/api.ts";
-import {
-  dueFiltersForAgenda,
-  filterEndedEvents,
-  mergeCalendarItems,
-  shouldHideEndedEvents,
-} from "./lib/agenda-items.ts";
+import { dueFiltersForAgenda, filterEndedEvents, mergeCalendarItems } from "./lib/agenda-items.ts";
 import {
   cstDayKey,
   dayHeadingLabel,
@@ -54,11 +51,14 @@ import {
   CALENDAR_VIEW_MODE_LABEL,
   CALENDAR_VIEW_MODES,
   builtinSourceLabel,
+  currentViewDisplay,
   isAgendaViewMode,
   readCalendarUiPrefs,
+  replaceCalendarUiPrefs,
   writeCalendarUiPrefs,
   type BuiltinCalendarSourceId,
   type CalendarKindPref,
+  type CalendarUiPrefsWritePatch,
   type CalendarViewMode,
 } from "./lib/calendar-prefs.ts";
 import { readCalendarEventFromUrl, writeCalendarEventToUrl } from "./lib/calendar-event-url.ts";
@@ -88,17 +88,48 @@ export function CalendarApp() {
   });
   const [selectedDay, setSelectedDay] = useState(today);
   const [prefs, setPrefs] = useState(() => readCalendarUiPrefs());
-  const kinds = prefs.kinds;
-  const builtinSources = prefs.builtinSources;
   const viewMode = prefs.viewMode;
-  const expandRecurrence = prefs.expandRecurrence;
+  const viewDisplay = currentViewDisplay(prefs);
+  const kinds = viewDisplay.kinds;
+  const builtinSources = viewDisplay.builtinSources;
+  const expandRecurrence = viewDisplay.expandRecurrence;
+  const showCompleted = viewDisplay.showCompleted;
+  const showEndedEvents = viewDisplay.showEndedEvents;
   const agendaMode = isAgendaViewMode(viewMode);
   const [editor, setEditor] = useState<EventEditorTarget | null>(null);
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
   const [refreshing, setRefreshing] = useState(false);
 
-  const patchPrefs = useCallback((patch: Parameters<typeof writeCalendarUiPrefs>[0]) => {
-    setPrefs(writeCalendarUiPrefs(patch));
+  const patchPrefs = useCallback((patch: CalendarUiPrefsWritePatch) => {
+    const next = writeCalendarUiPrefs(patch);
+    setPrefs(next);
+    const remotePatch: Parameters<typeof updateCalendarPrefs>[1] = {};
+    if (patch.viewMode != null) remotePatch.viewMode = patch.viewMode;
+    if (patch.byView != null) remotePatch.byView = patch.byView;
+    if (patch.currentView != null) {
+      remotePatch.byView = {
+        ...remotePatch.byView,
+        [next.viewMode]: patch.currentView,
+      };
+    }
+    void updateCalendarPrefs(CALENDAR_SUBJECT, remotePatch).catch(() => {
+      /* 本地已写入；下次启动再对齐 */
+    });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchCalendarPrefs(CALENDAR_SUBJECT)
+      .then((remote) => {
+        if (cancelled) return;
+        setPrefs(replaceCalendarUiPrefs(remote));
+      })
+      .catch(() => {
+        /* 保留本地缓存 */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const applyDay = useCallback((day: string) => {
@@ -142,6 +173,7 @@ export function CalendarApp() {
       kindsKey,
       sourcesKey,
       dueKey,
+      showCompleted ? "1" : "0",
     ],
     queryFn: async () => {
       const rangeItems = await fetchCalendarRange(CALENDAR_SUBJECT, {
@@ -149,6 +181,7 @@ export function CalendarApp() {
         to: range.to,
         kinds: rangeKinds,
         ...(builtinSources.length > 0 ? { sources: builtinSources } : {}),
+        ...(showCompleted ? { include_completed: true } : {}),
       });
       if (!dueFilters) return rangeItems;
       const dueItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, dueFilters);
@@ -159,9 +192,9 @@ export function CalendarApp() {
   const items = query.data ?? [];
   const visibleItems = useMemo(() => {
     const visible = filterVisibleCalendarItems(items, expandRecurrence);
-    if (!shouldHideEndedEvents(viewMode, selectedDay, today)) return visible;
+    if (showEndedEvents) return visible;
     return filterEndedEvents(visible, new Date(), today);
-  }, [expandRecurrence, items, selectedDay, today, viewMode]);
+  }, [expandRecurrence, items, showEndedEvents, today]);
 
   const agendaDays = useMemo(() => {
     if (viewMode === "day") return [selectedDay];
@@ -192,22 +225,22 @@ export function CalendarApp() {
 
   const toggleKind = useCallback(
     (kind: CalendarKindPref) => {
-      const prev = prefs.kinds;
+      const prev = kinds;
       const next = prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind];
-      if (next.length === 0 && prefs.builtinSources.length === 0) return;
-      patchPrefs({ kinds: next });
+      if (next.length === 0 && builtinSources.length === 0) return;
+      patchPrefs({ currentView: { kinds: next } });
     },
-    [patchPrefs, prefs.builtinSources.length, prefs.kinds],
+    [builtinSources.length, kinds, patchPrefs],
   );
 
   const toggleBuiltinSource = useCallback(
     (source: BuiltinCalendarSourceId) => {
-      const prev = prefs.builtinSources;
+      const prev = builtinSources;
       const next = prev.includes(source) ? prev.filter((s) => s !== source) : [...prev, source];
-      if (next.length === 0 && prefs.kinds.length === 0) return;
-      patchPrefs({ builtinSources: next });
+      if (next.length === 0 && kinds.length === 0) return;
+      patchPrefs({ currentView: { builtinSources: next } });
     },
-    [patchPrefs, prefs.builtinSources, prefs.kinds.length],
+    [builtinSources, kinds.length, patchPrefs],
   );
 
   const openHoliday = useCallback((item: Extract<CalendarRangeItem, { kind: "holiday" }>) => {
@@ -290,8 +323,18 @@ export function CalendarApp() {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 p-3 md:p-4">
-      <header className="flex flex-wrap items-center gap-2">
+    <div
+      className={cn(
+        "flex h-full min-h-0 flex-col gap-3 md:p-4",
+        compact && viewMode === "month" ? "p-0" : "p-3",
+      )}
+    >
+      <header
+        className={cn(
+          "flex flex-wrap items-center gap-2",
+          compact && viewMode === "month" && "px-2 pt-2",
+        )}
+      >
         <h1 className="text-lg font-semibold">{"日程"}</h1>
         <DropdownMenuTrigger>
           <Button
@@ -407,9 +450,15 @@ export function CalendarApp() {
           kinds={kinds}
           builtinSources={builtinSources}
           expandRecurrence={expandRecurrence}
+          showCompleted={showCompleted}
+          showEndedEvents={showEndedEvents}
           onToggleKind={toggleKind}
           onToggleSource={toggleBuiltinSource}
-          onToggleExpandRecurrence={(next) => patchPrefs({ expandRecurrence: next })}
+          onToggleExpandRecurrence={(next) =>
+            patchPrefs({ currentView: { expandRecurrence: next } })
+          }
+          onToggleShowCompleted={(next) => patchPrefs({ currentView: { showCompleted: next } })}
+          onToggleShowEndedEvents={(next) => patchPrefs({ currentView: { showEndedEvents: next } })}
         />
         <div className="ml-auto flex items-center gap-2">
           <Button
@@ -460,7 +509,12 @@ export function CalendarApp() {
               : "grid grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]",
           )}
         >
-          <section className="rounded-lg border border-border/60 p-3">
+          <section
+            className={cn(
+              "rounded-lg border border-border/60",
+              compact && viewMode === "month" ? "p-1" : "p-3",
+            )}
+          >
             {viewMode === "week" ? (
               <WeekGrid
                 weekStartDay={weekAnchor}

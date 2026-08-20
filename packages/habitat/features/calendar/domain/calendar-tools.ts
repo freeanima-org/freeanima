@@ -189,7 +189,16 @@ async function handleRange(args: Record<string, unknown>): Promise<string> {
   }
 
   try {
-    const items = await listCalendarRange(ctx, omitUndefined({ from, to, kinds, sources }));
+    const items = await listCalendarRange(
+      ctx,
+      omitUndefined({
+        from,
+        to,
+        kinds,
+        sources,
+        include_completed: args.include_completed === true ? true : undefined,
+      }),
+    );
     return toolResult({ ok: true, action: "range", items });
   } catch (e) {
     return toolError(String(e instanceof Error ? e.message : e));
@@ -315,7 +324,7 @@ export function buildCalendarToolDefs() {
     {
       name: "calendar_range",
       description:
-        "Unified calendar range: events, pending tasks with planned time, projects, and builtin holiday calendars overlapping [from, to].",
+        "Unified calendar range: events, pending/planned tasks, projects, builtin holidays; optional completed tasks (plan days + completion day).",
       parameters: {
         type: "object",
         properties: {
@@ -333,6 +342,10 @@ export function buildCalendarToolDefs() {
               type: "string",
               enum: ["cn_holiday", "traditional", "international", "solar_term"],
             },
+          },
+          include_completed: {
+            type: "boolean",
+            description: "Include completed tasks by plan overlap or completed_at",
           },
         },
         required: ["from", "to"],

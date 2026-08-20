@@ -71,10 +71,17 @@ export function packBarsForWeek(
   const candidates: Omit<PackedBar, "lane">[] = [];
   for (const item of items) {
     const range = itemDayRange(item);
-    if (!range) continue;
-    const clip = clipRangeToDays(range, weekDays);
-    if (!clip) continue;
-    candidates.push({ item, colStart: clip.colStart, colSpan: clip.colSpan });
+    if (range) {
+      const clip = clipRangeToDays(range, weekDays);
+      if (clip) candidates.push({ item, colStart: clip.colStart, colSpan: clip.colSpan });
+    }
+    if (item.kind === "task" && item.status === "completed" && item.completed_at) {
+      const doneDay = dayKeyFromIso(item.completed_at);
+      if (doneDay && (!range || doneDay < range.start || doneDay > range.end)) {
+        const clip = clipRangeToDays({ start: doneDay, end: doneDay }, weekDays);
+        if (clip) candidates.push({ item, colStart: clip.colStart, colSpan: clip.colSpan });
+      }
+    }
   }
 
   candidates.sort((a, b) => {
@@ -99,9 +106,15 @@ export function packBarsForWeek(
 }
 
 /** 与 AgendaList kind 徽章对齐的事件条底色 */
-export function kindBarClass(kind: CalendarRangeKind, opts?: { virtual?: boolean }): string {
+export function kindBarClass(
+  kind: CalendarRangeKind,
+  opts?: { virtual?: boolean; completed?: boolean },
+): string {
   if (opts?.virtual) {
     return "bg-muted/60 text-muted-foreground italic";
+  }
+  if (opts?.completed) {
+    return "bg-muted/50 text-muted-foreground line-through";
   }
   if (kind === "event") return "bg-primary/20 text-primary";
   if (kind === "task") return "bg-amber-500/20 text-amber-800 dark:text-amber-200";

@@ -9,9 +9,9 @@ title: 任务
 
 ## 与日历的边界（#14668）
 
-- **Task** = 清单工作台：Inbox、清单树、自定义智能清单与完成类内置清单、任务 CRUD、归档与排序
-- **Calendar** = 跨模块时间视图/入口：聚合事件、带计划的任务、仅有截止的任务（议程）、项目窗口；点击 overlay 或跳回本模块
-- 智能清单**不**迁入日历；按时间浏览日常安排以日历日/近三天/近七天为准（见 [calendar.md](./calendar.md)）
+- **Task** = 清单工作台：Inbox、清单树、自定义智能清单、任务 CRUD、归档与排序
+- **Calendar** = 跨模块时间视图/入口：聚合事件、带计划的任务、仅有截止的任务（议程）、项目窗口；并可按完成日回顾已完成任务；点击 overlay 或跳回本模块
+- 智能清单**不**迁入日历；按时间浏览与完成回顾以日历为准（见 [calendar.md](./calendar.md)）
 
 ## 数据模型
 
@@ -69,17 +69,17 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 ## 智能清单
 
-内置仅保留完成类：**今日完成 / 昨日完成 / 最近7天完成**。到期浏览（今天 / 明天 / 近几天）在 [日历](./calendar.md) 日视图与近三天/近七天。自定义智能清单仍可配置到期条件。默认打开任务落到收件箱。
+内置完成类（今日/昨日/最近7天完成）已退役；完成回顾在 [日历](./calendar.md)（按完成日，可与计划段同显）。到期浏览仍在日历日视图与近三天/近七天。自定义智能清单仍可配置到期与完成时间条件。默认打开任务落到收件箱。
 
 ## 智能清单「已完成」
 
-重复 live 完成后不再停留在 `completed`，故「今日/昨日完成」须 **并集**：
+重复 live 完成后不再停留在 `completed`，故自定义完成类过滤须 **并集**：
 
 1. `task_item`（一次性已完成）
 2. `task_occurrence`（重复打勾历史）
 
 实现：`listCompletedActivity`（domain）；列表 RPC 在 `status=completed` +
-`completed_on*` 时走并集。occurrence 行：`id = series_task_id`，带 `occurrence_id`。
+`completed_on*` / `completed_after`/`completed_before` 时走并集。occurrence 行：`id = series_task_id`，带 `occurrence_id`。日程 `calendar.range`（`include_completed`）亦复用该并集。
 
 ## 提醒
 

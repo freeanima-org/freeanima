@@ -24,8 +24,10 @@ import type {
   CalendarRangeItem,
   CalendarRangeKind,
   CalendarRangeOpts,
+  CalendarRangeTaskItem,
   CalendarStoreContext,
 } from "./types.ts";
+import { listCompletedActivity } from "@freeanima/features/task/domain/completed-activity.ts";
 
 const ALL_KINDS: CalendarRangeKind[] = ["event", "task", "project", "holiday"];
 
@@ -39,12 +41,127 @@ function sortKey(item: CalendarRangeItem): number {
     return Number.isFinite(ms) ? ms : 0;
   }
   if (item.kind === "task") {
-    const anchor = item.start_at ?? item.end_at ?? item.due_at ?? null;
+    if (
+      item.status === "completed" &&
+      item.completed_at &&
+      !hasTaskPlan({
+        start_at: item.start_at ?? null,
+        end_at: item.end_at ?? null,
+      })
+    ) {
+      const ms = Date.parse(item.completed_at);
+      return Number.isFinite(ms) ? ms : 0;
+    }
+    const anchor = item.start_at ?? item.end_at ?? item.due_at ?? item.completed_at ?? null;
     const ms = anchor ? Date.parse(anchor) : NaN;
     return Number.isFinite(ms) ? ms : 0;
   }
   const start = item.start_at ? Date.parse(item.start_at) : NaN;
   return Number.isFinite(start) ? start : 0;
+}
+
+function taskLiveKey(id: number, occurrenceId?: number): string {
+  return occurrenceId != null ? `task-occ-${occurrenceId}` : `task-live-${id}`;
+}
+
+function mergeCompletedTask(
+  byKey: Map<string, CalendarRangeTaskItem>,
+  next: CalendarRangeTaskItem,
+): void {
+  const key = taskLiveKey(next.id, next.occurrence_id);
+  const prev = byKey.get(key);
+  if (!prev) {
+    byKey.set(key, next);
+    return;
+  }
+  const occurrenceId = next.occurrence_id ?? prev.occurrence_id;
+  const merged: CalendarRangeTaskItem = {
+    kind: "task",
+    id: next.id,
+    title: next.title,
+    status: "completed",
+    priority: next.priority,
+    project_id: next.project_id,
+    list_id: next.list_id,
+    start_at: next.start_at ?? prev.start_at ?? null,
+    end_at: next.end_at ?? prev.end_at ?? null,
+    due_at: next.due_at ?? prev.due_at ?? null,
+    completed_at: next.completed_at ?? prev.completed_at ?? null,
+    ...(occurrenceId != null ? { occurrence_id: occurrenceId } : {}),
+    ...(next.virtual != null || prev.virtual != null
+      ? { virtual: next.virtual ?? prev.virtual }
+      : {}),
+  };
+  byKey.set(key, merged);
+}
+
+async function listCompletedTasksForRange(
+  ctx: CalendarStoreContext,
+  from: string,
+  to: string,
+): Promise<CalendarRangeTaskItem[]> {
+  const rows = await listCompletedActivity(
+    ctx.worldId,
+    {
+      status: "completed",
+      completed_after: from,
+      completed_before: to,
+      roots_only: true,
+    },
+    { limit: 500 },
+  );
+  const byKey = new Map<string, CalendarRangeTaskItem>();
+  for (const item of rows) {
+    mergeCompletedTask(byKey, {
+      kind: "task",
+      id: item.id,
+      title: item.title,
+      start_at: item.start_at ?? null,
+      end_at: item.end_at ?? null,
+      due_at: item.due_at ?? null,
+      status: "completed",
+      priority: item.priority ?? "none",
+      project_id: item.project_id ?? null,
+      list_id: item.list_id ?? null,
+      completed_at: item.completed_at ?? null,
+      ...(item.occurrence_id != null ? { occurrence_id: item.occurrence_id } : {}),
+    });
+  }
+
+  // 计划与窗相交、但 completed_at 落在窗外的已完成任务
+  const planned = await searchEntities({
+    world_id: ctx.worldId,
+    component: TASK_ITEM_COMPONENT,
+    filters: {
+      status: "completed",
+      roots_only: true,
+    },
+    limit: 500,
+    mode: "filter_only",
+  });
+  for (const row of planned.results) {
+    const item = asTaskItem(row);
+    if (!item) continue;
+    const startAt = item.start_at ?? null;
+    const endAt = item.end_at ?? null;
+    if (!hasTaskPlan({ start_at: startAt, end_at: endAt })) continue;
+    if (!planOverlapsRange(startAt, endAt, from, to)) continue;
+    mergeCompletedTask(byKey, {
+      kind: "task",
+      id: item.id,
+      title: item.title,
+      start_at: startAt,
+      end_at: endAt,
+      due_at: item.due_at ?? null,
+      status: "completed",
+      priority: item.priority ?? "none",
+      project_id: item.project_id ?? null,
+      list_id: item.list_id ?? null,
+      completed_at: item.completed_at ?? null,
+    });
+  }
+
+  return [...byKey.values()];
 }
 
 function itemSortId(item: CalendarRangeItem): string {
@@ -166,6 +283,9 @@ export async function listCalendarRange(
           }),
         );
       }
+    }
+    if (opts.include_completed) {
+      items.push(...(await listCompletedTasksForRange(ctx, opts.from, opts.to)));
     }
   }
 

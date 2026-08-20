@@ -160,6 +160,10 @@ export const calendarRangeTaskItemSchema = z.object({
   list_id: z.number().int().positive().nullable(),
   /** 重复虚拟展开实例（非 live 计划时钟）；点击仍打开 live */
   virtual: z.boolean().optional(),
+  /** 完成时间；已完成任务双轴显示用 */
+  completed_at: z.string().nullable().optional(),
+  /** 重复打勾历史；有则点开仍走 live series id */
+  occurrence_id: z.number().int().positive().optional(),
 });
 
 export const calendarRangeProjectItemSchema = z.object({
@@ -197,9 +201,62 @@ export const calendarRangeInputSchema = z.object({
   kinds: z.array(calendarRangeKindSchema).optional(),
   /** kinds 含 holiday 时有效；缺省 = 全部已实现内置源 */
   sources: z.array(builtinCalendarSourceIdSchema).optional(),
+  /** 并入已完成任务（计划窗相交或 completed_at 落窗） */
+  include_completed: z.boolean().optional(),
 });
 export type CalendarRangeInput = z.infer<typeof calendarRangeInputSchema>;
 export const calendarRangeOutputSchema = z.object({
   items: z.array(calendarRangeItemSchema),
 });
 export type CalendarRangeOutput = z.infer<typeof calendarRangeOutputSchema>;
+
+const calendarViewModeSchema = z.enum(["day", "next3", "next7", "week", "month"]);
+const calendarKindPrefSchema = z.enum(["event", "task", "project"]);
+
+export const calendarViewDisplayPrefsSchema = z.object({
+  kinds: z.array(calendarKindPrefSchema),
+  builtinSources: z.array(builtinCalendarSourceIdSchema),
+  expandRecurrence: z.boolean(),
+  showCompleted: z.boolean(),
+  showEndedEvents: z.boolean(),
+});
+
+export const calendarUiPrefsSchema = z.object({
+  viewMode: calendarViewModeSchema,
+  byView: z.object({
+    day: calendarViewDisplayPrefsSchema,
+    next3: calendarViewDisplayPrefsSchema,
+    next7: calendarViewDisplayPrefsSchema,
+    week: calendarViewDisplayPrefsSchema,
+    month: calendarViewDisplayPrefsSchema,
+  }),
+});
+export type CalendarUiPrefsPayload = z.infer<typeof calendarUiPrefsSchema>;
+
+export const calendarPrefsGetInputSchema = z.object({
+  subject_kind: notificationRecipientKindSchema,
+});
+export type CalendarPrefsGetInput = z.infer<typeof calendarPrefsGetInputSchema>;
+export const calendarPrefsGetOutputSchema = z.object({
+  prefs: calendarUiPrefsSchema,
+});
+export type CalendarPrefsGetOutput = z.infer<typeof calendarPrefsGetOutputSchema>;
+
+export const calendarPrefsUpdateInputSchema = z.object({
+  subject_kind: notificationRecipientKindSchema,
+  viewMode: calendarViewModeSchema.optional(),
+  byView: z
+    .object({
+      day: calendarViewDisplayPrefsSchema.partial().optional(),
+      next3: calendarViewDisplayPrefsSchema.partial().optional(),
+      next7: calendarViewDisplayPrefsSchema.partial().optional(),
+      week: calendarViewDisplayPrefsSchema.partial().optional(),
+      month: calendarViewDisplayPrefsSchema.partial().optional(),
+    })
+    .optional(),
+});
+export type CalendarPrefsUpdateInput = z.infer<typeof calendarPrefsUpdateInputSchema>;
+export const calendarPrefsUpdateOutputSchema = z.object({
+  prefs: calendarUiPrefsSchema,
+});
+export type CalendarPrefsUpdateOutput = z.infer<typeof calendarPrefsUpdateOutputSchema>;

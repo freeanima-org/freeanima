@@ -28,4 +28,8 @@ export const calendarHabitatRoutes = bindHabitatRouteHandlers(calendarMethodDefs
     service.serviceCalendarConvertToTask(depsOf(deps).runtime.runtimeDeps(), input),
   "calendar.range": async (deps, input) =>
     service.serviceCalendarRange(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "calendar.prefs.get": async (deps, input) =>
+    service.serviceCalendarPrefsGet(depsOf(deps).runtime.runtimeDeps(), input),
+  "calendar.prefs.update": async (deps, input) =>
+    service.serviceCalendarPrefsUpdate(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
 });

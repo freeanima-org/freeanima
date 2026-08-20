@@ -47,6 +47,7 @@ export function mergeCalendarItems(
 
 export function isOverdueTask(item: CalendarRangeItem, todayKey: string): boolean {
   if (item.kind !== "task" || item.virtual) return false;
+  if (item.status === "completed") return false;
   if (!item.due_at) return false;
   const dueDay = dayKeyFromIso(item.due_at);
   return dueDay !== "" && dueDay < todayKey;
@@ -87,6 +88,10 @@ export function itemOverlapsDay(item: CalendarRangeItem, day: string): boolean {
     return start !== "" && start <= day && day <= end;
   }
   if (item.kind === "task") {
+    if (item.status === "completed" && item.completed_at) {
+      const done = dayKeyFromIso(item.completed_at);
+      if (done === day) return true;
+    }
     if (item.start_at) {
       const start = dayKeyFromIso(item.start_at);
       if (start) {
@@ -94,7 +99,7 @@ export function itemOverlapsDay(item: CalendarRangeItem, day: string): boolean {
         if (start <= day && day <= end) return true;
       }
     }
-    if (item.due_at) {
+    if (item.due_at && item.status !== "completed") {
       const due = dayKeyFromIso(item.due_at);
       if (due === day) return true;
     }
@@ -104,6 +109,22 @@ export function itemOverlapsDay(item: CalendarRangeItem, day: string): boolean {
   const end = dayKeyFromIso(item.end_at ?? item.start_at ?? "");
   if (!start) return false;
   return start <= day && day <= (end || start);
+}
+
+/** 同日同 live 任务去重（计划日与完成日重合时只留一条） */
+export function dedupeAgendaItemsForDay(items: CalendarRangeItem[]): CalendarRangeItem[] {
+  const seen = new Set<string>();
+  const out: CalendarRangeItem[] = [];
+  for (const item of items) {
+    const key =
+      item.kind === "task"
+        ? `task-${item.id}-${item.occurrence_id ?? "live"}`
+        : calendarItemKey(item);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
 }
 
 export function partitionAgendaDay(
@@ -118,5 +139,5 @@ export function partitionAgendaDay(
     if (item.kind === "task" && overdueIds.has(item.id) && !item.virtual) return false;
     return itemOverlapsDay(item, day);
   });
-  return { overdue, dayItems };
+  return { overdue, dayItems: dedupeAgendaItemsForDay(dayItems) };
 }

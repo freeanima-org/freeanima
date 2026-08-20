@@ -140,7 +140,7 @@ export function WeekGrid({
             const canDrag = item.kind === "task" && !item.virtual && item.status === "pending";
             return (
               <button
-                key={barItemKey(item)}
+                key={`${bar.colStart}:${bar.colSpan}:${bar.lane}:${barItemKey(item)}`}
                 type="button"
                 title={
                   item.kind === "task" && item.virtual ? `${item.title}（重复实例）` : item.title
@@ -155,7 +155,11 @@ export function WeekGrid({
                   "flex items-center gap-1 truncate rounded px-1 text-left text-[11px] leading-[1.35rem]",
                   kindBarClass(
                     item.kind,
-                    item.kind === "task" && item.virtual ? { virtual: true } : undefined,
+                    item.kind === "task" && item.virtual
+                      ? { virtual: true }
+                      : item.kind === "task" && item.status === "completed"
+                        ? { completed: true }
+                        : undefined,
                   ),
                 )}
                 style={{

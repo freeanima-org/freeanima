@@ -4,6 +4,7 @@ import type {
   CalendarRangeItemPayload,
   CalendarRangeKind,
   BuiltinCalendarSourceIdPayload,
+  CalendarUiPrefsPayload,
 } from "@freeanima/shared/rpc-contract/frames/calendar";
 import type {
   TaskItemRowPayload,
@@ -95,15 +96,17 @@ export async function fetchCalendarRange(
     to: string;
     kinds?: CalendarRangeKind[];
     sources?: BuiltinCalendarSourceId[];
+    include_completed?: boolean;
   },
 ): Promise<CalendarRangeItem[]> {
   const scope = resolveHabitatCacheScope();
   const kindsKey = (opts.kinds ?? []).join(",");
   const sourcesKey = (opts.sources ?? []).join(",");
+  const completedKey = opts.include_completed ? "1" : "0";
   return withOfflineCache({
     scope,
     namespace: "calendar",
-    id: `range:${opts.from}:${opts.to}:${kindsKey}:${sourcesKey}`,
+    id: `range:${opts.from}:${opts.to}:${kindsKey}:${sourcesKey}:${completedKey}`,
     fetch: async () => {
       const data = await habitat().call("calendar.range", {
         subject_kind: subjectKind,
@@ -111,12 +114,47 @@ export async function fetchCalendarRange(
         to: opts.to,
         ...(opts.kinds?.length ? { kinds: opts.kinds } : {}),
         ...(opts.sources?.length ? { sources: opts.sources } : {}),
+        ...(opts.include_completed ? { include_completed: true } : {}),
       });
       return data.items;
     },
     offlineError: "calendar.range unavailable offline",
   });
 }
+
+export async function fetchCalendarPrefs(
+  subjectKind: SubjectKind,
+): Promise<CalendarUiPrefsPayload> {
+  const scope = resolveHabitatCacheScope();
+  return withOfflineCache({
+    scope,
+    namespace: "calendar",
+    id: `prefs:${subjectKind}`,
+    fetch: async () => {
+      const data = await habitat().call("calendar.prefs.get", { subject_kind: subjectKind });
+      return data.prefs;
+    },
+    offlineError: "calendar.prefs unavailable offline",
+  });
+}
+
+export async function updateCalendarPrefs(
+  subjectKind: SubjectKind,
+  patch: {
+    viewMode?: CalendarUiPrefsPayload["viewMode"];
+    byView?: Partial<
+      Record<CalendarUiPrefsPayload["viewMode"], Partial<CalendarUiPrefsPayload["byView"]["day"]>>
+    >;
+  },
+): Promise<CalendarUiPrefsPayload> {
+  const data = await habitat().call("calendar.prefs.update", {
+    subject_kind: subjectKind,
+    ...patch,
+  });
+  return data.prefs;
+}
+
+export type { CalendarUiPrefsPayload };
 
 export async function createCalendarEvent(
   subjectKind: SubjectKind,

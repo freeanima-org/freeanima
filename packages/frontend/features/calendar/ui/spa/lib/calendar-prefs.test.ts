@@ -5,6 +5,7 @@ import {
   readCalendarUiPrefs,
   writeCalendarUiPrefs,
   isAgendaViewMode,
+  currentViewDisplay,
 } from "./calendar-prefs.ts";
 
 function mockLocalStorage(): Storage {
@@ -66,13 +67,14 @@ describe("calendar-prefs", () => {
     expect(readCalendarUiPrefs().viewMode).toBe("month");
   });
 
-  test("旧 prefs 无 builtinSources 时填默认四源", () => {
+  test("旧扁平 prefs 迁移到 byView", () => {
     localStorage.setItem(
       "freeanima.calendar.uiPrefs",
       JSON.stringify({ expandRecurrence: true, viewMode: "month", kinds: ["event"] }),
     );
     const prefs = readCalendarUiPrefs();
-    expect(prefs.builtinSources).toEqual([
+    expect(prefs.byView.month.kinds).toEqual(["event"]);
+    expect(prefs.byView.month.builtinSources).toEqual([
       "cn_holiday",
       "traditional",
       "international",
@@ -80,9 +82,15 @@ describe("calendar-prefs", () => {
     ]);
   });
 
-  test("可清空 builtinSources", () => {
-    writeCalendarUiPrefs({ builtinSources: [] });
-    expect(readCalendarUiPrefs().builtinSources).toEqual([]);
+  test("可清空当前视图 builtinSources", () => {
+    writeCalendarUiPrefs({ currentView: { builtinSources: [] } });
+    expect(currentViewDisplay(readCalendarUiPrefs()).builtinSources).toEqual([]);
+  });
+
+  test("按视图独立 showCompleted 默认", () => {
+    const prefs = readCalendarUiPrefs();
+    expect(prefs.byView.day.showCompleted).toBe(true);
+    expect(prefs.byView.month.showCompleted).toBe(false);
   });
 
   test("isAgendaViewMode", () => {

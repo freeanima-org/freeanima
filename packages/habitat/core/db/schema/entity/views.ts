@@ -3,6 +3,7 @@ import { z } from "zod";
 import { entities, entityTypeSchema, type EntitySelect } from "./entity.ts";
 import {
   CALENDAR_EVENT_COMPONENT,
+  CALENDAR_UI_PREFS_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   DIARY_ENTRY_COMPONENT,
@@ -30,6 +31,7 @@ import {
   SUBAGENT_COMPONENT,
   BOOKMARK_COMPONENT,
   calendarEventBodySchema,
+  calendarUiPrefsBodySchema,
   contentBlockBodySchema,
   diaryBlockTemplateBodySchema,
   diaryEntryBodySchema,
@@ -57,6 +59,7 @@ import {
   subagentBodySchema,
   bookmarkBodySchema,
   type CalendarEventBody,
+  type CalendarUiPrefsBody,
   type ContentBlockBody,
   type DiaryBlockTemplateBody,
   type DiaryEntryBody,
@@ -326,6 +329,12 @@ export function asCompanionProfile(row: EntityRow): (CompanionProfileBody & { id
 export function asPomodoroConfig(row: EntityRow): (PomodoroConfigBody & { id: number }) | null {
   if (row.primary_component !== POMODORO_CONFIG_COMPONENT) return null;
   const parsed = pomodoroConfigBodySchema.safeParse(row.body);
+  return parsed.success ? { id: row.id, ...parsed.data } : null;
+}
+
+export function asCalendarUiPrefs(row: EntityRow): (CalendarUiPrefsBody & { id: number }) | null {
+  if (row.primary_component !== CALENDAR_UI_PREFS_COMPONENT) return null;
+  const parsed = calendarUiPrefsBodySchema.safeParse(row.body);
   return parsed.success ? { id: row.id, ...parsed.data } : null;
 }
 
