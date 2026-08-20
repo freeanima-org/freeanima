@@ -61,6 +61,10 @@ coverage/
 .tanstack/
 .wxt/
 
+# LoCoMo eval cache / reports（风巢 #16041）
+.cache/locomo/
+scripts/eval/locomo/out/
+
 # Misc
 /tmp/
 

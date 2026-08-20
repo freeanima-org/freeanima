@@ -74,7 +74,7 @@ Retain 缺口：夜间只 Inbox 通知；**补跑仅手动**（`memoryMaintenanc
 - **常驻**：读时 pinned ∪ 高 `reference_count` TopN（`memory.resident.top_n` / `pinned_max`）；超 `pinned_max` 截断列表并 warn，**默认不写库 unpin**
 - **cite 权重**：近 `memory.reference.decay_days` 日加权累加 `entities.reference_count`（`recent_weight` / `stale_weight`）；不自动 deprecate
 
-评测挂载见风巢 #16041（LoCoMo 等）。
+评测挂载见风巢 #16041（LoCoMo 等）；实现见 [`scripts/eval/locomo/README.md`](../../scripts/eval/locomo/README.md)（compose PG+Redis + hybrid FTS；不写用户 `~/.anima/config.yaml`）。
 
 ---
 

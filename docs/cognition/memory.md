@@ -165,3 +165,4 @@ Letta / LangChain / LlamaIndex 与 Working 上下文策略对照见 [`context-ma
 5. 删 `memory_references`；cite 收尾；文档与门禁
 
 评测挂载（LoCoMo 等）见风巢 #16041；本体系只保证契约可接「灌对话 → 检索」。
+薄 Eval Adapter：[`scripts/eval/locomo/README.md`](../../scripts/eval/locomo/README.md)（compose PG+Redis + hybrid FTS；`--dry-run --fixture` 冒烟；全量 opt-in，不进 CI）。不写用户 `~/.anima/config.yaml`。
