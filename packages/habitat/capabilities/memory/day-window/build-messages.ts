@@ -159,13 +159,13 @@ export function formatExistingMemoriesMessage(rows: SemanticMemoryRow[]): string
   }).text;
 }
 
-/** retain 任务规格（层 2）；独立抽取任务，非对话人设 */
-export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留的事实，对照已注入的「本对话相关 / 语义相关」记忆决定 create / update / deprecate。
+/** retain 任务规格（层 2）：抽取 + 防重复轻对照（非整表整理） */
+export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留的事实；对照已注入的少量「本对话相关 / 语义相关」记忆，用 create / update 避免近重复。
 勿再检索；以工具返回的 ok 为准，勿被开场相关记忆列表覆盖。
 记忆类型：world / experience / opinion / observation / preference / procedural / imprint。
-去重：仅与相关既有记忆比较；更准则跳过或更新；补充则 update；不再适用则 deprecate；全新则 create。
+防重复：仅与已注入的策展相关记忆比较；同义则 update 或跳过；全新则 create。全量合并 / 跨会话整理交给 reflect，勿在本 run 做大规模 deprecate。
 本 run 内同一 id 成功写入后勿再 create/update/deprecate（除非上次 error）。
-工具：memory_semantic_create / memory_semantic_update / memory_semantic_deprecate。
+工具：memory_semantic_create / memory_semantic_update / memory_semantic_deprecate（deprecate 仅当策展列表中条目已明显失效）。
 对话消息带 role（user/assistant）与 t（发送时间）：按说话人区分人物归属，勿把 assistant 的话当成用户事实（除非明确在描述用户）。
 observed_at = 事实首次被提及的消息时间（可参考 t）；occurred_at = 内容描述的事件时间（可模糊）。
 既有记忆以 <memory> 属性为准（id / type / sources / observed / occurred）。

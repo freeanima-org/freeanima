@@ -176,6 +176,7 @@ export async function semanticPassiveRecallSearchDetailed(
       toDebugHit(h.semantic_memory_id, h.score, h.content),
     ),
     excluded_resident_ids: [],
+    excluded_current_conversation_ids: [],
     injected: [],
     elapsed_ms: Math.round(performance.now() - started),
   };

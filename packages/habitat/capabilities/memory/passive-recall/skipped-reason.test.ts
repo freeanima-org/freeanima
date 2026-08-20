@@ -38,4 +38,12 @@ describe("classifyPassiveRecallNoHits", () => {
     d.after_score_filter = [{ id: 1, score: 0.02, content_preview: "x" }];
     expect(classifyPassiveRecallNoHits(d)).toBe("filtered_by_resident");
   });
+
+  it("returns filtered_by_current_conversation when current-session filter emptied", () => {
+    const d = base();
+    d.merged = [{ id: 1, score: 0.02, content_preview: "x" }];
+    d.after_score_filter = [{ id: 1, score: 0.02, content_preview: "x" }];
+    d.excluded_current_conversation_ids = [1];
+    expect(classifyPassiveRecallNoHits(d)).toBe("filtered_by_current_conversation");
+  });
 });

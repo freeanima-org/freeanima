@@ -229,6 +229,8 @@ export type PassiveRecallDebugTrace = {
   after_score_filter: PassiveRecallDebugHit[];
   after_resident_filter: PassiveRecallDebugHit[];
   excluded_resident_ids: number[];
+  /** 因 source_conversations 含当前会话而被排除的 id */
+  excluded_current_conversation_ids?: number[];
   injected: PassiveRecallDebugHit[];
   skipped_reason?: string;
   elapsed_ms: number;

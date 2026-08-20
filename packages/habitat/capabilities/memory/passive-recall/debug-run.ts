@@ -17,6 +17,7 @@ export type PassiveRecallDebugResult = {
   limit: number;
   max_chars: number;
   exclude_resident: boolean;
+  exclude_current_conversation: boolean;
 };
 
 function emptyDebug(query: string): PassiveRecallDebugTrace {
@@ -32,6 +33,7 @@ function emptyDebug(query: string): PassiveRecallDebugTrace {
     after_score_filter: [],
     after_resident_filter: [],
     excluded_resident_ids: [],
+    excluded_current_conversation_ids: [],
     injected: [],
     elapsed_ms: 0,
   };
@@ -43,14 +45,18 @@ function emptyDebug(query: string): PassiveRecallDebugTrace {
 export async function runPassiveRecallDebug(opts: {
   user_text: string;
   limit?: number;
+  /** 若提供且配置开启，则排除该会话来源命中 */
+  conversation_id?: string;
 }): Promise<PassiveRecallDebugResult> {
   const config = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
   const limit = Math.max(1, Math.min(20, opts.limit ?? config.limit));
+  const conversationId = opts.conversation_id?.trim() ?? "";
   const baseMeta = {
     enabled: config.enabled,
     limit,
     max_chars: config.max_chars,
     exclude_resident: config.exclude_resident,
+    exclude_current_conversation: config.exclude_current_conversation,
   };
 
   if (!config.enabled) {
@@ -108,12 +114,22 @@ export async function runPassiveRecallDebug(opts: {
       .map((hit) => hit.semantic_memory_id);
   }
 
+  let excludedCurrentConversationIds: number[] = [];
+  if (config.exclude_current_conversation && conversationId && hits.length > 0) {
+    const before = hits;
+    hits = hits.filter((hit) => !hit.source_conversations.includes(conversationId));
+    excludedCurrentConversationIds = before
+      .filter((hit) => hit.source_conversations.includes(conversationId))
+      .map((hit) => hit.semantic_memory_id);
+  }
+
   debug.after_resident_filter = hits.map((h) => ({
     id: h.semantic_memory_id,
     score: h.score,
     content_preview: previewPassiveContent(h.content),
   }));
   debug.excluded_resident_ids = excludedResidentIds;
+  debug.excluded_current_conversation_ids = excludedCurrentConversationIds;
   debug.elapsed_ms = Math.round(performance.now() - started);
 
   if (hits.length === 0) {

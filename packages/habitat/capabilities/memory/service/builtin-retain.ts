@@ -4,7 +4,6 @@
  */
 
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
-import { listSemanticMemoryBySourceSessions } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { updateSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import {
   ORGANIZE_MEMORY_FIELDS,
@@ -23,6 +22,11 @@ import { omitUndefined } from "@freeanima/habitat/core/util";
 import { RETAIN_TASK_SPEC, formatExistingMemoriesMessage } from "../day-window/build-messages.ts";
 
 import { withRetainProvenance } from "./retain-context.ts";
+import {
+  RETAIN_PASSIVE_MIN_RELATIVE_SCORE,
+  RETAIN_PASSIVE_MIN_SCORE,
+  curateRetainRelatedMemories,
+} from "./retain-related-curate.ts";
 import { isRetainLlmRegistered, runRetainLlm } from "./retain-llm-port.ts";
 import { collectRetainPassiveHits, type RetainTextItem } from "./retain-passive-recall.ts";
 import type { MemoryProvenance } from "./types.ts";
@@ -86,7 +90,11 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
     return { created: [], updated: [], skipped: true, summary: "no_texts" };
   }
 
-  const related = await listSemanticMemoryBySourceSessions([input.conversation_id]);
+  const curated = await curateRetainRelatedMemories({
+    conversation_id: input.conversation_id,
+    text_items: textItems,
+  });
+  const related = curated.rows;
   const relatedIds = new Set(related.map((r) => r.id));
 
   const dataParts: AutoLlmDataPart[] = [];
@@ -94,13 +102,21 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
     dataParts.push({
       tag: PROMPT_XML_TAGS.relatedMemories,
       body: formatExistingMemoriesMessage(related),
-      attrs: { count: String(related.length), filter: "source_conversations" },
+      attrs: {
+        count: String(related.length),
+        session_total: String(curated.session_total),
+        filter: "recent3_or_today5",
+      },
     });
   }
 
   try {
-    const config = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
-    const hits = await collectRetainPassiveHits(textItems, relatedIds, config);
+    const base = resolvePassiveRecallConfig(getActiveRuntimeConfig().data);
+    const hits = await collectRetainPassiveHits(textItems, relatedIds, {
+      ...base,
+      min_score: RETAIN_PASSIVE_MIN_SCORE,
+      min_relative_score: RETAIN_PASSIVE_MIN_RELATIVE_SCORE,
+    });
     const { text } = renderSemanticMemoryList(
       hits.map((h) => toSemanticMemoryPromptItem(h)),
       { fields: ORGANIZE_MEMORY_FIELDS, maxChars: RETAIN_PASSIVE_MAX_CHARS },
