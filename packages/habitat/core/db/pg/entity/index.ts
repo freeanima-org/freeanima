@@ -19,6 +19,7 @@ export {
   deleteTaskItemsByListId,
   deleteEmailEntitiesByAccountId,
   listEntities,
+  listCommonWorldEntities,
   countEntities,
   countEntitiesByBodyListId,
   countPendingTaskItemsByListId,

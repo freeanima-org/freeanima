@@ -10,8 +10,6 @@ import {
   contactDeleteOutputSchema,
   contactGetInputSchema,
   contactGetOutputSchema,
-  contactLinkMessageInputSchema,
-  contactLinkMessageOutputSchema,
   contactListInputSchema,
   contactListOutputSchema,
   contactPatchInputSchema,
@@ -66,11 +64,6 @@ export const contactMethodDefs = {
   "contact.createFromAddress": defineHabitatMethod({
     input: contactCreateFromAddressInputSchema,
     output: contactCreateFromAddressOutputSchema,
-    meta: dualTransportMeta(false),
-  }),
-  "contact.linkMessage": defineHabitatMethod({
-    input: contactLinkMessageInputSchema,
-    output: contactLinkMessageOutputSchema,
     meta: dualTransportMeta(false),
   }),
 } as const;

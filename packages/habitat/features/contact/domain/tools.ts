@@ -165,7 +165,7 @@ export function buildContactToolDefs() {
       {
         name: "contact_create",
         description:
-          "Create a contact in Commons (user: always allowed; agent: requires Commons write grant)",
+          "Create a contact in Commons (user has full world write; agent needs Commons write grant)",
         parameters: {
           type: "object",
           properties: {

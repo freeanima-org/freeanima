@@ -1,14 +1,25 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
 
-import { isContactUserAccessPassthrough } from "./contact-world.ts";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/habitat/core/config/resolved-world-context.ts";
 
-describe("isContactUserAccessPassthrough", () => {
-  test("user 免 Commons grant 校验", () => {
-    expect(isContactUserAccessPassthrough("user")).toBe(true);
+import { resolveContactWorldId } from "./contact-world.ts";
+
+describe("resolveContactWorldId", () => {
+  afterEach(() => {
+    resetResolvedWorldContextForTest();
   });
 
-  test("agent / 缺省不免校验", () => {
-    expect(isContactUserAccessPassthrough("agent")).toBe(false);
-    expect(isContactUserAccessPassthrough(undefined)).toBe(false);
+  test("从 ResolvedWorldContext 读取 commons_world_id", () => {
+    bindResolvedWorldContext({
+      user_subject_id: 1,
+      agent_subject_id: 2,
+      user_world_id: 10,
+      agent_world_id: 20,
+      commons_world_id: 30,
+    });
+    expect(resolveContactWorldId()).toBe(30);
   });
 });

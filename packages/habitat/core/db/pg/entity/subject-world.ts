@@ -17,10 +17,22 @@ import {
   createEntity,
   createEntityAtId,
   getEntity,
+  listCommonWorldEntities,
   listEntities,
   updateEntity,
 } from "./repos/entity-crud-repo.ts";
 import { assertPrivateWorldOwnedBySubject } from "./world-assert.ts";
+
+function isUniqueViolation(err: unknown): boolean {
+  if (!err || typeof err !== "object") return false;
+  const code =
+    "code" in err && typeof (err as { code?: unknown }).code === "string"
+      ? (err as { code: string }).code
+      : "";
+  if (code === "23505") return true;
+  const msg = err instanceof Error ? err.message : "";
+  return /duplicate key|unique constraint|idx_entities_world_common/i.test(msg);
+}
 
 export class EntitySubjectBootstrapError extends Error {
   constructor(message: string) {
@@ -262,43 +274,64 @@ export type EnsuredWorldSubjects = {
   commons_world_id: number;
 };
 
-async function findCommonsWorld(): Promise<EntityRow | undefined> {
-  const worlds = await listEntities({ type: "world", limit: 500 });
-  return worlds.find((row) => {
-    const parsed = worldConfigBodySchema.safeParse(row.body);
-    return parsed.success && parsed.data.common;
+/** 重复 Commons 降级为普通 public world（保留最小 id） */
+async function demoteDuplicateCommonsWorld(row: EntityRow): Promise<void> {
+  const parsed = worldConfigBodySchema.safeParse(row.body);
+  const grants = parsed.success ? parsed.data.grants : [];
+  await updateEntity({
+    id: row.id,
+    title: row.title.trim() === "Commons" ? "Commons（已退役）" : row.title,
+    body: buildWorldConfigBody({ private: false, common: false, grants }),
   });
 }
 
-/** 全库唯一 common public world；有则用、无则建 */
+/** 全库唯一 common public world；有则用、无则建；多条时保留最小 id */
 export async function ensureCommonsWorld(): Promise<number> {
-  const existing = await findCommonsWorld();
-  if (existing) {
+  const commons = await listCommonWorldEntities();
+  if (commons.length > 0) {
+    const keeper = commons[0];
+    if (!keeper) {
+      throw new EntitySubjectBootstrapError(
+        "listCommonWorldEntities returned empty after length check",
+      );
+    }
+    const dupes = commons.slice(1);
+    for (const dupe of dupes) {
+      await demoteDuplicateCommonsWorld(dupe);
+    }
     // 强制保持 public
-    const parsed = worldConfigBodySchema.safeParse(existing.body);
+    const parsed = worldConfigBodySchema.safeParse(keeper.body);
     if (parsed.success && (parsed.data.private || parsed.data.owner_subject_id != null)) {
       await updateEntity({
-        id: existing.id,
+        id: keeper.id,
         body: buildWorldConfigBody({ private: false, common: true, grants: parsed.data.grants }),
       });
     }
-    return existing.id;
+    return keeper.id;
   }
-  const created = await createEntity({
-    type: "world",
-    world_id: ENTITY_ROOT_WORLD_ID,
-    components: [WORLD_CONFIG_COMPONENT],
-    primary_component: WORLD_CONFIG_COMPONENT,
-    title: "Commons",
-    summary: "Shared skills, files, and companion assets",
-    content: "",
-    body: buildWorldConfigBody({ private: false, common: true }),
-  });
-  const aligned = await updateEntity({
-    id: created.id,
-    world_id: created.id,
-  });
-  return aligned?.id ?? created.id;
+
+  try {
+    const created = await createEntity({
+      type: "world",
+      world_id: ENTITY_ROOT_WORLD_ID,
+      components: [WORLD_CONFIG_COMPONENT],
+      primary_component: WORLD_CONFIG_COMPONENT,
+      title: "Commons",
+      summary: "Shared skills, files, and companion assets",
+      content: "",
+      body: buildWorldConfigBody({ private: false, common: true }),
+    });
+    const aligned = await updateEntity({
+      id: created.id,
+      world_id: created.id,
+    });
+    return aligned?.id ?? created.id;
+  } catch (err) {
+    if (!isUniqueViolation(err)) throw err;
+    const again = await listCommonWorldEntities();
+    if (again[0]) return again[0].id;
+    throw err;
+  }
 }
 
 function readSubjectWorldId(subject: EntityRow): number {

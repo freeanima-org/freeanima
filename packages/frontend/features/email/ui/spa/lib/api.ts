@@ -61,8 +61,6 @@ export type EmailMessageRow = {
   content_type?: "text/plain" | "text/html";
   from: string;
   to: string;
-  from_contact_id?: number | null;
-  to_contact_ids?: number[];
   sent_at: string;
   unread: boolean;
   flagged: boolean;
@@ -82,8 +80,6 @@ function toUiMessage(row: {
   content_type?: "text/plain" | "text/html" | undefined;
   from: string;
   to: string;
-  from_contact_id?: number | null | undefined;
-  to_contact_ids?: number[] | undefined;
   sent_at: string;
   unread: boolean;
   flagged?: boolean | undefined;
@@ -120,8 +116,6 @@ function toUiMessage(row: {
     body: row.body,
     from: row.from,
     to: row.to,
-    from_contact_id: row.from_contact_id ?? null,
-    to_contact_ids: row.to_contact_ids ?? [],
     sent_at: row.sent_at,
     unread: row.unread,
     flagged: row.flagged === true,

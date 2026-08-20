@@ -5,7 +5,7 @@ import {
   contactAddressEntrySchema,
   contactBodySchema,
 } from "@freeanima/habitat/core/db/schema/entity/components/contact.ts";
-import { extractEmailAddress } from "./contact-store.ts";
+import { extractEmailAddress, extractMailboxDisplayName } from "./contact-store.ts";
 
 describe("contact channel normalize", () => {
   test("email lowercases", () => {
@@ -28,6 +28,16 @@ describe("extractEmailAddress", () => {
 
   test("rejects non-email", () => {
     expect(extractEmailAddress("not-an-email")).toBeNull();
+  });
+});
+
+describe("extractMailboxDisplayName", () => {
+  test("parses display name before angle", () => {
+    expect(extractMailboxDisplayName("灼华 <zhuohua@example.com>")).toBe("灼华");
+  });
+
+  test("bare address has no display name", () => {
+    expect(extractMailboxDisplayName("a@b.com")).toBeNull();
   });
 });
 

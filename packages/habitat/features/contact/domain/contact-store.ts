@@ -60,15 +60,22 @@ function assertContactInWorld(
 }
 
 function normalizeEntries(
-  _kind: Exclude<ContactChannelKind, "address">,
+  kind: Exclude<ContactChannelKind, "address">,
   entries: ContactChannelEntry[] | undefined,
 ): ContactChannelEntry[] {
   if (!entries) return [];
-  return entries.map((e) => ({
-    value: e.value.trim(),
-    ...(e.label != null && e.label !== "" ? { label: e.label } : {}),
-    identity_key: e.identity_key,
-  }));
+  return entries.map((e) => {
+    const trimmed = e.value.trim();
+    const value =
+      kind === "email"
+        ? (extractEmailAddress(trimmed) ?? normalizeContactChannelValue("email", trimmed))
+        : normalizeContactChannelValue(kind, trimmed);
+    return {
+      value,
+      ...(e.label != null && e.label !== "" ? { label: e.label } : {}),
+      identity_key: e.identity_key,
+    };
+  });
 }
 
 function normalizeAddresses(entries: ContactAddressEntry[] | undefined): ContactAddressEntry[] {
@@ -232,6 +239,16 @@ export function extractEmailAddress(raw: string): string | null {
   return normalizeContactChannelValue("email", candidate);
 }
 
+/** 从 `Name <a@b.com>` / `"Name" <a@b.com>` 提取显示名；纯地址则返回 null。 */
+export function extractMailboxDisplayName(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (!trimmed.includes("<")) return null;
+  const before = trimmed.split("<")[0]?.trim() ?? "";
+  const unquoted = before.replace(/^"|"$/g, "").trim();
+  return unquoted || null;
+}
+
 export async function resolveContactsByAddress(
   worldId: number,
   address: string,
@@ -341,15 +358,15 @@ export async function attachAddressToContact(
 ): Promise<ContactRow | null> {
   const existing = await getContact(worldId, input.contact_id);
   if (!existing) return null;
-  const addr = extractEmailAddress(input.address) ?? input.address.trim();
-  if (!addr.includes("@")) throw new Error("invalid email address");
-  const normalized = normalizeContactChannelValue("email", addr);
+  const addr = extractEmailAddress(input.address);
+  if (!addr) throw new Error("invalid email address");
+  const normalized = addr;
   const emails = [...existing.emails];
   const idx = emails.findIndex(
     (e) => normalizeContactChannelValue("email", e.value) === normalized,
   );
   const entry: ContactChannelEntry = {
-    value: addr,
+    value: normalized,
     ...(input.label ? { label: input.label } : {}),
     identity_key: Boolean(input.identity_key),
   };

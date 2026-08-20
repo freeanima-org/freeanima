@@ -67,10 +67,4 @@ export const contactHabitatRoutes = bindHabitatRouteHandlers(contactMethodDefs, 
       omitUndefined(input),
       ctxAuth(ctx),
     ),
-  "contact.linkMessage": async (deps, input, ctx) =>
-    service.serviceContactLinkMessage(
-      depsOf(deps).runtime.runtimeDeps(),
-      omitUndefined(input),
-      ctxAuth(ctx),
-    ),
 });

@@ -56,6 +56,7 @@ export const entities = pgTable(
     index("idx_entities_tag_ids").using("gin", t.tag_ids),
     index("idx_entities_deleted_at").on(t.deleted_at),
     // gin_trgm / body 表达式索引：见 migrations 追加 SQL（drizzle-kit 难表达 opclass / partial）
+    // Commons 唯一：idx_entities_world_common（body.common=true partial unique）
   ],
 );
 

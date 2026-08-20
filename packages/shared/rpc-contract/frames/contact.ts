@@ -146,24 +146,9 @@ export const contactCreateFromAddressInputSchema = z.object({
   label: z.string().optional(),
   identity_key: z.boolean().optional(),
   summary: z.string().optional(),
-  message_id: z.number().int().positive().optional(),
-  link_role: z.enum(["from", "to"]).optional(),
 });
 export type ContactCreateFromAddressInput = z.infer<typeof contactCreateFromAddressInputSchema>;
-export const contactCreateFromAddressOutputSchema = z.object({ item: contactRowSchema });
+export const contactCreateFromAddressOutputSchema = z.object({
+  item: contactRowSchema,
+});
 export type ContactCreateFromAddressOutput = z.infer<typeof contactCreateFromAddressOutputSchema>;
-
-export const contactLinkMessageInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
-  message_id: z.number().int().positive(),
-  role: z.enum(["from", "to"]),
-  contact_id: z.number().int().positive().nullable(),
-  /** to 角色：替换整个 to_contact_ids；省略则按 contact_id 追加/清除单项语义由 contact_id 决定 */
-  to_contact_ids: z.array(z.number().int().positive()).optional(),
-});
-export type ContactLinkMessageInput = z.infer<typeof contactLinkMessageInputSchema>;
-export const contactLinkMessageOutputSchema = z.object({
-  from_contact_id: z.number().int().positive().nullable(),
-  to_contact_ids: z.array(z.number().int().positive()),
-});
-export type ContactLinkMessageOutput = z.infer<typeof contactLinkMessageOutputSchema>;

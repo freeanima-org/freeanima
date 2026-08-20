@@ -13,6 +13,10 @@ const listEntities = mock(
   async (_opts?: { type?: string; limit?: number }) =>
     [] as Array<{ id: number; type: string; body: Record<string, unknown>; title: string }>,
 );
+const listCommonWorldEntities = mock(
+  async () =>
+    [] as Array<{ id: number; type: string; body: Record<string, unknown>; title: string }>,
+);
 const createEntity = mock(async (input: { type: string }) => {
   const id = createEntity.mock.calls.length + 100;
   return {
@@ -45,6 +49,7 @@ mock.module("./repos/entity-crud-repo.ts", () => ({
   ...entityCrudOriginal,
   getEntity,
   listEntities,
+  listCommonWorldEntities,
   createEntity,
   createEntityAtId,
   updateEntity,
@@ -66,6 +71,7 @@ describe("ensureWorldSubjects", () => {
   beforeEach(() => {
     getEntity.mockReset();
     listEntities.mockReset();
+    listCommonWorldEntities.mockReset();
     createEntity.mockReset();
     createEntityAtId.mockReset();
     updateEntity.mockReset();
@@ -83,6 +89,7 @@ describe("ensureWorldSubjects", () => {
       return null;
     });
     listEntities.mockImplementation(async () => []);
+    listCommonWorldEntities.mockImplementation(async () => []);
     createEntity.mockImplementation(async (input: { type: string }) => {
       const id = 100 + createEntity.mock.calls.length;
       return {
@@ -120,18 +127,16 @@ describe("ensureWorldSubjects", () => {
       if (opts?.type === "agent") {
         return [{ id: 43, type: "agent", body: { default_private_world_id: 430 }, title: "Agent" }];
       }
-      if (opts?.type === "world") {
-        return [
-          {
-            id: 900,
-            type: "world",
-            body: { private: false, common: true, grants: [] },
-            title: "Commons",
-          },
-        ];
-      }
       return [];
     });
+    listCommonWorldEntities.mockImplementation(async () => [
+      {
+        id: 900,
+        type: "world",
+        body: { private: false, common: true, grants: [] },
+        title: "Commons",
+      },
+    ]);
     getEntity.mockImplementation(async (id: number) => {
       if (id === 42) {
         return { id: 42, type: "user", body: { default_private_world_id: 420 }, title: "用户" };

@@ -117,16 +117,18 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
   - `private: false` — 公开 world
   - `private: true` + `owner_subject_id` — 由 `agent` 或 `user` 实体拥有的私有 world
   - `default_private: true` — 标记 subject 的**独占**默认私有 world（每个 `owner_subject_id` 至多一个）
-  - `grants: [{ subject_id, permission: "read" | "write" }]` — 显式 subject 授权（**write 含 read**；`subject_id` 不得等于 owner）。在栖息地 Worlds UI 配置；源码中永不按 subject 硬编码。
+  - `grants: [{ subject_id, permission: "read" | "write" }]` — 显式 subject 授权（**write 含 read**；`subject_id` 不得等于 owner）。在栖息地 Worlds UI 配置；源码中永不按 subject **id** 硬编码。
+  - `common: true` — 全库唯一 Commons（`idx_entities_world_common`）；启动 `ensureCommonsWorld` 按 body 点查，重复则保留最小 id。
   - `stable_key?: string` — 可选的 World **跨机逻辑身份**（如 `git:github.com/org/foo`、`novel:…`、`manual:…`）。显示名仍在 `entities.title`。设置时须在 `world_config` 行间唯一（部分唯一索引）。编码笔记/任务优先用**公开**项目 World（一项目一个）——见 [`coding.md`](../modules/coding.md)。**永不**把该字段命名为 `repo_key`。
-- **访问规则**（MCP / LLM 工具经 `resolveToolWorld`）：
+- **访问规则**（MCP / LLM 工具经 `resolveToolWorld` / `assertSubjectCanAccessWorld`）：
 
-  | World   | 读                    | 写                      |
-  | ------- | --------------------- | ----------------------- |
-  | public  | 全部 subject          | owner **或** write 授权 |
-  | private | owner **或** 任意授权 | owner **或** write 授权 |
+  | World / 主体            | 读                    | 写                          |
+  | ----------------------- | --------------------- | --------------------------- |
+  | **`type=user`（主人）** | 任意 world            | 任意 world（不依赖 grants） |
+  | public（非 user）       | 全部 subject          | owner **或** write 授权     |
+  | private（非 user）      | owner **或** 任意授权 | owner **或** write 授权     |
 
-- Owner 始终有完整访问，无需授权行。跨 world 工具调用必须用授权——开源构建不得按 subject id 特判。
+- Owner 始终有完整访问，无需授权行。跨 world 工具调用对 **agent** 必须用授权——开源构建不得按 subject **id** 特判；**`type=user` 满权限**是产品约定（全局唯一主人），实现于 `getSubjectWorldAccessLevel`。
 - **LLM 工具：** `subject_kind: user|agent` 解析到该 subject 的默认私有 world，再走与显式 `world_id` **相同**的 `assertSubjectCanAccessWorld` 路径（无旁路）。壳 SAP/REST `subject_kind` 仍是 UI 作用域选择（已认证人类切换 user/agent world），不是这条 LLM 授权路径。
 - 勿与语义记忆 **`type=world`**（[`memory.md`](../cognition/memory.md) 中的事实分类）混淆——未来迁移后变为 `body.memory_kind=world`。
 
@@ -222,9 +224,10 @@ Commons 内的联系人（识别用，非 Subject）：
 | ------ | -------------- | --------- |
 | 联系人 | `type=content` | `contact` |
 
-- 固定 `world_id = commons_world_id`；**user** 维护免 Commons write grant；**agent** 仍须手动 write grant（不改全局 access 规则）
+- 固定 `world_id = commons_world_id`；**user** 经全局规则对任意 world 满权限；**agent** 仍须手动 write grant
 - Body：`emails` / `phones` / `addresses` / `wechats` 通道数组；`identity_key` 值须实例内该通道全局唯一；`addresses` 禁止 identity_key
-- 可选 `subject_id` 挂本机 user/agent；邮件 `from_contact_id` / `to_contact_ids` 可选关联
+- 可选 `subject_id` 挂本机 user/agent
+- 邮件详情按 `from`/`to` **实时** `resolveByAddress`，不在 `email_message` 上存联系人 FK
 
 见 [`docs/modules/contact.md`](../modules/contact.md)。
 

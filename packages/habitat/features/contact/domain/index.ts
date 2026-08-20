@@ -20,11 +20,8 @@ export {
   resolveContactsByAddress,
   attachAddressToContact,
   extractEmailAddress,
+  extractMailboxDisplayName,
 } from "./contact-store.ts";
 
-export {
-  resolveContactWorldId,
-  isContactUserAccessPassthrough,
-  assertContactWorldAccess,
-} from "./contact-world.ts";
+export { resolveContactWorldId, assertContactWorldAccess } from "./contact-world.ts";
 export { registerContactTools, buildContactToolDefs } from "./tools.ts";
