@@ -40,12 +40,16 @@ export default defineContentScript({
           type: "check_login",
           url,
           username: creds.username,
+          password: creds.password,
         });
-        if (existing.ok && "exists" in existing && existing.exists) return;
-        const ok = window.confirm(
-          `将登录凭据保存到 FreeAnima 保险库？\n${creds.username || "(无用户名)"}\n${url}`,
-        );
-        if (!ok) return;
+        const exists = existing.ok && "exists" in existing && existing.exists;
+        const needsUpdate =
+          exists && "needs_password_update" in existing && Boolean(existing.needs_password_update);
+        if (exists && !needsUpdate) return;
+        const prompt = needsUpdate
+          ? `检测到密码已变更，是否更新 FreeAnima 保险库？\n${creds.username || "(无用户名)"}\n${url}`
+          : `将登录凭据保存到 FreeAnima 保险库？\n${creds.username || "(无用户名)"}\n${url}`;
+        if (!window.confirm(prompt)) return;
         const res = await sendBg({
           type: "save_login",
           title,

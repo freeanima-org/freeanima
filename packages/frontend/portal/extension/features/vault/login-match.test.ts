@@ -1,4 +1,4 @@
-import { findExistingLogin } from "./login-match.ts";
+import { findExistingLogin, needsPasswordUpdate } from "./login-match.ts";
 
 describe("findExistingLogin", () => {
   const items = [
@@ -52,5 +52,19 @@ describe("findExistingLogin", () => {
   test("requires same username", () => {
     expect(findExistingLogin(items, "https://example.com/login", "bob")).toBeUndefined();
     expect(findExistingLogin(items, "https://github.com/login", "alice")).toBeUndefined();
+  });
+});
+
+describe("needsPasswordUpdate", () => {
+  test("无库内密码 → false（保守）", () => {
+    expect(needsPasswordUpdate(undefined, "new")).toBe(false);
+  });
+
+  test("相同 → false", () => {
+    expect(needsPasswordUpdate("same", "same")).toBe(false);
+  });
+
+  test("不同 → true", () => {
+    expect(needsPasswordUpdate("old", "new")).toBe(true);
   });
 });

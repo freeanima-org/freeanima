@@ -60,6 +60,69 @@ export function hasPasswordNearby(el: HTMLInputElement): boolean {
   return false;
 }
 
+function fieldText(el: HTMLInputElement): string {
+  return `${el.name} ${el.id} ${el.autocomplete} ${el.placeholder}`.toLowerCase();
+}
+
+/**
+ * 图形验证码 / 短信 / 手机验证码等：不弹页内浮层，也不作为 TOTP 填充目标。
+ * 笼统「验证码」在无 TOTP 正向信号时归此类。
+ */
+export function isCaptchaOrSmsCodeField(el: HTMLInputElement): boolean {
+  const t = fieldText(el);
+  if (
+    t.includes("captcha") ||
+    t.includes("recaptcha") ||
+    t.includes("hcaptcha") ||
+    t.includes("图形验证码") ||
+    t.includes("图片验证码") ||
+    t.includes("短信验证码") ||
+    t.includes("手机验证码") ||
+    t.includes("手机号验证码") ||
+    (t.includes("短信") && t.includes("验证")) ||
+    t.includes("sms") ||
+    /phone[_\s-]?code/.test(t) ||
+    /mobile[_\s-]?code/.test(t) ||
+    /短信码/.test(t)
+  ) {
+    return true;
+  }
+  // 裸「验证码」且无 TOTP 信号 → 当作短信/通用验证码
+  if (t.includes("验证码") && !hasTotpPositiveSignal(el)) return true;
+  return false;
+}
+
+function hasTotpPositiveSignal(el: HTMLInputElement): boolean {
+  const t = fieldText(el);
+  if (el.autocomplete === "one-time-code") return true;
+  return (
+    t.includes("totp") ||
+    t.includes("authenticator") ||
+    t.includes("2fa") ||
+    t.includes("mfa") ||
+    t.includes("one-time") ||
+    t.includes("onetime") ||
+    t.includes("otp") ||
+    t.includes("动态口令") ||
+    t.includes("动态验证码") ||
+    t.includes("身份验证器") ||
+    t.includes("谷歌验证") ||
+    t.includes("google auth")
+  );
+}
+
+/** TOTP / 身份验证器类一次性码输入框（应弹页内浮层） */
+export function isTotpField(el: HTMLInputElement): boolean {
+  if (el.type === "hidden" || el.disabled || el.readOnly) return false;
+  if (el.type === "password") return false;
+  if (isCaptchaOrSmsCodeField(el)) return false;
+  return hasTotpPositiveSignal(el);
+}
+
+function scoreTotp(el: HTMLInputElement): number {
+  return isTotpField(el) ? 10 : 0;
+}
+
 /**
  * 填充/保存时的用户名打分。
  * 关键词与 email 类型优先；与 password 同表单的裸 text 给邻接分，避免无法填无名用户名框。
@@ -67,7 +130,7 @@ export function hasPasswordNearby(el: HTMLInputElement): boolean {
 function scoreUsername(el: HTMLInputElement): number {
   if (el.type === "password") return -100;
   if (isNonLoginField(el)) return 0;
-  if (scoreOtp(el) > 0) return 0;
+  if (isCaptchaOrSmsCodeField(el) || isTotpField(el)) return 0;
   if (hasUsernameSignal(el)) return 10;
   if (isTextLikeUsernameType(el) && hasPasswordNearby(el)) return 5;
   return 0;
@@ -77,23 +140,12 @@ function scorePassword(el: HTMLInputElement): number {
   return el.type === "password" ? 10 : 0;
 }
 
-function scoreOtp(el: HTMLInputElement): number {
-  const t = `${el.name} ${el.id} ${el.autocomplete} ${el.placeholder}`.toLowerCase();
-  if (
-    t.includes("otp") ||
-    t.includes("totp") ||
-    t.includes("one-time") ||
-    el.autocomplete === "one-time-code"
-  )
-    return 10;
-  return 0;
-}
-
-/** 用户名或密码输入框（用于页内自动填充浮层） */
+/** 用户名、密码或 TOTP 输入框（用于页内自动填充浮层） */
 export function isLoginCredentialField(el: HTMLInputElement): boolean {
   if (el.type === "hidden" || el.disabled || el.readOnly) return false;
   if (scorePassword(el) > 0) return true;
-  if (scoreOtp(el) > 0) return false;
+  if (isCaptchaOrSmsCodeField(el)) return false;
+  if (isTotpField(el)) return true;
   if (isNonLoginField(el)) return false;
   if (hasUsernameSignal(el)) return true;
   if (isTextLikeUsernameType(el) && hasPasswordNearby(el)) return true;
@@ -104,10 +156,10 @@ export function fillLogin(fill: FillPayload): void {
   const inputs = visibleInputs();
   const userEl = inputs.toSorted((a, b) => scoreUsername(b) - scoreUsername(a))[0];
   const passEl = inputs.toSorted((a, b) => scorePassword(b) - scorePassword(a))[0];
-  const otpEl = inputs.toSorted((a, b) => scoreOtp(b) - scoreOtp(a))[0];
+  const totpEl = inputs.toSorted((a, b) => scoreTotp(b) - scoreTotp(a))[0];
   if (fill.username && userEl && scoreUsername(userEl) > 0) setNativeValue(userEl, fill.username);
   if (fill.password && passEl && scorePassword(passEl) > 0) setNativeValue(passEl, fill.password);
-  if (fill.totp && otpEl && scoreOtp(otpEl) > 0) setNativeValue(otpEl, fill.totp);
+  if (fill.totp && totpEl && scoreTotp(totpEl) > 0) setNativeValue(totpEl, fill.totp);
 }
 
 export function fillActiveField(value: string): void {
@@ -115,6 +167,11 @@ export function fillActiveField(value: string): void {
   if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
     setNativeValue(el, value);
   }
+}
+
+/** 向指定输入框写入（页内浮层在 mousedown 保焦时用） */
+export function fillInputElement(el: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+  setNativeValue(el, value);
 }
 
 export function fillCard(fill: FillPayload): void {

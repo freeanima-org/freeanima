@@ -20,7 +20,7 @@ import {
   loadCryptoCache,
   saveCryptoCache,
 } from "../features/vault/crypto-cache.ts";
-import { findExistingLogin } from "../features/vault/login-match.ts";
+import { findExistingLogin, needsPasswordUpdate } from "../features/vault/login-match.ts";
 import { generatePassword } from "../features/vault/password-gen.ts";
 import {
   EXT_SCOPE,
@@ -545,7 +545,50 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         getExtVaultSession().touchActivity();
         const items = await listItemsPreferCache("");
         const match = findExistingLogin(items, message.url, message.username);
-        return { ok: true, exists: Boolean(match) };
+        if (!match) return { ok: true, exists: false, needs_password_update: false };
+        if (!message.password) return { ok: true, exists: true, needs_password_update: false };
+
+        let storedPassword: string | undefined;
+        const cached = await loadLocalCache();
+        const cachedItem = cached?.items.find((i) => i.id === match.id);
+        if (cachedItem?.secrets_enc && cachedItem.dek_wrapped) {
+          try {
+            const secrets = await getExtVaultSession().openSecrets(
+              cachedItem.secrets_enc,
+              cachedItem.dek_wrapped,
+            );
+            if (typeof secrets.password === "string") storedPassword = secrets.password;
+          } catch {
+            /* 本地密文解不开则保守不提示更新 */
+          }
+        } else if (isExtOnline()) {
+          try {
+            const got = await vaultCall("vault.get", {
+              subject_kind: "user",
+              id: match.id,
+              include_secrets: true,
+            });
+            if (got.item.secrets_enc && got.item.dek_wrapped) {
+              const secrets = await getExtVaultSession().openSecrets(
+                got.item.secrets_enc,
+                got.item.dek_wrapped,
+              );
+              if (typeof secrets.password === "string") storedPassword = secrets.password;
+              await upsertLocalCacheItem({
+                ...toCachedMeta(got.item),
+                secrets_enc: got.item.secrets_enc,
+                dek_wrapped: got.item.dek_wrapped,
+              });
+            }
+          } catch {
+            /* 拉取失败则保守不提示更新 */
+          }
+        }
+        return {
+          ok: true,
+          exists: true,
+          needs_password_update: needsPasswordUpdate(storedPassword, message.password),
+        };
       }
       case "get_item": {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };

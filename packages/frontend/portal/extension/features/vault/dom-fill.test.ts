@@ -1,8 +1,10 @@
 import {
   hasPasswordNearby,
   hasUsernameSignal,
+  isCaptchaOrSmsCodeField,
   isLoginCredentialField,
   isNonLoginField,
+  isTotpField,
 } from "./dom-fill.ts";
 
 type MockInputOpts = {
@@ -107,11 +109,26 @@ describe("isLoginCredentialField", () => {
     ).toBe(false);
   });
 
-  test("otp → false", () => {
+  test("TOTP → true", () => {
     expect(isLoginCredentialField(makeInput({ type: "text", autocomplete: "one-time-code" }))).toBe(
+      true,
+    );
+    expect(isLoginCredentialField(makeInput({ type: "text", name: "totp" }))).toBe(true);
+    expect(isLoginCredentialField(makeInput({ type: "text", placeholder: "身份验证器" }))).toBe(
+      true,
+    );
+  });
+
+  test("验证码 / 图形验证码 / 手机验证码 → false", () => {
+    expect(isLoginCredentialField(makeInput({ type: "text", placeholder: "验证码" }))).toBe(false);
+    expect(isLoginCredentialField(makeInput({ type: "text", name: "captcha" }))).toBe(false);
+    expect(isLoginCredentialField(makeInput({ type: "text", placeholder: "图形验证码" }))).toBe(
       false,
     );
-    expect(isLoginCredentialField(makeInput({ type: "text", name: "totp" }))).toBe(false);
+    expect(isLoginCredentialField(makeInput({ type: "text", placeholder: "手机验证码" }))).toBe(
+      false,
+    );
+    expect(isLoginCredentialField(makeInput({ type: "text", name: "sms_code" }))).toBe(false);
   });
 
   test("hidden / disabled / readOnly → false", () => {
@@ -125,6 +142,24 @@ describe("isLoginCredentialField", () => {
     const pass = makeInput({ type: "password" });
     makeParent([user, pass]);
     expect(isLoginCredentialField(user)).toBe(true);
+  });
+});
+
+describe("isTotpField / isCaptchaOrSmsCodeField", () => {
+  test("isTotpField", () => {
+    expect(isTotpField(makeInput({ name: "totp" }))).toBe(true);
+    expect(isTotpField(makeInput({ autocomplete: "one-time-code" }))).toBe(true);
+    expect(isTotpField(makeInput({ placeholder: "Authenticator code" }))).toBe(true);
+    expect(isTotpField(makeInput({ placeholder: "验证码" }))).toBe(false);
+    expect(isTotpField(makeInput({ name: "captcha" }))).toBe(false);
+  });
+
+  test("isCaptchaOrSmsCodeField", () => {
+    expect(isCaptchaOrSmsCodeField(makeInput({ placeholder: "验证码" }))).toBe(true);
+    expect(isCaptchaOrSmsCodeField(makeInput({ placeholder: "图形验证码" }))).toBe(true);
+    expect(isCaptchaOrSmsCodeField(makeInput({ placeholder: "手机验证码" }))).toBe(true);
+    expect(isCaptchaOrSmsCodeField(makeInput({ name: "sms-code" }))).toBe(true);
+    expect(isCaptchaOrSmsCodeField(makeInput({ name: "totp" }))).toBe(false);
   });
 });
 
