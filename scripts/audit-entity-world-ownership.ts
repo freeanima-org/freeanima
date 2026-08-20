@@ -20,15 +20,17 @@ async function main(): Promise<void> {
 
   initDatabase({ getDatabaseUrl: () => url });
 
-  let report;
+  let configuredSubjects: ReturnType<typeof resolveWorldSubjectIds> | undefined;
   try {
-    const runtime = (await RuntimeConfigStore.open()).data;
-    report = await runIntegrityChecks({
-      configuredSubjects: resolveWorldSubjectIds(runtime),
-    });
+    configuredSubjects = resolveWorldSubjectIds((await RuntimeConfigStore.open()).data);
   } catch {
-    report = await runIntegrityChecks();
+    configuredSubjects = undefined;
   }
+
+  const report =
+    configuredSubjects != null
+      ? await runIntegrityChecks({ configuredSubjects })
+      : await runIntegrityChecks();
 
   for (const issue of report.issues) {
     console.error(
