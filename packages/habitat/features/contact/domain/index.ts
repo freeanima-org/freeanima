@@ -22,5 +22,9 @@ export {
   extractEmailAddress,
 } from "./contact-store.ts";
 
-export { resolveContactWorldId } from "./contact-world.ts";
+export {
+  resolveContactWorldId,
+  isContactUserAccessPassthrough,
+  assertContactWorldAccess,
+} from "./contact-world.ts";
 export { registerContactTools, buildContactToolDefs } from "./tools.ts";

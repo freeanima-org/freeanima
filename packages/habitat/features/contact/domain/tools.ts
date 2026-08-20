@@ -2,12 +2,10 @@ import {
   attachToolReturns,
   toolError,
   toolResult,
+  getToolCallerAuth,
   resolveToolCallerSubjectId,
 } from "@freeanima/habitat/core/tool";
-import {
-  assertSubjectCanAccessWorld,
-  ToolWorldAccessError,
-} from "@freeanima/habitat/core/db/pg/entity";
+import { ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { omitUndefined } from "@freeanima/habitat/core/util";
@@ -23,14 +21,17 @@ import {
   searchContacts,
   updateContact,
 } from "./contact-store.ts";
-import { resolveContactWorldId } from "./contact-world.ts";
+import { assertContactWorldAccess } from "./contact-world.ts";
 import { CONTACT_TOOL_RETURNS } from "./return-schemas.ts";
 
 async function assertContactAccess(access: "read" | "write"): Promise<number | string> {
   try {
-    const worldId = resolveContactWorldId();
-    await assertSubjectCanAccessWorld(resolveToolCallerSubjectId(), worldId, { access });
-    return worldId;
+    const auth = getToolCallerAuth();
+    return await assertContactWorldAccess({
+      subjectId: resolveToolCallerSubjectId(),
+      subjectType: auth?.subject_type,
+      access,
+    });
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);
@@ -163,7 +164,8 @@ export function buildContactToolDefs() {
       },
       {
         name: "contact_create",
-        description: "Create a contact in Commons (requires Commons write grant)",
+        description:
+          "Create a contact in Commons (user: always allowed; agent: requires Commons write grant)",
         parameters: {
           type: "object",
           properties: {
