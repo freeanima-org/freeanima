@@ -1,0 +1,32 @@
+# LoCoMo 评测依赖（仅 PG + Redis；Habitat 进程仍在宿主机）
+# 端口刻意避开日常 5432/6379，避免误连 ~/.anima
+#
+#   docker compose -f scripts/eval/locomo/compose.yaml up -d
+#   docker compose -f scripts/eval/locomo/compose.yaml down -v
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg18
+    container_name: freeanima-locomo-pg
+    environment:
+      POSTGRES_USER: locomo
+      POSTGRES_PASSWORD: locomo
+      POSTGRES_DB: locomo
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U locomo -d locomo"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    container_name: freeanima-locomo-redis
+    ports:
+      - "56379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 20

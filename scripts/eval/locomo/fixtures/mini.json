@@ -1,0 +1,72 @@
+[
+  {
+    "sample_id": "mini-001",
+    "conversation": {
+      "speaker_a": "Alice",
+      "speaker_b": "Bob",
+      "session_1_date_time": "2023-01-01 10:00",
+      "session_1": [
+        {
+          "speaker": "Alice",
+          "dia_id": "D1:1",
+          "text": "I moved to Shanghai last month for a new job at a tea company."
+        },
+        {
+          "speaker": "Bob",
+          "dia_id": "D1:2",
+          "text": "That sounds exciting! Do you still paint on weekends?"
+        },
+        {
+          "speaker": "Alice",
+          "dia_id": "D1:3",
+          "text": "Yes, I paint watercolors every Sunday morning."
+        }
+      ],
+      "session_2_date_time": "2023-02-15 18:00",
+      "session_2": [
+        {
+          "speaker": "Bob",
+          "dia_id": "D2:1",
+          "text": "How is the tea company job going?"
+        },
+        {
+          "speaker": "Alice",
+          "dia_id": "D2:2",
+          "text": "Great. My manager Mei is teaching me about oolong blends."
+        }
+      ]
+    },
+    "qa": [
+      {
+        "question": "Where did Alice move for her new job?",
+        "answer": "Shanghai",
+        "category": 1,
+        "evidence": ["D1:1"]
+      },
+      {
+        "question": "What does Alice do every Sunday morning?",
+        "answer": "paint watercolors",
+        "category": 1,
+        "evidence": ["D1:3"]
+      },
+      {
+        "question": "Who is teaching Alice about oolong blends?",
+        "answer": "Mei",
+        "category": 1,
+        "evidence": ["D2:2"]
+      },
+      {
+        "question": "When did Bob ask about the tea company job relative to Alice moving?",
+        "answer": "About one and a half months later (Feb 15 after Jan 1 move)",
+        "category": 2,
+        "evidence": ["D1:1", "D2:1"]
+      },
+      {
+        "question": "Does Alice work at a coffee shop?",
+        "answer": "No",
+        "category": 5,
+        "evidence": []
+      }
+    ]
+  }
+]
