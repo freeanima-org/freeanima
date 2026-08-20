@@ -87,6 +87,12 @@ export function registerFeaturePluginShellRoutes(): void {
       load: lazyNamedComponent(() => import("@freeanima/features/bookmark/ui/spa"), "BookmarkApp"),
     },
     {
+      featureId: "contact",
+      path: "/contacts",
+      navLabel: "通讯录",
+      load: lazyNamedComponent(() => import("@freeanima/features/contact/ui/spa"), "ContactApp"),
+    },
+    {
       featureId: "email",
       path: "/email",
       navLabel: "Email",

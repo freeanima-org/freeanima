@@ -16,6 +16,7 @@ export const CALENDAR_EVENT_COMPONENT = "calendar_event" as const;
 export const DIARY_BLOCK_TEMPLATE_COMPONENT = "diary_block_template" as const;
 export const CODING_NOTE_COMPONENT = "coding_note" as const;
 export const BOOKMARK_COMPONENT = "bookmark" as const;
+export const CONTACT_COMPONENT = "contact" as const;
 export const CONTENT_BLOCK_COMPONENT = "content_block" as const;
 export const LIMBIC_COMPONENT = "limbic" as const;
 export const NARRATIVE_COMPONENT = "narrative" as const;
@@ -60,6 +61,7 @@ export const COMPONENT_IDS = [
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   CODING_NOTE_COMPONENT,
   BOOKMARK_COMPONENT,
+  CONTACT_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,

@@ -28,6 +28,10 @@ export const emailMessageBodySchema = z.object({
   from: z.string(),
   to: z.string(),
   cc: z.string().optional(),
+  /** 发件人关联的联系人（0 或 1） */
+  from_contact_id: z.number().int().positive().nullable().optional(),
+  /** 收件人关联的联系人（to 可多人，每人至多一条） */
+  to_contact_ids: z.array(z.number().int().positive()).optional(),
   sent_at: z.string(),
   unread: z.boolean().default(true),
   flags: z.array(z.string()).optional(),

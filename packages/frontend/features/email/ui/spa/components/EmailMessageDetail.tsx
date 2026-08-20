@@ -20,6 +20,7 @@ import {
   type EmailMessageRow,
 } from "../lib/api.ts";
 import { buildEmailHtmlSrcDoc, looksLikeHtmlBody } from "../lib/email-html.ts";
+import { EmailContactLinkPanel } from "./EmailContactLinkPanel.tsx";
 
 function formatWhen(iso: string): string {
   if (!iso) return "";
@@ -49,6 +50,7 @@ type EmailMessageDetailProps = {
   onMarkRead?: () => void;
   onCopyId?: () => void;
   onDelete?: () => void;
+  onContactLinked?: (next: { from_contact_id: number | null; to_contact_ids: number[] }) => void;
 };
 
 function EmailAttachmentList({ attachments }: { attachments: EmailAttachmentRow[] }) {
@@ -222,6 +224,7 @@ export function EmailMessageDetail({
   onMarkRead,
   onCopyId,
   onDelete,
+  onContactLinked,
 }: EmailMessageDetailProps) {
   if (loading) {
     return (
@@ -300,9 +303,29 @@ export function EmailMessageDetail({
         <div className="text-muted-foreground mb-4 space-y-1">
           <div>
             {"发件人："} {message.from}
+            {onContactLinked ? (
+              <EmailContactLinkPanel
+                messageId={message.id}
+                role="from"
+                addressRaw={message.from}
+                linkedContactId={message.from_contact_id ?? null}
+                writesDisabled={writesDisabled}
+                onLinked={onContactLinked}
+              />
+            ) : null}
           </div>
           <div>
             {"收件人："} {message.to}
+            {onContactLinked ? (
+              <EmailContactLinkPanel
+                messageId={message.id}
+                role="to"
+                addressRaw={message.to}
+                linkedContactId={message.to_contact_ids?.[0] ?? null}
+                writesDisabled={writesDisabled}
+                onLinked={onContactLinked}
+              />
+            ) : null}
           </div>
           <div>
             {"时间："} {formatWhen(message.sent_at)}

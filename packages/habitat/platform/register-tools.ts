@@ -5,6 +5,7 @@ import { registerEmailTools } from "@freeanima/features/email/domain";
 import { registerTaskTools } from "@freeanima/features/task/domain";
 import { registerSubagentTools } from "@freeanima/features/subagent/domain";
 import { registerVaultTools } from "@freeanima/features/vault/domain";
+import { registerContactTools } from "@freeanima/features/contact/domain";
 import {
   bindObjectStore,
   createObjectStore,
@@ -65,6 +66,7 @@ export function registerServiceTools(opts: {
   registerVaultTools(opts.toolSets);
   registerObjectStorageTools(opts.toolSets);
   registerMediaTools(opts.toolSets);
+  registerContactTools(opts.toolSets);
   registeredCatalog = opts;
 }
 
