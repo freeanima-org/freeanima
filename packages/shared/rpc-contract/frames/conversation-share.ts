@@ -19,6 +19,8 @@ export const conversationShareCreateOutputSchema = z.object({
   expires_at: z.string().min(1),
   /** 相对壳 basepath 的路径，如 /share/<id> */
   url_path: z.string().min(1),
+  /** 配置了 public.origin 时的绝对可复制链接 */
+  url: z.string().url().optional(),
 });
 
 export type ConversationShareCreateOutput = z.infer<typeof conversationShareCreateOutputSchema>;
@@ -55,6 +57,8 @@ export const conversationShareListItemSchema = z.object({
   message_count: z.number().int().min(0),
   ttl_remaining_seconds: z.number().int().nullable(),
   url_path: z.string().min(1),
+  /** 配置了 public.origin 时的绝对可复制链接 */
+  url: z.string().url().optional(),
 });
 
 export const conversationShareListOutputSchema = z.object({

@@ -43,7 +43,22 @@ export type ConversationShareListItem = {
   /** Redis 剩余 TTL 秒；未知为 null */
   ttl_remaining_seconds: number | null;
   url_path: string;
+  /** 配置了 public.origin 时的绝对可复制链接 */
+  url?: string;
 };
+
+/** Web 壳 URL 前缀（与 habitat-api/web-static WEB_URL_PREFIX 对齐） */
+export const CONVERSATION_SHARE_WEB_PREFIX = "/web";
+
+export function conversationShareUrlPath(id: string): string {
+  return `/share/${id}`;
+}
+
+/** 由对外 origin 拼绝对分享链接：`{origin}/web/share/{id}` */
+export function buildConversationSharePublicUrl(id: string, publicOrigin: string): string {
+  const origin = publicOrigin.replace(/\/$/, "");
+  return `${origin}${CONVERSATION_SHARE_WEB_PREFIX}/share/${id}`;
+}
 
 const SHARE_KEY_PREFIX = `${REDIS_KV_KEY_PREFIX}conversation-share:`;
 
@@ -126,7 +141,7 @@ export async function listConversationShares(): Promise<ConversationShareListIte
       expires_at: snapshot.expires_at,
       message_count: snapshot.display.filter((d) => d.type === "message").length,
       ttl_remaining_seconds,
-      url_path: `/share/${id}`,
+      url_path: conversationShareUrlPath(id),
     });
   }
   items.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));

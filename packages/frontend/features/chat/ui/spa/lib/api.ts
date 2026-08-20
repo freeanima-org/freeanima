@@ -91,9 +91,9 @@ export async function createConversationShare(input: {
   conversationId: string;
   ttl?: ConversationShareTtl;
   posList?: number[];
-}): Promise<{ id: string; expires_at: string; url_path: string }> {
+}): Promise<{ id: string; expires_at: string; url_path: string; url?: string }> {
   requireHabitatFetch("conversation.share.create");
-  return habitat().call(
+  const result = await habitat().call(
     "conversation.share.create",
     omitUndefined({
       conversation_id: input.conversationId,
@@ -101,6 +101,12 @@ export async function createConversationShare(input: {
       pos_list: input.posList,
     }),
   );
+  return omitUndefined({
+    id: result.id,
+    expires_at: result.expires_at,
+    url_path: result.url_path,
+    url: result.url,
+  });
 }
 
 export async function getConversationTail(conversationId: string) {

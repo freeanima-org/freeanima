@@ -348,6 +348,7 @@ export async function listConversationShares() {
       message_count: number;
       ttl_remaining_seconds: number | null;
       url_path: string;
+      url?: string;
     }>;
   }>;
 }
