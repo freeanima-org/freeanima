@@ -15,7 +15,7 @@ export type EnvHealthTickResult = {
 
 export type EnvHealthNotificationCreateInput = {
   recipient_kind: "user" | "agent";
-  recipient_id?: string;
+  recipient_id: number;
   title: string;
   body: string;
   payload?: Record<string, unknown> | null;
@@ -28,10 +28,10 @@ export type EnvHealthNotificationPort = {
   create(input: EnvHealthNotificationCreateInput): Promise<unknown>;
   existsBySourceRef(
     sourceRef: string,
-    recipient: { kind: "user" | "agent"; id: string },
+    recipient: { kind: "user" | "agent"; id: number },
   ): Promise<boolean>;
-  getAgentRecipient(): { kind: "user" | "agent"; id: string };
-  getUserRecipient(): { kind: "user" | "agent"; id: string };
+  getAgentRecipient(): { kind: "user" | "agent"; id: number };
+  getUserRecipient(): { kind: "user" | "agent"; id: number };
 };
 
 export type EnvHealthTickDeps = {

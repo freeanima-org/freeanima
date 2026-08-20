@@ -11,6 +11,7 @@ import {
   toolNamesForToolSets,
 } from "@freeanima/habitat/core/tool";
 import { getActiveRuntimeConfig, getProfileHopModel } from "@freeanima/habitat/core/config";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
 import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
 import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
 import { buildSystemPrompt } from "@freeanima/habitat/core/hooks/prompt";
@@ -155,7 +156,7 @@ export async function listConversationSummariesPage(opts?: {
   offset?: number;
   limit?: number;
   includeArchived?: boolean;
-  user_subject_id?: string;
+  user_subject_id?: number;
 }): Promise<{
   items: ConversationSummaryRow[];
   total: number;
@@ -222,6 +223,15 @@ export async function appendMessage(msg: StoredMessage, conversationId: string):
   if (out.pos === undefined) {
     out.pos = await nextMessagePosWithRouting(conversationId);
   }
+  if (out.subject_id == null) {
+    const ctx = getResolvedWorldContext();
+    if (out.role === "user") {
+      out.subject_id = ctx.user_subject_id;
+    } else {
+      const meta = await loadConversationMeta(conversationId);
+      out.subject_id = isConversationMeta(meta) ? meta.agent_subject_id : ctx.agent_subject_id;
+    }
+  }
   await pgWriteMessage(conversationId, out);
 }
 
@@ -237,6 +247,7 @@ export async function appendConversationMeta(
     staged_toolsets: [],
     functions: opts?.functions ?? [],
     timestamp: formatCstIso(),
+    agent_subject_id: getResolvedWorldContext().agent_subject_id,
   };
   if (opts?.platform) meta.platform = opts.platform;
   await pgWriteMeta(conversationId, meta);
@@ -266,6 +277,7 @@ export async function initConversation(
     timestamp: formatCstIso(),
     platform: opts.platform,
     cwd,
+    agent_subject_id: getResolvedWorldContext().agent_subject_id,
     ...(opts.scenario ? { scenario: opts.scenario } : {}),
     platform_extra:
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,

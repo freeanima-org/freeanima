@@ -84,8 +84,17 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 - Subject **不**以成员关系意义上的 `world_id` 限定范围；行 `world_id` 保持在引导根（`ENTITY_ROOT_WORLD_ID`）作为表占位。
 - **`agent_config` / `user_config` body**：`default_private_world_id`——该 subject 唯一的默认私有 world（创建 subject 时自动创建；可从 subject 拥有的私有 world 配置）；`public_id` / `public_key`——稳定公开身份与验签公钥（见 [`habitat-identity.md`](habitat-identity.md)）。
 - **阶段约束：** `type=user` 全局至多一个；多数字生命仅增加 `type=agent`。
-- **通知**用 subject 实体 id 作 `recipient_id`（见 [`notifications.md`](../cognition/notifications.md)）；id 来自启动时 **`ResolvedWorldContext`**（并持久化到 `habitat_runtime_config.worlds`）。
+- **通知**用 subject 实体 id 作 `recipient_id`（**`bigint` FK → `entities.id`**；见 [`notifications.md`](../cognition/notifications.md)）；id 来自启动时 **`ResolvedWorldContext`**（并持久化到 `habitat_runtime_config.worlds`）。
 - **Service API Token**（`service_api_tokens` 表）绑定 subject 实体 id；栖息地 REST/SAP/MCP 从 Bearer token 解析调用方身份。见 [`remote-access.md`](../ops/remote-access.md)。
+- **行级 subject 列约定：** 一律 **`bigint` + FK → `entities.id`**（勿再用 `text` / `String(id)`）。含：
+  - `conversations.agent_subject_id` — 会话绑定的 agent
+  - `messages.subject_id` — 发言主体（user → user；assistant/tool → 会话 agent）
+  - `auto_llm_runs.subject_id` / `auto_llm_messages.subject_id` — AutoLlm 行动主体
+  - `cron_jobs.subject_id` — 定时任务行动主体
+  - `search_documents.subject_id`（+ 既有 `world_id`）— 检索旁表归属；entity 从 world owner 派生，message 从 `messages.subject_id` + 主体默认私有 world
+  - `conversation_read_state.subject_id` — 用户已读水位
+- **未按 subject 分片（刻意）：** `self_blocks` 仍为实例单例自我层（多数字生命自我层另议）。
+- Content 实体**不**另加 `subject_id` 列；归属经 `world_id` → `world_config.owner_subject_id`。
 
 ### 启动时 ensure（`worlds` 配置）
 

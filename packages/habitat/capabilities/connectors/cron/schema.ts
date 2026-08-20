@@ -26,6 +26,8 @@ export const cronJobDataSchema = z.object({
   notify_on_success: z.boolean().default(false),
   allowed_tools: z.array(z.string()).default([]),
   denied_tools: z.array(z.string()).default([]),
+  /** 行动主体 entities.id */
+  subject_id: z.number().int().positive(),
   /** API view: computed at runtime, not stored in PG */
   next_run_at: z.number().default(0),
   /** API view: lazy-loaded from last_output_ref */

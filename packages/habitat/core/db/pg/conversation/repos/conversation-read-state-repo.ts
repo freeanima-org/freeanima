@@ -7,7 +7,7 @@ import { getMaxMessagePos } from "./message-repo.ts";
 const pgNow = (): Date => new Date();
 
 /** 用户视角：是否存在尚未读到的 assistant 消息 */
-export function conversationUnreadExistsSql(userSubjectId: string) {
+export function conversationUnreadExistsSql(userSubjectId: number) {
   return sql<boolean>`exists (
     select 1
     from messages m
@@ -26,13 +26,15 @@ export function conversationUnreadExistsSql(userSubjectId: string) {
  */
 export async function markConversationRead(opts: {
   conversation_id: string;
-  subject_id: string;
+  subject_id: number;
   last_read_pos?: number;
 }): Promise<{ last_read_pos: number }> {
   const conversation_id = opts.conversation_id.trim();
-  const subject_id = opts.subject_id.trim();
+  const subject_id = opts.subject_id;
   if (!conversation_id) throw new Error("conversation_id is required");
-  if (!subject_id) throw new Error("subject_id is required");
+  if (!Number.isFinite(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
+  }
 
   const targetPos =
     opts.last_read_pos != null
@@ -72,13 +74,12 @@ export async function markConversationRead(opts: {
 
 /** 用户未归档且未读的会话个数（Shell 角标；可选按 platform 与列表对齐） */
 export async function countUnreadConversations(
-  userSubjectId: string,
+  userSubjectId: number,
   opts?: { platform?: string },
 ): Promise<number> {
-  const subject_id = userSubjectId.trim();
-  if (!subject_id) return 0;
+  if (!Number.isFinite(userSubjectId) || userSubjectId <= 0) return 0;
   const db = getDb();
-  const unread = conversationUnreadExistsSql(subject_id);
+  const unread = conversationUnreadExistsSql(userSubjectId);
   const platform = opts?.platform?.trim();
   const conds = [isNull(conversations.archived_at), sql`${unread}`];
   if (platform) {
@@ -93,7 +94,7 @@ export async function countUnreadConversations(
 
 export async function getConversationLastReadPos(
   conversation_id: string,
-  subject_id: string,
+  subject_id: number,
 ): Promise<number> {
   const db = getDb();
   const rows = await db

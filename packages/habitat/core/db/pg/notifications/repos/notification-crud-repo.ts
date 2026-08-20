@@ -6,20 +6,21 @@ import {
   notificationSourceKindSchema,
 } from "@freeanima/habitat/core/db/schema";
 import type { NotificationCreateInput, NotificationListOpts, NotificationRow } from "../types.ts";
-import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "../types.ts";
 
 import { getDb } from "../../client.ts";
 
 const DEFAULT_LIST_LIMIT = 20;
 
-function normalizeRecipientId(raw?: string): string {
-  const trimmed = raw?.trim();
-  return trimmed || DEFAULT_NOTIFICATION_RECIPIENT_ID;
+function requireRecipientId(raw: number | undefined): number {
+  if (raw == null || !Number.isFinite(raw) || raw <= 0) {
+    throw new Error("recipient_id is required (positive entities.id)");
+  }
+  return Math.floor(raw);
 }
 
 function buildListConditions(opts: Omit<NotificationListOpts, "offset" | "limit">) {
   const recipient_kind = notificationRecipientKindSchema.parse(opts.recipient_kind);
-  const recipient_id = normalizeRecipientId(opts.recipient_id);
+  const recipient_id = requireRecipientId(opts.recipient_id);
   const conditions = [
     eq(notifications.recipient_kind, recipient_kind),
     eq(notifications.recipient_id, recipient_id),
@@ -47,7 +48,7 @@ export async function createNotification(input: NotificationCreateInput): Promis
     .values({
       id: randomPublicId(),
       recipient_kind,
-      recipient_id: normalizeRecipientId(input.recipient_id),
+      recipient_id: requireRecipientId(input.recipient_id),
       title,
       body,
       payload: input.payload ?? null,
@@ -122,7 +123,7 @@ export async function notificationExistsBySourceRef(
   if (!trimmed) return false;
 
   const recipient_kind = notificationRecipientKindSchema.parse(opts.recipient_kind);
-  const recipient_id = normalizeRecipientId(opts.recipient_id);
+  const recipient_id = requireRecipientId(opts.recipient_id);
   const db = getDb();
   const rows = await db
     .select({ id: notifications.id })
@@ -146,7 +147,7 @@ export async function markNotificationsReadBySourceRef(
   if (!trimmed) return 0;
 
   const recipient_kind = notificationRecipientKindSchema.parse(opts.recipient_kind);
-  const recipient_id = normalizeRecipientId(opts.recipient_id);
+  const recipient_id = requireRecipientId(opts.recipient_id);
   const now = new Date();
   const db = getDb();
   const updated = await db

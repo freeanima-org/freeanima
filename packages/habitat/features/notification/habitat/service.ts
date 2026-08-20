@@ -4,7 +4,6 @@ import type {
   NotificationReadFilter,
 } from "@freeanima/habitat/core/db/pg/notifications/types";
 import type { NotificationRow } from "@freeanima/habitat/core/db/schema/rows";
-import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/habitat/core/db/pg/notifications/types";
 import {
   countNotifications,
   createNotification as createPgNotification,
@@ -27,16 +26,18 @@ function clampPagination(offset?: number, limit?: number) {
   return { offset: safeOffset, limit: safeLimit };
 }
 
-function resolveRecipientId(recipientId?: string): string {
-  const trimmed = recipientId?.trim();
-  return trimmed || DEFAULT_NOTIFICATION_RECIPIENT_ID;
+function requireRecipientId(recipientId: number | undefined): number {
+  if (recipientId == null || !Number.isFinite(recipientId) || recipientId <= 0) {
+    throw new Error("recipient_id is required (positive entities.id)");
+  }
+  return Math.floor(recipientId);
 }
 
 export async function listNotifications(
   _deps: RuntimeDeps,
   args: {
     recipient_kind: NotificationRecipientKind;
-    recipient_id?: string;
+    recipient_id: number;
     read_filter?: NotificationReadFilter;
     offset?: number;
     limit?: number;
@@ -45,7 +46,7 @@ export async function listNotifications(
   const { offset, limit } = clampPagination(args.offset, args.limit);
   const filterOpts = {
     recipient_kind: args.recipient_kind,
-    recipient_id: resolveRecipientId(args.recipient_id),
+    recipient_id: requireRecipientId(args.recipient_id),
     read_filter: args.read_filter ?? "all",
   };
   const [items, total] = await Promise.all([
@@ -68,7 +69,7 @@ export async function createNotification(
 ): Promise<NotificationRow> {
   const row = await createPgNotification({
     ...input,
-    recipient_id: resolveRecipientId(input.recipient_id),
+    recipient_id: requireRecipientId(input.recipient_id),
   });
   if (row.recipient_kind === "user") {
     emitUserNotificationCreated({

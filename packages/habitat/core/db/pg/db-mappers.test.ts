@@ -13,6 +13,7 @@ describe("db transforms", () => {
       functions: [],
       timestamp: "2026-05-17T07:15:24.873+00:00",
       platform: "chat",
+      agent_subject_id: 1,
     });
     expect(row.created_at).toEqual(new Date("2026-05-17T07:15:24.873Z"));
     expect(row.platform_info).toEqual({ platform: "chat" });
@@ -28,6 +29,7 @@ describe("db transforms", () => {
       timestamp: "2026-05-11T04:00:11.050Z",
       platform: "cron",
       ended_at: "2026-05-11T04:03:34.574+00:00",
+      agent_subject_id: 1,
     });
     expect(row.platform_info).toBeNull();
   });
@@ -41,6 +43,7 @@ describe("db transforms", () => {
       timestamp: "2026-05-17T07:15:24.873Z",
       platform: "coding",
       scenario: "coding_agent",
+      agent_subject_id: 1,
       platform_extra: {
         outpost_app_id: "coding",
         outpost_instance_id: "inst1",
@@ -60,9 +63,11 @@ describe("db transforms", () => {
       role: "user",
       content: "hi",
       pos: 1,
+      subject_id: 2,
       timestamp: "2026-01-01T00:00:00.000Z",
     });
     expect(userInsert.pos).toBe(1);
+    expect(userInsert.subject_id).toBe(2);
     expect(userInsert.id).toMatch(/^[0-9A-Za-z]{21}$/);
     expect(userInsert.payload).toMatchObject({ role: "user", content: "hi" });
     expect(userInsert.payload).not.toHaveProperty("pos");
@@ -74,12 +79,14 @@ describe("db transforms", () => {
       created_at: "2026-01-01T00:00:00.000Z",
     });
     expect(user.pos).toBe(1);
+    expect(user.subject_id).toBe(2);
 
     const toolInsert = messageToInsert("sess", {
       role: "tool",
       tool_call_id: "call_1",
       content: '{"ok":true}',
       pos: 2,
+      subject_id: 1,
       timestamp: "2026-01-01T00:00:01.000Z",
     });
     expect(toolInsert.pos).toBe(2);
@@ -110,6 +117,7 @@ describe("db transforms", () => {
     context_from: [],
     timeout_sec: 300,
     builtin: true,
+    subject_id: 1,
     repeat: null,
     run_count: 0,
     paused: false,

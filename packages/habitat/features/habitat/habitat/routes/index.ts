@@ -58,6 +58,7 @@ import {
   deleteHabitatRedisLock,
   listHabitatRedisLocks,
 } from "../habitat-api/handlers/redis-locks.ts";
+import { runDataIntegrityCheck } from "../habitat-api/handlers/data-integrity.ts";
 import {
   countSemanticMemory,
   listSemanticMemories,
@@ -561,6 +562,11 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     "redisLocks.delete",
     habitatMethodDefs["redisLocks.delete"],
     wrapConsoleLegacyHandler((payload) => deleteHabitatRedisLock(payload as { key: string })),
+  ),
+  defineHabitatRouteFromDef(
+    "dataIntegrity.run",
+    habitatMethodDefs["dataIntegrity.run"],
+    wrapConsoleLegacyHandler(() => runDataIntegrityCheck()),
   ),
   defineHabitatRouteFromDef(
     "cronLogs.list",

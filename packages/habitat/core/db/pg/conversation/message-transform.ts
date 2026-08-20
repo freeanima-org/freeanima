@@ -30,7 +30,7 @@ function assertConversationMessage(msg: StoredMessage): ConversationMessage {
 }
 
 function toPayload(msg: ConversationMessage): MessageInsert["payload"] {
-  const { pos: _pos, ...rest } = msg;
+  const { pos: _pos, subject_id: _subjectId, ...rest } = msg;
   return conversationPayloadSchema.parse(rest);
 }
 
@@ -39,19 +39,23 @@ export function messageToInsert(conversation_id: string, msg: StoredMessage): Me
   const parsed = assertConversationMessage(msg);
   const pos = parsed.pos;
   if (pos === undefined) throw new Error("message pos is required for insert");
+  const subject_id = parsed.subject_id;
+  if (subject_id == null) throw new Error("messages write requires subject_id");
   return {
     id: newMessageGlobalId(),
     conversation_id,
+    subject_id,
     pos,
     payload: toPayload(parsed),
   };
 }
 
-/** PG row → domain Conversation messages (pos column is source of truth) */
+/** PG row → domain Conversation messages (pos / subject_id columns are source of truth) */
 export function rowToMessage(row: unknown): ConversationMessage {
   const parsed = messageSelectSchema.parse(row);
   return conversationMessageSchema.parse({
     ...parsed.payload,
     pos: parsed.pos,
+    subject_id: parsed.subject_id,
   });
 }

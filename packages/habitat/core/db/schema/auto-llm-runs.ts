@@ -1,6 +1,7 @@
-import { index, integer, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+import { bigint, index, integer, jsonb, pgTable, text } from "drizzle-orm/pg-core";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
+import { entities } from "./entity/entity.ts";
 
 export const autoLlmRuns = pgTable(
   "auto_llm_runs",
@@ -8,8 +9,10 @@ export const autoLlmRuns = pgTable(
     id: text("id").primaryKey(),
     run_name: text("run_name").notNull(),
     run_kind: text("run_kind").notNull(),
-    /** Acting subject (agent / future anima); null for legacy rows */
-    subject_id: integer("subject_id"),
+    /** Acting subject (agent / future anima)；entities.id */
+    subject_id: bigint("subject_id", { mode: "number" })
+      .notNull()
+      .references(() => entities.id),
     output: text("output").notNull().default(""),
     status: text("status").notNull(),
     duration_ms: integer("duration_ms").notNull(),

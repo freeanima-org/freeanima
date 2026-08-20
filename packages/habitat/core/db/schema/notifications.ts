@@ -1,9 +1,10 @@
-import { index, jsonb, pgTable, text } from "drizzle-orm/pg-core";
+import { bigint, index, jsonb, pgTable, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { z } from "zod";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
+import { entities } from "./entity/entity.ts";
 
 export const notificationRecipientKindSchema = z.enum(["user", "agent"]);
 export type NotificationRecipientKind = z.infer<typeof notificationRecipientKindSchema>;
@@ -16,7 +17,10 @@ export const notifications = pgTable(
   {
     id: text("id").primaryKey(),
     recipient_kind: text("recipient_kind").notNull(),
-    recipient_id: text("recipient_id").notNull().default("default"),
+    /** Subject entity id（user/agent）；bigint FK，勿再用 String(id) / "default" */
+    recipient_id: bigint("recipient_id", { mode: "number" })
+      .notNull()
+      .references(() => entities.id),
     title: text("title").notNull(),
     body: text("body").notNull(),
     payload: jsonb("payload").$type<Record<string, unknown> | null>(),

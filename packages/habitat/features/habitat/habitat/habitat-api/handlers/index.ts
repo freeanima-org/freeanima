@@ -43,6 +43,7 @@ export { getOutpostsStatus } from "./outposts.ts";
 export { iterateConversationEvents } from "./conversation-events.ts";
 export { getFtsStatus, startRebuildFtsIndex, getRebuildFtsJobStatus } from "./fts.ts";
 export { listHabitatRedisLocks, deleteHabitatRedisLock } from "./redis-locks.ts";
+export { runDataIntegrityCheck } from "./data-integrity.ts";
 export {
   getMemoryMaintenanceSummary,
   listCronLogs,

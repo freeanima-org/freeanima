@@ -394,7 +394,11 @@ async function persistRunningStart(
       max_duration_ms: row.input.maxDurationMs ?? null,
       metadata: buildAutoLlmMetadata(row.input, row.model),
       created_at: row.startedAt,
-      messages: payloads.map((payload, pos) => ({ pos, payload })),
+      messages: payloads.map((payload, pos) => ({
+        pos,
+        payload,
+        subject_id: row.input.subjectId,
+      })),
     });
     audit.nextPos = payloads.length;
   } catch (err) {
@@ -406,6 +410,7 @@ async function persistMessageBatch(
   deps: FullRuntimeDeps,
   audit: AutoLlmAudit,
   runId: string,
+  subjectId: number,
   batch: StoredMessage[],
 ): Promise<void> {
   if (!isPostgresPrimary() || batch.length === 0) return;
@@ -415,7 +420,7 @@ async function persistMessageBatch(
     const msgs = payloads.map((payload) => {
       const pos = audit.nextPos;
       audit.nextPos += 1;
-      return { pos, payload };
+      return { pos, payload, subject_id: subjectId };
     });
     await appendAutoLlmMessages(runId, msgs);
   } catch (err) {
@@ -491,7 +496,7 @@ export async function runAutoLlm(
   });
 
   const persistBatch = (batch: StoredMessage[]): Promise<void> =>
-    persistMessageBatch(deps, audit, runId, batch);
+    persistMessageBatch(deps, audit, runId, input.subjectId, batch);
 
   try {
     for (let attempt = 0; attempt < AUTO_LLM_MAX_ATTEMPTS; attempt++) {

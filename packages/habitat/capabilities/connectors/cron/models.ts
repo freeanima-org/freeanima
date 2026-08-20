@@ -30,8 +30,11 @@ export class CronJob {
   notify_on_success: boolean;
   allowed_tools: string[];
   denied_tools: string[];
+  subject_id: number;
 
-  constructor(init: Partial<CronJobData> & Pick<CronJobData, "id" | "name" | "schedule">) {
+  constructor(
+    init: Partial<CronJobData> & Pick<CronJobData, "id" | "name" | "schedule" | "subject_id">,
+  ) {
     this.id = init.id;
     this.name = init.name;
     this.schedule = init.schedule;
@@ -55,6 +58,7 @@ export class CronJob {
     this.notify_on_success = init.notify_on_success ?? false;
     this.allowed_tools = init.allowed_tools ?? [];
     this.denied_tools = init.denied_tools ?? [];
+    this.subject_id = init.subject_id;
   }
 
   static fromRow(row: CronJobRow): CronJob {
@@ -82,6 +86,7 @@ export class CronJob {
       notify_on_success: row.notify_on_success,
       allowed_tools: row.allowed_tools ?? [],
       denied_tools: row.denied_tools ?? [],
+      subject_id: row.subject_id,
     });
   }
 
@@ -113,6 +118,7 @@ export class CronJob {
       notify_on_success: this.notify_on_success,
       allowed_tools: [...this.allowed_tools],
       denied_tools: [...this.denied_tools],
+      subject_id: this.subject_id,
       next_run_at: next,
       last_output: lastOutput.slice(0, 10_000),
     };

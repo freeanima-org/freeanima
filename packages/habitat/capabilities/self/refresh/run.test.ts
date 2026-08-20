@@ -100,13 +100,13 @@ function makePort(opts?: { unreadProposal?: boolean }): NotificationPort & {
   const created: NotificationRow[] = [];
   return {
     created,
-    getAgentRecipient: () => ({ kind: "agent", id: "110" }),
-    getUserRecipient: () => ({ kind: "user", id: "109" }),
+    getAgentRecipient: () => ({ kind: "agent", id: 110 }),
+    getUserRecipient: () => ({ kind: "user", id: 109 }),
     async create(input) {
       const row = {
         id: `n-${created.length + 1}`,
         recipient_kind: input.recipient_kind,
-        recipient_id: input.recipient_id ?? "110",
+        recipient_id: input.recipient_id ?? 110,
         title: input.title,
         body: input.body,
         payload: input.payload ?? null,
@@ -124,7 +124,7 @@ function makePort(opts?: { unreadProposal?: boolean }): NotificationPort & {
         {
           id: "pending",
           recipient_kind: "agent",
-          recipient_id: "110",
+          recipient_id: 110,
           title: "自我层维护建议",
           body: "pending",
           payload: null,

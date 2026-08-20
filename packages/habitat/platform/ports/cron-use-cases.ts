@@ -3,6 +3,10 @@ export type CronEngineJobInput = {
   name?: string;
   model_name?: string | null;
   skills: string[];
+  allowed_tools?: string[];
+  denied_tools?: string[];
+  /** 行动主体；缺省由 runner 用 boot agent */
+  subject_id?: number;
 };
 
 export type RunCronEngineTurnFn = (job: CronEngineJobInput, prompt: string) => Promise<string>;

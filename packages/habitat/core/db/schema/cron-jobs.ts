@@ -1,7 +1,8 @@
-import { boolean, index, integer, pgTable, text } from "drizzle-orm/pg-core";
+import { bigint, boolean, index, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 import { pgTimestamptz } from "./columns/pg-timestamptz.ts";
+import { entities } from "./entity/entity.ts";
 
 export const cronJobs = pgTable(
   "cron_jobs",
@@ -23,6 +24,10 @@ export const cronJobs = pgTable(
     allowed_tools: text("allowed_tools").array().notNull().default([]),
     /** 调用方工具黑名单（可选）；deny 胜出 */
     denied_tools: text("denied_tools").array().notNull().default([]),
+    /** 定时任务所属行动主体（entities.id）；默认 boot agent */
+    subject_id: bigint("subject_id", { mode: "number" })
+      .notNull()
+      .references(() => entities.id),
     repeat: integer("repeat"),
     run_count: integer("run_count").notNull().default(0),
     paused: boolean("paused").notNull().default(false),
@@ -37,5 +42,8 @@ export const cronJobs = pgTable(
     /** 成功时是否将输出写入通知收件箱；失败始终通知 */
     notify_on_success: boolean("notify_on_success").notNull().default(false),
   },
-  (t) => [index("idx_cron_jobs_paused").on(t.paused)],
+  (t) => [
+    index("idx_cron_jobs_paused").on(t.paused),
+    index("idx_cron_jobs_subject_id").on(t.subject_id),
+  ],
 );

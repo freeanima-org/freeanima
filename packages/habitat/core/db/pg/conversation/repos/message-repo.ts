@@ -57,6 +57,7 @@ export async function appendMessage(
         conversation_id,
         role: row.payload.role ?? "",
         content,
+        subject_id: row.subject_id,
       });
       const created_at =
         typeof row.payload.timestamp === "string" ? row.payload.timestamp : undefined;
@@ -187,6 +188,7 @@ export async function appendMessageReturningId(
         conversation_id,
         role: insertedRow.payload.role ?? "",
         content,
+        subject_id: insertedRow.subject_id,
       });
     }
     return { messageId: insertedRow.id };
@@ -213,7 +215,7 @@ export async function updateMessageContent(
 ): Promise<void> {
   const db = getDb();
   const rows = await db
-    .select({ id: messages.id, payload: messages.payload })
+    .select({ id: messages.id, payload: messages.payload, subject_id: messages.subject_id })
     .from(messages)
     .where(and(eq(messages.conversation_id, conversation_id), eq(messages.id, message_id)))
     .limit(1);
@@ -234,6 +236,7 @@ export async function updateMessageContent(
     conversation_id,
     role: payload.role ?? "",
     content: content.trim(),
+    subject_id: contentRow.subject_id,
     scheduleEmbedding: false,
   });
 }

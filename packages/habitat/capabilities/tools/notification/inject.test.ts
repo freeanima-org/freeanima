@@ -18,7 +18,7 @@ function sampleRows(): NotificationRow[] {
     {
       id: "n-1",
       recipient_kind: "agent",
-      recipient_id: "1",
+      recipient_id: 1,
       title: "任务到期",
       body: "整理收件箱",
       payload: null,

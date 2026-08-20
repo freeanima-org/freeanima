@@ -44,8 +44,8 @@ function mockNotificationPort(opts?: {
 }): EnvHealthNotificationPort & { created: EnvHealthNotificationCreateInput[] } {
   const existing = opts?.existingRefs ?? new Set<string>();
   const created: EnvHealthNotificationCreateInput[] = [];
-  const user = { kind: "user" as const, id: "1" };
-  const agent = { kind: "agent" as const, id: "2" };
+  const user = { kind: "user" as const, id: 1 };
+  const agent = { kind: "agent" as const, id: 2 };
   return {
     created,
     getUserRecipient: () => user,

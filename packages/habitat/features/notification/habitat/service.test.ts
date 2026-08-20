@@ -4,8 +4,10 @@ import type {
   NotificationListOpts,
 } from "@freeanima/habitat/core/db/pg/notifications/types";
 import type { NotificationRow } from "@freeanima/habitat/core/db/schema/rows";
-import { DEFAULT_NOTIFICATION_RECIPIENT_ID } from "@freeanima/habitat/core/db/pg/notifications/types";
 import type { RuntimeDeps } from "./runtime-deps.ts";
+
+const USER_ID = 1;
+const AGENT_ID = 2;
 
 const rows = new Map<string, NotificationRow>();
 
@@ -14,7 +16,7 @@ const createPgNotificationMock = mock(
     const row: NotificationRow = {
       id: `n-${rows.size + 1}`,
       recipient_kind: input.recipient_kind,
-      recipient_id: input.recipient_id?.trim() || DEFAULT_NOTIFICATION_RECIPIENT_ID,
+      recipient_id: input.recipient_id,
       title: input.title,
       body: input.body,
       payload: input.payload ?? null,
@@ -30,9 +32,8 @@ const createPgNotificationMock = mock(
 
 const listPgNotificationsMock = mock(
   async (opts: NotificationListOpts): Promise<NotificationRow[]> => {
-    const recipientId = opts.recipient_id?.trim() || DEFAULT_NOTIFICATION_RECIPIENT_ID;
     let items = [...rows.values()].filter(
-      (row) => row.recipient_kind === opts.recipient_kind && row.recipient_id === recipientId,
+      (row) => row.recipient_kind === opts.recipient_kind && row.recipient_id === opts.recipient_id,
     );
     if (opts.read_filter === "unread") {
       items = items.filter((row) => row.read_at == null);
@@ -45,9 +46,8 @@ const listPgNotificationsMock = mock(
 
 const countNotificationsMock = mock(
   async (opts: Omit<NotificationListOpts, "offset" | "limit">): Promise<number> => {
-    const recipientId = opts.recipient_id?.trim() || DEFAULT_NOTIFICATION_RECIPIENT_ID;
     let items = [...rows.values()].filter(
-      (row) => row.recipient_kind === opts.recipient_kind && row.recipient_id === recipientId,
+      (row) => row.recipient_kind === opts.recipient_kind && row.recipient_id === opts.recipient_id,
     );
     if (opts.read_filter === "unread") {
       items = items.filter((row) => row.read_at == null);
@@ -95,21 +95,27 @@ describe("service-notifications", () => {
     const deps = testDeps();
     await createNotification(deps, {
       recipient_kind: "user",
+      recipient_id: USER_ID,
       title: "A",
       body: "one",
     });
     await createNotification(deps, {
       recipient_kind: "agent",
+      recipient_id: AGENT_ID,
       title: "B",
       body: "two",
     });
 
-    const userAll = await listNotifications(deps, { recipient_kind: "user" });
+    const userAll = await listNotifications(deps, {
+      recipient_kind: "user",
+      recipient_id: USER_ID,
+    });
     expect(userAll.total).toBe(1);
     expect(userAll.items[0]?.title).toBe("A");
 
     const agentUnread = await listNotifications(deps, {
       recipient_kind: "agent",
+      recipient_id: AGENT_ID,
       read_filter: "unread",
     });
     expect(agentUnread.total).toBe(1);
@@ -119,6 +125,7 @@ describe("service-notifications", () => {
     const deps = testDeps();
     const created = await createNotification(deps, {
       recipient_kind: "user",
+      recipient_id: USER_ID,
       title: "Read me",
       body: "body",
     });
@@ -128,6 +135,7 @@ describe("service-notifications", () => {
 
     const unread = await listNotifications(deps, {
       recipient_kind: "user",
+      recipient_id: USER_ID,
       read_filter: "unread",
     });
     expect(unread.total).toBe(0);
@@ -135,10 +143,26 @@ describe("service-notifications", () => {
 
   it("createNotification can fan out to user and agent", async () => {
     const deps = testDeps();
-    await createNotification(deps, { recipient_kind: "user", title: "Fanout", body: "both" });
-    await createNotification(deps, { recipient_kind: "agent", title: "Fanout", body: "both" });
-    const userRows = await listNotifications(deps, { recipient_kind: "user" });
-    const agentRows = await listNotifications(deps, { recipient_kind: "agent" });
+    await createNotification(deps, {
+      recipient_kind: "user",
+      recipient_id: USER_ID,
+      title: "Fanout",
+      body: "both",
+    });
+    await createNotification(deps, {
+      recipient_kind: "agent",
+      recipient_id: AGENT_ID,
+      title: "Fanout",
+      body: "both",
+    });
+    const userRows = await listNotifications(deps, {
+      recipient_kind: "user",
+      recipient_id: USER_ID,
+    });
+    const agentRows = await listNotifications(deps, {
+      recipient_kind: "agent",
+      recipient_id: AGENT_ID,
+    });
     expect(userRows.items).toHaveLength(1);
     expect(agentRows.items).toHaveLength(1);
     expect(userRows.items[0]?.title).toBe("Fanout");

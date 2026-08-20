@@ -22,6 +22,7 @@ describe("schemas/cron", () => {
       id: "j1",
       name: "test",
       schedule: "0 * * * *",
+      subject_id: 1,
     });
     expect(result.success).toBe(true);
     if (!result.success) return;

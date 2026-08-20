@@ -14,6 +14,7 @@ describe("pg-shapes generated rows", () => {
     const parsed = messageSelectSchema.parse({
       id: "m1",
       conversation_id: "c1",
+      subject_id: 2,
       pos: 1,
       payload: { role: "user", content: "hi" },
     });
@@ -25,6 +26,7 @@ describe("pg-shapes generated rows", () => {
       messageInsertSchema.safeParse({
         id: "m1",
         conversation_id: "c1",
+        subject_id: 2,
         pos: 0,
         payload: { role: "user", content: "x" },
       }).success,
@@ -39,6 +41,7 @@ describe("pg-shapes generated rows", () => {
       cwd: null,
       system_prompt: null,
       platform_info: null,
+      agent_subject_id: 1,
       compression: null,
       temporal_day: null,
       todos: { items: [], next_id: 1 },
@@ -63,6 +66,7 @@ describe("pg-shapes generated rows", () => {
     const r = conversationInsertSchema.safeParse({
       id: "c1",
       model: "m",
+      agent_subject_id: 1,
       todos: { items: [], next_id: 1 },
       cached_toolsets: [],
       staged_toolsets: [],

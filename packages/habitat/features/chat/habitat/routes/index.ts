@@ -50,7 +50,7 @@ function ctxOf(ctx: unknown): RemoteToolsRequestContext {
   return ctx as RemoteToolsRequestContext;
 }
 
-function resolveUserSubjectId(deps: ChatHubDeps): string {
+function resolveUserSubjectId(deps: ChatHubDeps): number {
   return resolveNotificationRecipients(deps.runtime.runtimeDeps().engine.config.data).user.id;
 }
 

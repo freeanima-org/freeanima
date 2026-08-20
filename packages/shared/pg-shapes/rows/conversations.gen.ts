@@ -25,6 +25,7 @@ export const conversationSelectSchema = z.object({
   platform_info: platformInfoSchema.nullable(),
   /** 情景行为档（与 platform_info 通道身份正交）。digital_human | coding_agent；NULL = digital_human（兼容旧行）。 */
   scenario: conversationScenarioSchema.nullable().optional(),
+  agent_subject_id: z.number(),
   compression: compressionJsonSchema.nullable(),
   /** 当天对话级时间摘要 chunks（操作态，不可引用） */
   temporal_day: temporalDayJsonSchema.nullable(),
@@ -53,6 +54,7 @@ export const conversationInsertSchema = z.object({
   platform_info: platformInfoSchema.nullable(),
   /** 情景行为档（与 platform_info 通道身份正交）。digital_human | coding_agent；NULL = digital_human（兼容旧行）。 */
   scenario: conversationScenarioSchema.nullable().optional(),
+  agent_subject_id: z.number(),
   compression: compressionJsonSchema.nullable(),
   /** 当天对话级时间摘要 chunks（操作态，不可引用） */
   temporal_day: temporalDayJsonSchema.nullable(),

@@ -125,12 +125,14 @@ describePg("cron", () => {
       id: "t-quiet",
       name: "quiet-job",
       schedule: "1h",
+      subject_id: getResolvedWorldContext().agent_subject_id,
       notify_on_success: false,
     });
     const loud = new CronJob({
       id: "t-loud",
       name: "loud-job",
       schedule: "1h",
+      subject_id: getResolvedWorldContext().agent_subject_id,
       notify_on_success: true,
     });
 
@@ -146,7 +148,7 @@ describePg("cron", () => {
       error: "err",
     });
 
-    const userSubjectId = String(getResolvedWorldContext().user_subject_id);
+    const userSubjectId = getResolvedWorldContext().user_subject_id;
     const userRows = await listNotifications({
       recipient_kind: "user",
       recipient_id: userSubjectId,

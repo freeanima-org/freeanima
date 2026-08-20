@@ -25,11 +25,16 @@ export type {
 } from "@freeanima/shared/pg-shapes/jsonb/message-payload.ts";
 
 const posField = { pos: z.number().optional() };
+/** 列级发言主体（entities.id）；不进 payload jsonb */
+const subjectField = { subject_id: z.number().int().positive().optional() };
 
-export const userMessageSchema = userPayloadSchema.extend(posField);
-export const systemMessageSchema = systemPayloadSchema.extend(posField);
-export const assistantMessageSchema = assistantPayloadSchema.extend(posField);
-export const toolMessageSchema = toolPayloadSchema.extend(posField);
+export const userMessageSchema = userPayloadSchema.extend({ ...posField, ...subjectField });
+export const systemMessageSchema = systemPayloadSchema.extend({ ...posField, ...subjectField });
+export const assistantMessageSchema = assistantPayloadSchema.extend({
+  ...posField,
+  ...subjectField,
+});
+export const toolMessageSchema = toolPayloadSchema.extend({ ...posField, ...subjectField });
 
 /** Conversation messages (user/system/assistant/tool) — excludes conversation meta */
 export const conversationMessageSchema = z.discriminatedUnion("role", [

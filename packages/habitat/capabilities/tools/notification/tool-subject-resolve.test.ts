@@ -36,8 +36,8 @@ describe("notification tool subject resolve", () => {
       target: "both",
     });
     expect(targets).toEqual([
-      { recipient_kind: "user", recipient_id: "10" },
-      { recipient_kind: "agent", recipient_id: "20" },
+      { recipient_kind: "user", recipient_id: 10 },
+      { recipient_kind: "agent", recipient_id: 20 },
     ]);
   });
 
