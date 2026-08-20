@@ -35,6 +35,13 @@ export const taskItemSearchFiltersSchema = z
     has_due_at: z.boolean().optional(),
     due_on: taskRelativeDaySchema.optional(),
     due_on_or_before_days: z.number().int().nonnegative().optional(),
+    /** 有计划开始（start_at） */
+    has_start_at: z.boolean().optional(),
+    /**
+     * 计划结束时刻上界（不含）：COALESCE(end_at, start_at) < plan_before。
+     * 议程「计划逾期」常用今天 00:00。
+     */
+    plan_before: z.string().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     completed_on_or_after_days: z.number().int().nonnegative().optional(),
     completed_after: z.string().optional(),

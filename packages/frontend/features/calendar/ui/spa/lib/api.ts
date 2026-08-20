@@ -56,7 +56,7 @@ function taskRowToRangeItem(row: TaskItemRowPayload): CalendarRangeItem {
   };
 }
 
-/** 议程用：按截止日拉取 pending 根任务（含仅有 due_at、无计划） */
+/** 议程用：按截止日拉取 pending 根任务（含项目内、仅有 due_at） */
 export async function fetchDueTasksForAgenda(
   subjectKind: SubjectKind,
   filters: TaskItemSearchFiltersPayload,
@@ -64,7 +64,7 @@ export async function fetchDueTasksForAgenda(
   try {
     const data = await habitat().call("tasklist.item.list", {
       subject_kind: subjectKind,
-      filters,
+      filters: { ...filters, in_backlog: false },
       roots_only: true,
       limit: 500,
     });
