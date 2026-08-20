@@ -251,7 +251,9 @@ export function EmailApp() {
         if (row.direction === "inbound" && row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
-            // 未读 tab：不立刻从列表剔除，等切 tab / 手动刷新 / 同步再 loadMessages
+            // 未读 tab：不立刻从列表剔除（等切 tab / 手动刷新 / 同步再 loadMessages），
+            // 但本地清掉未读圆点与加粗，避免仍显示「未读」。
+            setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
             setDetail((prev) => (prev?.id === row.id ? { ...prev, unread: false } : prev));
           } catch (markErr) {
             console.warn("markEmailMessageRead failed:", markErr);
