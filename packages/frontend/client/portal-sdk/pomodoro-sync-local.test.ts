@@ -67,6 +67,30 @@ describe("mergeRemoteActive", () => {
     });
     expect(merged.active?.sessionLocalId).toBe("local-session");
   });
+
+  test("preferRemote always adopts remote even if local meta is newer", () => {
+    const merged = mergeRemoteActive(
+      remoteBody,
+      localState,
+      { device_id: "device-local", updated_at_ms: 9_000 },
+      { preferRemote: true },
+    );
+    expect(merged.active?.sessionLocalId).toBe("remote-session");
+  });
+
+  test("preferRemote clears when remote is null", () => {
+    const merged = mergeRemoteActive(
+      null,
+      localState,
+      {
+        device_id: "device-local",
+        updated_at_ms: 9_000,
+      },
+      { preferRemote: true },
+    );
+    expect(merged.active).toBeNull();
+    expect(merged.meta).toBeNull();
+  });
 });
 
 describe("pomodoro sync meta persistence", () => {

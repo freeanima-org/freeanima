@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 import { clearStaleNsisSetups, matchNsisSetupForProduct } from "./build-tauri-desktop-windows.ts";
 import { emitPackArtifact } from "./emit-pack-artifact.ts";
+import { resolveTauriRustBuildEnv } from "./tauri-rust-build-env.ts";
 
 const LOG = "[pack tauri]";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -83,10 +84,13 @@ const prep = spawnSync("bun", ["scripts/prepare-tauri-ui.ts"], {
 if (prep.status !== 0) process.exit(prep.status ?? 1);
 
 const identity = applyTauriShellIdentity({ target: "desktop" });
-const buildEnv = {
-  ...process.env,
-  FREEANIMA_BUILD_CHANNEL: identity.channel,
-};
+const buildEnv = resolveTauriRustBuildEnv(
+  {
+    ...process.env,
+    FREEANIMA_BUILD_CHANNEL: identity.channel,
+  },
+  { logPrefix: LOG },
+);
 
 // 只打 CI/发布实际收集的格式，避免 targets=all 白打 deb/rpm
 const bundles = process.platform === "linux" ? ["--bundles", "appimage"] : [];

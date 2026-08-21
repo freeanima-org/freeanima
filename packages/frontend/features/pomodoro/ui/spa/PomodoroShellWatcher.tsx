@@ -24,6 +24,7 @@ import {
   pullPomodoroActive,
   runPhaseComplete,
 } from "./lib/pomodoro-sync.ts";
+import { bindPomodoroShellActiveSync } from "./lib/pomodoro-shell-sync.ts";
 import { remainingMs } from "./lib/timer-engine.ts";
 
 const POLL_MS = 1_000;
@@ -56,6 +57,10 @@ export function PomodoroShellWatcher() {
       window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
       window.removeEventListener("storage", onStorage);
     };
+  }, [subjectKind]);
+
+  useEffect(() => {
+    return bindPomodoroShellActiveSync(subjectKind);
   }, [subjectKind]);
 
   useEffect(() => {
@@ -134,36 +139,6 @@ export function PomodoroShellWatcher() {
       })();
     }, POLL_MS);
     return () => clearInterval(id);
-  }, [subjectKind]);
-
-  /** 桌面：有进行中会话则显示番茄迷你窗；结束后 hide */
-  useEffect(() => {
-    const shell = window.portalShell;
-    if (!shell?.setPomodoroFloatVisible) return () => {};
-    let lastVisible: boolean | null = null;
-    const syncFloat = () => {
-      const active =
-        getPomodoroSyncSnapshot(subjectKind).active ??
-        readPomodoroActiveState(undefined, subjectKind);
-      const visible =
-        active != null && (active.runState === "running" || active.runState === "paused");
-      if (lastVisible === visible) return;
-      lastVisible = visible;
-      void shell.setPomodoroFloatVisible?.(visible).catch(() => undefined);
-    };
-    const unsub = subscribePomodoroSync(syncFloat);
-    const onCustom = (event: Event) => {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
-      const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
-      if (detail?.subjectKind === subjectKind) syncFloat();
-    };
-    window.addEventListener("freeanima:pomodoro-active-changed", onCustom);
-    syncFloat();
-    return () => {
-      unsub();
-      window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
-      void shell.setPomodoroFloatVisible?.(false).catch(() => undefined);
-    };
   }, [subjectKind]);
 
   return null;

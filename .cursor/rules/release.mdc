@@ -106,12 +106,14 @@ Canary `nextVersion`：有 open Release PR（`autorelease: pending`）则取其 
 
 **Tauri 打包加速约定**（优先级：构建速度 > 体积 > 运行速度）：
 
-- portal `[profile.release]`：`lto = false`、`codegen-units = 16`、`opt-level = 2`、`strip = true`（canary/release 共用）
+- portal `[profile.release]`：`lto = false`、`codegen-units = 32`、`opt-level = 1`、`strip = true`（canary/release 共用）
 - Linux 只打 AppImage、Windows 只打 NSIS（脚本 `--bundles`）
 - **Android 默认只编 `aarch64`**（`FREEANIMA_ANDROID_TARGETS`，见 `scripts/android-pack-targets.ts`）；`all` 恢复四 ABI（模拟器/旧机）
 - Android SDK 缓存含 **NDK 27.0.12077973**；Gradle 显式缓存 `~/.gradle`（勿依赖 `gen/android` 路径，其 gitignore）
 - 三端 job 均挂 `Swatinem/rust-cache`，**`key` 按平台区分**（`tauri-linux` / `tauri-windows-xwin` / `tauri-android`），避免并行覆盖
 - Windows 交叉另缓存 `cargo-xwin` 与 `~/.xwin`
+- **UI 准备**（`scripts/prepare-tauri-ui.ts`）：web + companion/coding/pomodoro-float **并行**；`FREEANIMA_SKIP_UI=1` 跳过；local channel 默认增量指纹跳过（`FREEANIMA_UI_INCREMENTAL=0` 关闭）
+- **Rust 加速 env**（`scripts/tauri-rust-build-env.ts`，打包脚本自动注入）：本机有 `sccache` → `RUSTC_WRAPPER`；Linux 有 `mold`（否则 `lld`）→ `RUSTFLAGS=-C link-arg=-fuse-ld=…`；`CARGO_BUILD_JOBS` 默认 `min(CPU,8)`（交叉 Windows 默认 4，OOM 可降为 2）
 
 **本机构建默认 `channel=local`**（未设 `FREEANIMA_BUILD_CHANNEL` 时；遗留值 `dev` 读入归一为 `local`）。CI 必须显式设置 `release` / `canary`。构建版本可用 `FREEANIMA_BUILD_VERSION` 覆盖（不改根 `package.json`）；未覆盖且为 `local` 时自动 stamp。Android APK 的 `versionName` / `versionCode` 由 `apply-tauri-shell-identity` 写入 Tauri `--config` 合并层（与 `native-build-meta` 同源），避免 canary 仍显示基线 release 号。
 

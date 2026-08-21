@@ -112,10 +112,24 @@ export function applyLocalPomodoroActive(
   next: PomodoroActiveState | null,
   subjectKind: "user" | "agent",
   meta?: PomodoroSyncMeta | null,
+  opts?: { broadcastShell?: boolean },
 ): void {
   writePomodoroActiveState(next, undefined, subjectKind);
   setPomodoroSyncMeta(subjectKind, meta ?? null);
   notify(subjectKind);
+  if (opts?.broadcastShell === false) return;
+  try {
+    const shell = typeof window !== "undefined" ? window.portalShell : undefined;
+    void shell
+      ?.emitPomodoroActiveSync?.({
+        subject_kind: subjectKind,
+        active: next,
+        meta: meta ?? null,
+      })
+      .catch(() => undefined);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function buildHubActivePayload(
@@ -129,7 +143,15 @@ export function mergeRemoteActive(
   remote: PomodoroActiveBody | null,
   local: PomodoroActiveState | null,
   localMeta: PomodoroSyncMeta | null,
+  opts?: { preferRemote?: boolean },
 ): { active: PomodoroActiveState | null; meta: PomodoroSyncMeta | null } {
+  if (opts?.preferRemote) {
+    if (!remote) return { active: null, meta: null };
+    return {
+      active: habitatBodyToActiveState(remote),
+      meta: { device_id: remote.device_id, updated_at_ms: remote.updated_at_ms },
+    };
+  }
   if (!remote) {
     return { active: local, meta: localMeta };
   }

@@ -23,6 +23,7 @@ import {
   notifyShellConfigChanged,
 } from "../lib/apply-habitat-to-shell.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { isRecord } from "@freeanima/shared/util";
 import {
   codingPickDirectoryBridge,
   codingRunCommandBridge,
@@ -151,8 +152,38 @@ export async function bootstrapTauriBridge(): Promise<void> {
     getPomodoroFloatVisible: () => invoke<boolean>("get_pomodoro_float_visible"),
     setPomodoroFloatVisible: async (visible) => {
       await invoke("set_pomodoro_float_visible", { visible });
+      notifyShellConfigChanged();
     },
     openPomodoro: () => invoke("open_pomodoro"),
+    emitPomodoroActiveSync: async (payload) => {
+      await emit("pomodoro:active-sync", payload);
+    },
+    listenPomodoroActiveSync: (handler) => {
+      let unlisten: (() => void) | undefined;
+      void listen<unknown>("pomodoro:active-sync", (ev) => {
+        const raw = ev.payload;
+        if (!isRecord(raw)) return;
+        const kind = raw.subject_kind;
+        if (kind !== "user" && kind !== "agent") return;
+        let meta: { device_id: string; updated_at_ms: number } | null = null;
+        const metaRec = raw.meta;
+        if (
+          isRecord(metaRec) &&
+          typeof metaRec.device_id === "string" &&
+          typeof metaRec.updated_at_ms === "number"
+        ) {
+          meta = { device_id: metaRec.device_id, updated_at_ms: metaRec.updated_at_ms };
+        }
+        handler({
+          subject_kind: kind,
+          active: raw.active ?? null,
+          meta,
+        });
+      }).then((u) => {
+        unlisten = u;
+      });
+      return () => unlisten?.();
+    },
     enqueueCompanionBubble: async (text) => {
       await emit("companion:enqueue-bubble", { text });
     },

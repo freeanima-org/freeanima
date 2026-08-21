@@ -34,9 +34,9 @@ tokio = { version = "1", features = ["net", "rt", "process", "time", "io-util"] 
 # 打包优先级：构建速度 > 体积 > 运行速度（CI canary/release 共用）
 [profile.release]
 panic = "abort"
-codegen-units = 16
+codegen-units = 32
 lto = false
-opt-level = 2
+opt-level = 1
 strip = true
 
 # Coding 选目录 / 光标追踪仅桌面；rfd 无 Android 后端，勿进 mobile 依赖图
