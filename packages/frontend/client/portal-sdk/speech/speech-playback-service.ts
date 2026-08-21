@@ -1,4 +1,6 @@
 /// <reference lib="dom" />
+import { isRecord } from "@freeanima/shared/util";
+
 import type { SpeechPlaybackAdapter, SpeechUnsupportedReason } from "./adapter-types.ts";
 import { createSpeechAdapter } from "./create-adapter.ts";
 import { createSpeechPlaybackController, type SpeechPlaybackController } from "./controller.ts";
@@ -69,8 +71,14 @@ function unsupportedReasonFor(config: SpeechPlaybackConfig): SpeechUnsupportedRe
   return getWebSpeechUnsupportedReason(true);
 }
 
-function serviceRoot(): typeof globalThis & Record<string, ServiceState | undefined> {
-  return globalThis as typeof globalThis & Record<string, ServiceState | undefined>;
+function isServiceState(value: unknown): value is ServiceState {
+  return (
+    isRecord(value) &&
+    isRecord(value.config) &&
+    value.listeners instanceof Set &&
+    value.controller != null &&
+    typeof value.controller === "object"
+  );
 }
 
 function notify(state: ServiceState): void {
@@ -100,26 +108,30 @@ function rebuildController(state: ServiceState): void {
 function createInitialState(): ServiceState {
   const config = DEFAULT_SPEECH_PLAYBACK_CONFIG;
   const listeners = new Set<Listener>();
-  const state = {
+  let stateRef: ServiceState | undefined;
+  const adapter = wrapAdapterWithErrorHandler(createSpeechAdapter(config), () => {
+    if (stateRef) showPlaybackError(stateRef);
+  });
+  const controller = createSpeechPlaybackController(adapter, () => {
+    if (stateRef) notify(stateRef);
+  });
+  stateRef = {
     config,
     listeners,
-    playbackError: null as string | null,
-    playbackErrorTimer: null as ReturnType<typeof setTimeout> | null,
-    configLoading: null as Promise<void> | null,
-  } as ServiceState;
-  const adapter = wrapAdapterWithErrorHandler(createSpeechAdapter(config), () =>
-    showPlaybackError(state),
-  );
-  state.controller = createSpeechPlaybackController(adapter, () => notify(state));
-  return state;
+    playbackError: null,
+    playbackErrorTimer: null,
+    configLoading: null,
+    controller,
+  };
+  return stateRef;
 }
 
 function getState(): ServiceState {
-  const root = serviceRoot();
-  if (!root[SERVICE_STATE_KEY]) {
-    root[SERVICE_STATE_KEY] = createInitialState();
-  }
-  return root[SERVICE_STATE_KEY];
+  const existing: unknown = Reflect.get(globalThis, SERVICE_STATE_KEY);
+  if (isServiceState(existing)) return existing;
+  const next = createInitialState();
+  Reflect.set(globalThis, SERVICE_STATE_KEY, next);
+  return next;
 }
 
 export function subscribeSpeechPlayback(listener: Listener): () => void {
@@ -213,10 +225,11 @@ export function pauseSpeechPlaybackAudio(): void {
 }
 
 export function resetSpeechPlaybackServiceForTests(): void {
-  const root = serviceRoot();
-  const existing = root[SERVICE_STATE_KEY];
-  if (existing?.playbackErrorTimer != null) clearTimeout(existing.playbackErrorTimer);
-  existing?.controller.stop();
+  const existing: unknown = Reflect.get(globalThis, SERVICE_STATE_KEY);
+  if (isServiceState(existing)) {
+    if (existing.playbackErrorTimer != null) clearTimeout(existing.playbackErrorTimer);
+    existing.controller.stop();
+  }
   clearSpeechMediaSession();
-  delete root[SERVICE_STATE_KEY];
+  Reflect.deleteProperty(globalThis, SERVICE_STATE_KEY);
 }

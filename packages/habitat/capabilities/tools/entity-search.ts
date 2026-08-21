@@ -21,8 +21,9 @@ import {
   validateFtsQueryInput,
 } from "@freeanima/habitat/core/util";
 import type { EntitySearchMode } from "@freeanima/habitat/core/db/pg/entity/types";
-import type { EntityType } from "@freeanima/habitat/core/db/schema";
+import { entityTypeSchema, type EntityType } from "@freeanima/habitat/core/db/schema";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 const FTS_SYNTAX =
   "PG search syntax (to_tsquery simple):\n" +
@@ -38,11 +39,7 @@ function asFloat(value: unknown, defaultVal: number): number {
 }
 
 function parseFilters(raw: unknown): Record<string, unknown> | undefined {
-  if (raw == null) return undefined;
-  if (typeof raw === "object" && !Array.isArray(raw)) {
-    return raw as Record<string, unknown>;
-  }
-  return undefined;
+  return asRecord(raw) ?? undefined;
 }
 
 function parseExplicitWorldId(raw: unknown): number | undefined {
@@ -170,6 +167,7 @@ export function buildEntitySearchToolDefs() {
           const limit = Math.max(1, Math.min(50, asFloat(args.limit, 10)));
           const offset = Math.max(0, asFloat(args.offset, 0));
           const mode: EntitySearchMode = args.mode === "filter_only" ? "filter_only" : "hybrid";
+          const typeParsed = entityTypeSchema.safeParse(args.type);
 
           try {
             if (query) validateFtsQueryInput(query);
@@ -196,7 +194,7 @@ export function buildEntitySearchToolDefs() {
                 world_id: global ? undefined : world_id,
                 global,
                 accessible_world_ids,
-                type: args.type as EntityType | undefined,
+                type: typeParsed.success ? typeParsed.data : undefined,
                 primary_component:
                   args.primary_component != null ? coerceString(args.primary_component) : undefined,
                 component: args.component != null ? coerceString(args.component) : undefined,

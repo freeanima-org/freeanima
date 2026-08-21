@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { omitUndefined } from "@freeanima/shared/util/omit-undefined.ts";
+import { asRecord } from "@freeanima/shared/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 import { messageAttachmentMetaSchema } from "@freeanima/shared/pg-shapes/jsonb/message-payload.ts";
@@ -308,6 +309,99 @@ const STREAM_METHOD_MAP: Record<StreamApiLikeEvent["event"], StreamEventMethod> 
   llm_debug: "stream.llm_debug",
 };
 
+type AwaitClarifyItem = Extract<
+  StreamApiLikeEvent,
+  { event: "awaiting_clarify" }
+>["data"]["items"][number];
+
+function asArgsRecord(value: unknown): Record<string, unknown> {
+  return asRecord(value) ?? {};
+}
+
+function asDoneReason(value: unknown): "awaiting_clarify" | "interrupted" | undefined {
+  return value === "awaiting_clarify" || value === "interrupted" ? value : undefined;
+}
+
+function asAwaitClarifyItems(value: unknown): AwaitClarifyItem[] {
+  if (!Array.isArray(value)) return [];
+  const items: AwaitClarifyItem[] = [];
+  for (const entry of value) {
+    const rec = asRecord(entry);
+    if (!rec || typeof rec.question !== "string") continue;
+    const item: AwaitClarifyItem = { question: rec.question };
+    if (Array.isArray(rec.choices)) {
+      item.choices = rec.choices.filter((c): c is string => typeof c === "string");
+    }
+    if (typeof rec.default === "string") item.default = rec.default;
+    items.push(item);
+  }
+  return items;
+}
+
+function asSapDisplayItem(value: unknown): SapDisplayItem | null {
+  const rec = asRecord(value);
+  if (!rec || typeof rec.type !== "string") return null;
+  if (rec.type === "message") {
+    if (rec.role !== "user" && rec.role !== "assistant") return null;
+    if (typeof rec.content !== "string") return null;
+    const item: Extract<SapDisplayItem, { type: "message" }> = {
+      type: "message",
+      role: rec.role,
+      content: rec.content,
+    };
+    if (Array.isArray(rec.attachments)) {
+      item.attachments = rec.attachments.flatMap((att) => {
+        const a = asRecord(att);
+        if (
+          !a ||
+          typeof a.filename !== "string" ||
+          typeof a.mime_type !== "string" ||
+          typeof a.size !== "number"
+        ) {
+          return [];
+        }
+        return [{ filename: a.filename, mime_type: a.mime_type, size: a.size }];
+      });
+    }
+    return item;
+  }
+  if (rec.type === "tool_block") {
+    if (!Array.isArray(rec.calls)) return null;
+    const calls: SapDisplayToolCall[] = [];
+    for (const call of rec.calls) {
+      const c = asRecord(call);
+      if (
+        !c ||
+        typeof c.name !== "string" ||
+        typeof c.argsPreview !== "string" ||
+        typeof c.tool_call_id !== "string" ||
+        typeof c.status !== "string"
+      ) {
+        continue;
+      }
+      const mapped: SapDisplayToolCall = {
+        name: c.name,
+        argsPreview: c.argsPreview,
+        tool_call_id: c.tool_call_id,
+        status: c.status,
+      };
+      const args = asRecord(c.args);
+      if (args) mapped.args = args;
+      if (typeof c.result === "string") mapped.result = c.result;
+      calls.push(mapped);
+    }
+    return { type: "tool_block", calls };
+  }
+  return null;
+}
+
+function asLlmDebugSnapshot(value: unknown): LlmDebugSnapshotPayload | null {
+  const parsed = llmDebugSnapshotSchema.safeParse(value);
+  if (!parsed.success) return null;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- zod parse → 手写 snapshot 形状
+  return parsed.data as LlmDebugSnapshotPayload;
+}
+
 export function mapStreamApiEventToSap(
   streamId: string,
   ev: StreamApiLikeEvent,
@@ -344,7 +438,7 @@ export function mapRuntimeStreamEventToSap(
         event: "tool_begin",
         data: {
           tool: coerceString(ev.data.name ?? ev.data.tool ?? "?"),
-          args: (ev.data.args as Record<string, unknown>) ?? {},
+          args: asArgsRecord(ev.data.args),
           content: "",
         },
       });
@@ -368,10 +462,7 @@ export function mapRuntimeStreamEventToSap(
       return mapStreamApiEventToSap(streamId, {
         event: "awaiting_clarify",
         data: {
-          items:
-            (ev.data.items as StreamApiLikeEvent extends { event: "awaiting_clarify" }
-              ? StreamApiLikeEvent["data"]["items"]
-              : never) ?? [],
+          items: asAwaitClarifyItems(ev.data.items),
           timeout_sec: Number(ev.data.timeout_sec ?? 0),
         },
       });
@@ -381,7 +472,7 @@ export function mapRuntimeStreamEventToSap(
         data: { reason: coerceString(ev.data.reason ?? "") },
       });
     case "done": {
-      const reason = ev.data.reason as "awaiting_clarify" | "interrupted" | undefined;
+      const reason = asDoneReason(ev.data.reason);
       return mapStreamApiEventToSap(streamId, {
         event: "done",
         data: reason !== undefined ? { reason } : {},
@@ -397,11 +488,14 @@ export function mapRuntimeStreamEventToSap(
             typeof ev.data.current_tail_pos === "number" ? ev.data.current_tail_pos : undefined,
         }),
       });
-    case "llm_debug":
+    case "llm_debug": {
+      const snapshot = asLlmDebugSnapshot(ev.data);
+      if (!snapshot) return null;
       return mapStreamApiEventToSap(streamId, {
         event: "llm_debug",
-        data: ev.data as LlmDebugSnapshotPayload,
+        data: snapshot,
       });
+    }
     default:
       return null;
   }
@@ -419,17 +513,20 @@ export function mapSapStreamMethodToApi(
       return { event: "token", data: { content: coerceString(payload.content ?? "") } };
     case "stream.content_replace":
       return { event: "content_replace", data: { content: coerceString(payload.content ?? "") } };
-    case "stream.display_append":
+    case "stream.display_append": {
+      const item = asSapDisplayItem(payload.item);
+      if (!item) return null;
       return {
         event: "display_append",
-        data: { item: payload.item as SapDisplayItem },
+        data: { item },
       };
+    }
     case "stream.tool_begin":
       return {
         event: "tool_begin",
         data: {
           tool: coerceString(payload.tool ?? "?"),
-          args: (payload.args as Record<string, unknown>) ?? {},
+          args: asArgsRecord(payload.args),
           content: "",
         },
       };
@@ -453,17 +550,14 @@ export function mapSapStreamMethodToApi(
       return {
         event: "awaiting_clarify",
         data: {
-          items:
-            (payload.items as StreamApiLikeEvent extends { event: "awaiting_clarify" }
-              ? StreamApiLikeEvent["data"]["items"]
-              : never) ?? [],
+          items: asAwaitClarifyItems(payload.items),
           timeout_sec: Number(payload.timeout_sec ?? 0),
         },
       };
     case "stream.interrupted":
       return { event: "interrupted", data: { reason: coerceString(payload.reason ?? "") } };
     case "stream.done": {
-      const reason = payload.reason as "awaiting_clarify" | "interrupted" | undefined;
+      const reason = asDoneReason(payload.reason);
       return {
         event: "done",
         data: reason !== undefined ? { reason } : {},
@@ -479,11 +573,14 @@ export function mapSapStreamMethodToApi(
             typeof payload.current_tail_pos === "number" ? payload.current_tail_pos : undefined,
         }),
       };
-    case "stream.llm_debug":
+    case "stream.llm_debug": {
+      const snapshot = asLlmDebugSnapshot(payload);
+      if (!snapshot) return null;
       return {
         event: "llm_debug",
-        data: payload as LlmDebugSnapshotPayload,
+        data: snapshot,
       };
+    }
     case "stream.ping":
       return { event: "ping", data: {} };
     default:

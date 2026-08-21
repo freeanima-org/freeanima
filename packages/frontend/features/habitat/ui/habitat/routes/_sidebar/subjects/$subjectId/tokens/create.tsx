@@ -38,6 +38,18 @@ import {
 
 type Mode = "full" | "preset" | "custom";
 
+function isMode(value: string): value is Mode {
+  return value === "full" || value === "preset" || value === "custom";
+}
+
+function isTokenAuthorizationPreset(value: string): value is TokenAuthorizationPreset {
+  return value === "app" || value === "extension" || value === "mcp";
+}
+
+function isServiceApiTokenPortal(value: string): value is ServiceApiTokenPortal {
+  return value === "app" || value === "extension" || value === "mcp";
+}
+
 export const Route = createFileRoute("/_sidebar/subjects/$subjectId/tokens/create")({
   loader: async ({ params }) => {
     const subjectId = Number(params.subjectId);
@@ -277,7 +289,8 @@ function CreateSubjectApiTokenPage() {
                 isDisabled={creating}
                 onSelectionChange={(key) => {
                   if (key == null) return;
-                  setMode(String(key) as Mode);
+                  const next = String(key);
+                  if (isMode(next)) setMode(next);
                 }}
               >
                 <SelectTrigger>
@@ -300,7 +313,8 @@ function CreateSubjectApiTokenPage() {
                   isDisabled={creating}
                   onSelectionChange={(key) => {
                     if (key == null) return;
-                    setPreset(String(key) as TokenAuthorizationPreset);
+                    const next = String(key);
+                    if (isTokenAuthorizationPreset(next)) setPreset(next);
                   }}
                 >
                   <SelectTrigger>
@@ -323,7 +337,8 @@ function CreateSubjectApiTokenPage() {
                     isDisabled={creating}
                     onSelectionChange={(key) => {
                       if (key == null) return;
-                      setPortal(String(key) as ServiceApiTokenPortal);
+                      const next = String(key);
+                      if (isServiceApiTokenPortal(next)) setPortal(next);
                     }}
                   >
                     <SelectTrigger>

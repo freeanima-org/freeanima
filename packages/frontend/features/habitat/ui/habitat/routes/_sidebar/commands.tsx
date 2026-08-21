@@ -42,6 +42,7 @@ function CommandDescription({ cmd }: { cmd: CommandRow }) {
 }
 
 function CommandsPage() {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const data = Route.useLoaderData() as { commands?: CommandRow[] };
   const commands = data.commands ?? [];
 

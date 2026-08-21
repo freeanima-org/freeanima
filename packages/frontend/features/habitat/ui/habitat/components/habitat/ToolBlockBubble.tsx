@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@freeanima/ui-kit";
 import type { DisplayToolCall } from "@freeanima/shared/rpc-contract/frames/display.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 type ToolBlockBubbleProps = {
   calls: DisplayToolCall[];
@@ -76,7 +77,7 @@ function parseSubagentResults(result: string | undefined): SubagentRunResult[] |
   try {
     const parsed = JSON.parse(result) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-    const obj = parsed as Record<string, unknown>;
+    const obj = asRecord(parsed) ?? {};
     if (obj.action !== "run" || !Array.isArray(obj.results)) return null;
     return obj.results.filter(
       (r): r is SubagentRunResult => r != null && typeof r === "object" && !Array.isArray(r),

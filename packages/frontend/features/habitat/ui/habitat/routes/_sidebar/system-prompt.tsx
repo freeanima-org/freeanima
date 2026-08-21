@@ -201,6 +201,7 @@ function SystemPromptPage() {
     setError("");
     void getPromptDebug(selectedConversation || undefined)
       .then((result) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         if (!cancelled) setData(result as PromptDebugResponse);
       })
       .catch((e) => {
@@ -356,7 +357,10 @@ function SystemPromptPage() {
           <Tabs
             selectedKey={tab}
             onSelectionChange={(key: Key) => {
-              if (key != null) setTab(String(key) as TabId);
+              if (key != null) {
+                const v = String(key);
+                if (v === "parts" || v === "full" || v === "tools") setTab(v);
+              }
             }}
             className="mb-4"
           >

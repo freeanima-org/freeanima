@@ -175,7 +175,9 @@ export function EmailContactMailbox({
         ) : linked && email ? (
           <>
             <Link
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
               to={"/contacts" as never}
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
               search={{ id: linked.id } as never}
               className="text-foreground font-medium underline-offset-2 hover:underline"
             >

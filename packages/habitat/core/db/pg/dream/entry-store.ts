@@ -35,6 +35,7 @@ async function brickToDreamRow(b: MemoryBrickRow): Promise<DreamEntryRow> {
     source_conversation_ids: Array.isArray(b.body.source_conversation_ids)
       ? (b.body.source_conversation_ids as unknown[]).map(String)
       : [],
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body.snippets 运行时数组形
     episodic_snippets: Array.isArray(snippets) ? (snippets as DreamEpisodicSnippet[]) : [],
     ...(b.body.legacy_id !== undefined ? { legacy_id: coerceString(b.body.legacy_id) } : {}),
     created_at: b.created_at,

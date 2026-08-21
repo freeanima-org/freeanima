@@ -27,6 +27,19 @@ const STATUS_OPTIONS: Array<{ value: TaskItemSearchFilters["status"]; label: str
   { value: "all", label: "全部" },
 ];
 
+const SMART_STATUS_VALUES = ["pending", "completed", "all"] as const;
+function isSmartListStatus(v: string): v is (typeof SMART_STATUS_VALUES)[number] {
+  return (SMART_STATUS_VALUES as readonly string[]).includes(v);
+}
+const DUE_MODES = ["none", "today", "tomorrow", "next7"] as const;
+function isDueMode(v: string): v is (typeof DUE_MODES)[number] {
+  return (DUE_MODES as readonly string[]).includes(v);
+}
+const COMPLETED_MODES = ["none", "today", "yesterday", "last7"] as const;
+function isCompletedMode(v: string): v is (typeof COMPLETED_MODES)[number] {
+  return (COMPLETED_MODES as readonly string[]).includes(v);
+}
+
 function readInitialListIds(filters: TaskItemSearchFilters | undefined): number[] {
   if (filters?.list_ids?.length) return [...filters.list_ids];
   if (filters?.list_id != null) return [filters.list_id];
@@ -138,7 +151,10 @@ export function SmartListEditorDialog({
             id="smart-list-status"
             className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
             value={status ?? "pending"}
-            onChange={(e) => setStatus(e.target.value as TaskItemSearchFilters["status"])}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (isSmartListStatus(v)) setStatus(v);
+            }}
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value ?? "all"} value={opt.value ?? "all"}>
@@ -154,7 +170,10 @@ export function SmartListEditorDialog({
               id="smart-list-due"
               className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
               value={dueMode}
-              onChange={(e) => setDueMode(e.target.value as typeof dueMode)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (isDueMode(v)) setDueMode(v);
+              }}
             >
               <option value="none">不限</option>
               <option value="today">今天及已过期</option>
@@ -169,7 +188,10 @@ export function SmartListEditorDialog({
               id="smart-list-completed"
               className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
               value={completedMode}
-              onChange={(e) => setCompletedMode(e.target.value as typeof completedMode)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (isCompletedMode(v)) setCompletedMode(v);
+              }}
             >
               <option value="none">不限</option>
               <option value="today">今日完成</option>

@@ -2,6 +2,7 @@ import { mkdirSync, unlinkSync, writeFileSync, existsSync, readFileSync } from "
 import { dirname } from "node:path";
 import { PATHS } from "@freeanima/habitat/platform/config";
 import { logComponent } from "@freeanima/habitat/platform/logging";
+import { asRecord } from "@freeanima/shared/util";
 import { ANIMA_VERSION } from "../service/version.ts";
 import { SERVICE_BUILD_META } from "../service/service-build-meta.ts";
 
@@ -79,8 +80,8 @@ export function cleanStatusFile(): void {
   if (!pidMatches) {
     try {
       if (existsSync(PATHS.statusFile)) {
-        const status = JSON.parse(readFileSync(PATHS.statusFile, "utf-8")) as { pid?: unknown };
-        pidMatches = status.pid === process.pid;
+        const status = asRecord(JSON.parse(readFileSync(PATHS.statusFile, "utf-8")));
+        pidMatches = status?.pid === process.pid;
       }
     } catch {
       /* ignore */

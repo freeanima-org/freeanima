@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import {
   isRedisConfigured,
@@ -93,7 +94,7 @@ export function filterDisplayByPosList(
 
 function parseSnapshot(raw: string): ConversationShareSnapshot | null {
   try {
-    const parsed = JSON.parse(raw) as ConversationShareSnapshot;
+    const parsed = assertNarrow<ConversationShareSnapshot>(JSON.parse(raw));
     if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.display)) return null;
     return parsed;
   } catch {

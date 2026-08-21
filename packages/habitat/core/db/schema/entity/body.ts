@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 
 import { componentBodySchema, isKnownComponent, type ComponentId } from "./components/index.ts";
@@ -10,12 +11,15 @@ export function stripRemovedComponentBodyFields(
 ): Record<string, unknown> {
   const parsed = componentBodySchema(removed).safeParse(body);
   if (!parsed.success) return { ...body };
+  const removedData = asRecord(parsed.data);
+  if (!removedData) return { ...body };
   const next = { ...body };
-  for (const key of Object.keys(parsed.data as Record<string, unknown>)) {
+  for (const key of Object.keys(removedData)) {
     const stillNeeded = remaining.some((tag) => {
       if (!isKnownComponent(tag)) return false;
       const other = componentBodySchema(tag).safeParse(body);
-      return other.success && key in (other.data as Record<string, unknown>);
+      const otherData = other.success ? asRecord(other.data) : null;
+      return otherData != null && key in otherData;
     });
     if (!stillNeeded) delete next[key];
   }

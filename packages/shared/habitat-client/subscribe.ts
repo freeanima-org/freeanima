@@ -6,7 +6,12 @@ import {
 } from "@freeanima/shared/habitat-contract";
 import type { RpcClient } from "@freeanima/shared/habitat-rpc";
 
-import { createHabitatClient, type HabitatCallOptions, type HabitatClient } from "./client.ts";
+import {
+  createHabitatClient,
+  type HabitatCallOptions,
+  type HabitatClient,
+  type HabitatHttpFetch,
+} from "./client.ts";
 
 export type HabitatSubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -22,7 +27,7 @@ export type HabitatSubscribeOptions = {
 export function createHabitatSubscriber(options: {
   httpOrigin: string;
   authToken?: string;
-  fetch?: typeof fetch;
+  fetch?: HabitatHttpFetch;
   getRpcClient: () => Promise<RpcClient>;
   profile?: HabitatClientProfile;
 }) {

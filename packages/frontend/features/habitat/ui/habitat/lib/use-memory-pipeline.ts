@@ -54,6 +54,7 @@ export function useMemoryPipeline(opts?: { logScope?: string; onSettled?: () => 
 
   const refreshPipelineStatus = useCallback(async () => {
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const status = (await getMemoryMaintenanceStatus()) as MaintenanceStatus;
       setPipelineStatus(status);
       return status;

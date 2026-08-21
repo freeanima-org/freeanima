@@ -40,6 +40,10 @@ export const Route = createFileRoute("/_sidebar/subagents")({
 });
 
 const TIER_NONE = "__none__";
+const TEMPERATURE_TIERS = ["focused", "balanced", "creative"] as const;
+function isTemperatureTier(v: string): v is (typeof TEMPERATURE_TIERS)[number] {
+  return (TEMPERATURE_TIERS as readonly string[]).includes(v);
+}
 const TEMPERATURE_TIER_OPTIONS = [
   { id: "focused", label: "专注" },
   { id: "balanced", label: "平衡" },
@@ -270,8 +274,7 @@ function SubagentsPage() {
                 const v = String(key);
                 setForm((f) => ({
                   ...f,
-                  temperature_tier:
-                    v === TIER_NONE ? "" : (v as "focused" | "balanced" | "creative"),
+                  temperature_tier: v === TIER_NONE ? "" : isTemperatureTier(v) ? v : "",
                 }));
               }}
             >

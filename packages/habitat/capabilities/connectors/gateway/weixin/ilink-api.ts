@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 
 import { ilinkMessageSchema, type IlinkMessage } from "../schemas/weixin.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 export { type IlinkMessage };
 export const ILINK_BASE_URL = "https://ilinkai.weixin.qq.com";
@@ -128,7 +129,7 @@ export async function apiPost(
   } catch {
     throw new Error(`iLink POST ${endpoint}: invalid JSON`);
   }
-  return safeParseOrNull(ilinkResponseSchema, parsed) ?? (parsed as Record<string, unknown>);
+  return safeParseOrNull(ilinkResponseSchema, parsed) ?? asRecord(parsed) ?? {};
 }
 
 export function assertIlinkOk(resp: Record<string, unknown>, endpoint: string): void {

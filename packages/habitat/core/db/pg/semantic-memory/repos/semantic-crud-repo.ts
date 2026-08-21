@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, desc, eq, sql as drizzleSql } from "drizzle-orm";
 import {
   SEMANTIC_MEMORY_COMPONENT,
@@ -88,6 +89,7 @@ type SemanticSelectRow = {
 function mapDbRow(row: SemanticSelectRow): SemanticMemoryRow {
   const entityRow: EntityRow = {
     id: row.id,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PG text → EntityRow.type
     type: row.type as EntityRow["type"],
     world_id: row.world_id,
     components: [...row.components],
@@ -95,7 +97,7 @@ function mapDbRow(row: SemanticSelectRow): SemanticMemoryRow {
     title: row.title ?? "",
     summary: row.summary ?? "",
     content: row.content ?? "",
-    body: (row.body ?? {}) as Record<string, unknown>,
+    body: asRecord(row.body) ?? {},
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [],

@@ -12,6 +12,7 @@ import {
   patchHabitatRuntimeConfigSection,
   replaceHabitatRuntimeConfigSection,
 } from "@freeanima/habitat/core/db/pg";
+import { asRecord } from "@freeanima/shared/util";
 
 import { loadBootstrapConfig } from "../boot/bootstrap.ts";
 
@@ -80,11 +81,14 @@ export async function loadRuntimeConfigSection<T = unknown>(
 ): Promise<T | undefined> {
   try {
     const active = getActiveRuntimeConfig();
-    const value = (active.data as Record<string, unknown>)[section];
+    const value: unknown = asRecord(active.data)?.[section];
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 调用方指定配置段形状
     return value as T | undefined;
   } catch {
     await ensureDbFromBootstrap();
     const document = await getHabitatRuntimeConfigDocument();
-    return document[section] as T | undefined;
+    const value: unknown = document[section];
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 调用方指定配置段形状
+    return value as T | undefined;
   }
 }

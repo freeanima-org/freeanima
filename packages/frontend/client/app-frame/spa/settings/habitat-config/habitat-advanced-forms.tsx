@@ -7,6 +7,7 @@ import {
 } from "./habitat-config-field-helpers.tsx";
 import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { isRecord } from "@freeanima/shared/util";
 
 export const ADVANCED_SECTIONS = [
   "i18n",
@@ -221,7 +222,7 @@ function BrowserForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
-  const camofox = (value.camofox ?? {}) as Record<string, unknown>;
+  const camofox = isRecord(value.camofox) ? value.camofox : {};
   const setCamofox = (patch: Record<string, unknown>) =>
     onChange({ ...value, camofox: { ...camofox, ...patch } });
 
@@ -330,7 +331,7 @@ function FtsForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
-  const trgm = (value.trgm ?? {}) as Record<string, unknown>;
+  const trgm = isRecord(value.trgm) ? value.trgm : {};
   const setTrgm = (patch: Record<string, unknown>) =>
     onChange({ ...value, trgm: { ...trgm, ...patch } });
 
@@ -384,10 +385,7 @@ function AutoLlmForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
-  const subagent =
-    value.subagent && typeof value.subagent === "object" && !Array.isArray(value.subagent)
-      ? (value.subagent as Record<string, unknown>)
-      : {};
+  const subagent = isRecord(value.subagent) ? value.subagent : {};
   const patchSubagent = (patch: Record<string, unknown>) =>
     onChange({ ...value, subagent: { ...subagent, ...patch } });
   return (
@@ -606,8 +604,8 @@ export function AdvancedSectionForm({
 }
 
 function cloneSectionValue(raw: unknown): Record<string, unknown> {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  return structuredClone(raw) as Record<string, unknown>;
+  if (!isRecord(raw)) return {};
+  return structuredClone(raw);
 }
 
 export function readAdvancedSectionDraft(raw: unknown): Record<string, unknown> {

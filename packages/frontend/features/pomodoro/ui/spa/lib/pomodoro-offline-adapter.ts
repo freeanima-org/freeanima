@@ -16,6 +16,21 @@ import { POMODORO_OUTBOX_MODULE_ID } from "./pomodoro-offline-store.ts";
 
 type PomodoroSubjectKind = "user" | "agent";
 
+const POMODORO_FLUSH_METHODS = [
+  "pomodoro.config.update",
+  "pomodoro.active.put",
+  "pomodoro.active.clear",
+] as const;
+type PomodoroFlushMethod = (typeof POMODORO_FLUSH_METHODS)[number];
+
+function isPomodoroFlushMethod(v: string): v is PomodoroFlushMethod {
+  return (POMODORO_FLUSH_METHODS as readonly string[]).includes(v);
+}
+
+function isPomodoroSubjectKind(v: unknown): v is PomodoroSubjectKind {
+  return v === "user" || v === "agent";
+}
+
 const NAMESPACE = "pomodoro";
 const COMPACT_METHODS = new Set([
   "pomodoro.config.update",
@@ -56,9 +71,16 @@ async function flushPomodoroOp(
 ): Promise<import("@freeanima/client/portal-sdk/offline-module-types").FlushOpOutcome> {
   const habitatClient = getTypedHabitatClient();
   try {
-    await habitatClient.call(op.method as "pomodoro.config.update", {
+    if (!isPomodoroFlushMethod(op.method)) {
+      return { status: "failed", error: `unknown method ${op.method}` };
+    }
+    const subjectKind = op.payload.subject_kind;
+    if (!isPomodoroSubjectKind(subjectKind)) {
+      return { status: "failed", error: "invalid subject_kind" };
+    }
+    await habitatClient.call(op.method, {
       ...op.payload,
-      subject_kind: op.payload.subject_kind as "user" | "agent",
+      subject_kind: subjectKind,
     });
     return { status: "done" };
   } catch (e) {

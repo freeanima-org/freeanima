@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 import type { ThreeColumnLayoutMode } from "../layout/three-column-mode.ts";
 
 /** history.state 标记：compact 详情全屏编辑页 */
@@ -10,11 +12,7 @@ export type DetailEditChrome = {
 };
 
 export function historyStateHasDetailEdit(state: unknown): boolean {
-  return Boolean(
-    state &&
-    typeof state === "object" &&
-    (state as Record<string, unknown>)[DETAIL_EDIT_HISTORY_KEY] === true,
-  );
+  return isRecord(state) && state[DETAIL_EDIT_HISTORY_KEY] === true;
 }
 
 /** 进入 compact 全屏编辑：关 peek、开 immersive */

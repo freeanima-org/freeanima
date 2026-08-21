@@ -1,3 +1,4 @@
+import { asRecord, isRecord } from "@freeanima/shared/util";
 import { parseYaml } from "../../platform/config/yaml.ts";
 
 /** agentskills.io 兼容 frontmatter 解析（含 FreeAnima 扩展） */
@@ -50,8 +51,8 @@ export function parseFrontmatter(text: string): SkillFrontmatter {
   } catch {
     return {};
   }
-  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return {};
-  const obj = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return {};
+  const obj = raw;
   const out: SkillFrontmatter = {};
 
   const name = asString(obj.name);
@@ -69,8 +70,9 @@ export function parseFrontmatter(text: string): SkillFrontmatter {
   const status = asString(obj.status);
   if (status != null) out.status = status;
 
-  if (obj.metadata != null && typeof obj.metadata === "object" && !Array.isArray(obj.metadata)) {
-    out.metadata = obj.metadata as Record<string, unknown>;
+  const metadata = asRecord(obj.metadata);
+  if (metadata) {
+    out.metadata = metadata;
   }
 
   const allowedDash = asStringOrStringArray(obj["allowed-tools"]);

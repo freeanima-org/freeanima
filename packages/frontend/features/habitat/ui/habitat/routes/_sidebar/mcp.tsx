@@ -62,6 +62,7 @@ function canStopMcpServer(srv: McpServer): boolean {
 }
 
 function McpPage() {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const initial = Route.useLoaderData() as McpStatus | null;
 
   const [status, setStatus] = useState<McpStatus | null>(initial);
@@ -72,6 +73,7 @@ function McpPage() {
   const refreshStatus = useCallback(async () => {
     try {
       const next = await getMcpStatus();
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       setStatus(next as McpStatus);
       setError("");
     } catch (e) {
@@ -85,6 +87,7 @@ function McpPage() {
     setActing((a) => ({ ...a, [name]: action }));
     try {
       const result = action === "start" ? await startMcp(name) : await stopMcp(name);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       setStatus(result as McpStatus);
     } catch (e) {
       logCaughtError("routes/_sidebar/mcp", e);
@@ -105,6 +108,7 @@ function McpPage() {
     setBulkActing(true);
     try {
       const result = action === "start-all" ? await startAllMcp() : await stopAllMcp();
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       setStatus(result as McpStatus);
     } catch (e) {
       logCaughtError("routes/_sidebar/mcp", e);

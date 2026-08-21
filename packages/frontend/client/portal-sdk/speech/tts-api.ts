@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import { buildHabitatRestRequest } from "@freeanima/shared/habitat-rpc";
 
 import { resolveBinarySafeHabitatFetch } from "../habitat-api-fetch.ts";
@@ -51,18 +52,17 @@ async function postHubTtsSynthesize(params: HabitatTtsSynthesizeParams): Promise
   if (!response.ok) {
     let message = "语音合成失败";
     try {
-      const body = (await response.json()) as {
-        error?: { message?: string } | string;
-      };
-      if (
-        typeof body.error === "object" &&
-        body.error !== null &&
-        typeof body.error.message === "string" &&
-        body.error.message.trim()
-      ) {
-        message = body.error.message.trim();
-      } else if (typeof body.error === "string" && body.error.trim()) {
-        message = body.error.trim();
+      const body: unknown = await response.json();
+      if (isRecord(body)) {
+        if (
+          isRecord(body.error) &&
+          typeof body.error.message === "string" &&
+          body.error.message.trim()
+        ) {
+          message = body.error.message.trim();
+        } else if (typeof body.error === "string" && body.error.trim()) {
+          message = body.error.trim();
+        }
       }
     } catch {
       if (response.status === 401) {

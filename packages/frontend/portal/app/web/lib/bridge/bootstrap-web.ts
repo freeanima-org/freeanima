@@ -28,8 +28,9 @@ function installScopedSettingsBridge(): void {
     },
     test: async (scope: SettingsStorageScope, value: unknown): Promise<unknown> => {
       if (scope.kind === "kv" && scope.id === "habitat") {
-        const raw = value as { habitatUrl: string; remoteAuthToken: string };
-        await testWebHabitatConnection(raw.habitatUrl, raw.remoteAuthToken);
+        const cfg = parseShellClientConfig(value);
+        if (!cfg) throw new Error("无效的 habitat 设置");
+        await testWebHabitatConnection(cfg.habitatUrl, cfg.remoteAuthToken);
         return;
       }
       if (scope.kind === "kv" && scope.id === "debug") {

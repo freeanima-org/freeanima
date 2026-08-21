@@ -40,8 +40,7 @@ alwaysApply: false
   - `typescript/no-unnecessary-type-assertion` / `no-unnecessary-type-conversion` / `no-unnecessary-type-arguments` / `no-unnecessary-type-parameters` / `no-unnecessary-boolean-literal-compare`
   - `typescript/no-meaningless-void-operator` / `no-misused-spread` / `no-redundant-type-constituents` / `no-duplicate-type-constituents` / `unbound-method`
   - `typescript/no-unsafe-assignment` / `no-unsafe-member-access` / `no-unsafe-call` — 测试文件 override 为 off（与 `no-explicit-any` 同）
-- **Type-aware warn**（暂未升 error；新代码优先避免）:
-  - `typescript/no-unsafe-type-assertion` — 窄化断言量级大，门禁不 fail；优先类型守卫 / Zod.parse，勿机械包一层 `as`
+  - `typescript/no-unsafe-type-assertion` — 禁止不安全窄化断言；优先类型守卫 / Zod.parse / `isRecord`·`asRecord`（`@freeanima/shared/util`），勿机械包一层 `as`；router 注入 deps/ctx 用 `asRouteDeps`/`asRouteCtx`
 - **Error-level 规则**（fix，do not disable without reason）:
   - `unicorn/no-array-sort` — use `Array#toSorted()` when returning a sorted copy; avoid in-place `.sort()` unless mutation is intentional (then use a line-level disable with reason).
   - `unicorn/prefer-add-event-listener` — prefer `addEventListener` over `on*` property handlers (DOM, WebSocket, IDB, SharedWorker).

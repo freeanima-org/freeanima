@@ -366,6 +366,7 @@ export async function uploadEmailAttachment(file: File): Promise<{
   const res = await habitat().callRaw("email.attachment.upload", withSubjectKind({}), {
     body: form,
   });
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const body = (await parseHabitatRestResponse(res)) as {
     object_file_id: number;
     filename: string;

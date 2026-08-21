@@ -16,7 +16,9 @@ export const ANDROID_RUST_BY_ABI: Record<AndroidAbiShort, string> = {
 /** 与 sdkmanager `ndk;…` / cache key 对齐 */
 export const ANDROID_NDK_PACKAGE = "ndk;27.0.12077973";
 
-const SHORT_SET = new Set<string>(ANDROID_ABI_SHORT);
+function isAndroidAbiShort(value: string): value is AndroidAbiShort {
+  return (ANDROID_ABI_SHORT as readonly string[]).includes(value);
+}
 
 export function resolveAndroidPackAbis(env: NodeJS.ProcessEnv = process.env): AndroidAbiShort[] {
   const raw = env.FREEANIMA_ANDROID_TARGETS?.trim();
@@ -32,14 +34,14 @@ export function resolveAndroidPackAbis(env: NodeJS.ProcessEnv = process.env): An
   const out: AndroidAbiShort[] = [];
   const seen = new Set<string>();
   for (const p of parts) {
-    if (!SHORT_SET.has(p)) {
+    if (!isAndroidAbiShort(p)) {
       throw new Error(
         `未知 FREEANIMA_ANDROID_TARGETS 项「${p}」。允许：${ANDROID_ABI_SHORT.join("|")}|all`,
       );
     }
     if (seen.has(p)) continue;
     seen.add(p);
-    out.push(p as AndroidAbiShort);
+    out.push(p);
   }
   return out.length > 0 ? out : ["aarch64"];
 }

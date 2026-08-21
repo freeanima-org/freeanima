@@ -8,6 +8,7 @@ import {
 
 import type { FlatTurn, LocomoSample } from "./types.ts";
 import { asString } from "./coerce.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 function row(
   partial: Partial<SemanticMemoryRow> & Pick<SemanticMemoryRow, "id" | "content">,
@@ -49,7 +50,7 @@ export function createEvalMemoryHarness(): {
           row({
             id,
             content: input.content,
-            type: (input.type as SemanticMemoryRow["type"]) ?? "observation",
+            type: input.type ?? "observation",
             source: input.source ?? null,
             source_conversations: input.source_conversations ?? [],
             pinned: input.pinned ?? false,
@@ -68,9 +69,9 @@ export function createEvalMemoryHarness(): {
         const next: SemanticMemoryRow = {
           ...cur,
           content: input.content ?? cur.content,
-          type: (input.type as SemanticMemoryRow["type"]) ?? cur.type,
+          type: input.type ?? cur.type,
           pinned: input.pinned ?? cur.pinned,
-          status: (input.status as SemanticMemoryRow["status"]) ?? cur.status,
+          status: input.status ?? cur.status,
           links: input.links ?? cur.links ?? [],
           observed_at:
             input.observed_at !== undefined
@@ -128,7 +129,8 @@ export function flattenConversation(sample: LocomoSample): FlatTurn[] {
     if (!Array.isArray(raw)) continue;
     for (const item of raw) {
       if (!item || typeof item !== "object") continue;
-      const t = item as Record<string, unknown>;
+      const t = asRecord(item);
+      if (!t) continue;
       const speaker = asString(t.speaker);
       const dia_id = asString(t.dia_id, `${sessionKey}:${turns.length}`);
       let text = typeof t.text === "string" ? t.text : "";

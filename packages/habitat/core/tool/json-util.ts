@@ -33,6 +33,7 @@ export function parseToolResult<T = unknown>(
       if (!result.success) return { ok: false, error: "validation failed" };
       return { ok: true, data: result.data };
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 无 schema 时由调用方约定 T
     return { ok: true, data: parsed as T };
   } catch {
     return { ok: false, error: "invalid JSON" };

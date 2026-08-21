@@ -13,6 +13,7 @@ function baseBody(model: string, request: ChatRequest): Omit<ChatCompletionCreat
     model,
     messages: messagesForApi(messages, systemPrompt),
     max_tokens: params.maxOutputTokens,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenAI ChatCompletionTool 边界
     tools: tools?.length ? (tools as ChatCompletionTool[]) : undefined,
   });
 

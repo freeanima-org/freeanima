@@ -79,6 +79,10 @@ function asBufferSource(bytes: Uint8Array): BufferSource {
   return copy;
 }
 
+function isVaultSecretsPayload(value: unknown): value is VaultSecretsPayload {
+  return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
 function utf8Encode(text: string): Uint8Array {
   return new TextEncoder().encode(text);
 }
@@ -219,7 +223,11 @@ export async function decryptSecrets(
     dek,
     asBufferSource(b64ToBytes(dataB64)),
   );
-  return JSON.parse(utf8Decode(plain)) as VaultSecretsPayload;
+  const parsed: unknown = JSON.parse(utf8Decode(plain));
+  if (!isVaultSecretsPayload(parsed)) {
+    throw new Error("invalid secrets payload");
+  }
+  return parsed;
 }
 
 export async function sealVaultSecrets(

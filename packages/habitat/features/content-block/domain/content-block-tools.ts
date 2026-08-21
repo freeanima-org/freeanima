@@ -1,6 +1,7 @@
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 import {
   createContentBlock,
@@ -337,7 +338,10 @@ async function handleReorder(args: Record<string, unknown>): Promise<string> {
     if (typeof raw !== "object" || raw == null || Array.isArray(raw)) {
       return toolError("each item must be an object with id and sort_order");
     }
-    const obj = raw as Record<string, unknown>;
+    const obj = asRecord(raw);
+    if (!obj) {
+      return toolError("each item must be an object with id and sort_order");
+    }
     const id = Number(obj.id);
     const sortOrder = Number(obj.sort_order);
     if (!Number.isFinite(id) || id <= 0 || !Number.isFinite(sortOrder)) {

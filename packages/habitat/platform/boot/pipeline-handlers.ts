@@ -27,6 +27,7 @@ import { formatCstIso } from "@freeanima/habitat/core/util";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
 import { cacheGetJson, cacheSetJson } from "@freeanima/habitat/core/redis";
+import { asRecord } from "@freeanima/shared/util";
 
 import {
   MEMORY_MAINTENANCE_PIPELINE_ID,
@@ -96,12 +97,7 @@ async function recordStepWatermark(
     status: result.status,
     started_at: null,
     finished_at: formatCstIso(),
-    output:
-      result.output != null && typeof result.output === "object" && !Array.isArray(result.output)
-        ? (result.output as Record<string, unknown>)
-        : result.output != null
-          ? { value: result.output }
-          : null,
+    output: asRecord(result.output) ?? (result.output != null ? { value: result.output } : null),
     error: result.error ?? null,
     skipped_reason: result.skipped_reason ?? null,
   });

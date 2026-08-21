@@ -1,3 +1,4 @@
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import {
   Outlet,
   RouterProvider,
@@ -36,7 +37,7 @@ const setupAliasRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/setup",
   beforeLoad: () => {
-    throw redirect({ to: "/settings" as never });
+    throw redirect({ to: assertNarrow<never>("/settings") });
   },
 });
 
@@ -50,7 +51,7 @@ const mainLayoutRoute = createRoute({
   component: AppFrame,
   beforeLoad: ({ location }) => {
     if (needsHabitatSetup() && !isSettingsPath(location.pathname)) {
-      throw redirect({ to: "/settings" as never });
+      throw redirect({ to: assertNarrow<never>("/settings") });
     }
   },
 });
@@ -59,17 +60,19 @@ const indexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/",
   beforeLoad: () => {
-    throw redirect({ to: "/chat" as never });
+    throw redirect({ to: assertNarrow<never>("/chat") });
   },
 });
 
 function createLazyShellRoute(path: string, component: ComponentType<object>) {
-  return createRoute({
-    getParentRoute: () => mainLayoutRoute,
-    path,
-    component: asRouteComponent(component),
-    // Windows tsgo + exactOptionalPropertyTypes 下 lazy RouteComponent 与 RouteOptions 不兼容
-  } as never);
+  return createRoute(
+    assertNarrow<Parameters<typeof createRoute>[0]>({
+      getParentRoute: () => mainLayoutRoute,
+      path,
+      component: asRouteComponent(component),
+      // Windows tsgo + exactOptionalPropertyTypes 下 lazy RouteComponent 与 RouteOptions 不兼容
+    }),
+  );
 }
 
 const featureRoutes = listShellFeatureRoutes().map((entry) =>
@@ -80,7 +83,7 @@ const habitatIndexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/habitat",
   beforeLoad: () => {
-    throw redirect({ to: "/habitat/dashboard" as never });
+    throw redirect({ to: assertNarrow<never>("/habitat/dashboard") });
   },
 });
 

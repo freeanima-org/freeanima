@@ -101,6 +101,7 @@ export const runtimeConfigSchema = runtimeConfigObjectSchema.partial().passthrou
 export type RuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
 /** 已知运行时段（与静态 shape / registerSection 同源） */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.keys 擦除 keyof
 export const RUNTIME_CONFIG_SECTION_KEYS = Object.keys(runtimeConfigObjectSchema.shape) as Array<
   keyof typeof runtimeConfigObjectSchema.shape
 >;

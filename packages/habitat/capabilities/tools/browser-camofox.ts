@@ -1,5 +1,5 @@
 import { toolError, toolResult } from "@freeanima/habitat/core/tool";
-import { randomPublicId } from "@freeanima/shared/util";
+import { asRecord, randomPublicId } from "@freeanima/shared/util";
 import type { Config } from "@freeanima/habitat/core/config";
 import { homePath } from "@freeanima/habitat/core/config/paths";
 import { omitUndefined } from "@freeanima/habitat/core/util";
@@ -45,12 +45,9 @@ export function resetBrowserToolsConfigForTest(): void {
 function getCamofoxConfigBlock(): Record<string, unknown> {
   try {
     if (!browserConfig) return {};
-    const cfg = browserConfig.data as Record<string, unknown>;
-    const browser = cfg.browser as Record<string, unknown> | undefined;
-    const camofox = browser?.camofox;
-    return typeof camofox === "object" && camofox != null && !Array.isArray(camofox)
-      ? (camofox as Record<string, unknown>)
-      : {};
+    const cfg = asRecord(browserConfig.data) ?? {};
+    const browser = asRecord(cfg.browser);
+    return asRecord(browser?.camofox) ?? {};
   } catch {
     return {};
   }
@@ -143,7 +140,8 @@ async function postJson(
       timeoutMs,
     }),
   );
-  return (await resp.json()) as Record<string, unknown>;
+  const jsonBody: unknown = await resp.json();
+  return asRecord(jsonBody) ?? {};
 }
 
 async function getJson(
@@ -159,13 +157,15 @@ async function getJson(
     url.pathname + url.search,
     omitUndefined({ method: "GET", timeoutMs }),
   );
-  return (await resp.json()) as Record<string, unknown>;
+  const getBody: unknown = await resp.json();
+  return asRecord(getBody) ?? {};
 }
 
 async function deleteJson(path: string, timeoutMs?: number): Promise<Record<string, unknown>> {
   const resp = await camofoxFetch(path, omitUndefined({ method: "DELETE", timeoutMs }));
   if (resp.status === 204) return {};
-  return (await resp.json()) as Record<string, unknown>;
+  const deleteBody: unknown = await resp.json();
+  return asRecord(deleteBody) ?? {};
 }
 
 async function getRaw(
@@ -191,7 +191,7 @@ export async function checkCamofoxAvailable(): Promise<boolean> {
     const resp = await fetch(`${url}/health`, { signal: AbortSignal.timeout(5_000) });
     if (resp.status === 200 && !vncUrlChecked) {
       try {
-        const data = (await resp.json()) as Record<string, unknown>;
+        const data = asRecord(await resp.json()) ?? {};
         const vncPort = data.vncPort;
         if (typeof vncPort === "number" && vncPort >= 1 && vncPort <= 65535) {
           const parsed = new URL(url);

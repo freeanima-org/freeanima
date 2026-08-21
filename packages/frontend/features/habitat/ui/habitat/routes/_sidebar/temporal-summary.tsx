@@ -250,6 +250,7 @@ function TemporalSummaryPage() {
       }
       if (!silent) setError("");
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const data = (await listTemporalSummaries(
           omitUndefined({
             window,
@@ -285,6 +286,7 @@ function TemporalSummaryPage() {
     }
     if (!silent) setError("");
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const data = (await listTemporalSystemRolls()) as { items: SystemRollRow[] };
       setRolls(data.items ?? []);
     } catch (e) {
@@ -587,12 +589,14 @@ function TemporalSummaryPage() {
         selectedKey={tab}
         onSelectionChange={(key: Key) => {
           if (key == null) return;
-          const next = String(key) as PageTab;
+          const next = String(key);
           if (next === "month" || next === "year" || next === "day") {
             setFrom((prev) => normalizeRangeValue(prev, next));
             setTo((prev) => normalizeRangeValue(prev, next));
+            setTab(next);
+          } else if (next === "system_rolls") {
+            setTab(next);
           }
-          setTab(next);
         }}
         className="space-y-4"
       >

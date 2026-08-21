@@ -10,6 +10,8 @@ import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/habitat/core/
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { getRuntimeDeps } from "@freeanima/habitat/platform/service/runtime-context.ts";
 import { runSubagentTasks } from "@freeanima/habitat/platform/service/use-cases/subagent-runner.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 import {
   createSubagent,
@@ -148,7 +150,7 @@ function parseTemperatureTier(raw: unknown): SubagentTemperatureTier | undefined
   if (raw == null) return undefined;
   const v = coerceString(raw).trim();
   return (SUBAGENT_TEMPERATURE_TIERS as readonly string[]).includes(v)
-    ? (v as SubagentTemperatureTier)
+    ? assertNarrow<SubagentTemperatureTier>(v)
     : undefined;
 }
 
@@ -461,7 +463,9 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                 if (raw == null || typeof raw !== "object") {
                   return toolError("each task must be an object");
                 }
-                const parsed = parseTask(raw as Record<string, unknown>);
+                const rec = asRecord(raw);
+                if (!rec) return toolError("each task must be an object");
+                const parsed = parseTask(rec);
                 if (typeof parsed === "string") return toolError(parsed);
                 tasks.push(parsed);
               }

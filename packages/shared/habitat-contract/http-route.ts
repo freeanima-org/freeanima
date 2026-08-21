@@ -1,5 +1,7 @@
 import type { z as zod } from "zod";
 
+import { asRecord } from "../util/is-record.ts";
+
 /** POST 请求体编码（默认 json） */
 export type HttpRequestEncoding = "json" | "multipart" | "raw";
 
@@ -43,23 +45,36 @@ const WRITE_PATH_ACTIONS = new Set([
   "unarchive",
 ]);
 
-type ZodSchema = zod.ZodTypeAny & { type?: string };
+function zodTypeName(schema: zod.ZodTypeAny): string | undefined {
+  const rec = asRecord(schema);
+  return typeof rec?.type === "string" ? rec.type : undefined;
+}
+
+function callZodMethod(schema: zod.ZodTypeAny, method: string): zod.ZodTypeAny | null {
+  const rec = asRecord(schema);
+  const fn = rec?.[method];
+  if (typeof fn !== "function") return null;
+  const next: unknown = fn.call(schema);
+  if (next == null || typeof next !== "object") return null;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Zod schema method 返回边界
+  return next as zod.ZodTypeAny;
+}
 
 function unwrapZodType(schema: zod.ZodTypeAny): zod.ZodTypeAny {
   let current: zod.ZodTypeAny = schema;
   for (let depth = 0; depth < 8; depth++) {
-    const typed = current as ZodSchema;
-    if (typed.type === "optional" || typed.type === "nullable") {
-      const unwrap = (current as { unwrap?: () => zod.ZodTypeAny }).unwrap;
-      if (unwrap) {
-        current = unwrap.call(current);
+    const type = zodTypeName(current);
+    if (type === "optional" || type === "nullable") {
+      const next = callZodMethod(current, "unwrap");
+      if (next) {
+        current = next;
         continue;
       }
     }
-    if (typed.type === "default") {
-      const removeDefault = (current as { removeDefault?: () => zod.ZodTypeAny }).removeDefault;
-      if (removeDefault) {
-        current = removeDefault.call(current);
+    if (type === "default") {
+      const next = callZodMethod(current, "removeDefault");
+      if (next) {
+        current = next;
         continue;
       }
     }
@@ -69,14 +84,23 @@ function unwrapZodType(schema: zod.ZodTypeAny): zod.ZodTypeAny {
 }
 
 function getObjectShape(schema: zod.ZodTypeAny): Record<string, zod.ZodTypeAny> | null {
-  const unwrapped = unwrapZodType(schema) as ZodSchema;
-  if (unwrapped.type === "object") {
-    const shape = (unwrapped as { shape?: Record<string, zod.ZodTypeAny> }).shape;
-    return shape ?? null;
+  const unwrapped = unwrapZodType(schema);
+  if (zodTypeName(unwrapped) === "object") {
+    const rec = asRecord(unwrapped);
+    const shape = rec?.shape;
+    if (asRecord(shape)) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Zod object shape 边界
+      return shape as Record<string, zod.ZodTypeAny>;
+    }
+    return null;
   }
-  if (unwrapped.type === "pipe") {
-    const inner = (unwrapped as { in?: zod.ZodTypeAny }).in;
-    if (inner) return getObjectShape(inner);
+  if (zodTypeName(unwrapped) === "pipe") {
+    const rec = asRecord(unwrapped);
+    const inner = rec?.in;
+    if (inner != null && typeof inner === "object") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Zod pipe.in 边界
+      return getObjectShape(inner as zod.ZodTypeAny);
+    }
   }
   return null;
 }
@@ -84,8 +108,9 @@ function getObjectShape(schema: zod.ZodTypeAny): Record<string, zod.ZodTypeAny> 
 function shapeHasIntField(shape: Record<string, zod.ZodTypeAny>, key: string): boolean {
   const field = shape[key];
   if (!field) return false;
-  const unwrapped = unwrapZodType(field) as ZodSchema & { isInt?: boolean };
-  return unwrapped.type === "number" && unwrapped.isInt === true;
+  const unwrapped = unwrapZodType(field);
+  const rec = asRecord(unwrapped);
+  return zodTypeName(unwrapped) === "number" && rec?.isInt === true;
 }
 
 function inferPathParams(method: string, input: zod.ZodTypeAny): readonly string[] {
@@ -154,26 +179,24 @@ export function coercePayloadForSchema(
   for (const [key, fieldSchema] of Object.entries(shape)) {
     if (!(key in out)) continue;
     let val = out[key];
-    const unwrapped = unwrapZodType(fieldSchema) as ZodSchema;
+    const unwrapped = unwrapZodType(fieldSchema);
+    const type = zodTypeName(unwrapped);
     // query 解码（decodeQueryScalar）会把数字/布尔样式的字符串预先转成 number/boolean，
     // 但 schema 声明为 string 时需还原为字符串（如 recipient_id="53"），否则 Zod 校验失败。
-    if (unwrapped.type === "string" && (typeof val === "number" || typeof val === "boolean")) {
+    if (type === "string" && (typeof val === "number" || typeof val === "boolean")) {
       out[key] = String(val);
       continue;
     }
     if (typeof val === "string") {
-      if (unwrapped.type === "number" && /^-?\d+$/.test(val)) {
+      if (type === "number" && /^-?\d+$/.test(val)) {
         out[key] = Number(val);
         continue;
       }
-      if (unwrapped.type === "boolean" && (val === "true" || val === "false")) {
+      if (type === "boolean" && (val === "true" || val === "false")) {
         out[key] = val === "true";
         continue;
       }
-      if (
-        (unwrapped.type === "object" || unwrapped.type === "array") &&
-        (val.startsWith("{") || val.startsWith("["))
-      ) {
+      if ((type === "object" || type === "array") && (val.startsWith("{") || val.startsWith("["))) {
         try {
           out[key] = JSON.parse(val) as unknown;
           val = out[key];
@@ -183,7 +206,7 @@ export function coercePayloadForSchema(
       }
     }
     // GET 重复 key 仅一项时 parseQueryToPayload 得到标量；schema 为 array 时包一层。
-    if (unwrapped.type === "array" && val !== undefined && val !== null && !Array.isArray(val)) {
+    if (type === "array" && val !== undefined && val !== null && !Array.isArray(val)) {
       out[key] = [val];
     }
   }

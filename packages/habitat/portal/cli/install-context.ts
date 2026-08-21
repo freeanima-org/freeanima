@@ -1,4 +1,5 @@
 import { getRepoRoot } from "@freeanima/habitat/core/config/repo-root";
+import { asRecord } from "@freeanima/shared/util";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,8 +16,8 @@ function packageNameAt(dir: string): string | null {
   const path = join(dir, "package.json");
   if (!existsSync(path)) return null;
   try {
-    const pkg = JSON.parse(readFileSync(path, "utf8")) as { name?: string };
-    return typeof pkg.name === "string" ? pkg.name : null;
+    const pkg = asRecord(JSON.parse(readFileSync(path, "utf8")));
+    return typeof pkg?.name === "string" ? pkg.name : null;
   } catch {
     return null;
   }

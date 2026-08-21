@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { eq } from "drizzle-orm";
 
 import { companionConfigSchema } from "@freeanima/habitat/core/config/schemas/companion.ts";
@@ -27,12 +28,7 @@ function mergeSection(
   section: string,
   patch: Record<string, unknown>,
 ): Record<string, unknown> {
-  const existing =
-    typeof document[section] === "object" &&
-    document[section] != null &&
-    !Array.isArray(document[section])
-      ? (document[section] as Record<string, unknown>)
-      : {};
+  const existing = asRecord(document[section]) ?? {};
 
   // connections：条目级合并，避免只 patch 一条连接时冲掉其它条目
   // 条目值为 null → 删除（patch 缺键仍保留，故删除必须显式传 null）
@@ -137,10 +133,7 @@ export async function patchHabitatRuntimeConfigSection(
     .where(eq(habitatRuntimeConfig.section, section))
     .limit(1);
   const existingRaw = rows[0]?.value;
-  const existing =
-    typeof existingRaw === "object" && existingRaw != null && !Array.isArray(existingRaw)
-      ? (existingRaw as Record<string, unknown>)
-      : {};
+  const existing = asRecord(existingRaw) ?? {};
   const merged = mergeSection({ [section]: existing }, section, patch);
   await upsertSectionRow(section, normalizeSectionValue(section, merged[section]));
   return getHabitatRuntimeConfigDocument();

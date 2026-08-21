@@ -12,6 +12,7 @@ export function readPersistedActiveStream(conversationId?: string): PersistedAct
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse 边界
     const parsed = JSON.parse(raw) as PersistedActiveStream;
     if (
       typeof parsed?.conversationId !== "string" ||

@@ -1,8 +1,9 @@
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import type { SettingsPanelProps } from "@freeanima/client/portal-sdk/settings";
 import { habitatFields } from "@freeanima/client/portal-sdk/settings";
-import type { ShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config";
+import { parseShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config";
 
 import { FormRenderer } from "../../form/FormRenderer.tsx";
 import { needsHabitatSetup } from "../../setup/habitat-setup.ts";
@@ -17,8 +18,9 @@ export default function HabitatConnectionSettingsPanel({ platform, store }: Sett
     let cancelled = false;
     if (store) {
       void store.load().then((raw) => {
-        if (cancelled || !raw || typeof raw !== "object") return;
-        const url = (raw as ShellClientConfig).habitatUrl;
+        if (cancelled) return;
+        const config = parseShellClientConfig(raw);
+        const url = config?.habitatUrl;
         if (typeof url === "string" && url.trim()) {
           setHabitatUrl(url.trim());
         }
@@ -49,7 +51,7 @@ export default function HabitatConnectionSettingsPanel({ platform, store }: Sett
         platform={platform}
         sectionId="habitat"
         enterAfterSave={gateMode}
-        onEnterAfterSave={() => void navigate({ to: "/chat" as never })}
+        onEnterAfterSave={() => void navigate({ to: assertNarrow<never>("/chat") })}
       />
       <HabitatTlsCaTrustCard {...(habitatUrl ? { habitatUrl } : {})} />
     </div>

@@ -85,7 +85,9 @@ function readWorldBody(row: EntityRow): {
   const grants: WorldGrantInput[] = [];
   for (const g of grantsRaw) {
     if (!g || typeof g !== "object") continue;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     const subjectId = Number((g as { subject_id?: unknown }).subject_id);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     const permission = (g as { permission?: unknown }).permission;
     if (!Number.isFinite(subjectId) || subjectId <= 0) continue;
     if (permission !== "read" && permission !== "write") continue;

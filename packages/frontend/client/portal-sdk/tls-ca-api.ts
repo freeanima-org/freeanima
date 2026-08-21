@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 /** Habitat REST 默认 HTTP 端口（与 @freeanima/habitat/core/config DEFAULT_HABITAT_HTTP_PORT 保持一致） */
 import { habitatTlsCaInfoUrl } from "@freeanima/shared/habitat-rpc";
 
@@ -13,6 +15,33 @@ export type TlsCaInfo = {
   filename: string;
   install_hint: string;
 };
+
+const TLS_CA_KINDS = ["mkcert", "self-signed", "letsencrypt", "missing"] as const;
+
+function isTlsCaKind(value: string): value is TlsCaInfo["kind"] {
+  return (TLS_CA_KINDS as readonly string[]).includes(value);
+}
+
+function parseTlsCaInfo(raw: unknown): TlsCaInfo | null {
+  if (!isRecord(raw)) return null;
+  if (typeof raw.available !== "boolean") return null;
+  if (typeof raw.kind !== "string" || !isTlsCaKind(raw.kind)) return null;
+  if (raw.issuer !== null && typeof raw.issuer !== "string") return null;
+  if (typeof raw.download_url !== "string") return null;
+  if (typeof raw.qr_url !== "string") return null;
+  if (typeof raw.filename !== "string") return null;
+  if (typeof raw.install_hint !== "string") return null;
+  return {
+    available: raw.available,
+    kind: raw.kind,
+    issuer: raw.issuer,
+    download_url: raw.download_url,
+    qr_url: raw.qr_url,
+    filename: raw.filename,
+    install_hint: raw.install_hint,
+    ...(typeof raw.qr_data_url === "string" ? { qr_data_url: raw.qr_data_url } : {}),
+  };
+}
 
 function collectTlsCaInfoBases(habitatUrl?: string): string[] {
   const bases: string[] = [];
@@ -67,7 +96,11 @@ export async function fetchTlsCaInfo(habitatUrl?: string): Promise<TlsCaInfo> {
       if (!res.ok) {
         throw new Error(`TLS CA 信息不可用（${res.status}）`);
       }
-      return (await res.json()) as TlsCaInfo;
+      const parsed = parseTlsCaInfo(await res.json());
+      if (!parsed) {
+        throw new Error("TLS CA 信息格式无效");
+      }
+      return parsed;
     } catch (e) {
       lastError = e instanceof Error ? e : new Error(String(e));
     }

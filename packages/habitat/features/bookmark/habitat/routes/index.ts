@@ -1,6 +1,10 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 
 import { bookmarkMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -13,11 +17,11 @@ type BookmarkRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): BookmarkRemoteToolsServerDeps {
-  return deps as BookmarkRemoteToolsServerDeps;
+  return asRouteDeps<BookmarkRemoteToolsServerDeps>(deps);
 }
 
 function ctxAuth(ctx: unknown) {
-  return (ctx as RemoteToolsRequestContext).auth;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx).auth;
 }
 
 export const bookmarkHabitatRoutes = bindHabitatRouteHandlers(bookmarkMethodDefs, {

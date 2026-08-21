@@ -113,6 +113,7 @@ export const useCompanionStore = create<CompanionState>((set, get) => ({
   activeObjectFileId: null,
   models: [],
   motionLibrary: [],
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
   motionSlots: {} as MotionSlotsConfig,
   behavior: { ...DEFAULT_BEHAVIOR },
   hitTestFn: null,

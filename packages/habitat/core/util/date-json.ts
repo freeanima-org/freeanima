@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 /** ISO-8601 date/time strings from JSON.stringify(Date). */
 const ISO_DATE_STRING_RE =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/;
@@ -36,10 +37,12 @@ export function reviveDates<T>(value: T): T {
     return value;
   }
   if (Array.isArray(value)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- reviveDates 保持输入结构
     return value.map((item) => reviveDates(item)) as T;
   }
+  if (!isRecord(value)) return value;
   const out: Record<string, unknown> = {};
-  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+  for (const [key, raw] of Object.entries(value)) {
     if (typeof raw === "string" && DATE_JSON_KEYS.has(key) && isPlainIsoDateString(raw)) {
       out[key] = new Date(raw);
     } else if (raw != null && typeof raw === "object") {
@@ -48,5 +51,6 @@ export function reviveDates<T>(value: T): T {
       out[key] = raw;
     }
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- reviveDates 保持输入结构
   return out as T;
 }

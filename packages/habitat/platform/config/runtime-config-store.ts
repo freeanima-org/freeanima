@@ -19,9 +19,12 @@ export type PatchableRuntimeConfig = Config & {
 
 export function isPatchableRuntimeConfig(config: Config): config is PatchableRuntimeConfig {
   return (
-    typeof (config as PatchableRuntimeConfig).patchSection === "function" &&
-    typeof (config as PatchableRuntimeConfig).replaceSection === "function" &&
-    typeof (config as PatchableRuntimeConfig).reload === "function"
+    "patchSection" in config &&
+    typeof config.patchSection === "function" &&
+    "replaceSection" in config &&
+    typeof config.replaceSection === "function" &&
+    "reload" in config &&
+    typeof config.reload === "function"
   );
 }
 

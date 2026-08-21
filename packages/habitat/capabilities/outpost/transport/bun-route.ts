@@ -48,6 +48,7 @@ export function createSapBunHandlers(deps: RemoteToolsServerDeps): {
           isWebSocketUpgrade(req) &&
           server.upgrade(req, {
             data: {
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- WS 握手前 handler 占位
               handler: null as unknown as RemoteToolsSocketData["handler"],
             },
           })

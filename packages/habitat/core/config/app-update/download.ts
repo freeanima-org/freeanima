@@ -30,7 +30,8 @@ export async function pipeResponseBodyToFile(
   const nodeStream =
     body instanceof Readable
       ? body
-      : Readable.fromWeb(body as unknown as import("node:stream/web").ReadableStream);
+      : // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Fetch body → Node ReadableStream
+        Readable.fromWeb(body as unknown as import("node:stream/web").ReadableStream);
 
   if (!onProgress) {
     await pipeline(nodeStream, createWriteStream(destPath));

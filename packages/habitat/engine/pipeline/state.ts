@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { PATHS } from "@freeanima/habitat/core/config/paths";
-import { safeParseOrNull } from "@freeanima/habitat/core/util";
+import { omitUndefined, safeParseOrNull } from "@freeanima/habitat/core/util";
 import { z } from "zod";
 
-import type { PipelineRunState } from "./types.ts";
+import type { PipelineRunState, PipelineStepState } from "./types.ts";
 
 const stepStateSchema = z.object({
   status: z.enum(["pending", "running", "completed", "skipped", "failed"]),
@@ -38,7 +38,21 @@ export function readPipelineRunState(pipelineId: string): PipelineRunState | nul
   if (!existsSync(p)) return null;
   try {
     const raw: unknown = JSON.parse(readFileSync(p, "utf-8"));
-    return safeParseOrNull(runStateSchema, raw) as PipelineRunState | null;
+    const parsed = safeParseOrNull(runStateSchema, raw);
+    if (!parsed) return null;
+    const steps: Record<string, PipelineStepState> = {};
+    for (const [id, step] of Object.entries(parsed.steps)) {
+      steps[id] = omitUndefined(step);
+    }
+    return omitUndefined({
+      pipeline_id: parsed.pipeline_id,
+      run_id: parsed.run_id,
+      day: parsed.day,
+      started_at: parsed.started_at,
+      finished_at: parsed.finished_at,
+      status: parsed.status,
+      steps,
+    });
   } catch {
     return null;
   }

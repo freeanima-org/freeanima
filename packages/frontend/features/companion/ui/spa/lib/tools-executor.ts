@@ -2,6 +2,10 @@ import type { MotionSlotId } from "@freeanima/shared/companion-app/companion-sch
 import { MOTION_SLOT_IDS } from "@freeanima/shared/companion-app/companion-schema.ts";
 import { enqueueBubble, enqueuePlaySlot } from "./runtime-local.ts";
 
+function isMotionSlotId(v: string): v is MotionSlotId {
+  return (MOTION_SLOT_IDS as readonly string[]).includes(v);
+}
+
 function toolResult(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value);
 }
@@ -25,7 +29,7 @@ export async function executeCompanionTool(
     }
     case "play_slot": {
       const slot = typeof args.slot === "string" ? args.slot : "";
-      if (!MOTION_SLOT_IDS.includes(slot as MotionSlotId)) {
+      if (!isMotionSlotId(slot)) {
         return toolError(`未知动作槽位: ${slot}`);
       }
       const motionId = typeof args.motion_id === "string" ? args.motion_id : undefined;

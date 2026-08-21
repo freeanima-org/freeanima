@@ -1,4 +1,6 @@
 /// <reference lib="dom" />
+import { isRecord } from "@freeanima/shared/util";
+
 import type { ShellApi } from "./shell-api.ts";
 import { resolveHabitatRpcWsUrl } from "./habitat-ws-url.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
@@ -60,22 +62,18 @@ function cacheKey(scope: string, namespace: string, id: string): string {
   return `${scope}|${namespace}|${id}`;
 }
 
-function isEnvelope<T>(raw: unknown): raw is OfflineCacheEnvelope<T> {
-  return (
-    raw !== null &&
-    typeof raw === "object" &&
-    "v" in raw &&
-    (raw as OfflineCacheEnvelope<T>).v === ENVELOPE_VERSION &&
-    "data" in raw
-  );
+function isEnvelope(raw: unknown): raw is OfflineCacheEnvelope<unknown> {
+  return isRecord(raw) && raw.v === ENVELOPE_VERSION && "data" in raw && "cachedAt" in raw;
 }
 
 function unwrapStored<T>(raw: unknown): OfflineCacheEntry<T> | null {
   if (raw == null) return null;
-  if (isEnvelope<T>(raw)) {
-    const at = Date.parse(raw.cachedAt);
-    return { data: raw.data, cachedAt: Number.isFinite(at) ? new Date(at) : null };
+  if (isEnvelope(raw)) {
+    const at = typeof raw.cachedAt === "string" ? Date.parse(raw.cachedAt) : Number.NaN;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- envelope data 由写入方约定 T
+    return { data: raw.data as T, cachedAt: Number.isFinite(at) ? new Date(at) : null };
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 旧版无 envelope 裸缓存，调用方约定 T
   return { data: raw as T, cachedAt: null };
 }
 

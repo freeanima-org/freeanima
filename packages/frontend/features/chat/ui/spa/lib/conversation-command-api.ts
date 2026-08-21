@@ -55,6 +55,7 @@ export async function fetchLlmDebug(conversationId: string): Promise<{
 }> {
   const raw = await habitat().call("llm_debug.get", { conversation_id: conversationId });
   if (!raw || typeof raw !== "object") return {};
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   return raw as {
     initial?: LlmDebugSnapshotPayload;
     final?: LlmDebugSnapshotPayload;

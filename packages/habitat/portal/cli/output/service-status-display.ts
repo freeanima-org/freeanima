@@ -4,6 +4,7 @@ import {
   parseComponentBuildMeta,
 } from "@freeanima/habitat/core/config/build-meta";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord, omitUndefined } from "@freeanima/shared/util";
 import { prettyDuration, writeStatusLine } from "./status.ts";
 
 type MemoryDetail = {
@@ -15,6 +16,49 @@ type MemoryDetail = {
   mcp?: { server_count?: number; connected_count?: number };
   acp?: { agent_count?: number; connected_count?: number };
 };
+
+function asOptionalNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function parseMemoryDetail(value: unknown): MemoryDetail | undefined {
+  const rec = asRecord(value);
+  if (!rec) return undefined;
+  const mcp = asRecord(rec.mcp);
+  const acp = asRecord(rec.acp);
+  return omitUndefined({
+    heap_used_kb: asOptionalNumber(rec.heap_used_kb),
+    external_kb: asOptionalNumber(rec.external_kb),
+    vm_size_kb: asOptionalNumber(rec.vm_size_kb),
+    tokenizer_repos: Array.isArray(rec.tokenizer_repos)
+      ? rec.tokenizer_repos.filter((x): x is string => typeof x === "string")
+      : undefined,
+    jieba_loaded: typeof rec.jieba_loaded === "boolean" ? rec.jieba_loaded : undefined,
+    mcp: mcp
+      ? omitUndefined({
+          server_count: asOptionalNumber(mcp.server_count),
+          connected_count: asOptionalNumber(mcp.connected_count),
+        })
+      : undefined,
+    acp: acp
+      ? omitUndefined({
+          agent_count: asOptionalNumber(acp.agent_count),
+          connected_count: asOptionalNumber(acp.connected_count),
+        })
+      : undefined,
+  });
+}
+
+function parsePlatforms(value: unknown): Record<string, Record<string, unknown>> {
+  const root = asRecord(value);
+  if (!root) return {};
+  const out: Record<string, Record<string, unknown>> = {};
+  for (const [name, entry] of Object.entries(root)) {
+    const rec = asRecord(entry);
+    if (rec) out[name] = rec;
+  }
+  return out;
+}
 
 function formatMb(kb: number): string {
   return `${(kb / 1024).toFixed(1)} MB`;
@@ -88,7 +132,7 @@ export function printServiceRunningStatus(opts: {
   const buildRaw = api.build ?? opts.statusFile.build;
   const build = parseComponentBuildMeta(buildRaw);
 
-  let uptime = api.uptime_seconds as number | undefined;
+  let uptime = asOptionalNumber(api.uptime_seconds);
   if (uptime == null && opts.statusFile.start_time) {
     uptime = Date.now() / 1000 - Number(opts.statusFile.start_time);
   }
@@ -106,7 +150,7 @@ export function printServiceRunningStatus(opts: {
   for (const h of parseBindHosts(opts.host)) {
     printField("http", `http://${h}:${opts.port}`);
     printField("api", `http://${h}:${opts.port}/api`);
-    const tlsPort = opts.tlsPort ?? (opts.statusFile.tls_port as number | undefined);
+    const tlsPort = opts.tlsPort ?? asOptionalNumber(opts.statusFile.tls_port);
     if (tlsPort != null && tlsPort > 0) {
       printField("https", `https://${h}:${tlsPort}`);
       printField("api (tls)", `https://${h}:${tlsPort}/api`);
@@ -131,7 +175,7 @@ export function printServiceRunningStatus(opts: {
     printField("http", `http://${opts.web.host}:${opts.web.port}/web/chat`);
   }
 
-  const config = (api.config as Record<string, unknown>) ?? {};
+  const config = asRecord(api.config) ?? {};
   const model = config.model ?? opts.statusFile.model;
   const apiBase = config.api_base ?? opts.statusFile.api_base;
   if (model || apiBase) {
@@ -140,7 +184,7 @@ export function printServiceRunningStatus(opts: {
     if (apiBase) printField("provider", coerceString(apiBase));
   }
 
-  const platforms = (api.platforms as Record<string, Record<string, unknown>>) ?? {};
+  const platforms = parsePlatforms(api.platforms);
   const platformNames = Object.keys(platforms).toSorted();
   if (platformNames.length > 0) {
     printSection(`gateways (${platformNames.length})`);
@@ -149,7 +193,7 @@ export function printServiceRunningStatus(opts: {
     }
   }
 
-  const conversations = api.conversations as Record<string, unknown> | undefined;
+  const conversations = asRecord(api.conversations);
   const tools = api.tools;
   const cronJobs = api.cron_jobs;
   const workload: string[] = [];
@@ -163,7 +207,7 @@ export function printServiceRunningStatus(opts: {
   }
 
   const memKb = api.memory_kb;
-  const memDetail = api.memory_detail as MemoryDetail | undefined;
+  const memDetail = parseMemoryDetail(api.memory_detail);
   if (memKb) {
     printSection("memory");
     printField("rss (phys)", formatMb(Number(memKb)));

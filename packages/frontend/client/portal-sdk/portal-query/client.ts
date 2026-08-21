@@ -57,7 +57,9 @@ export class PortalQueryClient {
 
   getQueryState<T>(queryKey: PortalQueryKey): PortalQueryState<T> {
     const entry = this.cache.get(hashQueryKey(queryKey));
-    return (entry?.state as PortalQueryState<T> | undefined) ?? idleState<T>();
+    if (!entry) return idleState<T>();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 内存 cache 存 PortalQueryState<unknown>，按 key 以 T 读出
+    return entry.state as PortalQueryState<T>;
   }
 
   getQueryData(queryKey: PortalQueryKey): unknown {
@@ -70,10 +72,12 @@ export class PortalQueryClient {
   ): void {
     const hashed = hashQueryKey(queryKey);
     const entry = this.ensureEntry(hashed, queryKey);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- cache.data 为 unknown，按调用方 T 解释
     const prev = entry.state.data as T | undefined;
     const next =
       typeof updater === "function"
-        ? (updater as (p: T | undefined) => T | undefined)(prev)
+        ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- typeof 无法区分泛型函数与 T 值
+          (updater as (p: T | undefined) => T | undefined)(prev)
         : updater;
     entry.state = {
       data: next,
@@ -98,6 +102,7 @@ export class PortalQueryClient {
     const entry = this.ensureEntry(hashed, opts.queryKey);
 
     if (entry.promise) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 同 key 在途 promise 共享为 Promise<unknown>
       return entry.promise as Promise<T>;
     }
 

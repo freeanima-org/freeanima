@@ -5,6 +5,7 @@ import {
   pickRuntimeDocument,
   type RuntimeConfig,
 } from "@freeanima/habitat/core/config";
+import { asRecord } from "@freeanima/shared/util";
 import { stringifyYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
 import { loadConfigYamlRecord } from "./yaml-io.ts";
@@ -31,10 +32,7 @@ export class FileConfig extends Config {
   /** Merge-write a config.yaml section then reload */
   patchSection(section: keyof RuntimeConfig, patch: Record<string, unknown>): RuntimeConfig {
     const raw = loadConfigYamlRecord();
-    const existing =
-      typeof raw[section] === "object" && raw[section] != null && !Array.isArray(raw[section])
-        ? (raw[section] as Record<string, unknown>)
-        : {};
+    const existing = asRecord(raw[section]) ?? {};
     const merged = { ...existing, ...patch };
     raw[section] = merged;
     writeFileSync(PATHS.configYaml, stringifyYaml(raw), "utf-8");

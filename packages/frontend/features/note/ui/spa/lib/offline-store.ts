@@ -270,6 +270,7 @@ async function flushNoteOp(
   scope: string,
 ): Promise<import("@freeanima/client/portal-sdk/offline-module-types").FlushOpOutcome> {
   try {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
     const result = (await habitat().call(op.method as never, op.payload as never)) as {
       item?: NoteRow | NoteTextBlock;
     };

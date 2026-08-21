@@ -11,6 +11,7 @@
 import { readFileSync } from "node:fs";
 
 import { fetchHabitatRestRaw, parseHabitatRestResponse } from "@freeanima/shared/habitat-rpc";
+import { asRecord, omitUndefined } from "@freeanima/shared/util";
 
 type MemoryDetail = {
   rss_kb?: number;
@@ -76,7 +77,7 @@ async function fetchStatusViaHabitatRpc(
   try {
     const options = bearer ? { authToken: bearer } : undefined;
     const res = await fetchHabitatRestRaw(habitatUrl, "status.get", {}, options);
-    return (await parseHabitatRestResponse(res)) as Record<string, unknown>;
+    return asRecord(await parseHabitatRestResponse(res));
   } catch {
     return null;
   }
@@ -121,9 +122,43 @@ if (habitatUrl) {
     if (typeof status.memory_kb === "number") {
       parts.push(`status_memory_kb=${status.memory_kb}`);
     }
-    appendMemoryDetail(parts, status.memory_detail as MemoryDetail | undefined, stage);
-    const conversations = status.conversations as { total?: number } | undefined;
-    if (conversations?.total != null) {
+    const memDetail = asRecord(status.memory_detail);
+    const mcp = memDetail ? asRecord(memDetail.mcp) : null;
+    const acp = memDetail ? asRecord(memDetail.acp) : null;
+    appendMemoryDetail(
+      parts,
+      memDetail
+        ? omitUndefined({
+            heap_used_kb:
+              typeof memDetail.heap_used_kb === "number" ? memDetail.heap_used_kb : undefined,
+            vm_size_kb: typeof memDetail.vm_size_kb === "number" ? memDetail.vm_size_kb : undefined,
+            external_kb:
+              typeof memDetail.external_kb === "number" ? memDetail.external_kb : undefined,
+            tokenizer_repos: Array.isArray(memDetail.tokenizer_repos)
+              ? memDetail.tokenizer_repos.filter((x): x is string => typeof x === "string")
+              : undefined,
+            jieba_loaded:
+              typeof memDetail.jieba_loaded === "boolean" ? memDetail.jieba_loaded : undefined,
+            mcp: mcp
+              ? omitUndefined({
+                  server_count: typeof mcp.server_count === "number" ? mcp.server_count : undefined,
+                  connected_count:
+                    typeof mcp.connected_count === "number" ? mcp.connected_count : undefined,
+                })
+              : undefined,
+            acp: acp
+              ? omitUndefined({
+                  agent_count: typeof acp.agent_count === "number" ? acp.agent_count : undefined,
+                  connected_count:
+                    typeof acp.connected_count === "number" ? acp.connected_count : undefined,
+                })
+              : undefined,
+          })
+        : undefined,
+      stage,
+    );
+    const conversations = asRecord(status.conversations);
+    if (typeof conversations?.total === "number") {
       parts.push(`conversations=${conversations.total}`);
     }
     if (typeof status.tools === "number") {

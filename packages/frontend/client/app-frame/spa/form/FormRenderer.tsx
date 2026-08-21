@@ -19,6 +19,8 @@ import { notifyDebugConfigChanged } from "../debug-config-events.ts";
 import { resolveShellRouterBasepath } from "../router-basepath.ts";
 import { shouldUseNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { isRecord } from "@freeanima/shared/util";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 type Props = {
   fields: SettingsFormFields;
@@ -62,8 +64,8 @@ export function FormRenderer({
       setError(null);
       try {
         const raw = await store.load();
-        if (!cancelled && raw && typeof raw === "object") {
-          setValues({ ...(raw as Record<string, unknown>) });
+        if (!cancelled && isRecord(raw)) {
+          setValues({ ...raw });
         }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));
@@ -118,7 +120,7 @@ export function FormRenderer({
       return;
     }
     if (shouldUseNativeShellNavigation()) {
-      await navigate({ to: "/chat" as never });
+      await navigate({ to: assertNarrow<never>("/chat") });
       return;
     }
     const base = resolveShellRouterBasepath() ?? "";

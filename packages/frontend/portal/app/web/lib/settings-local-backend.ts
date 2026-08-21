@@ -8,8 +8,10 @@ import {
 } from "@freeanima/client/portal-sdk/settings";
 import {
   parseShellDebugConfig,
-  type ShellDebugConfig,
+  normalizeShellDebugConfig,
 } from "@freeanima/client/portal-sdk/shell-debug-config";
+import { normalizeShellClientConfig } from "@freeanima/client/portal-sdk";
+import { isRecord } from "@freeanima/shared/util";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("web 仅支持 kv scope");
@@ -32,13 +34,17 @@ function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
   if (scope.kind !== "kv") throw new Error("web 仅支持 kv scope");
   const scopeId = scope.id;
   if (scopeId === "habitat") {
-    const raw = value as { habitatUrl: string; remoteAuthToken: string };
-    localStorage.setItem(HABITAT_URL_KEY, raw.habitatUrl);
-    localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, raw.remoteAuthToken);
+    if (!isRecord(value)) throw new Error("无效的 habitat 设置");
+    const cfg = normalizeShellClientConfig({
+      habitatUrl: typeof value.habitatUrl === "string" ? value.habitatUrl : "",
+      remoteAuthToken: typeof value.remoteAuthToken === "string" ? value.remoteAuthToken : "",
+    });
+    localStorage.setItem(HABITAT_URL_KEY, cfg.habitatUrl);
+    localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, cfg.remoteAuthToken);
     return;
   }
   if (scopeId === "debug") {
-    const cfg = value as ShellDebugConfig;
+    const cfg = normalizeShellDebugConfig(parseShellDebugConfig(value));
     localStorage.setItem(DEBUG_VCONSOLE_ENABLED_KEY, cfg.vConsoleEnabled ? "1" : "0");
     return;
   }

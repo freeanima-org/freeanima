@@ -5,6 +5,7 @@ export async function mapWithConcurrency<T, R>(
   fn: (item: T, index: number) => Promise<R>,
 ): Promise<R[]> {
   if (items.length === 0) return [];
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 预分配稀疏结果槽
   const results = Array.from({ length: items.length }) as R[];
   let next = 0;
 

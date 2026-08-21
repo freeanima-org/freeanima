@@ -138,6 +138,7 @@ export class MCPManager {
     const tasks: Promise<void>[] = [];
 
     for (const [name, rawCfg] of Object.entries(servers)) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mcp_servers 配置边界
       const serverCfg = rawCfg as McpServerConfig;
       if (!isMcpServerEnabled(serverCfg)) continue;
       if (this.clients.has(name) || this.connecting.has(name)) continue;
@@ -159,6 +160,7 @@ export class MCPManager {
   }
 
   private resolveServerConfig(name: string): McpServerConfig | undefined {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mcp_servers 配置边界
     const fromCfg = this.config.data.mcp_servers?.[name] as McpServerConfig | undefined;
     if (!fromCfg) return undefined;
     this.serverConfigs.set(name, fromCfg);
@@ -195,15 +197,18 @@ export class MCPManager {
 
     const entries = Object.entries(servers).filter(([, serverCfg]) => {
       if (!opts?.enabledOnly) return true;
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mcp_servers 配置边界
       return isMcpServerEnabled(serverCfg as McpServerConfig);
     });
 
     for (const [serverName, serverCfg] of Object.entries(servers)) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mcp_servers 配置边界
       this.serverConfigs.set(serverName, serverCfg as McpServerConfig);
     }
 
     const results = await Promise.allSettled(
       entries.map(([serverName, serverCfg]) =>
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mcp_servers 配置边界
         this.startOneSafe(serverName, serverCfg as McpServerConfig),
       ),
     );
@@ -346,6 +351,7 @@ export class MCPManager {
     const servers: McpServerStatusView[] = [];
     for (const name of serverNames.toSorted()) {
       const rawCfg =
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mcp_servers 配置边界
         (serversCfg[name] as McpServerConfig | undefined) ?? this.serverConfigs.get(name) ?? {};
       const enabled = isMcpServerEnabled(rawCfg);
       const client = this.clients.get(name);

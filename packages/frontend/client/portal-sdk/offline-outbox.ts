@@ -1,4 +1,6 @@
 /// <reference lib="dom" />
+import { isRecord } from "@freeanima/shared/util";
+
 import {
   resolveHabitatCacheScope,
   setSatelliteOfflineCacheBackendForTests,
@@ -60,6 +62,13 @@ function outboxKey(scope: string, opId: string): string {
   return `${scope}|${opId}`;
 }
 
+function isOfflineOutboxOp(raw: unknown): raw is OfflineOutboxOp {
+  if (!isRecord(raw)) return false;
+  if (typeof raw.id !== "string" || typeof raw.moduleId !== "string") return false;
+  if (typeof raw.method !== "string" || typeof raw.createdAt !== "string") return false;
+  return isRecord(raw.payload);
+}
+
 export function setOfflineOutboxBackendForTests(map: MemoryBackend | null): void {
   setOfflineDbBackendForTests(map);
   setSatelliteOfflineCacheBackendForTests(map);
@@ -71,8 +80,7 @@ export async function enqueueOutboxOp(scope: string, op: OfflineOutboxOp): Promi
 
 export async function getOutboxOp(scope: string, opId: string): Promise<OfflineOutboxOp | null> {
   const raw = await offlineDbGet(OFFLINE_OUTBOX_STORE, outboxKey(scope, opId));
-  if (!raw || typeof raw !== "object") return null;
-  return raw as OfflineOutboxOp;
+  return isOfflineOutboxOp(raw) ? raw : null;
 }
 
 export async function listOutboxOps(
@@ -84,10 +92,9 @@ export async function listOutboxOps(
   const ops: OfflineOutboxOp[] = [];
   for (const suffix of suffixes) {
     const raw = await offlineDbGet(OFFLINE_OUTBOX_STORE, `${prefix}${suffix}`);
-    if (!raw || typeof raw !== "object") continue;
-    const op = raw as OfflineOutboxOp;
-    if (moduleId && op.moduleId !== moduleId) continue;
-    ops.push(op);
+    if (!isOfflineOutboxOp(raw)) continue;
+    if (moduleId && raw.moduleId !== moduleId) continue;
+    ops.push(raw);
   }
   return ops.toSorted((a, b) => a.createdAt.localeCompare(b.createdAt));
 }

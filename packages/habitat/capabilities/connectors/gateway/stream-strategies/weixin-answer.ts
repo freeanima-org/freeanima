@@ -1,5 +1,6 @@
 import type { StreamEffect } from "../stream-state/types.ts";
 import type { ChannelAction, StreamStrategy, StrategyContext } from "./types.ts";
+import { bagGetString } from "./types.ts";
 
 const BAG_BUFFER = "weixin.answerBuffer";
 
@@ -9,10 +10,7 @@ export function createWeixinBufferedAnswerStrategy(): StreamStrategy {
     handle(effect: StreamEffect, ctx: StrategyContext): ChannelAction[] {
       switch (effect.kind) {
         case "answer_delta":
-          ctx.bag.set(
-            BAG_BUFFER,
-            `${(ctx.bag.get(BAG_BUFFER) as string | undefined) ?? ""}${effect.delta}`,
-          );
+          ctx.bag.set(BAG_BUFFER, `${bagGetString(ctx.bag, BAG_BUFFER) ?? ""}${effect.delta}`);
           return [];
         case "answer_replace":
           ctx.bag.set(BAG_BUFFER, effect.content);

@@ -6,6 +6,7 @@ import {
   maskConfigSecretsForLlm as maskConfigSecretsForLlmKernel,
   sanitizeConfigForApi as sanitizeConfigForApiKernel,
 } from "@freeanima/habitat/kernel/config-mechanism";
+import { asRecord } from "@freeanima/shared/util";
 
 export { CONFIG_MASKED_SECRET, isConfigSecretKey, findForbiddenLlmConfigPatchPath };
 
@@ -13,8 +14,8 @@ export { CONFIG_MASKED_SECRET, isConfigSecretKey, findForbiddenLlmConfigPatchPat
 export function sanitizeConfigForApi(cfg: RuntimeConfig): Record<string, unknown> {
   const out = sanitizeConfigForApiKernel(cfg);
   // identity 私钥 / subject_keys 永不经 Habitat 配置 API 下发
-  if (out.identity != null && typeof out.identity === "object" && !Array.isArray(out.identity)) {
-    const id = out.identity as Record<string, unknown>;
+  const id = asRecord(out.identity);
+  if (id) {
     out.identity = {
       ...(typeof id.habitat_instance_id === "string"
         ? { habitat_instance_id: id.habitat_instance_id }

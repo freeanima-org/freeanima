@@ -2,6 +2,7 @@ import { safeParseOrNull } from "@freeanima/habitat/core/util";
 import { ITEM_TEXT, MSG_TYPE_BOT, MSG_TYPE_USER, type IlinkMessage } from "./ilink-api.ts";
 import { ilinkMessageSchema } from "../schemas/weixin.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 export type WeixinPlatformExtra = {
   weixin_user_id: string;
@@ -39,10 +40,10 @@ function coerceMessageType(value: unknown): number | null {
 
 /** Unpack single getupdates message (nested msg, camelCase fields) */
 export function normalizeInboundMessage(raw: IlinkMessage): IlinkMessage {
-  let msg = raw;
-  const nested = raw.msg;
-  if (typeof nested === "object" && nested != null && !Array.isArray(nested)) {
-    msg = nested as IlinkMessage;
+  let msg: Record<string, unknown> = raw;
+  const nested = asRecord(raw.msg);
+  if (nested) {
+    msg = nested;
   }
 
   const itemList = readField(msg, "item_list", "itemList");
@@ -72,23 +73,23 @@ export function extractTextFromMessage(msg: IlinkMessage): string {
   if (!Array.isArray(items)) return "";
 
   for (const item of items) {
-    if (typeof item !== "object" || item == null) continue;
-    const rec = item as Record<string, unknown>;
+    const rec = asRecord(item);
+    if (!rec) continue;
     const itemType = coerceItemType(rec.type ?? rec.item_type);
     if (itemType !== ITEM_TEXT) continue;
 
-    const textItem = (rec.text_item ?? rec.textItem) as Record<string, unknown> | undefined;
-    if (typeof textItem === "object" && textItem != null) {
+    const textItem = asRecord(rec.text_item ?? rec.textItem);
+    if (textItem) {
       const text = coerceString(textItem.text ?? textItem.content ?? "");
       if (text) return text;
     }
   }
 
   for (const item of items) {
-    if (typeof item !== "object" || item == null) continue;
-    const rec = item as Record<string, unknown>;
-    const voiceItem = (rec.voice_item ?? rec.voiceItem) as Record<string, unknown> | undefined;
-    if (typeof voiceItem === "object" && voiceItem != null) {
+    const rec = asRecord(item);
+    if (!rec) continue;
+    const voiceItem = asRecord(rec.voice_item ?? rec.voiceItem);
+    if (voiceItem) {
       const voiceText = coerceString(voiceItem.text ?? "");
       if (voiceText) return voiceText;
     }

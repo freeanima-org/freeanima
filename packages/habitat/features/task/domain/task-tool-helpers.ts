@@ -3,6 +3,8 @@ import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 
 import type { TaskItemRow, TaskListRow, TaskReminderEntryInput } from "./types.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export const TASK_PRIORITIES: TaskItemPriority[] = ["high", "medium", "low", "none"];
 
@@ -13,7 +15,9 @@ export type ParseResult<T> = ParseOk<T> | ParseErr;
 export function parsePriority(raw: unknown): TaskItemPriority | undefined {
   if (raw == null || raw === "") return undefined;
   const s = coerceString(raw);
-  return TASK_PRIORITIES.includes(s as TaskItemPriority) ? (s as TaskItemPriority) : undefined;
+  return (TASK_PRIORITIES as readonly string[]).includes(s)
+    ? assertNarrow<TaskItemPriority>(s)
+    : undefined;
 }
 
 export function parseWorldId(raw: unknown): number | null {
@@ -119,7 +123,8 @@ export function parseReminders(raw: unknown): ParseResult<TaskReminderEntryInput
     if (item == null || typeof item !== "object") {
       return { ok: false, error: "invalid reminders element" };
     }
-    const rec = item as Record<string, unknown>;
+    const rec = asRecord(item);
+    if (!rec) return { ok: false, error: "invalid reminders element" };
     const at = coerceString(rec.at ?? "").trim();
     if (!at) return { ok: false, error: "reminders[].at is required" };
     const entry: TaskReminderEntryInput = { at };
@@ -128,7 +133,7 @@ export function parseReminders(raw: unknown): ParseResult<TaskReminderEntryInput
       if (!REMINDER_ANCHORS.has(anchor)) {
         return { ok: false, error: `invalid reminders[].anchor: ${anchor}` };
       }
-      entry.anchor = anchor as "start" | "end" | "due";
+      entry.anchor = assertNarrow<"start" | "end" | "due">(anchor);
     }
     if (rec.last_notified_at !== undefined) {
       entry.last_notified_at =

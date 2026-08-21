@@ -8,6 +8,7 @@ import type {
   VaultUriEntryPayload as VaultUriEntry,
   VaultUriMatch,
 } from "@freeanima/shared/rpc-contract/frames/vault.ts";
+import { asRecord } from "@freeanima/shared/util";
 import type {
   VaultCardSecrets,
   VaultCustomField,
@@ -48,12 +49,6 @@ const BW_TYPE_LOGIN = 1;
 const BW_TYPE_SECURE_NOTE = 2;
 const BW_TYPE_CARD = 3;
 const BW_TYPE_IDENTITY = 4;
-
-function asRecord(v: unknown): Record<string, unknown> | null {
-  return v != null && typeof v === "object" && !Array.isArray(v)
-    ? (v as Record<string, unknown>)
-    : null;
-}
 
 function asString(v: unknown): string | undefined {
   return typeof v === "string" ? v : undefined;

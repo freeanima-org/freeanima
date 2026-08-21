@@ -1,5 +1,6 @@
 import type { Config } from "@freeanima/habitat/core/config";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 import {
   getActiveRuntimeConfig,
   isPatchableRuntimeConfig,
@@ -35,7 +36,7 @@ export function getHomeChannel(platform: string): HomeChannel | null {
   } catch {
     cfg = requireHomeChannelConfig().data;
   }
-  const section = cfg[platform] as Record<string, unknown> | undefined;
+  const section = asRecord(cfg[platform]);
   if (!section) return null;
   const chatId = coerceString(section.home_channel ?? "").trim();
   if (!chatId) return null;
@@ -49,11 +50,8 @@ function mergePlatformSectionIntoActive(platform: string, patch: Record<string, 
     // RuntimeConfigStore.patchSection 已更新内存快照
     return;
   }
-  const data = { ...(config.data as Record<string, unknown>) };
-  const existing =
-    typeof data[platform] === "object" && data[platform] != null && !Array.isArray(data[platform])
-      ? { ...(data[platform] as Record<string, unknown>) }
-      : {};
+  const data = { ...config.data };
+  const existing = asRecord(data[platform]) ?? {};
   data[platform] = { ...existing, ...patch };
   config.update(data);
 }

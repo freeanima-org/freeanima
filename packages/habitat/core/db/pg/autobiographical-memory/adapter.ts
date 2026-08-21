@@ -21,7 +21,9 @@ import type {
 } from "./types.ts";
 
 function brickToRow(b: MemoryBrickRow): AutobiographicalMemoryRow {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body.significance 运行时枚举
   const significance = (b.body.significance as NarrativeSignificance | undefined) ?? "normal";
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body.status 运行时枚举
   const status = (b.body.status as NarrativeStatus | undefined) ?? "active";
   const facts = b.body.source_facts;
   const convs = b.body.source_conversations;

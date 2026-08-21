@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 import { formatZodError } from "@freeanima/habitat/core/util";
 import type { JsonSchemaObject } from "./registry.ts";
@@ -73,8 +74,10 @@ function toolArgsZodSchema(parameters: JsonSchemaObject): z.ZodType {
   if (cached) return cached;
 
   const normalized = normalizeJsonSchema(parameters);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- withStrict 仍为 JSON Schema 对象形
   const forValidation = withStrictAdditionalProperties(normalized) as JsonSchemaObject;
   // ToolDef.parameters 为宽松 JsonSchemaObject；运行时再交给 Zod 解析
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Zod fromJSONSchema 输入边界
   const schema = z.fromJSONSchema(forValidation as Parameters<typeof z.fromJSONSchema>[0]);
   schemaCache.set(parameters, schema);
   return schema;
@@ -92,5 +95,5 @@ export function validateToolArgs(
   if (!result.success) {
     return { ok: false, error: `invalid tool arguments: ${formatZodError(result.error)}` };
   }
-  return { ok: true, data: result.data as Record<string, unknown> };
+  return { ok: true, data: asRecord(result.data) ?? {} };
 }

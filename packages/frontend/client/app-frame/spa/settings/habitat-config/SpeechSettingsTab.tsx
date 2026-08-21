@@ -9,6 +9,7 @@ import {
   parseSpeechConfigFromHub,
   readSpeechConfigDraft,
   speechConfigDraftToPatch,
+  isTtsProvider,
   type SpeechConfigDraft,
   type TtsProvider,
 } from "@freeanima/client/portal-sdk/speech/types";
@@ -145,7 +146,10 @@ export function SpeechSettingsTab({ config, saving, onSavingChange, onError, onS
           <select
             className={selectClassName}
             value={draft.provider}
-            onChange={(e) => setDraft((d) => ({ ...d, provider: e.target.value as TtsProvider }))}
+            onChange={(e) => {
+              const next = e.target.value;
+              setDraft((d) => ({ ...d, provider: isTtsProvider(next) ? next : d.provider }));
+            }}
           >
             {PROVIDER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>

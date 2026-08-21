@@ -18,14 +18,14 @@ export function resolveBunSchedule(schedule: string): BunSchedule {
   const [schedType, value] = parseSchedule(schedule);
 
   if (schedType === ScheduleType.INTERVAL) {
-    return { kind: "cron", expr: intervalSecondsToCron(value as number) };
+    return { kind: "cron", expr: intervalSecondsToCron(value) };
   }
 
   if (schedType === ScheduleType.CRON) {
-    return { kind: "cron", expr: cstCronToUtc(value as string) };
+    return { kind: "cron", expr: cstCronToUtc(value) };
   }
 
-  return { kind: "oneshot", atMs: (value as number) * 1000 };
+  return { kind: "oneshot", atMs: value * 1000 };
 }
 
 /** Compute next run unix seconds; paused job returns 0 */

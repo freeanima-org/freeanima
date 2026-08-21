@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 import { resolveHabitatCacheScope } from "./offline-cache.ts";
 import { getSubjectKind } from "./subject-scope-store.ts";
 import type { SubjectKind } from "./subject-scope.ts";
@@ -57,13 +59,12 @@ function parseTasksValue(raw: string | null): TaskModuleSelection | null {
     if (typeof parsed === "number" && Number.isInteger(parsed) && parsed > 0) {
       return { kind: "list", id: parsed };
     }
-    if (typeof parsed !== "object" || parsed === null) return null;
-    const obj = parsed as Record<string, unknown>;
-    if (obj.kind === "list" && typeof obj.id === "number" && obj.id > 0) {
-      return { kind: "list", id: obj.id };
+    if (!isRecord(parsed)) return null;
+    if (parsed.kind === "list" && typeof parsed.id === "number" && parsed.id > 0) {
+      return { kind: "list", id: parsed.id };
     }
-    if (obj.kind === "smart_list" && typeof obj.key === "string" && obj.key.trim()) {
-      return { kind: "smart_list", key: obj.key.trim() };
+    if (parsed.kind === "smart_list" && typeof parsed.key === "string" && parsed.key.trim()) {
+      return { kind: "smart_list", key: parsed.key.trim() };
     }
     // search 不持久化；旧数据若误写则忽略
   } catch {
@@ -77,11 +78,11 @@ function parseEmailValue(raw: string | null): EmailModuleSelection | null {
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as unknown;
-    if (typeof parsed !== "object" || parsed === null) return null;
-    const accountId = (parsed as EmailModuleSelection).accountId;
+    if (!isRecord(parsed)) return null;
+    const accountId = parsed.accountId;
     if (typeof accountId !== "number" || !Number.isInteger(accountId) || accountId <= 0)
       return null;
-    const messageId = (parsed as EmailModuleSelection).messageId;
+    const messageId = parsed.messageId;
     if (messageId == null) return { accountId };
     if (typeof messageId === "number" && Number.isInteger(messageId) && messageId > 0) {
       return { accountId, messageId };

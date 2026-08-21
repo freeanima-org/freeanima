@@ -41,6 +41,7 @@ function attachLookAtQuaternionProxy(vrm: VRM): void {
   const scene = getVrmScene(vrm);
   if (scene.getObjectByName(LOOK_AT_PROXY_NAME)) return;
   const proxy = new VRMLookAtQuaternionProxy(vrm.lookAt);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
   const proxyObj = proxy as unknown as THREE.Object3D;
   proxyObj.name = LOOK_AT_PROXY_NAME;
   scene.add(proxyObj);
@@ -149,6 +150,7 @@ export class VrmBackend implements CharacterBackend {
     const gltf = await loader.loadAsync(source);
     if (generation !== this.loadGeneration) return;
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
     const vrm = gltf.userData.vrm as VRM | undefined;
     if (!vrm) {
       throw new Error("not a VRM model");

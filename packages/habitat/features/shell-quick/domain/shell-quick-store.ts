@@ -19,6 +19,7 @@ import {
   type ShellQuickAllowedPrimary,
   type ShellQuickEntryRowPayload,
 } from "@freeanima/shared/rpc-contract/frames/shell-quick";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 export const SHELL_QUICK_MAX_ENTRIES = 20;
 
@@ -43,7 +44,7 @@ function toEntry(row: {
   if (primary == null || !ALLOWED.has(primary)) return null;
   return {
     id: row.id,
-    primary_component: primary as ShellQuickAllowedPrimary,
+    primary_component: assertNarrow<ShellQuickAllowedPrimary>(primary),
     title: row.title,
     quick_sort_order: readQuickSortOrder(row.body),
   };

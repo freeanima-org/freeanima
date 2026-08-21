@@ -17,6 +17,7 @@ import {
   applyHabitatConfigToShell,
   notifyShellConfigChanged,
 } from "../lib/apply-habitat-to-shell.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
 
@@ -150,7 +151,7 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
     },
     save: async (scope, value) => {
       if (scope.kind === "kv" && scope.id === "habitat") {
-        const raw = value as { habitatUrl: string; remoteAuthToken: string };
+        const raw = assertNarrow<{ habitatUrl: string; remoteAuthToken: string }>(value);
         await invoke("set_habitat_config", {
           habitatUrl: raw.habitatUrl,
           remoteAuthToken: raw.remoteAuthToken,
@@ -161,7 +162,7 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
     },
     test: async (scope, value) => {
       if (scope.kind === "kv" && scope.id === "habitat") {
-        const raw = value as { habitatUrl: string; remoteAuthToken: string };
+        const raw = assertNarrow<{ habitatUrl: string; remoteAuthToken: string }>(value);
         const url = normalizeHabitatUrl(raw.habitatUrl);
         const token = (raw.remoteAuthToken ?? "").trim();
         if (!url) throw new Error("栖息地地址不能为空");

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { isRecord } from "@freeanima/shared/util";
+
 import { readPomodoroActiveState } from "./pomodoro-active.ts";
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
 import {
@@ -38,8 +40,10 @@ export function usePomodoroNavCountdown(): PomodoroNavCountdown {
     };
     const unsub = subscribePomodoroSync(() => refresh());
     const onCustom = (event: Event) => {
-      const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
-      if (detail?.subjectKind === subjectKind) refresh();
+      if (!(event instanceof CustomEvent)) return;
+      const detail: unknown = event.detail;
+      if (!isRecord(detail)) return;
+      if (detail.subjectKind === subjectKind) refresh();
     };
     const onStorage = (event: StorageEvent) => {
       if (!event.key?.startsWith("freeanima.pomodoro.active:")) return;

@@ -37,6 +37,7 @@ import {
 import { normalizeUsage } from "../usage.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { isQuotaExhaustedText, createSdkFetch } from "../sdk-retry-guard.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export const ANTHROPIC_MESSAGES_FORMAT_ID = LLM_FORMAT_ANTHROPIC_MESSAGES;
 
@@ -126,9 +127,8 @@ function toAnthropicMessages(messages: LlmTurnMessage[]): MessageParam[] {
           let input: Record<string, unknown> = {};
           try {
             const parsed: unknown = JSON.parse(tc.function.arguments || "{}");
-            if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-              input = parsed as Record<string, unknown>;
-            }
+            const rec = asRecord(parsed);
+            if (rec) input = rec;
           } catch {
             input = {};
           }
@@ -151,6 +151,7 @@ function toAnthropicMessages(messages: LlmTurnMessage[]): MessageParam[] {
         };
         const last = out[out.length - 1];
         if (last?.role === "user" && Array.isArray(last.content)) {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Anthropic tool_result content 数组边界
           (last.content as ToolResultBlockParam[]).push(block);
         } else {
           out.push({ role: "user", content: [block] });
@@ -172,10 +173,14 @@ function toAnthropicTools(request: ChatRequest): Tool[] | undefined {
     omitUndefined({
       name: t.function.name,
       description: t.function.description,
-      input_schema: (t.function.parameters ?? {
-        type: "object",
-        properties: {},
-      }) as Tool["input_schema"],
+      input_schema: (() => {
+        const schema = t.function.parameters ?? {
+          type: "object",
+          properties: {},
+        };
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Anthropic Tool.input_schema 边界
+        return schema as Tool["input_schema"];
+      })(),
     }),
   );
 }
@@ -192,7 +197,8 @@ function mapAnthropicError(err: unknown, meta?: { providerId?: string }): Provid
     );
   }
   if (err && typeof err === "object" && "status" in err) {
-    const status = (err as { status?: number }).status ?? 0;
+    const errRec = asRecord(err);
+    const status = typeof errRec?.status === "number" ? errRec.status : 0;
     const message = err instanceof Error ? err.message : coerceString(err);
     if (status === 429 && isQuotaExhaustedText(message)) {
       return new ProviderErrorClass(

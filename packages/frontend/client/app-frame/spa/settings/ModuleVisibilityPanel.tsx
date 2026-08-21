@@ -18,6 +18,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Checkbox, Label, Slider } from "@freeanima/ui-kit";
 import {
   SHELL_MODULE_LOCKED,
+  isShellModuleId,
   type ShellModuleId,
 } from "@freeanima/client/portal-sdk/shell-module-visibility";
 import {
@@ -165,8 +166,11 @@ export default function ModuleVisibilityPanel(_props: SettingsPanelProps) {
   const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = order.indexOf(active.id as ShellModuleId);
-    const newIndex = order.indexOf(over.id as ShellModuleId);
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (!isShellModuleId(activeId) || !isShellModuleId(overId)) return;
+    const oldIndex = order.indexOf(activeId);
+    const newIndex = order.indexOf(overId);
     if (oldIndex < 0 || newIndex < 0) return;
     setOrder(arrayMove(order, oldIndex, newIndex));
   };

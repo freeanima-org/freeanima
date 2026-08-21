@@ -8,6 +8,6 @@ export function getHabitatRpcClient() {
   const origin = resolveApiOrigin();
   return getTypedHabitatUiClient({
     habitatUrl: origin,
-    fetch: resolveHabitatFetch() as typeof fetch,
+    fetch: resolveHabitatFetch(),
   });
 }

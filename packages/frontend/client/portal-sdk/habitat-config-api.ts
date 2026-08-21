@@ -1,16 +1,15 @@
-import { getBundledHabitatClient } from "@freeanima/shared/habitat-client/bundled-browser.ts";
-
+import { getTypedHabitatClient, type HabitatMethodOutputs } from "./habitat-typed-client.ts";
 import { resolveHabitatApiFetch } from "./habitat-api-fetch.ts";
 
 function habitatRpc() {
-  return getBundledHabitatClient({
+  return getTypedHabitatClient({
     profile: "outpost",
-    fetch: resolveHabitatApiFetch() as typeof fetch,
+    fetch: resolveHabitatApiFetch(),
   });
 }
 
 export async function fetchHabitatConfig(): Promise<Record<string, unknown>> {
-  return (await habitatRpc().call("config.get", {})) as Record<string, unknown>;
+  return habitatRpc().call("config.get", {});
 }
 
 export async function fetchHabitatConfigSection(section: string): Promise<unknown> {
@@ -21,20 +20,14 @@ export async function patchHabitatConfigSection(
   section: string,
   patch: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  return (await habitatRpc().call("config.patchSection", { section, patch })) as Record<
-    string,
-    unknown
-  >;
+  return habitatRpc().call("config.patchSection", { section, patch });
 }
 
 export async function replaceHabitatConfigSection(
   section: string,
   value: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  return (await habitatRpc().call("config.replaceSection", { section, value })) as Record<
-    string,
-    unknown
-  >;
+  return habitatRpc().call("config.replaceSection", { section, value });
 }
 
 export async function restartHabitatService(): Promise<void> {
@@ -74,19 +67,23 @@ export type HabitatServiceUpdateApplyResult =
 export async function checkHabitatServiceUpdate(opts?: {
   proxy?: HabitatServiceUpdateProxy;
 }): Promise<HabitatServiceUpdateCheckResult> {
-  return (await habitatRpc().call(
+  const raw = await habitatRpc().call(
     "status.updateCheck",
     opts?.proxy != null ? { proxy: opts.proxy } : {},
-  )) as HabitatServiceUpdateCheckResult;
+  );
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- status.updateCheck 契约为 unknownOutputSchema，收窄到产品结果形
+  return raw as HabitatServiceUpdateCheckResult;
 }
 
 export async function applyHabitatServiceUpdate(opts?: {
   proxy?: HabitatServiceUpdateProxy;
 }): Promise<HabitatServiceUpdateApplyResult> {
-  return (await habitatRpc().call(
+  const raw = await habitatRpc().call(
     "status.updateApply",
     opts?.proxy != null ? { proxy: opts.proxy } : {},
-  )) as HabitatServiceUpdateApplyResult;
+  );
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- status.updateApply 契约为 unknownOutputSchema，收窄到产品结果形
+  return raw as HabitatServiceUpdateApplyResult;
 }
 
 export type HabitatConfigTestService =
@@ -98,38 +95,18 @@ export type HabitatConfigTestService =
   | "weixin"
   | "object_storage";
 
-export type HabitatConfigTestConnectionResult = {
-  ok: boolean;
-  message: string;
-  latency_ms?: number;
-  details?: Record<string, unknown>;
-};
+export type HabitatConfigTestConnectionResult = HabitatMethodOutputs["config.testConnection"];
 
 export async function testHabitatConfigConnection(input: {
   service: HabitatConfigTestService;
   config?: Record<string, unknown>;
   provider_id?: string;
 }): Promise<HabitatConfigTestConnectionResult> {
-  return (await habitatRpc().call(
-    "config.testConnection",
-    input,
-  )) as HabitatConfigTestConnectionResult;
+  return habitatRpc().call("config.testConnection", input);
 }
 
-export type HabitatProviderModelEntry = {
-  model: string;
-  label?: string;
-  contextWindow: number;
-  maxOutputTokens: number;
-  cost?: { input?: number; output?: number };
-  inputModalities?: Array<"text" | "image" | "audio" | "video" | "pdf">;
-  outputModalities?: Array<"text" | "image" | "audio" | "video">;
-};
-
-export type HabitatListProviderModelsResult = {
-  models: HabitatProviderModelEntry[];
-  source: "provider" | "models_dev" | "builtin";
-};
+export type HabitatListProviderModelsResult = HabitatMethodOutputs["config.listProviderModels"];
+export type HabitatProviderModelEntry = HabitatListProviderModelsResult["models"][number];
 
 export async function listHabitatProviderModels(input: {
   provider_id: string;
@@ -137,24 +114,11 @@ export async function listHabitatProviderModels(input: {
   limit?: number;
   purpose?: "chat" | "image_generate" | "embedding" | "voice_generate" | "video_generate";
 }): Promise<HabitatListProviderModelsResult> {
-  return (await habitatRpc().call(
-    "config.listProviderModels",
-    input,
-  )) as HabitatListProviderModelsResult;
+  return habitatRpc().call("config.listProviderModels", input);
 }
 
-export type HabitatProviderVoiceEntry = {
-  id: string;
-  label: string;
-  lang?: string;
-  models?: string[];
-};
-
-export type HabitatListProviderVoicesResult = {
-  voices: HabitatProviderVoiceEntry[];
-  protocol: "openai_audio_speech" | "edge-tts" | "alibaba_audio";
-  source: "builtin";
-};
+export type HabitatListProviderVoicesResult = HabitatMethodOutputs["config.listProviderVoices"];
+export type HabitatProviderVoiceEntry = HabitatListProviderVoicesResult["voices"][number];
 
 /** 按连接 voice_protocol 返回静态音色目录（与合成模型列表分维） */
 export async function listHabitatProviderVoices(input: {
@@ -163,8 +127,5 @@ export async function listHabitatProviderVoices(input: {
   query?: string;
   limit?: number;
 }): Promise<HabitatListProviderVoicesResult> {
-  return (await habitatRpc().call(
-    "config.listProviderVoices",
-    input,
-  )) as HabitatListProviderVoicesResult;
+  return habitatRpc().call("config.listProviderVoices", input);
 }

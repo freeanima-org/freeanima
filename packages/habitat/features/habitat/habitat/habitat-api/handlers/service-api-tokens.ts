@@ -13,6 +13,7 @@ import {
 } from "@freeanima/shared/service-api-auth";
 import type { FeatureRpcHandler } from "@freeanima/habitat/platform/features";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { authHasScope, type ServiceAuthContext } from "../auth-context.ts";
 import { getSubjectEntity } from "./entities.ts";
@@ -46,20 +47,20 @@ function resolveCreateAuthorization(input: {
 export const tokensHabitatHandlers: Record<string, FeatureRpcHandler> = {
   "tokens.listForSubject": async (_deps, payload, ctx) => {
     requireFullAuth(ctx);
-    const { id } = payload as { id: number };
+    const { id } = assertNarrow<{ id: number }>(payload);
     await getSubjectEntity(id);
     const items = await listServiceApiTokensBySubject(id);
     return { items };
   },
   "tokens.createForSubject": async (_deps, payload, ctx) => {
     requireFullAuth(ctx);
-    const { id, name, preset, world_ids, authorization } = payload as {
+    const { id, name, preset, world_ids, authorization } = assertNarrow<{
       id: number;
       name: string;
       preset?: "full" | "app" | "extension" | "mcp";
       world_ids?: number[];
       authorization?: import("@freeanima/shared/service-api-auth").ServiceApiTokenAuthorization;
-    };
+    }>(payload);
     await getSubjectEntity(id);
     const trimmed = name.trim();
     if (!trimmed) {
@@ -78,7 +79,7 @@ export const tokensHabitatHandlers: Record<string, FeatureRpcHandler> = {
   },
   "tokens.revoke": async (_deps, payload, ctx) => {
     requireFullAuth(ctx);
-    const { id } = payload as { id: number };
+    const { id } = assertNarrow<{ id: number }>(payload);
     const row = await getServiceApiTokenById(id);
     if (!row) {
       throw new ApiHandlerError(404, "token not found", { code: "token_not_found" });
@@ -91,7 +92,7 @@ export const tokensHabitatHandlers: Record<string, FeatureRpcHandler> = {
   },
   "tokens.reveal": async (_deps, payload, ctx) => {
     requireFullAuth(ctx);
-    const { id } = payload as { id: number };
+    const { id } = assertNarrow<{ id: number }>(payload);
     const row = await getServiceApiTokenById(id);
     if (!row) {
       throw new ApiHandlerError(404, "token not found", { code: "token_not_found" });
@@ -112,7 +113,7 @@ export const tokensHabitatHandlers: Record<string, FeatureRpcHandler> = {
   },
   "tokens.updateName": async (_deps, payload, ctx) => {
     requireFullAuth(ctx);
-    const { id, name } = payload as { id: number; name: string };
+    const { id, name } = assertNarrow<{ id: number; name: string }>(payload);
     const trimmed = name.trim();
     if (!trimmed) {
       throw new ApiHandlerError(400, "name is required", { code: "token_name_required" });

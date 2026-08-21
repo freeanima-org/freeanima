@@ -29,12 +29,8 @@ type ToolContextStore = {
 const storage = new AsyncLocalStorage<ToolContextStore>();
 
 function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
-  return (
-    value != null &&
-    typeof value === "object" &&
-    Symbol.asyncIterator in value &&
-    typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function"
-  );
+  if (value == null || typeof value !== "object") return false;
+  return typeof Reflect.get(value, Symbol.asyncIterator) === "function";
 }
 
 /** Each next() runs in conversation context; for runStream and other async generators */
@@ -80,6 +76,7 @@ export function runWithToolContext<T>(
   });
   const result = storage.run(store, fn);
   if (isAsyncIterable(result)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- AsyncIterable 绑定后仍为 T
     return bindToolContext(store, result) as T;
   }
   return result;

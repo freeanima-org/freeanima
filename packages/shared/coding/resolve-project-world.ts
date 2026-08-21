@@ -8,6 +8,8 @@
  * - 返回的 world id 作为 `conversation.create` 的 `project_world_id`
  */
 
+import { asRecord } from "../util/is-record.ts";
+
 export type WorldListItem = {
   id: number;
   title?: string | null;
@@ -15,8 +17,9 @@ export type WorldListItem = {
 };
 
 export function extractStableKeyFromWorldBody(body: unknown): string | null {
-  if (!body || typeof body !== "object") return null;
-  const key = (body as Record<string, unknown>).stable_key;
+  const record = asRecord(body);
+  if (!record) return null;
+  const key = record.stable_key;
   if (typeof key !== "string") return null;
   const trimmed = key.trim();
   return trimmed || null;

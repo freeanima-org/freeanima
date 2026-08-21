@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { ModelInfo } from "@freeanima/habitat/core/provider";
 import { REDIS_CACHE_KEY_PREFIX, cacheGetJson, cacheSetJson } from "@freeanima/habitat/core/redis";
+import { asRecord } from "@freeanima/shared/util";
 
 import type { OpenAiCompatibleContext } from "./context.ts";
 
@@ -15,16 +16,18 @@ export function llmModelCatalogRedisKey(context: OpenAiCompatibleContext): strin
   return `${REDIS_CACHE_KEY_PREFIX}llm-model-catalog:${digest}`;
 }
 
-function isModelInfoArray(value: unknown): value is ModelInfo[] {
-  if (!Array.isArray(value)) return false;
-  return value.every(
-    (entry) =>
-      entry != null &&
-      typeof entry === "object" &&
-      typeof (entry as ModelInfo).model === "string" &&
-      typeof (entry as ModelInfo).contextWindow === "number" &&
-      typeof (entry as ModelInfo).maxOutputTokens === "number",
+function isModelInfo(entry: unknown): entry is ModelInfo {
+  const rec = asRecord(entry);
+  if (!rec) return false;
+  return (
+    typeof rec.model === "string" &&
+    typeof rec.contextWindow === "number" &&
+    typeof rec.maxOutputTokens === "number"
   );
+}
+
+function isModelInfoArray(value: unknown): value is ModelInfo[] {
+  return Array.isArray(value) && value.every(isModelInfo);
 }
 
 export async function loadModelCatalogCache(

@@ -384,25 +384,24 @@ async function callTaskItemWrite(
   patch: TaskItemContentPatch,
 ): Promise<TaskItemRow> {
   const opId = randomPublicId();
-  const movingToProject = typeof patch.project_id === "number";
-  const movingToList = !movingToProject && patch.list_id != null;
-
-  if (movingToProject) {
+  const projectId = patch.project_id;
+  if (typeof projectId === "number") {
     const result = await habitat().call("task.moveToProject", {
       ...subjectPayload(),
       id: entityId,
       client_op_id: opId,
-      project_id: patch.project_id as number,
+      project_id: projectId,
       ...(patch.sort_order !== undefined ? { sort_order: patch.sort_order } : {}),
     });
     return result.item;
   }
-  if (movingToList) {
+  const listId = patch.list_id;
+  if (listId != null) {
     const result = await habitat().call("task.moveToList", {
       ...subjectPayload(),
       id: entityId,
       client_op_id: opId,
-      list_id: patch.list_id as number,
+      list_id: listId,
       ...(patch.sort_order !== undefined ? { sort_order: patch.sort_order } : {}),
     });
     return result.item;
@@ -598,7 +597,8 @@ async function flushTaskOp(
   scope: string,
 ): Promise<import("@freeanima/client/portal-sdk/offline-module-types").FlushOpOutcome> {
   try {
-    const result = (await habitat().call(op.method as "tasklist.create", op.payload as never)) as {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outbox 动态 method 返回值边界
+    const result = (await habitat().callByName(op.method, op.payload)) as {
       item?: TaskListRow | TaskItemRow;
       ok?: true;
     };
@@ -609,6 +609,7 @@ async function flushTaskOp(
           scope,
           op.tempEntityId,
           result.item.id,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
           result.item as TaskListRow,
         );
       } else if (op.method === "tasklist.item.create") {
@@ -616,6 +617,7 @@ async function flushTaskOp(
           scope,
           op.tempEntityId,
           result.item.id,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- flush 按 method 分支收窄
           result.item as TaskItemRow,
         );
       }
@@ -900,9 +902,14 @@ export async function offlineCreateTaskItem(input: {
     const tempId = allocateTempId(scope, MODULE_ID);
     const opId = randomPublicId();
     const now = new Date().toISOString();
-    const sort_order = autoPrepend
-      ? await localNextPrependSortOrder(scope, input.list_id)
-      : (input.sort_order as number);
+    let sort_order: number;
+    if (autoPrepend) {
+      sort_order = await localNextPrependSortOrder(scope, input.list_id);
+    } else {
+      const so = input.sort_order;
+      if (typeof so !== "number") throw new Error("sort_order is required");
+      sort_order = so;
+    }
     const row: TaskItemRow = {
       id: tempId,
       title: payload.title,

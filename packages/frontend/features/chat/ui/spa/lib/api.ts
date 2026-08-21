@@ -296,6 +296,7 @@ export async function lookupActiveStream(
   requireHabitatFetch("stream.lookup");
   const raw = await habitat().call("stream.lookup", { conversation_id: conversationId });
   if (!raw || typeof raw !== "object") return {};
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   return raw as { stream_id?: string; status?: string };
 }
 
@@ -322,6 +323,7 @@ export async function loadConfig() {
   if (!ct.includes("application/json")) {
     throw new Error("网络错误");
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse 边界
   return res.json() as Promise<{
     app_id: string;
     habitat_ws_url?: string;

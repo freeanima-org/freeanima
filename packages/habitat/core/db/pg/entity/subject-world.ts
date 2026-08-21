@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import {
   AGENT_CONFIG_COMPONENT,
   ENTITY_ROOT_WORLD_ID,
@@ -24,11 +25,8 @@ import {
 import { assertPrivateWorldOwnedBySubject } from "./world-assert.ts";
 
 function isUniqueViolation(err: unknown): boolean {
-  if (!err || typeof err !== "object") return false;
-  const code =
-    "code" in err && typeof (err as { code?: unknown }).code === "string"
-      ? (err as { code: string }).code
-      : "";
+  if (!isRecord(err)) return false;
+  const code = typeof err.code === "string" ? err.code : "";
   if (code === "23505") return true;
   const msg = err instanceof Error ? err.message : "";
   return /duplicate key|unique constraint|idx_entities_world_common/i.test(msg);

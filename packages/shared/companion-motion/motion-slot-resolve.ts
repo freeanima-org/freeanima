@@ -44,6 +44,12 @@ function parseObjectFileId(ref: number | string): number | null {
   return null;
 }
 
+const MOTION_SLOT_ID_SET: ReadonlySet<string> = new Set(MOTION_SLOT_IDS);
+
+function isMotionSlotId(key: string): key is MotionSlotId {
+  return MOTION_SLOT_ID_SET.has(key);
+}
+
 export function resolveMotionForSlot(
   slot: MotionSlotId,
   slots: MotionSlotsConfig,
@@ -117,8 +123,8 @@ export function normalizeMotionSlots(
       for (const id of mapRefs(refs)) inPlace.add(id);
       continue;
     }
-    if (MOTION_SLOT_IDS.includes(key as MotionSlotId)) {
-      next[key as MotionSlotId] = mapRefs(refs);
+    if (isMotionSlotId(key)) {
+      next[key] = mapRefs(refs);
     }
   }
 

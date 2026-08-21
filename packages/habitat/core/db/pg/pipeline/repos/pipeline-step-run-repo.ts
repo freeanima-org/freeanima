@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, desc, eq, max, sql } from "drizzle-orm";
 import { pipelineStepRun } from "@freeanima/habitat/core/db/schema";
 import type {
@@ -22,7 +23,7 @@ export function mapRow(raw: PipelineStepRunDbRow): PipelineStepRunRow {
     status: raw.status,
     started_at: raw.started_at ? String(raw.started_at) : null,
     finished_at: String(raw.finished_at),
-    output: raw.output as Record<string, unknown> | null,
+    output: raw.output == null ? null : (asRecord(raw.output) ?? {}),
     error: raw.error,
     skipped_reason: raw.skipped_reason,
   };

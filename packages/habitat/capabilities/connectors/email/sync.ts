@@ -122,7 +122,10 @@ async function syncMailboxMessages(
 
     const searchQuery =
       lastUid > 0 ? ({ uid: `${lastUid + 1}:*` } as const) : ({ all: true } as const);
-    const uids = (await client.search(searchQuery, { uid: true })) as number[];
+    const searched = await client.search(searchQuery, { uid: true });
+    const uids = Array.isArray(searched)
+      ? searched.filter((uid): uid is number => typeof uid === "number")
+      : [];
     const uidList = uids.filter((uid) => uid > lastUid).slice(-limit);
 
     for (const uid of uidList) {

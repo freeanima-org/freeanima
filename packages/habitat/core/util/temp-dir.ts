@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
@@ -38,7 +39,7 @@ export function removeTempDir(path: string | undefined): void {
   try {
     rmSync(path, { recursive: true, force: true });
   } catch (e) {
-    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+    if (!isRecord(e) || e.code !== "ENOENT") throw e;
   }
 }
 

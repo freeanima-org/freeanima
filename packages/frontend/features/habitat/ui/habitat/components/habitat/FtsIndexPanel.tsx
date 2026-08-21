@@ -178,6 +178,7 @@ export function FtsIndexPanel({ active }: FtsIndexPanelProps) {
   const reload = useCallback(async () => {
     setError("");
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const data = (await getFtsStatus()) as FtsStatus;
       setStatus(data);
       if (data.rebuild) setJob(data.rebuild);
@@ -189,6 +190,7 @@ export function FtsIndexPanel({ active }: FtsIndexPanelProps) {
 
   const pollJob = useCallback(async () => {
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const next = (await getRebuildFtsJobStatus()) as FtsRebuildJobStatus;
       setJob(next);
       if (!next.running) {
@@ -222,6 +224,7 @@ export function FtsIndexPanel({ active }: FtsIndexPanelProps) {
     setLoading(true);
     setError("");
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const started = (await startRebuildFtsIndex({
         only_missing: onlyMissing,
       })) as FtsRebuildJobStatus;

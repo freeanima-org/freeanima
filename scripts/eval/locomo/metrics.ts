@@ -100,7 +100,9 @@ export function buildReport(input: {
     .map(([category, pairs]) => {
       const agg = aggregatePairRates(pairs);
       const name =
-        LOCOMO_CATEGORY_NAMES[category as keyof typeof LOCOMO_CATEGORY_NAMES] ?? `cat-${category}`;
+        category === 1 || category === 2 || category === 3 || category === 4 || category === 5
+          ? LOCOMO_CATEGORY_NAMES[category]
+          : `cat-${category}`;
       return {
         category,
         name,

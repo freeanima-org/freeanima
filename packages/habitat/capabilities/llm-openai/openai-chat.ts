@@ -15,6 +15,7 @@ import {
 } from "./request-timeouts.ts";
 import { finalizeStreamingToolCalls, mergeStreamingToolCalls } from "./stream-tools.ts";
 import { normalizeUsage } from "./usage.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 function rethrowTimeout(err: unknown): never {
   const llm = extractLlmTimeoutError(err);
@@ -54,21 +55,22 @@ export async function* runOpenAiChatStream(
       timeouts.onChunk();
       if (chunk.model) modelName = chunk.model;
       if (chunk.usage) {
-        lastUsage = normalizeUsage(chunk.usage as unknown as Record<string, unknown>);
+        lastUsage = normalizeUsage(asRecord(chunk.usage) ?? {});
       }
       const choice = chunk.choices[0];
       if (choice?.finish_reason) finishReason = choice.finish_reason;
-      const delta = choice?.delta as
-        | (Record<string, unknown> & { content?: string; tool_calls?: ToolCall[] })
-        | undefined;
-      if (delta?.content) yield { type: "content", content: delta.content };
+      const delta = asRecord(choice?.delta);
+      if (typeof delta?.content === "string" && delta.content) {
+        yield { type: "content", content: delta.content };
+      }
       const reasoningDelta =
         (typeof delta?.reasoning_content === "string" && delta.reasoning_content) ||
         (typeof delta?.reasoning === "string" && delta.reasoning) ||
         "";
       if (reasoningDelta) reasoningParts.push(reasoningDelta);
-      if (delta?.tool_calls?.length) {
-        toolCallsAcc = mergeStreamingToolCalls(toolCallsAcc, delta.tool_calls);
+      if (Array.isArray(delta?.tool_calls) && delta.tool_calls.length > 0) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenAI stream tool_calls 增量边界
+        toolCallsAcc = mergeStreamingToolCalls(toolCallsAcc, delta.tool_calls as ToolCall[]);
       }
     }
 

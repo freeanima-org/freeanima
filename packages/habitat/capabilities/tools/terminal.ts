@@ -13,6 +13,7 @@ import { assertPathAllowed } from "./path-policy.ts";
 import { assertTerminalCommandAllowed, splitCommandLine } from "./terminal-command-policy.ts";
 import { buildSubprocessEnv } from "./subprocess-env.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 import {
   parseSecretsArg,
   resolveSubprocessSecrets,
@@ -24,6 +25,19 @@ const MAX_FOREGROUND_TIMEOUT = 600;
 const backgroundProcs = new Map<string, ChildProcess>();
 const backgroundOutput = new Map<string, string>();
 const backgroundArtifacts = new Map<string, string>();
+
+function spawnCatchMessage(e: unknown, enoentMessage: string, timeoutSec?: number): string {
+  const err = asRecord(e);
+  if (err?.killed && timeoutSec != null) return toolError(`timeout after ${timeoutSec}s`);
+  if (err?.code === "ENOENT") return toolError(enoentMessage);
+  const message = e instanceof Error ? e.message : String(e);
+  if (message.includes("maxBuffer")) {
+    return toolError(
+      `output exceeded capture limit (${TOOL_OUTPUT_CAPTURE_MAX} chars); redirect to a file and use file_read`,
+    );
+  }
+  return toolError(message);
+}
 
 function appendOutput(conversationId: string, chunk: Buffer): void {
   const text = chunk.toString("utf-8");
@@ -85,15 +99,7 @@ function runForegroundArgv(
     }
     return formatOversizedToolOutput(parts.join(""), { kind: "terminal-run" });
   } catch (e) {
-    const err = e as NodeJS.ErrnoException & { killed?: boolean };
-    if (err.killed) return toolError(`timeout after ${safeTimeout}s`);
-    if (err.code === "ENOENT") return toolError(`executable not found: ${bin}`);
-    if (err.message?.includes("maxBuffer")) {
-      return toolError(
-        `output exceeded capture limit (${TOOL_OUTPUT_CAPTURE_MAX} chars); redirect to a file and use file_read`,
-      );
-    }
-    return toolError(err.message);
+    return spawnCatchMessage(e, `executable not found: ${bin}`, safeTimeout);
   }
 }
 
@@ -121,15 +127,7 @@ function runForegroundShell(
     }
     return formatOversizedToolOutput(parts.join(""), { kind: "terminal-run" });
   } catch (e) {
-    const err = e as NodeJS.ErrnoException & { killed?: boolean };
-    if (err.killed) return toolError(`timeout after ${safeTimeout}s`);
-    if (err.code === "ENOENT") return toolError("shell not found");
-    if (err.message?.includes("maxBuffer")) {
-      return toolError(
-        `output exceeded capture limit (${TOOL_OUTPUT_CAPTURE_MAX} chars); redirect to a file and use file_read`,
-      );
-    }
-    return toolError(err.message);
+    return spawnCatchMessage(e, "shell not found", safeTimeout);
   }
 }
 
@@ -157,9 +155,7 @@ function runBackgroundArgv(
       `Use \`process('kill', conversation_id='${conversationId}')\` to terminate.`
     );
   } catch (e) {
-    const err = e as NodeJS.ErrnoException;
-    if (err.code === "ENOENT") return toolError(`executable not found: ${bin}`);
-    return toolError(err.message);
+    return spawnCatchMessage(e, `executable not found: ${bin}`);
   }
 }
 
@@ -186,9 +182,7 @@ function runBackgroundShell(
       `Use \`process('kill', conversation_id='${conversationId}')\` to terminate.`
     );
   } catch (e) {
-    const err = e as NodeJS.ErrnoException;
-    if (err.code === "ENOENT") return toolError("shell not found");
-    return toolError(err.message);
+    return spawnCatchMessage(e, "shell not found");
   }
 }
 

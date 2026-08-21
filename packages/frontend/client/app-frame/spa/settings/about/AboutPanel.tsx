@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 import { useEffect, useState, type ReactNode } from "react";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@freeanima/ui-kit";
 import type { ComponentBuildMeta } from "@freeanima/client/portal-sdk/build-meta";
@@ -12,6 +14,7 @@ import {
 import { parseComponentBuildMeta } from "@freeanima/client/portal-sdk/build-meta";
 import {
   GITHUB_RELEASE_PROXY_IDS,
+  isGithubReleaseProxyId,
   type GithubReleaseProxyId,
 } from "@freeanima/client/portal-sdk/github-release-proxy";
 import {
@@ -146,22 +149,19 @@ async function fetchServiceAboutInfo(): Promise<ServiceAboutInfo> {
     const origin = resolveHabitatApiOrigin();
     const res = await fetch(habitatHealthProbeUrl(origin), { cache: "no-store" });
     if (!res.ok) return { meta: null };
-    const body = (await res.json()) as {
-      build?: unknown;
-      version?: string;
-      started_at?: string;
-    };
-    const build = parseComponentBuildMeta(body.build);
+    const bodyRaw: unknown = await res.json();
+    if (!isRecord(bodyRaw)) return { meta: null };
+    const build = parseComponentBuildMeta(bodyRaw.build);
     const startedAt =
-      typeof body.started_at === "string" && body.started_at.trim()
-        ? body.started_at.trim()
+      typeof bodyRaw.started_at === "string" && bodyRaw.started_at.trim()
+        ? bodyRaw.started_at.trim()
         : undefined;
     if (build) return { meta: build, ...(startedAt ? { startedAt } : {}) };
-    if (typeof body.version === "string" && body.version.trim()) {
+    if (typeof bodyRaw.version === "string" && bodyRaw.version.trim()) {
       return {
         meta: {
           component: "service",
-          version: body.version.trim(),
+          version: bodyRaw.version.trim(),
           channel: "local",
         },
         ...(startedAt ? { startedAt } : {}),
@@ -401,7 +401,8 @@ export default function AboutPanel() {
             className={proxySelectClassName}
             value={updateProxy}
             onChange={(e) => {
-              const next = e.target.value as GithubReleaseProxyId;
+              const next = e.target.value;
+              if (!isGithubReleaseProxyId(next)) return;
               setUpdateProxy(next);
               writeGithubReleaseProxyPref(next);
             }}

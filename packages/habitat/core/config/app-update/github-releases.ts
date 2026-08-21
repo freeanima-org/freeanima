@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import {
   applyGithubReleaseProxy,
   normalizeGithubReleaseProxy,
@@ -45,14 +46,14 @@ function githubHeaders(): Record<string, string> {
 }
 
 export function parseGithubRelease(raw: unknown): GithubRelease | null {
-  if (raw == null || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return null;
+  const o = raw;
   if (typeof o.tag_name !== "string") return null;
   const assetsRaw = Array.isArray(o.assets) ? o.assets : [];
   const assets: GithubReleaseAsset[] = [];
   for (const a of assetsRaw) {
-    if (a == null || typeof a !== "object") continue;
-    const ar = a as Record<string, unknown>;
+    if (!isRecord(a)) continue;
+    const ar = a;
     if (typeof ar.name !== "string" || typeof ar.browser_download_url !== "string") continue;
     assets.push({
       name: ar.name,

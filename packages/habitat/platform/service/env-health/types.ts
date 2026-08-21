@@ -19,8 +19,8 @@ export type EnvHealthMarkers = {
 
 /** 稳定序列化（键排序）供 fingerprint */
 export function stableMarkersJson(markers: EnvHealthMarkers): string {
-  const keys = Object.keys(markers).toSorted() as (keyof EnvHealthMarkers)[];
-  const ordered: Record<string, unknown> = {};
-  for (const k of keys) ordered[k] = markers[k];
+  const ordered = Object.fromEntries(
+    Object.entries(markers).toSorted(([a], [b]) => a.localeCompare(b)),
+  );
   return JSON.stringify(ordered);
 }

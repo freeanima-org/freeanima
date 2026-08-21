@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import type { ToolSetRegistry } from "./toolset.ts";
 
 export const TOOL_SET_LOAD_TOOL_NAME = "toolset_load";
@@ -106,8 +107,8 @@ export function toolNamesForToolSets(
 
 /** Parse toolset_load call arguments */
 export function parseToolSetsFromLoadArgs(args: unknown): string[] {
-  if (!args || typeof args !== "object") return [];
-  const record = args as Record<string, unknown>;
+  if (!isRecord(args)) return [];
+  const record = args;
   const raw = record.toolsets ?? record.names;
   if (!Array.isArray(raw)) return [];
   return raw.map((n) => String(n ?? "").trim()).filter(Boolean);

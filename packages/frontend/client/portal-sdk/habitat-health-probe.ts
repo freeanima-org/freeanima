@@ -1,5 +1,7 @@
-import { buildBearerHeaders } from "./remote-auth.ts";
+import { isRecord } from "@freeanima/shared/util";
 import { habitatHealthProbeUrl } from "@freeanima/shared/habitat-rpc/urls.ts";
+
+import { buildBearerHeaders } from "./remote-auth.ts";
 
 export type HabitatHealthBody = {
   status?: string;
@@ -29,20 +31,23 @@ function probeAbortSignal(timeoutMs: number, external?: AbortSignal): AbortSigna
   return controller.signal;
 }
 
+type PortalShellProbe = {
+  isTauri?: boolean;
+  isNativeShell?: boolean;
+  primaryInput?: string;
+};
+
+function readPortalShellProbe(): PortalShellProbe | undefined {
+  const shell: unknown = Reflect.get(globalThis, "portalShell");
+  return isRecord(shell) ? shell : undefined;
+}
+
 function isTauriShellRuntime(): boolean {
-  return Boolean((globalThis as { portalShell?: { isTauri?: boolean } }).portalShell?.isTauri);
+  return Boolean(readPortalShellProbe()?.isTauri);
 }
 
 function isTouchNativeShellRuntime(): boolean {
-  const shell = (
-    globalThis as {
-      portalShell?: {
-        isNativeShell?: boolean;
-        isTauri?: boolean;
-        primaryInput?: "pointer" | "touch";
-      };
-    }
-  ).portalShell;
+  const shell = readPortalShellProbe();
   if (!shell?.isNativeShell && !shell?.isTauri) return false;
   return shell.primaryInput === "touch";
 }
@@ -93,7 +98,15 @@ async function probeHabitatHealthViaWebViewFetch(
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
   }
-  return (await res.json()) as HabitatHealthBody;
+  const body: unknown = await res.json();
+  if (!isRecord(body)) {
+    throw new Error("栖息地 health 响应不是对象");
+  }
+  return {
+    ...(typeof body.status === "string" ? { status: body.status } : {}),
+    ...(typeof body.authed === "boolean" ? { authed: body.authed } : {}),
+    ...(typeof body.version === "string" ? { version: body.version } : {}),
+  };
 }
 
 export async function probeHabitatHealthUrl(

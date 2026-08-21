@@ -13,12 +13,30 @@ export function diffMarkers(
   if (baseline == null) {
     return { changed: false, changedKeys: [] };
   }
-  const keys = Object.keys(current) as (keyof EnvHealthMarkers)[];
   const changedKeys: (keyof EnvHealthMarkers)[] = [];
-  for (const k of keys) {
-    if (current[k] !== baseline[k]) changedKeys.push(k);
+  for (const key of Object.keys(current)) {
+    if (!isEnvHealthMarkerKey(key)) continue;
+    if (current[key] !== baseline[key]) changedKeys.push(key);
   }
   return { changed: changedKeys.length > 0, changedKeys: changedKeys.toSorted() };
+}
+
+function isEnvHealthMarkerKey(key: string): key is keyof EnvHealthMarkers {
+  return (
+    key === "hostname" ||
+    key === "os" ||
+    key === "timezone" ||
+    key === "hub_version" ||
+    key === "boot_started_at" ||
+    key === "postgres" ||
+    key === "redis" ||
+    key === "rss_band" ||
+    key === "mcp_connected" ||
+    key === "mcp_servers" ||
+    key === "acp_connected" ||
+    key === "acp_agents" ||
+    key === "disk_free_band"
+  );
 }
 
 /** `env-health:<keys>:<fingerprint>`；keys 已排序 */

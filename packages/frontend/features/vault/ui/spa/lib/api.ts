@@ -40,6 +40,7 @@ async function vaultRequest<T>(
   method: VaultRpcMethod,
   payload: Record<string, unknown>,
 ): Promise<T> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
   return getTypedHabitatClient().call(method as never, payload as never);
 }
 

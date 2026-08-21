@@ -3,6 +3,7 @@ import { findSmartListRowByKey, type TaskModuleSelection } from "./task-smart-li
 import { readTaskSelectionFromUrl } from "./task-selection-url.ts";
 import { resolveDefaultListId } from "./resolve-list.ts";
 import type { TaskListRow } from "./api.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 function tryResolveCandidate(
   lists: TaskListRow[],
@@ -48,7 +49,7 @@ export function parseStoredTaskSelection(raw: unknown): TaskModuleSelection | nu
     return { kind: "list", id: raw };
   }
   if (typeof raw !== "object" || raw === null) return null;
-  const obj = raw as Record<string, unknown>;
+  const obj = asRecord(raw) ?? {};
   if (obj.kind === "list" && typeof obj.id === "number" && obj.id > 0) {
     return { kind: "list", id: obj.id };
   }

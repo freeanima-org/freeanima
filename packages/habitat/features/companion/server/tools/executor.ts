@@ -1,4 +1,5 @@
 import type { MotionSlotId } from "@freeanima/shared/companion-app/companion-schema.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 function toolResult(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value);
@@ -25,11 +26,12 @@ export async function executeCompanionTool(
     }
     case "play_slot": {
       const slot = typeof args.slot === "string" ? args.slot : "";
-      if (!MOTION_SLOT_IDS.includes(slot as MotionSlotId)) {
+      if (!(MOTION_SLOT_IDS as readonly string[]).includes(slot)) {
         return toolError(`未知动作槽位: ${slot}`);
       }
+      const typedSlot = assertNarrow<MotionSlotId>(slot);
       const motionId = typeof args.motion_id === "string" ? args.motion_id : undefined;
-      const cmd = enqueuePlaySlot(slot, motionId);
+      const cmd = enqueuePlaySlot(typedSlot, motionId);
       return toolResult({ ok: true, id: cmd.id, slot: cmd.slot, motion_id: cmd.motionId ?? null });
     }
     default:

@@ -1,6 +1,10 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 
 import { handleEmailAttachmentUpload } from "../binary.ts";
 import { emailMethodDefs } from "../method-defs.ts";
@@ -12,11 +16,11 @@ type EmailRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): EmailRemoteToolsServerDeps {
-  return deps as EmailRemoteToolsServerDeps;
+  return asRouteDeps<EmailRemoteToolsServerDeps>(deps);
 }
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
-  return ctx as RemoteToolsRequestContext;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx);
 }
 
 export const emailHabitatRoutes = bindHabitatRouteHandlers(emailMethodDefs, {

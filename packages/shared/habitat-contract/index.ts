@@ -44,6 +44,8 @@ export {
   mergeFeatureRoutes,
   mergeHabitatRouteBundles,
   bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
   type HabitatRouteBundle,
   type HabitatRouteHandler,
   type HabitatRouteHandlersForDefs,

@@ -5,6 +5,7 @@ import {
   type SubagentPromptInclude,
 } from "@freeanima/habitat/core/db/schema/entity/components/subagent.ts";
 import { formatCstIsoFromEpoch } from "@freeanima/habitat/core/util";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import type { ResolvedSubagentProfile } from "./types.ts";
 
@@ -17,8 +18,9 @@ export function normalizePromptIncludes(
   for (const item of raw) {
     const key = (item ?? "").trim().toLowerCase();
     if (!allow.has(key)) continue;
-    if (!out.includes(key as SubagentPromptInclude)) {
-      out.push(key as SubagentPromptInclude);
+    const typed = assertNarrow<SubagentPromptInclude>(key);
+    if (!out.includes(typed)) {
+      out.push(typed);
     }
   }
   return out;

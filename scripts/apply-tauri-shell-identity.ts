@@ -18,6 +18,7 @@ import {
   type DesktopShellIdentity,
   type MobileShellIdentity,
 } from "@freeanima/habitat/core/config/shell-identity.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const srcTauriDefault = join(root, "packages/frontend/portal/app/tauri/src-tauri");
@@ -79,7 +80,7 @@ export function applyTauriShellIdentity(options?: {
   const version = resolveBuildVersionFromEnv(repoRoot, env, { channel });
 
   const basePath = join(srcTauri, "tauri.conf.json");
-  const base = JSON.parse(readFileSync(basePath, "utf-8")) as TauriConfShape;
+  const base = asRecord(JSON.parse(readFileSync(basePath, "utf-8"))) ?? {};
 
   const overlay: TauriConfShape = { version };
 
@@ -88,7 +89,11 @@ export function applyTauriShellIdentity(options?: {
     overlay.productName = id.productName;
     overlay.identifier = id.appId;
     overlay.mainBinaryName = id.executableName;
-    const windows = (base.app?.windows ?? []).map((w) => ({ ...w }));
+    const app = asRecord(base.app);
+    const windows = (Array.isArray(app?.windows) ? app.windows : [])
+      .map((w) => asRecord(w))
+      .filter((w): w is Record<string, unknown> => w != null)
+      .map((w) => ({ ...w }));
     if (windows.length === 0) {
       windows.push({ label: "main", title: id.productName });
     } else {

@@ -76,9 +76,7 @@ export async function reconcileServerCalendarEvents(items: CalendarEventRow[]): 
   const scope = resolveOutboxScope();
   const ops = await listOutboxOps(scope, MODULE_ID);
   const pendingTemp = new Set(
-    ops
-      .filter((op) => op.method === "calendar.create" && typeof op.tempEntityId === "number")
-      .map((op) => op.tempEntityId as number),
+    ops.map((op) => op.tempEntityId).filter((id): id is number => typeof id === "number"),
   );
   const locals = await readLocalEvents(scope);
   const keptTemps = locals.filter((row) => isTempId(row.id) && pendingTemp.has(row.id));
@@ -90,6 +88,7 @@ async function flushCalendarOp(op: OfflineOutboxOp, scope: string): Promise<Flus
     const idMap = await loadIdMap(scope, MODULE_ID);
     const payload = resolveIdFields(op.payload, idMap, ["id"]);
     if (op.method === "calendar.create") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       const data = await habitat().call("calendar.create", payload as never);
       if (typeof op.tempEntityId === "number") {
         await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, data.item.id);
@@ -99,11 +98,13 @@ async function flushCalendarOp(op: OfflineOutboxOp, scope: string): Promise<Flus
       return { status: "done" };
     }
     if (op.method === "calendar.patch") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       const data = await habitat().call("calendar.patch", payload as never);
       await upsertLocalEvent(scope, data.item);
       return { status: "done" };
     }
     if (op.method === "calendar.delete") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       await habitat().call("calendar.delete", payload as never);
       const id = Number((payload as { id?: number }).id);
       if (Number.isFinite(id)) await removeLocalEvent(scope, id);

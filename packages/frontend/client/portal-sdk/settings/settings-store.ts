@@ -16,11 +16,12 @@ export type ScopedSettingsBackend = {
 export function createScopedSettingsStore<T>(opts: {
   scope: SettingsStorageScope;
   backend: ScopedSettingsBackend;
-  parseLoad?: (raw: unknown) => T;
+  /** 将后端 unknown 解析为 T（必填，避免裸 `as T`） */
+  parseLoad: (raw: unknown) => T;
   normalizeSave?: (value: T) => T;
   test?: (value: T) => Promise<void>;
 }): SettingsStore<T> {
-  const parseLoad = opts.parseLoad ?? ((raw: unknown) => raw as T);
+  const parseLoad = opts.parseLoad;
   const normalizeSave = opts.normalizeSave ?? ((value: T) => value);
   return {
     scope: opts.scope,

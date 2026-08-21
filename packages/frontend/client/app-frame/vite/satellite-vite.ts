@@ -1,3 +1,4 @@
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import react from "@vitejs/plugin-react";
@@ -98,7 +99,7 @@ export async function runSatelliteViteBuild(opts: SatelliteViteOptions): Promise
   const config = createSatelliteViteInlineConfig(opts);
 
   if (opts.watch) {
-    const watcher = (await build(config)) as Rollup.RollupWatcher;
+    const watcher = assertNarrow<Rollup.RollupWatcher>(await build(config));
     watcher.on("event", (event) => {
       if (event.code === "BUNDLE_END") {
         void opts.onRebuild?.(true);

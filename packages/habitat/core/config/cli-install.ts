@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import { existsSync, realpathSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -12,8 +13,10 @@ export type CliInstallKind = "source" | "standalone";
 export function isStandaloneExecutable(argv1 = process.argv[1]): boolean {
   if (typeof argv1 === "string" && argv1.startsWith("/$bunfs/")) return true;
   if (argv1 === process.argv[1] && typeof Bun !== "undefined") {
-    const bunStandalone = (Bun as { isStandaloneExecutable?: boolean }).isStandaloneExecutable;
-    if (typeof bunStandalone === "boolean") return bunStandalone;
+    const bun = Bun as unknown;
+    if (isRecord(bun) && typeof bun.isStandaloneExecutable === "boolean") {
+      return bun.isStandaloneExecutable;
+    }
   }
   return false;
 }

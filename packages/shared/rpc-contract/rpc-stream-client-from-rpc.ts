@@ -8,7 +8,7 @@ export function sapClientFromRpc(rpc: RpcClient): RpcStreamClient {
       payload: RpcRouterInputs[K],
       opts?: RpcRequestOptions,
     ): Promise<RpcRouterOutputs[K]> {
-      return rpc.request(method, payload, opts) as Promise<RpcRouterOutputs[K]>;
+      return rpc.request<RpcRouterOutputs[K]>(method, payload, opts);
     },
     onEvent(method: string, handler: (payload: unknown) => void): () => void {
       return rpc.onEvent(method, handler);

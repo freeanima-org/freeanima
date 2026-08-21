@@ -1,6 +1,7 @@
 import type { ConversationMetaLoadResult } from "@freeanima/habitat/core/db/domain";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
+import { asRecord } from "@freeanima/shared/util";
 
 export const TOOL_DISPLAY_MODES = [
   "hidden",
@@ -37,8 +38,11 @@ export function resolveToolDisplayMode(
     );
     if (sessionMode) return sessionMode;
   }
-  const gateway = config?.gateway as { tool_display?: string } | undefined;
-  const globalMode = parseToolDisplayMode(gateway?.tool_display);
+  const gateway = asRecord(config?.gateway);
+  const toolDisplay = gateway?.tool_display;
+  const globalMode = parseToolDisplayMode(
+    typeof toolDisplay === "string" ? toolDisplay : undefined,
+  );
   return globalMode ?? DEFAULT_TOOL_DISPLAY_MODE;
 }
 
@@ -48,9 +52,10 @@ const HANDOFF_DEFAULTS: Record<string, boolean> = {
 };
 
 export function resolveConversationHandoffOnNew(platform: string, config?: RuntimeConfig): boolean {
-  const section = config?.[platform] as { session_handoff_on_new?: boolean } | undefined;
-  if (typeof section?.session_handoff_on_new === "boolean") {
-    return section.session_handoff_on_new;
+  const section = asRecord(asRecord(config)?.[platform]);
+  const handoff = section?.session_handoff_on_new;
+  if (typeof handoff === "boolean") {
+    return handoff;
   }
   return HANDOFF_DEFAULTS[platform] ?? true;
 }

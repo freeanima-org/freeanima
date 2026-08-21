@@ -41,6 +41,7 @@ export function PomodoroShellWatcher() {
     };
     const unsub = subscribePomodoroSync(bump);
     const onCustom = (event: Event) => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
       const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
       if (detail?.subjectKind === subjectKind) bump();
     };
@@ -152,6 +153,7 @@ export function PomodoroShellWatcher() {
     };
     const unsub = subscribePomodoroSync(syncFloat);
     const onCustom = (event: Event) => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
       const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
       if (detail?.subjectKind === subjectKind) syncFloat();
     };

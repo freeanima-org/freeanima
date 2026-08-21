@@ -50,10 +50,10 @@ export async function searchMailboxUidByMessageId(
   const bare = normalized.slice(1, -1);
   const candidates = [normalized, bare];
   for (const value of candidates) {
-    const uids = (await client.search(
-      { header: { "message-id": value } },
-      { uid: true },
-    )) as number[];
+    const searched = await client.search({ header: { "message-id": value } }, { uid: true });
+    const uids = Array.isArray(searched)
+      ? searched.filter((uid): uid is number => typeof uid === "number")
+      : [];
     const first = uids[0];
     if (first != null && Number.isFinite(first) && first > 0) {
       return first;

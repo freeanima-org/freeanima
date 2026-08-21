@@ -7,13 +7,11 @@ import type {
 import type { DisplayAttachment } from "@freeanima/shared/rpc-contract/frames/display";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { asRecord } from "@freeanima/shared/util";
 
 function parseArgs(raw: string): Record<string, unknown> {
   try {
-    const parsed = JSON.parse(raw) as unknown;
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : {};
+    return asRecord(JSON.parse(raw)) ?? {};
   } catch {
     return {};
   }
@@ -83,7 +81,8 @@ export function foldObjectFileAttachmentsIntoContent(
 export function parseMediaGenerateObjectFileId(result: string | undefined): number | null {
   if (!result?.trim()) return null;
   try {
-    const parsed = JSON.parse(result) as Record<string, unknown>;
+    const parsed = asRecord(JSON.parse(result));
+    if (!parsed) return null;
     const id = parsed.object_file_id;
     if (typeof id !== "number" || !Number.isFinite(id) || id <= 0) return null;
     return id;

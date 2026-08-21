@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 
 import { entities, entityTypeSchema, type EntitySelect } from "./entity.ts";
@@ -170,7 +171,7 @@ export function mapEntityRow(
     title: row.title ?? "",
     summary: row.summary ?? "",
     content: row.content ?? "",
-    body: (row.body ?? {}) as Record<string, unknown>,
+    body: asRecord(row.body) ?? {},
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [...(row.tag_ids ?? [])],

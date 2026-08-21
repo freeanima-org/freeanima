@@ -29,6 +29,7 @@ import {
   createCodingWorkspaceFsBridge,
   desktopSaveBlobBridge,
 } from "../lib/coding-shell-fs.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
 
@@ -295,11 +296,11 @@ export async function bootstrapTauriBridge(): Promise<void> {
     },
     save: async (scope, value) => {
       if (scope.kind === "kv" && scope.id === "habitat") {
-        const raw = value as {
+        const raw = assertNarrow<{
           habitatUrl: string;
           remoteAuthToken: string;
           launchAtLogin?: boolean;
-        };
+        }>(value);
         await invoke("set_habitat_config", {
           habitatUrl: raw.habitatUrl,
           remoteAuthToken: raw.remoteAuthToken,
@@ -313,14 +314,14 @@ export async function bootstrapTauriBridge(): Promise<void> {
         return;
       }
       if (scope.kind === "kv" && scope.id === "companion-shell") {
-        const visible = (value as { visible?: boolean }).visible !== false;
+        const visible = assertNarrow<{ visible?: boolean }>(value).visible !== false;
         await invoke("set_companion_visible", { visible });
         notifyShellConfigChanged();
       }
     },
     test: async (scope, value) => {
       if (scope.kind === "kv" && scope.id === "habitat") {
-        const raw = value as { habitatUrl: string; remoteAuthToken: string };
+        const raw = assertNarrow<{ habitatUrl: string; remoteAuthToken: string }>(value);
         const url = normalizeHabitatUrl(raw.habitatUrl);
         const token = (raw.remoteAuthToken ?? "").trim();
         if (!url) throw new Error("栖息地地址不能为空");

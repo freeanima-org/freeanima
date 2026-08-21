@@ -67,6 +67,7 @@ export function stripCachedToolSetLoadRounds(
 
     let j = i + 1;
     while (j < messages.length && messages[j]?.role === "tool") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- role===tool 已收窄
       const t = messages[j] as ToolMessage;
       if (stripIds.has(t.tool_call_id)) {
         j++;

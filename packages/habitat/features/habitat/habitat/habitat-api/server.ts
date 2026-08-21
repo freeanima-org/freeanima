@@ -62,21 +62,22 @@ function dispatchFetch(
   sapHandlers: ReturnType<typeof createSapBunHandlers> | null,
 ): Response | Promise<Response> | undefined {
   if (sapHandlers) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Bun.Server fetch 第二参边界
     const sapRes = sapHandlers.fetch(req, bunServer as never);
     if (sapRes !== undefined) return sapRes;
   }
   return new Response("Not Found", { status: 404 });
 }
 
+type BunRequestIp = { requestIP?: (r: Request) => { address: string } | null };
+
 function resolveRemoteAddress(bunServer: unknown, req: Request): string | undefined {
-  if (
-    typeof (bunServer as { requestIP?: (r: Request) => { address: string } | null }).requestIP !==
-    "function"
-  ) {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Bun.Server requestIP 边界
+  const server = bunServer as BunRequestIp;
+  if (typeof server.requestIP !== "function") {
     return undefined;
   }
-  return (bunServer as { requestIP: (r: Request) => { address: string } | null }).requestIP(req)
-    ?.address;
+  return server.requestIP(req)?.address;
 }
 
 function prepareApiServerRuntime(options: ApiServerOptions): ApiServerRuntime {
@@ -101,6 +102,7 @@ function createApiFetchHandler(runtime: ApiServerRuntime) {
   return function apiFetch(req: Request, bunServer: unknown): Response | Promise<Response> {
     const remoteAddress = resolveRemoteAddress(bunServer, req);
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Bun.Server upgrade 边界
     const sapUpgrade = trySapWebSocketUpgrade(req, bunServer as Bun.Server<unknown>, sapHandlers);
     if (sapUpgrade != null) return sapUpgrade;
 

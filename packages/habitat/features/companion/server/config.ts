@@ -8,6 +8,7 @@ import {
 import { companionConfigSchema } from "@freeanima/habitat/core/config/schemas/companion.ts";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { loadShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config-node";
+import { asRecord } from "@freeanima/shared/util";
 
 export type CompanionConfig = CompanionConfigV2;
 
@@ -25,9 +26,12 @@ export const DEFAULT_CONFIG: CompanionConfig = {
 function coerceLocal(raw: unknown): CompanionConfig {
   const parsed = companionConfigSchema.safeParse(raw);
   if (parsed.success) {
+    const rawRec = asRecord(raw);
     const habitat_url =
-      raw && typeof raw === "object" && "habitat_url" in raw
-        ? ((raw as { habitat_url?: string }).habitat_url ?? HABITAT_URL)
+      rawRec && "habitat_url" in rawRec
+        ? typeof rawRec.habitat_url === "string"
+          ? rawRec.habitat_url
+          : HABITAT_URL
         : HABITAT_URL;
     return { ...parsed.data, habitat_url };
   }
