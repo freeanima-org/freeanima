@@ -63,21 +63,22 @@ export function formatSubagentGoalSection(input: {
     .join("\n");
 }
 
-async function buildSelfIncludeSection(): Promise<string> {
-  const self = (
-    await loadSelfLayerPrompt(getResolvedWorldContext().default_chat_agent_subject_id)
-  ).trim();
+async function buildSelfIncludeSection(agentSubjectId: number): Promise<string> {
+  const self = (await loadSelfLayerPrompt(agentSubjectId)).trim();
   if (!self) return "";
   return `## Self\n${self}`;
 }
 
-function buildWorldIncludeSection(): string {
+function buildWorldIncludeSection(bound: {
+  agent_subject_id: number;
+  agent_world_id: number;
+}): string {
   try {
     const ctx = getResolvedWorldContext();
     return [
       "## World context",
-      `- agent_subject_id: ${ctx.agent_subject_id}`,
-      `- agent_world_id: ${ctx.agent_world_id}`,
+      `- agent_subject_id: ${bound.agent_subject_id}`,
+      `- agent_world_id: ${bound.agent_world_id}`,
       `- user_subject_id: ${ctx.user_subject_id}`,
       `- user_world_id: ${ctx.user_world_id}`,
       `- commons_world_id: ${ctx.commons_world_id}`,
@@ -98,17 +99,18 @@ function buildTimeIncludeSection(): string {
   return `## Time\n- now: ${formatCstIsoFromEpoch(Math.floor(now / 1000))}\n- timezone: ${tz}`;
 }
 
-/** 按 opt-in 列表构建旁路段（默认空） */
+/** 按 opt-in 列表构建旁路段（默认空；self/world 须显式 agent） */
 export async function buildSubagentOptInSections(
   includes: readonly SubagentPromptInclude[],
+  opts: { agent_subject_id: number; agent_world_id: number },
 ): Promise<string[]> {
   const sections: string[] = [];
   for (const key of includes) {
     if (key === "self") {
-      const s = await buildSelfIncludeSection();
+      const s = await buildSelfIncludeSection(opts.agent_subject_id);
       if (s) sections.push(s);
     } else if (key === "world") {
-      const s = buildWorldIncludeSection();
+      const s = buildWorldIncludeSection(opts);
       if (s) sections.push(s);
     } else if (key === "time") {
       sections.push(buildTimeIncludeSection());

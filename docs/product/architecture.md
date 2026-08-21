@@ -67,7 +67,7 @@ title: 架构
 | **Transferred（需转移）** | `connections`、`text_generate`、`i18n`、`embedding`、`mcp_servers`、`discord` / `weixin` / `gateway` platforms、`object_storage`、`chat`                                                                   | 快照更新**外加**段应用（重初始化注册表 / 重连 / 重绑 ObjectStore）；`chat` 主要为 Live 读，写入后热生效 |
 | **Bootstrap（引导）**     | `database`、`http`、`redis`                                                                                                                                                                                | 改 YAML；需**进程重启**                                                                                 |
 
-> **已废除**：`runtime.worlds` 配置段。boot 后仅在内存钉唯一 `user_*` + `commons_*`；默认聊天 Anima 为 `chat.default_agent_subject_id`（仅 Chat/Coding 新建会话预选，禁止工具静默回退）。
+> **已废除**：`runtime.worlds` 配置段。boot 后仅在内存钉唯一 `user_*` + `commons_*`；默认聊天 Anima 为 `chat.default_agent_subject_id`（**仅** Chat/Coding 新建会话预选；配置 `vault()` 解析宿主与前端 user/agent 切换中的 agent 侧身份可读同一配置值，但 **禁止** 用作 LLM / 工具 / 记忆 / temporal / cron / 观测 UI 的静默回退）。
 
 ### 运行时配置：UI 覆盖缺口
 
@@ -231,7 +231,7 @@ FTS 索引维护在数据维护（资源组）下。记忆巩固手动入口在�
 - World：`subject_id` → 默认私有 world；工具无会话且无显式 subject → **报错**，禁止回退默认聊天 agent。
 - 产品模块固定 user；壳层顶级 **卧室**（与栖息地平级）统一选择 Anima，再进自我层 / 语义 / 时间摘要等子页。
 - **对话作用域（系统提示 / 旁注 / 记忆工具）**：一律 `meta.agent_subject_id` → 该 agent 私有 `world_id`。常驻记忆、时间摘要段、被动召回、通知 Inbox 注入、peer 时间线、`memory_semantic_*` 均不得跨 Anima；工具入参禁止 `subject_id` / `world_id`。
-- **夜间维护**：retain / reflect / temporal day·cascade / cluster 校准按 enabled agent 的私有 world **分桶**；自我层刷新已按 agent 循环。实例级告警扇出仍可写默认聊天 agent。
+- **夜间维护**：retain / reflect / temporal day·cascade / cluster 校准按 enabled agent 的私有 world **分桶**；自我层刷新已按 agent 循环。系统段 `<temporal_summary>` / Redis `sys_roll` 按会话绑定 agent 的 `world_id` 分桶。实例级告警扇出勿再默写默认聊天 agent（须显式或按 enabled agent 分发）。
 
 ### 背景
 
@@ -418,9 +418,9 @@ mcp_servers:
 **对话持久化拆分：** 会话元数据（model、system_prompt、compression、todos、toolsets、…）在 **`conversations` 行**（领域类型 `ConversationMetaMessage`）。转录消息在 **`messages.payload`**（`StoredMessage` = 仅 user/system/assistant/tool）。勿把 meta 建模为消息角色——旧 JSONL 首行 `{ role: "conversation_meta" }` 形态已移除。
 AutoLlmRun 覆盖：cron agent 分支、记忆维护 LLM 阶段、对话**标题**生成、**goal_judge**、压缩 / handoff 摘要、**内部 subagent**。一次性侧车用 `runAutoLlmChat`（记录的 `chat()`）；带工具的 AutoLlm 循环用 `runAutoLlm`。过程中 Habitat 管理页可见 `running`；引擎仍以内存 `messages` 为下一跳输入。工具有副作用，中断后标失败，不按落库重放、不跨实例续跑。工具上下文用 `contextKind: auto_llm`，使 `memory_remember` 不附加 `source_conversations`。Cron `no_agent` shell 脚本**不是** AutoLlmRun。绑定策略的 AutoLlm 运行把**具体工具名列表**作为 `tools` 传入（HARD_DENY `toolset_load` / `toolset_unload` / `toolset_search`）。
 
-**AutoLlm 提示：** `composeAutoLlmPrompt` 组装——`system`：`<auto_llm_protocol>` + `<auto_llm_task_spec>`（稳定，可用 `{{param}}` 挖空）；`user`：可选技能 → `<auto_llm_task_params>`（填空）→ 数据。协议只禁末轮 `tool_calls`；**收尾形态在 kind 的 `task_spec`**（如 retain 约 20 字、subagent 给父代理完整答复）。禁止把对话 `system_prompt` 快照当作 AutoLlm system（压缩/handoff 亦然）。审计列含 `subject_id`、`max_loop_iterations`（引擎轮预算）、`max_duration_ms`（墙钟预算，可空）与实际 `duration_ms`。
+**AutoLlm 提示：** `composeAutoLlmPrompt` 组装——`system`：`<auto_llm_protocol>` + `<auto_llm_task_spec>`（稳定，可用 `{{param}}` 挖空）；`user`：可选技能 → `<auto_llm_task_params>`（填空）→ 数据。协议只禁末轮 `tool_calls`；**收尾形态在 kind 的 `task_spec`**（如 retain 约 20 字、subagent 给父代理完整答复）。禁止把对话 `system_prompt` 快照当作 AutoLlm system（压缩/handoff 亦然）。审计列含可空的 `subject_id`、`max_loop_iterations`（引擎轮预算）、`max_duration_ms`（墙钟预算，可空）与实际 `duration_ms`。
 
-**行动主体：** `runAutoLlm` 与 `runAutoLlmChat` 都要求 `subjectId`（持久化为 `auto_llm_runs.subject_id`）。工具 world 授权用 `resolveToolCallerSubjectId()`——MCP token subject，否则 ALS `subjectId`，否则栖息地 `agent_subject_id` 回退。今日调用方传入 boot 绑定的 agent subject；多数字生命时传入 job 绑定的 anima，无需改授权路径。
+**行动主体：** `runAutoLlmChat`（无工具侧车：标题 / 压缩 / goal_judge / 簇标题等）**通常不传** `subjectId`，审计列 `auto_llm_runs.subject_id` 可空。`runAutoLlm`（有工具环：subagent / cron / retain / skill review 等）**必填**显式 `subjectId`（会话绑定 agent、cron `job.subject_id`、或维护分桶 agent），禁止静默填入 `default_chat_agent_subject_id` / 废弃别名 `agent_subject_id`。工具 world 授权用 `resolveToolCallerSubjectId()`——MCP token subject，否则 ALS `subjectId`，否则**报错**（禁止回退默认聊天 agent）。
 
 **会话目标 continue 回合**（合成用户 `↻ Continuing…` + assistant）留在**对话**路径，使聊天室转录完整；仅 **judge** 跳转为 AutoLlm（`run_kind: goal-judge`）。
 

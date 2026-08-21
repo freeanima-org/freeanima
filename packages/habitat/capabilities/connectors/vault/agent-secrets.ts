@@ -1,7 +1,5 @@
 import { ensureVaultConfig, getVaultConfig } from "@freeanima/features/vault/domain/config-store";
 import { getVaultItem, updateVaultItem } from "@freeanima/features/vault/domain/item-store";
-import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config";
 import {
   extractCustomFieldNames,
   openVaultSecrets,
@@ -11,27 +9,25 @@ import {
 
 import { getAgentMachineKey } from "./machine-key.ts";
 
-async function defaultAgentVaultWorldId(): Promise<number> {
-  const ctx = getResolvedWorldContext();
-  return resolveVaultWorldId(ctx.default_chat_agent_subject_id);
-}
-
 export async function ensureAgentVaultConfig(
-  worldId?: number,
+  worldId: number,
 ): Promise<NonNullable<Awaited<ReturnType<typeof getVaultConfig>>>> {
-  const resolvedWorldId = worldId ?? (await defaultAgentVaultWorldId());
-  const existing = await getVaultConfig(resolvedWorldId);
+  if (worldId == null || worldId <= 0) {
+    throw new Error("agent vault world_id is required");
+  }
+  const existing = await getVaultConfig(worldId);
   if (existing?.mode === "machine") return existing;
-  return ensureVaultConfig(resolvedWorldId, {
+  return ensureVaultConfig(worldId, {
     mode: "machine",
     key_id: "agent-machine",
   });
 }
 
 export async function sealAgentVaultItem(
+  worldId: number,
   secrets: VaultSecretsPayload,
 ): Promise<{ secrets_enc: string; dek_wrapped: string; custom_field_names: string[] }> {
-  await ensureAgentVaultConfig();
+  await ensureAgentVaultConfig(worldId);
   const key = await getAgentMachineKey();
   const sealed = await sealVaultSecrets(secrets, key);
   return {
@@ -41,10 +37,11 @@ export async function sealAgentVaultItem(
 }
 
 export async function openAgentVaultSecrets(
+  worldId: number,
   secrets_enc: string,
   dek_wrapped: string,
 ): Promise<VaultSecretsPayload> {
-  await ensureAgentVaultConfig();
+  await ensureAgentVaultConfig(worldId);
   const key = await getAgentMachineKey();
   return openVaultSecrets(secrets_enc, dek_wrapped, key);
 }
@@ -59,7 +56,7 @@ export async function resolveAgentVaultSecret(
   if (!item || !("secrets_enc" in item) || !("dek_wrapped" in item)) {
     throw new Error("NOT_FOUND");
   }
-  const secrets = await openAgentVaultSecrets(item.secrets_enc, item.dek_wrapped);
+  const secrets = await openAgentVaultSecrets(worldId, item.secrets_enc, item.dek_wrapped);
   const { resolveSecretField } = await import("@freeanima/shared/vault-crypto");
   const value = resolveSecretField(secrets, field);
   if (value == null) throw new Error("FIELD_NOT_FOUND");
@@ -71,7 +68,7 @@ export async function patchAgentVaultSecrets(
   itemId: number,
   secrets: VaultSecretsPayload,
 ): Promise<void> {
-  const sealed = await sealAgentVaultItem(secrets);
+  const sealed = await sealAgentVaultItem(worldId, secrets);
   const updated = await updateVaultItem(worldId, {
     id: itemId,
     secrets_enc: sealed.secrets_enc,

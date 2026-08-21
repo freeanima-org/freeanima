@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
+import { resolveToolCallerSubjectId } from "@freeanima/habitat/core/tool/tool-context.ts";
 import { CronJob } from "./models.ts";
 import {
   createCronJobRow,
@@ -30,6 +30,8 @@ export async function createJob(opts: {
   parseSchedule(opts.schedule);
   const now = new Date();
   const id = randomBytes(8).toString("hex").slice(0, 16);
+  const subject_id =
+    opts.subject_id != null && opts.subject_id > 0 ? opts.subject_id : resolveToolCallerSubjectId();
   await createCronJobRow({
     id,
     name: opts.name,
@@ -43,7 +45,7 @@ export async function createJob(opts: {
     workdir: opts.workdir ?? null,
     context_from: opts.context_from ?? [],
     timeout_sec: opts.timeout_sec ?? 300,
-    subject_id: opts.subject_id ?? getResolvedWorldContext().agent_subject_id,
+    subject_id,
     repeat: opts.repeat ?? null,
     notify_on_success: opts.notify_on_success ?? false,
     created_at: now,

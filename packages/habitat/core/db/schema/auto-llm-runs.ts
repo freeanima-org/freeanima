@@ -9,10 +9,8 @@ export const autoLlmRuns = pgTable(
     id: text("id").primaryKey(),
     run_name: text("run_name").notNull(),
     run_kind: text("run_kind").notNull(),
-    /** Acting subject (agent / future anima)；entities.id */
-    subject_id: bigint("subject_id", { mode: "number" })
-      .notNull()
-      .references(() => entities.id),
+    /** Acting subject（有工具环时必填）；无工具侧车可空 */
+    subject_id: bigint("subject_id", { mode: "number" }).references(() => entities.id),
     output: text("output").notNull().default(""),
     status: text("status").notNull(),
     duration_ms: integer("duration_ms").notNull(),

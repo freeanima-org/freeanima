@@ -9,6 +9,7 @@ import {
   temporalSummaryRebuildRangeBodySchema,
   temporalSystemRollRegenerateBodySchema,
   temporalSystemRollBatchStartBodySchema,
+  temporalSystemRollListBodySchema,
   type PassiveRecallDebugBody,
   type SemanticMemoryListBody,
   type SemanticMemoryClustersBody,
@@ -19,7 +20,9 @@ import {
   type TemporalSummaryRebuildRangeBody,
   type TemporalSystemRollRegenerateBody,
   type TemporalSystemRollBatchStartBody,
+  type TemporalSystemRollListBody,
 } from "@freeanima/features/habitat/habitat/habitat-api/api";
+import { omitUndefined } from "@freeanima/shared/util";
 import { habitatCtx } from "./runtime.ts";
 
 export async function passiveRecallDebug(body: PassiveRecallDebugBody) {
@@ -32,14 +35,16 @@ export async function passiveRecallDebug(body: PassiveRecallDebugBody) {
 
 export async function listTemporalSummaries(body: TemporalSummaryListBody) {
   const parsed = temporalSummaryListBodySchema.parse(body);
-  return habitatCtx().listTemporalSummaries({
-    window: parsed.window,
-    period_start_from: parsed.period_start_from?.trim() || undefined,
-    period_start_to: parsed.period_start_to?.trim() || undefined,
-    offset: parsed.offset,
-    limit: parsed.limit,
-    agent_subject_id: parsed.agent_subject_id,
-  });
+  return habitatCtx().listTemporalSummaries(
+    omitUndefined({
+      window: parsed.window,
+      period_start_from: parsed.period_start_from?.trim() || undefined,
+      period_start_to: parsed.period_start_to?.trim() || undefined,
+      offset: parsed.offset,
+      limit: parsed.limit,
+      agent_subject_id: parsed.agent_subject_id,
+    }),
+  );
 }
 
 export async function regenerateTemporalSummary(body: TemporalSummaryRegenerateBody) {
@@ -72,19 +77,26 @@ export function getTemporalBatchJobStatus() {
   return habitatCtx().getTemporalSummaryBatchJobStatus();
 }
 
-export async function listTemporalSystemRolls() {
-  return habitatCtx().listTemporalSystemRolls();
+export async function listTemporalSystemRolls(body: TemporalSystemRollListBody) {
+  const parsed = temporalSystemRollListBodySchema.parse(body);
+  return habitatCtx().listTemporalSystemRolls({ agent_subject_id: parsed.agent_subject_id });
 }
 
 export async function regenerateTemporalSystemRoll(body: TemporalSystemRollRegenerateBody) {
   const parsed = temporalSystemRollRegenerateBodySchema.parse(body);
-  return habitatCtx().regenerateTemporalSystemRoll({ kind: parsed.kind });
+  return habitatCtx().regenerateTemporalSystemRoll({
+    kind: parsed.kind,
+    agent_subject_id: parsed.agent_subject_id,
+  });
 }
 
-export function startTemporalSystemRollBatch(body: TemporalSystemRollBatchStartBody = {}) {
+export function startTemporalSystemRollBatch(body: TemporalSystemRollBatchStartBody) {
   const parsed = temporalSystemRollBatchStartBodySchema.parse(body);
   return habitatCtx().startTemporalSystemRollBatch(
-    parsed.kinds !== undefined ? { kinds: parsed.kinds } : {},
+    omitUndefined({
+      agent_subject_id: parsed.agent_subject_id,
+      kinds: parsed.kinds,
+    }),
   );
 }
 

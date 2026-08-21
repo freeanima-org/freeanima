@@ -78,14 +78,14 @@ export const temporalSummaryListBodySchema = memoryListPaginationSchema.extend({
   window: temporalSummaryWindowSchema.optional(),
   period_start_from: z.string().optional(),
   period_start_to: z.string().optional(),
-  /** 观测：按 Anima subject 的私有 world；省略则用 resolved 默认 agent world */
-  agent_subject_id: z.number().int().positive().optional(),
+  /** 按 Anima subject 的私有 world；必填 */
+  agent_subject_id: z.number().int().positive(),
 });
 
-/** Habitat 自我层五块只读；观测页应传 agent_subject_id */
+/** Habitat 自我层五块只读；须传 agent_subject_id */
 export const selfBlocksBodySchema = z
   .object({
-    agent_subject_id: z.number().int().positive().optional(),
+    agent_subject_id: z.number().int().positive(),
   })
   .strict();
 
@@ -132,11 +132,19 @@ export const temporalSystemRollKindSchema = z.enum(["past_days", "past_months", 
 
 export const temporalSystemRollRegenerateBodySchema = z.object({
   kind: temporalSystemRollKindSchema,
+  agent_subject_id: z.number().int().positive(),
 });
 
 export const temporalSystemRollBatchStartBodySchema = z.object({
   kinds: z.array(temporalSystemRollKindSchema).min(1).optional(),
+  agent_subject_id: z.number().int().positive(),
 });
+
+export const temporalSystemRollListBodySchema = z
+  .object({
+    agent_subject_id: z.number().int().positive(),
+  })
+  .strict();
 
 export const temporalSystemRollBatchFailedItemSchema = z.object({
   kind: temporalSystemRollKindSchema,
@@ -176,6 +184,7 @@ export type TemporalSystemRollRegenerateBody = z.infer<
 export type TemporalSystemRollBatchStartBody = z.infer<
   typeof temporalSystemRollBatchStartBodySchema
 >;
+export type TemporalSystemRollListBody = z.infer<typeof temporalSystemRollListBodySchema>;
 export type TemporalSystemRollBatchJobStatus = z.infer<
   typeof temporalSystemRollBatchJobStatusSchema
 >;

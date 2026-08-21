@@ -153,7 +153,7 @@ export async function serviceVaultGet(
 
   if (await isAgentSubject(subjectId)) {
     const { openAgentVaultSecrets } = await loadAgentVaultConnector();
-    const secrets = await openAgentVaultSecrets(item.secrets_enc, item.dek_wrapped);
+    const secrets = await openAgentVaultSecrets(worldId, item.secrets_enc, item.dek_wrapped);
     return { item: { ...toMetaPayload(item), secrets } };
   }
 
@@ -215,7 +215,7 @@ export async function serviceVaultCreatePlain(
   const worldId = await resolveVaultWorldId(subjectId);
   const { ensureAgentVaultConfig, sealAgentVaultItem } = await loadAgentVaultConnector();
   await ensureAgentVaultConfig(worldId);
-  const sealed = await sealAgentVaultItem(input.secrets);
+  const sealed = await sealAgentVaultItem(worldId, input.secrets);
   const item = await createVaultItem(
     worldId,
     omitUndefined({
@@ -311,12 +311,16 @@ export async function serviceVaultPatchPlain(
     if (!existing || !("secrets_enc" in existing)) throw new Error("NOT_FOUND");
     let merged: VaultSecretsPayload;
     if (existing.secrets_enc && existing.dek_wrapped) {
-      const current = await openAgentVaultSecrets(existing.secrets_enc, existing.dek_wrapped);
+      const current = await openAgentVaultSecrets(
+        worldId,
+        existing.secrets_enc,
+        existing.dek_wrapped,
+      );
       merged = { ...current, ...secrets };
     } else {
       merged = secrets;
     }
-    const sealed = await sealAgentVaultItem(merged);
+    const sealed = await sealAgentVaultItem(worldId, merged);
     patch.secrets_enc = sealed.secrets_enc;
     patch.dek_wrapped = sealed.dek_wrapped;
     patch.custom_field_names = sealed.custom_field_names;
@@ -493,9 +497,8 @@ export async function serviceVaultEnsureAgent(
   if (auth.subject_type !== "user" && auth.subject_type !== "agent") {
     throw new Error("FORBIDDEN_SUBJECT");
   }
-  const { getResolvedWorldContext } = await import("@freeanima/habitat/core/config/world-context");
   const agentSubjectId =
-    input.agent_subject_id ?? getResolvedWorldContext().default_chat_agent_subject_id;
+    input.agent_subject_id != null && input.agent_subject_id > 0 ? input.agent_subject_id : null;
   if (agentSubjectId == null) {
     throw new Error("agent_subject_id_required");
   }
@@ -533,9 +536,8 @@ export async function serviceVaultAgentKeyProvision(
   assertPg(deps);
   assertUserOrAgentToken(auth);
   const { provisionAgentMachineKeyB64, ensureAgentVaultConfig } = await loadAgentVaultConnector();
-  const { getResolvedWorldContext } = await import("@freeanima/habitat/core/config/world-context");
   const agentSubjectId =
-    input.agent_subject_id ?? getResolvedWorldContext().default_chat_agent_subject_id;
+    input.agent_subject_id != null && input.agent_subject_id > 0 ? input.agent_subject_id : null;
   if (agentSubjectId == null) {
     throw new Error("agent_subject_id_required");
   }

@@ -121,16 +121,33 @@ export async function planSleepCatchUp(opts?: {
     }),
   ]);
   const completedLight = new Set([...completedRetain, ...completedLegacyLight]);
-  const temporalRows = await listTemporalSummariesInRange({
-    window: "day",
-    period_start_from: start,
-    period_start_to: end,
-  });
+  const { listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  const agents = await listEnabledBoundAgents();
+  let existingIntersection: Set<string> | null = null;
+  for (const agent of agents) {
+    const rows = await listTemporalSummariesInRange({
+      window: "day",
+      period_start_from: start,
+      period_start_to: end,
+      world_id: agent.agent_world_id,
+    });
+    const periods = new Set<string>(rows.map((r) => r.period_start));
+    if (existingIntersection == null) {
+      existingIntersection = periods;
+    } else {
+      const next = new Set<string>();
+      for (const p of existingIntersection) {
+        if (periods.has(p)) next.add(p);
+      }
+      existingIntersection = next;
+    }
+  }
 
   const computed = computeSleepCatchUpDays({
     activityDays,
     completedLightDays: completedLight,
-    existingTemporalDays: new Set(temporalRows.map((r) => r.period_start)),
+    existingTemporalDays: existingIntersection ?? new Set<string>(),
     from: start,
     to: end,
   });

@@ -5,7 +5,6 @@ import {
   temporalSummaryBodySchema,
   type TemporalSummaryWindow,
 } from "@freeanima/habitat/core/db/schema";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { createEntity, updateEntity } from "@freeanima/habitat/core/db/pg/entity";
 import { getDb } from "../../client.ts";
 
@@ -19,8 +18,13 @@ export type TemporalSummaryRow = {
   updated_at: Date;
 };
 
-function agentWorldId(explicit?: number): number {
-  return explicit ?? getResolvedWorldContext().agent_world_id;
+function requireWorldId(explicit?: number): number {
+  if (explicit == null || explicit <= 0) {
+    throw new Error(
+      "temporal summary requires world_id (agent private world); no default chat agent fallback",
+    );
+  }
+  return explicit;
 }
 
 function mapRow(row: {
@@ -44,9 +48,10 @@ function mapRow(row: {
 export async function getTemporalSummary(
   window: TemporalSummaryWindow,
   period_start: string,
-  opts?: { world_id?: number },
+  opts: { world_id: number },
 ): Promise<TemporalSummaryRow | null> {
   const db = getDb();
+  const world_id = requireWorldId(opts.world_id);
   const rows = await db
     .select({
       id: entities.id,
@@ -58,7 +63,7 @@ export async function getTemporalSummary(
     .where(
       and(
         eq(entities.primary_component, TEMPORAL_SUMMARY_COMPONENT),
-        eq(entities.world_id, agentWorldId(opts?.world_id)),
+        eq(entities.world_id, world_id),
         sql`${entities.body}->>'window' = ${window}`,
         sql`${entities.body}->>'period_start' = ${period_start}`,
       ),
@@ -75,11 +80,11 @@ export async function upsertTemporalSummary(input: {
   content: string;
   empty_reason?: string | null;
   source_count?: number;
-  world_id?: number;
+  world_id: number;
 }): Promise<number> {
   const content = input.content.trim();
   const empty_reason = input.empty_reason !== undefined ? input.empty_reason : null;
-  const world_id = agentWorldId(input.world_id);
+  const world_id = requireWorldId(input.world_id);
   const body = temporalSummaryBodySchema.parse({
     window: input.window,
     period_start: input.period_start,
@@ -117,9 +122,10 @@ export async function listTemporalSummariesInRange(input: {
   window: TemporalSummaryWindow;
   period_start_from: string;
   period_start_to: string;
-  world_id?: number;
+  world_id: number;
 }): Promise<TemporalSummaryRow[]> {
   const db = getDb();
+  const world_id = requireWorldId(input.world_id);
   const rows = await db
     .select({
       id: entities.id,
@@ -131,7 +137,7 @@ export async function listTemporalSummariesInRange(input: {
     .where(
       and(
         eq(entities.primary_component, TEMPORAL_SUMMARY_COMPONENT),
-        eq(entities.world_id, agentWorldId(input.world_id)),
+        eq(entities.world_id, world_id),
         sql`${entities.body}->>'window' = ${input.window}`,
         sql`${entities.body}->>'period_start' >= ${input.period_start_from}`,
         sql`${entities.body}->>'period_start' <= ${input.period_start_to}`,
@@ -147,15 +153,15 @@ export async function listTemporalSummaries(input: {
   period_start_to?: string;
   offset?: number;
   limit?: number;
-  /** 观测：显式 world；省略则用 resolved 默认 agent world */
-  world_id?: number;
+  world_id: number;
 }): Promise<{ items: TemporalSummaryRow[]; total: number }> {
   const db = getDb();
   const offset = Math.max(0, input.offset ?? 0);
   const limit = Math.max(1, Math.min(100, input.limit ?? 20));
+  const world_id = requireWorldId(input.world_id);
   const conditions = [
     eq(entities.primary_component, TEMPORAL_SUMMARY_COMPONENT),
-    eq(entities.world_id, agentWorldId(input.world_id)),
+    eq(entities.world_id, world_id),
   ];
   if (input.window) {
     conditions.push(sql`${entities.body}->>'window' = ${input.window}`);

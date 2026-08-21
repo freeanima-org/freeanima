@@ -411,8 +411,8 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.passiveRecallDebug(args);
   }
 
-  listTemporalSummaries(args?: Parameters<typeof memory.listTemporalSummaryMemories>[0]) {
-    return memory.listTemporalSummaryMemories(args ?? {});
+  listTemporalSummaries(args: Parameters<typeof memory.listTemporalSummaryMemories>[0]) {
+    return memory.listTemporalSummaryMemories(args);
   }
 
   regenerateTemporalSummary(args: Parameters<typeof memory.regenerateTemporalSummary>[0]) {
@@ -435,8 +435,8 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.getTemporalSummaryBatchJobStatus();
   }
 
-  listTemporalSystemRolls() {
-    return memory.listTemporalSystemRollMemories();
+  listTemporalSystemRolls(args: { agent_subject_id: number }) {
+    return memory.listTemporalSystemRollMemories(args);
   }
 
   regenerateTemporalSystemRoll(
@@ -445,7 +445,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.regenerateTemporalSystemRollMemory(args);
   }
 
-  startTemporalSystemRollBatch(args?: Parameters<typeof memory.startTemporalSystemRollBatch>[0]) {
+  startTemporalSystemRollBatch(args: Parameters<typeof memory.startTemporalSystemRollBatch>[0]) {
     return memory.startTemporalSystemRollBatch(args);
   }
 
@@ -481,7 +481,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return fts.getRebuildFtsJobStatus();
   }
 
-  listSelfBlocks(agentSubjectId?: number): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
+  listSelfBlocks(agentSubjectId: number): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
     return selfLayer.listSelfBlocks(this.runtimeDeps(), agentSubjectId);
   }
 
@@ -517,6 +517,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     name: string;
     schedule: string;
     prompt: string;
+    subject_id: number;
     notify_on_success?: boolean;
   }): Promise<CronJobData> {
     return status.createCronJob(opts);

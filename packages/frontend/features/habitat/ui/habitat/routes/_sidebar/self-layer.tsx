@@ -9,7 +9,6 @@ import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/li
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
 import { useMemoryPipeline } from "@freeanima/features/habitat/ui/habitat/lib/use-memory-pipeline.ts";
-import { omitUndefined } from "../../lib/omit-undefined.ts";
 
 export const Route = createFileRoute("/_sidebar/self-layer")({
   component: () => <RedirectToObserver subpath="/self-layer" />,
@@ -34,7 +33,7 @@ export function SelfLayerPage() {
     let cancelled = false;
     setLoading(true);
     setLocalError("");
-    void getSelfBlocks(omitUndefined({ agent_subject_id: agentSubjectId }))
+    void getSelfBlocks({ agent_subject_id: agentSubjectId })
       .then((data) => {
         if (cancelled) return;
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- self.blocks 响应边界

@@ -4,7 +4,6 @@ import {
   materializeToolNames,
 } from "@freeanima/habitat/core/capability-policy";
 import { getProfileHopFormat, getProfileHopModel } from "@freeanima/habitat/core/config";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import {
   PROFILE_CHAT,
   resolveSamplingRanges,
@@ -20,6 +19,7 @@ import {
 } from "@freeanima/habitat/core/tool";
 import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
+import { resolveBoundAgentForConversation } from "@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts";
 
 import {
   AUTO_LLM_DEFAULT_MAX_DURATION_MS,
@@ -274,15 +274,21 @@ export const SUBAGENT_TASK_SPEC = `你是父代理派出的一次性子代理（
 /**
  * 子代理角色 + opt-in 块（数据层，不进 task_spec）。
  */
-export async function buildSubagentRoleData(profile: ResolvedSubagentProfile): Promise<string> {
-  const optIn = await buildSubagentOptInSections(profile.prompt_includes);
+export async function buildSubagentRoleData(
+  profile: ResolvedSubagentProfile,
+  agent: { agent_subject_id: number; agent_world_id: number },
+): Promise<string> {
+  const optIn = await buildSubagentOptInSections(profile.prompt_includes, agent);
   const role = formatSubagentRoleSection(profile);
   return [role, ...optIn].filter(Boolean).join("\n\n");
 }
 
 /** @deprecated 使用 SUBAGENT_TASK_SPEC + buildSubagentRoleData */
-export async function buildSubagentTaskSpec(profile: ResolvedSubagentProfile): Promise<string> {
-  const roleData = await buildSubagentRoleData(profile);
+export async function buildSubagentTaskSpec(
+  profile: ResolvedSubagentProfile,
+  agent: { agent_subject_id: number; agent_world_id: number },
+): Promise<string> {
+  const roleData = await buildSubagentRoleData(profile, agent);
   return [SUBAGENT_TASK_SPEC, roleData].filter(Boolean).join("\n\n");
 }
 
@@ -331,7 +337,14 @@ async function runOneTask(
   });
 
   const skillsText = formatSkillsPrefix(deps.engine.skills, skillNames);
-  const roleData = await buildSubagentRoleData(profile);
+  if (!parentConversationId?.trim()) {
+    throw new Error("subagent requires parent conversation to resolve acting subject");
+  }
+  const bound = await resolveBoundAgentForConversation(parentConversationId);
+  const roleData = await buildSubagentRoleData(profile, {
+    agent_subject_id: bound.agent_subject_id,
+    agent_world_id: bound.agent_world_id,
+  });
   const { systemPrompt, userMessages } = composeAutoLlmPrompt({
     kind: "subagent",
     taskSpec: SUBAGENT_TASK_SPEC,
@@ -366,12 +379,14 @@ async function runOneTask(
   };
   onLiveUpdate(liveBase);
 
+  const subjectId = bound.agent_subject_id;
+
   const result: AutoLlmRunResult = await runAutoLlm(
     deps,
     omitUndefined({
       runName,
       runKind: "subagent",
-      subjectId: getResolvedWorldContext().agent_subject_id,
+      subjectId,
       systemPrompt,
       userMessages,
       model,

@@ -17,6 +17,7 @@ import {
   temporalSystemRollRegenerateBodySchema,
   temporalSystemRollBatchStartBodySchema,
   temporalSystemRollBatchJobStatusSchema,
+  temporalSystemRollListBodySchema,
   worldEntityCreateBodySchema,
   worldEntityPatchInputSchema,
   redisLocksDeleteBodySchema,
@@ -48,6 +49,7 @@ const cronJobCreateInputSchema = z
     name: z.string().min(1),
     schedule: z.string().min(1),
     prompt: z.string().min(1),
+    subject_id: z.number().int().positive(),
     notify_on_success: z.boolean().optional(),
   })
   .strict();
@@ -311,7 +313,7 @@ export const habitatMethodDefs = {
     meta: dualTransportMeta(true),
   }),
   "memory.temporalSystemRollList": defineHabitatMethod({
-    input: emptyInputSchema,
+    input: temporalSystemRollListBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),
   }),

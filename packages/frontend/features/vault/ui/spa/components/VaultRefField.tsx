@@ -10,7 +10,6 @@ import {
   Label,
   Spinner,
 } from "@freeanima/ui-kit";
-import { getCachedResolvedWorldContext } from "@freeanima/client/portal-sdk/world-context.ts";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
 
 import { fetchVaultItems } from "../lib/api.ts";
@@ -24,7 +23,7 @@ export type VaultRefFieldProps = {
   disabled?: boolean;
   type?: "text" | "password";
   placeholder?: string;
-  /** 缺省时用 worlds.context 默认 chat agent subject */
+  /** agent 侧 subject：须显式传入；禁止默认聊天 agent 静默回退 */
   subjectId?: number;
 };
 
@@ -36,10 +35,8 @@ export function VaultRefField({
   disabled = false,
   type = "text",
   placeholder = "未设置",
-  subjectId: subjectIdProp,
+  subjectId,
 }: VaultRefFieldProps): ReactNode {
-  const subjectId =
-    subjectIdProp ?? getCachedResolvedWorldContext()?.default_chat_agent_subject_id ?? null;
   const [open, setOpen] = useState(false);
   const parsed = useMemo(() => parseVaultRef(value), [value]);
   const inputType = parsed ? "text" : type;

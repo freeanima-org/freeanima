@@ -33,8 +33,16 @@ describe("api/schemas", () => {
       window: "day",
       offset: 0,
       limit: 20,
+      agent_subject_id: 2,
     });
     expect(ok.success).toBe(true);
+
+    const missingAgent = temporalSummaryListBodySchema.safeParse({
+      window: "day",
+      offset: 0,
+      limit: 20,
+    });
+    expect(missingAgent.success).toBe(false);
   });
 
   it("validates temporal regenerate and system roll bodies", () => {
@@ -50,8 +58,14 @@ describe("api/schemas", () => {
         period_start: "bad",
       }).success,
     ).toBe(false);
+    expect(
+      temporalSystemRollRegenerateBodySchema.safeParse({
+        kind: "past_days",
+        agent_subject_id: 2,
+      }).success,
+    ).toBe(true);
     expect(temporalSystemRollRegenerateBodySchema.safeParse({ kind: "past_days" }).success).toBe(
-      true,
+      false,
     );
     expect(temporalSystemRollRegenerateBodySchema.safeParse({ kind: "near7" }).success).toBe(false);
   });
@@ -59,8 +73,14 @@ describe("api/schemas", () => {
   it("validates temporal system roll batch start body", async () => {
     const { temporalSystemRollBatchStartBodySchema, temporalBatchJobStatusSchema } =
       await import("./api/schemas.ts");
-    expect(temporalSystemRollBatchStartBodySchema.safeParse({}).success).toBe(true);
-    expect(temporalSystemRollBatchStartBodySchema.safeParse({ kinds: ["past_days"] }).success).toBe(
+    expect(temporalSystemRollBatchStartBodySchema.safeParse({}).success).toBe(false);
+    expect(
+      temporalSystemRollBatchStartBodySchema.safeParse({
+        kinds: ["past_days"],
+        agent_subject_id: 2,
+      }).success,
+    ).toBe(true);
+    expect(temporalSystemRollBatchStartBodySchema.safeParse({ agent_subject_id: 2 }).success).toBe(
       true,
     );
     expect(temporalSystemRollBatchStartBodySchema.safeParse({ kinds: [] }).success).toBe(false);

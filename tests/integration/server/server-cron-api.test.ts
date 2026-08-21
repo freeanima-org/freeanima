@@ -84,10 +84,14 @@ describePg("server cron API", () => {
 
   it("AppRuntime create and delete cron job", async () => {
     const svc = getAppRuntime();
+    const { getResolvedWorldContext } =
+      await import("@freeanima/habitat/core/config/world-context");
+    const subject_id = getResolvedWorldContext().default_chat_agent_subject_id;
     const created = await svc.createCronJob({
       name: "created-via-runtime",
       schedule: "2h",
       prompt: "say hello",
+      subject_id,
       notify_on_success: false,
     });
     expect(created.name).toBe("created-via-runtime");
@@ -117,10 +121,14 @@ describePg("server cron API", () => {
   });
 
   it("handler create/delete and errors", async () => {
+    const { getResolvedWorldContext } =
+      await import("@freeanima/habitat/core/config/world-context");
+    const subject_id = getResolvedWorldContext().default_chat_agent_subject_id;
     const created = await createCronJob({
       name: "handler-create",
       schedule: "30m",
       prompt: "ping",
+      subject_id,
     });
     expect(created.ok).toBe(true);
     expect(created.job.name).toBe("handler-create");
@@ -134,7 +142,12 @@ describePg("server cron API", () => {
 
     await expect(deleteCronJob("no-such-job")).rejects.toThrow(ApiHandlerError);
     await expect(
-      createCronJob({ name: "bad", schedule: "not-a-schedule", prompt: "x" }),
+      createCronJob({
+        name: "bad",
+        schedule: "not-a-schedule",
+        prompt: "x",
+        subject_id,
+      }),
     ).rejects.toThrow(ApiHandlerError);
   });
 

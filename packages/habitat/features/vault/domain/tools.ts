@@ -271,7 +271,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
 
   try {
     await ensureAgentVaultConfig(worldId);
-    const sealed = await sealAgentVaultItem(secretsParsed);
+    const sealed = await sealAgentVaultItem(worldId, secretsParsed);
     const tagIds = await resolveVaultToolTagIds(worldId, args);
     if (typeof tagIds === "string") return tagIds;
     const item = await createVaultItem(
@@ -359,12 +359,16 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
       }
       let merged: VaultSecretsPayload;
       if (existing.secrets_enc && existing.dek_wrapped) {
-        const current = await openAgentVaultSecrets(existing.secrets_enc, existing.dek_wrapped);
+        const current = await openAgentVaultSecrets(
+          worldId,
+          existing.secrets_enc,
+          existing.dek_wrapped,
+        );
         merged = { ...current, ...secretsParsed };
       } else {
         merged = secretsParsed;
       }
-      const sealed = await sealAgentVaultItem(merged);
+      const sealed = await sealAgentVaultItem(worldId, merged);
       patch.secrets_enc = sealed.secrets_enc;
       patch.dek_wrapped = sealed.dek_wrapped;
       patch.custom_field_names = sealed.custom_field_names;

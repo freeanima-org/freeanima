@@ -94,9 +94,10 @@ async function resolveEngineSubjectId(opts: {
       await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
     return (await resolveBoundAgentForConversation(provenance.conversation_id)).agent_subject_id;
   }
-  // 无会话绑定的维护路径（如 autobiography）：仍用默认聊天 agent
-  const { getResolvedWorldContext } = await import("@freeanima/habitat/core/config/world-context");
-  return getResolvedWorldContext().agent_subject_id;
+  // 无会话绑定的维护路径须由调用方显式传入 subjectId
+  throw new Error(
+    "AutoLlm acting subject unresolved; pass subjectId or bind conversation / retain context",
+  );
 }
 
 async function runReflectStream(

@@ -55,6 +55,7 @@ function materialRows(
 async function loadSourceRows(
   kind: SysRollKind,
   today: string,
+  world_id: number,
 ): Promise<{
   anchor: string;
   label: string;
@@ -73,6 +74,7 @@ async function loadSourceRows(
             window: "day",
             period_start_from: from,
             period_start_to: to,
+            world_id,
           });
     return {
       anchor: today,
@@ -92,6 +94,7 @@ async function loadSourceRows(
             window: "month",
             period_start_from: from,
             period_start_to: toMonth,
+            world_id,
           });
     return {
       anchor: today.slice(0, 7),
@@ -105,6 +108,7 @@ async function loadSourceRows(
     window: "year",
     period_start_from: "1970-01-01",
     period_start_to: earlierYear,
+    world_id,
   });
   return {
     anchor: today.slice(0, 4),
@@ -117,6 +121,7 @@ async function loadSourceRows(
 async function resolveRollup(opts: {
   kind: SysRollKind;
   today: string;
+  world_id: number;
   config: ResolvedTemporalSummaryConfig;
   peerCache?: PeerRollCache;
   force?: boolean;
@@ -131,12 +136,13 @@ async function resolveRollup(opts: {
   cache_hit: boolean;
   redis_key: string;
 }> {
-  const loaded = await loadSourceRows(opts.kind, opts.today);
+  const loaded = await loadSourceRows(opts.kind, opts.today, opts.world_id);
   const rows = materialRows(loaded.rows);
   const redis_key = sysRollRedisKey({
     prefix: opts.config.redis_key_prefix,
     kind: opts.kind,
     anchor: loaded.anchor,
+    world_id: opts.world_id,
   });
   const maxChars = opts.config.global_day_max_chars;
   const hardCap = temporalSummaryHardCap(maxChars);
@@ -215,18 +221,20 @@ const SYS_ROLL_KINDS: SysRollKind[] = ["past_days", "past_months", "past_years"]
 /** Read-only list of three cache slots (no LLM). */
 export async function listTemporalSystemRolls(opts: {
   config: ResolvedTemporalSummaryConfig;
+  world_id: number;
   peerCache?: PeerRollCache;
   nowMs?: number;
 }): Promise<{ items: SysRollSlot[] }> {
   const today = cstDateString(opts.nowMs ?? Date.now());
   const items: SysRollSlot[] = [];
   for (const kind of SYS_ROLL_KINDS) {
-    const loaded = await loadSourceRows(kind, today);
+    const loaded = await loadSourceRows(kind, today, opts.world_id);
     const rows = materialRows(loaded.rows);
     const redis_key = sysRollRedisKey({
       prefix: opts.config.redis_key_prefix,
       kind,
       anchor: loaded.anchor,
+      world_id: opts.world_id,
     });
     const fp = rows.length > 0 ? sysRollSourcesFp(rows) : "";
     const hit = opts.peerCache ? await opts.peerCache.getJson<SysRollCacheValue>(redis_key) : null;
@@ -250,6 +258,7 @@ export async function listTemporalSystemRolls(opts: {
 export async function regenerateTemporalSystemRoll(opts: {
   kind: SysRollKind;
   config: ResolvedTemporalSummaryConfig;
+  world_id: number;
   peerCache?: PeerRollCache;
   nowMs?: number;
 }): Promise<SysRollSlot> {
@@ -257,6 +266,7 @@ export async function regenerateTemporalSystemRoll(opts: {
   const result = await resolveRollup({
     kind: opts.kind,
     today,
+    world_id: opts.world_id,
     config: opts.config,
     force: true,
     ...(opts.peerCache ? { peerCache: opts.peerCache } : {}),

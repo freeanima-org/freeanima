@@ -14,6 +14,8 @@ export type TemporalSummarySystemSectionResult = {
 
 export type BuildTemporalSummarySystemSectionOpts = {
   nowMs?: number;
+  /** agent 私有 world；必填，禁止默认聊天 agent 回退 */
+  world_id: number;
   /** Redis (or in-process) cache for system rollups. */
   peerCache?: PeerRollCache;
   /**
@@ -29,6 +31,7 @@ async function cachedSystemRollBlocks(
 ): Promise<Array<{ label: string; summary: string }>> {
   const { items } = await listTemporalSystemRolls({
     config,
+    world_id: opts.world_id,
     ...(opts.peerCache ? { peerCache: opts.peerCache } : {}),
     ...(opts.nowMs !== undefined ? { nowMs: opts.nowMs } : {}),
   });
@@ -40,14 +43,11 @@ async function cachedSystemRollBlocks(
 /** Build system prompt section: 过往日 → 过往月 → 过往年（只读 Redis，miss 跳过）。 */
 export async function buildTemporalSummarySystemSection(
   config: ResolvedTemporalSummaryConfig,
-  opts: BuildTemporalSummarySystemSectionOpts | number = {},
+  opts: BuildTemporalSummarySystemSectionOpts,
 ): Promise<TemporalSummarySystemSectionResult> {
-  // Backward-compatible: second arg may be nowMs number from older call sites / tests.
-  const normalized: BuildTemporalSummarySystemSectionOpts =
-    typeof opts === "number" ? { nowMs: opts } : opts;
   if (!config.enabled) return { content: "", truncated: false };
 
-  const rolls = await cachedSystemRollBlocks(config, normalized);
+  const rolls = await cachedSystemRollBlocks(config, opts);
   if (rolls.length === 0) return { content: "", truncated: false };
 
   const body = rolls.map((r) => `### ${r.label}\n${r.summary}`).join("\n\n");
@@ -66,13 +66,11 @@ export async function buildTemporalSummarySystemSection(
 /** Body-only for fold path (xmlTag applied by hook). 只读缓存，不打 LLM。 */
 export async function buildTemporalSummarySystemBody(
   config: ResolvedTemporalSummaryConfig,
-  opts: BuildTemporalSummarySystemSectionOpts | number = {},
+  opts: BuildTemporalSummarySystemSectionOpts,
 ): Promise<{ body: string; truncated: boolean }> {
-  const normalized: BuildTemporalSummarySystemSectionOpts =
-    typeof opts === "number" ? { nowMs: opts } : opts;
   if (!config.enabled) return { body: "", truncated: false };
 
-  const rolls = await cachedSystemRollBlocks(config, normalized);
+  const rolls = await cachedSystemRollBlocks(config, opts);
   if (rolls.length === 0) return { body: "", truncated: false };
 
   const body = rolls.map((r) => `### ${r.label}\n${r.summary}`).join("\n\n");

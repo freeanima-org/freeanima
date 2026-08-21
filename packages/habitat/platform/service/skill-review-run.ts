@@ -12,10 +12,10 @@ import {
 } from "@freeanima/habitat/core/skill";
 import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
 import { getProfileHopModel } from "@freeanima/habitat/core/config";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROMPT_XML_TAGS, wrapPromptXml } from "@freeanima/habitat/core/hooks/prompt";
 import { composeAutoLlmPrompt } from "@freeanima/habitat/core/llm/auto-llm-prompt";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { resolveBoundAgentForConversation } from "@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts";
 import { resolveInvisibleCapabilityPolicy } from "./capability-policy-bind.ts";
 import { toolNamesForInvisiblePolicy } from "./use-cases/cron-runner.ts";
 import {
@@ -112,6 +112,12 @@ export async function runSkillReview(
       ? `skill-evolve:${input.conversationId ?? "anon"}`
       : `skill-maintain:${input.conversationId ?? "anon"}`;
 
+  const conversationId = input.conversationId?.trim();
+  if (!conversationId) {
+    return { ran: false, reason: "conversation_id required for skill review acting subject" };
+  }
+  const subjectId = (await resolveBoundAgentForConversation(conversationId)).agent_subject_id;
+
   log.info("skill review starting", {
     mode: input.mode,
     reason: gateReason,
@@ -124,7 +130,7 @@ export async function runSkillReview(
     omitUndefined({
       runName,
       runKind,
-      subjectId: getResolvedWorldContext().agent_subject_id,
+      subjectId,
       systemPrompt,
       userMessages,
       model,
@@ -132,7 +138,7 @@ export async function runSkillReview(
       maxLoopIterations: input.maxLoopIterations ?? SKILL_REVIEW_MAX_TURNS,
       maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
       toolPolicy: policy,
-      parentConversationId: input.conversationId,
+      parentConversationId: conversationId,
       metadata: {
         gate_reason: gateReason,
         min_tool_calls: input.minToolCalls ?? SKILL_EVOLVE_MIN_TOOL_CALLS,

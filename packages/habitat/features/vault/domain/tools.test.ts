@@ -254,6 +254,7 @@ describe("vault CRUD tools", () => {
       },
     });
     expect(sealAgentVaultItemMock).toHaveBeenCalledWith(
+      expect.any(Number),
       expect.objectContaining({
         password: "tok",
         notes: "  keep  ",

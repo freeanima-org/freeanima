@@ -243,7 +243,7 @@ describePg("server memory API", () => {
       agentId,
     );
 
-    const { blocks } = await getAppRuntime().listSelfBlocks();
+    const { blocks } = await getAppRuntime().listSelfBlocks(agentId);
     expect(blocks.length).toBe(SELF_BLOCK_KEYS.length);
     expect(blocks.map((b: { block_key: string }) => b.block_key)).toEqual([...SELF_BLOCK_KEYS]);
     const direction = blocks.find((b: { block_key: string }) => b.block_key === "direction");

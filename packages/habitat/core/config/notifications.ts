@@ -12,7 +12,7 @@ export type ResolvedNotificationRecipients = {
   agent: NotificationRecipientRef;
 };
 
-/** 从 ResolvedWorldContext（boot 后）解析通知收件主体；agent = 默认聊天 agent（仅收件别名） */
+/** 从 ResolvedWorldContext（boot 后）解析通知收件主体；agent = 默认聊天 agent（收件别名，非 LLM 行动主体） */
 export function resolveNotificationRecipients(
   config: RuntimeConfig,
 ): ResolvedNotificationRecipients {

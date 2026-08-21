@@ -165,10 +165,14 @@ async function buildSystemView(
   composed: string;
   fold: PromptDebugFold;
 }> {
-  const selfContent = await loadSelfLayerPrompt(
-    (await import("@freeanima/habitat/core/config/world-context")).getResolvedWorldContext()
-      .default_chat_agent_subject_id,
-  );
+  const agentSubjectId =
+    meta != null && isConversationMeta(meta) && meta.agent_subject_id != null
+      ? meta.agent_subject_id
+      : null;
+  if (meta != null && isConversationMeta(meta) && agentSubjectId == null) {
+    throw new Error("prompt debug requires conversation meta.agent_subject_id");
+  }
+  const selfContent = agentSubjectId != null ? await loadSelfLayerPrompt(agentSubjectId) : "";
   const memoryParts = await decomposeSystemPromptParts(selfContent, cwd ?? undefined);
   const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
   const parts: SystemPromptParts = { ...memoryParts, toolsets };

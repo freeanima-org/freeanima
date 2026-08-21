@@ -112,14 +112,16 @@ export function sysRollSourcesFp(
 
 export type SysRollKind = "past_days" | "past_months" | "past_years";
 
-/** Stable Redis key (no fp) so Habitat UI can list cache slots. */
+/** Stable Redis key（按 agent world 分桶；无 fp，Habitat UI 可列缓存槽） */
 export function sysRollRedisKey(opts: {
   prefix: string;
   kind: SysRollKind;
   /** past_days → today; past_months → yyyy-mm; past_years → yyyy */
   anchor: string;
+  /** agent 私有 world_id */
+  world_id: number;
 }): string {
-  return `${opts.prefix}:sys_roll:${opts.kind}:${opts.anchor}`;
+  return `${opts.prefix}:sys_roll:w${opts.world_id}:${opts.kind}:${opts.anchor}`;
 }
 
 export function monthPeriodStart(cstDate: string): string {

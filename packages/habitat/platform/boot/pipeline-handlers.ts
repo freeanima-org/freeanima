@@ -347,11 +347,14 @@ async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> 
     else anyFail = true;
   }
   if (anyOk) {
-    scheduleTemporalSystemRollWarm({
-      kinds: ["past_days"] satisfies SysRollKind[],
-      config,
-      peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
-    });
+    for (const agent of agents) {
+      scheduleTemporalSystemRollWarm({
+        kinds: ["past_days"] satisfies SysRollKind[],
+        config,
+        world_id: agent.agent_world_id,
+        peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
+      });
+    }
   }
   const allSkipped = results.every((r) => r.skipped);
   return {
@@ -386,9 +389,7 @@ async function runTemporalCascadeStep(ctx: StepCtx): Promise<MaintenanceStepResu
     };
   }
   const results = [];
-  let anyOk = false;
   let anyFail = false;
-  const kinds: SysRollKind[] = [];
   for (const agent of agents) {
     const result = await runTemporalSummaryCascade(
       omitUndefined({
@@ -399,17 +400,18 @@ async function runTemporalCascadeStep(ctx: StepCtx): Promise<MaintenanceStepResu
       }),
     );
     results.push(result);
-    if (result.ok) anyOk = true;
-    else anyFail = true;
+    if (!result.ok) anyFail = true;
+    const kinds: SysRollKind[] = [];
     if (result.month_id != null) kinds.push("past_months");
     if (result.year_id != null) kinds.push("past_years");
-  }
-  if (anyOk && kinds.length > 0) {
-    scheduleTemporalSystemRollWarm({
-      kinds: [...new Set(kinds)],
-      config,
-      peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
-    });
+    if (result.ok && kinds.length > 0) {
+      scheduleTemporalSystemRollWarm({
+        kinds,
+        config,
+        world_id: agent.agent_world_id,
+        peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
+      });
+    }
   }
   const allSkipped = results.every((r) => r.skipped);
   return {

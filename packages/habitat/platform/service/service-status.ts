@@ -279,13 +279,18 @@ export async function createCronJob(opts: {
   name: string;
   schedule: string;
   prompt: string;
+  subject_id: number;
   notify_on_success?: boolean;
 }): Promise<CronJobData> {
+  if (opts.subject_id == null || opts.subject_id <= 0) {
+    throw new Error("subject_id is required to create cron job");
+  }
   const job = await createJob({
     name: opts.name,
     schedule: opts.schedule,
     prompt: opts.prompt,
     notify_on_success: opts.notify_on_success ?? false,
+    subject_id: opts.subject_id,
   });
   return job.toJSON();
 }

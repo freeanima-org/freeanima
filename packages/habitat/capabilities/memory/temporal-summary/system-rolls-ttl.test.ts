@@ -33,6 +33,7 @@ describe("regenerateTemporalSystemRoll TTL", () => {
     };
     await regenerateTemporalSystemRoll({
       kind: "past_days",
+      world_id: 42,
       config: {
         enabled: true,
         chunk_max_chars: 50,

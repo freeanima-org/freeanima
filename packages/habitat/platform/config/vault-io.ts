@@ -17,6 +17,7 @@ export async function resolveVaultField(itemId: number, field: string): Promise<
   }
   try {
     const ctx = getResolvedWorldContext();
+    // 配置密钥解析：vault() 落在默认聊天 Anima 的私有 world（配置期宿主，非 LLM 行动主体回退）
     const worldId = await resolveVaultWorldId(ctx.default_chat_agent_subject_id);
     const value = await resolveAgentVaultSecret(worldId, itemId, field);
     cache.set(key, value);

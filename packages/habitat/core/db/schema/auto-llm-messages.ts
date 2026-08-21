@@ -12,10 +12,8 @@ export const autoLlmMessages = pgTable(
     run_id: text("run_id")
       .notNull()
       .references(() => autoLlmRuns.id, { onDelete: "cascade" }),
-    /** 与所属 run 相同的行动主体（冗余，便于按 subject 扫表） */
-    subject_id: bigint("subject_id", { mode: "number" })
-      .notNull()
-      .references(() => entities.id),
+    /** 与所属 run 相同的行动主体（可空；冗余便于按 subject 扫表） */
+    subject_id: bigint("subject_id", { mode: "number" }).references(() => entities.id),
     pos: bigint("pos", { mode: "number" }).notNull(),
     payload: jsonb("payload").$type<MessagePayload>().notNull(),
   },
