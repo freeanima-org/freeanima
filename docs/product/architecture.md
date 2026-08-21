@@ -22,8 +22,9 @@ title: 架构
 | 远程工具注册方                 | **Outpost**      | **前哨**           | 不可达本地应用，经 `remote_tools.attach`（入口内嵌伴侣或独立工具）；**不是**入口                 |
 | 壳                             | **Shell**        | **壳**             | 应用形态入口（desktop / mobile / web）。**不是**栖息地；**不是**应用布局；**不是**浏览器形态入口 |
 | 应用布局                       | **app frame**    | **应用布局**       | `packages/frontend/client/app-frame`（`AppFrame`）中的 SPA chrome；随视口；与壳正交              |
-| 管理 / 检视 UI（遗留 Habitat） | **Habitat** (UI) | **栖息地**         | `/habitat/*` 区域；「打开栖息地」vs「连接栖息地」                                                |
+| 管理 / 检视 UI（遗留 Habitat） | **Habitat** (UI) | **栖息地**         | `/habitat/*` 区域；「打开栖息地」vs「连接栖息地」——**实例**运维 / 检视                           |
 | 管理首页                       | **Dashboard**    | **仪表盘**         | 仅 `/habitat/dashboard`；其他栖息地路由保留各自标签                                              |
+| Anima 私有空间 UI              | **Bedroom**      | **卧室**           | `/bedroom/*`；与栖息地成对——选一个 Anima，看其自我层 / 记忆 / 生活资产（群租房隐喻）             |
 | 消息桥                         | **Gateway**      | Gateway            | Discord / 微信 — **不是**入口                                                                    |
 | 协议 / 代码标识                | —                | **协议/代码标识**  | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                |
 
@@ -60,11 +61,13 @@ title: 架构
 
 ### 运行时配置：Live vs Transferred（即时 vs 需转移）
 
-| 种类                      | 段（示例）                                                                                                                                                                                                 | UI 保存后                                                          |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Live（即时）**          | `compression`、`prompt`、`memory`、`fts`、`cjk`、`clarify`、`browser`、`firecrawl`、`models`、`tts`、`auto_llm`、`companion`、`image_generate`、`audio_generate`、`video_generate`、gateway `tool_display` | 消费者每次读 `Config.data`；快照更新即可                           |
-| **Transferred（需转移）** | `connections`、`text_generate`、`i18n`、`embedding`、`mcp_servers`、`discord` / `weixin` / `gateway` platforms、`worlds`、`object_storage`                                                                 | 快照更新**外加**段应用（重初始化注册表 / 重连 / 重绑 ObjectStore） |
-| **Bootstrap（引导）**     | `database`、`http`、`redis`                                                                                                                                                                                | 改 YAML；需**进程重启**                                            |
+| 种类                      | 段（示例）                                                                                                                                                                                                 | UI 保存后                                                                                               |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Live（即时）**          | `compression`、`prompt`、`memory`、`fts`、`cjk`、`clarify`、`browser`、`firecrawl`、`models`、`tts`、`auto_llm`、`companion`、`image_generate`、`audio_generate`、`video_generate`、gateway `tool_display` | 消费者每次读 `Config.data`；快照更新即可                                                                |
+| **Transferred（需转移）** | `connections`、`text_generate`、`i18n`、`embedding`、`mcp_servers`、`discord` / `weixin` / `gateway` platforms、`object_storage`、`chat`                                                                   | 快照更新**外加**段应用（重初始化注册表 / 重连 / 重绑 ObjectStore）；`chat` 主要为 Live 读，写入后热生效 |
+| **Bootstrap（引导）**     | `database`、`http`、`redis`                                                                                                                                                                                | 改 YAML；需**进程重启**                                                                                 |
+
+> **已废除**：`runtime.worlds` 配置段。boot 后仅在内存钉唯一 `user_*` + `commons_*`；默认聊天 Anima 为 `chat.default_agent_subject_id`（仅 Chat/Coding 新建会话预选，禁止工具静默回退）。
 
 ### 运行时配置：UI 覆盖缺口
 
@@ -73,8 +76,8 @@ title: 架构
 | 缺口                | 段                                        | 说明                                                                                  |
 | ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
 | **无设置面板**      | `clarify`、`prompt`                       | `clarify` live；`prompt.system_prompt_budget_chars`                                   |
-| **有设置面板**      | `i18n`                                    | transferred；时区 IANA（默认 Asia/Shanghai）                                          |
-| **遗留 / 重叠**     | `notifications`                           | subject id；优先 `worlds`（boot 仍可能作回退读取）                                    |
+| **有设置面板**      | `i18n`、`chat`                            | `chat`：默认聊天 Anima + LLM 调试；时区 IANA（默认 Asia/Shanghai）                    |
+| **遗留 / 重叠**     | `notifications`                           | subject id；以内存 `ResolvedWorldContext` / 显式 `recipient_id` 为准                  |
 | **可能死码 / 预留** | `push`、`fallback_providers`、`platforms` | 几乎无产品消费者；后续清理候选                                                        |
 | **部分 UI**         | `compression`、`memory`                   | 压缩 UI 省略触发/摘要字段；记忆运维：语义记忆页被动召回调试 + `temporal-summary` 浏览 |
 
@@ -210,15 +213,25 @@ UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`do
 
 栖息地侧栏按组划分（非扁平存储表）。新功能应映射到这些用户可见概念：
 
-| 分组                 | 认知层         | 路由（代表）                                                    |
-| -------------------- | -------------- | --------------------------------------------------------------- |
-| Runtime（运行时）    | 资源层 + 运维  | dashboard、config、cron                                         |
-| Memory（记忆）       | 记忆层         | semantic-memory、temporal-summary、conversations、auto-llm-runs |
-| Self（自我）         | 自我层         | self-layer、system-prompt                                       |
-| Estate（资源）       | 资源层         | subjects、worlds、data-maintenance（含会话清理、FTS）           |
-| Capabilities（能力） | 资源层（工具） | tools、commands、mcp、远程工具实例、subagent                    |
+| 分组                         | 认知层         | 路由（代表）                                          |
+| ---------------------------- | -------------- | ----------------------------------------------------- |
+| Runtime（运行时）            | 资源层 + 运维  | dashboard、cron                                       |
+| Conversation ops（对话运维） | 记忆层 / 运维  | conversations、conversation-shares、auto-llm-runs     |
+| Estate（资源）               | 资源层         | subjects、worlds、data-maintenance（含会话清理、FTS） |
+| Capabilities（能力）         | 资源层（工具） | tools、commands、mcp、远程工具实例、subagent          |
 
-FTS 索引维护在数据维护（资源组）下。记忆巩固手动入口在语义记忆 / 自我层；夜间 DAG 仍跑。勿新增未映射到上述分组的扁平导航项。
+壳层顶级 **卧室**（与栖息地平级）：统一选择 Anima 后进入自我层 / 语义记忆 / 时间摘要 / 系统提示词，并挂接生活记录（日记·笔记·邮件·密码库·书签）与事务（清单·项目·日程·实体·通知）——均落在该 Anima 私有 World。栖息地管**实例**；卧室管**某个 Anima**。
+
+FTS 索引维护在数据维护（资源组）下。记忆巩固手动入口在卧室；夜间 DAG 仍跑。勿新增未映射到上述分组的扁平导航项。
+
+### 多 Anima（实例内）
+
+- **User** 唯一；boot 内存绑定。**Agent** 可多个；仅停用（`enabled`），不删除主体。
+- 会话绑定 `agent_subject_id`；Chat/Coding 新建预选 `chat.default_agent_subject_id`；首条用户消息前可 `conversation.setAgent`。
+- World：`subject_id` → 默认私有 world；工具无会话且无显式 subject → **报错**，禁止回退默认聊天 agent。
+- 产品模块固定 user；壳层顶级 **卧室**（与栖息地平级）统一选择 Anima，再进自我层 / 语义 / 时间摘要等子页。
+- **对话作用域（系统提示 / 旁注 / 记忆工具）**：一律 `meta.agent_subject_id` → 该 agent 私有 `world_id`。常驻记忆、时间摘要段、被动召回、通知 Inbox 注入、peer 时间线、`memory_semantic_*` 均不得跨 Anima；工具入参禁止 `subject_id` / `world_id`。
+- **夜间维护**：retain / reflect / temporal day·cascade / cluster 校准按 enabled agent 的私有 world **分桶**；自我层刷新已按 agent 循环。实例级告警扇出仍可写默认聊天 agent。
 
 ### 背景
 
@@ -310,7 +323,7 @@ Agent 行为
 | Parked   | limbic / dream / narrative — 存量只读（写入已拆除）         |
 
 **程序入口：** `MemoryService`（`embedded` \| `remote` 同契约）。LLM 工具仍是分范围 search（无统一 `memory_recall`）。  
-**巩固路径：** 回合后 `retain`；夜间 `memory-maintenance`（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。
+**巩固路径：** 回合后 `retain`；夜间 `memory-maintenance`（cleanup / Retain 缺口检查 / 周一 reflect·self / temporal）。语义与时间骨架按 **agent 私有 World** 隔离。详情：[`memory.md`](../cognition/memory.md)、[`sleep.md`](../cognition/sleep.md)（旧睡眠已废止）。
 
 ## 保险库与密钥（摘要）
 

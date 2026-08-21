@@ -69,14 +69,14 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-export async function fetchProjectFolders(subjectKind: SubjectKind): Promise<ProjectFolderRow[]> {
+export async function fetchProjectFolders(subjectId: number): Promise<ProjectFolderRow[]> {
   const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
     namespace: "project",
     id: "folders",
     fetch: async () => {
-      const data = await habitat().call("projectfolder.list", { subject_kind: subjectKind });
+      const data = await habitat().call("projectfolder.list", { subject_id: subjectId });
       return data.folders;
     },
     reconcile: (folders) => reconcileServerProjectFolders(folders),
@@ -103,7 +103,7 @@ function withDefaultProjectTaskCount(projects: ProjectRow[]): ProjectRow[] {
 }
 
 export async function fetchProjects(
-  subjectKind: SubjectKind,
+  subjectId: number,
   folderId?: number | null,
 ): Promise<ProjectRow[]> {
   const scope = resolveHabitatCacheScope();
@@ -124,7 +124,7 @@ export async function fetchProjects(
 
     try {
       const data = await habitat().call("project.list", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         folder_id: folderId,
       });
       const projects = withDefaultProjectTaskCount(data.projects);
@@ -142,7 +142,7 @@ export async function fetchProjects(
     namespace: "project",
     id: "projects",
     fetch: async () => {
-      const data = await habitat().call("project.list", { subject_kind: subjectKind });
+      const data = await habitat().call("project.list", { subject_id: subjectId });
       return withDefaultProjectTaskCount(data.projects);
     },
     reconcile: (projects) => reconcileServerProjects(projects),
@@ -150,13 +150,13 @@ export async function fetchProjects(
   });
 }
 
-export async function fetchProjectStats(subjectKind: SubjectKind): Promise<Map<number, number>> {
+export async function fetchProjectStats(subjectId: number): Promise<Map<number, number>> {
   if (!isHabitatFetchAvailable()) return new Map();
-  const data = await habitat().call("project.stats", { subject_kind: subjectKind });
+  const data = await habitat().call("project.stats", { subject_id: subjectId });
   return new Map(data.counts.map((row) => [row.id, row.task_count]));
 }
 
-export async function fetchProject(subjectKind: SubjectKind, id: number): Promise<ProjectRow> {
+export async function fetchProject(subjectId: number, id: number): Promise<ProjectRow> {
   const scope = resolveHabitatCacheScope();
 
   const readLocal = async (): Promise<ProjectRow> => {
@@ -175,7 +175,7 @@ export async function fetchProject(subjectKind: SubjectKind, id: number): Promis
   }
 
   try {
-    const data = await habitat().call("project.get", { subject_kind: subjectKind, id });
+    const data = await habitat().call("project.get", { subject_id: subjectId, id });
     const cached = (await readCachedProjects(scope)) ?? [];
     const next = cached.filter((p) => p.id !== data.item.id);
     next.push(data.item);
@@ -187,7 +187,7 @@ export async function fetchProject(subjectKind: SubjectKind, id: number): Promis
 }
 
 export async function createProjectApi(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   input: {
     title: string;
     start_at?: string | null;
@@ -201,7 +201,7 @@ export async function createProjectApi(
 }
 
 export async function fetchProjectTasks(
-  subjectKind: SubjectKind,
+  subjectId: number,
   projectId: number,
 ): Promise<TaskItemRow[]> {
   const scope = resolveHabitatCacheScope();
@@ -214,7 +214,7 @@ export async function fetchProjectTasks(
     id: `items:${String(projectId)}`,
     fetch: async () => {
       const data = await habitat().call("project.item.list", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         project_id: projectId,
       });
       return normalizeTaskItemRows(data.items);
@@ -225,7 +225,7 @@ export async function fetchProjectTasks(
 }
 
 export async function createProjectTask(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   input: { title: string; project_id: number; sort_order?: number },
 ): Promise<TaskItemRow> {
   ensureProjectOfflineModule();
@@ -233,7 +233,7 @@ export async function createProjectTask(
 }
 
 export async function moveTaskToProject(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   taskId: number,
   projectId: number,
 ): Promise<TaskItemRow> {
@@ -242,7 +242,7 @@ export async function moveTaskToProject(
 }
 
 export async function patchProjectApi(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   id: number,
   patch: {
     status?: ProjectRow["status"];
@@ -259,13 +259,13 @@ export async function patchProjectApi(
   return offlineUpdateProject(id, patch);
 }
 
-export async function deleteProjectApi(_subjectKind: SubjectKind, id: number): Promise<void> {
+export async function deleteProjectApi(_subjectId: number, id: number): Promise<void> {
   ensureProjectOfflineModule();
   return offlineDeleteProject(id);
 }
 
 export async function createProjectFolderApi(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   name: string,
   parentId?: number | null,
 ): Promise<ProjectFolderRow> {
@@ -274,7 +274,7 @@ export async function createProjectFolderApi(
 }
 
 export async function patchProjectFolderApi(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   id: number,
   patch: { name?: string; parent_id?: number | null; sort_order?: number },
 ): Promise<ProjectFolderRow> {
@@ -282,13 +282,13 @@ export async function patchProjectFolderApi(
   return offlineUpdateProjectFolder(id, patch);
 }
 
-export async function deleteProjectFolderApi(_subjectKind: SubjectKind, id: number): Promise<void> {
+export async function deleteProjectFolderApi(_subjectId: number, id: number): Promise<void> {
   ensureProjectOfflineModule();
   return offlineDeleteProjectFolder(id);
 }
 
 export async function updateProjectTask(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   id: number,
   patch: Partial<
     Pick<
@@ -312,30 +312,24 @@ export async function updateProjectTask(
   return offlineUpdateProjectTask(id, patch);
 }
 
-export async function completeProjectTask(
-  _subjectKind: SubjectKind,
-  id: number,
-): Promise<TaskItemRow> {
+export async function completeProjectTask(_subjectId: number, id: number): Promise<TaskItemRow> {
   ensureProjectOfflineModule();
   return offlineUpdateProjectTask(id, { status: "completed" });
 }
 
-export async function uncompleteProjectTask(
-  _subjectKind: SubjectKind,
-  id: number,
-): Promise<TaskItemRow> {
+export async function uncompleteProjectTask(_subjectId: number, id: number): Promise<TaskItemRow> {
   ensureProjectOfflineModule();
   return offlineUpdateProjectTask(id, { status: "pending" });
 }
 
-export async function deleteProjectTask(_subjectKind: SubjectKind, id: number): Promise<void> {
+export async function deleteProjectTask(_subjectId: number, id: number): Promise<void> {
   ensureProjectOfflineModule();
   return offlineDeleteProjectTask(id);
 }
 
-export async function fetchTaskListsForMove(subjectKind: SubjectKind): Promise<TaskListRow[]> {
+export async function fetchTaskListsForMove(subjectId: number): Promise<TaskListRow[]> {
   if (!isHabitatFetchAvailable()) return [];
-  const data = await habitat().call("tasklist.list", { subject_kind: subjectKind });
+  const data = await habitat().call("tasklist.list", { subject_id: subjectId });
   return data.lists.map((list) => ({
     id: list.id,
     name: list.name,
@@ -351,13 +345,13 @@ export async function fetchTaskListsForMove(subjectKind: SubjectKind): Promise<T
   }));
 }
 
-export async function fetchProjectsForMove(subjectKind: SubjectKind): Promise<ProjectPickerRow[]> {
-  const projects = await fetchProjects(subjectKind);
+export async function fetchProjectsForMove(subjectId: number): Promise<ProjectPickerRow[]> {
+  const projects = await fetchProjects(subjectId);
   return projects.map((p) => ({ id: p.id, title: p.title, status: p.status }));
 }
 
 export async function moveProjectTaskToList(
-  _subjectKind: SubjectKind,
+  _subjectId: number,
   taskId: number,
   listId: number,
 ): Promise<void> {

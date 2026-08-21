@@ -41,6 +41,16 @@ mock.module("@freeanima/habitat/core/db/pg/conversation", () => ({
   isCronSession,
 }));
 
+const resolveBoundAgentForConversation = mock(async () => ({
+  agent_subject_id: 1,
+  agent_world_id: 100,
+  title: "Agent 1",
+}));
+
+mock.module("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts", () => ({
+  resolveBoundAgentForConversation,
+}));
+
 mock.module("@freeanima/habitat/core/db/pg/semantic-memory", () => ({
   listResidentSemanticMemory,
 }));
@@ -95,6 +105,7 @@ describe("createPassiveMemoryRecallHandler", () => {
       limit: 5,
       min_score: 0.016,
       min_relative_score: 0.55,
+      world_id: 100,
       debug: false,
     });
     expect(messages).toHaveLength(2);
@@ -122,6 +133,7 @@ describe("createPassiveMemoryRecallHandler", () => {
       limit: 5,
       min_score: 0.016,
       min_relative_score: 0.55,
+      world_id: 100,
       debug: true,
     });
     expect(llmDebugExtras.passive_recall).toBeDefined();

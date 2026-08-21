@@ -8,8 +8,7 @@ import type { TaskModuleSelection } from "@freeanima/client/portal-sdk";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { usePortalRead, invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
 import {
-  useSubjectScope,
-  SubjectScopeToggle,
+  useUserSubjectId,
   setCompactImmersive,
   useShellQuickIdSet,
 } from "@freeanima/client/portal-sdk/react.tsx";
@@ -130,7 +129,7 @@ type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
 
 export function TaskApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const writesDisabled = false;
   const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useTaskActionSheet();
@@ -285,7 +284,7 @@ export function TaskApp() {
   useEffect(() => {
     setTagFilterId(null);
     void reloadTags();
-  }, [subjectKind, reloadTags]);
+  }, [subjectId, reloadTags]);
 
   useEffect(() => {
     if (!webShell) return () => {};
@@ -337,7 +336,7 @@ export function TaskApp() {
   };
 
   const listsQuery = usePortalRead<TaskListsBundle>({
-    queryKey: taskListsQueryKey(subjectKind),
+    queryKey: taskListsQueryKey(subjectId),
     queryFn: async () => {
       const [rows, smartRows] = await Promise.all([
         fetchTaskLists({ includeClosed: true }),
@@ -366,14 +365,14 @@ export function TaskApp() {
 
   const itemsQueryKey = useMemo(() => {
     if (selection == null) return null;
-    if (selection.kind === "list") return taskListItemsQueryKey(subjectKind, selection.id);
-    if (selection.kind === "smart_list") return taskSmartItemsQueryKey(subjectKind, selection.key);
+    if (selection.kind === "list") return taskListItemsQueryKey(subjectId, selection.id);
+    if (selection.kind === "smart_list") return taskSmartItemsQueryKey(subjectId, selection.key);
     if (selection.kind === "search") {
       const q = searchQuery.trim();
-      return q.length > 0 ? taskSearchItemsQueryKey(subjectKind, q) : null;
+      return q.length > 0 ? taskSearchItemsQueryKey(subjectId, q) : null;
     }
     return null;
-  }, [selection, subjectKind, searchQuery]);
+  }, [selection, subjectId, searchQuery]);
 
   const itemsQuery = usePortalRead<TaskItemRow[]>({
     queryKey: itemsQueryKey,
@@ -473,7 +472,7 @@ export function TaskApp() {
 
   const loadItems = useCallback(
     async (listId: number) => {
-      await invalidatePortalReads(taskListItemsQueryKey(subjectKind, listId));
+      await invalidatePortalReads(taskListItemsQueryKey(subjectId, listId));
       const generation = ++itemsLoadGenRef.current;
       try {
         const rows = await fetchTaskItems(listId);
@@ -484,7 +483,7 @@ export function TaskApp() {
         setItems([]);
       }
     },
-    [subjectKind],
+    [subjectId],
   );
 
   const loadLists = useCallback(async (): Promise<TaskListRow[]> => {
@@ -500,14 +499,11 @@ export function TaskApp() {
   const refresh = useCallback(async () => {
     setError("");
     try {
-      await Promise.all([
-        reloadLists(),
-        invalidatePortalReads(taskSmartListsQueryKey(subjectKind)),
-      ]);
+      await Promise.all([reloadLists(), invalidatePortalReads(taskSmartListsQueryKey(subjectId))]);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
-  }, [reloadLists, subjectKind]);
+  }, [reloadLists, subjectId]);
 
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -625,7 +621,7 @@ export function TaskApp() {
     setSearchQuery("");
     setSearchHits([]);
     void refresh();
-  }, [subjectKind, refresh]);
+  }, [subjectId, refresh]);
 
   useEffect(() => {
     if (selection == null) return;
@@ -1477,11 +1473,9 @@ export function TaskApp() {
             }
             list={
               <div className="flex min-h-0 flex-1 flex-col">
-                <ModuleScopeBar>
-                  <SubjectScopeToggle />
-                </ModuleScopeBar>
+                <ModuleScopeBar></ModuleScopeBar>
                 <ListSidebar
-                  key={subjectKind}
+                  key={subjectId}
                   builtinSmartListSection={
                     <BuiltinSmartListSection
                       smartLists={smartLists}

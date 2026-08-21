@@ -6,6 +6,10 @@ import { registerToolConversationResolver } from "@freeanima/habitat/capabilitie
 import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { runWithToolContext, getToolConversationId } from "@freeanima/habitat/core/tool";
 
+mock.module("@freeanima/habitat/core/config/world-context-pg.ts", () => ({
+  resolvePrivateWorldId: mock(async () => 1),
+}));
+
 const rows = new Map<number, SemanticMemoryRow>();
 let nextId = 1;
 
@@ -122,7 +126,7 @@ describe("memory search", () => {
         });
         expect(out).toContain("semantic_memory_id");
       },
-      { tools: toolSets },
+      { tools: toolSets, subjectId: 1 },
     );
     const results = await searchSemanticMemory("beta", 5);
     expect(results.length).toBe(1);
@@ -146,7 +150,7 @@ describe("memory search", () => {
           type: "world",
         });
       },
-      { tools: toolSets, contextKind: "auto_llm" },
+      { tools: toolSets, contextKind: "auto_llm", subjectId: 1 },
     );
     expect(createdSources).toEqual([]);
   });
@@ -156,10 +160,15 @@ describe("memory search", () => {
       content: "memory with sources",
       source_conversations: ["s1", "s2"],
     });
-    const out = await toolSets.getTool("memory_semantic_update")!.handler({
-      id,
-      source_conversations: [],
-    });
+    const out = await runWithToolContext(
+      "upd",
+      () =>
+        toolSets.getTool("memory_semantic_update")!.handler({
+          id,
+          source_conversations: [],
+        }),
+      { tools: toolSets, subjectId: 1 },
+    );
     const parsed = JSON.parse(out) as { ok: boolean };
     expect(parsed.ok).toBe(true);
     const row = await getSemanticMemoryMock(id);

@@ -42,7 +42,7 @@ export type ConversationTemporalDayRow = {
 /** Non-cron conversations with temporal_day for a CST date */
 export async function listTemporalDayByCstDate(
   cst_date: string,
-  opts?: { exclude_conversation_id?: string },
+  opts?: { exclude_conversation_id?: string; agent_subject_id?: number },
 ): Promise<ConversationTemporalDayRow[]> {
   const db = getDb();
   const conditions = [
@@ -52,6 +52,9 @@ export async function listTemporalDayByCstDate(
   ];
   if (opts?.exclude_conversation_id) {
     conditions.push(ne(conversations.id, opts.exclude_conversation_id));
+  }
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
   }
   const rows = await db
     .select({

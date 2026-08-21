@@ -7,6 +7,11 @@ export const subjectConfigBodySchema = z.object({
   public_id: z.string().min(1).optional(),
   /** Ed25519 公钥（base64url）；私钥在 habitat_runtime_config.identity.subject_keys */
   public_key: z.string().min(1).optional(),
+  /**
+   * 是否启用。缺省 true。
+   * user 恒视为启用；agent 停用后不可作新建会话主体、不可新 turn。
+   */
+  enabled: z.boolean().optional(),
 });
 
 export type SubjectConfigBody = z.infer<typeof subjectConfigBodySchema>;

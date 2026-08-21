@@ -32,7 +32,12 @@ export async function computeRuntimeContextBreakdown(
     ? await deps.conversation.loadConversationTools(conversationId, meta)
     : [];
 
-  const selfContent = await loadSelfLayerPrompt();
+  const selfContent = await loadSelfLayerPrompt(
+    isConversationMeta(meta) && meta.agent_subject_id != null
+      ? meta.agent_subject_id
+      : (await import("@freeanima/habitat/core/config/world-context")).getResolvedWorldContext()
+          .default_chat_agent_subject_id,
+  );
   const cwd = isConversationMeta(meta) ? meta.cwd : undefined;
   const parts = await decomposeSystemPromptParts(selfContent, cwd);
   const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);

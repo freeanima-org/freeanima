@@ -7,7 +7,6 @@ import {
   DialogTitle,
   Spinner,
 } from "@freeanima/ui-kit";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
 
 import { listVaultItemHistory, restoreVaultItemHistory } from "../lib/api.ts";
 
@@ -42,7 +41,7 @@ function formatCapturedAt(iso: string): string {
 
 export function VaultItemHistoryDialog({
   open,
-  subjectKind,
+  subjectId,
   itemId,
   itemTitle,
   disabled,
@@ -50,7 +49,7 @@ export function VaultItemHistoryDialog({
   onRestored,
 }: {
   open: boolean;
-  subjectKind: SubjectKind;
+  subjectId: number;
   itemId: number;
   itemTitle: string;
   disabled?: boolean;
@@ -69,7 +68,7 @@ export function VaultItemHistoryDialog({
     setLoading(true);
     setError("");
     setConfirmIndex(null);
-    void listVaultItemHistory(subjectKind, itemId)
+    void listVaultItemHistory(subjectId, itemId)
       .then((revisions) => {
         if (!cancelled) setRows(revisions);
       })
@@ -85,7 +84,7 @@ export function VaultItemHistoryDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, subjectKind, itemId]);
+  }, [open, subjectId, itemId]);
 
   const confirmRow = confirmIndex === null ? null : rows.find((r) => r.index === confirmIndex);
 
@@ -183,7 +182,7 @@ export function VaultItemHistoryDialog({
               if (confirmIndex === null) return;
               setRestoringIndex(confirmIndex);
               setError("");
-              void restoreVaultItemHistory(subjectKind, itemId, confirmIndex)
+              void restoreVaultItemHistory(subjectId, itemId, confirmIndex)
                 .then(async () => {
                   setConfirmIndex(null);
                   onOpenChange(false);

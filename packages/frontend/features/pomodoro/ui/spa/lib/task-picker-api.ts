@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { getSubjectKind } from "@freeanima/client/portal-sdk/subject-scope-store.ts";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 export type PomodoroTaskPickRow = {
@@ -15,8 +15,8 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
-  return { subject_kind: getSubjectKind(), ...payload };
+async function withSubjectId<T extends Record<string, unknown>>(payload: T) {
+  return { subject_id: await getUserSubjectId(), ...payload };
 }
 
 function sortByUpdatedDesc(items: PomodoroTaskPickRow[]): PomodoroTaskPickRow[] {
@@ -31,7 +31,7 @@ function sortByUpdatedDesc(items: PomodoroTaskPickRow[]): PomodoroTaskPickRow[] 
 export async function fetchRecentPendingTasksForPicker(): Promise<PomodoroTaskPickRow[]> {
   const data = await habitat().call(
     "tasklist.item.list",
-    withSubjectKind({ status: "pending", limit: 50 }),
+    await withSubjectId({ status: "pending", limit: 50 }),
   );
   const items = (data.items ?? []) as PomodoroTaskPickRow[];
   return sortByUpdatedDesc(items).slice(0, PICK_LIMIT);
@@ -42,7 +42,7 @@ export async function searchPendingTasksForPicker(query: string): Promise<Pomodo
   if (!q) return fetchRecentPendingTasksForPicker();
   const data = await habitat().call(
     "task.search",
-    withSubjectKind({ query: q, status: "pending", limit: PICK_LIMIT }),
+    await withSubjectId({ query: q, status: "pending", limit: PICK_LIMIT }),
   );
   return data.items ?? [];
 }
@@ -54,7 +54,7 @@ export async function resolveTaskTitleForPicker(taskId: number): Promise<string 
 
   const data = await habitat().call(
     "tasklist.item.list",
-    withSubjectKind({ status: "all", limit: 200 }),
+    await withSubjectId({ status: "all", limit: 200 }),
   );
   const items = (data.items ?? []) as PomodoroTaskPickRow[];
   return items.find((row) => row.id === taskId)?.title ?? null;

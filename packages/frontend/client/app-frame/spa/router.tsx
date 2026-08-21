@@ -13,7 +13,7 @@ import { useMemo, type ComponentType, type ReactElement } from "react";
 import { shouldUseNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 
 import { shellLazyRoute } from "./lazy-route.tsx";
-import { loadHabitatShellRoute } from "./features/feature-shell-routes.ts";
+import { loadHabitatShellRoute, loadBedroomShellRoute } from "./features/feature-shell-routes.ts";
 import { listShellFeatureRoutes } from "./features/shell-registry.ts";
 import { AppFrame } from "./main/AppFrame.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
@@ -91,6 +91,35 @@ const habitatDashboardRoute = createLazyShellRoute("/habitat/dashboard", loadHab
 
 const habitatCatchAllRoute = createLazyShellRoute("/habitat/$", loadHabitatShellRoute());
 
+const observerIndexRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/observer",
+  beforeLoad: () => {
+    throw redirect({ to: assertNarrow<never>("/bedroom/self-layer") });
+  },
+});
+
+const observerCatchAllRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/observer/$",
+  beforeLoad: ({ location }) => {
+    const next = location.pathname.replace(/\/observer(?=\/|$)/, "/bedroom");
+    throw redirect({ to: assertNarrow<never>(next) });
+  },
+});
+
+const bedroomIndexRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/bedroom",
+  beforeLoad: () => {
+    throw redirect({ to: assertNarrow<never>("/bedroom/self-layer") });
+  },
+});
+
+const bedroomSelfLayerRoute = createLazyShellRoute("/bedroom/self-layer", loadBedroomShellRoute());
+
+const bedroomCatchAllRoute = createLazyShellRoute("/bedroom/$", loadBedroomShellRoute());
+
 const settingsRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/settings",
@@ -119,6 +148,11 @@ const routeTree = rootRoute.addChildren([
     habitatIndexRoute,
     habitatDashboardRoute,
     habitatCatchAllRoute,
+    observerIndexRoute,
+    observerCatchAllRoute,
+    bedroomIndexRoute,
+    bedroomSelfLayerRoute,
+    bedroomCatchAllRoute,
     settingsRoute,
   ]),
 ]);

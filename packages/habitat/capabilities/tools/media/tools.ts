@@ -7,7 +7,6 @@ import {
 } from "@freeanima/habitat/core/config";
 import { connectionEndpointUrl } from "@freeanima/habitat/core/llm/presets";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
-import type { SubjectKind } from "@freeanima/habitat/core/config";
 import {
   attachToolReturns,
   defineToolReturn,
@@ -86,16 +85,20 @@ async function resolveWorld(args: ToolArgs): Promise<number | string> {
         : typeof args.world_id === "string" && args.world_id.trim()
           ? Number(args.world_id)
           : undefined;
-    const rawSubject = args.subject_kind;
-    const subject: SubjectKind | undefined =
-      rawSubject === "user" || rawSubject === "agent" ? rawSubject : undefined;
+    const rawSubject = args.subject_id;
+    const subjectId =
+      typeof rawSubject === "number" && Number.isInteger(rawSubject) && rawSubject > 0
+        ? rawSubject
+        : typeof rawSubject === "string" && Number(rawSubject) > 0
+          ? Math.floor(Number(rawSubject))
+          : undefined;
     if (explicit != null && Number.isFinite(explicit) && explicit > 0) {
       return await resolveToolWorld({ explicitWorldId: explicit, access: "write" });
     }
-    if (subject == null) {
-      return toolError("subject_kind is required (user|agent) when world_id omitted");
+    if (subjectId == null) {
+      return toolError("subject_id is required when world_id omitted");
     }
-    return await resolveToolWorld({ subjectKind: subject, access: "write" });
+    return await resolveToolWorld({ subjectId, access: "write" });
   } catch (err) {
     if (err instanceof ToolWorldAccessError) return toolError(err.message);
     throw err;
@@ -132,10 +135,10 @@ export function registerMediaTools(toolSets: ToolSetRegistry): void {
                 type: "integer",
                 description: "Optional world override",
               },
-              subject_kind: {
-                type: "string",
-                enum: ["user", "agent"],
-                description: "Owning subject when world_id omitted",
+              subject_id: {
+                type: "integer",
+                description:
+                  "Owning subject entity id (required unless world_id or conversation tool context resolves world)",
               },
             },
             required: ["prompt"],
@@ -255,10 +258,10 @@ export function registerMediaTools(toolSets: ToolSetRegistry): void {
                 type: "integer",
                 description: "Optional world override",
               },
-              subject_kind: {
-                type: "string",
-                enum: ["user", "agent"],
-                description: "Owning subject when world_id omitted",
+              subject_id: {
+                type: "integer",
+                description:
+                  "Owning subject entity id (required unless world_id or conversation tool context resolves world)",
               },
             },
             required: ["text"],

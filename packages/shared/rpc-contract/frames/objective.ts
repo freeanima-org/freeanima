@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const objectiveSubjectKindSchema = notificationRecipientKindSchema;
-
 export const objectiveStatusSchema = z.enum([
   "not_started",
   "in_progress",
@@ -106,7 +102,7 @@ export type ObjectiveLinkPayload = z.infer<typeof objectiveLinkSchema>;
 export type ObjectiveStatusPayload = z.infer<typeof objectiveStatusSchema>;
 
 export const objectiveListInputSchema = z.object({
-  subject_kind: objectiveSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   parent_id: z.number().int().positive().nullable().optional(),
   status: objectiveStatusSchema.optional(),
   /** 为 true 时包含已完成/取消/暂停；默认仅未开始+进行中 */
@@ -119,7 +115,7 @@ export const objectiveListOutputSchema = z.object({
 export type ObjectiveListOutput = z.infer<typeof objectiveListOutputSchema>;
 
 export const objectiveGetInputSchema = z.object({
-  subject_kind: objectiveSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type ObjectiveGetInput = z.infer<typeof objectiveGetInputSchema>;
@@ -127,7 +123,7 @@ export const objectiveGetOutputSchema = z.object({ item: objectiveRowSchema });
 export type ObjectiveGetOutput = z.infer<typeof objectiveGetOutputSchema>;
 
 export const objectiveCreateInputSchema = z.object({
-  subject_kind: objectiveSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   content: z.string().optional(),
   parent_id: z.number().int().positive().nullable().optional(),
@@ -144,7 +140,7 @@ export const objectiveCreateOutputSchema = z.object({ item: objectiveRowSchema }
 export type ObjectiveCreateOutput = z.infer<typeof objectiveCreateOutputSchema>;
 
 export const objectivePatchInputSchema = z.object({
-  subject_kind: objectiveSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   content: z.string().optional(),
@@ -162,7 +158,7 @@ export const objectivePatchOutputSchema = z.object({ item: objectiveRowSchema })
 export type ObjectivePatchOutput = z.infer<typeof objectivePatchOutputSchema>;
 
 export const objectiveDeleteInputSchema = z.object({
-  subject_kind: objectiveSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -171,7 +167,7 @@ export const objectiveDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type ObjectiveDeleteOutput = z.infer<typeof objectiveDeleteOutputSchema>;
 
 export const objectiveLinkInputSchema = z.object({
-  subject_kind: objectiveSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   link: objectiveLinkSchema,
   client_op_id: z.string().min(1).optional(),
@@ -181,7 +177,7 @@ export const objectiveLinkOutputSchema = z.object({ item: objectiveRowSchema });
 export type ObjectiveLinkOutput = z.infer<typeof objectiveLinkOutputSchema>;
 
 export const objectiveUnlinkInputSchema = z.object({
-  subject_kind: objectiveSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   link: objectiveLinkSchema,
   client_op_id: z.string().min(1).optional(),

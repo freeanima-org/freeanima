@@ -3,6 +3,7 @@ import { createEnginePort } from "./engine-port-registry.ts";
 export type SelfLayerRefreshEngineInput = {
   systemPrompt: string;
   userMessage: string;
+  agent_subject_id: number;
 };
 
 export type SelfLayerRefreshEngineResult = {

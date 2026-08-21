@@ -32,7 +32,7 @@ import {
 
 export const Route = createFileRoute("/_sidebar/subagents")({
   loader: () =>
-    listHabitatSubagents("agent").catch(
+    listHabitatSubagents().catch(
       catchWithFallback("subagents/list", { items: [] as HabitatSubagentRow[] }),
     ),
   staleTime: 30_000,
@@ -80,7 +80,7 @@ function SubagentsPage() {
 
   const reload = async () => {
     try {
-      const data = await listHabitatSubagents("agent");
+      const data = await listHabitatSubagents();
       setItems(data.items ?? []);
     } catch (e) {
       logCaughtError("subagents/reload", e);
@@ -114,7 +114,6 @@ function SubagentsPage() {
     setError("");
     try {
       const payload = {
-        subject_kind: "agent" as const,
         slug: form.slug.trim(),
         title: form.title.trim() || form.slug.trim(),
         summary: form.summary,
@@ -149,7 +148,7 @@ function SubagentsPage() {
     setBusy(true);
     setError("");
     try {
-      await deleteHabitatSubagent("agent", id);
+      await deleteHabitatSubagent(id);
       await reload();
       if (editingId === id) startCreate();
     } catch (e) {

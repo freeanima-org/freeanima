@@ -189,7 +189,16 @@ export async function runSimpleTurn(
             llm_kind: "conversation",
             ...createTurnMessageCallbacks(deps, conversationId),
           }),
-        { tools: deps.engine.catalog.toolSets, ...omitUndefined({ executableTools }) },
+        {
+          tools: deps.engine.catalog.toolSets,
+          ...omitUndefined({
+            executableTools,
+            subjectId:
+              isConversationMeta(meta) && meta.agent_subject_id != null
+                ? meta.agent_subject_id
+                : undefined,
+          }),
+        },
       );
     } catch (e) {
       if (e instanceof loopEngine.MaxLoopIterationsExceeded) {
@@ -252,7 +261,16 @@ export async function* yieldEngineStream(
             ...omitUndefined({ executableTools, llm_debug: llmDebug ? true : undefined }),
             ...host.engineStreamOpts(conversationId, signal, llmDebug),
           }),
-        { tools: deps.engine.catalog.toolSets, ...omitUndefined({ executableTools }) },
+        {
+          tools: deps.engine.catalog.toolSets,
+          ...omitUndefined({
+            executableTools,
+            subjectId:
+              isConversationMeta(meta) && meta.agent_subject_id != null
+                ? meta.agent_subject_id
+                : undefined,
+          }),
+        },
       )) {
         if (ev.event === "awaiting_clarify") {
           await applyClarifyStreamAwaiting(

@@ -98,6 +98,7 @@ export async function curateRetainRelatedMemories(opts: {
   conversation_id: string;
   text_items: readonly RetainTextItem[];
   now_ms?: number;
+  world_id?: number;
 }): Promise<CurateRetainRelatedResult> {
   const conversationId = opts.conversation_id.trim();
   const sessionRows = conversationId
@@ -117,6 +118,7 @@ export async function curateRetainRelatedMemories(opts: {
         limit: RETAIN_RELATED_TODAY_SEMANTIC_LIMIT,
         min_score: RETAIN_RELATED_TODAY_MIN_SCORE,
         min_relative_score: RETAIN_RELATED_TODAY_MIN_RELATIVE_SCORE,
+        ...(opts.world_id != null ? { world_id: opts.world_id } : {}),
       });
       const picked: SemanticMemoryRow[] = [];
       for (const hit of hits) {

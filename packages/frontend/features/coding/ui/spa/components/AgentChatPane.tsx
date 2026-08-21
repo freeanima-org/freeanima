@@ -9,6 +9,12 @@ import {
   listConversationCommands,
   runConversationCommand,
 } from "@freeanima/features/chat/ui/spa/lib/conversation-command-api.ts";
+import { setConversationAgent } from "@freeanima/features/chat/ui/spa/lib/api.ts";
+import {
+  listAgentSubjects,
+  type AgentSubjectOption,
+} from "@freeanima/features/chat/ui/spa/lib/agent-subjects.ts";
+import { ConversationAnimaControl } from "@freeanima/features/chat/ui/spa/components/ConversationAnimaControl.tsx";
 import {
   buildSlashMenuEntries,
   type SlashCommandItem,
@@ -48,9 +54,11 @@ type Props = {
   /** 切换 Agent 时重置线程；勿用 conversationId（首条消息绑定时会变） */
   sessionKey: string;
   conversationId: string | null;
+  agentSubjectId?: number;
   disabled?: boolean;
   placeholder?: string;
   onNeedConversation: (message: string) => Promise<string | null>;
+  onAgentSubjectChange?: (agentSubjectId: number) => void;
   onTitleHint?: (text: string) => void;
 };
 
@@ -61,9 +69,11 @@ function renderMd(text: string): string {
 export function AgentChatPane({
   sessionKey,
   conversationId,
+  agentSubjectId,
   disabled,
   placeholder,
   onNeedConversation,
+  onAgentSubjectChange,
   onTitleHint,
 }: Props) {
   const [thread, setThread] = useState<CodingThreadState>(() => emptyCodingThread());
@@ -82,6 +92,11 @@ export function AgentChatPane({
     text: string;
     loading?: boolean;
   } | null>(null);
+  const [agentOptions, setAgentOptions] = useState<AgentSubjectOption[]>([]);
+  const [animaChanging, setAnimaChanging] = useState(false);
+  const [boundAgentSubjectId, setBoundAgentSubjectId] = useState<number | undefined>(
+    agentSubjectId,
+  );
   const llmDebugEnabled = useChatLlmDebugEnabled();
   const [debugViewerOpen, setDebugViewerOpen] = useState(false);
   const [llmDebugLoading, setLlmDebugLoading] = useState(false);
@@ -114,6 +129,16 @@ export function AgentChatPane({
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    void listAgentSubjects()
+      .then((items) => setAgentOptions(items))
+      .catch((e) => console.error("listAgentSubjects:", e));
+  }, []);
+
+  useEffect(() => {
+    setBoundAgentSubjectId(agentSubjectId);
+  }, [agentSubjectId, sessionKey]);
 
   useEffect(() => {
     setSelectedCmdIdx((i) =>
@@ -431,6 +456,29 @@ export function AgentChatPane({
   const empty = thread.display.length === 0 && !thread.streamText && !historyLoading && !busy;
   const streaming = busy || thread.streaming;
   const streamVisible = thread.streamText.length > 0;
+  const hasUserMessage = thread.display.some(
+    (item) => item.type === "message" && item.role === "user",
+  );
+  const canChangeAnima = Boolean(conversationId) && !historyLoading && !hasUserMessage;
+
+  const handleChangeAnima = useCallback(
+    async (nextId: number) => {
+      if (!conversationId) return;
+      setAnimaChanging(true);
+      try {
+        await setConversationAgent(conversationId, nextId);
+        setBoundAgentSubjectId(nextId);
+        onAgentSubjectChange?.(nextId);
+      } catch (e) {
+        toast(e instanceof Error && e.message.trim() ? e.message : "更换 Anima 失败", {
+          duration: 4000,
+        });
+      } finally {
+        setAnimaChanging(false);
+      }
+    },
+    [conversationId, onAgentSubjectChange],
+  );
 
   const composeBlock = (hero: boolean) => (
     <div
@@ -513,7 +561,19 @@ export function AgentChatPane({
     <section className="coding-pane coding-chat" aria-label="Agent 对话">
       <div className="coding-chat-column">
         <header className="coding-chat-toolbar">
-          <span className="coding-chat-toolbar-title">对话</span>
+          <div className="coding-chat-toolbar-leading">
+            <span className="coding-chat-toolbar-title">对话</span>
+            {conversationId || boundAgentSubjectId != null ? (
+              <ConversationAnimaControl
+                {...(boundAgentSubjectId != null ? { agentSubjectId: boundAgentSubjectId } : {})}
+                agents={agentOptions}
+                canChange={canChangeAnima}
+                changing={animaChanging}
+                compact
+                onChange={(id) => void handleChangeAnima(id)}
+              />
+            ) : null}
+          </div>
           {llmDebugEnabled ? (
             <Button
               type="button"

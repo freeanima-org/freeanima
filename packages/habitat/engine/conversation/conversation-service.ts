@@ -44,6 +44,7 @@ import {
   deleteUserConversation,
   updateConversationMeta,
   updateConversationMetaField,
+  setConversationAgent,
 } from "./conversation.ts";
 import {
   advanceCompressionMeta,
@@ -91,13 +92,16 @@ export function createConversationService(tools: ToolSetRegistry) {
       model?: string,
       platformExtra?: Record<string, unknown>,
       scenario?: "digital_human" | "coding_agent",
-    ) => newConversation(tools, platform, model, platformExtra, scenario),
+      agentSubjectId?: number,
+    ) => newConversation(tools, platform, model, platformExtra, scenario, agentSubjectId),
     findConversationByOrigin,
     activateConversationOrigin,
     updateConversationMetaField: (
       conversationId: string,
       patch: Parameters<typeof updateConversationMetaField>[1],
     ) => updateConversationMetaField(conversationId, patch),
+    setConversationAgent: (conversationId: string, agentSubjectId: number) =>
+      setConversationAgent(conversationId, agentSubjectId),
     patchConversationOrigin,
     rebuildConversationSystemPrompt,
     rebuildConversationCache: (conversationId: string) =>

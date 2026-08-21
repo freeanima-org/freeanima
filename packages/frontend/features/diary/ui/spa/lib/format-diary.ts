@@ -1,5 +1,3 @@
-export type DiarySubjectKind = "user" | "agent";
-
 export type DiaryTextBlock = {
   id: number;
   title: string;

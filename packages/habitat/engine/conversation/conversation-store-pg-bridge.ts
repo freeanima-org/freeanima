@@ -199,6 +199,7 @@ export async function pgListConversationSummaries(
     platform: string;
     archived_at?: Date | null;
     pinned_at?: Date | null;
+    agent_subject_id?: number;
   }>
 > {
   return listConversationSummaries(platform, opts);
@@ -220,6 +221,7 @@ export async function pgListConversationSummariesPage(opts?: {
     archived_at?: Date | null;
     pinned_at?: Date | null;
     unread?: boolean;
+    agent_subject_id?: number;
   }>;
   total: number;
 }> {

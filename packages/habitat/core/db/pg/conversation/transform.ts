@@ -7,7 +7,6 @@ import {
   type ConversationMetaMessage,
   type ConversationTodoStore,
 } from "@freeanima/habitat/core/db/domain";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
 import {
   conversationCachedToolsetsSchema,
   conversationFunctionsSchema,
@@ -122,7 +121,12 @@ export function conversationMetaToInsert(
       Object.keys(extra).length > 0 ? extra : undefined,
     ),
     scenario: meta.scenario ?? null,
-    agent_subject_id: meta.agent_subject_id ?? getResolvedWorldContext().agent_subject_id,
+    agent_subject_id: (() => {
+      if (meta.agent_subject_id == null) {
+        throw new Error("conversation meta missing agent_subject_id");
+      }
+      return meta.agent_subject_id;
+    })(),
     compression: compressionParsed,
     temporal_day: null,
     todos,

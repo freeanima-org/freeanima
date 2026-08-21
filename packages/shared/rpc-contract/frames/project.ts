@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const projectSubjectKindSchema = notificationRecipientKindSchema;
-
 export const projectStatusSchema = z.enum(["active", "completed", "cancelled", "on_hold"]);
 
 export const projectFolderRowSchema = z.object({
@@ -37,7 +33,7 @@ export const projectRowSchema = z.object({
 export type ProjectRowPayload = z.infer<typeof projectRowSchema>;
 
 export const projectfolderListInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type ProjectfolderListInput = z.infer<typeof projectfolderListInputSchema>;
 export const projectfolderListOutputSchema = z.object({
@@ -46,7 +42,7 @@ export const projectfolderListOutputSchema = z.object({
 export type ProjectfolderListOutput = z.infer<typeof projectfolderListOutputSchema>;
 
 export const projectfolderCreateInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   name: z.string().min(1),
   parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
@@ -57,7 +53,7 @@ export const projectfolderCreateOutputSchema = z.object({ item: projectFolderRow
 export type ProjectfolderCreateOutput = z.infer<typeof projectfolderCreateOutputSchema>;
 
 export const projectfolderPatchInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   name: z.string().min(1).optional(),
   parent_id: z.number().int().positive().nullable().optional(),
@@ -69,7 +65,7 @@ export const projectfolderPatchOutputSchema = z.object({ item: projectFolderRowS
 export type ProjectfolderPatchOutput = z.infer<typeof projectfolderPatchOutputSchema>;
 
 export const projectfolderDeleteInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -78,7 +74,7 @@ export const projectfolderDeleteOutputSchema = z.object({ ok: z.literal(true) })
 export type ProjectfolderDeleteOutput = z.infer<typeof projectfolderDeleteOutputSchema>;
 
 export const projectListInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   folder_id: z.number().int().positive().nullable().optional(),
   status: projectStatusSchema.optional(),
 });
@@ -87,7 +83,7 @@ export const projectListOutputSchema = z.object({ projects: z.array(projectRowSc
 export type ProjectListOutput = z.infer<typeof projectListOutputSchema>;
 
 export const projectStatsInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   folder_id: z.number().int().positive().nullable().optional(),
   status: projectStatusSchema.optional(),
 });
@@ -103,7 +99,7 @@ export const projectStatsOutputSchema = z.object({
 export type ProjectStatsOutput = z.infer<typeof projectStatsOutputSchema>;
 
 export const projectCreateInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   start_at: z.string().nullable().optional(),
   end_at: z.string().nullable().optional(),
@@ -118,7 +114,7 @@ export const projectCreateOutputSchema = z.object({ item: projectRowSchema });
 export type ProjectCreateOutput = z.infer<typeof projectCreateOutputSchema>;
 
 export const projectGetInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type ProjectGetInput = z.infer<typeof projectGetInputSchema>;
@@ -126,7 +122,7 @@ export const projectGetOutputSchema = z.object({ item: projectRowSchema });
 export type ProjectGetOutput = z.infer<typeof projectGetOutputSchema>;
 
 export const projectPatchInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   start_at: z.string().nullable().optional(),
@@ -145,7 +141,7 @@ export const projectPatchOutputSchema = z.object({ item: projectRowSchema });
 export type ProjectPatchOutput = z.infer<typeof projectPatchOutputSchema>;
 
 export const projectDeleteInputSchema = z.object({
-  subject_kind: projectSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });

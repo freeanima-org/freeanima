@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { getSubjectKind } from "@freeanima/client/portal-sdk/subject-scope-store.ts";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 export type TaskPomodoroFocusRow = {
@@ -19,7 +19,7 @@ export async function fetchTaskPomodoroFocus(
   limit = 10,
 ): Promise<TaskPomodoroFocusRow[]> {
   const data = await habitat().call("pomodoro.focus.list", {
-    subject_kind: getSubjectKind(),
+    subject_id: await getUserSubjectId(),
     task_item_id: taskItemId,
     limit,
   });

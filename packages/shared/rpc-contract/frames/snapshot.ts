@@ -127,6 +127,7 @@ export type ConversationSummary = {
   pinned_at?: Date | null;
   /** 用户未读（assistant 回复尚未被用户读到） */
   unread?: boolean;
+  agent_subject_id?: number;
 };
 
 export type SafeConfigSnapshot = {

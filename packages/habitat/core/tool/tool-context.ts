@@ -1,4 +1,3 @@
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -128,15 +127,17 @@ export function getToolCallerAuth(): VerifiedServiceApiToken | undefined {
 /**
  * Caller subject for tool world grants:
  * 1. MCP / Service API token subject
- * 2. ALS subjectId (AutoLlmRun acting subject)
- * 3. Fallback: Habitat agent_subject_id
+ * 2. ALS subjectId (conversation / AutoLlmRun acting subject)
+ * 3. 否则报错（禁止回退默认聊天 agent）
  */
 export function resolveToolCallerSubjectId(): number {
   const auth = getToolCallerAuth();
   if (auth) return auth.subject_id;
   const subjectId = storage.getStore()?.subjectId;
   if (subjectId != null && subjectId > 0) return subjectId;
-  return getResolvedWorldContext().agent_subject_id;
+  throw new Error(
+    "tool caller subject_id missing; set runWithToolContext({ subjectId }) or Service API token",
+  );
 }
 
 export function getToolRegistry(): ToolSetRegistry {

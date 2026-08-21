@@ -23,7 +23,7 @@ export type CompanionWindowRole = "overlay" | "settings";
 
 /** 主窗 ↔ 番茄迷你窗跨 WebView 同步（壳事件载荷） */
 export type PomodoroActiveShellSyncPayload = {
-  subject_kind: "user" | "agent";
+  subject_id: number;
   /** JSON 可序列化的 active；null = 已清空 */
   active: unknown;
   meta: { device_id: string; updated_at_ms: number } | null;

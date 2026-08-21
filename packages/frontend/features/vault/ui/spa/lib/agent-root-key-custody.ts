@@ -1,4 +1,5 @@
 import { getUserVaultSession } from "@freeanima/client/portal-sdk/react.tsx";
+import { getBootUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import {
   AGENT_ROOT_KEY_ITEM_TITLE,
   AGENT_ROOT_KEY_REF,
@@ -36,20 +37,20 @@ function assertUserVaultUnlocked(): void {
 
 async function findAgentRootKeyItemId(): Promise<number | null> {
   // 标题精确检索优先，避免 list limit 漏检
-  const searched = await fetchVaultItems("user", {
+  const searched = await fetchVaultItems(await getBootUserSubjectId(), {
     query: AGENT_ROOT_KEY_ITEM_TITLE,
     limit: 50,
   });
   const hit = searched.find((row) => row.import_refs?.agent_root_key === AGENT_ROOT_KEY_REF);
   if (hit) return hit.id;
-  const items = await fetchVaultItems("user", { limit: 500 });
+  const items = await fetchVaultItems(await getBootUserSubjectId(), { limit: 500 });
   const existing = items.find((row) => row.import_refs?.agent_root_key === AGENT_ROOT_KEY_REF);
   return existing?.id ?? null;
 }
 
 async function readSsotKeyB64(itemId: number): Promise<string> {
   const session = getUserVaultSession();
-  const detail = await getVaultItem("user", itemId, true);
+  const detail = await getVaultItem(await getBootUserSubjectId(), itemId, true);
   if (!detail.secrets_enc || !detail.dek_wrapped) {
     throw new Error("AGENT_ROOT_KEY_CIPHERTEXT_MISSING");
   }
@@ -68,7 +69,7 @@ async function sealSsotItem(keyB64: string): Promise<void> {
     notes: "System: Habitat Agent vault root key (do not delete).",
   };
   const sealed = await session.sealSecrets(secrets);
-  await createVaultItem("user", {
+  await createVaultItem(await getBootUserSubjectId(), {
     title: AGENT_ROOT_KEY_ITEM_TITLE,
     item_type: "secure_note",
     content: "",

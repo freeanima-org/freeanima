@@ -22,13 +22,13 @@ describe("http-rest", () => {
     const params = new URLSearchParams();
     appendPayloadToQuery(
       params,
-      { subject_kind: "user", tags: ["a", "b"], active: true, note: null },
+      { subject_id: 1, tags: ["a", "b"], active: true, note: null },
       new Set(),
     );
-    expect(params.toString()).toBe("subject_kind=user&tags=a&tags=b&active=true&note=");
+    expect(params.toString()).toBe("subject_id=1&tags=a&tags=b&active=true&note=");
     const parsed = parseQueryToPayload(params, new Set());
     expect(parsed).toEqual({
-      subject_kind: "user",
+      subject_id: 1,
       tags: ["a", "b"],
       active: true,
       note: "",

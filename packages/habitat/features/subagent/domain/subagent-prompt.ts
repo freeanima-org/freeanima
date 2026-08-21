@@ -64,7 +64,9 @@ export function formatSubagentGoalSection(input: {
 }
 
 async function buildSelfIncludeSection(): Promise<string> {
-  const self = (await loadSelfLayerPrompt()).trim();
+  const self = (
+    await loadSelfLayerPrompt(getResolvedWorldContext().default_chat_agent_subject_id)
+  ).trim();
   if (!self) return "";
   return `## Self\n${self}`;
 }

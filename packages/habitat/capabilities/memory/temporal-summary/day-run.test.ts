@@ -81,10 +81,13 @@ describe("runTemporalSummaryDay", () => {
     const result = await runTemporalSummaryDay({
       config: baseConfig,
       day: "2026-06-08",
+      agent_subject_id: 2,
+      world_id: 200,
     });
     expect(listConversationIdsWithMessagesBetweenMock).toHaveBeenCalledWith(
       "2026-06-08T00:00:00+08:00",
       "2026-06-09T00:00:00+08:00",
+      { agent_subject_id: 2 },
     );
     expect(result.ok).toBe(true);
     expect(result.entity_id).toBe(42);
@@ -96,6 +99,7 @@ describe("runTemporalSummaryDay", () => {
         content: "当日主题摘要",
         empty_reason: null,
         source_count: 1,
+        world_id: 200,
       }),
     );
   });
@@ -105,6 +109,8 @@ describe("runTemporalSummaryDay", () => {
     const result = await runTemporalSummaryDay({
       config: baseConfig,
       day: "2026-06-08",
+      agent_subject_id: 2,
+      world_id: 200,
     });
     expect(result.ok).toBe(true);
     expect(result.skipped).toBe("no_sessions");

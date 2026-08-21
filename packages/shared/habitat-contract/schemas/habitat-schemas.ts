@@ -25,6 +25,8 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   sort_by: semanticMemorySortBySchema.optional(),
   /** 省略=不筛；null=仅未分组；非负整数=该聚类族 */
   cluster_id: z.number().int().nonnegative().nullable().optional(),
+  /** 观测：按 Anima subject 的私有 world 过滤；省略则不按 world 筛 */
+  agent_subject_id: z.number().int().positive().optional(),
 });
 
 export const semanticMemoryClustersBodySchema = z.object({}).strict();
@@ -76,7 +78,16 @@ export const temporalSummaryListBodySchema = memoryListPaginationSchema.extend({
   window: temporalSummaryWindowSchema.optional(),
   period_start_from: z.string().optional(),
   period_start_to: z.string().optional(),
+  /** 观测：按 Anima subject 的私有 world；省略则用 resolved 默认 agent world */
+  agent_subject_id: z.number().int().positive().optional(),
 });
+
+/** Habitat 自我层五块只读；观测页应传 agent_subject_id */
+export const selfBlocksBodySchema = z
+  .object({
+    agent_subject_id: z.number().int().positive().optional(),
+  })
+  .strict();
 
 export const temporalSummaryRegenerateBodySchema = z.object({
   window: temporalSummaryWindowSchema,
@@ -171,6 +182,7 @@ export type TemporalSystemRollBatchJobStatus = z.infer<
 export type SemanticMemoryListBody = z.infer<typeof semanticMemoryListBodySchema>;
 export type SemanticMemoryClustersBody = z.infer<typeof semanticMemoryClustersBodySchema>;
 export type SemanticMemoryPinBody = z.infer<typeof semanticMemoryPinBodySchema>;
+export type SelfBlocksBody = z.infer<typeof selfBlocksBodySchema>;
 
 export const entityIdParamsSchema = z.object({
   id: z.coerce.number().int().positive(),

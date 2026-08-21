@@ -1,4 +1,3 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/habitat/core/util";
@@ -17,19 +16,19 @@ import { coerceString } from "@freeanima/shared/coerce-string";
 const WORLD_ID_OPTIONAL = {
   world_id: {
     type: "integer",
-    description: "Optional world override; otherwise subject_kind selects the private world",
-  },
-  subject_kind: {
-    type: "string",
-    enum: ["user", "agent"],
     description:
-      "Owning subject: user or agent (required unless world_id or entity id resolves world)",
+      "Optional world override; otherwise subject_id or conversation subject selects the private world",
+  },
+  subject_id: {
+    type: "integer",
+    description:
+      "Owning subject entity id (required unless world_id or conversation tool context resolves world)",
   },
 } as const;
 
-function parseSubjectKind(raw: unknown): SubjectKind | undefined {
-  if (raw === "user" || raw === "agent") return raw;
-  return undefined;
+function parseSubjectId(raw: unknown): number | null {
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
 }
 
 function parseWorldId(raw: unknown): number | null {
@@ -44,7 +43,7 @@ async function resolveTagToolWorld(opts: {
 }): Promise<number | string> {
   try {
     const explicit = parseWorldId(opts.args.world_id);
-    const subjectKind = parseSubjectKind(opts.args.subject_kind);
+    const subjectId = parseSubjectId(opts.args.subject_id);
     const access = opts.access ?? "read";
     if (explicit != null) {
       return await resolveToolWorld({ explicitWorldId: explicit, access });
@@ -52,10 +51,20 @@ async function resolveTagToolWorld(opts: {
     if (opts.entityId != null && opts.entityId > 0) {
       return await resolveToolWorld({ entityId: opts.entityId, access });
     }
-    if (subjectKind == null) {
-      return toolError("subject_kind is required (user|agent) when world_id omitted");
+    if (subjectId != null) {
+      return await resolveToolWorld({ subjectId, access });
     }
-    return await resolveToolWorld({ subjectKind, access });
+    try {
+      return await resolveToolWorld({ access });
+    } catch (inner) {
+      const innerMsg = inner instanceof Error ? inner.message : String(inner);
+      if (innerMsg.includes("subject_id") || innerMsg.includes("tool caller subject")) {
+        return toolError(
+          "subject_id is required when world_id omitted and no tool conversation subject",
+        );
+      }
+      throw inner;
+    }
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);
@@ -86,7 +95,7 @@ export function buildTagToolDefs() {
         parameters: {
           type: "object",
           properties: { ...WORLD_ID_OPTIONAL },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: async (args) => {
           const worldId = await resolveTagToolWorld({ args });
@@ -111,7 +120,7 @@ export function buildTagToolDefs() {
             limit: { type: "integer" },
             offset: { type: "integer" },
           },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: async (args) => {
           const worldId = await resolveTagToolWorld({ args });
@@ -142,7 +151,7 @@ export function buildTagToolDefs() {
             title: { type: "string" },
             sort_order: { type: "integer" },
           },
-          required: ["subject_kind", "title"],
+          required: ["subject_id", "title"],
         },
         handler: async (args) => {
           const worldId = await resolveTagToolWorld({ args, access: "write" });
@@ -172,7 +181,7 @@ export function buildTagToolDefs() {
             title: { type: "string" },
             sort_order: { type: "integer" },
           },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = Number(args.id);
@@ -204,7 +213,7 @@ export function buildTagToolDefs() {
         parameters: {
           type: "object",
           properties: { ...WORLD_ID_OPTIONAL, id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = Number(args.id);

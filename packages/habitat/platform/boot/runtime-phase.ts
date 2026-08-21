@@ -66,7 +66,11 @@ export async function bootRuntimePhase(
   registerMemoryPassiveRecallHook({ kernel });
   registerTemporalSummaryPeerInject({ kernel });
   invalidateSelfLayerPromptCache();
-  await loadSelfLayerPrompt();
+  {
+    const { getResolvedWorldContext } =
+      await import("@freeanima/habitat/core/config/world-context");
+    await loadSelfLayerPrompt(getResolvedWorldContext().default_chat_agent_subject_id);
+  }
 
   registerMemoryEngines(runtime.fullDeps());
   const { registerSemanticClusteringEmbeddingHook } =

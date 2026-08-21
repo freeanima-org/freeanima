@@ -7,6 +7,10 @@ import {
   setTokenizerEncodeForTest,
 } from "@freeanima/habitat/core/tokenizer/testing";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/habitat/core/config/resolved-world-context.ts";
 
 const listResidentSemanticMemoryMock = mock(async () => [] as SemanticMemoryRow[]);
 
@@ -100,6 +104,15 @@ describe("service-prompt-debug", () => {
   let catalog: ReturnType<typeof createEngineCatalog>;
 
   beforeEach(async () => {
+    bindResolvedWorldContext({
+      user_subject_id: 1,
+      agent_subject_id: 2,
+      user_world_id: 10,
+      agent_world_id: 20,
+      default_chat_agent_subject_id: 2,
+      default_chat_agent_world_id: 20,
+      commons_world_id: 30,
+    });
     resetRegisterServiceToolsForTest();
     bindEnginePorts();
     setTokenizerEncodeForTest(FALLBACK_TOKENIZER_REPO, (text: string) => {
@@ -131,6 +144,7 @@ describe("service-prompt-debug", () => {
 
   afterEach(() => {
     resetTokenizerForTest();
+    resetResolvedWorldContextForTest();
   });
 
   it("computeGlobalBreakdown counts only system and tools breakdown", () => {

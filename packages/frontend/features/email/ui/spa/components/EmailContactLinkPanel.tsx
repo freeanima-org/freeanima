@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
+import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 
@@ -39,7 +39,7 @@ export function EmailContactMailbox({
   addressRaw,
   writesDisabled = false,
 }: EmailContactMailboxProps) {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const [linked, setLinked] = useState<ContactRow | null>(null);
   const [candidates, setCandidates] = useState<ContactRow[]>([]);
   const [busy, setBusy] = useState(false);
@@ -59,7 +59,7 @@ export function EmailContactMailbox({
     setResolving(true);
     setError("");
     try {
-      const items = await resolveContactsByAddress(subjectKind, email);
+      const items = await resolveContactsByAddress(subjectId, email);
       setLinked(items[0] ?? null);
     } catch (e) {
       setLinked(null);
@@ -67,7 +67,7 @@ export function EmailContactMailbox({
     } finally {
       setResolving(false);
     }
-  }, [email, subjectKind]);
+  }, [email, subjectId]);
 
   useEffect(() => {
     void refresh();
@@ -79,7 +79,7 @@ export function EmailContactMailbox({
     setBusy(true);
     setError("");
     try {
-      const items = await resolveContactsByAddress(subjectKind, email);
+      const items = await resolveContactsByAddress(subjectId, email);
       setCandidates(items);
       const angleName = addressRaw.match(/"([^"]+)"/)?.[1];
       const beforeAngle = addressRaw.includes("<")
@@ -104,7 +104,7 @@ export function EmailContactMailbox({
     setBusy(true);
     setError("");
     try {
-      await attachAddressRemote(subjectKind, {
+      await attachAddressRemote(subjectId, {
         contact_id: contactId,
         address: email,
         identity_key: false,
@@ -122,7 +122,7 @@ export function EmailContactMailbox({
     setBusy(true);
     setError("");
     try {
-      const row = await getContactRemote(subjectKind, contactId);
+      const row = await getContactRemote(subjectId, contactId);
       setLinked(row);
       setShowPanel(false);
     } catch (e) {
@@ -137,7 +137,7 @@ export function EmailContactMailbox({
     setBusy(true);
     setError("");
     try {
-      await createFromAddressRemote(subjectKind, {
+      await createFromAddressRemote(subjectId, {
         title: newTitle.trim() || "未命名联系人",
         address: email,
         identity_key: true,
@@ -157,7 +157,7 @@ export function EmailContactMailbox({
     setError("");
     try {
       const nextEmails = linked.emails.filter((e) => e.value.trim().toLowerCase() !== email);
-      await patchContactRemote(subjectKind, linked.id, { emails: nextEmails });
+      await patchContactRemote(subjectId, linked.id, { emails: nextEmails });
       setLinked(null);
       await refresh();
     } catch (e) {

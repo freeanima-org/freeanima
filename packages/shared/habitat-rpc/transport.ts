@@ -3,6 +3,8 @@ import {
   HABITAT_RPC_HEARTBEAT_SEND_CAP_MS,
   HABITAT_RPC_LIVENESS_CHECK_INTERVAL_MS,
   HABITAT_RPC_LIVENESS_SILENCE_MS,
+  HABITAT_RPC_RECONNECT_INITIAL_MS,
+  HABITAT_RPC_RECONNECT_MAX_MS,
 } from "./constants.ts";
 import type { HabitatRpcConnectedPayload } from "./lifecycle.ts";
 import { serializeHabitatRpcEnvelope } from "./protocol.ts";
@@ -35,8 +37,8 @@ export type HabitatRpcTransportHandle = {
 };
 
 const DEFAULT_POLICY: Required<HabitatRpcReconnectPolicy> = {
-  initialMs: 1000,
-  maxMs: 30_000,
+  initialMs: HABITAT_RPC_RECONNECT_INITIAL_MS,
+  maxMs: HABITAT_RPC_RECONNECT_MAX_MS,
   factor: 2,
 };
 
@@ -185,11 +187,15 @@ export function runHabitatRpcTransport(
   }
 
   function rejectConnected(error: Error): void {
-    for (const waiter of connectedWaiters) {
+    const waiters = connectedWaiters;
+    connectedWaiters = [];
+    const pending = connectedPromise;
+    connectedPromise = null;
+    // 防止无人 await 时出现 Uncaught (in promise)；已有 awaiter 仍会收到 rejection
+    if (pending) void pending.catch(() => undefined);
+    for (const waiter of waiters) {
       waiter.reject(error);
     }
-    connectedWaiters = [];
-    connectedPromise = null;
   }
 
   function whenConnected(): Promise<RpcClient> {

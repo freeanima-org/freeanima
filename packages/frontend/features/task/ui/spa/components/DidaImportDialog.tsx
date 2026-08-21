@@ -19,7 +19,6 @@ import {
   TabsTrigger,
 } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import {
   buildDidaPreviewRows,
@@ -73,13 +72,13 @@ function PreviewTable({ rows, noteHeader }: { rows: DidaPreviewRow[]; noteHeader
 
 export function DidaImportDialog({
   open,
-  subjectKind,
+  subjectId,
   disabled,
   onOpenChange,
   onDone,
 }: {
   open: boolean;
-  subjectKind: SubjectKind;
+  subjectId: number;
   disabled: boolean;
   onOpenChange: (open: boolean) => void;
   onDone?: () => Promise<void> | void;
@@ -149,7 +148,7 @@ export function DidaImportDialog({
     setResult(null);
     try {
       const out = await getTypedHabitatClient().call("task.importDidaCsv", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         csv_text: csvText,
         mode,
       });

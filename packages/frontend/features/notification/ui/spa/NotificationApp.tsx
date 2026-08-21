@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  getCachedResolvedWorldContext,
+  useUserSubjectId,
+} from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Alert,
   AlertDescription,
@@ -12,23 +15,17 @@ import {
 } from "@freeanima/ui-kit";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
 
-import {
-  listNotifications,
-  markNotificationRead,
-  getNotificationRecipients,
-  type NotificationRow,
-} from "./lib/api.ts";
+import { listNotifications, markNotificationRead, type NotificationRow } from "./lib/api.ts";
 import { useNotificationUnreadStore } from "./stores/notification-unread.ts";
 
 const PAGE_SIZE = 20;
 
-type RecipientIds = { user: number; agent: number };
 type ReadFilter = "all" | "unread";
 
-async function resolveRecipientIds(cached: RecipientIds | null): Promise<RecipientIds> {
-  if (cached) return cached;
-  const remote = await getNotificationRecipients();
-  return { user: remote.user_subject_id, agent: remote.agent_subject_id };
+function resolveRecipientKind(subjectId: number): "user" | "agent" {
+  const bootUserId = getCachedResolvedWorldContext()?.user_subject_id ?? 0;
+  if (subjectId > 0 && bootUserId > 0 && subjectId === bootUserId) return "user";
+  return "agent";
 }
 
 function ListPagination({
@@ -79,8 +76,8 @@ function ListPagination({
 }
 
 export function NotificationApp() {
-  const { kind: recipientKind } = useSubjectScope();
-  const [recipientIds, setRecipientIds] = useState<RecipientIds | null>(null);
+  const subjectId = useUserSubjectId();
+  const recipientKind = resolveRecipientKind(subjectId);
   const [readFilter, setReadFilter] = useState<ReadFilter>("unread");
   const [offset, setOffset] = useState(0);
   const [markingId, setMarkingId] = useState<string | null>(null);
@@ -90,28 +87,16 @@ export function NotificationApp() {
 
   const listQuery = usePortalRead({
     queryKey:
-      recipientIds == null
-        ? null
-        : [
-            "notifications",
-            recipientKind,
-            recipientKind === "user" ? recipientIds.user : recipientIds.agent,
-            readFilter,
-            offset,
-          ],
-    queryFn: async () => {
-      const ids = recipientIds;
-      if (!ids) throw new Error("recipient ids missing");
-      const recipient_id = recipientKind === "user" ? ids.user : ids.agent;
-      return listNotifications({
+      subjectId <= 0 ? null : ["notifications", recipientKind, subjectId, readFilter, offset],
+    queryFn: async () =>
+      listNotifications({
         recipient_kind: recipientKind,
-        recipient_id,
+        recipient_id: subjectId,
         read_filter: readFilter,
         offset,
         limit: PAGE_SIZE,
-      });
-    },
-    enabled: recipientIds != null,
+      }),
+    enabled: subjectId > 0,
   });
 
   const items = listQuery.data?.items ?? [];
@@ -122,22 +107,19 @@ export function NotificationApp() {
     if (listQuery.error) setError(listQuery.error.message);
   }, [listQuery.error]);
 
-  const fetchList = useCallback(async (nextOffset: number) => {
-    setError("");
-    setOffset(nextOffset);
-  }, []);
-
   useEffect(() => {
-    void (async () => {
-      try {
-        const ids = await resolveRecipientIds(null);
-        setRecipientIds(ids);
-        setOffset(0);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : String(e));
-      }
-    })();
-  }, [recipientKind]);
+    setOffset(0);
+    setError("");
+  }, [subjectId, readFilter]);
+
+  const fetchList = useCallback(
+    (nextOffset: number) => {
+      setError("");
+      setOffset(nextOffset);
+      if (nextOffset === offset) void listQuery.reload();
+    },
+    [listQuery, offset],
+  );
 
   const onPageChange = (page: number) => {
     setOffset((page - 1) * PAGE_SIZE);
@@ -181,7 +163,6 @@ export function NotificationApp() {
       <p className="text-muted-foreground mb-4 text-sm">默认显示未读；点击「标记已读」确认处理。</p>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <SubjectScopeToggle />
         <div className="inline-flex overflow-hidden rounded-md border shadow-xs">
           <Button
             type="button"
@@ -206,9 +187,11 @@ export function NotificationApp() {
           type="button"
           variant="ghost"
           size="sm"
-          isDisabled={loading}
+          isDisabled={loading || subjectId <= 0}
           aria-label={"刷新"}
-          onClick={() => void fetchList(offset)}
+          onClick={() => {
+            fetchList(offset);
+          }}
         >
           {loading ? "刷新中…" : "刷新"}
         </Button>
@@ -220,7 +203,7 @@ export function NotificationApp() {
         </Alert>
       ) : null}
 
-      {loading && items.length === 0 ? (
+      {subjectId <= 0 || (loading && items.length === 0) ? (
         <div className="flex justify-center py-8">
           <Spinner className="size-4" />
         </div>

@@ -15,6 +15,7 @@ import { isRecord } from "@freeanima/shared/util";
 import { resolveCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import type { HabitatMethodInputs } from "@freeanima/client/portal-sdk/habitat-typed-client";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { reviveDates } from "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts";
 
 import { getHabitatRpcClient } from "./habitat-client.ts";
@@ -215,14 +216,15 @@ export type HabitatSubagentRow = {
   updated_at: string;
 };
 
-export async function listHabitatSubagents(subjectKind: "user" | "agent" = "agent") {
-  return hubCall(habitat().call("subagent.list", { subject_kind: subjectKind })) as Promise<{
+export async function listHabitatSubagents(subjectId?: number) {
+  const subject_id = subjectId ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.list", { subject_id })) as Promise<{
     items: HabitatSubagentRow[];
   }>;
 }
 
 export async function createHabitatSubagent(input: {
-  subject_kind: "user" | "agent";
+  subject_id?: number;
   slug: string;
   title: string;
   summary?: string;
@@ -234,13 +236,14 @@ export async function createHabitatSubagent(input: {
   denied_tools?: string[];
   prompt_includes?: Array<"self" | "world" | "time">;
 }) {
-  return hubCall(habitat().call("subagent.create", input)) as Promise<{
+  const subject_id = input.subject_id ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.create", { ...input, subject_id })) as Promise<{
     item: HabitatSubagentRow;
   }>;
 }
 
 export async function patchHabitatSubagent(input: {
-  subject_kind: "user" | "agent";
+  subject_id?: number;
   id: number;
   slug?: string;
   title?: string;
@@ -253,13 +256,15 @@ export async function patchHabitatSubagent(input: {
   denied_tools?: string[];
   prompt_includes?: Array<"self" | "world" | "time">;
 }) {
-  return hubCall(habitat().call("subagent.patch", input)) as Promise<{
+  const subject_id = input.subject_id ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.patch", { ...input, subject_id })) as Promise<{
     item: HabitatSubagentRow;
   }>;
 }
 
-export async function deleteHabitatSubagent(subjectKind: "user" | "agent", id: number) {
-  return hubCall(habitat().call("subagent.delete", { subject_kind: subjectKind, id })) as Promise<{
+export async function deleteHabitatSubagent(id: number, subjectId?: number) {
+  const subject_id = subjectId ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.delete", { subject_id, id })) as Promise<{
     ok: true;
   }>;
 }
@@ -443,6 +448,7 @@ export async function listSemanticMemories(input: {
   source_conversation?: string;
   sort_by?: "created_at" | "updated_at" | "reference_count" | "rank";
   cluster_id?: number | null;
+  agent_subject_id?: number;
 }) {
   const payload = semanticMemoryListBodySchema.parse(input);
   const scope = resolveCacheScope(resolveApiOrigin());
@@ -524,8 +530,10 @@ export async function runDataIntegrityCheck() {
   return raw as DataIntegrityReport;
 }
 
-export async function getSelfBlocks() {
-  return hubCall(habitat().call("self.blocks", {}));
+export async function getSelfBlocks(input?: { agent_subject_id?: number }) {
+  return hubCall(
+    habitat().call("self.blocks", omitUndefined({ agent_subject_id: input?.agent_subject_id })),
+  );
 }
 
 export async function getMcpStatus() {

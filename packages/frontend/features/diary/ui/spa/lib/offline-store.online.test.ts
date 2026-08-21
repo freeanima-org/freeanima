@@ -52,7 +52,7 @@ describe("diary online write-through", () => {
   });
 
   it("Habitat 可用时 create 直连且不入 outbox", async () => {
-    const created = await offlineCreateDiaryEntry("user", {
+    const created = await offlineCreateDiaryEntry(1, {
       title: "online",
       entry_at: "2026-07-12T00:00:00.000Z",
     });

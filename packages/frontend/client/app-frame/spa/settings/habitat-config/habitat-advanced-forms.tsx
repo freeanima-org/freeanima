@@ -38,7 +38,6 @@ export const SIDEBAR_OPS_SECTIONS = [
   "browser",
   "cjk",
   "fts",
-  "worlds",
   "object_storage",
 ] as const satisfies ReadonlyArray<AdvancedSectionId>;
 

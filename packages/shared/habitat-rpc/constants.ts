@@ -27,6 +27,15 @@ export const HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS = 600_000;
 /** WS 无任何 inbound 超过此时间则主动断连重连 */
 export const HABITAT_RPC_LIVENESS_SILENCE_MS = 10_000;
 
+/** 意外断线后先显示 connecting；超过此时间仍未连上再标 disconnected（覆盖 dev Habitat 硬重启） */
+export const HABITAT_RPC_DISCONNECT_GRACE_MS = 12_000;
+
+/** 客户端自动重连：首次重试间隔 */
+export const HABITAT_RPC_RECONNECT_INITIAL_MS = 250;
+
+/** 客户端自动重连：最大退避 */
+export const HABITAT_RPC_RECONNECT_MAX_MS = 30_000;
+
 /** rpc.connect 握手超时 */
 export const HABITAT_RPC_CONNECT_TIMEOUT_MS = 10_000;
 

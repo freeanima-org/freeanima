@@ -1,6 +1,5 @@
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config";
-import type { DiarySubjectKind } from "./types.ts";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 
-export async function resolveDiaryWorldId(kind: DiarySubjectKind): Promise<number> {
-  return resolveSubjectWorldId(kind);
+export async function resolveDiaryWorldId(subjectId: number): Promise<number> {
+  return resolvePrivateWorldId(subjectId);
 }

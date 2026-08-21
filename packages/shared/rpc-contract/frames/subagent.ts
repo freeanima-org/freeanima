@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const subjectKindSchema = notificationRecipientKindSchema;
-
 const temperatureTierSchema = z.enum(["focused", "balanced", "creative"]);
 
 export const subagentRowSchema = z.object({
@@ -26,14 +22,14 @@ export const subagentRowSchema = z.object({
 export type SubagentRowPayload = z.infer<typeof subagentRowSchema>;
 
 export const subagentListInputSchema = z.object({
-  subject_kind: subjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type SubagentListInput = z.infer<typeof subagentListInputSchema>;
 export const subagentListOutputSchema = z.object({ items: z.array(subagentRowSchema) });
 export type SubagentListOutput = z.infer<typeof subagentListOutputSchema>;
 
 export const subagentGetInputSchema = z.object({
-  subject_kind: subjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive().optional(),
   slug: z.string().optional(),
 });
@@ -42,7 +38,7 @@ export const subagentGetOutputSchema = z.object({ item: subagentRowSchema });
 export type SubagentGetOutput = z.infer<typeof subagentGetOutputSchema>;
 
 export const subagentCreateInputSchema = z.object({
-  subject_kind: subjectKindSchema,
+  subject_id: z.number().int().positive(),
   slug: z.string().min(1),
   title: z.string().min(1),
   summary: z.string().optional(),
@@ -59,7 +55,7 @@ export const subagentCreateOutputSchema = z.object({ item: subagentRowSchema });
 export type SubagentCreateOutput = z.infer<typeof subagentCreateOutputSchema>;
 
 export const subagentPatchInputSchema = z.object({
-  subject_kind: subjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   slug: z.string().optional(),
   title: z.string().optional(),
@@ -77,7 +73,7 @@ export const subagentPatchOutputSchema = z.object({ item: subagentRowSchema });
 export type SubagentPatchOutput = z.infer<typeof subagentPatchOutputSchema>;
 
 export const subagentDeleteInputSchema = z.object({
-  subject_kind: subjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type SubagentDeleteInput = z.infer<typeof subagentDeleteInputSchema>;

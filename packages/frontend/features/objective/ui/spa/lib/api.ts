@@ -4,7 +4,6 @@ import type {
   ObjectiveRowPayload,
   ObjectiveStatusPayload,
 } from "@freeanima/shared/rpc-contract/frames/objective.ts";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
@@ -20,7 +19,7 @@ function habitat() {
 }
 
 export async function fetchObjectives(
-  subjectKind: SubjectKind,
+  subjectId: number,
   opts?: { include_inactive?: boolean; parent_id?: number | null },
 ): Promise<ObjectiveRow[]> {
   const scope = resolveHabitatCacheScope();
@@ -30,10 +29,10 @@ export async function fetchObjectives(
   return withOfflineCache({
     scope,
     namespace: "objective",
-    id: `list:${subjectKind}:${inactive}:${parentKey}`,
+    id: `list:${subjectId}:${inactive}:${parentKey}`,
     fetch: async () => {
       const data = await habitat().call("objective.list", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         ...(opts?.include_inactive ? { include_inactive: true } : {}),
         ...(opts?.parent_id !== undefined ? { parent_id: opts.parent_id } : {}),
       });
@@ -44,7 +43,7 @@ export async function fetchObjectives(
 }
 
 export async function createObjectiveRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     title: string;
     content?: string;
@@ -56,7 +55,7 @@ export async function createObjectiveRemote(
   },
 ): Promise<ObjectiveRow> {
   const data = await habitat().call("objective.create", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   await invalidatePortalReads(["objective"]);
@@ -64,7 +63,7 @@ export async function createObjectiveRemote(
 }
 
 export async function patchObjectiveRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
   patch: {
     title?: string;
@@ -78,7 +77,7 @@ export async function patchObjectiveRemote(
   },
 ): Promise<ObjectiveRow> {
   const data = await habitat().call("objective.patch", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
     ...patch,
   });
@@ -86,18 +85,18 @@ export async function patchObjectiveRemote(
   return data.item;
 }
 
-export async function deleteObjectiveRemote(subjectKind: SubjectKind, id: number): Promise<void> {
-  await habitat().call("objective.delete", { subject_kind: subjectKind, id });
+export async function deleteObjectiveRemote(subjectId: number, id: number): Promise<void> {
+  await habitat().call("objective.delete", { subject_id: subjectId, id });
   await invalidatePortalReads(["objective"]);
 }
 
 export async function linkObjectiveRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
   link: ObjectiveLink,
 ): Promise<ObjectiveRow> {
   const data = await habitat().call("objective.link", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
     link,
   });
@@ -106,12 +105,12 @@ export async function linkObjectiveRemote(
 }
 
 export async function unlinkObjectiveRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
   link: ObjectiveLink,
 ): Promise<ObjectiveRow> {
   const data = await habitat().call("objective.unlink", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
     link,
   });

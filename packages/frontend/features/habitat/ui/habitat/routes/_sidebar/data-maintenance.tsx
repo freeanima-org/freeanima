@@ -8,16 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
 } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { FormField, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
-import { getUserVaultSession, VAULT_UI_SCOPE } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  getUserVaultSession,
+  useUserSubjectId,
+  VAULT_UI_SCOPE,
+} from "@freeanima/client/portal-sdk/react.tsx";
 import { BitwardenImportDialog } from "@freeanima/features/vault/ui/spa/components/BitwardenImportDialog.tsx";
 import { UnlockAgentVaultDialog } from "@freeanima/features/vault/ui/spa/components/UnlockAgentVaultDialog.tsx";
 import { DidaImportDialog } from "@freeanima/features/task/ui/spa/components/DidaImportDialog.tsx";
@@ -32,9 +29,9 @@ export const Route = createFileRoute("/_sidebar/data-maintenance")({
 
 function DataMaintenancePage() {
   const userUnlocked = getUserVaultSession().isUnlocked(VAULT_UI_SCOPE);
+  const subjectId = useUserSubjectId();
   const [bwOpen, setBwOpen] = useState(false);
   const [didaOpen, setDidaOpen] = useState(false);
-  const [didaSubjectKind, setDidaSubjectKind] = useState<SubjectKind>("user");
   const [agentVaultOpen, setAgentVaultOpen] = useState(false);
   const [ftsOpen, setFtsOpen] = useState(false);
 
@@ -117,28 +114,11 @@ function DataMaintenancePage() {
                 {"导入滴答 Web CSV（清单树、任务、提醒、重复）。"}
               </p>
             </div>
-            <FormFieldset bordered={false} className="gap-2">
-              <FormField label={"写入主体"} className="text-xs">
-                <Select
-                  selectedKey={didaSubjectKind}
-                  onSelectionChange={(key) => {
-                    if (key === "user" || key === "agent") setDidaSubjectKind(key);
-                  }}
-                >
-                  <SelectTrigger size="sm" className="w-full max-w-[12rem]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem id="user">{"用户"}</SelectItem>
-                    <SelectItem id="agent">{"Agent"}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-            </FormFieldset>
             <Button
               type="button"
               size="sm"
               className="self-start"
+              isDisabled={subjectId == null}
               onClick={() => setDidaOpen(true)}
             >
               {"从滴答清单导入 CSV"}
@@ -166,19 +146,23 @@ function DataMaintenancePage() {
       </Dialog>
 
       <UnlockAgentVaultDialog open={agentVaultOpen} onOpenChange={setAgentVaultOpen} />
-      <BitwardenImportDialog
-        open={bwOpen}
-        subjectKind="user"
-        disabled={!userUnlocked}
-        onOpenChange={setBwOpen}
-        onDone={async () => {}}
-      />
-      <DidaImportDialog
-        open={didaOpen}
-        subjectKind={didaSubjectKind}
-        disabled={false}
-        onOpenChange={setDidaOpen}
-      />
+      {subjectId != null ? (
+        <BitwardenImportDialog
+          open={bwOpen}
+          subjectId={subjectId}
+          disabled={!userUnlocked}
+          onOpenChange={setBwOpen}
+          onDone={async () => {}}
+        />
+      ) : null}
+      {subjectId != null ? (
+        <DidaImportDialog
+          open={didaOpen}
+          subjectId={subjectId}
+          disabled={false}
+          onOpenChange={setDidaOpen}
+        />
+      ) : null}
     </div>
   );
 }

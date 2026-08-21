@@ -17,7 +17,9 @@ export type SemanticEmbeddingClusterRow = {
 };
 
 /** Active semantic_memory entities that have a search_documents embedding. */
-export async function listActiveSemanticMemoryEmbeddings(): Promise<SemanticEmbeddingClusterRow[]> {
+export async function listActiveSemanticMemoryEmbeddings(opts?: {
+  world_id?: number;
+}): Promise<SemanticEmbeddingClusterRow[]> {
   const statusCond = buildSemanticStatusCondition("active");
   const conditions = [
     eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
@@ -26,6 +28,7 @@ export async function listActiveSemanticMemoryEmbeddings(): Promise<SemanticEmbe
     sql`${entities.deleted_at} IS NULL`,
   ];
   if (statusCond) conditions.push(statusCond);
+  if (opts?.world_id != null) conditions.push(eq(entities.world_id, opts.world_id));
 
   const rows = await getDb()
     .select({
@@ -62,13 +65,16 @@ export type SemanticClusterIdRow = {
 };
 
 /** Active semantic memories with optional cluster_id (left join; no embedding required). */
-export async function listActiveSemanticMemoryClusterIds(): Promise<SemanticClusterIdRow[]> {
+export async function listActiveSemanticMemoryClusterIds(opts?: {
+  world_id?: number;
+}): Promise<SemanticClusterIdRow[]> {
   const statusCond = buildSemanticStatusCondition("active");
   const conditions = [
     eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
     sql`${entities.deleted_at} IS NULL`,
   ];
   if (statusCond) conditions.push(statusCond);
+  if (opts?.world_id != null) conditions.push(eq(entities.world_id, opts.world_id));
 
   const rows = await getDb()
     .select({

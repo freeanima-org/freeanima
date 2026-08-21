@@ -54,7 +54,7 @@ describe("note online write-through", () => {
   });
 
   it("Habitat 可用时 create 直连且不入 outbox", async () => {
-    const created = await offlineCreateNote("user", { title: "online" });
+    const created = await offlineCreateNote(1, { title: "online" });
     expect(created.id).toBe(42);
     expect(hubCall).toHaveBeenCalled();
     const ops = await listOutboxOps(resolveOutboxScope(), "note");

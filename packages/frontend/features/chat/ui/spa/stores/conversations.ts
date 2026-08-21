@@ -14,10 +14,17 @@ import {
   interruptMessageStream,
   listConversations,
   pinConversation as pinConversationApi,
+  setConversationAgent as setConversationAgentApi,
   setConversationTitle,
   unarchiveConversation as unarchiveConversationApi,
   unpinConversation as unpinConversationApi,
 } from "@freeanima/features/chat/ui/spa/lib/api.ts";
+import { resolveDefaultChatAgentSubjectId } from "@freeanima/features/chat/ui/spa/lib/default-chat-agent.ts";
+import {
+  formatAgentSubjectLabel,
+  listAgentSubjects,
+} from "@freeanima/features/chat/ui/spa/lib/agent-subjects.ts";
+import { omitUndefined } from "@freeanima/shared/util";
 import {
   readCachedConversations,
   readCachedMessages,
@@ -51,6 +58,7 @@ type ConversationsState = {
   setShowArchived: (show: boolean) => Promise<ConversationListItem[]>;
   selectConversation: (id: string) => Promise<void>;
   newConversation: () => Promise<string | null>;
+  setConversationAgent: (conversationId: string, agentSubjectId: number) => Promise<boolean>;
   renameConversation: (conversationId: string, newTitle: string) => Promise<void>;
   archiveConversation: (conversationId: string) => Promise<string | null>;
   unarchiveConversation: (conversationId: string) => Promise<string | null>;
@@ -207,7 +215,8 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
 
   async newConversation() {
     try {
-      const d = await createConversation();
+      const agentSubjectId = await resolveDefaultChatAgentSubjectId();
+      const d = await createConversation(omitUndefined({ agent_subject_id: agentSubjectId }));
       await get().fetchConversations();
       const conversationId = d.conversation_id;
       await get().selectConversation(conversationId);
@@ -216,6 +225,37 @@ export const useConversationsStore = create<ConversationsState>((set, get) => ({
       console.error("newConversation:", e);
       toast("新建对话失败，请检查栖息地连接后重试", { duration: 4000 });
       return null;
+    }
+  },
+
+  async setConversationAgent(conversationId, agentSubjectId) {
+    try {
+      await setConversationAgentApi(conversationId, agentSubjectId);
+      let agentTitle: string | undefined;
+      try {
+        const agents = await listAgentSubjects();
+        agentTitle = formatAgentSubjectLabel(agentSubjectId, null, agents) || undefined;
+      } catch {
+        agentTitle = `#${agentSubjectId}`;
+      }
+      set({
+        conversations: get().conversations.map((s) =>
+          s.id === conversationId
+            ? {
+                ...s,
+                agentSubjectId,
+                agentTitle: agentTitle ?? `#${agentSubjectId}`,
+              }
+            : s,
+        ),
+      });
+      return true;
+    } catch (e) {
+      console.error("setConversationAgent:", e);
+      toast(e instanceof Error && e.message.trim() ? e.message : "更换 Anima 失败", {
+        duration: 4000,
+      });
+      return false;
     }
   },
 

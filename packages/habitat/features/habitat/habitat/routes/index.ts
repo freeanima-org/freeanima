@@ -449,7 +449,9 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "self.blocks",
     habitatMethodDefs["self.blocks"],
-    asLooseRouteHandler(habitatMethodDefs["self.blocks"], () => Promise.resolve(listSelfBlocks())),
+    asLooseRouteHandler(habitatMethodDefs["self.blocks"], (_deps, input) =>
+      Promise.resolve(listSelfBlocks(input)),
+    ),
   ),
   defineHabitatRouteFromDef(
     "prompt.debug",

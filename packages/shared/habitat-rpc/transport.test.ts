@@ -26,9 +26,11 @@ class MockWebSocket {
   closeCalls = 0;
   respondToHeartbeat = true;
   respondToRequests = true;
+  autoOpen = true;
 
   constructor() {
     queueMicrotask(() => {
+      if (!this.autoOpen) return;
       this.readyState = MockWebSocket.OPEN;
       this.emit("open", new Event("open"));
     });
@@ -170,6 +172,25 @@ describe("runHabitatRpcTransport", () => {
     expect(second).toBeDefined();
     expect(connectCount).toBeGreaterThanOrEqual(2);
     handle.stop();
+  });
+
+  it("stop 会 reject whenConnected，且不留下未处理 rejection", async () => {
+    const handle = runHabitatRpcTransport({
+      habitatUrl: "http://127.0.0.1:2658",
+      authToken: "test-token",
+      reconnect: false,
+      createWebSocket: () => {
+        const ws = new MockWebSocket();
+        ws.autoOpen = false;
+        return ws as unknown as WebSocket;
+      },
+      onConnected: async () => {},
+    });
+
+    const pending = handle.whenConnected();
+    await Promise.resolve();
+    handle.stop();
+    await expect(pending).rejects.toThrow("Habitat RPC transport stopped");
   });
 });
 

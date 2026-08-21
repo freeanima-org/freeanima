@@ -24,6 +24,7 @@ export * from "./tts-helpers.ts";
 export * from "./schemas/tts.ts";
 export * from "./notifications.ts";
 export * from "./schemas/notifications.ts";
+export * from "./schemas/chat.ts";
 export * from "./worlds.ts";
 export * from "./schemas/worlds.ts";
 export * from "./schemas/memory-config.ts";

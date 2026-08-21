@@ -31,8 +31,13 @@ export class HabitatSessionRegistry {
     return this.sessions.size;
   }
 
+  /**
+   * Fan-out 到匹配会话。
+   * - number：按 auth.subject_id
+   * - "user"|"agent"：按 auth.subject_type（兼容旧广播）
+   */
   broadcastToSubject(
-    subjectType: RpcRequestAuthContext["subject_type"],
+    subjectKey: RpcRequestAuthContext["subject_type"] | number,
     method: string,
     payload: unknown,
     opts?: BroadcastToSubjectOptions,
@@ -40,7 +45,11 @@ export class HabitatSessionRegistry {
     let sent = 0;
     for (const [id, entry] of this.sessions) {
       if (opts?.excludeId != null && id === opts.excludeId) continue;
-      if (entry.auth.subject_type !== subjectType) continue;
+      if (typeof subjectKey === "number") {
+        if (entry.auth.subject_id !== subjectKey) continue;
+      } else if (entry.auth.subject_type !== subjectKey) {
+        continue;
+      }
       entry.sendEvent(method, payload);
       sent += 1;
     }

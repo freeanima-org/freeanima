@@ -21,7 +21,7 @@ describe("HabitatSessionRegistry", () => {
       },
     });
 
-    const payload = { subject_kind: "user", active: null };
+    const payload = { subject_id: "user", active: null };
     const sent = registry.broadcastToSubject("user", "pomodoro.active.changed", payload);
 
     expect(sent).toBe(1);

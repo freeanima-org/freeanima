@@ -4,7 +4,7 @@ import { LogicalPosition, LogicalSize } from "@tauri-apps/api/dpi";
 import {
   useHabitatConnection,
   useNetworkOnline,
-  useSubjectScope,
+  useUserSubjectId,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { whenPortalHabitatRpcReady } from "@freeanima/client/portal-sdk/habitat-rpc-call";
 import { reconnectHabitat } from "@freeanima/client/portal-sdk/habitat-connection.ts";
@@ -55,10 +55,9 @@ const MOVE_SETTLE_MS = 180;
 
 type DockPersist = { edge: DockEdge | null };
 
-function readActive(subjectKind: "user" | "agent"): PomodoroActiveState | null {
-  return (
-    getPomodoroSyncSnapshot(subjectKind).active ?? readPomodoroActiveState(undefined, subjectKind)
-  );
+function readActive(subjectId: number | null): PomodoroActiveState | null {
+  if (subjectId == null) return null;
+  return getPomodoroSyncSnapshot(subjectId).active ?? readPomodoroActiveState(undefined, subjectId);
 }
 
 function loadDock(): DockPersist {
@@ -148,10 +147,10 @@ async function applyFrame(frame: RectPx): Promise<void> {
 }
 
 export function PomodoroFloatApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
-  const [active, setActive] = useState<PomodoroActiveState | null>(() => readActive(subjectKind));
+  const [active, setActive] = useState<PomodoroActiveState | null>(() => readActive(subjectId));
   const [, setTick] = useState(0);
   const [busy, setBusy] = useState(false);
   const [dockedEdge, setDockedEdge] = useState<DockEdge | null>(() => loadDock().edge);
@@ -173,12 +172,12 @@ export function PomodoroFloatApp() {
   }, []);
 
   useEffect(() => {
-    const refresh = () => setActive(readActive(subjectKind));
+    const refresh = () => setActive(readActive(subjectId));
     const unsub = subscribePomodoroSync(() => refresh());
     const onCustom = (event: Event) => {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
-      const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
-      if (detail?.subjectKind === subjectKind) refresh();
+      const detail = (event as CustomEvent<{ subjectId?: number }>).detail;
+      if (detail?.subjectId === subjectId) refresh();
     };
     window.addEventListener("freeanima:pomodoro-active-changed", onCustom);
     refresh();
@@ -186,39 +185,39 @@ export function PomodoroFloatApp() {
       unsub();
       window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
     };
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
-    return bindPomodoroShellActiveSync(subjectKind);
-  }, [subjectKind]);
+    return bindPomodoroShellActiveSync(subjectId);
+  }, [subjectId]);
 
   useEffect(() => {
     if (!networkOnline || habitatConnection !== "connected") return;
-    void pullPomodoroActive(subjectKind, { preferRemote: true }).then(() =>
-      setActive(readActive(subjectKind)),
+    void pullPomodoroActive(subjectId, { preferRemote: true }).then(() =>
+      setActive(readActive(subjectId)),
     );
-  }, [networkOnline, habitatConnection, subjectKind]);
+  }, [networkOnline, habitatConnection, subjectId]);
 
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
-      void pullPomodoroActive(subjectKind, { preferRemote: true }).then(() =>
-        setActive(readActive(subjectKind)),
+      void pullPomodoroActive(subjectId, { preferRemote: true }).then(() =>
+        setActive(readActive(subjectId)),
       );
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
     const shell = window.portalShell;
     if (!shell?.listenConfigChanged) return () => {};
     return shell.listenConfigChanged(() => {
-      void pullPomodoroActive(subjectKind, { preferRemote: true }).then(() =>
-        setActive(readActive(subjectKind)),
+      void pullPomodoroActive(subjectId, { preferRemote: true }).then(() =>
+        setActive(readActive(subjectId)),
       );
     });
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
     if (!networkOnline || habitatConnection !== "connected") return () => {};
@@ -229,16 +228,16 @@ export function PomodoroFloatApp() {
       off = rpc.onEvent(POMODORO_ACTIVE_CHANGED_EVENT, (payload) => {
         const parsed = pomodoroActiveChangedEventSchema.safeParse(payload);
         if (!parsed.success) return;
-        if (parsed.data.subject_kind !== subjectKind) return;
-        applyPomodoroActiveChangedEvent(subjectKind, parsed.data.active);
-        setActive(readActive(subjectKind));
+        if (parsed.data.subject_id !== subjectId) return;
+        applyPomodoroActiveChangedEvent(subjectId, parsed.data.active);
+        setActive(readActive(subjectId));
       });
     });
     return () => {
       cancelled = true;
       off?.();
     };
-  }, [networkOnline, habitatConnection, subjectKind]);
+  }, [networkOnline, habitatConnection, subjectId]);
 
   useEffect(() => {
     if (!active || (active.runState !== "running" && active.runState !== "paused")) {
@@ -381,36 +380,36 @@ export function PomodoroFloatApp() {
     setBusy(true);
     const next =
       active.runState === "paused" ? resumeActiveState(active) : pauseActiveState(active);
-    void applyPomodoroActive(next, subjectKind)
-      .then(() => setActive(readActive(subjectKind)))
+    void applyPomodoroActive(next, subjectId)
+      .then(() => setActive(readActive(subjectId)))
       .finally(() => setBusy(false));
-  }, [active, busy, subjectKind]);
+  }, [active, busy, subjectId]);
 
   const handleStart = useCallback(() => {
     if (busy) return;
     setBusy(true);
     void (async () => {
       try {
-        const config = await fetchPomodoroConfig(subjectKind);
+        const config = await fetchPomodoroConfig(subjectId);
         await applyPomodoroActive(
           createInitialActiveState(config, { sessionLocalId: randomPublicId() }),
-          subjectKind,
+          subjectId,
           { alertConfig: config },
         );
-        setActive(readActive(subjectKind));
+        setActive(readActive(subjectId));
       } finally {
         setBusy(false);
       }
     })();
-  }, [busy, subjectKind]);
+  }, [busy, subjectId]);
 
   const handleEnd = useCallback(() => {
     if (!active || busy) return;
     setBusy(true);
-    void runPhaseAbort({ state: active, subjectKind })
-      .then(() => setActive(readActive(subjectKind)))
+    void runPhaseAbort({ state: active, subjectId })
+      .then(() => setActive(readActive(subjectId)))
       .finally(() => setBusy(false));
-  }, [active, busy, subjectKind]);
+  }, [active, busy, subjectId]);
 
   const openFull = useCallback(() => {
     void window.portalShell?.openPomodoro?.();

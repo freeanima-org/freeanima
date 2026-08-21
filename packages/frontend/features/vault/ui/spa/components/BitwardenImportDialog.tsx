@@ -8,7 +8,6 @@ import {
   Spinner,
 } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
 import { getUserVaultSession, VAULT_UI_SCOPE } from "@freeanima/client/portal-sdk/react.tsx";
 import { extractCustomFieldNames } from "@freeanima/shared/vault-crypto";
 import {
@@ -41,13 +40,13 @@ async function ensureTagIdsFromTitles(titles: string[]): Promise<number[]> {
 
 export function BitwardenImportDialog({
   open,
-  subjectKind,
+  subjectId,
   disabled,
   onOpenChange,
   onDone,
 }: {
   open: boolean;
-  subjectKind: SubjectKind;
+  subjectId: number;
   disabled: boolean;
   onOpenChange: (open: boolean) => void;
   onDone: () => Promise<void>;
@@ -101,7 +100,7 @@ export function BitwardenImportDialog({
         setError(parsed.error);
         return;
       }
-      const existing = await fetchVaultItems(subjectKind, { limit: 10_000 });
+      const existing = await fetchVaultItems(subjectId, { limit: 10_000 });
       const index = indexBitwardenImportRefs(existing);
       setMappedItems(parsed.items);
       setExistingIndex(index);
@@ -120,7 +119,7 @@ export function BitwardenImportDialog({
     : null;
 
   const runImport = async () => {
-    if (!plan || subjectKind !== "user") return;
+    if (!plan) return;
     const session = getUserVaultSession();
     if (!session.isUnlocked(VAULT_UI_SCOPE)) {
       setError("请先解锁用户保险库");
@@ -157,10 +156,10 @@ export function BitwardenImportDialog({
             ...(mapped.bitwarden_id ? { import_refs: { bitwarden: mapped.bitwarden_id } } : {}),
           };
           if (entry.action === "create") {
-            await createVaultItem("user", meta);
+            await createVaultItem(subjectId, meta);
             created += 1;
           } else if (entry.action === "update" && entry.local_id != null) {
-            await patchVaultItem("user", { id: entry.local_id, ...meta });
+            await patchVaultItem(subjectId, { id: entry.local_id, ...meta });
             updated += 1;
           }
         } catch (e) {
@@ -190,9 +189,7 @@ export function BitwardenImportDialog({
         <p className="text-sm text-muted-foreground">
           选择未加密的 Bitwarden JSON 导出。按 cipher UUID（import_refs.bitwarden）幂等更新。
         </p>
-        {subjectKind !== "user" ? (
-          <StatusAlert variant="error">Bitwarden 导入仅支持用户保险库</StatusAlert>
-        ) : null}
+
         {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
         {result ? (
           <StatusAlert variant={result.failed.length > 0 ? "warning" : "success"}>
@@ -221,7 +218,7 @@ export function BitwardenImportDialog({
           <input
             type="file"
             accept="application/json,.json"
-            disabled={disabled || running || subjectKind !== "user"}
+            disabled={disabled || running}
             onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
           />
           {fileName ? <p className="text-xs text-muted-foreground">已选：{fileName}</p> : null}
@@ -253,7 +250,7 @@ export function BitwardenImportDialog({
         </Button>
         <Button
           type="button"
-          isDisabled={disabled || running || !plan || plan.length === 0 || subjectKind !== "user"}
+          isDisabled={disabled || running || !plan || plan.length === 0}
           onClick={() => void runImport()}
         >
           {running ? <Spinner className="size-4" /> : "开始导入"}

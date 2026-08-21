@@ -1,4 +1,3 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
 import {
   attachToolReturns,
   getToolConversationId,
@@ -33,13 +32,13 @@ import {
 const WORLD_ID_OPTIONAL = {
   world_id: {
     type: "integer",
-    description: "Optional world override; otherwise subject_kind selects the private world",
-  },
-  subject_kind: {
-    type: "string",
-    enum: ["user", "agent"],
     description:
-      "Owning subject: user or agent (required unless world_id or entity id resolves world)",
+      "Optional world override; otherwise subject_id or conversation subject selects the private world",
+  },
+  subject_id: {
+    type: "integer",
+    description:
+      "Owning subject entity id (required unless world_id or conversation tool context resolves world)",
   },
 } as const;
 
@@ -105,9 +104,9 @@ export function rejectTasksMixedWithSugar(args: Record<string, unknown>): string
   return `tasks 与单任务字段不能同时出现（多余: ${extra.join("、")}）。单任务用 goal，并行才用 tasks。`;
 }
 
-function parseSubjectKind(raw: unknown): SubjectKind | undefined {
-  if (raw === "user" || raw === "agent") return raw;
-  return undefined;
+function parseSubjectId(raw: unknown): number | null {
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
 }
 
 function parseWorldId(raw: unknown): number | null {
@@ -122,7 +121,7 @@ async function resolveWorld(opts: {
 }): Promise<number | string> {
   try {
     const explicit = parseWorldId(opts.args.world_id);
-    const subjectKind = parseSubjectKind(opts.args.subject_kind);
+    const subjectId = parseSubjectId(opts.args.subject_id);
     const access = opts.access ?? "read";
     if (explicit != null) {
       return await resolveToolWorld({ explicitWorldId: explicit, access });
@@ -130,10 +129,20 @@ async function resolveWorld(opts: {
     if (opts.entityId != null && opts.entityId > 0) {
       return await resolveToolWorld({ entityId: opts.entityId, access });
     }
-    if (subjectKind == null) {
-      return toolError("subject_kind is required (user|agent) when world_id omitted");
+    if (subjectId != null) {
+      return await resolveToolWorld({ subjectId, access });
     }
-    return await resolveToolWorld({ subjectKind, access });
+    try {
+      return await resolveToolWorld({ access });
+    } catch (inner) {
+      const innerMsg = inner instanceof Error ? inner.message : String(inner);
+      if (innerMsg.includes("subject_id") || innerMsg.includes("tool caller subject")) {
+        return toolError(
+          "subject_id is required when world_id omitted and no tool conversation subject",
+        );
+      }
+      throw inner;
+    }
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);
@@ -225,7 +234,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: { ...WORLD_ID_OPTIONAL },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld({ args });
@@ -249,7 +258,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               id: { type: "integer" },
               slug: { type: "string" },
             },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld({ args });
@@ -299,7 +308,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                 description: "Opt-in child prompt sections (default none)",
               },
             },
-            required: ["subject_kind", "slug", "title"],
+            required: ["subject_id", "slug", "title"],
           },
           handler: async (args) => {
             const worldId = await resolveWorld({ args, access: "write" });
@@ -354,7 +363,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                 items: { type: "string", enum: ["self", "world", "time"] },
               },
             },
-            required: ["subject_kind", "id"],
+            required: ["subject_id", "id"],
           },
           handler: async (args) => {
             const id = Number(args.id);
@@ -409,7 +418,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
               ...WORLD_ID_OPTIONAL,
               id: { type: "integer" },
             },
-            required: ["subject_kind", "id"],
+            required: ["subject_id", "id"],
           },
           handler: async (args) => {
             const id = Number(args.id);
@@ -448,7 +457,7 @@ export function registerSubagentTools(toolSets: ToolSetRegistry): void {
                   "Parallel tasks only (mutually exclusive with top-level goal/slug/instructions). Each is named (slug|id) or ephemeral (instructions+allowed_tools)",
               },
             },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: async (args) => {
             const mixed = rejectTasksMixedWithSugar(args);

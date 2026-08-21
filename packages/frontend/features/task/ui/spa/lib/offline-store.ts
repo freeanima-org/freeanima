@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getCachedUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { getIdMapping, resolveIdFields } from "@freeanima/client/portal-sdk/offline-id-map";
 import {
   registerOfflineModule,
@@ -65,8 +65,8 @@ function normalizeListRow(list: TaskListRowPayload): TaskListRow {
   };
 }
 
-function subjectPayload(): { subject_kind: ReturnType<typeof getSubjectKind> } {
-  return { subject_kind: getSubjectKind() };
+function subjectPayload(): { subject_id: ReturnType<typeof getCachedUserSubjectId> } {
+  return { subject_id: getCachedUserSubjectId() };
 }
 
 async function readLocalLists(scope: string): Promise<TaskListRow[]> {
@@ -496,7 +496,7 @@ function entitySortKey(op: OfflineOutboxOp): string | null {
 
 function isSortOrderOnlyPatch(op: OfflineOutboxOp): boolean {
   if (op.method !== "tasklist.patch" && op.method !== "task.patch") return false;
-  const allowed = new Set(["id", "sort_order", "subject_kind", "client_op_id"]);
+  const allowed = new Set(["id", "sort_order", "subject_id", "client_op_id"]);
   const keys = Object.keys(op.payload).filter((key) => op.payload[key] !== undefined);
   if (!keys.includes("sort_order")) return false;
   return keys.every((key) => allowed.has(key));

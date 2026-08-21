@@ -5,8 +5,6 @@ import {
 import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
 import { isRecord } from "@freeanima/shared/util";
 
-import type { PomodoroSubjectKind } from "./api.ts";
-
 function isPomodoroActiveState(value: unknown): value is PomodoroActiveState {
   if (!isRecord(value)) return false;
   return (
@@ -26,15 +24,15 @@ function isSyncMeta(value: unknown): value is PomodoroSyncMeta {
  * 订阅壳层 `pomodoro:active-sync`（主窗 ↔ 迷你窗）。
  * 收到后写入本 WebView 本地态，且不再二次 broadcast（避免环）。
  */
-export function bindPomodoroShellActiveSync(subjectKind: PomodoroSubjectKind): () => void {
+export function bindPomodoroShellActiveSync(subjectId: number): () => void {
   const shell = typeof window !== "undefined" ? window.portalShell : undefined;
   if (!shell?.listenPomodoroActiveSync) return () => {};
   return shell.listenPomodoroActiveSync((payload) => {
-    if (payload.subject_kind !== subjectKind) return;
+    if (payload.subject_id !== subjectId) return;
     const active =
       payload.active == null ? null : isPomodoroActiveState(payload.active) ? payload.active : null;
     if (payload.active != null && active == null) return;
     const meta = payload.meta != null && isSyncMeta(payload.meta) ? payload.meta : null;
-    applyLocalPomodoroActive(active, subjectKind, meta, { broadcastShell: false });
+    applyLocalPomodoroActive(active, subjectId, meta, { broadcastShell: false });
   });
 }

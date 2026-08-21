@@ -1,6 +1,9 @@
-import { beforeEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/habitat/core/config/world-context";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   resolveNotificationListSubject,
@@ -12,12 +15,18 @@ const CTX = {
   agent_subject_id: 20,
   user_world_id: 100,
   agent_world_id: 200,
+  default_chat_agent_subject_id: 2,
+  default_chat_agent_world_id: 200,
   commons_world_id: 30,
 } as const;
 
 describe("notification tool subject resolve", () => {
   beforeEach(() => {
     bindResolvedWorldContext({ ...CTX });
+  });
+
+  afterEach(() => {
+    resetResolvedWorldContextForTest();
   });
 
   it("send without target or subject_id errors", async () => {

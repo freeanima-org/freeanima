@@ -1,5 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
+import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
 import type { Key } from "react-aria-components";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -32,6 +33,7 @@ import {
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
@@ -96,7 +98,7 @@ type TemporalSystemRollBatchJobStatus = {
 };
 
 export const Route = createFileRoute("/_sidebar/temporal-summary")({
-  component: TemporalSummaryPage,
+  component: () => <RedirectToObserver subpath="/temporal-summary" />,
 });
 
 function formatRatio(current: number, total: number): string {
@@ -214,7 +216,8 @@ function RollBatchProgress({ job }: { job: TemporalSystemRollBatchJobStatus }) {
   );
 }
 
-function TemporalSummaryPage() {
+export function TemporalSummaryPage() {
+  const agentSubjectId = useObserverAgentSubjectId();
   const [tab, setTab] = useState<PageTab>("day");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -258,6 +261,7 @@ function TemporalSummaryPage() {
             period_start_to: to.trim() ? normalizeRangeValue(to, window) : undefined,
             offset: nextOffset,
             limit: PAGE_SIZE,
+            agent_subject_id: agentSubjectId ?? undefined,
           }),
         )) as { items: TemporalRow[]; total: number };
         setItems(data.items ?? []);
@@ -273,7 +277,7 @@ function TemporalSummaryPage() {
         }
       }
     },
-    [from, setOffset, to],
+    [from, setOffset, to, agentSubjectId],
   );
 
   const fetchRolls = useCallback(async (opts?: { silent?: boolean; claimOp?: boolean }) => {
@@ -573,13 +577,15 @@ function TemporalSummaryPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-bold">{"⏳ 时间摘要"}</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {
-            "全局日/月/年实体（各周期结束后写入），以及三条反向系统汇总（过往日/月/年），经 Redis 缓存。计入所有非 debug、非 cron 会话（含 remote）；全局日按消息时间选源。「补全缺失」只填没有行的周期；「强制重跑」覆盖区间内全部期望周期（含空占位）。批量任务在后台执行，页面轮询进度。"
-          }
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold">{"⏳ 时间摘要"}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {
+              "全局日/月/年实体（各周期结束后写入），以及三条反向系统汇总（过往日/月/年），经 Redis 缓存。计入所有非 debug、非 cron 会话（含 remote）；全局日按消息时间选源。「补全缺失」只填没有行的周期；「强制重跑」覆盖区间内全部期望周期（含空占位）。批量任务在后台执行，页面轮询进度。"
+            }
+          </p>
+        </div>
       </div>
 
       {batchJob ? <EntityBatchProgress job={batchJob} /> : null}

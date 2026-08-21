@@ -17,7 +17,6 @@ import {
   fetchDiaryBlockTemplates,
   updateDiaryBlockTemplate,
 } from "../lib/api.ts";
-import type { DiarySubjectKind } from "../lib/format-diary.ts";
 
 type EditorState = {
   id?: number;
@@ -34,12 +33,12 @@ const emptyEditor = (): EditorState => ({
 
 export function DiaryBlockTemplateDialog({
   open,
-  subjectKind,
+  subjectId,
   onClose,
   onChanged,
 }: {
   open: boolean;
-  subjectKind: DiarySubjectKind;
+  subjectId: number;
   onClose: () => void;
   onChanged: (items: DiaryBlockTemplateRow[]) => void;
 }): JSX.Element {
@@ -52,7 +51,7 @@ export function DiaryBlockTemplateDialog({
   useEffect(() => {
     if (!open) return () => {};
     let cancelled = false;
-    void fetchDiaryBlockTemplates(subjectKind)
+    void fetchDiaryBlockTemplates(subjectId)
       .then((rows) => {
         if (!cancelled) {
           setItems(rows);
@@ -65,10 +64,10 @@ export function DiaryBlockTemplateDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, onChanged, subjectKind]);
+  }, [open, onChanged, subjectId]);
 
   async function reload(): Promise<DiaryBlockTemplateRow[]> {
-    const rows = await fetchDiaryBlockTemplates(subjectKind);
+    const rows = await fetchDiaryBlockTemplates(subjectId);
     setItems(rows);
     onChanged(rows);
     return rows;
@@ -91,12 +90,12 @@ export function DiaryBlockTemplateDialog({
         tag_ids: [] as number[],
       };
       if (editor.id != null) {
-        await updateDiaryBlockTemplate(subjectKind, editor.id, {
+        await updateDiaryBlockTemplate(subjectId, editor.id, {
           name,
           preset,
         });
       } else {
-        await createDiaryBlockTemplate(subjectKind, { name, preset });
+        await createDiaryBlockTemplate(subjectId, { name, preset });
       }
       setEditor(null);
       await reload();
@@ -112,7 +111,7 @@ export function DiaryBlockTemplateDialog({
     setError("");
     setTemplateToDelete(null);
     try {
-      await deleteDiaryBlockTemplate(subjectKind, id);
+      await deleteDiaryBlockTemplate(subjectId, id);
       await reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

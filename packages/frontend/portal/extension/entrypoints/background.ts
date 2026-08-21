@@ -30,7 +30,7 @@ import {
   isExtVaultUnlocked,
   persistExtVaultSession,
 } from "../features/vault/session.ts";
-import { vaultCall } from "../runtime/habitat.ts";
+import { vaultCall, getExtUserSubjectId } from "../runtime/habitat.ts";
 import {
   type ExtBgResponse,
   type ExtToBgMessage,
@@ -73,7 +73,7 @@ function filterLocalMeta(
 
 async function refreshLocalCacheFromHabitat(): Promise<CachedVaultItem[]> {
   const listed = await vaultCall("vault.list", {
-    subject_kind: "user",
+    subject_id: await getExtUserSubjectId(),
     limit: 2000,
   });
   const prevSecrets = new Map<number, Pick<CachedVaultItem, "secrets_enc" | "dek_wrapped">>();
@@ -102,7 +102,7 @@ async function listItemsPreferCache(query: string): Promise<VaultItemMetaRowPayl
     if (isExtOnline()) {
       try {
         const searched = await vaultCall("vault.search", {
-          subject_kind: "user",
+          subject_id: await getExtUserSubjectId(),
           query: q,
           limit: 200,
         });
@@ -211,7 +211,7 @@ async function recordFillUsed(itemId: number): Promise<void> {
   }
   try {
     const touched = await vaultCall("vault.touch", {
-      subject_kind: "user",
+      subject_id: await getExtUserSubjectId(),
       id: itemId,
     });
     const sealed =
@@ -384,7 +384,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         return statusPayload(await isExtVaultUnlocked());
       }
       case "test_connection": {
-        await vaultCall("vault.crypto.get", { subject_kind: "user" });
+        await vaultCall("vault.crypto.get", { subject_id: await getExtUserSubjectId() });
         return { ok: true, message: "连接成功" };
       }
       case "unlock": {
@@ -396,7 +396,9 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
 
         if (isExtOnline() && habitatConfigured) {
           try {
-            const cryptoRes = await vaultCall("vault.crypto.get", { subject_kind: "user" });
+            const cryptoRes = await vaultCall("vault.crypto.get", {
+              subject_id: await getExtUserSubjectId(),
+            });
             const config = cryptoRes.config;
             if (config?.salt && config.verifier) {
               salt = config.salt;
@@ -503,7 +505,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           return { ok: false, error: "离线缺少本地密文，请先在联网时填充或打开过该条目" };
         } else {
           const got = await vaultCall("vault.get", {
-            subject_kind: "user",
+            subject_id: await getExtUserSubjectId(),
             id: message.item_id,
             include_secrets: true,
           });
@@ -564,7 +566,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         } else if (isExtOnline()) {
           try {
             const got = await vaultCall("vault.get", {
-              subject_kind: "user",
+              subject_id: await getExtUserSubjectId(),
               id: match.id,
               include_secrets: true,
             });
@@ -606,7 +608,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         if (isExtOnline()) {
           try {
             const { item } = await vaultCall("vault.get", {
-              subject_kind: "user",
+              subject_id: await getExtUserSubjectId(),
               id: message.item_id,
               include_secrets: true,
             });
@@ -648,7 +650,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
 
         if (message.id != null) {
           const { item } = await vaultCall("vault.get", {
-            subject_kind: "user",
+            subject_id: await getExtUserSubjectId(),
             id: message.id,
             include_secrets: true,
           });
@@ -669,7 +671,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
           }
           const sealed = await getExtVaultSession().sealSecrets(secrets);
           const patched = await vaultCall("vault.patch", {
-            subject_kind: "user",
+            subject_id: await getExtUserSubjectId(),
             id: message.id,
             title,
             item_type: message.item_type,
@@ -697,7 +699,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         if (message.custom_fields?.length) secrets.custom_fields = message.custom_fields;
         const sealed = await getExtVaultSession().sealSecrets(secrets);
         const created = await vaultCall("vault.create", {
-          subject_kind: "user",
+          subject_id: await getExtUserSubjectId(),
           title,
           item_type: message.item_type,
           ...(url ? { url } : {}),
@@ -720,7 +722,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         if (!(await isExtVaultUnlocked())) return { ok: false, error: "vault_locked" };
         if (!isExtOnline()) return { ok: false, error: OFFLINE_READONLY_ERROR };
         await vaultCall("vault.delete", {
-          subject_kind: "user",
+          subject_id: await getExtUserSubjectId(),
           id: message.item_id,
         });
         await removeLocalCacheItem(message.item_id);
@@ -733,7 +735,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         const match = findExistingLogin(items, message.url, message.username);
         if (match) {
           const { item } = await vaultCall("vault.get", {
-            subject_kind: "user",
+            subject_id: await getExtUserSubjectId(),
             id: match.id,
             include_secrets: true,
           });
@@ -755,7 +757,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
             ? baseUris
             : [...baseUris, { uri: message.url, match: "domain" as const }];
           const patched = await vaultCall("vault.patch", {
-            subject_kind: "user",
+            subject_id: await getExtUserSubjectId(),
             id: match.id,
             title: message.title || match.title,
             url: item.url || message.url,
@@ -776,7 +778,7 @@ async function handleMessage(message: ExtToBgMessage): Promise<ExtBgResponse> {
         const sealed = await getExtVaultSession().sealSecrets(secrets);
         const uris = [{ uri: message.url, match: "domain" as const }];
         const created = await vaultCall("vault.create", {
-          subject_kind: "user",
+          subject_id: await getExtUserSubjectId(),
           title: message.title || new URL(message.url).hostname || "Login",
           item_type: "login",
           url: message.url,

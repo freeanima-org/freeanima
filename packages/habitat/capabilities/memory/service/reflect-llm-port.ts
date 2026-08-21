@@ -10,6 +10,7 @@ export type ReflectLlmInput = {
   toolNames: string[];
   round: DeepSleepRound;
   changeLog: DeepSleepChangeLog;
+  agent_subject_id?: number;
 };
 
 export type ReflectLlmResult = {

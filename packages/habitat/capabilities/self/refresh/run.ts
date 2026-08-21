@@ -1,6 +1,8 @@
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { purgeOrphanSelfBlocks } from "@freeanima/habitat/core/db/pg/self-layer";
+import { listEntities } from "@freeanima/habitat/core/db/pg/entity";
+import { isSubjectEnabled } from "@freeanima/habitat/core/config/resolved-world-context.ts";
 import { getNotificationPort } from "@freeanima/habitat/capabilities/tools/notification";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -26,39 +28,41 @@ export type SelfLayerRefreshResult = {
 };
 
 export type RunSelfLayerRefreshOpts = {
+  agent_subject_id: number;
   /** @deprecated 忽略；自我正文作数据层，不再作对话 system */
   selfContent?: string;
 };
 
-async function hasUnreadProposal(): Promise<boolean> {
+async function hasUnreadProposal(agentSubjectId: number): Promise<boolean> {
   const port = getNotificationPort();
   if (!port) return false;
-  const agent = port.getAgentRecipient();
   const items = await port.list({
-    recipient_kind: agent.kind,
-    recipient_id: agent.id,
+    recipient_kind: "agent",
+    recipient_id: agentSubjectId,
     read_filter: "unread",
     limit: 50,
   });
   return items.some((row) => row.source_ref === SELF_LAYER_PROPOSAL_SOURCE_REF);
 }
 
-/** Slow self-layer maintenance: propose updates into agent Inbox (no silent write). */
+/** Slow self-layer maintenance for one agent: propose updates into that agent Inbox. */
 export async function runSelfLayerRefresh(
-  opts: RunSelfLayerRefreshOpts = {},
+  opts: RunSelfLayerRefreshOpts,
 ): Promise<SelfLayerRefreshResult> {
   void opts.selfContent;
+  const agentSubjectId = opts.agent_subject_id;
   try {
-    await purgeOrphanSelfBlocks();
+    await purgeOrphanSelfBlocks(agentSubjectId);
   } catch (err) {
     logComponent("self").warn("purge orphan self blocks failed", {
       error: err instanceof Error ? err.message : String(err),
+      agent_subject_id: agentSubjectId,
     });
   }
 
-  invalidateSelfLayerPromptCache();
+  invalidateSelfLayerPromptCache(agentSubjectId);
 
-  if (await hasUnreadProposal()) {
+  if (await hasUnreadProposal(agentSubjectId)) {
     const result: SelfLayerRefreshResult = {
       ok: true,
       proposed: false,
@@ -83,16 +87,18 @@ export async function runSelfLayerRefresh(
     return result;
   }
 
-  const blocks = await loadSelfBlocks();
+  const blocks = await loadSelfBlocks(agentSubjectId);
   const userMessage = buildSelfLayerRefreshDataMessage(evidence, blocks);
 
   logComponent("self").info("self-layer refresh LLM started", {
     evidence_count: evidence.length,
+    agent_subject_id: agentSubjectId,
   });
 
   const generated = await runSelfLayerRefreshEngine({
     systemPrompt: SELF_LAYER_REFRESH_INSTRUCTION,
     userMessage,
+    agent_subject_id: agentSubjectId,
   });
   const parsed = parseSelfLayerRefreshResponse(generated.content);
 
@@ -118,17 +124,17 @@ export async function runSelfLayerRefresh(
     };
   }
 
-  const agent = port.getAgentRecipient();
   const body = formatProposalNotificationBody(parsed);
   const row = await port.create({
-    recipient_kind: agent.kind,
-    recipient_id: agent.id,
+    recipient_kind: "agent",
+    recipient_id: agentSubjectId,
     title: SELF_LAYER_PROPOSAL_TITLE,
     body,
     source_kind: "system",
     source_ref: SELF_LAYER_PROPOSAL_SOURCE_REF,
     payload: {
       kind: "self_layer_proposal",
+      agent_subject_id: agentSubjectId,
       rationale: parsed.rationale,
       evidence_ids: parsed.evidence_ids,
       blocks: parsed.blocks,
@@ -144,4 +150,33 @@ export async function runSelfLayerRefresh(
   });
   logComponent("self").info("self-layer refresh proposed", result);
   return result;
+}
+
+/** Pipeline：对所有 enabled agent 各跑一轮 */
+export async function runSelfLayerRefreshAllAgents(): Promise<SelfLayerRefreshResult> {
+  const agents = await listEntities({ type: "agent", limit: 200 });
+  const enabled = agents.filter((row) => isSubjectEnabled(row.body));
+  if (enabled.length === 0) {
+    return {
+      ok: true,
+      proposed: false,
+      evidence_count: 0,
+      summary: "No enabled agents",
+      skipped: "no_agents",
+    };
+  }
+  let anyProposed = false;
+  let last: SelfLayerRefreshResult | null = null;
+  for (const agent of enabled) {
+    last = await runSelfLayerRefresh({ agent_subject_id: agent.id });
+    if (last.proposed) anyProposed = true;
+  }
+  return (
+    last ?? {
+      ok: true,
+      proposed: anyProposed,
+      evidence_count: 0,
+      summary: "done",
+    }
+  );
 }

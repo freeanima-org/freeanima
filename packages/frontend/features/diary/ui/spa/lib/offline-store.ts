@@ -27,76 +27,66 @@ import {
 } from "@freeanima/client/portal-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { randomPublicId } from "@freeanima/shared/util";
 
-import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
+import type { DiaryEntryRow, DiaryTextBlock } from "./format-diary.ts";
 
 const MODULE_ID = "diary";
 const NAMESPACE = "diary";
 
-function listCacheId(subjectKind: DiarySubjectKind): string {
-  return `list:${subjectKind}`;
+function listCacheId(subjectId: number): string {
+  return `list:${subjectId}`;
 }
 
-function entryCacheId(subjectKind: DiarySubjectKind, id: number): string {
-  return `entry:${subjectKind}:${id}`;
+function entryCacheId(subjectId: number, id: number): string {
+  return `entry:${subjectId}:${id}`;
 }
 
-async function readLocalList(
-  scope: string,
-  subjectKind: DiarySubjectKind,
-): Promise<DiaryEntryRow[]> {
-  const cached = await readOfflineCache<DiaryEntryRow[]>(
-    scope,
-    NAMESPACE,
-    listCacheId(subjectKind),
-  );
+async function readLocalList(scope: string, subjectId: number): Promise<DiaryEntryRow[]> {
+  const cached = await readOfflineCache<DiaryEntryRow[]>(scope, NAMESPACE, listCacheId(subjectId));
   return cached ?? [];
 }
 
 async function writeLocalList(
   scope: string,
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   items: DiaryEntryRow[],
 ): Promise<void> {
   const sorted = items.toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
-  await writeOfflineCache(scope, NAMESPACE, listCacheId(subjectKind), sorted);
+  await writeOfflineCache(scope, NAMESPACE, listCacheId(subjectId), sorted);
 }
 
 async function upsertLocalEntry(
   scope: string,
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   entry: DiaryEntryRow,
 ): Promise<void> {
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   const next = list.filter((e) => e.id !== entry.id);
   next.unshift(entry);
-  await writeLocalList(scope, subjectKind, next);
-  await writeOfflineCache(scope, NAMESPACE, entryCacheId(subjectKind, entry.id), entry);
+  await writeLocalList(scope, subjectId, next);
+  await writeOfflineCache(scope, NAMESPACE, entryCacheId(subjectId, entry.id), entry);
 }
 
-async function removeLocalEntry(
-  scope: string,
-  subjectKind: DiarySubjectKind,
-  id: number,
-): Promise<void> {
-  const list = await readLocalList(scope, subjectKind);
+async function removeLocalEntry(scope: string, subjectId: number, id: number): Promise<void> {
+  const list = await readLocalList(scope, subjectId);
   await writeLocalList(
     scope,
-    subjectKind,
+    subjectId,
     list.filter((e) => e.id !== id),
   );
 }
 
 async function rewriteLocalEntryId(
   scope: string,
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   tempId: number,
   serverId: number,
   serverRow?: DiaryEntryRow,
 ): Promise<void> {
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   const existing = list.find((e) => e.id === tempId);
   const rewritten: DiaryEntryRow = serverRow
     ? { ...serverRow }
@@ -121,8 +111,8 @@ async function rewriteLocalEntryId(
         };
   const next = list.filter((e) => e.id !== tempId && e.id !== serverId);
   next.unshift(rewritten);
-  await writeLocalList(scope, subjectKind, next);
-  await writeOfflineCache(scope, NAMESPACE, entryCacheId(subjectKind, serverId), rewritten);
+  await writeLocalList(scope, subjectId, next);
+  await writeOfflineCache(scope, NAMESPACE, entryCacheId(subjectId, serverId), rewritten);
 }
 
 async function resolveEntityId(scope: string, id: number): Promise<number> {
@@ -133,11 +123,11 @@ async function resolveEntityId(scope: string, id: number): Promise<number> {
 
 async function findLocalEntry(
   scope: string,
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
 ): Promise<DiaryEntryRow | undefined> {
   const resolvedId = await resolveEntityId(scope, id);
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   return (
     list.find((e) => e.id === resolvedId) ??
     (resolvedId !== id ? list.find((e) => e.id === id) : undefined)
@@ -175,10 +165,10 @@ async function pendingTempEntryIds(scope: string): Promise<Set<number>> {
 
 async function mergeServerList(
   scope: string,
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   serverItems: DiaryEntryRow[],
 ): Promise<DiaryEntryRow[]> {
-  const local = await readLocalList(scope, subjectKind);
+  const local = await readLocalList(scope, subjectId);
   const localById = new Map(local.map((e) => [e.id, e]));
   // diary.list 故意不带 blocks（空数组=未加载）；勿覆盖本地已缓存的块
   const withBlocks = serverItems.map((server) => {
@@ -201,10 +191,10 @@ async function mergeServerList(
 }
 
 export async function reconcileServerDiaryList(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   serverItems: DiaryEntryRow[],
 ): Promise<DiaryEntryRow[]> {
-  return mergeServerList(resolveOutboxScope(), subjectKind, serverItems);
+  return mergeServerList(resolveOutboxScope(), subjectId, serverItems);
 }
 
 export function compactDiaryOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
@@ -285,10 +275,9 @@ async function flushDiaryOp(
       result.item &&
       "blocks" in result.item
     ) {
-      const subjectKind =
-        op.payload.subject_kind === "agent" ? ("agent" as const) : ("user" as const);
+      const subjectId = typeof op.payload.subject_id === "number" ? op.payload.subject_id : 0;
       await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, result.item.id);
-      await rewriteLocalEntryId(scope, subjectKind, op.tempEntityId, result.item.id, result.item);
+      await rewriteLocalEntryId(scope, subjectId, op.tempEntityId, result.item.id, result.item);
     }
     if (
       op.tempEntityId != null &&
@@ -297,18 +286,17 @@ async function flushDiaryOp(
       "parent_id" in result.item &&
       !("blocks" in result.item)
     ) {
-      const subjectKind =
-        op.payload.subject_kind === "agent" ? ("agent" as const) : ("user" as const);
+      const subjectId = typeof op.payload.subject_id === "number" ? op.payload.subject_id : 0;
       await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, result.item.id);
       const parentId =
         typeof op.payload.parent_id === "number" ? op.payload.parent_id : result.item.parent_id;
-      const entry = await findLocalEntry(scope, subjectKind, parentId);
+      const entry = await findLocalEntry(scope, subjectId, parentId);
       if (entry) {
         const blocks = entry.blocks
           .filter((b) => b.id !== op.tempEntityId)
           .concat([{ ...result.item }])
           .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-        await upsertLocalEntry(scope, subjectKind, { ...entry, blocks });
+        await upsertLocalEntry(scope, subjectId, { ...entry, blocks });
       }
     }
     return { status: "done" };
@@ -326,17 +314,16 @@ export const diaryRpcAdapter: RpcModuleAdapter = {
   resolvePayloadIds: (payload, idMap) => resolveIdFields(payload, idMap, ["id", "parent_id"]),
   flushOp: async (op, ctx) => flushDiaryOp(op, ctx.scope),
   refreshAll: async (scope) => {
-    for (const subjectKind of ["user", "agent"] as const) {
-      try {
-        const data = await habitat().call("diary.list", {
-          subject_kind: subjectKind,
-          limit: 200,
-        });
-        const merged = await mergeServerList(scope, subjectKind, data.items);
-        await writeLocalList(scope, subjectKind, merged);
-      } catch {
-        /* keep local snapshot */
-      }
+    try {
+      const subjectId = await getUserSubjectId();
+      const data = await habitat().call("diary.list", {
+        subject_id: subjectId,
+        limit: 200,
+      });
+      const merged = await mergeServerList(scope, subjectId, data.items);
+      await writeLocalList(scope, subjectId, merged);
+    } catch {
+      /* keep local snapshot */
     }
   },
 };
@@ -348,7 +335,7 @@ export function registerDiaryOfflineModule(): void {
 }
 
 export async function offlineCreateDiaryEntry(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   input: {
     title: string;
     content?: string;
@@ -369,11 +356,11 @@ export async function offlineCreateDiaryEntry(
       const scope = resolveOutboxScope();
       const opId = randomPublicId();
       const data = await habitat().call("diary.create", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         client_op_id: opId,
         ...payload,
       });
-      await upsertLocalEntry(scope, subjectKind, data.item);
+      await upsertLocalEntry(scope, subjectId, data.item);
       return data.item;
     },
     async () => {
@@ -409,13 +396,13 @@ export async function offlineCreateDiaryEntry(
         created_at: now,
         updated_at: now,
       };
-      await upsertLocalEntry(scope, subjectKind, row);
+      await upsertLocalEntry(scope, subjectId, row);
       await enqueueOutboxOp(scope, {
         id: opId,
         moduleId: MODULE_ID,
         method: "diary.create",
         payload: {
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           client_op_id: opId,
           ...payload,
         },
@@ -429,14 +416,14 @@ export async function offlineCreateDiaryEntry(
 }
 
 export async function offlineUpdateDiaryEntry(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
   patch: Partial<Pick<DiaryEntryRow, "title" | "summary" | "entry_at" | "tag_ids">> & {
     tags?: string[];
   },
 ): Promise<DiaryEntryRow> {
   const scope = resolveOutboxScope();
-  const existing = await findLocalEntry(scope, subjectKind, id);
+  const existing = await findLocalEntry(scope, subjectId, id);
   if (!existing) throw new Error("diary entry not found locally");
   const resolvedId = existing.id;
 
@@ -447,7 +434,7 @@ export async function offlineUpdateDiaryEntry(
       ...patch,
       updated_at: now,
     };
-    await upsertLocalEntry(scope, subjectKind, updated);
+    await upsertLocalEntry(scope, subjectId, updated);
 
     const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
@@ -455,7 +442,7 @@ export async function offlineUpdateDiaryEntry(
       moduleId: MODULE_ID,
       method: "diary.patch",
       payload: {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         id: resolvedId,
         client_op_id: opId,
         ...patch,
@@ -473,23 +460,23 @@ export async function offlineUpdateDiaryEntry(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     const data = await habitat().call("diary.patch", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       client_op_id: opId,
       ...patch,
     });
-    await upsertLocalEntry(scope, subjectKind, data.item);
+    await upsertLocalEntry(scope, subjectId, data.item);
     return data.item;
   }, doOffline);
 }
 
 export async function offlineAppendDiaryEntry(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
   content: string,
 ): Promise<DiaryEntryRow> {
   const scope = resolveOutboxScope();
-  const existing = await findLocalEntry(scope, subjectKind, id);
+  const existing = await findLocalEntry(scope, subjectId, id);
   if (!existing) throw new Error("diary entry not found locally");
   const resolvedId = existing.id;
   const fragment = content.trim();
@@ -514,7 +501,7 @@ export async function offlineAppendDiaryEntry(
       blocks: [...existing.blocks, block],
       updated_at: now,
     };
-    await upsertLocalEntry(scope, subjectKind, updated);
+    await upsertLocalEntry(scope, subjectId, updated);
 
     const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
@@ -522,7 +509,7 @@ export async function offlineAppendDiaryEntry(
       moduleId: MODULE_ID,
       method: "diary.append",
       payload: {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         id: resolvedId,
         content: fragment,
         client_op_id: opId,
@@ -540,12 +527,12 @@ export async function offlineAppendDiaryEntry(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     const data = await habitat().call("diary.append", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       content: fragment,
       client_op_id: opId,
     });
-    await upsertLocalEntry(scope, subjectKind, data.item);
+    await upsertLocalEntry(scope, subjectId, data.item);
     return data.item;
   }, doOffline);
 }
@@ -560,7 +547,7 @@ export type OfflineDiaryBlockCreateInput = {
 };
 
 export async function offlineCreateDiaryBlock(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   parentId: number,
   input: OfflineDiaryBlockCreateInput | string,
   sortOrder?: number,
@@ -573,7 +560,7 @@ export async function offlineCreateDiaryBlock(
       : input;
   const scope = resolveOutboxScope();
   await ensureAllocatorSeeded(scope);
-  const existing = await findLocalEntry(scope, subjectKind, parentId);
+  const existing = await findLocalEntry(scope, subjectId, parentId);
   if (!existing) throw new Error("diary entry not found locally");
   const resolvedParentId = existing.id;
 
@@ -594,7 +581,7 @@ export async function offlineCreateDiaryBlock(
       created_at: now,
       updated_at: now,
     };
-    await upsertLocalEntry(scope, subjectKind, {
+    await upsertLocalEntry(scope, subjectId, {
       ...existing,
       blocks: [...existing.blocks, block],
       updated_at: now,
@@ -604,7 +591,7 @@ export async function offlineCreateDiaryBlock(
       moduleId: MODULE_ID,
       method: "diary.blockCreate",
       payload: {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         parent_id: resolvedParentId,
         content: block.content,
         title: block.title,
@@ -627,7 +614,7 @@ export async function offlineCreateDiaryBlock(
   return preferOnlineWrite(async () => {
     const opId = opts.client_op_id?.trim() || randomPublicId();
     const data = await habitat().call("diary.blockCreate", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       parent_id: resolvedParentId,
       content: opts.content,
       ...(opts.title !== undefined ? { title: opts.title } : {}),
@@ -636,12 +623,12 @@ export async function offlineCreateDiaryBlock(
       ...(opts.sort_order != null ? { sort_order: opts.sort_order } : {}),
       client_op_id: opId,
     });
-    const entry = await findLocalEntry(scope, subjectKind, resolvedParentId);
+    const entry = await findLocalEntry(scope, subjectId, resolvedParentId);
     if (entry) {
       const blocks = entry.blocks
         .concat([data.item])
         .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-      await upsertLocalEntry(scope, subjectKind, {
+      await upsertLocalEntry(scope, subjectId, {
         ...entry,
         blocks,
         updated_at: new Date().toISOString(),
@@ -652,13 +639,13 @@ export async function offlineCreateDiaryBlock(
 }
 
 export async function offlineUpdateDiaryBlock(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
   patch: { content?: string; title?: string; tag_ids?: number[]; sort_order?: number },
 ): Promise<DiaryTextBlock> {
   const scope = resolveOutboxScope();
   const resolvedId = await resolveEntityId(scope, id);
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   let parent: DiaryEntryRow | undefined;
   let block: DiaryTextBlock | undefined;
   for (const entry of list) {
@@ -682,7 +669,7 @@ export async function offlineUpdateDiaryBlock(
       id: localBlockId,
       updated_at: now,
     };
-    await upsertLocalEntry(scope, subjectKind, {
+    await upsertLocalEntry(scope, subjectId, {
       ...localParent,
       blocks: localParent.blocks.map((b) => (b.id === localBlockId ? updatedBlock : b)),
       updated_at: now,
@@ -694,7 +681,7 @@ export async function offlineUpdateDiaryBlock(
       moduleId: MODULE_ID,
       method: "diary.blockPatch",
       payload: {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         id: resolvedId,
         client_op_id: opId,
         ...patch,
@@ -712,14 +699,14 @@ export async function offlineUpdateDiaryBlock(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     const data = await habitat().call("diary.blockPatch", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       client_op_id: opId,
       ...patch,
     });
-    const entry = await findLocalEntry(scope, subjectKind, localParent.id);
+    const entry = await findLocalEntry(scope, subjectId, localParent.id);
     if (entry) {
-      await upsertLocalEntry(scope, subjectKind, {
+      await upsertLocalEntry(scope, subjectId, {
         ...entry,
         blocks: entry.blocks.map((b) => (b.id === localBlockId ? data.item : b)),
         updated_at: new Date().toISOString(),
@@ -730,17 +717,17 @@ export async function offlineUpdateDiaryBlock(
 }
 
 export async function offlineDeleteDiaryBlock(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   parentId: number,
   blockId: number,
 ): Promise<void> {
   const scope = resolveOutboxScope();
-  const existing = await findLocalEntry(scope, subjectKind, parentId);
+  const existing = await findLocalEntry(scope, subjectId, parentId);
   if (!existing) throw new Error("diary entry not found locally");
 
   const doOffline = async (): Promise<void> => {
     const now = new Date().toISOString();
-    await upsertLocalEntry(scope, subjectKind, {
+    await upsertLocalEntry(scope, subjectId, {
       ...existing,
       blocks: existing.blocks.filter((b) => b.id !== blockId),
       updated_at: now,
@@ -764,7 +751,7 @@ export async function offlineDeleteDiaryBlock(
       id: opId,
       moduleId: MODULE_ID,
       method: "diary.blockDelete",
-      payload: { subject_kind: subjectKind, id: blockId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: blockId, client_op_id: opId },
       createdAt: now,
     });
     scheduleFlush(scope);
@@ -777,13 +764,13 @@ export async function offlineDeleteDiaryBlock(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("diary.blockDelete", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: blockId,
       client_op_id: opId,
     });
-    const entry = await findLocalEntry(scope, subjectKind, parentId);
+    const entry = await findLocalEntry(scope, subjectId, parentId);
     if (entry) {
-      await upsertLocalEntry(scope, subjectKind, {
+      await upsertLocalEntry(scope, subjectId, {
         ...entry,
         blocks: entry.blocks.filter((b) => b.id !== blockId),
         updated_at: new Date().toISOString(),
@@ -793,12 +780,12 @@ export async function offlineDeleteDiaryBlock(
 }
 
 export async function offlineReorderDiaryBlocks(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   parentId: number,
   items: Array<{ id: number; sort_order: number }>,
 ): Promise<DiaryTextBlock[]> {
   const scope = resolveOutboxScope();
-  const existing = await findLocalEntry(scope, subjectKind, parentId);
+  const existing = await findLocalEntry(scope, subjectId, parentId);
   if (!existing) throw new Error("diary entry not found locally");
 
   const doOffline = async (): Promise<DiaryTextBlock[]> => {
@@ -810,14 +797,14 @@ export async function offlineReorderDiaryBlocks(
         return nextOrder != null ? { ...b, sort_order: nextOrder, updated_at: now } : b;
       })
       .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-    await upsertLocalEntry(scope, subjectKind, { ...existing, blocks, updated_at: now });
+    await upsertLocalEntry(scope, subjectId, { ...existing, blocks, updated_at: now });
 
     const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
       id: opId,
       moduleId: MODULE_ID,
       method: "diary.blockReorder",
-      payload: { subject_kind: subjectKind, items },
+      payload: { subject_id: subjectId, items },
       createdAt: now,
     });
     scheduleFlush(scope);
@@ -830,10 +817,10 @@ export async function offlineReorderDiaryBlocks(
 
   return preferOnlineWrite(async () => {
     const data = await habitat().call("diary.blockReorder", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       items,
     });
-    await upsertLocalEntry(scope, subjectKind, {
+    await upsertLocalEntry(scope, subjectId, {
       ...existing,
       blocks: data.items,
       updated_at: new Date().toISOString(),
@@ -842,17 +829,14 @@ export async function offlineReorderDiaryBlocks(
   }, doOffline);
 }
 
-export async function offlineDeleteDiaryEntry(
-  subjectKind: DiarySubjectKind,
-  id: number,
-): Promise<void> {
+export async function offlineDeleteDiaryEntry(subjectId: number, id: number): Promise<void> {
   const scope = resolveOutboxScope();
-  const existing = await findLocalEntry(scope, subjectKind, id);
+  const existing = await findLocalEntry(scope, subjectId, id);
   const resolvedId = existing?.id ?? (await resolveEntityId(scope, id));
 
   const doOffline = async (): Promise<void> => {
-    await removeLocalEntry(scope, subjectKind, resolvedId);
-    if (resolvedId !== id) await removeLocalEntry(scope, subjectKind, id);
+    await removeLocalEntry(scope, subjectId, resolvedId);
+    if (resolvedId !== id) await removeLocalEntry(scope, subjectId, id);
 
     if (isTempId(resolvedId) || isTempId(id)) {
       const tempIds = new Set([id, resolvedId].filter(isTempId));
@@ -875,7 +859,7 @@ export async function offlineDeleteDiaryEntry(
       id: opId,
       moduleId: MODULE_ID,
       method: "diary.delete",
-      payload: { subject_kind: subjectKind, id: resolvedId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: resolvedId, client_op_id: opId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
@@ -888,12 +872,12 @@ export async function offlineDeleteDiaryEntry(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("diary.delete", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       client_op_id: opId,
     });
-    await removeLocalEntry(scope, subjectKind, resolvedId);
-    if (resolvedId !== id) await removeLocalEntry(scope, subjectKind, id);
+    await removeLocalEntry(scope, subjectId, resolvedId);
+    if (resolvedId !== id) await removeLocalEntry(scope, subjectId, id);
   }, doOffline);
 }
 

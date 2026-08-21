@@ -46,6 +46,7 @@ describePg("content_block tool", () => {
     const sid = "sess-content-block";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const worldId = testAgentWorldId();

@@ -25,6 +25,11 @@ import { uploadChatAttachmentDrafts } from "@freeanima/features/chat/ui/spa/lib/
 import type { TranscriptScrollApi } from "@freeanima/features/chat/ui/spa/hooks/useStickToBottomScroll.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
+import { ConversationAnimaControl } from "@freeanima/features/chat/ui/spa/components/ConversationAnimaControl.tsx";
+import {
+  listAgentSubjects,
+  type AgentSubjectOption,
+} from "@freeanima/features/chat/ui/spa/lib/agent-subjects.ts";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
 import { useKeyboardInset } from "@freeanima/features/chat/ui/spa/hooks/useKeyboardInset.ts";
 import {
@@ -230,6 +235,7 @@ export function ChatApp() {
   const fetchConversations = useConversationsStore((s) => s.fetchConversations);
   const selectConversation = useConversationsStore((s) => s.selectConversation);
   const newConversationFn = useConversationsStore((s) => s.newConversation);
+  const setConversationAgentFn = useConversationsStore((s) => s.setConversationAgent);
   const renameConversation = useConversationsStore((s) => s.renameConversation);
   const showArchived = useConversationsStore((s) => s.showArchived);
   const setShowArchived = useConversationsStore((s) => s.setShowArchived);
@@ -318,6 +324,8 @@ export function ChatApp() {
   const [selectedPosSet, setSelectedPosSet] = useState<Set<number>>(() => new Set());
   const [selectionShareTtl, setSelectionShareTtl] = useState<ConversationShareTtl>("1h");
   const [selectionShareBusy, setSelectionShareBusy] = useState(false);
+  const [agentOptions, setAgentOptions] = useState<AgentSubjectOption[]>([]);
+  const [animaChanging, setAnimaChanging] = useState(false);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const mobileLayout = useCompactLayout();
   const canOpenHabitatSettingsUi = useOpenHabitatSettingsCapability();
@@ -493,6 +501,26 @@ export function ChatApp() {
     return [...synced, ...pendingOutbox];
   }, [currentId, display, outboxEntries]);
 
+  const hasUserMessage = useMemo(
+    () => mergedDisplay.some((item) => item.type === "message" && item.role === "user"),
+    [mergedDisplay],
+  );
+
+  const canChangeAnima = Boolean(currentId) && !messagesLoading && !hasUserMessage;
+
+  const handleChangeAnima = useCallback(
+    async (agentSubjectId: number) => {
+      if (!currentId) return;
+      setAnimaChanging(true);
+      try {
+        await setConversationAgentFn(currentId, agentSubjectId);
+      } finally {
+        setAnimaChanging(false);
+      }
+    },
+    [currentId, setConversationAgentFn],
+  );
+
   /** 等待助手回复：流式中 / 恢复中；stalled 或用户停止时不占位（改出【继续】） */
   const awaitingAssistant = shouldShowAwaitingPlaceholder({
     currentId,
@@ -627,6 +655,13 @@ export function ChatApp() {
       void bootstrapConversation(false).catch((e) => console.error("chat subject bootstrap:", e));
     });
   }, [ready, bootstrapConversation]);
+
+  useEffect(() => {
+    if (!ready) return;
+    void listAgentSubjects()
+      .then((items) => setAgentOptions(items))
+      .catch((e) => console.error("listAgentSubjects:", e));
+  }, [ready]);
 
   useEffect(() => {
     if (!ready) return;
@@ -1705,6 +1740,21 @@ export function ChatApp() {
           ☰
         </Button>
         <span className="truncate text-sm font-medium">{headerTitle}</span>
+        {currentId ? (
+          <ConversationAnimaControl
+            {...(currentConversation?.agentSubjectId != null
+              ? { agentSubjectId: currentConversation.agentSubjectId }
+              : {})}
+            {...(currentConversation?.agentTitle
+              ? { agentTitle: currentConversation.agentTitle }
+              : {})}
+            agents={agentOptions}
+            canChange={canChangeAnima}
+            changing={animaChanging}
+            onChange={(id) => void handleChangeAnima(id)}
+            className="max-w-[40%] shrink"
+          />
+        ) : null}
         <span className="flex-1" />
         <Button
           type="button"

@@ -16,7 +16,6 @@ import {
   updateDiaryEntry,
   updateDiaryTextBlock,
   type DiaryBlockTemplatePreset,
-  type DiarySubjectKind,
 } from "../domain/index.ts";
 
 import { DIARY_ENTRY_COMPONENT } from "@freeanima/habitat/core/db/schema";
@@ -31,15 +30,15 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-async function storeContext(_deps: RuntimeDeps, subjectKind: DiarySubjectKind) {
-  const worldId = await resolveDiaryWorldId(subjectKind);
+async function storeContext(_deps: RuntimeDeps, subjectId: number) {
+  const worldId = await resolveDiaryWorldId(subjectId);
   return { worldId };
 }
 
 export async function serviceDiaryList(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     entry_after?: string;
     entry_before?: string;
     tag_ids?: number[];
@@ -48,7 +47,7 @@ export async function serviceDiaryList(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await listDiaryEntries(
     ctx,
     omitUndefined({
@@ -65,7 +64,7 @@ export async function serviceDiaryList(
 export async function serviceDiaryCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     title: string;
     content?: string;
     summary?: string;
@@ -76,7 +75,7 @@ export async function serviceDiaryCreate(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await createDiaryEntry(ctx, input);
   return { item };
 }
@@ -84,14 +83,14 @@ export async function serviceDiaryCreate(
 export async function serviceDiaryAppend(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     id: number;
     content: string;
     client_op_id?: string;
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await appendDiaryEntry(ctx, input);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -100,7 +99,7 @@ export async function serviceDiaryAppend(
 export async function serviceDiaryPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     id: number;
     title?: string;
     summary?: string;
@@ -110,8 +109,8 @@ export async function serviceDiaryPatch(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { id, subject_kind: _kind, ...patch } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { id, subject_id: _sid, ...patch } = input;
   const item = await updateDiaryEntry(ctx, { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -119,10 +118,10 @@ export async function serviceDiaryPatch(
 
 export async function serviceDiaryDelete(
   deps: RuntimeDeps,
-  input: { subject_kind: DiarySubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const ok = await deleteDiaryEntry(ctx, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
@@ -130,10 +129,10 @@ export async function serviceDiaryDelete(
 
 export async function serviceDiaryGet(
   deps: RuntimeDeps,
-  input: { subject_kind: DiarySubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await getDiaryEntry(ctx, input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -142,7 +141,7 @@ export async function serviceDiaryGet(
 export async function serviceDiarySearch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     query: string;
     entry_after?: string;
     entry_before?: string;
@@ -151,7 +150,7 @@ export async function serviceDiarySearch(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await searchDiaryEntries(ctx, input);
   // UI 列表/离线缓存仍按「壳 + 空 blocks」；命中摘要仅经 diary_search 工具返回
   return { items: items.map((item) => ({ ...item, blocks: [] as typeof item.blocks })) };
@@ -160,7 +159,7 @@ export async function serviceDiarySearch(
 export async function serviceDiaryBlockCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     parent_id: number;
     content: string;
     title?: string;
@@ -171,7 +170,7 @@ export async function serviceDiaryBlockCreate(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await createDiaryTextBlock(
     ctx,
     omitUndefined({
@@ -190,7 +189,7 @@ export async function serviceDiaryBlockCreate(
 export async function serviceDiaryBlockPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     id: number;
     content?: string;
     title?: string;
@@ -199,7 +198,7 @@ export async function serviceDiaryBlockPatch(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await updateDiaryTextBlock(
     ctx,
     omitUndefined({
@@ -216,10 +215,10 @@ export async function serviceDiaryBlockPatch(
 
 export async function serviceDiaryBlockDelete(
   deps: RuntimeDeps,
-  input: { subject_kind: DiarySubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const ok = await deleteDiaryTextBlock(ctx, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
@@ -228,22 +227,19 @@ export async function serviceDiaryBlockDelete(
 export async function serviceDiaryBlockReorder(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     items: Array<{ id: number; sort_order: number }>;
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await reorderDiaryTextBlocks(ctx, input.items);
   return { items };
 }
 
-export async function serviceDiaryTemplateList(
-  deps: RuntimeDeps,
-  input: { subject_kind: DiarySubjectKind },
-) {
+export async function serviceDiaryTemplateList(deps: RuntimeDeps, input: { subject_id: number }) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await listDiaryBlockTemplates(ctx);
   return { items };
 }
@@ -251,7 +247,7 @@ export async function serviceDiaryTemplateList(
 export async function serviceDiaryTemplateCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     name: string;
     preset: DiaryBlockTemplatePreset;
     sort_order?: number;
@@ -259,7 +255,7 @@ export async function serviceDiaryTemplateCreate(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await createDiaryBlockTemplate(
     ctx,
     omitUndefined({
@@ -275,7 +271,7 @@ export async function serviceDiaryTemplateCreate(
 export async function serviceDiaryTemplatePatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: DiarySubjectKind;
+    subject_id: number;
     id: number;
     name?: string;
     preset?: Partial<DiaryBlockTemplatePreset>;
@@ -283,7 +279,7 @@ export async function serviceDiaryTemplatePatch(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await updateDiaryBlockTemplate(
     ctx,
     omitUndefined({
@@ -299,10 +295,10 @@ export async function serviceDiaryTemplatePatch(
 
 export async function serviceDiaryTemplateDelete(
   deps: RuntimeDeps,
-  input: { subject_kind: DiarySubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const ok = await deleteDiaryBlockTemplate(ctx, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
@@ -310,10 +306,10 @@ export async function serviceDiaryTemplateDelete(
 
 export async function serviceDiarySuggestTags(
   deps: RuntimeDeps,
-  input: { subject_kind: DiarySubjectKind; query?: string; limit?: number },
+  input: { subject_id: number; query?: string; limit?: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await suggestTags(
     ctx.worldId,
     DIARY_ENTRY_COMPONENT,

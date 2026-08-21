@@ -108,4 +108,26 @@ describe("ConversationListItem", () => {
     expect(html).toContain("opacity-100");
     expect(html).not.toContain("opacity-0");
   });
+
+  it("展示 Anima 副行", () => {
+    const html = renderToStaticMarkup(
+      createElement(ConversationListItem, {
+        conversation: {
+          ...baseConversation,
+          agentSubjectId: 42,
+          agentTitle: "小草",
+        },
+        label: "测试会话",
+        active: false,
+        useActionSheet: true,
+        contextMenuEnabled: false,
+        contextMenuItems: [],
+        onNavigate: () => {},
+        onOpenMenu: () => {},
+        onArchive: () => {},
+        onUnarchive: () => {},
+      }),
+    );
+    expect(html).toContain("小草");
+  });
 });

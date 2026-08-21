@@ -1,5 +1,4 @@
 import type { ContactRowPayload } from "@freeanima/shared/rpc-contract/frames/contact.ts";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
@@ -13,12 +12,12 @@ function habitat() {
 }
 
 export async function fetchContacts(
-  subjectKind: SubjectKind,
+  subjectId: number,
   opts?: { query?: string; limit?: number },
 ): Promise<ContactRow[]> {
   const scope = resolveHabitatCacheScope();
   const q = opts?.query?.trim();
-  const cacheId = q ? `search:${subjectKind}:${q}` : `list:${subjectKind}`;
+  const cacheId = q ? `search:${subjectId}:${q}` : `list:${subjectId}`;
 
   return withOfflineCache({
     scope,
@@ -27,14 +26,14 @@ export async function fetchContacts(
     fetch: async () => {
       if (q) {
         const data = await habitat().call("contact.search", {
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           query: q,
           limit: opts?.limit ?? 200,
         });
         return data.items;
       }
       const data = await habitat().call("contact.list", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         limit: opts?.limit ?? 2000,
       });
       return data.items;
@@ -43,13 +42,13 @@ export async function fetchContacts(
   });
 }
 
-export async function getContactRemote(subjectKind: SubjectKind, id: number): Promise<ContactRow> {
-  const data = await habitat().call("contact.get", { subject_kind: subjectKind, id });
+export async function getContactRemote(subjectId: number, id: number): Promise<ContactRow> {
+  const data = await habitat().call("contact.get", { subject_id: subjectId, id });
   return data.item;
 }
 
 export async function createContactRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     title: string;
     summary?: string;
@@ -57,11 +56,11 @@ export async function createContactRemote(
     phones?: ContactChannelEntry[];
     addresses?: ContactRow["addresses"];
     wechats?: ContactChannelEntry[];
-    subject_id?: number | null;
+    linked_subject_id?: number | null;
   },
 ): Promise<ContactRow> {
   const data = await habitat().call("contact.create", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   await invalidatePortalReads(["contact"]);
@@ -69,7 +68,7 @@ export async function createContactRemote(
 }
 
 export async function patchContactRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
   patch: {
     title?: string;
@@ -78,11 +77,11 @@ export async function patchContactRemote(
     phones?: ContactChannelEntry[];
     addresses?: ContactRow["addresses"];
     wechats?: ContactChannelEntry[];
-    subject_id?: number | null;
+    linked_subject_id?: number | null;
   },
 ): Promise<ContactRow> {
   const data = await habitat().call("contact.patch", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
     ...patch,
   });
@@ -90,24 +89,24 @@ export async function patchContactRemote(
   return data.item;
 }
 
-export async function deleteContactRemote(subjectKind: SubjectKind, id: number): Promise<void> {
-  await habitat().call("contact.delete", { subject_kind: subjectKind, id });
+export async function deleteContactRemote(subjectId: number, id: number): Promise<void> {
+  await habitat().call("contact.delete", { subject_id: subjectId, id });
   await invalidatePortalReads(["contact"]);
 }
 
 export async function resolveContactsByAddress(
-  subjectKind: SubjectKind,
+  subjectId: number,
   address: string,
 ): Promise<ContactRow[]> {
   const data = await habitat().call("contact.resolveByAddress", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     address,
   });
   return data.items;
 }
 
 export async function attachAddressRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     contact_id: number;
     address: string;
@@ -116,7 +115,7 @@ export async function attachAddressRemote(
   },
 ): Promise<ContactRow> {
   const data = await habitat().call("contact.attachAddress", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   await invalidatePortalReads(["contact"]);
@@ -124,7 +123,7 @@ export async function attachAddressRemote(
 }
 
 export async function createFromAddressRemote(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     title: string;
     address: string;
@@ -132,7 +131,7 @@ export async function createFromAddressRemote(
   },
 ): Promise<ContactRow> {
   const data = await habitat().call("contact.createFromAddress", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   await invalidatePortalReads(["contact", "email"]);

@@ -3,6 +3,7 @@ import {
   subscribeEntityOverlayClose,
 } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
+import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   cn,
@@ -85,9 +86,6 @@ import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 
 registerCalendarOfflineModule();
 
-/** 日程暂只看用户视图，不暴露 subject 切换 */
-const CALENDAR_SUBJECT = "user" as const;
-
 function openTask(id: number) {
   void openEntityResource({ id, component: "task_item", present: "overlay" });
 }
@@ -97,6 +95,7 @@ function openProject(id: number) {
 }
 
 export function CalendarApp() {
+  const subjectId = useUserSubjectId();
   const compact = useCompactLayout();
   const today = cstDayKey();
   const [cursor, setCursor] = useState(() => {
@@ -132,14 +131,14 @@ export function CalendarApp() {
         [next.viewMode]: patch.currentView,
       };
     }
-    void updateCalendarPrefs(CALENDAR_SUBJECT, remotePatch).catch(() => {
+    void updateCalendarPrefs(subjectId, remotePatch).catch(() => {
       /* 本地已写入；下次启动再对齐 */
     });
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-    void fetchCalendarPrefs(CALENDAR_SUBJECT)
+    void fetchCalendarPrefs(subjectId)
       .then((remote) => {
         if (cancelled) return;
         setPrefs(replaceCalendarUiPrefs(remote));
@@ -193,7 +192,7 @@ export function CalendarApp() {
     queryKey: [
       "calendar",
       "range",
-      CALENDAR_SUBJECT,
+      subjectId,
       range.from,
       range.to,
       kindsKey,
@@ -203,7 +202,7 @@ export function CalendarApp() {
       showCompleted ? "1" : "0",
     ],
     queryFn: async () => {
-      const rangeItems = await fetchCalendarRange(CALENDAR_SUBJECT, {
+      const rangeItems = await fetchCalendarRange(subjectId, {
         from: range.from,
         to: range.to,
         kinds: rangeKinds,
@@ -212,11 +211,11 @@ export function CalendarApp() {
       });
       let merged = rangeItems;
       if (dueFilters) {
-        const dueItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, dueFilters);
+        const dueItems = await fetchDueTasksForAgenda(subjectId, dueFilters);
         merged = mergeCalendarItems(merged, dueItems);
       }
       if (planOverdueFilters) {
-        const planItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, planOverdueFilters);
+        const planItems = await fetchDueTasksForAgenda(subjectId, planOverdueFilters);
         merged = mergeCalendarItems(merged, planItems);
       }
       return merged;
@@ -760,7 +759,7 @@ export function CalendarApp() {
                 onOpenProject={openProject}
                 onOpenHoliday={openHoliday}
                 onDropTaskDue={(taskId, day) => {
-                  void patchTaskDueAt(CALENDAR_SUBJECT, taskId, day).then(() => refresh());
+                  void patchTaskDueAt(subjectId, taskId, day).then(() => refresh());
                 }}
               />
             ) : (
@@ -802,24 +801,21 @@ export function CalendarApp() {
         onClose={() => setEditor(null)}
         onSave={async (input) => {
           if (editor?.mode === "edit") {
-            await updateCalendarEvent(CALENDAR_SUBJECT, {
-              id: editor.event.id,
-              ...input,
-            });
+            await updateCalendarEvent(subjectId, { id: editor.event.id, ...input });
           } else {
-            await createCalendarEvent(CALENDAR_SUBJECT, input);
+            await createCalendarEvent(subjectId, input);
           }
           await refresh();
         }}
         {...(editor?.mode === "edit"
           ? {
               onDelete: async () => {
-                await deleteCalendarEvent(CALENDAR_SUBJECT, editor.event.id);
+                await deleteCalendarEvent(subjectId, editor.event.id);
                 setEditor(null);
                 await refresh();
               },
               onConvertToTask: async () => {
-                const item = await convertCalendarEventToTask(CALENDAR_SUBJECT, editor.event.id);
+                const item = await convertCalendarEventToTask(subjectId, editor.event.id);
                 setEditor(null);
                 await refresh();
                 void openEntityResource({

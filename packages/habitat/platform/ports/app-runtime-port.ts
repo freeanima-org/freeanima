@@ -132,7 +132,7 @@ export type AppRuntimeMemoryPort = {
   getFtsStatus(): Promise<unknown>;
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): unknown;
   getRebuildFtsJobStatus(): unknown;
-  listSelfBlocks(): Promise<unknown>;
+  listSelfBlocks(agentSubjectId?: number): Promise<unknown>;
 };
 
 /** 记忆维护与 auto-llm 审计 */

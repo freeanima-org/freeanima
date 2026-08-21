@@ -84,6 +84,7 @@ describePg("world scope tools", () => {
     const sid = "sess-diary-world";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     let agentOut = "";
@@ -160,6 +161,7 @@ describePg("world scope tools", () => {
     const sid = "sess-email-world";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const accountInput = {
@@ -216,6 +218,7 @@ describePg("world scope tools", () => {
     const sid = "sess-notif-subject";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const { user_subject_id } = getResolvedWorldContext();

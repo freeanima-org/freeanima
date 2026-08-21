@@ -17,6 +17,8 @@ export type ConversationSummaryRow = {
   pinned_at?: Date | null;
   /** 用户未读：存在 pos > last_read_pos 的 assistant 消息 */
   unread?: boolean;
+  /** 绑定的 Anima subject id */
+  agent_subject_id?: number;
 };
 
 export type ConversationListOpts = {

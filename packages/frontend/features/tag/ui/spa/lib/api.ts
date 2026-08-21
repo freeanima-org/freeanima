@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import type { TagRowPayload } from "@freeanima/shared/rpc-contract/frames/tag.ts";
 
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
@@ -17,22 +17,22 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
-  return { subject_kind: getSubjectKind(), ...payload };
+async function withSubjectId<T extends Record<string, unknown>>(payload: T) {
+  return { subject_id: await getUserSubjectId(), ...payload };
 }
 
 /** 写入 method 默认 WS；显式 http 以便浏览器扩展（不连 Habitat WS）也能建签/改签 */
 const httpOnly = { transport: "http" as const };
 
 export async function fetchTags(): Promise<TagRow[]> {
-  const data = await habitat().call("tag.list", withSubjectKind({}), httpOnly);
+  const data = await habitat().call("tag.list", await withSubjectId({}), httpOnly);
   return data.tags;
 }
 
 export async function searchTags(query: string, opts?: { limit?: number }): Promise<TagRow[]> {
   const data = await habitat().call(
     "tag.search",
-    withSubjectKind({
+    await withSubjectId({
       query,
       ...(opts?.limit != null ? { limit: opts.limit } : {}),
     }),
@@ -47,7 +47,7 @@ export async function suggestTags(
 ): Promise<TagSuggestion[]> {
   const data = await habitat().call(
     "tag.suggest",
-    withSubjectKind({
+    await withSubjectId({
       primary_component: primaryComponent,
       ...(opts?.query != null ? { query: opts.query } : {}),
       ...(opts?.limit != null ? { limit: opts.limit } : {}),
@@ -58,14 +58,14 @@ export async function suggestTags(
 }
 
 export async function createTag(title: string): Promise<TagRow> {
-  const data = await habitat().call("tag.create", withSubjectKind({ title }), httpOnly);
+  const data = await habitat().call("tag.create", await withSubjectId({ title }), httpOnly);
   return data.item;
 }
 
 export async function setEntityTagIds(entityId: number, tagIds: number[]): Promise<number[]> {
   const data = await habitat().call(
     "tag.setOnEntity",
-    withSubjectKind({ entity_id: entityId, tag_ids: tagIds }),
+    await withSubjectId({ entity_id: entityId, tag_ids: tagIds }),
     httpOnly,
   );
   return data.tag_ids;

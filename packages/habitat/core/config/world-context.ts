@@ -1,8 +1,8 @@
 /**
  * World-context re-exports that are safe for client-side imports (no PG dependency).
  *
- * resolveAndBindWorldContext (which requires PG) lives in world-context-pg.ts to
- * keep the config barrel export free of `bun` / database imports.
+ * resolveAndBindWorldContext / resolvePrivateWorldId（需 PG）在 world-context-pg.ts，
+ * 避免 config 桶把 `bun` 拖进浏览器构建。
  */
 export type { ResolvedWorldContext, SubjectKind } from "./resolved-world-context.ts";
 export {
@@ -11,4 +11,5 @@ export {
   tryGetResolvedWorldContext,
   resetResolvedWorldContextForTest,
   resolveSubjectWorldId,
+  isSubjectEnabled,
 } from "./resolved-world-context.ts";

@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
 const calendarReminderAnchorSchema = z.enum(["start", "end", "due"]);
 
 const calendarReminderEntrySchema = z.object({
@@ -29,7 +27,7 @@ export const calendarEventRowSchema = z.object({
 export type CalendarEventRowPayload = z.infer<typeof calendarEventRowSchema>;
 
 export const calendarListInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   range_start: z.string().optional(),
   range_end: z.string().optional(),
   limit: z.number().int().positive().optional(),
@@ -42,7 +40,7 @@ export const calendarListOutputSchema = z.object({
 export type CalendarListOutput = z.infer<typeof calendarListOutputSchema>;
 
 export const calendarCreateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   content: z.string().optional(),
   start_at: z.string().min(1),
@@ -58,7 +56,7 @@ export const calendarCreateOutputSchema = z.object({ item: calendarEventRowSchem
 export type CalendarCreateOutput = z.infer<typeof calendarCreateOutputSchema>;
 
 export const calendarPatchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   title: z.string().min(1).optional(),
   content: z.string().optional(),
@@ -75,7 +73,7 @@ export const calendarPatchOutputSchema = z.object({ item: calendarEventRowSchema
 export type CalendarPatchOutput = z.infer<typeof calendarPatchOutputSchema>;
 
 export const calendarDeleteInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -84,7 +82,7 @@ export const calendarDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type CalendarDeleteOutput = z.infer<typeof calendarDeleteOutputSchema>;
 
 export const calendarGetInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type CalendarGetInput = z.infer<typeof calendarGetInputSchema>;
@@ -92,7 +90,7 @@ export const calendarGetOutputSchema = z.object({ item: calendarEventRowSchema }
 export type CalendarGetOutput = z.infer<typeof calendarGetOutputSchema>;
 
 export const calendarConvertToTaskInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type CalendarConvertToTaskInput = z.infer<typeof calendarConvertToTaskInputSchema>;
@@ -195,7 +193,7 @@ export const calendarRangeItemSchema = z.discriminatedUnion("kind", [
 export type CalendarRangeItemPayload = z.infer<typeof calendarRangeItemSchema>;
 
 export const calendarRangeInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   from: z.string().min(1),
   to: z.string().min(1),
   kinds: z.array(calendarRangeKindSchema).optional(),
@@ -234,7 +232,7 @@ export const calendarUiPrefsSchema = z.object({
 export type CalendarUiPrefsPayload = z.infer<typeof calendarUiPrefsSchema>;
 
 export const calendarPrefsGetInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type CalendarPrefsGetInput = z.infer<typeof calendarPrefsGetInputSchema>;
 export const calendarPrefsGetOutputSchema = z.object({
@@ -243,7 +241,7 @@ export const calendarPrefsGetOutputSchema = z.object({
 export type CalendarPrefsGetOutput = z.infer<typeof calendarPrefsGetOutputSchema>;
 
 export const calendarPrefsUpdateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   viewMode: calendarViewModeSchema.optional(),
   byView: z
     .object({

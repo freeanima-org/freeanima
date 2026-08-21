@@ -124,7 +124,7 @@ function makePort(opts?: { unreadProposal?: boolean }): NotificationPort & {
         {
           id: "pending",
           recipient_kind: "agent",
-          recipient_id: 110,
+          recipient_id: 2,
           title: "自我层维护建议",
           body: "pending",
           payload: null,
@@ -164,7 +164,7 @@ describe("runSelfLayerRefresh", () => {
   it("skips when unread proposal pending", async () => {
     registerNotificationPort(makePort({ unreadProposal: true }));
     registerSelfLayerRefreshEngine(async () => ({ content: '{"propose":true}' }));
-    const result = await runSelfLayerRefresh();
+    const result = await runSelfLayerRefresh({ agent_subject_id: 2 });
     expect(result.skipped).toBe("pending_proposal");
     expect(result.proposed).toBe(false);
   });
@@ -173,7 +173,7 @@ describe("runSelfLayerRefresh", () => {
     listResidentSemanticMemoryMock.mockImplementationOnce(async () => []);
     registerNotificationPort(makePort());
     registerSelfLayerRefreshEngine(async () => ({ content: '{"propose":true}' }));
-    const result = await runSelfLayerRefresh();
+    const result = await runSelfLayerRefresh({ agent_subject_id: 2 });
     expect(result.skipped).toBe("no_evidence");
   });
 
@@ -181,7 +181,7 @@ describe("runSelfLayerRefresh", () => {
     const port = makePort();
     registerNotificationPort(port);
     registerSelfLayerRefreshEngine(async () => ({ content: '{"propose":false}' }));
-    const result = await runSelfLayerRefresh();
+    const result = await runSelfLayerRefresh({ agent_subject_id: 2 });
     expect(result.skipped).toBe("no_change");
     expect(port.created).toHaveLength(0);
   });
@@ -197,7 +197,7 @@ describe("runSelfLayerRefresh", () => {
         blocks: { self_model: "I am careful with tools." },
       }),
     }));
-    const result = await runSelfLayerRefresh({ selfContent: "self" });
+    const result = await runSelfLayerRefresh({ agent_subject_id: 2, selfContent: "self" });
     expect(result.proposed).toBe(true);
     expect(result.notification_id).toBe("n-1");
     expect(port.created).toHaveLength(1);

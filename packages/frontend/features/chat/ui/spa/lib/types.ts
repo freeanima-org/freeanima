@@ -41,6 +41,10 @@ export type ConversationListItem = {
   pinnedAt?: string | null;
   /** 用户未读 */
   unread?: boolean;
+  /** 绑定的 Anima subject id */
+  agentSubjectId?: number;
+  /** Anima 展示名（列表/头；缺省用 subjects 缓存或 #id） */
+  agentTitle?: string;
 };
 
 export type LlmDebugSnapshotPayload = {

@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const contactSubjectKindSchema = notificationRecipientKindSchema;
-
 export const contactChannelEntrySchema = z.object({
   value: z.string().min(1),
   label: z.string().optional(),
@@ -46,7 +42,7 @@ export const contactRowSchema = z.object({
 export type ContactRowPayload = z.infer<typeof contactRowSchema>;
 
 export const contactListInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   limit: z.number().int().positive().max(5000).optional(),
   offset: z.number().int().nonnegative().optional(),
 });
@@ -57,7 +53,7 @@ export const contactListOutputSchema = z.object({
 export type ContactListOutput = z.infer<typeof contactListOutputSchema>;
 
 export const contactGetInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type ContactGetInput = z.infer<typeof contactGetInputSchema>;
@@ -65,7 +61,7 @@ export const contactGetOutputSchema = z.object({ item: contactRowSchema });
 export type ContactGetOutput = z.infer<typeof contactGetOutputSchema>;
 
 export const contactSearchInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().min(1),
   limit: z.number().int().positive().max(500).optional(),
   offset: z.number().int().nonnegative().optional(),
@@ -82,11 +78,12 @@ const contactChannelsInput = {
   phones: z.array(contactChannelEntrySchema).optional(),
   addresses: z.array(contactAddressEntrySchema).optional(),
   wechats: z.array(contactChannelEntrySchema).optional(),
-  subject_id: z.number().int().positive().nullable().optional(),
+  /** 联系人关联的 subject 实体（非 world 归属） */
+  linked_subject_id: z.number().int().positive().nullable().optional(),
 };
 
 export const contactCreateInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   summary: z.string().optional(),
   ...contactChannelsInput,
@@ -97,7 +94,7 @@ export const contactCreateOutputSchema = z.object({ item: contactRowSchema });
 export type ContactCreateOutput = z.infer<typeof contactCreateOutputSchema>;
 
 export const contactPatchInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   summary: z.string().optional(),
@@ -109,7 +106,7 @@ export const contactPatchOutputSchema = z.object({ item: contactRowSchema });
 export type ContactPatchOutput = z.infer<typeof contactPatchOutputSchema>;
 
 export const contactDeleteInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -118,7 +115,7 @@ export const contactDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type ContactDeleteOutput = z.infer<typeof contactDeleteOutputSchema>;
 
 export const contactResolveByAddressInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   address: z.string().min(1),
   limit: z.number().int().positive().max(50).optional(),
 });
@@ -129,7 +126,7 @@ export const contactResolveByAddressOutputSchema = z.object({
 export type ContactResolveByAddressOutput = z.infer<typeof contactResolveByAddressOutputSchema>;
 
 export const contactAttachAddressInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   contact_id: z.number().int().positive(),
   address: z.string().min(1),
   label: z.string().optional(),
@@ -140,7 +137,7 @@ export const contactAttachAddressOutputSchema = z.object({ item: contactRowSchem
 export type ContactAttachAddressOutput = z.infer<typeof contactAttachAddressOutputSchema>;
 
 export const contactCreateFromAddressInputSchema = z.object({
-  subject_kind: contactSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   address: z.string().min(1),
   label: z.string().optional(),

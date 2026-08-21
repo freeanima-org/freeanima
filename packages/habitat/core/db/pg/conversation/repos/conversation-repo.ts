@@ -147,6 +147,8 @@ export async function upsertConversationMeta(
           system_prompt: row.system_prompt,
           system_prompt_built_at: row.system_prompt_built_at,
           platform_info: row.platform_info,
+          scenario: row.scenario,
+          agent_subject_id: row.agent_subject_id,
           compression: row.compression,
           todos: row.todos,
           awaiting_clarify: row.awaiting_clarify,
@@ -273,6 +275,14 @@ export async function patchConversationMeta(
     set.model = patch.model;
     hasColumnPatch = true;
   }
+  if (patch.agent_subject_id !== undefined) {
+    set.agent_subject_id = patch.agent_subject_id;
+    hasColumnPatch = true;
+  }
+  if (patch.scenario !== undefined) {
+    set.scenario = patch.scenario;
+    hasColumnPatch = true;
+  }
 
   if (hasColumnPatch) {
     try {
@@ -389,6 +399,7 @@ function mapConversationSummaryRow(row: {
   archived_at?: Date | null;
   pinned_at?: Date | null;
   unread?: boolean | null;
+  agent_subject_id?: number | null;
 }): ConversationSummaryRow {
   const raw = row.platform_info?.platform;
   return {
@@ -400,6 +411,9 @@ function mapConversationSummaryRow(row: {
     archived_at: row.archived_at ?? null,
     pinned_at: row.pinned_at ?? null,
     ...(row.unread === true ? { unread: true } : row.unread === false ? { unread: false } : {}),
+    ...(row.agent_subject_id != null && row.agent_subject_id > 0
+      ? { agent_subject_id: row.agent_subject_id }
+      : {}),
   };
 }
 
@@ -441,6 +455,7 @@ export async function listConversationSummaries(
       updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
       pinned_at: conversations.pinned_at,
+      agent_subject_id: conversations.agent_subject_id,
       ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)
@@ -483,6 +498,7 @@ export async function listConversationSummariesPage(opts?: {
       updated_at: conversations.updated_at,
       archived_at: conversations.archived_at,
       pinned_at: conversations.pinned_at,
+      agent_subject_id: conversations.agent_subject_id,
       ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)

@@ -1,5 +1,4 @@
-import type { DiaryEntryRow, DiarySubjectKind, DiaryTextBlock } from "./format-diary.ts";
-export type { DiarySubjectKind };
+import type { DiaryEntryRow, DiaryTextBlock } from "./format-diary.ts";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
@@ -29,17 +28,17 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-function diaryListCacheId(subjectKind: DiarySubjectKind, query?: string): string {
+function diaryListCacheId(subjectId: number, query?: string): string {
   const q = query?.trim();
-  return q ? `search:${subjectKind}:${q}` : `list:${subjectKind}`;
+  return q ? `search:${subjectId}:${q}` : `list:${subjectId}`;
 }
 
-function diaryEntryCacheId(subjectKind: DiarySubjectKind, id: number): string {
-  return `entry:${subjectKind}:${id}`;
+function diaryEntryCacheId(subjectId: number, id: number): string {
+  return `entry:${subjectId}:${id}`;
 }
 
 export async function fetchDiaryEntries(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   opts?: { limit?: number; offset?: number },
 ): Promise<DiaryEntryRow[]> {
   const limit = opts?.limit ?? 20;
@@ -48,7 +47,7 @@ export async function fetchDiaryEntries(
   // 分页后续页不走 list cache，避免把「仅首屏」写成「全量」
   if (offset > 0) {
     const data = await habitat().call("diary.list", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       limit,
       offset,
     });
@@ -56,38 +55,38 @@ export async function fetchDiaryEntries(
   }
 
   const scope = resolveHabitatCacheScope();
-  const cacheId = diaryListCacheId(subjectKind);
+  const cacheId = diaryListCacheId(subjectId);
   return withOfflineCache({
     scope,
     namespace: "diary",
     id: cacheId,
     fetch: async () => {
       const data = await habitat().call("diary.list", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         limit,
         offset: 0,
       });
       return data.items;
     },
-    reconcile: (items) => reconcileServerDiaryList(subjectKind, items),
+    reconcile: (items) => reconcileServerDiaryList(subjectId, items),
     offlineError: "diary.list unavailable offline",
   });
 }
 
 export async function searchDiaryEntries(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   query: string,
   limit?: number,
 ): Promise<DiaryEntryRow[]> {
   const scope = resolveHabitatCacheScope();
-  const cacheId = diaryListCacheId(subjectKind, query);
+  const cacheId = diaryListCacheId(subjectId, query);
   return withOfflineCache({
     scope,
     namespace: "diary",
     id: cacheId,
     fetch: async () => {
       const data = await habitat().call("diary.search", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         query,
         limit,
       });
@@ -97,18 +96,15 @@ export async function searchDiaryEntries(
   });
 }
 
-export async function getDiaryEntry(
-  subjectKind: DiarySubjectKind,
-  id: number,
-): Promise<DiaryEntryRow> {
+export async function getDiaryEntry(subjectId: number, id: number): Promise<DiaryEntryRow> {
   const scope = resolveHabitatCacheScope();
-  const cacheId = diaryEntryCacheId(subjectKind, id);
+  const cacheId = diaryEntryCacheId(subjectId, id);
   return withOfflineCache({
     scope,
     namespace: "diary",
     id: cacheId,
     fetch: async () => {
-      const data = await habitat().call("diary.get", { subject_kind: subjectKind, id });
+      const data = await habitat().call("diary.get", { subject_id: subjectId, id });
       return data.item;
     },
     offlineError: "diary.get unavailable offline",
@@ -116,7 +112,7 @@ export async function getDiaryEntry(
 }
 
 export async function createDiaryEntry(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   input: {
     title: string;
     content?: string;
@@ -127,36 +123,36 @@ export async function createDiaryEntry(
   },
 ): Promise<DiaryEntryRow> {
   ensureDiaryOfflineModule();
-  return offlineCreateDiaryEntry(subjectKind, input);
+  return offlineCreateDiaryEntry(subjectId, input);
 }
 
 export async function appendDiaryEntry(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
   content: string,
 ): Promise<DiaryEntryRow> {
   ensureDiaryOfflineModule();
-  return offlineAppendDiaryEntry(subjectKind, id, content);
+  return offlineAppendDiaryEntry(subjectId, id, content);
 }
 
 export async function updateDiaryEntry(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
   patch: Partial<Pick<DiaryEntryRow, "title" | "summary" | "entry_at" | "tag_ids">> & {
     tags?: string[];
   },
 ): Promise<DiaryEntryRow> {
   ensureDiaryOfflineModule();
-  return offlineUpdateDiaryEntry(subjectKind, id, patch);
+  return offlineUpdateDiaryEntry(subjectId, id, patch);
 }
 
-export async function deleteDiaryEntry(subjectKind: DiarySubjectKind, id: number): Promise<void> {
+export async function deleteDiaryEntry(subjectId: number, id: number): Promise<void> {
   ensureDiaryOfflineModule();
-  return offlineDeleteDiaryEntry(subjectKind, id);
+  return offlineDeleteDiaryEntry(subjectId, id);
 }
 
 export async function createDiaryBlock(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   parentId: number,
   input: {
     content: string;
@@ -168,16 +164,16 @@ export async function createDiaryBlock(
   },
 ): Promise<DiaryTextBlock> {
   ensureDiaryOfflineModule();
-  return offlineCreateDiaryBlock(subjectKind, parentId, input);
+  return offlineCreateDiaryBlock(subjectId, parentId, input);
 }
 
 export async function updateDiaryBlock(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
   patch: { content?: string; title?: string; tag_ids?: number[]; sort_order?: number },
 ): Promise<DiaryTextBlock> {
   ensureDiaryOfflineModule();
-  return offlineUpdateDiaryBlock(subjectKind, id, patch);
+  return offlineUpdateDiaryBlock(subjectId, id, patch);
 }
 
 export type DiaryBlockTemplateRow = {
@@ -195,18 +191,18 @@ export type DiaryBlockTemplateRow = {
 };
 
 export async function fetchDiaryBlockTemplates(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
 ): Promise<DiaryBlockTemplateRow[]> {
-  const data = await habitat().call("diary.templateList", { subject_kind: subjectKind });
+  const data = await habitat().call("diary.templateList", { subject_id: subjectId });
   return data.items;
 }
 
 export async function suggestDiaryTags(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   opts?: { query?: string; limit?: number },
 ): Promise<Array<{ id: number; title: string; count: number }>> {
   const data = await habitat().call("diary.suggestTags", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...(opts?.query != null && opts.query !== "" ? { query: opts.query } : {}),
     limit: opts?.limit ?? 10,
   });
@@ -214,7 +210,7 @@ export async function suggestDiaryTags(
 }
 
 export async function createDiaryBlockTemplate(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   input: {
     name: string;
     preset: DiaryBlockTemplateRow["preset"];
@@ -222,14 +218,14 @@ export async function createDiaryBlockTemplate(
   },
 ): Promise<DiaryBlockTemplateRow> {
   const data = await habitat().call("diary.templateCreate", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   return data.item;
 }
 
 export async function updateDiaryBlockTemplate(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   id: number,
   patch: {
     name?: string;
@@ -238,36 +234,33 @@ export async function updateDiaryBlockTemplate(
   },
 ): Promise<DiaryBlockTemplateRow> {
   const data = await habitat().call("diary.templatePatch", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
     ...patch,
   });
   return data.item;
 }
 
-export async function deleteDiaryBlockTemplate(
-  subjectKind: DiarySubjectKind,
-  id: number,
-): Promise<void> {
-  await habitat().call("diary.templateDelete", { subject_kind: subjectKind, id });
+export async function deleteDiaryBlockTemplate(subjectId: number, id: number): Promise<void> {
+  await habitat().call("diary.templateDelete", { subject_id: subjectId, id });
 }
 
 export async function deleteDiaryBlock(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   parentId: number,
   blockId: number,
 ): Promise<void> {
   ensureDiaryOfflineModule();
-  return offlineDeleteDiaryBlock(subjectKind, parentId, blockId);
+  return offlineDeleteDiaryBlock(subjectId, parentId, blockId);
 }
 
 export async function reorderDiaryBlocks(
-  subjectKind: DiarySubjectKind,
+  subjectId: number,
   parentId: number,
   items: Array<{ id: number; sort_order: number }>,
 ): Promise<DiaryTextBlock[]> {
   ensureDiaryOfflineModule();
-  return offlineReorderDiaryBlocks(subjectKind, parentId, items);
+  return offlineReorderDiaryBlocks(subjectId, parentId, items);
 }
 
 export { countDiaryPendingOps } from "./offline-store.ts";

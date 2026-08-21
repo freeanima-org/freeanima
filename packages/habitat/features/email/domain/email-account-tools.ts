@@ -55,7 +55,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
             tags: { type: "array", items: { type: "string" } },
             tag_ids: { type: "array", items: { type: "integer" } },
           },
-          required: ["subject_kind", "password", "address"],
+          required: ["subject_id", "password", "address"],
         },
         handler: async (args) => {
           try {
@@ -103,7 +103,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
             tags: { type: "array", items: { type: "string" } },
             tag_ids: { type: "array", items: { type: "integer" } },
           },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = parseMessageId(args.id);
@@ -140,7 +140,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: { ...WORLD_ID_OPTIONAL },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: async (args) => {
           try {
@@ -164,7 +164,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
             ...WORLD_ID_OPTIONAL,
             id: { type: "number" },
           },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = parseMessageId(args.id);

@@ -69,8 +69,15 @@ export async function listTemporalSummaryMemories(args: {
   period_start_to?: string;
   offset?: number;
   limit?: number;
+  agent_subject_id?: number;
 }) {
   const { offset, limit } = clampPagination(args.offset, args.limit);
+  let world_id: number | undefined;
+  if (args.agent_subject_id != null) {
+    const { resolvePrivateWorldId } =
+      await import("@freeanima/habitat/core/config/world-context-pg.ts");
+    world_id = await resolvePrivateWorldId(args.agent_subject_id);
+  }
   const result = await listTemporalSummaries(
     omitUndefined({
       window: args.window,
@@ -78,6 +85,7 @@ export async function listTemporalSummaryMemories(args: {
       period_start_to: args.period_start_to,
       offset,
       limit,
+      world_id,
     }),
   );
   return {
@@ -104,45 +112,82 @@ export async function regenerateTemporalSummary(args: {
   period_start: string;
 }) {
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  if (args.window === "day") {
-    const result = await runTemporalSummaryDay({
-      config,
-      day: args.period_start,
-    });
+  const { listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  const agents = await listEnabledBoundAgents();
+  if (agents.length === 0) {
     return {
-      ok: result.ok,
+      ok: true,
+      window: args.window,
+      period_start: args.period_start,
+      entity_id: null,
+      summary: "no_agents",
+      skipped: "no_agents",
+    };
+  }
+  if (args.window === "day") {
+    const results = [];
+    for (const agent of agents) {
+      results.push(
+        await runTemporalSummaryDay({
+          config,
+          day: args.period_start,
+          agent_subject_id: agent.agent_subject_id,
+          world_id: agent.agent_world_id,
+        }),
+      );
+    }
+    const ok = results.every((r) => r.ok);
+    return {
+      ok,
       window: "day" as const,
       period_start: args.period_start,
-      entity_id: result.entity_id ?? null,
-      summary: result.summary,
-      skipped: result.skipped ?? null,
+      entity_id: results[0]?.entity_id ?? null,
+      summary: results.map((r) => r.summary).join("; "),
+      skipped: results.every((r) => r.skipped) ? (results[0]?.skipped ?? null) : null,
     };
   }
   if (args.window === "month") {
-    const result = await rebuildMonthSummary({
-      config,
-      period_start: args.period_start,
-    });
+    const results = [];
+    for (const agent of agents) {
+      results.push(
+        await rebuildMonthSummary({
+          config,
+          period_start: args.period_start,
+          agent_subject_id: agent.agent_subject_id,
+          world_id: agent.agent_world_id,
+        }),
+      );
+    }
+    const ok = results.every((r) => r.ok);
     return {
-      ok: result.ok,
+      ok,
       window: "month" as const,
       period_start: args.period_start,
-      entity_id: result.entity_id ?? null,
-      summary: result.summary,
-      skipped: result.skipped ?? null,
+      entity_id: results[0]?.entity_id ?? null,
+      summary: results.map((r) => r.summary).join("; "),
+      skipped: results.every((r) => r.skipped) ? (results[0]?.skipped ?? null) : null,
     };
   }
-  const result = await rebuildYearSummary({
-    config,
-    period_start: args.period_start,
-  });
+  const results = [];
+  for (const agent of agents) {
+    results.push(
+      await rebuildYearSummary({
+        config,
+        period_start: args.period_start,
+        agent_subject_id: agent.agent_subject_id,
+        world_id: agent.agent_world_id,
+      }),
+    );
+  }
+  const ok = results.every((r) => r.ok);
   return {
-    ok: result.ok,
+    ok,
     window: "year" as const,
     period_start: args.period_start,
-    entity_id: result.entity_id ?? null,
-    summary: result.summary,
-    skipped: result.skipped ?? null,
+    entity_id: results[0]?.entity_id ?? null,
+    summary: results.map((r) => r.summary).join("; "),
+    skipped: results.every((r) => r.skipped) ? (results[0]?.skipped ?? null) : null,
   };
 }
 
@@ -322,10 +367,17 @@ export async function listSemanticMemories(
     source_conversation?: string;
     sort_by?: SemanticMemorySearchOpts["sort_by"];
     cluster_id?: number | null;
+    agent_subject_id?: number;
   } = {},
 ): Promise<MemoryListResult<SemanticFtsHit>> {
   const { offset, limit } = clampPagination(args.offset, args.limit);
   const sourceSession = args.source_conversation?.trim();
+  let world_id: number | undefined;
+  if (args.agent_subject_id != null) {
+    const { resolvePrivateWorldId } =
+      await import("@freeanima/habitat/core/config/world-context-pg.ts");
+    world_id = await resolvePrivateWorldId(args.agent_subject_id);
+  }
   const filterOpts: Omit<SemanticMemorySearchOpts, "limit" | "offset"> = omitUndefined({
     query: args.query,
     types: args.types,
@@ -333,6 +385,7 @@ export async function listSemanticMemories(
     source_conversations: sourceSession ? [sourceSession] : undefined,
     sort_by: args.sort_by,
     cluster_id: args.cluster_id,
+    world_id,
   });
   const [items, total] = await Promise.all([
     searchSemanticMemory({ ...filterOpts, offset, limit }),

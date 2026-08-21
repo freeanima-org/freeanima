@@ -57,7 +57,7 @@ describe("reconcileServerDiaryList", () => {
   it("保留 outbox 中仍未同步的 temp 条目，避免被服务器列表覆盖丢失", async () => {
     const scope = resolveOutboxScope();
     const tempId = -1;
-    await writeOfflineCache(scope, "diary", "list:user", [
+    await writeOfflineCache(scope, "diary", "list:1", [
       row(tempId, "2026-07-12T00:00:00.000Z"),
       row(10, "2026-07-10T00:00:00.000Z"),
     ]);
@@ -65,23 +65,23 @@ describe("reconcileServerDiaryList", () => {
       id: "op-1",
       moduleId: "diary",
       method: "diary.create",
-      payload: { subject_kind: "user" },
+      payload: { subject_id: 1 },
       tempEntityId: tempId,
       createdAt: "2026-07-12T00:00:00.000Z",
     });
 
     const serverItems = [row(10, "2026-07-10T00:00:00.000Z")];
-    const merged = await reconcileServerDiaryList("user", serverItems);
+    const merged = await reconcileServerDiaryList(1, serverItems);
 
     expect(merged.map((e) => e.id)).toEqual([tempId, 10]);
   });
 
   it("temp 条目已同步（outbox 无 create op）时不再保留，直接采用服务器列表", async () => {
     const scope = resolveOutboxScope();
-    await writeOfflineCache(scope, "diary", "list:user", [row(-1, "2026-07-12T00:00:00.000Z")]);
+    await writeOfflineCache(scope, "diary", "list:1", [row(-1, "2026-07-12T00:00:00.000Z")]);
 
     const serverItems = [row(11, "2026-07-12T00:00:00.000Z")];
-    const merged = await reconcileServerDiaryList("user", serverItems);
+    const merged = await reconcileServerDiaryList(1, serverItems);
 
     expect(merged.map((e) => e.id)).toEqual([11]);
   });
@@ -90,9 +90,9 @@ describe("reconcileServerDiaryList", () => {
     const scope = resolveOutboxScope();
     const entryAt = "2026-07-12T00:00:00.000Z";
     const localBlocks = [textBlock(101, 10, "块一", entryAt), textBlock(102, 10, "块二", entryAt)];
-    await writeOfflineCache(scope, "diary", "list:user", [row(10, entryAt, localBlocks)]);
+    await writeOfflineCache(scope, "diary", "list:1", [row(10, entryAt, localBlocks)]);
 
-    const merged = await reconcileServerDiaryList("user", [row(10, entryAt)]);
+    const merged = await reconcileServerDiaryList(1, [row(10, entryAt)]);
 
     expect(merged).toHaveLength(1);
     expect(merged[0]!.blocks.map((b) => b.id)).toEqual([101, 102]);
@@ -109,7 +109,7 @@ describe("offlineCreateDiaryEntry validation", () => {
 
   it("拒绝空标题，避免产生服务端必然拒绝的 outbox op", async () => {
     await expect(
-      offlineCreateDiaryEntry("user", {
+      offlineCreateDiaryEntry(1, {
         title: "   ",
         entry_at: "2026-07-12T00:00:00.000Z",
       }),
@@ -118,7 +118,7 @@ describe("offlineCreateDiaryEntry validation", () => {
 
   it("拒绝空 entry_at", async () => {
     await expect(
-      offlineCreateDiaryEntry("user", {
+      offlineCreateDiaryEntry(1, {
         title: "hello",
         entry_at: "  ",
       }),
@@ -135,7 +135,7 @@ describe("offlineUpdateDiaryEntry temp id resolve", () => {
 
   it("create flush 后本地只剩 server id 时，仍可用 temp id 更新元数据", async () => {
     const scope = resolveOutboxScope();
-    const created = await offlineCreateDiaryEntry("user", {
+    const created = await offlineCreateDiaryEntry(1, {
       title: "2026/7/12",
       entry_at: "2026-07-12T12:00:00+08:00",
     });
@@ -143,11 +143,9 @@ describe("offlineUpdateDiaryEntry temp id resolve", () => {
 
     const serverId = 99;
     await setIdMapping(scope, "diary", created.id, serverId);
-    await writeOfflineCache(scope, "diary", "list:user", [
-      row(serverId, "2026-07-12T12:00:00+08:00"),
-    ]);
+    await writeOfflineCache(scope, "diary", "list:1", [row(serverId, "2026-07-12T12:00:00+08:00")]);
 
-    const updated = await offlineUpdateDiaryEntry("user", created.id, { tag_ids: [7] });
+    const updated = await offlineUpdateDiaryEntry(1, created.id, { tag_ids: [7] });
     expect(updated.id).toBe(serverId);
     expect(updated.tag_ids).toEqual([7]);
 
@@ -170,12 +168,12 @@ describe("offlineUpdateDiaryBlock temp id resolve", () => {
     const tempBlockId = -5;
     const serverBlockId = 201;
     const parentId = 10;
-    await writeOfflineCache(scope, "diary", "list:user", [
+    await writeOfflineCache(scope, "diary", "list:1", [
       row(parentId, entryAt, [textBlock(serverBlockId, parentId, "旧内容", entryAt)]),
     ]);
     await setIdMapping(scope, "diary", tempBlockId, serverBlockId);
 
-    const updated = await offlineUpdateDiaryBlock("user", tempBlockId, { content: "新内容" });
+    const updated = await offlineUpdateDiaryBlock(1, tempBlockId, { content: "新内容" });
     expect(updated.id).toBe(serverBlockId);
     expect(updated.content).toBe("新内容");
 

@@ -5,6 +5,7 @@ import { Button, cn } from "@freeanima/ui-kit";
 import { ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
 import type { ConversationListItem as ConversationListEntry } from "@freeanima/features/chat/ui/spa/lib/types.ts";
+import { formatAgentSubjectLabel } from "@freeanima/features/chat/ui/spa/lib/agent-subjects.ts";
 
 type ConversationListItemProps = {
   conversation: ConversationListEntry;
@@ -38,6 +39,7 @@ export function ConversationListItem({
   const archived = conversation.archivedAt != null;
   const pinned = conversation.pinnedAt != null;
   const archiveLabel = archived ? "取消归档" : "归档";
+  const agentLabel = formatAgentSubjectLabel(conversation.agentSubjectId, conversation.agentTitle);
   /** pointer：仅 hover / active / focus-within 露出；touch：常驻 */
   const archiveReveal = useActionSheet
     ? ""
@@ -65,13 +67,13 @@ export function ConversationListItem({
       onClick={() => onNavigate(conversation.id)}
     >
       {pinned ? <PinIcon className="text-primary size-3.5 shrink-0" aria-label="已置顶" /> : null}
-      <div
-        className={cn(
-          "min-w-0 flex-1 truncate",
-          unread && !active ? "font-semibold text-foreground" : "",
-        )}
-      >
-        {label}
+      <div className="min-w-0 flex-1">
+        <div className={cn("truncate", unread && !active ? "font-semibold text-foreground" : "")}>
+          {label}
+        </div>
+        {agentLabel ? (
+          <div className="truncate text-xs font-normal text-muted-foreground">{agentLabel}</div>
+        ) : null}
       </div>
       {unread && !active ? (
         <span className="bg-primary size-2 shrink-0 rounded-full" aria-label="未读" title="未读" />

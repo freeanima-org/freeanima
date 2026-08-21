@@ -1,5 +1,6 @@
 import { getVaultItem } from "@freeanima/features/vault/domain/item-store";
 import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config";
 import {
   vaultResolveSecretUserInputSchema,
   vaultResolveSecretUserOutputSchema,
@@ -23,7 +24,8 @@ export async function resolveUserVaultSecret(input: {
     throw new Error("VAULT_SHELL_OFFLINE");
   }
 
-  const worldId = input.world_id ?? resolveVaultWorldId("user");
+  const worldId =
+    input.world_id ?? (await resolveVaultWorldId(getResolvedWorldContext().user_subject_id));
   const item = await getVaultItem(worldId, input.item_id, { include_secrets: true });
   if (!item || !("secrets_enc" in item) || !("dek_wrapped" in item)) {
     throw new Error("NOT_FOUND");

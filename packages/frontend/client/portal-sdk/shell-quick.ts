@@ -1,8 +1,8 @@
 /** 壳层快捷入口：Habitat `shell_quick.*` 为权威；内存缓存供 Rail / 菜单共享 */
 
-import { getSubjectKind } from "./subject-scope-store.ts";
 import { getTypedHabitatClient } from "./habitat-typed-client.ts";
 import type { ShellQuickEntryRowPayload } from "@freeanima/shared/rpc-contract/frames/shell-quick.ts";
+import { getUserSubjectId } from "./world-context.ts";
 
 export type ShellQuickEntry = ShellQuickEntryRowPayload;
 
@@ -15,8 +15,10 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
-  return { subject_kind: getSubjectKind(), ...payload };
+async function withSubjectId<T extends Record<string, unknown>>(
+  payload: T,
+): Promise<T & { subject_id: number }> {
+  return { subject_id: await getUserSubjectId(), ...payload };
 }
 
 function notify(): void {
@@ -35,7 +37,7 @@ export function getShellQuickEntriesSnapshot(): ShellQuickEntry[] {
 }
 
 export async function refreshShellQuickEntries(): Promise<ShellQuickEntry[]> {
-  const data = await habitat().call("shell_quick.list", withSubjectKind({}), httpOnly);
+  const data = await habitat().call("shell_quick.list", await withSubjectId({}), httpOnly);
   cache = data.entries;
   notify();
   return cache;
@@ -53,7 +55,7 @@ export function isShellQuickAttached(entityId: number): boolean {
 export async function attachShellQuick(entityId: number): Promise<ShellQuickEntry> {
   const data = await habitat().call(
     "shell_quick.attach",
-    withSubjectKind({ id: entityId }),
+    await withSubjectId({ id: entityId }),
     httpOnly,
   );
   const next = cache.filter((e) => e.id !== data.entry.id);
@@ -65,9 +67,8 @@ export async function attachShellQuick(entityId: number): Promise<ShellQuickEntr
 }
 
 export async function detachShellQuick(entityId: number): Promise<void> {
-  await habitat().call("shell_quick.detach", withSubjectKind({ id: entityId }), httpOnly);
+  await habitat().call("shell_quick.detach", await withSubjectId({ id: entityId }), httpOnly);
   cache = cache.filter((e) => e.id !== entityId);
-  notify();
 }
 
 export async function toggleShellQuick(entityId: number): Promise<"attached" | "detached"> {

@@ -37,8 +37,9 @@ function pgRankToScore(rank: number): number {
 async function searchSemanticMemoryInternal(
   query: string,
   limit = DEFAULT_LIMIT,
+  world_id?: number,
 ): Promise<SearchResult[]> {
-  const rows = await searchSemanticMemoryFts(query, { limit });
+  const rows = await searchSemanticMemoryFts(query, omitUndefined({ limit, world_id }));
   return rows.map((r) => ({
     content: r.content,
     source: "semantic_memory" as const,
@@ -94,8 +95,9 @@ export async function search(query: string, limit = DEFAULT_LIMIT): Promise<Sear
 export async function searchSemanticMemory(
   query: string,
   limit = DEFAULT_LIMIT,
+  opts?: { world_id?: number },
 ): Promise<SearchResult[]> {
-  const results = await searchSemanticMemoryInternal(query, limit);
+  const results = await searchSemanticMemoryInternal(query, limit, opts?.world_id);
   results.sort((a, b) => b.score - a.score);
   return results.slice(0, limit);
 }

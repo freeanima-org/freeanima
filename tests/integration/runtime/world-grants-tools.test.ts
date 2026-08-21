@@ -68,6 +68,7 @@ describePg("world grants tools", () => {
     const sid = "sess-grant-deny";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
     await setUserWorldGrants([]);
 
@@ -89,6 +90,7 @@ describePg("world grants tools", () => {
     const sid = "sess-grant-rw";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
     const { agent_subject_id } = getResolvedWorldContext();
 
@@ -168,6 +170,7 @@ describePg("world grants tools", () => {
     const sid = "sess-grant-subject-kind";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
     const { agent_subject_id } = getResolvedWorldContext();
 

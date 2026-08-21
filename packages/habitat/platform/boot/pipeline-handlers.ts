@@ -10,7 +10,7 @@ import { cstDayRange } from "@freeanima/habitat/capabilities/memory";
 import { createEmbeddedMemoryService } from "@freeanima/habitat/capabilities/memory/service";
 import { runRetainCatchUp } from "@freeanima/habitat/capabilities/memory/service/retain-catch-up";
 import { planSleepCatchUp } from "@freeanima/habitat/capabilities/memory/sleep-catch-up";
-import { runSelfLayerRefresh } from "@freeanima/habitat/capabilities/self/refresh/run";
+import { runSelfLayerRefreshAllAgents } from "@freeanima/habitat/capabilities/self/refresh/run";
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { purgeStaleAutoLlmRuns } from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
@@ -170,9 +170,31 @@ async function runReflectStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
     day: ctx.day,
     ...omitUndefined({ reflect_mode: ctx.reflect_mode }),
   });
-  const reflectResult = await createEmbeddedMemoryService().reflect({
-    force: mode === "full",
-  });
+  const { listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  const agents = await listEnabledBoundAgents();
+  if (agents.length === 0) {
+    return {
+      ok: true,
+      step_id: MAINTENANCE_STEP_IDS.reflect,
+      status: "skipped",
+      skipped_reason: "no_agents",
+      output: { day: ctx.day, mode },
+    };
+  }
+  const perAgent = [];
+  for (const agent of agents) {
+    const reflectResult = await createEmbeddedMemoryService().reflect({
+      force: mode === "full",
+      world_id: agent.agent_world_id,
+      agent_subject_id: agent.agent_subject_id,
+    });
+    perAgent.push({
+      agent_subject_id: agent.agent_subject_id,
+      world_id: agent.agent_world_id,
+      ...reflectResult,
+    });
+  }
   return {
     ok: true,
     step_id: MAINTENANCE_STEP_IDS.reflect,
@@ -180,8 +202,8 @@ async function runReflectStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
     output: {
       day: ctx.day,
       mode,
-      ...reflectResult,
-      summary: "MemoryService.reflect",
+      agents: perAgent,
+      summary: "MemoryService.reflect per agent",
     },
   };
 }
@@ -189,16 +211,37 @@ async function runReflectStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
 async function runSemanticClusterCalibrateStep(): Promise<MaintenanceStepResult> {
   const { calibrateSemanticMemoryClusters } =
     await import("@freeanima/habitat/capabilities/memory/clustering/calibrate.ts");
+  const { listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
   try {
-    const result = await calibrateSemanticMemoryClusters();
+    const agents = await listEnabledBoundAgents();
+    if (agents.length === 0) {
+      return {
+        ok: true,
+        step_id: MAINTENANCE_STEP_IDS.semanticClusterCalibrate,
+        status: "skipped",
+        skipped_reason: "no_agents",
+      };
+    }
+    const results = [];
+    for (const agent of agents) {
+      results.push(await calibrateSemanticMemoryClusters({ world_id: agent.agent_world_id }));
+    }
+    const ok = results.every((r) => r.ok);
+    const allSkipped = results.every((r) => r.skipped);
     return {
-      ok: result.ok,
+      ok,
       step_id: MAINTENANCE_STEP_IDS.semanticClusterCalibrate,
-      status: result.skipped ? "skipped" : result.ok ? "completed" : "failed",
-      output: result,
+      status: allSkipped ? "skipped" : ok ? "completed" : "failed",
+      output: { agents: results },
       ...omitUndefined({
-        skipped_reason: result.skipped ? result.reason : undefined,
-        error: result.ok ? undefined : result.reason,
+        skipped_reason: allSkipped ? results[0]?.reason : undefined,
+        error: ok
+          ? undefined
+          : results
+              .map((r) => r.reason)
+              .filter(Boolean)
+              .join("; "),
       }),
     };
   } catch (err) {
@@ -254,7 +297,7 @@ async function runSemanticClusterTitleStep(): Promise<MaintenanceStepResult> {
 }
 
 async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
-  const result = await runSelfLayerRefresh();
+  const result = await runSelfLayerRefreshAllAgents();
   if (result.skipped) {
     return {
       ok: true,
@@ -275,63 +318,114 @@ async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
 
 async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const result = await runTemporalSummaryDay(omitUndefined({ day: ctx.day, config }));
-  if (result.skipped) {
+  const { listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  const agents = await listEnabledBoundAgents();
+  if (agents.length === 0) {
     return {
       ok: true,
       step_id: MAINTENANCE_STEP_IDS.temporalSummaryDay,
       status: "skipped",
-      skipped_reason: result.skipped,
-      output: result,
+      skipped_reason: "no_agents",
+      output: { day: ctx.day },
     };
   }
-  if (result.ok) {
+  const results = [];
+  let anyOk = false;
+  let anyFail = false;
+  for (const agent of agents) {
+    const result = await runTemporalSummaryDay(
+      omitUndefined({
+        day: ctx.day,
+        config,
+        agent_subject_id: agent.agent_subject_id,
+        world_id: agent.agent_world_id,
+      }),
+    );
+    results.push(result);
+    if (result.ok) anyOk = true;
+    else anyFail = true;
+  }
+  if (anyOk) {
     scheduleTemporalSystemRollWarm({
       kinds: ["past_days"] satisfies SysRollKind[],
       config,
       peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
     });
   }
+  const allSkipped = results.every((r) => r.skipped);
   return {
-    ok: result.ok,
+    ok: !anyFail,
     step_id: MAINTENANCE_STEP_IDS.temporalSummaryDay,
-    status: result.ok ? "completed" : "failed",
-    output: result,
-    ...omitUndefined({ error: result.ok ? undefined : result.summary }),
+    status: anyFail ? "failed" : allSkipped ? "skipped" : "completed",
+    ...(allSkipped && results[0]?.skipped ? { skipped_reason: results[0].skipped } : {}),
+    output: { day: ctx.day, agents: results },
+    ...omitUndefined({
+      error: anyFail
+        ? results
+            .filter((r) => !r.ok)
+            .map((r) => r.summary)
+            .join("; ")
+        : undefined,
+    }),
   };
 }
 
 async function runTemporalCascadeStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const result = await runTemporalSummaryCascade(omitUndefined({ day: ctx.day, config }));
-  if (result.skipped) {
+  const { listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  const agents = await listEnabledBoundAgents();
+  if (agents.length === 0) {
     return {
       ok: true,
       step_id: MAINTENANCE_STEP_IDS.temporalSummaryCascade,
       status: "skipped",
-      skipped_reason: result.skipped,
-      output: result,
+      skipped_reason: "no_agents",
+      output: { day: ctx.day },
     };
   }
-  if (result.ok) {
-    const kinds: SysRollKind[] = [];
+  const results = [];
+  let anyOk = false;
+  let anyFail = false;
+  const kinds: SysRollKind[] = [];
+  for (const agent of agents) {
+    const result = await runTemporalSummaryCascade(
+      omitUndefined({
+        day: ctx.day,
+        config,
+        agent_subject_id: agent.agent_subject_id,
+        world_id: agent.agent_world_id,
+      }),
+    );
+    results.push(result);
+    if (result.ok) anyOk = true;
+    else anyFail = true;
     if (result.month_id != null) kinds.push("past_months");
     if (result.year_id != null) kinds.push("past_years");
-    // cascade 未写实体时（非月初/年初）不必预热；写了则按粒度刷新
-    if (kinds.length > 0) {
-      scheduleTemporalSystemRollWarm({
-        kinds,
-        config,
-        peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
-      });
-    }
   }
+  if (anyOk && kinds.length > 0) {
+    scheduleTemporalSystemRollWarm({
+      kinds: [...new Set(kinds)],
+      config,
+      peerCache: { getJson: cacheGetJson, setJson: cacheSetJson },
+    });
+  }
+  const allSkipped = results.every((r) => r.skipped);
   return {
-    ok: result.ok,
+    ok: !anyFail,
     step_id: MAINTENANCE_STEP_IDS.temporalSummaryCascade,
-    status: result.ok ? "completed" : "failed",
-    output: result,
-    ...omitUndefined({ error: result.ok ? undefined : result.summary }),
+    status: anyFail ? "failed" : allSkipped ? "skipped" : "completed",
+    ...(allSkipped && results[0]?.skipped ? { skipped_reason: results[0].skipped } : {}),
+    output: { day: ctx.day, agents: results },
+    ...omitUndefined({
+      error: anyFail
+        ? results
+            .filter((r) => !r.ok)
+            .map((r) => r.summary)
+            .join("; ")
+        : undefined,
+    }),
   };
 }
 

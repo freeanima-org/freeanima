@@ -1,6 +1,19 @@
 export { SubjectScopeProvider, useSubjectScope } from "./subject-scope-react.tsx";
 export { SubjectToggle } from "./SubjectToggle.tsx";
 export { SubjectScopeToggle } from "./SubjectScopeToggle.tsx";
+export { useUserSubjectId } from "./use-user-subject-id.ts";
+export {
+  getUserSubjectId,
+  getBootUserSubjectId,
+  loadResolvedWorldContext,
+  getCachedUserSubjectId,
+  getCachedBootUserSubjectId,
+  getCachedResolvedWorldContext,
+} from "./world-context.ts";
+export {
+  getPortalSubjectIdOverride,
+  setPortalSubjectIdOverride,
+} from "./portal-subject-override.ts";
 export {
   hasEnterToSendCapability,
   hasFinePointerCapability,

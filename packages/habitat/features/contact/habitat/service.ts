@@ -1,4 +1,3 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
@@ -27,26 +26,26 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (!subject_kind || subject_kind === auth.subject_type) return;
-  if (auth.subject_type === "user" && subject_kind === "agent") return;
+function assertSubjectIdAllowed(auth: RpcRequestAuthContext, subjectId: number): void {
+  if (auth.subject_id === subjectId) return;
+  if (auth.subject_type === "user") return;
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
-  if (subject_kind !== "user" && subject_kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+function requireSubjectId(subject_id: number | undefined): number {
+  if (subject_id == null || !Number.isInteger(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
   }
-  return subject_kind;
+  return subject_id;
 }
 
 async function contactWorldIdForAuth(
   auth: RpcRequestAuthContext,
-  subject_kind: SubjectKind | undefined,
+  subject_id: number | undefined,
   access: "read" | "write",
 ): Promise<number> {
-  const kind = resolveSubjectKind(subject_kind);
-  assertSubjectKindMatches(auth, kind);
+  const subjectId = requireSubjectId(subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
   return assertContactWorldAccess({
     subjectId: auth.subject_id,
     subjectType: auth.subject_type,
@@ -63,11 +62,11 @@ function mapIdentityError(e: unknown): never {
 
 export async function serviceContactList(
   deps: RuntimeDeps,
-  input: { subject_kind: SubjectKind; limit?: number; offset?: number },
+  input: { subject_id: number; limit?: number; offset?: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "read");
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "read");
   const items = await listContacts(
     worldId,
     omitUndefined({ limit: input.limit, offset: input.offset }),
@@ -77,11 +76,11 @@ export async function serviceContactList(
 
 export async function serviceContactGet(
   deps: RuntimeDeps,
-  input: { subject_kind: SubjectKind; id: number },
+  input: { subject_id: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "read");
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "read");
   const item = await getContact(worldId, input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -89,11 +88,11 @@ export async function serviceContactGet(
 
 export async function serviceContactSearch(
   deps: RuntimeDeps,
-  input: { subject_kind: SubjectKind; query: string; limit?: number; offset?: number },
+  input: { subject_id: number; query: string; limit?: number; offset?: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "read");
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "read");
   return searchContacts(
     worldId,
     omitUndefined({
@@ -107,23 +106,27 @@ export async function serviceContactSearch(
 export async function serviceContactCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: SubjectKind;
+    subject_id: number;
     title: string;
     summary?: string;
     emails?: ContactChannelEntry[];
     phones?: ContactChannelEntry[];
     addresses?: ContactAddressEntry[];
     wechats?: ContactChannelEntry[];
-    subject_id?: number | null;
+    linked_subject_id?: number | null;
     client_op_id?: string;
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "write");
-  const { subject_kind: _sk, ...rest } = input;
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "write");
+  const { subject_id: _sid, linked_subject_id, ...rest } = input;
+  const restWithLink = {
+    ...rest,
+    ...(linked_subject_id !== undefined ? { subject_id: linked_subject_id } : {}),
+  };
   try {
-    const item = await createContact(worldId, omitUndefined(rest));
+    const item = await createContact(worldId, omitUndefined(restWithLink));
     return { item };
   } catch (e) {
     return mapIdentityError(e);
@@ -133,7 +136,7 @@ export async function serviceContactCreate(
 export async function serviceContactPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: SubjectKind;
+    subject_id: number;
     id: number;
     title?: string;
     summary?: string;
@@ -141,16 +144,20 @@ export async function serviceContactPatch(
     phones?: ContactChannelEntry[];
     addresses?: ContactAddressEntry[];
     wechats?: ContactChannelEntry[];
-    subject_id?: number | null;
+    linked_subject_id?: number | null;
     client_op_id?: string;
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "write");
-  const { subject_kind: _sk, ...rest } = input;
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "write");
+  const { subject_id: _sid, linked_subject_id, ...rest } = input;
+  const restWithLink = {
+    ...rest,
+    ...(linked_subject_id !== undefined ? { subject_id: linked_subject_id } : {}),
+  };
   try {
-    const item = await updateContact(worldId, omitUndefined(rest));
+    const item = await updateContact(worldId, omitUndefined(restWithLink));
     if (!item) throw new Error("NOT_FOUND");
     return { item };
   } catch (e) {
@@ -160,11 +167,11 @@ export async function serviceContactPatch(
 
 export async function serviceContactDelete(
   deps: RuntimeDeps,
-  input: { subject_kind: SubjectKind; id: number },
+  input: { subject_id: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "write");
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "write");
   const ok = await deleteContact(worldId, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
@@ -172,11 +179,11 @@ export async function serviceContactDelete(
 
 export async function serviceContactResolveByAddress(
   deps: RuntimeDeps,
-  input: { subject_kind: SubjectKind; address: string; limit?: number },
+  input: { subject_id: number; address: string; limit?: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "read");
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "read");
   const items = await resolveContactsByAddress(
     worldId,
     input.address,
@@ -188,7 +195,7 @@ export async function serviceContactResolveByAddress(
 export async function serviceContactAttachAddress(
   deps: RuntimeDeps,
   input: {
-    subject_kind: SubjectKind;
+    subject_id: number;
     contact_id: number;
     address: string;
     label?: string;
@@ -197,7 +204,7 @@ export async function serviceContactAttachAddress(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "write");
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "write");
   try {
     const item = await attachAddressToContact(
       worldId,
@@ -218,7 +225,7 @@ export async function serviceContactAttachAddress(
 export async function serviceContactCreateFromAddress(
   deps: RuntimeDeps,
   input: {
-    subject_kind: SubjectKind;
+    subject_id: number;
     title: string;
     address: string;
     label?: string;
@@ -228,7 +235,7 @@ export async function serviceContactCreateFromAddress(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await contactWorldIdForAuth(auth, input.subject_kind, "write");
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "write");
   try {
     const email = extractEmailAddress(input.address);
     if (!email) throw new Error("invalid email address");

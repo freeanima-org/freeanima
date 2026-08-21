@@ -1,12 +1,9 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
 import {
   vaultItemTypeSchema,
   type VaultItemType,
 } from "@freeanima/shared/pg-shapes/entity/enums.ts";
-
-const vaultSubjectKindSchema = notificationRecipientKindSchema;
 
 export { vaultItemTypeSchema };
 export type VaultItemTypePayload = VaultItemType;
@@ -92,7 +89,7 @@ export const vaultConfigRowSchema = z.object({
 export type VaultConfigRowPayload = z.infer<typeof vaultConfigRowSchema>;
 
 export const vaultListInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
   include_secrets: z.boolean().optional(),
@@ -104,7 +101,7 @@ export const vaultListOutputSchema = z.object({
 });
 export type VaultListOutput = z.infer<typeof vaultListOutputSchema>;
 export const vaultGetInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   include_secrets: z.boolean().optional(),
 });
@@ -113,7 +110,7 @@ export const vaultGetOutputSchema = z.object({ item: vaultItemDetailRowSchema })
 export type VaultGetOutput = z.infer<typeof vaultGetOutputSchema>;
 
 export const vaultCreateInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   content: z.string().optional(),
   item_type: vaultItemTypeSchema.optional(),
@@ -131,7 +128,7 @@ export const vaultCreateOutputSchema = z.object({ item: vaultItemMetaRowSchema }
 export type VaultCreateOutput = z.infer<typeof vaultCreateOutputSchema>;
 
 export const vaultPatchInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   content: z.string().optional(),
@@ -151,7 +148,7 @@ export type VaultPatchOutput = z.infer<typeof vaultPatchOutputSchema>;
 
 /** 自动填充成功后 bump last_used_at（skip revision） */
 export const vaultTouchInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type VaultTouchInput = z.infer<typeof vaultTouchInputSchema>;
@@ -159,7 +156,7 @@ export const vaultTouchOutputSchema = z.object({ item: vaultItemMetaRowSchema })
 export type VaultTouchOutput = z.infer<typeof vaultTouchOutputSchema>;
 
 export const vaultDeleteInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type VaultDeleteInput = z.infer<typeof vaultDeleteInputSchema>;
@@ -167,7 +164,7 @@ export const vaultDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type VaultDeleteOutput = z.infer<typeof vaultDeleteOutputSchema>;
 
 export const vaultSearchInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().min(1),
   tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
@@ -179,7 +176,7 @@ export const vaultSearchOutputSchema = z.object({
 export type VaultSearchOutput = z.infer<typeof vaultSearchOutputSchema>;
 
 export const vaultCryptoGetInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type VaultCryptoGetInput = z.infer<typeof vaultCryptoGetInputSchema>;
 export const vaultCryptoGetOutputSchema = z.object({
@@ -188,7 +185,7 @@ export const vaultCryptoGetOutputSchema = z.object({
 export type VaultCryptoGetOutput = z.infer<typeof vaultCryptoGetOutputSchema>;
 
 export const vaultCryptoInitInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   salt: z.string().min(1),
   verifier: z.string().min(1),
   kdf: z
@@ -203,7 +200,7 @@ export const vaultCryptoInitOutputSchema = z.object({ config: vaultConfigRowSche
 export type VaultCryptoInitOutput = z.infer<typeof vaultCryptoInitOutputSchema>;
 
 export const vaultCryptoChangeInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   salt: z.string().min(1).optional(),
   verifier: z.string().min(1),
   rewrapped: z.array(
@@ -220,7 +217,7 @@ export const vaultCryptoChangeOutputSchema = z.object({ ok: z.literal(true) });
 export type VaultCryptoChangeOutput = z.infer<typeof vaultCryptoChangeOutputSchema>;
 
 export const vaultHistoryListInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type VaultHistoryListInput = z.infer<typeof vaultHistoryListInputSchema>;
@@ -253,7 +250,7 @@ export const vaultHistoryListOutputSchema = z.object({
 export type VaultHistoryListOutput = z.infer<typeof vaultHistoryListOutputSchema>;
 
 export const vaultHistoryRestoreInputSchema = z.object({
-  subject_kind: vaultSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   revision_index: z.number().int().nonnegative(),
 });
@@ -261,7 +258,9 @@ export type VaultHistoryRestoreInput = z.infer<typeof vaultHistoryRestoreInputSc
 export const vaultHistoryRestoreOutputSchema = z.object({ item: vaultItemMetaRowSchema });
 export type VaultHistoryRestoreOutput = z.infer<typeof vaultHistoryRestoreOutputSchema>;
 
-export const vaultEnsureAgentInputSchema = z.object({});
+export const vaultEnsureAgentInputSchema = z.object({
+  agent_subject_id: z.number().int().positive().optional(),
+});
 export type VaultEnsureAgentInput = z.infer<typeof vaultEnsureAgentInputSchema>;
 export const vaultEnsureAgentOutputSchema = z.object({ config: vaultConfigRowSchema });
 export type VaultEnsureAgentOutput = z.infer<typeof vaultEnsureAgentOutputSchema>;
@@ -276,6 +275,7 @@ export type VaultAgentKeyStatusOutput = z.infer<typeof vaultAgentKeyStatusOutput
 
 export const vaultAgentKeyProvisionInputSchema = z.object({
   key_b64: z.string().min(1),
+  agent_subject_id: z.number().int().positive().optional(),
 });
 export type VaultAgentKeyProvisionInput = z.infer<typeof vaultAgentKeyProvisionInputSchema>;
 export const vaultAgentKeyProvisionOutputSchema = z.object({
@@ -299,7 +299,7 @@ export const vaultAgentKeyPeekRawOutputSchema = z.object({
 export type VaultAgentKeyPeekRawOutput = z.infer<typeof vaultAgentKeyPeekRawOutputSchema>;
 
 export const vaultCreatePlainInputSchema = z.object({
-  subject_kind: z.literal("agent"),
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   content: z.string().optional(),
   item_type: vaultItemTypeSchema.optional(),
@@ -313,7 +313,7 @@ export const vaultCreatePlainInputSchema = z.object({
 export type VaultCreatePlainInput = z.infer<typeof vaultCreatePlainInputSchema>;
 
 export const vaultPatchPlainInputSchema = z.object({
-  subject_kind: z.literal("agent"),
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   content: z.string().optional(),

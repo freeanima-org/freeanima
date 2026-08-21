@@ -103,11 +103,21 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
       undefined,
       Object.keys(platformExtra).length > 0 ? platformExtra : undefined,
       scenario,
+      input.agent_subject_id,
     );
     if (input.title?.trim()) {
       await depsOf(deps).runtime.setConversationTitle(sid, input.title.trim(), platform);
     }
     return { conversation_id: sid };
+  },
+  "conversation.setAgent": async (deps, input) => {
+    await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    const result = await depsOf(deps).runtime.conversation.setConversationAgent(
+      input.conversation_id,
+      input.agent_subject_id,
+    );
+    depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
+    return { ok: true as const, agent_subject_id: result.agent_subject_id };
   },
   "conversation.list": async (deps, input, _ctx) => {
     const platform = input.platform?.trim() || undefined;
@@ -133,6 +143,7 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
           archived_at: s.archived_at?.toISOString() ?? null,
           pinned_at: s.pinned_at?.toISOString() ?? null,
           unread: s.unread === true ? true : s.unread === false ? false : undefined,
+          agent_subject_id: s.agent_subject_id,
         }),
       ),
     };
