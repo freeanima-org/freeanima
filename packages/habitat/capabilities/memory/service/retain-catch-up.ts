@@ -7,6 +7,7 @@ import {
   listConversationIdsUpdatedBetween,
   listMessageRowsPage,
 } from "@freeanima/habitat/core/db/pg/conversation";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import { collectConversationBlocks, cstDayRange } from "../day-window/build-messages.ts";
 import { createEmbeddedMemoryService } from "./embedded.ts";
@@ -20,6 +21,8 @@ export type RetainCatchUpResult = {
   errors: number;
   summary: string;
   skipped_reason?: string;
+  /** 首个会话失败原因（便于通知/排障） */
+  first_error?: string;
 };
 
 export async function runRetainCatchUp(opts: { day?: string } = {}): Promise<RetainCatchUpResult> {
@@ -57,6 +60,7 @@ export async function runRetainCatchUp(opts: { day?: string } = {}): Promise<Ret
   let retained = 0;
   let skipped = 0;
   let errors = 0;
+  let first_error: string | undefined;
 
   for (const conversation_id of activeIds) {
     try {
@@ -75,20 +79,30 @@ export async function runRetainCatchUp(opts: { day?: string } = {}): Promise<Ret
       else retained += 1;
     } catch (err) {
       errors += 1;
+      const errMsg = err instanceof Error ? err.message : String(err);
+      if (first_error === undefined) {
+        first_error = `${conversation_id}:${errMsg}`;
+      }
       logComponent("memory").warn("retain catch-up conversation failed", {
         conversation_id,
-        err: err instanceof Error ? err.message : String(err),
+        err: errMsg,
       });
     }
   }
 
-  return {
+  const summaryParts = [
+    `retain-catch-up:${range.day}:ok=${retained}:skip=${skipped}:err=${errors}`,
+  ];
+  if (first_error) summaryParts.push(first_error);
+
+  return omitUndefined({
     ok: errors === 0,
     day: range.day,
     conversations: activeIds.length,
     retained,
     skipped,
     errors,
-    summary: `retain-catch-up:${range.day}:ok=${retained}:skip=${skipped}:err=${errors}`,
-  };
+    summary: summaryParts.join(" "),
+    first_error,
+  });
 }

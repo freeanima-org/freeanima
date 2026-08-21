@@ -2,6 +2,8 @@
  * retain 语义相关：按 user/assistant 各条正文分别 hybrid 召回，两侧分配额后合并去重。
  */
 
+import { isFtsQueryError } from "@freeanima/habitat/core/util";
+
 import type { SemanticRecallHit } from "../recall-search.ts";
 import {
   focusPassiveRecallQuery,
@@ -84,13 +86,19 @@ async function searchForRoleItems(
   if (queries.length === 0) return [];
 
   const batches = await Promise.all(
-    queries.map((query) =>
-      semanticPassiveRecallSearch(query, {
-        limit: searchOpts.limit,
-        min_score: searchOpts.min_score,
-        min_relative_score: searchOpts.min_relative_score,
-      }),
-    ),
+    queries.map(async (query) => {
+      try {
+        return await semanticPassiveRecallSearch(query, {
+          limit: searchOpts.limit,
+          min_score: searchOpts.min_score,
+          min_relative_score: searchOpts.min_relative_score,
+        });
+      } catch (err) {
+        // 单条正文仍可能踩 FTS 校验；跳过该条，不拖垮整次 retain
+        if (isFtsQueryError(err)) return [];
+        throw err;
+      }
+    }),
   );
   return batches.flat();
 }

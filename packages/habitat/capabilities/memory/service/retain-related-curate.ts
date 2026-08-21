@@ -3,6 +3,7 @@
  * 用于防重复的轻对照，非整表整理。
  */
 
+import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/schema/rows";
 import { listSemanticMemoryBySourceSessions } from "@freeanima/habitat/core/db/pg/semantic-memory";
 
@@ -110,22 +111,30 @@ export async function curateRetainRelatedMemories(opts: {
 
   let todaySemantic: SemanticMemoryRow[] = [];
   if (conversationId && opts.text_items.length > 0) {
-    const hits = await collectRetainPassiveHits(opts.text_items, new Set(), {
-      enabled: true,
-      limit: RETAIN_RELATED_TODAY_SEMANTIC_LIMIT,
-      min_score: RETAIN_RELATED_TODAY_MIN_SCORE,
-      min_relative_score: RETAIN_RELATED_TODAY_MIN_RELATIVE_SCORE,
-    });
-    const picked: SemanticMemoryRow[] = [];
-    for (const hit of hits) {
-      if (!hit.source_conversations.includes(conversationId)) continue;
-      const row = byId.get(hit.semantic_memory_id);
-      if (!row) continue;
-      if (!isMemoryActiveOnCstDay(row, range)) continue;
-      picked.push(row);
-      if (picked.length >= RETAIN_RELATED_TODAY_SEMANTIC_LIMIT) break;
+    try {
+      const hits = await collectRetainPassiveHits(opts.text_items, new Set(), {
+        enabled: true,
+        limit: RETAIN_RELATED_TODAY_SEMANTIC_LIMIT,
+        min_score: RETAIN_RELATED_TODAY_MIN_SCORE,
+        min_relative_score: RETAIN_RELATED_TODAY_MIN_RELATIVE_SCORE,
+      });
+      const picked: SemanticMemoryRow[] = [];
+      for (const hit of hits) {
+        if (!hit.source_conversations.includes(conversationId)) continue;
+        const row = byId.get(hit.semantic_memory_id);
+        if (!row) continue;
+        if (!isMemoryActiveOnCstDay(row, range)) continue;
+        picked.push(row);
+        if (picked.length >= RETAIN_RELATED_TODAY_SEMANTIC_LIMIT) break;
+      }
+      todaySemantic = picked;
+    } catch (e) {
+      // 与跨会话 passive 一致：hybrid 失败时仍保留 recent，不中断 retain
+      logComponent("memory").warn("retain related today-semantic failed", {
+        conversation_id: conversationId,
+        error: e instanceof Error ? e.message : String(e),
+      });
     }
-    todaySemantic = picked;
   }
 
   return {
