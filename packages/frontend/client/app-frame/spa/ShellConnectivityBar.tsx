@@ -6,6 +6,7 @@ import {
   useNetworkOnline,
   useOpenHabitatSettingsCapability,
 } from "@freeanima/client/portal-sdk/react.tsx";
+import { subscribeBundledHabitatRpcConfigChanges } from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef } from "react";
 
@@ -27,6 +28,9 @@ export function ShellConnectivityBar(): null {
     habitatConnection,
     localPrefer,
   });
+
+  // 设置页保存 Habitat 时 Chat/Diary 可能未挂载；条幅级监听才能强制重连
+  useEffect(() => subscribeBundledHabitatRpcConfigChanges(), []);
 
   useEffect(() => {
     if (!notice) {
@@ -52,9 +56,9 @@ export function ShellConnectivityBar(): null {
           label: "尝试恢复",
           onClick: () => {
             clearLocalPrefer();
-            if (reconnectingRef.current || habitatConnection === "connecting") return;
+            if (reconnectingRef.current) return;
             reconnectingRef.current = true;
-            void reconnectHabitat()
+            void reconnectHabitat({ force: true })
               .catch(() => undefined)
               .finally(() => {
                 reconnectingRef.current = false;
@@ -66,7 +70,28 @@ export function ShellConnectivityBar(): null {
     }
 
     if (notice.kind === "habitat-connecting") {
-      showShellToast(SHELL_TOAST_IDS.connectivity, "连接中");
+      showShellToast(SHELL_TOAST_IDS.connectivity, "连接中", {
+        action: {
+          label: "重连",
+          onClick: () => {
+            if (reconnectingRef.current) return;
+            reconnectingRef.current = true;
+            void reconnectHabitat({ force: true })
+              .catch(() => undefined)
+              .finally(() => {
+                reconnectingRef.current = false;
+              });
+          },
+        },
+        ...(canOpenHabitatSettings
+          ? {
+              cancel: {
+                label: "连接设置",
+                onClick: openHabitatSettingsIfAvailable,
+              },
+            }
+          : {}),
+      });
       return;
     }
 
@@ -74,9 +99,9 @@ export function ShellConnectivityBar(): null {
       action: {
         label: "重连",
         onClick: () => {
-          if (reconnectingRef.current || habitatConnection === "connecting") return;
+          if (reconnectingRef.current) return;
           reconnectingRef.current = true;
-          void reconnectHabitat()
+          void reconnectHabitat({ force: true })
             .catch(() => undefined)
             .finally(() => {
               reconnectingRef.current = false;

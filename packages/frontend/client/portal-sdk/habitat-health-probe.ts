@@ -151,30 +151,38 @@ export async function testHabitatHealthConnection(
   habitatUrl: string,
   remoteAuthToken?: string,
 ): Promise<void> {
+  const token = remoteAuthToken?.trim();
   const body = await probeHabitatHealthUrl(
     habitatUrl,
-    remoteAuthToken !== undefined ? { token: remoteAuthToken } : {},
+    token !== undefined && token.length > 0 ? { token } : {},
   );
   const reason = habitatHealthFailureReason(body);
   if (reason) throw new Error(reason);
+  if (token && body.authed !== true) {
+    throw new Error("栖息地可达，但认证失败：请检查 Service API Token");
+  }
 
   if (isTauriShellRuntime()) {
-    await probeHabitatRpcWebSocket(habitatUrl);
+    await probeHabitatRpcWebSocket(habitatUrl, token);
   }
 }
 
 /**
- * 实际业务走 WebView WebSocket；「测试连接」默认是原生 HTTP。
- * 在此补一轮 WS open，避免 HTTP 通但 WS/TLS 失败时误报成功。
+ * 实际业务走 WebView WebSocket + connect 鉴权；「测试连接」默认是原生 HTTP。
+ * 在此补一轮 WS open（及可选 auth 握手），避免 HTTP 通但 WS/TLS/鉴权失败时误报成功。
  */
 export async function probeHabitatRpcWebSocket(
   habitatUrl: string,
+  authToken?: string,
   timeoutMs = 8_000,
 ): Promise<void> {
   const { resolveHabitatRpcWsUrl } = await import("@freeanima/shared/habitat-rpc/urls.ts");
+  const { HABITAT_RPC_VERSION, parseHabitatRpcEnvelope, serializeHabitatRpcEnvelope } =
+    await import("@freeanima/shared/habitat-rpc/protocol.ts");
   const base = habitatUrl.trim().replace(/\/$/, "");
   const wsUrl = resolveHabitatRpcWsUrl(base);
   const httpsHabitat = base.toLowerCase().startsWith("https://");
+  const token = authToken?.trim();
 
   await new Promise<void>((resolve, reject) => {
     let settled = false;
@@ -208,7 +216,49 @@ export async function probeHabitatRpcWebSocket(
         ),
       );
     }, timeoutMs);
-    ws.addEventListener("open", () => finish());
+    ws.addEventListener("open", () => {
+      if (!token) {
+        finish();
+        return;
+      }
+      try {
+        ws.send(
+          serializeHabitatRpcEnvelope({
+            kind: "connect",
+            payload: { protocol: HABITAT_RPC_VERSION, auth_token: token },
+          }),
+        );
+      } catch (e) {
+        finish(
+          new Error(e instanceof Error ? e.message : "无法发送 Habitat RPC connect", { cause: e }),
+        );
+      }
+    });
+    ws.addEventListener("message", (ev) => {
+      if (!token || typeof ev.data !== "string") return;
+      try {
+        const envelope = parseHabitatRpcEnvelope(ev.data);
+        if (envelope.kind === "connected") {
+          finish();
+          return;
+        }
+      } catch {
+        /* 忽略非握手帧 */
+      }
+    });
+    ws.addEventListener("close", (ev) => {
+      if (!token) return;
+      const reason = ev.reason?.trim();
+      finish(
+        new Error(
+          reason === "unauthorized"
+            ? "Habitat RPC 鉴权失败：WebSocket 已通，但 Service API Token 无效"
+            : reason
+              ? `Habitat RPC 握手失败：${reason}`
+              : "Habitat RPC 握手失败：连接在鉴权前被关闭",
+        ),
+      );
+    });
     ws.addEventListener("error", () => {
       finish(
         new Error(
