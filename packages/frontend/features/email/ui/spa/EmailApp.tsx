@@ -85,9 +85,8 @@ function writeUrlEmailAccountId(id: number | null): void {
   const url = new URL(window.location.href);
   if (id == null) url.searchParams.delete("account");
   else url.searchParams.set("account", String(id));
-  const next = `${url.pathname}${url.search}`;
-  if (next !== `${window.location.pathname}${window.location.search}`) {
-    window.history.replaceState({}, "", next);
+  if (url.href !== window.location.href) {
+    window.history.replaceState(null, "", url);
   }
 }
 

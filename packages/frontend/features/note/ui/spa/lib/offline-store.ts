@@ -132,7 +132,7 @@ async function resolveEntityId(scope: string, id: number): Promise<number> {
   return mapped ?? id;
 }
 
-async function findLocalNote(
+export async function findLocalNote(
   scope: string,
   subjectKind: NoteSubjectKind,
   id: number,

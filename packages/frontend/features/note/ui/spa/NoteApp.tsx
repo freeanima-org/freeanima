@@ -59,7 +59,9 @@ function useUrlNoteId(): [number | null, (id: number | null) => void] {
     const url = new URL(window.location.href);
     if (next == null) url.searchParams.delete("id");
     else url.searchParams.set("id", String(next));
-    window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    if (url.href !== window.location.href) {
+      window.history.replaceState(null, "", url);
+    }
     setIdState(next);
   }, []);
 

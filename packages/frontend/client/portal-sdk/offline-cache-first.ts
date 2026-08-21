@@ -44,6 +44,6 @@ export async function withOfflineCache<T>(opts: WithOfflineCacheOptions<T>): Pro
     }
     const cached = await cachedPromise;
     if (cached != null) return cached;
-    throw new Error(opts.offlineError ?? "offline fetch failed", { cause: err });
+    throw err;
   }
 }

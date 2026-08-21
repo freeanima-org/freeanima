@@ -99,7 +99,11 @@ import {
   useDrawerNav,
   useTaskActionSheet,
 } from "./lib/platform.ts";
-import { readTaskSelectionFromUrl, writeTaskSelectionToUrl } from "./lib/task-selection-url.ts";
+import {
+  readTaskSelectionFromUrl,
+  writeTaskSelectionToUrl,
+  taskSelectionEquals,
+} from "./lib/task-selection-url.ts";
 import { readTaskItemFromUrl, writeTaskItemToUrl } from "./lib/task-item-url.ts";
 import { moveTaskItemsToList, moveTaskItemsToProject } from "./lib/move-items.ts";
 import { taskAttributionLabel } from "./lib/task-attribution.ts";
@@ -318,16 +322,13 @@ export function TaskApp() {
     };
   }, [webShell, items, searchHits, detailItem, openTaskDetail]);
 
-  const persistSelection = useCallback(
-    (next: TaskModuleSelection) => {
-      // search 为临时态：写 URL，但不覆盖 localStorage 中的清单/智能清单
-      if (next.kind !== "search") {
-        writeModuleSelection("tasks", next);
-      }
-      if (webShell) writeTaskSelectionToUrl(next);
-    },
-    [webShell],
-  );
+  const persistSelection = useCallback((next: TaskModuleSelection) => {
+    // search 为临时态：写 URL，但不覆盖 localStorage 中的清单/智能清单
+    if (next.kind !== "search") {
+      writeModuleSelection("tasks", next);
+    }
+    writeTaskSelectionToUrl(next);
+  }, []);
 
   type TaskListsBundle = {
     lists: TaskListRow[];
@@ -403,15 +404,39 @@ export function TaskApp() {
     setLists(bundle.lists);
     setSmartLists(bundle.smartLists);
     setSmartListCounts(bundle.smartListCounts);
+    const urlSelection = readTaskSelectionFromUrl();
     const next = resolveTaskSelection(bundle.lists, bundle.smartLists, {
       stored: readModuleSelection("tasks"),
-      urlSelection: webShell ? readTaskSelectionFromUrl() : null,
-      preferUrl: webShell,
+      urlSelection,
+      // URL 有选型时优先（快捷菜单同模块切清单依赖此路径）
+      preferUrl: urlSelection != null,
     });
     setSelection(next);
     persistSelection(next);
     if (bundle.lists.length === 0) setItems([]);
-  }, [listsQuery.data, persistSelection, webShell]);
+  }, [listsQuery.data, persistSelection]);
+
+  // 已在任务模块时，快捷菜单 / 外部导航只改 URL：监听并切换清单
+  useEffect(() => {
+    const applyFromLocation = () => {
+      const urlSelection = readTaskSelectionFromUrl();
+      if (urlSelection == null) return;
+      if (lists.length === 0 && smartLists.length === 0) return;
+      const next = resolveTaskSelection(lists, smartLists, {
+        stored: readModuleSelection("tasks"),
+        urlSelection,
+        preferUrl: true,
+      });
+      setSelection((prev) => (taskSelectionEquals(prev, next) ? prev : next));
+      persistSelection(next);
+    };
+    window.addEventListener("popstate", applyFromLocation);
+    window.addEventListener("hashchange", applyFromLocation);
+    return () => {
+      window.removeEventListener("popstate", applyFromLocation);
+      window.removeEventListener("hashchange", applyFromLocation);
+    };
+  }, [lists, smartLists, persistSelection]);
 
   useEffect(() => {
     if (listsQuery.error) {

@@ -1,4 +1,5 @@
 import { navigateAppModulePath } from "./pomodoro-launch.ts";
+import { writeModuleSelection } from "./module-selection.ts";
 
 export type AnimaPresent = "navigate" | "overlay";
 
@@ -217,6 +218,10 @@ export function navigateAnimaUri(ref: AnimaUriRef): boolean {
     present: ref.present ?? defaultPresentForComponent(ref.component),
   });
   if (!path) return false;
+  // 同模块内切清单时 TaskApp 已挂载，需同步持久化选型，避免只改 URL 不换列表
+  if (ref.component === "task_list" && Number.isInteger(ref.id) && ref.id > 0) {
+    writeModuleSelection("tasks", { kind: "list", id: ref.id });
+  }
   navigateAppModulePath(path);
   return true;
 }
