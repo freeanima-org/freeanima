@@ -5,10 +5,7 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import {
-  deleteConversation,
-  upsertConversationMeta,
-} from "@freeanima/habitat/core/db/pg/conversation";
+import { deleteConversation } from "@freeanima/habitat/core/db/pg/conversation";
 import {
   countReferencesBySemanticMemory,
   formatMemoryReferenceMarker,
@@ -20,10 +17,10 @@ import {
   getSemanticMemory,
   listResidentSemanticMemory,
 } from "@freeanima/habitat/core/db/pg/semantic-memory";
-import { appendTestMessage } from "../../helpers/pg-test.ts";
+import { appendTestMessage, upsertTestConversationMeta } from "../../helpers/pg-test.ts";
 
 async function seedSessionMeta(conversationId: string): Promise<void> {
-  await upsertConversationMeta(conversationId, {
+  await upsertTestConversationMeta(conversationId, {
     model: "test-model",
     cached_toolsets: [],
     functions: [],

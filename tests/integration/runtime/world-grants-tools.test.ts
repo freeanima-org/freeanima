@@ -20,7 +20,12 @@ import { omitUndefined } from "@freeanima/habitat/core/util";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { testUserWorldId } from "../../helpers/world-context.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
+import {
+  getActivePgTestContext,
+  testConv,
+  testAgentToolContextOpts,
+  testChatAgentSubjectId,
+} from "../../helpers/pg-test.ts";
 
 function testCfg() {
   const ctx = getActivePgTestContext();
@@ -68,7 +73,7 @@ describePg("world grants tools", () => {
     const sid = "sess-grant-deny";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
-      agent_subject_id: 2,
+      agent_subject_id: testChatAgentSubjectId(),
     });
     await setUserWorldGrants([]);
 
@@ -81,7 +86,7 @@ describePg("world grants tools", () => {
           tool.handler({ date: "2026-07-10", world_id: testUserWorldId() }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     expect(out).toContain("cannot access world");
   });
@@ -90,7 +95,7 @@ describePg("world grants tools", () => {
     const sid = "sess-grant-rw";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
-      agent_subject_id: 2,
+      agent_subject_id: testChatAgentSubjectId(),
     });
     const { agent_subject_id } = getResolvedWorldContext();
 
@@ -109,7 +114,7 @@ describePg("world grants tools", () => {
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     expect(readDeniedWrite).toContain("cannot write world");
 
@@ -122,7 +127,7 @@ describePg("world grants tools", () => {
           tool.handler({ date: "2026-07-11", world_id: testUserWorldId() }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     // entry may be missing but access must succeed (not access error)
     expect(readOk).not.toContain("cannot access world");
@@ -143,7 +148,7 @@ describePg("world grants tools", () => {
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     expect(JSON.parse(writeOk).ok).toBe(true);
 
@@ -156,7 +161,7 @@ describePg("world grants tools", () => {
           tool.handler({ date: "2026-07-11", world_id: testUserWorldId() }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     const parsed = JSON.parse(getAfter) as {
       ok: boolean;
@@ -166,11 +171,11 @@ describePg("world grants tools", () => {
     expect(parsed.item.blocks.map((b) => b.content).join("\n")).toContain("agent via write grant");
   });
 
-  it("subject_kind=user denies agent without grant; allows with read grant", async () => {
-    const sid = "sess-grant-subject-kind";
+  it("user world_id denies agent without grant; allows with read grant", async () => {
+    const sid = "sess-grant-user-world";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
-      agent_subject_id: 2,
+      agent_subject_id: testChatAgentSubjectId(),
     });
     const { agent_subject_id } = getResolvedWorldContext();
 
@@ -181,7 +186,9 @@ describePg("world grants tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("diary_get")!;
-        denied = await Promise.resolve(tool.handler({ subject_kind: "user", date: "2026-07-12" }));
+        denied = await Promise.resolve(
+          tool.handler({ date: "2026-07-12", world_id: testUserWorldId() }),
+        );
       },
       { tools: toolSets, subjectId: agent_subject_id },
     );
@@ -194,7 +201,9 @@ describePg("world grants tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("diary_get")!;
-        allowed = await Promise.resolve(tool.handler({ subject_kind: "user", date: "2026-07-12" }));
+        allowed = await Promise.resolve(
+          tool.handler({ date: "2026-07-12", world_id: testUserWorldId() }),
+        );
       },
       { tools: toolSets, subjectId: agent_subject_id },
     );
