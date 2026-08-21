@@ -32,12 +32,12 @@ Agent「记得什么」= **此刻上下文窗口里有什么**。外存（Semant
 ⑥ 夜间 memory-maintenance（顺序）：cleanup → Retain 缺口检查（仅通知）→ 周一 reflect/self → temporal
 ```
 
-| 桶                   | 来源                                | 备注                                     |
-| -------------------- | ----------------------------------- | ---------------------------------------- |
-| system               | Self、常驻、temporal 段、工具目录等 | fold 截断；核心段硬保留                  |
-| summary / slim / raw | 当前会话消息视图                    | 压缩不删 PG；不触发 retain               |
-| 被动召回             | `memory.passive_recall`             | 默认 max_chars=2000                      |
-| 长期                 | Semantic + Temporal                 | 经常驻 / 被动 / `memory_semantic_search` |
+| 桶                   | 来源                                | 备注                                      |
+| -------------------- | ----------------------------------- | ----------------------------------------- |
+| system               | Self、常驻、temporal 段、工具目录等 | fold 截断；核心段硬保留                   |
+| summary / slim / raw | 当前会话消息视图                    | 压缩不删 PG；不触发 retain                |
+| 被动召回             | `memory.passive_recall`             | 默认 max_chars=2000；排除常驻与本会话来源 |
+| 长期                 | Semantic + Temporal                 | 经常驻 / 被动 / `memory_semantic_search`  |
 
 召回优先级：**常驻 → 被动召回 → 主动语义搜索**。
 
@@ -74,7 +74,7 @@ Retain 缺口：夜间只 Inbox 通知；**补跑仅手动**（`memoryMaintenanc
 - **常驻**：读时 pinned ∪ 高 `reference_count` TopN（`memory.resident.top_n` / `pinned_max`）；超 `pinned_max` 截断列表并 warn，**默认不写库 unpin**
 - **cite 权重**：近 `memory.reference.decay_days` 日加权累加 `entities.reference_count`（`recent_weight` / `stale_weight`）；不自动 deprecate
 
-评测挂载见风巢 #16041（LoCoMo 等）。
+评测挂载见风巢 #16041（LoCoMo 等）；实现见 [`scripts/eval/locomo/README.md`](../../scripts/eval/locomo/README.md)（compose PG+Redis + hybrid FTS；不写用户 `~/.anima/config.yaml`）。
 
 ---
 

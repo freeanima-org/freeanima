@@ -19,9 +19,10 @@ import type {
   RemoteToolsRequestContext,
 } from "@freeanima/shared/rpc-contract";
 
-import { habitatDispatch } from "./dispatch.ts";
+import { habitatDispatch, TokenAuthorizationError } from "./dispatch.ts";
 import { jsonResponseWithConditionalGet } from "./http-conditional.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types.ts";
+import { asRecord, isRecord } from "@freeanima/shared/util";
 
 /** 与 habitat-api handlers/errors 对齐；platform 不依赖 feature 内部 handler */
 class HabitatRestHandlerError extends Error {
@@ -137,31 +138,36 @@ export function mapHabitatRestHandlerError(e: unknown): Response {
   if (e instanceof z.ZodError) {
     return jsonError(400, "invalid_input", e.message);
   }
+  if (e instanceof TokenAuthorizationError) {
+    return jsonError(e.httpStatus, e.code, e.message);
+  }
   if (e instanceof HabitatRestHandlerError) {
     return jsonError(e.status, e.code, e.message);
   }
-  const apiErr = e as { status?: number; message?: string; context?: { code?: string } };
-  if (typeof apiErr.status === "number" && apiErr.message) {
+  const apiErr = isRecord(e) ? e : null;
+  const status = typeof apiErr?.status === "number" ? apiErr.status : undefined;
+  const message = typeof apiErr?.message === "string" ? apiErr.message : undefined;
+  const context = asRecord(apiErr?.context);
+  if (status != null && message) {
     return jsonError(
-      apiErr.status,
-      typeof apiErr.context?.code === "string" ? apiErr.context.code : "habitat_rpc_error",
-      apiErr.message,
+      status,
+      typeof context?.code === "string" ? context.code : "habitat_rpc_error",
+      message,
     );
   }
   console.error("[habitat-rest] handler failed:", e);
-  const withCode = e as { code?: unknown };
   const errCode =
-    e instanceof Error && typeof withCode.code === "string" && withCode.code.trim()
-      ? withCode.code
+    e instanceof Error && typeof apiErr?.code === "string" && apiErr.code.trim()
+      ? apiErr.code
       : "habitat_rpc_error";
-  const message =
+  const fallbackMessage =
     e instanceof Error && e.message.trim()
       ? e.message
       : typeof e === "string" && e.trim()
         ? e
         : "Habitat RPC request failed";
-  const status = errCode === "object_storage_not_configured" ? 503 : 500;
-  return jsonError(status, errCode, message);
+  const fallbackStatus = errCode === "object_storage_not_configured" ? 503 : 500;
+  return jsonError(fallbackStatus, errCode, fallbackMessage);
 }
 
 function ctxFor(
@@ -176,7 +182,7 @@ function ctxFor(
     token_id: 0,
     subject_id: 0,
     subject_type: "user",
-    scopes: [],
+    authorization: { full: true },
   };
   return {
     app_id: "",
@@ -223,7 +229,7 @@ export async function handleHttpHabitatRestRequest(
     if (requestEncoding === "json") {
       try {
         const raw = await req.text();
-        bodyPayload = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+        bodyPayload = raw ? (asRecord(JSON.parse(raw)) ?? {}) : {};
       } catch {
         return jsonError(400, "invalid_json", "Invalid JSON body");
       }

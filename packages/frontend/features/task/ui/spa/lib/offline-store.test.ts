@@ -10,6 +10,7 @@ import {
 } from "@freeanima/client/portal-sdk/offline-outbox";
 import { resetOfflineModuleRegistryForTests } from "@freeanima/client/portal-sdk/offline-module-registry";
 import { resetTempIdAllocatorForTests } from "@freeanima/client/portal-sdk/offline-temp-id";
+import { setPortalSubjectIdOverride } from "@freeanima/client/portal-sdk/portal-subject-override.ts";
 
 import type { TaskItemRow, TaskListRow } from "./api.ts";
 import {
@@ -59,6 +60,7 @@ describe("reconcileServerTaskLists", () => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
     resetTempIdAllocatorForTests();
+    setPortalSubjectIdOverride(1);
   });
 
   it("保留 outbox 中仍未同步的 temp 清单，避免被服务器列表覆盖丢失", async () => {
@@ -72,7 +74,7 @@ describe("reconcileServerTaskLists", () => {
       id: "op-1",
       moduleId: "task",
       method: "tasklist.create",
-      payload: { subject_kind: "user" },
+      payload: { subject_id: 1 },
       tempEntityId: tempId,
       createdAt: "2026-07-15T00:00:00.000Z",
     });
@@ -109,7 +111,7 @@ describe("reconcileServerTaskLists", () => {
       moduleId: "task",
       method: "tasklist.patch",
       payload: {
-        subject_kind: "user",
+        subject_id: 1,
         id: 17,
         parent_id: null,
         sort_order: 1,
@@ -133,6 +135,7 @@ describe("offlineCreateTaskItem prepend", () => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
     resetTempIdAllocatorForTests();
+    setPortalSubjectIdOverride(1);
   });
 
   it("未传 sort_order 时本地取 min(pending)-STEP，旧任务不变，且 RPC payload 不含 sort_order", async () => {
@@ -175,6 +178,7 @@ describe("offlineUpdateTaskItem temp id resolve", () => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
     resetTempIdAllocatorForTests();
+    setPortalSubjectIdOverride(1);
   });
 
   it("create flush 后本地只剩 server id 时，仍可用 temp id 更新", async () => {

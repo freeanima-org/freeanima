@@ -1,7 +1,13 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import { subjectConfigBodySchema } from "@freeanima/habitat/core/db/schema";
+import {
+  assertDataCapability,
+  DataCapabilityError,
+  filterWorldIdsByDataCapability,
+  tokenDataCapability,
+} from "@freeanima/shared/service-api-auth";
 import { resolveToolCallerSubjectId } from "@freeanima/habitat/core/tool";
+import { getActiveServiceApiAuth } from "../service-api-token/service-auth-als.ts";
 
 import { getEntity, listEntities } from "./repos/entity-crud-repo.ts";
 import { resolveWorldsAccessibleBySubject } from "./search/accessible-worlds.ts";
@@ -16,15 +22,14 @@ export class ToolWorldAccessError extends Error {
 }
 
 /**
- * Habitat UI SubjectScope：user 可代读 agent 默认私有 world
- *（与 entity/task/vault 的 `subject_type=user && subject_kind=agent` 一致）。
- * 仅挂在 Habitat HTTP/RPC 调用点；勿并入 assertSubjectCanAccessWorld / resolveToolWorld。
+ * 历史 SubjectScope 旁路：user 对任意 world 已满权限（assertSubjectCanAccessWorld），
+ * 此函数恒 false；保留符号以免 HTTP 调用点断裂。
  */
 export function isUserAgentPrivateWorldPassthrough(
-  subjectType: string | undefined,
-  worldId: number,
+  _subjectType: string | undefined,
+  _worldId: number,
 ): boolean {
-  return subjectType === "user" && worldId === resolveSubjectWorldId("agent");
+  return false;
 }
 
 /** subject entity → default_private_world_id */
@@ -45,6 +50,10 @@ export async function getSubjectWorldAccessLevel(
   subjectId: number,
   worldId: number,
 ): Promise<SubjectWorldAccessLevel> {
+  const subject = await getEntity(subjectId);
+  // 主人（全局唯一 type=user）对任意 world 满权限，不依赖 grants
+  if (subject?.type === "user") return "write";
+
   const row = await getEntity(worldId);
   if (!row || row.type !== "world") {
     throw new ToolWorldAccessError(`world not found: ${worldId}`);
@@ -66,6 +75,42 @@ export async function assertSubjectCanAccessWorld(
         : `subject ${subjectId} cannot access world ${worldId}`,
     );
   }
+  assertCallerTokenWorld(worldId, required);
+}
+
+/** Service API token 数据维 ∩ world（无 callerAuth 则跳过） */
+function assertCallerTokenWorld(worldId: number, access: "read" | "write"): void {
+  const auth = getActiveServiceApiAuth();
+  if (!auth) return;
+  const data = tokenDataCapability(auth.authorization);
+  if (!data) return;
+  try {
+    assertDataCapability(data, { worldId, access });
+  } catch (e) {
+    if (e instanceof DataCapabilityError) {
+      throw new ToolWorldAccessError(e.message);
+    }
+    throw e;
+  }
+}
+
+/** Service API token 组件维（无 callerAuth / full 则跳过） */
+export function assertCallerTokenComponent(
+  component: string,
+  access: "read" | "write" = "read",
+): void {
+  const auth = getActiveServiceApiAuth();
+  if (!auth) return;
+  const data = tokenDataCapability(auth.authorization);
+  if (!data) return;
+  try {
+    assertDataCapability(data, { component, access });
+  } catch (e) {
+    if (e instanceof DataCapabilityError) {
+      throw new ToolWorldAccessError(e.message);
+    }
+    throw e;
+  }
 }
 
 export async function resolveWorldFromEntityId(entityId: number): Promise<number> {
@@ -84,8 +129,8 @@ export type ResolveToolWorldOpts = {
   explicitWorldId?: number;
   entityId?: number;
   listId?: number;
-  /** Resolve user/agent private world then assert caller grants (same as explicitWorldId) */
-  subjectKind?: SubjectKind;
+  /** Resolve subject private world then assert caller grants (same as explicitWorldId) */
+  subjectId?: number;
   /** 默认 read；创建/更新/删除工具应传 write */
   access?: "read" | "write";
 };
@@ -112,17 +157,36 @@ export async function resolveToolWorld(opts: ResolveToolWorldOpts): Promise<numb
     return opts.explicitWorldId;
   }
 
-  if (opts.subjectKind != null) {
-    const worldId = resolveSubjectWorldId(opts.subjectKind);
+  if (opts.subjectId != null && opts.subjectId > 0) {
+    const worldId = await resolvePrivateWorldId(opts.subjectId);
     await assertSubjectCanAccessWorld(callerSubjectId, worldId, { access });
     return worldId;
   }
 
-  // 调用方自己的 default private world：owner 满权限，无需再 assert
+  // 工具 ALS / token subject 的 default private world：owner 满权限，无需再 assert
   return resolveDefaultPrivateWorldForSubject(callerSubjectId);
 }
 
-/** 供搜索列举：subject 可读的全部 world */
+/** 供搜索列举：subject 可读的全部 world（user 可超过 500；再与 token data 求交） */
 export async function listWorldIdsAccessibleBySubject(subjectId: number): Promise<number[]> {
-  return resolveWorldsAccessibleBySubject({ list: listEntities }, subjectId);
+  const subject = await getEntity(subjectId);
+  let ids: number[];
+  if (subject?.type === "user") {
+    ids = [];
+    let offset = 0;
+    for (;;) {
+      const batch = await listEntities({ type: "world", limit: 500, offset });
+      if (batch.length === 0) break;
+      ids.push(...batch.map((row) => row.id));
+      if (batch.length < 500) break;
+      offset += 500;
+    }
+  } else {
+    ids = await resolveWorldsAccessibleBySubject({ list: listEntities }, subjectId);
+  }
+  const auth = getActiveServiceApiAuth();
+  if (!auth) return ids;
+  const data = tokenDataCapability(auth.authorization);
+  if (!data) return ids;
+  return filterWorldIdsByDataCapability(ids, data);
 }

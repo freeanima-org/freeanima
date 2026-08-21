@@ -52,6 +52,7 @@ tauri-windows: _deps
   {{ bun }} scripts/pack-tauri-windows.ts
 
 # Tauri Android APK → dist/freeanima-mobile-tauri-android.apk
+# 默认 ABI=aarch64；全 ABI：FREEANIMA_ANDROID_TARGETS=all
 [no-cd]
 tauri-android: _deps _ensure-tauri-android
   {{ bun }} scripts/build-tauri-android.ts

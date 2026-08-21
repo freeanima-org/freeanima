@@ -258,6 +258,8 @@ export class DiscordAdapter implements PlatformAdapter {
     this.conversationUpdatedOff?.();
     this.conversationUpdatedOff = null;
     try {
+      // AppRuntimeContext 端口面未暴露 kernel；真实 runtime 有
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- AppRuntime.kernel 组合根边界
       const kernel = (getAppRuntime() as { kernel?: { hookRegistry: HookRegistry } }).kernel;
       const registry = kernel?.hookRegistry;
       if (!registry) return;

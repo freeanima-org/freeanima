@@ -109,7 +109,9 @@ export async function resolveOllamaModelHints(
       });
       if (!res.ok) continue;
 
-      const data = (await res.json()) as OllamaShowResponse;
+      const dataUnknown: unknown = await res.json();
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Ollama show 响应形
+      const data = dataUnknown as OllamaShowResponse;
       if (data.modelfile) {
         for (const repo of extractRepoFromModelfile(data.modelfile)) add(repo);
       }

@@ -1,5 +1,7 @@
 /// <reference lib="dom" />
 import type { PomodoroActiveBody } from "@freeanima/shared/entity-shapes";
+import { isRecord } from "@freeanima/shared/util";
+
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
 import { activeStateToHabitatBody, habitatBodyToActiveState } from "./pomodoro-active-store.ts";
 import { readPomodoroActiveState, writePomodoroActiveState } from "./pomodoro-active.ts";
@@ -29,35 +31,36 @@ function storage(): Storage | null {
   }
 }
 
-function subjectKey(subjectKind: string): string {
-  return subjectKind;
+function subjectKey(subjectId: number): string {
+  return String(subjectId);
 }
 
-function metaStorageKey(subjectKind: string): string {
-  return `${META_PREFIX}:${subjectKind}`;
+function metaStorageKey(subjectId: number): string {
+  return `${META_PREFIX}:${subjectId}`;
 }
 
-function readPersistedMeta(subjectKind: string): PomodoroSyncMeta | null {
+function readPersistedMeta(subjectId: number): PomodoroSyncMeta | null {
   try {
     const store = storage();
     if (!store) return null;
-    const raw = store.getItem(metaStorageKey(subjectKind));
+    const raw = store.getItem(metaStorageKey(subjectId));
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as PomodoroSyncMeta;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed)) return null;
     if (typeof parsed.device_id !== "string" || typeof parsed.updated_at_ms !== "number") {
       return null;
     }
-    return parsed;
+    return { device_id: parsed.device_id, updated_at_ms: parsed.updated_at_ms };
   } catch {
     return null;
   }
 }
 
-function writePersistedMeta(subjectKind: string, meta: PomodoroSyncMeta | null): void {
+function writePersistedMeta(subjectId: number, meta: PomodoroSyncMeta | null): void {
   try {
     const store = storage();
     if (!store) return;
-    const key = metaStorageKey(subjectKind);
+    const key = metaStorageKey(subjectId);
     if (meta == null) {
       store.removeItem(key);
       return;
@@ -68,8 +71,8 @@ function writePersistedMeta(subjectKind: string, meta: PomodoroSyncMeta | null):
   }
 }
 
-function notify(subjectKind: string): void {
-  const snapshot = getPomodoroSyncSnapshot(subjectKind);
+function notify(subjectId: number): void {
+  const snapshot = getPomodoroSyncSnapshot(subjectId);
   for (const listener of listeners) listener(snapshot);
 }
 
@@ -78,36 +81,50 @@ export function subscribePomodoroSync(listener: SyncListener): () => void {
   return () => listeners.delete(listener);
 }
 
-export function getPomodoroSyncMeta(subjectKind: string): PomodoroSyncMeta | null {
-  return metaBySubject.get(subjectKey(subjectKind)) ?? readPersistedMeta(subjectKind);
+export function getPomodoroSyncMeta(subjectId: number): PomodoroSyncMeta | null {
+  return metaBySubject.get(subjectKey(subjectId)) ?? readPersistedMeta(subjectId);
 }
 
-export function getPomodoroSyncSnapshot(subjectKind: string): PomodoroSyncSnapshot {
+export function getPomodoroSyncSnapshot(subjectId: number): PomodoroSyncSnapshot {
   return {
-    active: readPomodoroActiveState(undefined, subjectKind as "user" | "agent"),
-    meta: getPomodoroSyncMeta(subjectKind),
+    active: subjectId > 0 ? readPomodoroActiveState(undefined, subjectId) : null,
+    meta: getPomodoroSyncMeta(subjectId),
   };
 }
 
-export function setPomodoroSyncMeta(subjectKind: string, meta: PomodoroSyncMeta | null): void {
-  const key = subjectKey(subjectKind);
+export function setPomodoroSyncMeta(subjectId: number, meta: PomodoroSyncMeta | null): void {
+  const key = subjectKey(subjectId);
   if (meta == null) {
     metaBySubject.delete(key);
-    writePersistedMeta(subjectKind, null);
+    writePersistedMeta(subjectId, null);
   } else {
     metaBySubject.set(key, meta);
-    writePersistedMeta(subjectKind, meta);
+    writePersistedMeta(subjectId, meta);
   }
 }
 
 export function applyLocalPomodoroActive(
   next: PomodoroActiveState | null,
-  subjectKind: "user" | "agent",
+  subjectId: number,
   meta?: PomodoroSyncMeta | null,
+  opts?: { broadcastShell?: boolean },
 ): void {
-  writePomodoroActiveState(next, undefined, subjectKind);
-  setPomodoroSyncMeta(subjectKind, meta ?? null);
-  notify(subjectKind);
+  writePomodoroActiveState(next, undefined, subjectId);
+  setPomodoroSyncMeta(subjectId, meta ?? null);
+  notify(subjectId);
+  if (opts?.broadcastShell === false) return;
+  try {
+    const shell = typeof window !== "undefined" ? window.portalShell : undefined;
+    void shell
+      ?.emitPomodoroActiveSync?.({
+        subject_id: subjectId,
+        active: next,
+        meta: meta ?? null,
+      })
+      .catch(() => undefined);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function buildHubActivePayload(
@@ -121,7 +138,15 @@ export function mergeRemoteActive(
   remote: PomodoroActiveBody | null,
   local: PomodoroActiveState | null,
   localMeta: PomodoroSyncMeta | null,
+  opts?: { preferRemote?: boolean },
 ): { active: PomodoroActiveState | null; meta: PomodoroSyncMeta | null } {
+  if (opts?.preferRemote) {
+    if (!remote) return { active: null, meta: null };
+    return {
+      active: habitatBodyToActiveState(remote),
+      meta: { device_id: remote.device_id, updated_at_ms: remote.updated_at_ms },
+    };
+  }
   if (!remote) {
     return { active: local, meta: localMeta };
   }
@@ -135,8 +160,8 @@ export function mergeRemoteActive(
   return { active: local, meta: localMeta };
 }
 
-export function dispatchPomodoroActiveChanged(subjectKind: string): void {
-  notify(subjectKind);
+export function dispatchPomodoroActiveChanged(subjectId: number): void {
+  notify(subjectId);
 }
 
 export function clearPomodoroSyncMetaForTest(): void {

@@ -32,6 +32,7 @@ function emptyDebug(query: string): PassiveRecallDebugTrace {
     after_score_filter: [],
     after_resident_filter: [],
     excluded_resident_ids: [],
+    excluded_current_conversation_ids: [],
     injected: [],
     elapsed_ms: 0,
   };
@@ -76,6 +77,16 @@ export function createPassiveMemoryRecallHandler() {
       return;
     }
 
+    let agentWorldId: number;
+    try {
+      const { resolveBoundAgentForConversation } =
+        await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+      agentWorldId = (await resolveBoundAgentForConversation(conversationId)).agent_world_id;
+    } catch {
+      finishDebug(ctx, undefined, { skipped_reason: "no_bound_agent", query: "" });
+      return;
+    }
+
     const query = focusPassiveRecallQuery(stripTimePrefixFromUserContent(lastMsg.content));
     if (!query) {
       finishDebug(ctx, undefined, { skipped_reason: "empty_query", query: "" });
@@ -90,6 +101,7 @@ export function createPassiveMemoryRecallHandler() {
         limit: config.limit,
         min_score: config.min_score,
         min_relative_score: config.min_relative_score,
+        world_id: agentWorldId,
         debug: ctx.llm_debug === true,
       });
       hits = result.hits;
@@ -106,14 +118,27 @@ export function createPassiveMemoryRecallHandler() {
       throw e;
     }
 
+    if (ctx.llm_debug === true && !debug) {
+      debug = emptyDebug(query);
+    }
+
     let excludedResidentIds: number[] = [];
     if (config.exclude_resident && hits.length > 0) {
-      const resident = await listResidentSemanticMemory();
+      const resident = await listResidentSemanticMemory(undefined, { world_id: agentWorldId });
       const residentIds = new Set(resident.map((row) => row.id));
       const before = hits;
       hits = hits.filter((hit) => !residentIds.has(hit.semantic_memory_id));
       excludedResidentIds = before
         .filter((hit) => residentIds.has(hit.semantic_memory_id))
+        .map((hit) => hit.semantic_memory_id);
+    }
+
+    let excludedCurrentConversationIds: number[] = [];
+    if (config.exclude_current_conversation && hits.length > 0) {
+      const before = hits;
+      hits = hits.filter((hit) => !hit.source_conversations.includes(conversationId));
+      excludedCurrentConversationIds = before
+        .filter((hit) => hit.source_conversations.includes(conversationId))
         .map((hit) => hit.semantic_memory_id);
     }
 
@@ -124,6 +149,7 @@ export function createPassiveMemoryRecallHandler() {
         content_preview: previewPassiveContent(h.content),
       }));
       debug.excluded_resident_ids = excludedResidentIds;
+      debug.excluded_current_conversation_ids = excludedCurrentConversationIds;
       debug.elapsed_ms = Math.round(performance.now() - started);
     }
 

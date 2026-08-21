@@ -1,12 +1,14 @@
 import { applyChangeLog, type DeepSleepChangeLog } from "./types.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 function parseToolJson(content: string): Record<string, unknown> | null {
   try {
     const parsed: unknown = JSON.parse(content);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-    if ("error" in parsed && parsed.error) return null;
-    return parsed as Record<string, unknown>;
+    const rec = asRecord(parsed);
+    if (!rec) return null;
+    if ("error" in rec && rec.error) return null;
+    return rec;
   } catch {
     return null;
   }

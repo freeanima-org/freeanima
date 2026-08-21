@@ -6,12 +6,13 @@ import {
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import {
-  SubjectScopeToggle,
-  useSubjectScope,
+  useUserSubjectId,
   setCompactImmersive,
   useActionSheetCapability,
   useContextMenuCapability,
+  useShellQuickIdSet,
 } from "@freeanima/client/portal-sdk/react.tsx";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
 import {
   Button,
@@ -112,12 +113,13 @@ function menuToSheet(items: ProjectMenuItem[]): ActionSheetItem[] {
 }
 
 export function ProjectApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const writesDisabled = false;
   const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useActionSheetCapability();
   const useDrawer = useDrawerNav();
   const layoutMode = useThreeColumnLayoutMode();
+  const quickIds = useShellQuickIdSet();
 
   useEffect(() => {
     registerProjectOfflineModule();
@@ -132,23 +134,23 @@ export function ProjectApp() {
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [showInactive, setShowInactive] = useState(false);
-  const [hideCompleted, setHideCompleted] = useState(() => readHideCompleted(subjectKind));
+  const [hideCompleted, setHideCompleted] = useState(() => readHideCompleted(subjectId));
   const [tasks, setTasks] = useState<TaskItemRow[]>([]);
   const [tagPool, setTagPool] = useState<Array<{ id: number; title: string }>>([]);
   const [tagFilterId, setTagFilterId] = useState<number | null>(null);
-  const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
+  const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectId);
 
   type ProjectTreeBundle = { folders: ProjectFolderRow[]; projects: ProjectRow[] };
   const projectTreeQuery = usePortalRead<ProjectTreeBundle>({
-    queryKey: ["project", "tree", subjectKind],
+    queryKey: ["project", "tree", subjectId],
     queryFn: async () => {
       const [folderRows, projectRows] = await Promise.all([
-        fetchProjectFolders(subjectKind),
-        fetchProjects(subjectKind),
+        fetchProjectFolders(subjectId),
+        fetchProjects(subjectId),
       ]);
       let projectsWithCounts = projectRows;
       try {
-        const stats = await fetchProjectStats(subjectKind);
+        const stats = await fetchProjectStats(subjectId);
         if (stats.size > 0) {
           projectsWithCounts = projectRows.map((p) => ({
             ...p,
@@ -170,7 +172,7 @@ export function ProjectApp() {
     setFolders(bundle.folders);
     setProjects(bundle.projects);
     const fromUrl = readProjectFromUrl();
-    const stored = readModuleSelection("project", { subjectKind });
+    const stored = readModuleSelection("project", { subjectId });
     const active = bundle.projects.filter((p) => p.status === "active");
     const pickId =
       fromUrl != null && bundle.projects.some((p) => p.id === fromUrl)
@@ -184,12 +186,12 @@ export function ProjectApp() {
       return pickId;
     });
     if (fromUrl != null && bundle.projects.some((p) => p.id === fromUrl)) {
-      writeModuleSelection("project", fromUrl, { subjectKind });
+      writeModuleSelection("project", fromUrl, { subjectId });
     }
     if (pickId != null && bundle.projects.some((p) => p.id === pickId && p.status !== "active")) {
       setShowInactive(true);
     }
-  }, [projectTreeQuery.data, subjectKind]);
+  }, [projectTreeQuery.data, subjectId]);
 
   useEffect(() => {
     if (projectTreeQuery.error) {
@@ -198,8 +200,8 @@ export function ProjectApp() {
   }, [projectTreeQuery.error]);
 
   // subject 切换时在 render 阶段清空选中，避免详情 effect 用旧 ID 打到新 world
-  if (selectionSubjectKind !== subjectKind) {
-    setSelectionSubjectKind(subjectKind);
+  if (selectionSubjectKind !== subjectId) {
+    setSelectionSubjectKind(subjectId);
     setSelectedFolderId(null);
     setSelectedProjectId(null);
     setTasks([]);
@@ -235,7 +237,7 @@ export function ProjectApp() {
     isEqual: isTaskItemEqual,
     setCompactImmersive,
     persistItem: (snapshot) =>
-      updateProjectTask(subjectKind, snapshot.id, {
+      updateProjectTask(subjectId, snapshot.id, {
         title: snapshot.title,
         content: snapshot.content,
         tag_ids: snapshot.tag_ids,
@@ -307,7 +309,7 @@ export function ProjectApp() {
       setSelectedFolderId((prev) => (prev === tempId ? serverId : prev));
       setSelectedProjectId((prev) => {
         if (prev === tempId) {
-          writeModuleSelection("project", serverId, { subjectKind });
+          writeModuleSelection("project", serverId, { subjectId });
           return serverId;
         }
         return prev;
@@ -324,7 +326,7 @@ export function ProjectApp() {
         };
       });
     });
-  }, [setDetailItem, subjectKind]);
+  }, [setDetailItem, subjectId]);
 
   const [sheetItems, setSheetItems] = useState<ActionSheetItem[] | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<ProjectFolderRow | null>(null);
@@ -361,12 +363,12 @@ export function ProjectApp() {
       return;
     }
     try {
-      const ts = await fetchProjectTasks(subjectKind, selectedProjectId);
+      const ts = await fetchProjectTasks(subjectId, selectedProjectId);
       setTasks(ts);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
-  }, [selectedProjectId, subjectKind]);
+  }, [selectedProjectId, subjectId]);
 
   const reloadTags = useCallback(async () => {
     try {
@@ -396,12 +398,12 @@ export function ProjectApp() {
   }, [refreshing, reload, reloadProjectDetail, reloadTags]);
 
   useEffect(() => {
-    setHideCompleted(readHideCompleted(subjectKind));
-  }, [subjectKind]);
+    setHideCompleted(readHideCompleted(subjectId));
+  }, [subjectId]);
 
   useEffect(() => {
     void reloadTags();
-  }, [subjectKind, reloadTags]);
+  }, [subjectId, reloadTags]);
 
   const tagTitleById = useMemo(
     () => new Map(tagPool.map((t) => [t.id, t.title] as const)),
@@ -444,7 +446,7 @@ export function ProjectApp() {
   useEffect(() => {
     resetDetail();
     void reload();
-  }, [reload, resetDetail, subjectKind]);
+  }, [reload, resetDetail, subjectId]);
 
   useEffect(() => {
     void reloadProjectDetail();
@@ -459,7 +461,7 @@ export function ProjectApp() {
   const handleSelectProject = (id: number) => {
     setSelectedProjectId(id);
     setTagFilterId(null);
-    writeModuleSelection("project", id, { subjectKind });
+    writeModuleSelection("project", id, { subjectId });
     writeProjectToUrl(id);
     setSelectedFolderId(null);
     closeTaskDetail({ discard: true });
@@ -469,7 +471,7 @@ export function ProjectApp() {
   const handleCreateFolder = async (parentId: number | null, name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    await createProjectFolderApi(subjectKind, trimmed, parentId);
+    await createProjectFolderApi(subjectId, trimmed, parentId);
     await reload();
   };
 
@@ -477,13 +479,13 @@ export function ProjectApp() {
     const title = newProjectTitle.trim();
     if (!title) return;
     const folder_id = folderIdForNewProject(selectedProjectId, selectedFolderId, projects);
-    const item = await createProjectApi(subjectKind, {
+    const item = await createProjectApi(subjectId, {
       title,
       folder_id,
     });
     setNewProjectTitle("");
     setSelectedProjectId(item.id);
-    writeModuleSelection("project", item.id, { subjectKind });
+    writeModuleSelection("project", item.id, { subjectId });
     writeProjectToUrl(item.id);
     await reload();
   };
@@ -496,7 +498,7 @@ export function ProjectApp() {
   const toggleHideCompleted = () => {
     setHideCompleted((prev) => {
       const next = !prev;
-      writeHideCompleted(subjectKind, next);
+      writeHideCompleted(subjectId, next);
       return next;
     });
   };
@@ -506,7 +508,7 @@ export function ProjectApp() {
     const title = quickTaskTitle.trim();
     if (!title) return;
     // 省略 sort_order：与清单一致，domain / offline 统一 prepend 到 pending 最前
-    const created = await createProjectTask(subjectKind, {
+    const created = await createProjectTask(subjectId, {
       title,
       project_id: selectedProjectId,
     });
@@ -523,7 +525,7 @@ export function ProjectApp() {
     setTasks([...nextPending, ...completed]);
     try {
       await Promise.all(
-        updates.map((u) => updateProjectTask(subjectKind, u.id, { sort_order: u.sort_order })),
+        updates.map((u) => updateProjectTask(subjectId, u.id, { sort_order: u.sort_order })),
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -534,8 +536,8 @@ export function ProjectApp() {
   const handleToggleComplete = async (item: TaskItemRow) => {
     const saved =
       item.status === "completed"
-        ? await uncompleteProjectTask(subjectKind, item.id)
-        : await completeProjectTask(subjectKind, item.id);
+        ? await uncompleteProjectTask(subjectId, item.id)
+        : await completeProjectTask(subjectId, item.id);
     setTasks((prev) => prev.map((t) => (t.id === saved.id ? saved : t)));
     applySavedItem(saved);
   };
@@ -548,7 +550,7 @@ export function ProjectApp() {
     const item = deleteTaskTarget;
     if (!item) return;
     setDeleteTaskTarget(null);
-    await deleteProjectTask(subjectKind, item.id);
+    await deleteProjectTask(subjectId, item.id);
     setTasks((prev) => prev.filter((t) => t.id !== item.id));
     if (detailItem?.id === item.id) closeTaskDetail();
     await reload();
@@ -558,13 +560,13 @@ export function ProjectApp() {
     async (item: TaskItemRow) => {
       setSheetItems(null);
       try {
-        setTaskListsForMove(await fetchTaskListsForMove(subjectKind));
+        setTaskListsForMove(await fetchTaskListsForMove(subjectId));
         setMoveToListItem(item);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       }
     },
-    [subjectKind],
+    [subjectId],
   );
 
   const closeMoveToListPicker = useCallback(() => {
@@ -575,13 +577,13 @@ export function ProjectApp() {
     async (item: TaskItemRow) => {
       setSheetItems(null);
       try {
-        setProjectsForMove(await fetchProjectsForMove(subjectKind));
+        setProjectsForMove(await fetchProjectsForMove(subjectId));
         setMoveToProjectItem(item);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       }
     },
-    [subjectKind],
+    [subjectId],
   );
 
   const closeMoveToProjectPicker = useCallback(() => {
@@ -590,7 +592,7 @@ export function ProjectApp() {
 
   const handleMoveTaskToList = async (itemId: number, listId: number) => {
     try {
-      await moveProjectTaskToList(subjectKind, itemId, listId);
+      await moveProjectTaskToList(subjectId, itemId, listId);
       closeMoveToListPicker();
       setTasks((prev) => prev.filter((t) => t.id !== itemId));
       if (detailItem?.id === itemId) closeTaskDetail();
@@ -606,7 +608,7 @@ export function ProjectApp() {
       return;
     }
     try {
-      await moveTaskToProject(subjectKind, itemId, projectId);
+      await moveTaskToProject(subjectId, itemId, projectId);
       closeMoveToProjectPicker();
       if (detailItem?.id === itemId) closeTaskDetail();
       if (projectId === selectedProjectId) {
@@ -639,7 +641,7 @@ export function ProjectApp() {
 
   const handleProjectStatus = async (projectId: number, status: ProjectRow["status"]) => {
     if (writesDisabled) return;
-    await patchProjectApi(subjectKind, projectId, { status });
+    await patchProjectApi(subjectId, projectId, { status });
     await reload();
     if (selectedProjectId === projectId) await reloadProjectDetail();
   };
@@ -661,13 +663,13 @@ export function ProjectApp() {
   }) => {
     if (editorTarget == null) return;
     if (editorTarget.kind === "folder") {
-      await patchProjectFolderApi(subjectKind, editorTarget.folder.id, {
+      await patchProjectFolderApi(subjectId, editorTarget.folder.id, {
         name: input.name,
         parent_id: input.folderId,
       });
     } else {
       const dates = projectEditorDatesToIso(input.startLocal ?? "", input.endLocal ?? "");
-      await patchProjectApi(subjectKind, editorTarget.project.id, {
+      await patchProjectApi(subjectId, editorTarget.project.id, {
         title: input.name,
         folder_id: input.folderId,
         ...(input.content !== undefined ? { content: input.content } : {}),
@@ -684,7 +686,7 @@ export function ProjectApp() {
         setFolders((prev) =>
           prev.map((f) => (f.id === action.folderId ? { ...f, parent_id: action.parentId } : f)),
         );
-        await patchProjectFolderApi(subjectKind, action.folderId, {
+        await patchProjectFolderApi(subjectId, action.folderId, {
           parent_id: action.parentId,
         });
       } else if (action.type === "reorderFolders" || action.type === "placeFolder") {
@@ -702,7 +704,7 @@ export function ProjectApp() {
         const placedFolderId = action.type === "placeFolder" ? action.folderId : null;
         if (placedFolderId != null) {
           const placed = ordered.find((f) => f.id === placedFolderId);
-          await patchProjectFolderApi(subjectKind, placedFolderId, {
+          await patchProjectFolderApi(subjectId, placedFolderId, {
             parent_id: action.parentId,
             sort_order: placed?.sort_order ?? ordered.length,
           });
@@ -710,13 +712,13 @@ export function ProjectApp() {
         await Promise.all(
           updates
             .filter((u) => u.id !== placedFolderId)
-            .map((u) => patchProjectFolderApi(subjectKind, u.id, { sort_order: u.sort_order })),
+            .map((u) => patchProjectFolderApi(subjectId, u.id, { sort_order: u.sort_order })),
         );
       } else if (action.type === "moveProject") {
         setProjects((prev) =>
           prev.map((p) => (p.id === action.projectId ? { ...p, folder_id: action.folderId } : p)),
         );
-        await patchProjectApi(subjectKind, action.projectId, { folder_id: action.folderId });
+        await patchProjectApi(subjectId, action.projectId, { folder_id: action.folderId });
       } else if (action.type === "reorderProjects" || action.type === "placeProject") {
         const updates = sortOrderUpdates(action.ordered);
         const ordered = applySortOrderUpdates(
@@ -731,7 +733,7 @@ export function ProjectApp() {
         const placedProjectId = action.type === "placeProject" ? action.projectId : null;
         if (placedProjectId != null) {
           const placed = ordered.find((p) => p.id === placedProjectId);
-          await patchProjectApi(subjectKind, placedProjectId, {
+          await patchProjectApi(subjectId, placedProjectId, {
             folder_id: action.folderId,
             sort_order: placed?.sort_order ?? ordered.length,
           });
@@ -739,7 +741,7 @@ export function ProjectApp() {
         await Promise.all(
           updates
             .filter((u) => u.id !== placedProjectId)
-            .map((u) => patchProjectApi(subjectKind, u.id, { sort_order: u.sort_order })),
+            .map((u) => patchProjectApi(subjectId, u.id, { sort_order: u.sort_order })),
         );
       }
     } catch (err) {
@@ -761,17 +763,7 @@ export function ProjectApp() {
   };
 
   const openProjectMenuSheet = (project: ProjectRow) => {
-    setSheetItems(
-      menuToSheet(
-        buildProjectMenuItems(project, {
-          onEdit: openProjectEditor,
-          onDelete: (p) => setDeleteProjectTarget(p),
-          onStatusChange: (p, status) => void handleProjectStatus(p.id, status),
-          hideCompleted,
-          onToggleHideCompleted: toggleHideCompleted,
-        }),
-      ),
-    );
+    setSheetItems(contextMenuItemsForProject(project));
   };
 
   const openTaskMenuSheet = (item: TaskItemRow) => {
@@ -787,8 +779,8 @@ export function ProjectApp() {
       }),
     );
 
-  const contextMenuItemsForProject = (project: ProjectRow): ActionSheetItem[] =>
-    menuToSheet(
+  const contextMenuItemsForProject = (project: ProjectRow): ActionSheetItem[] => {
+    const items = menuToSheet(
       buildProjectMenuItems(project, {
         onEdit: openProjectEditor,
         onDelete: (p) => setDeleteProjectTarget(p),
@@ -797,6 +789,17 @@ export function ProjectApp() {
         onToggleHideCompleted: toggleHideCompleted,
       }),
     );
+    const attached = quickIds.has(project.id);
+    items.push({
+      label: attached ? "移出快捷" : "加入快捷",
+      onClick: () => {
+        void toggleShellQuick(project.id).catch(() => {
+          /* ignore */
+        });
+      },
+    });
+    return items;
+  };
 
   const contextMenuItemsForItem = (item: TaskItemRow): ActionSheetItem[] =>
     menuToSheet(buildTaskMenuForItem(item));
@@ -837,16 +840,14 @@ export function ProjectApp() {
           }
           list={
             <div className="flex h-full min-h-0 flex-col">
-              <ModuleScopeBar>
-                <SubjectScopeToggle />
-              </ModuleScopeBar>
+              <ModuleScopeBar></ModuleScopeBar>
               <ProjectDndRoot
                 folders={folders}
                 projects={projects}
                 onAction={(action) => void applyDragAction(action)}
               >
                 <ProjectSidebar
-                  subjectKind={subjectKind}
+                  subjectId={subjectId}
                   folders={folders}
                   projects={activeProjects}
                   inactiveProjects={inactiveProjects}
@@ -1032,7 +1033,7 @@ export function ProjectApp() {
         variant="error"
         onConfirm={() => {
           if (!deleteFolderTarget) return;
-          void deleteProjectFolderApi(subjectKind, deleteFolderTarget.id).then(() => {
+          void deleteProjectFolderApi(subjectId, deleteFolderTarget.id).then(() => {
             setDeleteFolderTarget(null);
             void reload();
           });
@@ -1052,7 +1053,7 @@ export function ProjectApp() {
         variant="error"
         onConfirm={() => {
           if (!deleteProjectTarget) return;
-          void deleteProjectApi(subjectKind, deleteProjectTarget.id).then(() => {
+          void deleteProjectApi(subjectId, deleteProjectTarget.id).then(() => {
             if (selectedProjectId === deleteProjectTarget.id) {
               setSelectedProjectId(null);
               closeTaskDetail();

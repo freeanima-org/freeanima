@@ -21,6 +21,7 @@ import { deleteOccurrencesForSeries } from "@freeanima/features/task/domain/occu
 import { nextPrependSortOrder } from "@freeanima/shared/task/sort-order.ts";
 import { getTaskItem, listTaskItems } from "@freeanima/features/task/domain/item-store.ts";
 import type { TaskItemRow } from "@freeanima/features/task/domain/types.ts";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 import type { CalendarEventRow, CalendarStoreContext, CalendarReminderEntry } from "./types.ts";
 
@@ -198,7 +199,7 @@ export async function convertTaskItemToCalendarEvent(
   const children = await listTaskItems(worldId, {
     parent_id: id,
     roots_only: false,
-    in_backlog: false,
+    container: TaskContainer.ANY,
     ...(parsed.project_id != null
       ? { project_id: parsed.project_id }
       : parsed.list_id != null

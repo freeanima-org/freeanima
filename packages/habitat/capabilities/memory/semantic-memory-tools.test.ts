@@ -20,6 +20,7 @@ const getSemanticMemoryMock = mock(async (id: number) => {
       observed_at: new Date("2026-03-01T10:00:00+08:00"),
       occurred_at: "2025 Spring",
       status: "active",
+      world_id: 100,
       created_at: new Date("2026-01-01T00:00:00.000Z"),
       updated_at: new Date("2026-01-01T00:00:00.000Z"),
     };
@@ -35,6 +36,7 @@ const getSemanticMemoryMock = mock(async (id: number) => {
       observed_at: new Date("2026-04-01T10:00:00+08:00"),
       occurred_at: "2024 Winter",
       status: "active",
+      world_id: 100,
       created_at: new Date("2026-01-01T00:00:00.000Z"),
       updated_at: new Date("2026-01-01T00:00:00.000Z"),
     };
@@ -58,6 +60,11 @@ mock.module("@freeanima/habitat/core/db/pg/semantic-memory", () => ({
   searchSemanticMemoryFts: mock(async () => []),
 }));
 
+mock.module("@freeanima/habitat/core/config/world-context-pg.ts", () => ({
+  resolvePrivateWorldId: mock(async () => 100),
+}));
+
+import { runWithToolContext } from "@freeanima/habitat/core/tool";
 import { createSemanticMemoryFromArgs, semanticMemoryToolDefs } from "./semantic-memory-tools.ts";
 
 describe("createSemanticMemoryFromArgs observed_at", () => {
@@ -73,7 +80,7 @@ describe("createSemanticMemoryFromArgs observed_at", () => {
   it("prefers args.observed_at when provided", async () => {
     await createSemanticMemoryFromArgs(
       { content: "test", observed_at: "2026-01-15T08:00:00+08:00" },
-      { observed_at: "2026-02-01T00:00:00+08:00" },
+      { observed_at: "2026-02-01T00:00:00+08:00", world_id: 100 },
     );
     expect(created[0]?.observed_at).toBe("2026-01-15T08:00:00+08:00");
   });
@@ -81,7 +88,7 @@ describe("createSemanticMemoryFromArgs observed_at", () => {
   it("uses defaults when args.observed_at is absent", async () => {
     await createSemanticMemoryFromArgs(
       { content: "test" },
-      { observed_at: "2026-02-01T00:00:00+08:00" },
+      { observed_at: "2026-02-01T00:00:00+08:00", world_id: 100 },
     );
     expect(created[0]?.observed_at).toBe("2026-02-01T00:00:00+08:00");
   });
@@ -97,10 +104,15 @@ describe("memory_semantic_merge occurred_at", () => {
     const mergeDef = semanticMemoryToolDefs.find((d) => d.name === "memory_semantic_merge");
     expect(mergeDef).toBeDefined();
 
-    const raw = await mergeDef!.handler({
-      source_ids: [1, 2],
-      target_content: "merged content",
-    });
+    const raw = await runWithToolContext(
+      "merge-test",
+      () =>
+        mergeDef!.handler({
+          source_ids: [1, 2],
+          target_content: "merged content",
+        }),
+      { tools: { getTool: () => undefined } as never, subjectId: 1 },
+    );
     const parsed = JSON.parse(raw) as {
       merged_occurred_at: string | null;
       id: number;
@@ -112,11 +124,16 @@ describe("memory_semantic_merge occurred_at", () => {
 
   it("target_occurred_at overrides programmatic merge", async () => {
     const mergeDef = semanticMemoryToolDefs.find((d) => d.name === "memory_semantic_merge");
-    const raw = await mergeDef!.handler({
-      source_ids: [1, 2],
-      target_content: "merged content",
-      target_occurred_at: "2026 Summer",
-    });
+    const raw = await runWithToolContext(
+      "merge-test-2",
+      () =>
+        mergeDef!.handler({
+          source_ids: [1, 2],
+          target_content: "merged content",
+          target_occurred_at: "2026 Summer",
+        }),
+      { tools: { getTool: () => undefined } as never, subjectId: 1 },
+    );
     const parsed = JSON.parse(raw) as { merged_occurred_at: string | null };
     expect(parsed.merged_occurred_at).toBe("2026 Summer");
     expect(created[0]?.occurred_at).toBe("2026 Summer");

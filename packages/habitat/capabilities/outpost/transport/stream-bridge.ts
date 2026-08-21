@@ -8,6 +8,7 @@ import {
 import type { DisplayItem } from "@freeanima/habitat/platform/schemas/display";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { mapRuntimeStreamEventToSap } from "@freeanima/shared/rpc-contract";
+import { asRecord } from "@freeanima/shared/util";
 
 export type RemoteToolsStreamEmitter = (method: string, payload: Record<string, unknown>) => void;
 
@@ -238,7 +239,8 @@ export async function* bridgeApiStreamEvents(
   for await (const chunk of source) {
     let data: Record<string, unknown> = {};
     try {
-      data = JSON.parse(chunk.data) as Record<string, unknown>;
+      const parsed: unknown = JSON.parse(chunk.data);
+      data = asRecord(parsed) ?? {};
     } catch {
       data = {};
     }

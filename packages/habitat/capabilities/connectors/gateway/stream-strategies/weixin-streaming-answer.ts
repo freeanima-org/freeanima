@@ -6,6 +6,7 @@ import {
   STREAM_FIRST_FLUSH_MIN_CHARS,
 } from "./first-flush-gate.ts";
 import type { ChannelAction, StreamStrategy, StrategyContext } from "./types.ts";
+import { bagGetGate, bagGetNumber, bagGetString, bagGetTimeout } from "./types.ts";
 
 export const WEIXIN_ANSWER_SEND_MS = 3000;
 
@@ -20,7 +21,7 @@ export type WeixinAnswerIo = {
 };
 
 function clearThrottle(ctx: StrategyContext): void {
-  const existing = ctx.bag.get(BAG_THROTTLE) as ReturnType<typeof setTimeout> | undefined;
+  const existing = bagGetTimeout(ctx.bag, BAG_THROTTLE);
   if (existing) {
     clearTimeout(existing);
     ctx.bag.delete(BAG_THROTTLE);
@@ -28,7 +29,7 @@ function clearThrottle(ctx: StrategyContext): void {
 }
 
 function getGate(ctx: StrategyContext): FirstFlushGate | undefined {
-  return ctx.bag.get(BAG_GATE) as FirstFlushGate | undefined;
+  return bagGetGate(ctx.bag, BAG_GATE);
 }
 
 function disposeGate(ctx: StrategyContext): void {
@@ -55,8 +56,8 @@ export function createWeixinStreamingAnswerStrategy(
 
   const flushDelta = async (ctx: StrategyContext): Promise<void> => {
     if (!ctx.bag.get(BAG_OPEN)) return;
-    const buffer = (ctx.bag.get(BAG_BUFFER) as string | undefined) ?? "";
-    const sentLen = (ctx.bag.get(BAG_SENT) as number | undefined) ?? 0;
+    const buffer = bagGetString(ctx.bag, BAG_BUFFER) ?? "";
+    const sentLen = bagGetNumber(ctx.bag, BAG_SENT) ?? 0;
     const delta = buffer.slice(sentLen).trim();
     if (!delta) return;
     ctx.bag.set(BAG_SENT, buffer.length);
@@ -92,7 +93,7 @@ export function createWeixinStreamingAnswerStrategy(
           return [];
         }
         case "answer_delta": {
-          const next = `${(ctx.bag.get(BAG_BUFFER) as string | undefined) ?? ""}${effect.delta}`;
+          const next = `${bagGetString(ctx.bag, BAG_BUFFER) ?? ""}${effect.delta}`;
           ctx.bag.set(BAG_BUFFER, next);
           const gate = getGate(ctx);
           if (gate && !gate.isOpen()) {
@@ -134,8 +135,8 @@ export function createWeixinStreamingAnswerStrategy(
             await flushDelta(ctx);
           }
           disposeGate(ctx);
-          const buffer = (ctx.bag.get(BAG_BUFFER) as string | undefined) ?? "";
-          const sentLen = (ctx.bag.get(BAG_SENT) as number | undefined) ?? 0;
+          const buffer = bagGetString(ctx.bag, BAG_BUFFER) ?? "";
+          const sentLen = bagGetNumber(ctx.bag, BAG_SENT) ?? 0;
           const tail = buffer.slice(sentLen).trim();
           ctx.bag.set(BAG_BUFFER, "");
           ctx.bag.set(BAG_SENT, 0);

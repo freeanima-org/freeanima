@@ -9,6 +9,19 @@ import { VAULT_ITEM_TYPE_OPTIONS, VAULT_URI_MATCH_OPTIONS } from "./uri-match.ts
 
 export type VaultItemType = (typeof VAULT_ITEM_TYPE_OPTIONS)[number]["value"];
 
+const VAULT_ITEM_TYPES = VAULT_ITEM_TYPE_OPTIONS.map((o) => o.value);
+function isVaultItemType(v: string): v is VaultItemType {
+  return (VAULT_ITEM_TYPES as readonly string[]).includes(v);
+}
+const VAULT_URI_MATCHES = VAULT_URI_MATCH_OPTIONS.map((o) => o.value);
+function isVaultUriMatch(v: string): v is VaultUriMatch {
+  return (VAULT_URI_MATCHES as readonly string[]).includes(v);
+}
+const CUSTOM_FIELD_TYPES = ["text", "hidden", "boolean"] as const;
+function isCustomFieldType(v: string): v is VaultCustomField["type"] {
+  return (CUSTOM_FIELD_TYPES as readonly string[]).includes(v);
+}
+
 export type VaultItemFormValues = {
   title: string;
   item_type: VaultItemType;
@@ -160,7 +173,10 @@ export function VaultItemForm({
           className={selectClassName}
           value={values.item_type}
           disabled={busy}
-          onChange={(e) => setField("item_type", e.target.value as VaultItemType)}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (isVaultItemType(v)) setField("item_type", v);
+          }}
         >
           {VAULT_ITEM_TYPE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -258,7 +274,10 @@ export function VaultItemForm({
                   value={row.match}
                   disabled={busy}
                   aria-label="匹配方式"
-                  onChange={(e) => updateUri(i, { match: e.target.value as VaultUriMatch })}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (isVaultUriMatch(v)) updateUri(i, { match: v });
+                  }}
                 >
                   {VAULT_URI_MATCH_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -361,7 +380,9 @@ export function VaultItemForm({
                   setValues((prev) => ({
                     ...prev,
                     custom_fields: prev.custom_fields.map((f, j) =>
-                      j === i ? { ...f, type: e.target.value as VaultCustomField["type"] } : f,
+                      j === i && isCustomFieldType(e.target.value)
+                        ? { ...f, type: e.target.value }
+                        : f,
                     ),
                   }))
                 }

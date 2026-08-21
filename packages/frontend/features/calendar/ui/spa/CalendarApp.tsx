@@ -1,27 +1,51 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  openEntityResource,
+  subscribeEntityOverlayClose,
+} from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
-import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
+import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
+  cn,
   DropdownMenu,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   Spinner,
-  cn,
 } from "@freeanima/ui-kit";
-import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import { toast } from "@freeanima/ui-kit/composite";
-import { ChevronDown, ChevronLeft, ChevronRight, PlusIcon } from "lucide-react";
+import { useCompactLayout } from "@freeanima/ui-kit/layout";
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  PlusIcon,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AgendaList } from "./components/AgendaList.tsx";
-import { CalendarDisplayPopover } from "./components/CalendarDisplayPopover.tsx";
+import { AgendaDayView } from "./components/AgendaDayView.tsx";
+import {
+  CalendarDisplayPopover,
+  CalendarDisplaySheet,
+} from "./components/CalendarDisplayPopover.tsx";
 import { EventEditorDialog, type EventEditorTarget } from "./components/EventEditorDialog.tsx";
 import { MonthGrid } from "./components/MonthGrid.tsx";
 import { MultiDayAgenda } from "./components/MultiDayAgenda.tsx";
 import { WeekGrid, weekStartMonday } from "./components/WeekGrid.tsx";
 import {
-  createCalendarEvent,
+  dueFiltersForAgenda,
+  filterEndedEvents,
+  mergeCalendarItems,
+  planOverdueFiltersForAgenda,
+} from "./lib/agenda-items.ts";
+import {
+  type CalendarEventRow,
+  type CalendarRangeItem,
+  type CalendarRangeKind,
   convertCalendarEventToTask,
+  createCalendarEvent,
   deleteCalendarEvent,
   fetchCalendarEventById,
   fetchCalendarPrefs,
@@ -30,11 +54,22 @@ import {
   patchTaskDueAt,
   updateCalendarEvent,
   updateCalendarPrefs,
-  type CalendarEventRow,
-  type CalendarRangeItem,
-  type CalendarRangeKind,
 } from "./lib/api.ts";
-import { dueFiltersForAgenda, filterEndedEvents, mergeCalendarItems } from "./lib/agenda-items.ts";
+import { readCalendarEventFromUrl, writeCalendarEventToUrl } from "./lib/calendar-event-url.ts";
+import {
+  type BuiltinCalendarSourceId,
+  builtinSourceLabel,
+  CALENDAR_VIEW_MODE_LABEL,
+  CALENDAR_VIEW_MODES,
+  type CalendarKindPref,
+  type CalendarUiPrefsWritePatch,
+  type CalendarViewMode,
+  currentViewDisplay,
+  isAgendaViewMode,
+  readCalendarUiPrefs,
+  replaceCalendarUiPrefs,
+  writeCalendarUiPrefs,
+} from "./lib/calendar-prefs.ts";
 import {
   cstDayKey,
   dayHeadingLabel,
@@ -47,27 +82,9 @@ import {
   shiftMonth,
 } from "./lib/format-calendar.ts";
 import { registerCalendarOfflineModule } from "./lib/offline-store.ts";
-import {
-  CALENDAR_VIEW_MODE_LABEL,
-  CALENDAR_VIEW_MODES,
-  builtinSourceLabel,
-  currentViewDisplay,
-  isAgendaViewMode,
-  readCalendarUiPrefs,
-  replaceCalendarUiPrefs,
-  writeCalendarUiPrefs,
-  type BuiltinCalendarSourceId,
-  type CalendarKindPref,
-  type CalendarUiPrefsWritePatch,
-  type CalendarViewMode,
-} from "./lib/calendar-prefs.ts";
-import { readCalendarEventFromUrl, writeCalendarEventToUrl } from "./lib/calendar-event-url.ts";
 import { filterVisibleCalendarItems } from "./lib/visible-items.ts";
 
 registerCalendarOfflineModule();
-
-/** 日程暂只看用户视图，不暴露 subject 切换 */
-const CALENDAR_SUBJECT = "user" as const;
 
 function openTask(id: number) {
   void openEntityResource({ id, component: "task_item", present: "overlay" });
@@ -78,6 +95,7 @@ function openProject(id: number) {
 }
 
 export function CalendarApp() {
+  const subjectId = useUserSubjectId();
   const compact = useCompactLayout();
   const today = cstDayKey();
   const [cursor, setCursor] = useState(() => {
@@ -99,6 +117,7 @@ export function CalendarApp() {
   const [editor, setEditor] = useState<EventEditorTarget | null>(null);
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
   const [refreshing, setRefreshing] = useState(false);
+  const [displaySheetOpen, setDisplaySheetOpen] = useState(false);
 
   const patchPrefs = useCallback((patch: CalendarUiPrefsWritePatch) => {
     const next = writeCalendarUiPrefs(patch);
@@ -112,14 +131,14 @@ export function CalendarApp() {
         [next.viewMode]: patch.currentView,
       };
     }
-    void updateCalendarPrefs(CALENDAR_SUBJECT, remotePatch).catch(() => {
+    void updateCalendarPrefs(subjectId, remotePatch).catch(() => {
       /* 本地已写入；下次启动再对齐 */
     });
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-    void fetchCalendarPrefs(CALENDAR_SUBJECT)
+    void fetchCalendarPrefs(subjectId)
       .then((remote) => {
         if (cancelled) return;
         setPrefs(replaceCalendarUiPrefs(remote));
@@ -159,33 +178,47 @@ export function CalendarApp() {
     () => (kinds.includes("task") ? dueFiltersForAgenda(viewMode, selectedDay, today) : null),
     [kinds, selectedDay, today, viewMode],
   );
+  const planOverdueFilters = useMemo(
+    () =>
+      kinds.includes("task") ? planOverdueFiltersForAgenda(viewMode, selectedDay, today) : null,
+    [kinds, selectedDay, today, viewMode],
+  );
 
   const kindsKey = rangeKinds.toSorted().join(",");
   const sourcesKey = builtinSources.toSorted().join(",");
   const dueKey = dueFilters ? JSON.stringify(dueFilters) : "";
+  const planOverdueKey = planOverdueFilters ? JSON.stringify(planOverdueFilters) : "";
   const query = usePortalRead({
     queryKey: [
       "calendar",
       "range",
-      CALENDAR_SUBJECT,
+      subjectId,
       range.from,
       range.to,
       kindsKey,
       sourcesKey,
       dueKey,
+      planOverdueKey,
       showCompleted ? "1" : "0",
     ],
     queryFn: async () => {
-      const rangeItems = await fetchCalendarRange(CALENDAR_SUBJECT, {
+      const rangeItems = await fetchCalendarRange(subjectId, {
         from: range.from,
         to: range.to,
         kinds: rangeKinds,
         ...(builtinSources.length > 0 ? { sources: builtinSources } : {}),
         ...(showCompleted ? { include_completed: true } : {}),
       });
-      if (!dueFilters) return rangeItems;
-      const dueItems = await fetchDueTasksForAgenda(CALENDAR_SUBJECT, dueFilters);
-      return mergeCalendarItems(rangeItems, dueItems);
+      let merged = rangeItems;
+      if (dueFilters) {
+        const dueItems = await fetchDueTasksForAgenda(subjectId, dueFilters);
+        merged = mergeCalendarItems(merged, dueItems);
+      }
+      if (planOverdueFilters) {
+        const planItems = await fetchDueTasksForAgenda(subjectId, planOverdueFilters);
+        merged = mergeCalendarItems(merged, planItems);
+      }
+      return merged;
     },
   });
 
@@ -263,7 +296,20 @@ export function CalendarApp() {
 
   const refresh = useCallback(async () => {
     await query.reload();
-  }, [query]);
+  }, [query.reload]);
+
+  // 任务/项目/事件浮层关闭后刷新议程（浮层内编辑不会自动推动 portal-query）
+  useEffect(() => {
+    return subscribeEntityOverlayClose((info) => {
+      if (
+        info.component === "task_item" ||
+        info.component === "project" ||
+        info.component === "calendar_event"
+      ) {
+        void refresh();
+      }
+    });
+  }, [refresh]);
 
   const handleManualRefresh = useCallback(async () => {
     if (refreshing) return;
@@ -331,156 +377,343 @@ export function CalendarApp() {
     >
       <header
         className={cn(
-          "flex flex-wrap items-center gap-2",
+          compact ? "flex flex-col gap-2" : "flex flex-wrap items-center gap-2",
           compact && viewMode === "month" && "px-2 pt-2",
         )}
       >
-        <h1 className="text-lg font-semibold">{"日程"}</h1>
-        <DropdownMenuTrigger>
-          <Button
-            type="button"
-            size={toggleSize}
-            variant="outline"
-            className={cn("min-w-24", compact && "min-h-11")}
-            aria-label="切换视图"
-          >
-            {CALENDAR_VIEW_MODE_LABEL[viewMode]}
-            <ChevronDown className="size-4" />
-          </Button>
-          <DropdownMenu>
-            {CALENDAR_VIEW_MODES.map((mode) => (
-              <DropdownMenuItem
-                key={mode}
-                id={mode}
-                {...(compact ? { className: "min-h-11" } : {})}
-                onAction={() => setViewMode(mode)}
+        {compact ? (
+          <>
+            <div className="flex items-center gap-2">
+              <h1 className="shrink-0 text-lg font-semibold">{"日程"}</h1>
+              <div className="ml-auto flex items-center gap-1.5">
+                <DropdownMenuTrigger>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-11"
+                    aria-label="更多"
+                  >
+                    <MoreHorizontal className="size-4" />
+                  </Button>
+                  <DropdownMenu>
+                    {CALENDAR_VIEW_MODES.map((mode) => (
+                      <DropdownMenuItem
+                        key={mode}
+                        id={`view-${mode}`}
+                        className="min-h-11"
+                        onAction={() => setViewMode(mode)}
+                      >
+                        <span className="flex w-full items-center gap-2">
+                          <Check
+                            className={cn(
+                              "size-4",
+                              viewMode === mode ? "opacity-100" : "opacity-0",
+                            )}
+                            aria-hidden
+                          />
+                          {CALENDAR_VIEW_MODE_LABEL[mode]}
+                        </span>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      id="display"
+                      className="min-h-11"
+                      onAction={() => setDisplaySheetOpen(true)}
+                    >
+                      {"显示"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      id="refresh"
+                      className="min-h-11"
+                      isDisabled={refreshing || query.loading}
+                      onAction={() => void handleManualRefresh()}
+                    >
+                      {refreshing ? "刷新中…" : "刷新"}
+                    </DropdownMenuItem>
+                  </DropdownMenu>
+                </DropdownMenuTrigger>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="min-h-11"
+                  onPress={() => setEditor({ mode: "create", day: selectedDay })}
+                >
+                  <PlusIcon className="size-4" />
+                  {"新建"}
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="flex min-w-0 flex-1 items-center justify-center gap-0.5">
+                {viewMode === "month" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={compact ? "size-11" : undefined}
+                      aria-label={"上一月"}
+                      onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, -1))}
+                    >
+                      <ChevronLeft className="size-4" />
+                    </Button>
+                    <span className="min-w-24 text-center font-medium">
+                      {monthLabel(cursor.year, cursor.monthIndex)}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={compact ? "size-11" : undefined}
+                      aria-label={"下一月"}
+                      onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, 1))}
+                    >
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </>
+                ) : null}
+                {viewMode === "week" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={compact ? "size-11" : undefined}
+                      aria-label="上一周"
+                      onPress={() => {
+                        const prev = shiftDayKey(weekAnchor, -7);
+                        if (prev) setWeekAnchor(prev);
+                      }}
+                    >
+                      <ChevronLeft className="size-4" />
+                    </Button>
+                    <span className="min-w-24 text-center font-medium">{weekAnchor}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={compact ? "size-11" : undefined}
+                      aria-label="下一周"
+                      onPress={() => {
+                        const next = shiftDayKey(weekAnchor, 7);
+                        if (next) setWeekAnchor(next);
+                      }}
+                    >
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </>
+                ) : null}
+                {viewMode === "day" ? (
+                  <>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={compact ? "size-11" : undefined}
+                      aria-label="前一天"
+                      onPress={() => shiftSelectedDay(-1)}
+                    >
+                      <ChevronLeft className="size-4" />
+                    </Button>
+                    <span className="min-w-28 text-center font-medium">
+                      {dayHeadingLabel(selectedDay, today)}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className={compact ? "size-11" : undefined}
+                      aria-label="后一天"
+                      onPress={() => shiftSelectedDay(1)}
+                    >
+                      <ChevronRight className="size-4" />
+                    </Button>
+                  </>
+                ) : null}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-11 shrink-0"
+                onPress={() => applyDay(today)}
               >
-                {CALENDAR_VIEW_MODE_LABEL[mode]}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenu>
-        </DropdownMenuTrigger>
-        {viewMode === "month" ? (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={"上一月"}
-              onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, -1))}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="min-w-24 text-center font-medium">
-              {monthLabel(cursor.year, cursor.monthIndex)}
-            </span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={"下一月"}
-              onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, 1))}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
+                {"今天"}
+              </Button>
+            </div>
+            <CalendarDisplaySheet
+              open={displaySheetOpen}
+              onClose={() => setDisplaySheetOpen(false)}
+              compact={compact}
+              kinds={kinds}
+              builtinSources={builtinSources}
+              expandRecurrence={expandRecurrence}
+              showCompleted={showCompleted}
+              showEndedEvents={showEndedEvents}
+              onToggleKind={toggleKind}
+              onToggleSource={toggleBuiltinSource}
+              onToggleExpandRecurrence={(next) =>
+                patchPrefs({ currentView: { expandRecurrence: next } })
+              }
+              onToggleShowCompleted={(next) => patchPrefs({ currentView: { showCompleted: next } })}
+              onToggleShowEndedEvents={(next) =>
+                patchPrefs({ currentView: { showEndedEvents: next } })
+              }
+            />
           </>
-        ) : null}
-        {viewMode === "week" ? (
+        ) : (
           <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="上一周"
-              onPress={() => {
-                const prev = shiftDayKey(weekAnchor, -7);
-                if (prev) setWeekAnchor(prev);
-              }}
-            >
-              <ChevronLeft className="size-4" />
+            <h1 className="text-lg font-semibold">{"日程"}</h1>
+            <DropdownMenuTrigger>
+              <Button
+                type="button"
+                size={toggleSize}
+                variant="outline"
+                className="min-w-24"
+                aria-label="切换视图"
+              >
+                {CALENDAR_VIEW_MODE_LABEL[viewMode]}
+                <ChevronDown className="size-4" />
+              </Button>
+              <DropdownMenu>
+                {CALENDAR_VIEW_MODES.map((mode) => (
+                  <DropdownMenuItem key={mode} id={mode} onAction={() => setViewMode(mode)}>
+                    {CALENDAR_VIEW_MODE_LABEL[mode]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenu>
+            </DropdownMenuTrigger>
+            {viewMode === "month" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={compact ? "size-11" : undefined}
+                  aria-label={"上一月"}
+                  onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, -1))}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <span className="min-w-24 text-center font-medium">
+                  {monthLabel(cursor.year, cursor.monthIndex)}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={compact ? "size-11" : undefined}
+                  aria-label={"下一月"}
+                  onPress={() => setCursor((c) => shiftMonth(c.year, c.monthIndex, 1))}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </>
+            ) : null}
+            {viewMode === "week" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={compact ? "size-11" : undefined}
+                  aria-label="上一周"
+                  onPress={() => {
+                    const prev = shiftDayKey(weekAnchor, -7);
+                    if (prev) setWeekAnchor(prev);
+                  }}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <span className="min-w-24 text-center font-medium">{weekAnchor}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={compact ? "size-11" : undefined}
+                  aria-label="下一周"
+                  onPress={() => {
+                    const next = shiftDayKey(weekAnchor, 7);
+                    if (next) setWeekAnchor(next);
+                  }}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </>
+            ) : null}
+            {viewMode === "day" ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={compact ? "size-11" : undefined}
+                  aria-label="前一天"
+                  onPress={() => shiftSelectedDay(-1)}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <span className="min-w-28 text-center font-medium">
+                  {dayHeadingLabel(selectedDay, today)}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={compact ? "size-11" : undefined}
+                  aria-label="后一天"
+                  onPress={() => shiftSelectedDay(1)}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </>
+            ) : null}
+            <Button type="button" variant="outline" size="sm" onPress={() => applyDay(today)}>
+              {"今天"}
             </Button>
-            <span className="min-w-24 text-center font-medium">{weekAnchor}</span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="下一周"
-              onPress={() => {
-                const next = shiftDayKey(weekAnchor, 7);
-                if (next) setWeekAnchor(next);
-              }}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
+            <CalendarDisplayPopover
+              toggleSize={toggleSize}
+              compact={compact}
+              kinds={kinds}
+              builtinSources={builtinSources}
+              expandRecurrence={expandRecurrence}
+              showCompleted={showCompleted}
+              showEndedEvents={showEndedEvents}
+              onToggleKind={toggleKind}
+              onToggleSource={toggleBuiltinSource}
+              onToggleExpandRecurrence={(next) =>
+                patchPrefs({ currentView: { expandRecurrence: next } })
+              }
+              onToggleShowCompleted={(next) => patchPrefs({ currentView: { showCompleted: next } })}
+              onToggleShowEndedEvents={(next) =>
+                patchPrefs({ currentView: { showEndedEvents: next } })
+              }
+            />
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 shrink-0 px-2"
+                isDisabled={refreshing || query.loading}
+                aria-label={"刷新"}
+                onPress={() => void handleManualRefresh()}
+              >
+                {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onPress={() => setEditor({ mode: "create", day: selectedDay })}
+              >
+                <PlusIcon className="size-4" />
+                {"新建事件"}
+              </Button>
+            </div>
           </>
-        ) : null}
-        {viewMode === "day" ? (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className={compact ? "size-11" : undefined}
-              aria-label="前一天"
-              onPress={() => shiftSelectedDay(-1)}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="min-w-28 text-center font-medium">
-              {dayHeadingLabel(selectedDay, today)}
-            </span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className={compact ? "size-11" : undefined}
-              aria-label="后一天"
-              onPress={() => shiftSelectedDay(1)}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </>
-        ) : null}
-        <Button type="button" variant="outline" size="sm" onPress={() => applyDay(today)}>
-          {"今天"}
-        </Button>
-        <CalendarDisplayPopover
-          compact={compact}
-          toggleSize={toggleSize}
-          kinds={kinds}
-          builtinSources={builtinSources}
-          expandRecurrence={expandRecurrence}
-          showCompleted={showCompleted}
-          showEndedEvents={showEndedEvents}
-          onToggleKind={toggleKind}
-          onToggleSource={toggleBuiltinSource}
-          onToggleExpandRecurrence={(next) =>
-            patchPrefs({ currentView: { expandRecurrence: next } })
-          }
-          onToggleShowCompleted={(next) => patchPrefs({ currentView: { showCompleted: next } })}
-          onToggleShowEndedEvents={(next) => patchPrefs({ currentView: { showEndedEvents: next } })}
-        />
-        <div className="ml-auto flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-7 shrink-0 px-2"
-            isDisabled={refreshing || query.loading}
-            aria-label={"刷新"}
-            onPress={() => void handleManualRefresh()}
-          >
-            {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onPress={() => setEditor({ mode: "create", day: selectedDay })}
-          >
-            <PlusIcon className="size-4" />
-            {"新建事件"}
-          </Button>
-        </div>
+        )}
       </header>
 
       {query.loading && items.length === 0 ? (
@@ -526,7 +759,7 @@ export function CalendarApp() {
                 onOpenProject={openProject}
                 onOpenHoliday={openHoliday}
                 onDropTaskDue={(taskId, day) => {
-                  void patchTaskDueAt(CALENDAR_SUBJECT, taskId, day).then(() => refresh());
+                  void patchTaskDueAt(subjectId, taskId, day).then(() => refresh());
                 }}
               />
             ) : (
@@ -547,8 +780,9 @@ export function CalendarApp() {
           <section className="flex min-h-0 flex-col rounded-lg border border-border/60 p-3">
             <h2 className="mb-2 text-sm font-medium text-muted-foreground">{selectedDay}</h2>
             <div className="min-h-0 flex-1 overflow-auto">
-              <AgendaList
+              <AgendaDayView
                 day={selectedDay}
+                today={today}
                 items={visibleItems}
                 onOpenEvent={openEvent}
                 onEditEvent={openEvent}
@@ -567,21 +801,21 @@ export function CalendarApp() {
         onClose={() => setEditor(null)}
         onSave={async (input) => {
           if (editor?.mode === "edit") {
-            await updateCalendarEvent(CALENDAR_SUBJECT, { id: editor.event.id, ...input });
+            await updateCalendarEvent(subjectId, { id: editor.event.id, ...input });
           } else {
-            await createCalendarEvent(CALENDAR_SUBJECT, input);
+            await createCalendarEvent(subjectId, input);
           }
           await refresh();
         }}
         {...(editor?.mode === "edit"
           ? {
               onDelete: async () => {
-                await deleteCalendarEvent(CALENDAR_SUBJECT, editor.event.id);
+                await deleteCalendarEvent(subjectId, editor.event.id);
                 setEditor(null);
                 await refresh();
               },
               onConvertToTask: async () => {
-                const item = await convertCalendarEventToTask(CALENDAR_SUBJECT, editor.event.id);
+                const item = await convertCalendarEventToTask(subjectId, editor.event.id);
                 setEditor(null);
                 await refresh();
                 void openEntityResource({

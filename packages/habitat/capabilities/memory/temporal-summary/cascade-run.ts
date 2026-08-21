@@ -22,6 +22,8 @@ export type TemporalSummaryCascadeResult = {
   year_id?: number;
   summary: string;
   skipped?: string;
+  agent_subject_id?: number;
+  world_id?: number;
 };
 
 export type RebuildTemporalPeriodResult = {
@@ -46,6 +48,7 @@ async function upsertEmptyPeriod(opts: {
   empty_reason: string;
   source_count: number;
   summary: string;
+  world_id: number;
 }): Promise<RebuildTemporalPeriodResult> {
   const entity_id = await upsertTemporalSummary({
     window: opts.window,
@@ -53,6 +56,7 @@ async function upsertEmptyPeriod(opts: {
     content: "",
     empty_reason: opts.empty_reason,
     source_count: opts.source_count,
+    world_id: opts.world_id,
   });
   return {
     ok: true,
@@ -66,6 +70,8 @@ async function upsertEmptyPeriod(opts: {
 export async function rebuildMonthSummary(opts: {
   config: ResolvedTemporalSummaryConfig;
   period_start: string;
+  world_id: number;
+  agent_subject_id: number;
 }): Promise<RebuildTemporalPeriodResult> {
   const period_start = monthPeriodStart(opts.period_start);
   const period_end = lastDayOfMonthPeriod(period_start);
@@ -73,6 +79,7 @@ export async function rebuildMonthSummary(opts: {
     window: "day",
     period_start_from: period_start,
     period_start_to: period_end,
+    world_id: opts.world_id,
   });
   if (days.length === 0) {
     return upsertEmptyPeriod({
@@ -81,6 +88,7 @@ export async function rebuildMonthSummary(opts: {
       empty_reason: "no_days",
       source_count: 0,
       summary: `no day rows for ${period_start}`,
+      world_id: opts.world_id,
     });
   }
   const materialDays = withContent(days);
@@ -91,6 +99,7 @@ export async function rebuildMonthSummary(opts: {
       empty_reason: "empty",
       source_count: 0,
       summary: `empty day material for ${period_start}`,
+      world_id: opts.world_id,
     });
   }
   try {
@@ -99,6 +108,7 @@ export async function rebuildMonthSummary(opts: {
       params: { period_start, period_end },
       material: materialDays.map((d) => `[${d.period_start}]\n${d.content}`).join("\n\n"),
       maxChars: opts.config.month_max_chars,
+      agent_subject_id: opts.agent_subject_id,
     });
     if (!content.trim()) {
       return upsertEmptyPeriod({
@@ -107,6 +117,7 @@ export async function rebuildMonthSummary(opts: {
         empty_reason: "empty_summary",
         source_count: materialDays.length,
         summary: "empty month summary",
+        world_id: opts.world_id,
       });
     }
     const entity_id = await upsertTemporalSummary({
@@ -115,6 +126,7 @@ export async function rebuildMonthSummary(opts: {
       content,
       empty_reason: null,
       source_count: materialDays.length,
+      world_id: opts.world_id,
     });
     return { ok: true, entity_id, summary: `month ${period_start}→${entity_id}` };
   } catch (e) {
@@ -133,6 +145,8 @@ export async function rebuildMonthSummary(opts: {
 export async function rebuildYearSummary(opts: {
   config: ResolvedTemporalSummaryConfig;
   period_start: string;
+  world_id: number;
+  agent_subject_id: number;
 }): Promise<RebuildTemporalPeriodResult> {
   const period_start = yearPeriodStart(opts.period_start);
   const y = period_start.slice(0, 4);
@@ -140,6 +154,7 @@ export async function rebuildYearSummary(opts: {
     window: "month",
     period_start_from: period_start,
     period_start_to: `${y}-12-01`,
+    world_id: opts.world_id,
   });
   if (months.length === 0) {
     return upsertEmptyPeriod({
@@ -148,6 +163,7 @@ export async function rebuildYearSummary(opts: {
       empty_reason: "no_months",
       source_count: 0,
       summary: `no month rows for ${y}`,
+      world_id: opts.world_id,
     });
   }
   const materialMonths = withContent(months);
@@ -158,6 +174,7 @@ export async function rebuildYearSummary(opts: {
       empty_reason: "empty",
       source_count: 0,
       summary: `empty month material for ${y}`,
+      world_id: opts.world_id,
     });
   }
   try {
@@ -166,6 +183,7 @@ export async function rebuildYearSummary(opts: {
       params: { year: y },
       material: materialMonths.map((d) => `[${d.period_start}]\n${d.content}`).join("\n\n"),
       maxChars: opts.config.year_max_chars,
+      agent_subject_id: opts.agent_subject_id,
     });
     if (!content.trim()) {
       return upsertEmptyPeriod({
@@ -174,6 +192,7 @@ export async function rebuildYearSummary(opts: {
         empty_reason: "empty_summary",
         source_count: materialMonths.length,
         summary: "empty year summary",
+        world_id: opts.world_id,
       });
     }
     const entity_id = await upsertTemporalSummary({
@@ -182,6 +201,7 @@ export async function rebuildYearSummary(opts: {
       content,
       empty_reason: null,
       source_count: materialMonths.length,
+      world_id: opts.world_id,
     });
     return { ok: true, entity_id, summary: `year ${period_start}→${entity_id}` };
   } catch (e) {
@@ -203,9 +223,18 @@ export async function rebuildYearSummary(opts: {
 export async function runTemporalSummaryCascade(opts: {
   config: ResolvedTemporalSummaryConfig;
   day?: string;
+  agent_subject_id: number;
+  world_id: number;
 }): Promise<TemporalSummaryCascadeResult> {
   if (!opts.config.enabled) {
-    return { ok: true, day: cstDayRange(opts.day).day, summary: "disabled", skipped: "disabled" };
+    return {
+      ok: true,
+      day: cstDayRange(opts.day).day,
+      summary: "disabled",
+      skipped: "disabled",
+      agent_subject_id: opts.agent_subject_id,
+      world_id: opts.world_id,
+    };
   }
   const D = cstDayRange(opts.day).day;
   const parts: string[] = [];
@@ -217,12 +246,16 @@ export async function runTemporalSummaryCascade(opts: {
     const monthResult = await rebuildMonthSummary({
       config: opts.config,
       period_start: prevMonth,
+      world_id: opts.world_id,
+      agent_subject_id: opts.agent_subject_id,
     });
     if (!monthResult.ok) {
       return {
         ok: false,
         day: D,
         summary: monthResult.summary,
+        agent_subject_id: opts.agent_subject_id,
+        world_id: opts.world_id,
       };
     }
     if (monthResult.entity_id != null) {
@@ -236,12 +269,16 @@ export async function runTemporalSummaryCascade(opts: {
     const yearResult = await rebuildYearSummary({
       config: opts.config,
       period_start: prevYear,
+      world_id: opts.world_id,
+      agent_subject_id: opts.agent_subject_id,
     });
     if (!yearResult.ok) {
       return {
         ok: false,
         day: D,
         summary: yearResult.summary,
+        agent_subject_id: opts.agent_subject_id,
+        world_id: opts.world_id,
         ...(month_id != null ? { month_id } : {}),
       };
     }
@@ -257,12 +294,16 @@ export async function runTemporalSummaryCascade(opts: {
       day: D,
       summary: "no cascade triggers",
       skipped: "no_trigger",
+      agent_subject_id: opts.agent_subject_id,
+      world_id: opts.world_id,
     };
   }
   return {
     ok: true,
     day: D,
     summary: parts.join("; "),
+    agent_subject_id: opts.agent_subject_id,
+    world_id: opts.world_id,
     ...(month_id != null ? { month_id } : {}),
     ...(year_id != null ? { year_id } : {}),
   };

@@ -106,10 +106,16 @@ export async function handleConversationTodo(
       return addTodo(conversationId, opts?.content ?? "");
     case "update":
       if (opts?.id == null) return toolError("id is required");
-      if (!opts.status || !VALID_STATUSES.has(opts.status as TodoStatus)) {
+      const status = opts.status;
+      if (
+        status !== "pending" &&
+        status !== "in_progress" &&
+        status !== "completed" &&
+        status !== "cancelled"
+      ) {
         return toolError("valid status is required");
       }
-      return updateTodo(conversationId, opts.id, opts.status as TodoStatus);
+      return updateTodo(conversationId, opts.id, status);
     case "delete":
       if (opts?.id == null) return toolError("id is required");
       return deleteTodo(conversationId, opts.id);

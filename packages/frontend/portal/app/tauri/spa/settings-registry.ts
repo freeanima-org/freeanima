@@ -4,10 +4,10 @@ import {
 } from "@freeanima/client/portal-sdk/settings";
 import { companionClientSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-client-settings-section.ts";
 import { companionHabitatSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts";
+import { pomodoroFloatClientSettingsSection } from "@freeanima/features/pomodoro/ui/spa/settings/pomodoro-float-client-settings-section.ts";
 import { shellModulesSettingsSection } from "@freeanima/client/app-frame/spa/settings/modules-section.ts";
 import { aboutSettingsSection } from "@freeanima/client/app-frame/spa/settings/about/about-section.ts";
 import { appearanceSettingsSection } from "@freeanima/client/app-frame/spa/settings/appearance/appearance-section.ts";
-import { chatSettingsSection } from "@freeanima/client/app-frame/spa/settings/chat/chat-section.ts";
 import { alertSettingsSection } from "@freeanima/client/app-frame/spa/settings/alert/alert-settings-section.ts";
 import { habitatConfigSettingsBindings } from "@freeanima/client/app-frame/spa/settings/habitat-config/habitat-config-sections.ts";
 
@@ -21,10 +21,10 @@ export function createDesktopSettingsBindings(
   return [
     { section: shellModulesSettingsSection },
     { section: appearanceSettingsSection },
-    { section: chatSettingsSection },
     { section: alertSettingsSection },
     { section: desktopGeneralSettingsSection, store: stores.habitat },
     { section: companionClientSettingsSection, store: stores.companionShell },
+    { section: pomodoroFloatClientSettingsSection },
     ...habitatConfigSettingsBindings,
     {
       section: companionHabitatSettingsSection,

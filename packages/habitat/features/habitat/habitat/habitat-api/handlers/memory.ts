@@ -38,6 +38,7 @@ export async function listTemporalSummaries(body: TemporalSummaryListBody) {
     period_start_to: parsed.period_start_to?.trim() || undefined,
     offset: parsed.offset,
     limit: parsed.limit,
+    agent_subject_id: parsed.agent_subject_id,
   });
 }
 
@@ -112,6 +113,7 @@ export async function listSemanticMemories(body: SemanticMemoryListBody) {
     source_conversation: parsed.source_conversation?.trim() || undefined,
     sort_by: parsed.sort_by,
     cluster_id: parsed.cluster_id,
+    agent_subject_id: parsed.agent_subject_id,
   });
 }
 

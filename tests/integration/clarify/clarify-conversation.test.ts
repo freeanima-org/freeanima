@@ -37,7 +37,10 @@ describePg("clarify session", () => {
   });
 
   async function createSession(id: string): Promise<void> {
-    await testConv().initConversation(id, "test-model", { platform: TEST_SAP_CHAT_PLATFORM });
+    await testConv().initConversation(id, "test-model", {
+      platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
+    });
   }
 
   it("session A/B awaiting_clarify isolated", async () => {

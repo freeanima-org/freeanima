@@ -10,6 +10,8 @@ import { omitUndefined } from "@freeanima/habitat/core/util";
 export type ReflectEngineInput = {
   conversation_ids?: string[];
   force?: boolean;
+  world_id?: number;
+  agent_subject_id?: number;
 };
 
 export type ReflectEngineResult = ReflectResult & {
@@ -40,6 +42,8 @@ export async function defaultReflect(input: ReflectInput = {}): Promise<ReflectR
     omitUndefined({
       conversation_ids: input.conversation_ids,
       force: input.force,
+      world_id: input.world_id,
+      agent_subject_id: input.agent_subject_id,
     }),
   );
   return {

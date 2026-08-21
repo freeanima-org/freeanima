@@ -1,11 +1,7 @@
 /** 解析项目 MCP JSON（.agents/mcp.json、.mcp.json、.vscode/mcp.json、.cursor/mcp.json） */
 
+import { asRecord } from "../../util/is-record.ts";
 import type { ProjectMcpServerConfig } from "./types.ts";
-
-function asRecord(v: unknown): Record<string, unknown> | null {
-  if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
-  return null;
-}
 
 function asString(v: unknown): string | undefined {
   return typeof v === "string" ? v : undefined;

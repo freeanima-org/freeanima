@@ -13,7 +13,6 @@ import {
   putPomodoroActive,
   clearPomodoroActive,
 } from "../domain/index.ts";
-import type { PomodoroSubjectKind } from "../domain/index.ts";
 import type { PomodoroActiveBody } from "@freeanima/habitat/core/db/schema/entity";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 
@@ -25,17 +24,14 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-async function storeContext(_deps: RuntimeDeps, subjectKind: PomodoroSubjectKind) {
-  const worldId = await resolvePomodoroWorldId(subjectKind);
+async function storeContext(_deps: RuntimeDeps, subjectId: number) {
+  const worldId = await resolvePomodoroWorldId(subjectId);
   return { worldId };
 }
 
-export async function servicePomodoroConfigGet(
-  deps: RuntimeDeps,
-  input: { subject_kind: PomodoroSubjectKind },
-) {
+export async function servicePomodoroConfigGet(deps: RuntimeDeps, input: { subject_id: number }) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const config = await getPomodoroConfig(ctx);
   return { config };
 }
@@ -43,7 +39,7 @@ export async function servicePomodoroConfigGet(
 export async function servicePomodoroConfigUpdate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: PomodoroSubjectKind;
+    subject_id: number;
     work_minutes?: number;
     short_break_minutes?: number;
     long_break_minutes?: number;
@@ -55,8 +51,8 @@ export async function servicePomodoroConfigUpdate(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { subject_kind: _kind, ...patch } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { subject_id: _sid, ...patch } = input;
   const config = await updatePomodoroConfig(ctx, omitUndefined(patch));
   return { config };
 }
@@ -64,7 +60,7 @@ export async function servicePomodoroConfigUpdate(
 export async function servicePomodoroSessionComplete(
   deps: RuntimeDeps,
   input: {
-    subject_kind: PomodoroSubjectKind;
+    subject_id: number;
     phase: "work" | "short_break" | "long_break";
     started_at: string;
     finished_at: string;
@@ -88,8 +84,8 @@ export async function servicePomodoroSessionComplete(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { subject_kind: _kind, ...body } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { subject_id: _sid, ...body } = input;
   const item = await completePomodoroSession(ctx, body);
   return { item };
 }
@@ -97,7 +93,7 @@ export async function servicePomodoroSessionComplete(
 export async function servicePomodoroSessionAbort(
   deps: RuntimeDeps,
   input: {
-    subject_kind: PomodoroSubjectKind;
+    subject_id: number;
     phase: "work" | "short_break" | "long_break";
     started_at: string;
     finished_at: string;
@@ -121,8 +117,8 @@ export async function servicePomodoroSessionAbort(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { subject_kind: _kind, ...body } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { subject_id: _sid, ...body } = input;
   const item = await abortPomodoroSession(ctx, body);
   return { item };
 }
@@ -130,7 +126,7 @@ export async function servicePomodoroSessionAbort(
 export async function servicePomodoroSessionList(
   deps: RuntimeDeps,
   input: {
-    subject_kind: PomodoroSubjectKind;
+    subject_id: number;
     started_after?: string;
     started_before?: string;
     phase?: "work" | "short_break" | "long_break";
@@ -139,17 +135,17 @@ export async function servicePomodoroSessionList(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { subject_kind: _kind, ...opts } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { subject_id: _sid, ...opts } = input;
   return listPomodoroSessions(ctx, omitUndefined(opts));
 }
 
 export async function servicePomodoroSessionStats(
   deps: RuntimeDeps,
-  input: { subject_kind: PomodoroSubjectKind; period?: "today" | "week" },
+  input: { subject_id: number; period?: "today" | "week" },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const stats = await getPomodoroStats(ctx, input.period ?? "today");
   return stats;
 }
@@ -157,7 +153,7 @@ export async function servicePomodoroSessionStats(
 export async function servicePomodoroFocusList(
   deps: RuntimeDeps,
   input: {
-    subject_kind: PomodoroSubjectKind;
+    subject_id: number;
     task_item_id?: number;
     session_local_id?: string;
     pomodoro_session_id?: number;
@@ -169,17 +165,14 @@ export async function servicePomodoroFocusList(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { subject_kind: _kind, ...opts } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { subject_id: _sid, ...opts } = input;
   return listPomodoroTaskFocus(ctx, omitUndefined(opts));
 }
 
-export async function servicePomodoroActiveGet(
-  deps: RuntimeDeps,
-  input: { subject_kind: PomodoroSubjectKind },
-) {
+export async function servicePomodoroActiveGet(deps: RuntimeDeps, input: { subject_id: number }) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const active = await getPomodoroActive(ctx);
   return { active: active ? omitEntityId(active) : null };
 }
@@ -187,22 +180,19 @@ export async function servicePomodoroActiveGet(
 export async function servicePomodoroActivePut(
   deps: RuntimeDeps,
   input: {
-    subject_kind: PomodoroSubjectKind;
+    subject_id: number;
     active: PomodoroActiveBody;
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const row = await putPomodoroActive(ctx, input.active);
   return { active: row ? omitEntityId(row) : null };
 }
 
-export async function servicePomodoroActiveClear(
-  deps: RuntimeDeps,
-  input: { subject_kind: PomodoroSubjectKind },
-) {
+export async function servicePomodoroActiveClear(deps: RuntimeDeps, input: { subject_id: number }) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   await clearPomodoroActive(ctx);
   return { ok: true as const };
 }

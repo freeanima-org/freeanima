@@ -19,6 +19,7 @@ describe("isRuntimeConfigSectionKey", () => {
     expect(isRuntimeConfigSectionKey("llm")).toBe(false);
     expect(isRuntimeConfigSectionKey("passive_recall")).toBe(true);
     expect(isRuntimeConfigSectionKey("semantic_clustering")).toBe(true);
+    expect(isRuntimeConfigSectionKey("public")).toBe(true);
   });
 
   it("排除 bootstrap 与未知段", () => {

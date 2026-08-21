@@ -1,5 +1,8 @@
-import { getEntity } from "../entity/index.ts";
+import type { ServiceApiTokenAuthorization } from "@freeanima/shared/service-api-auth";
+import { FULL_TOKEN_AUTHORIZATION } from "@freeanima/shared/service-api-auth";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+
+import { getEntity } from "../entity/index.ts";
 import {
   generateServiceApiTokenParts,
   hashServiceApiTokenSecret,
@@ -14,19 +17,14 @@ import {
   touchServiceApiTokenLastUsed,
   updateServiceApiTokenName as updateServiceApiTokenNameRow,
 } from "./repos/token-repo.ts";
-import { toServiceApiTokenPublic, type ServiceApiTokenPublic } from "./types.ts";
+import {
+  toServiceApiTokenPublic,
+  type CreateServiceApiTokenResult,
+  type ServiceApiTokenPublic,
+  type VerifiedServiceApiToken,
+} from "./types.ts";
 
-export type VerifiedServiceApiToken = {
-  token_id: number;
-  subject_id: number;
-  subject_type: "user" | "agent";
-  scopes: string[];
-};
-
-export type CreateServiceApiTokenResult = {
-  token: ServiceApiTokenPublic;
-  plaintext: string;
-};
+export type { VerifiedServiceApiToken, ServiceApiTokenPublic, CreateServiceApiTokenResult };
 
 const TOKEN_VERIFY_CACHE_TTL_MS = 30_000;
 const TOKEN_LAST_USED_THROTTLE_MS = 60_000;
@@ -58,7 +56,7 @@ export function clearServiceApiTokenVerifyCache(): void {
 export async function createServiceApiTokenWithSecret(input: {
   subject_id: number;
   name: string;
-  scopes?: string[];
+  authorization?: ServiceApiTokenAuthorization;
   expires_at?: Date | null;
 }): Promise<CreateServiceApiTokenResult> {
   const subject = await getEntity(input.subject_id);
@@ -74,7 +72,7 @@ export async function createServiceApiTokenWithSecret(input: {
       prefix: parts.prefix,
       token_hash,
       token_secret: parts.secret,
-      scopes: input.scopes,
+      authorization: input.authorization ?? FULL_TOKEN_AUTHORIZATION,
       expires_at: input.expires_at,
     }),
   );
@@ -153,7 +151,7 @@ export async function verifyServiceApiToken(
     token_id: row.id,
     subject_id: row.subject_id,
     subject_type: subject.type,
-    scopes: row.scopes,
+    authorization: row.authorization,
   };
   verifiedTokenCache.set(key, {
     expiresAt: now + TOKEN_VERIFY_CACHE_TTL_MS,
@@ -170,9 +168,10 @@ export async function importServiceApiTokenFromPlaintext(input: {
   subject_id: number;
   name: string;
   plaintext: string;
-  scopes?: string[];
+  authorization?: ServiceApiTokenAuthorization;
 }): Promise<CreateServiceApiTokenResult> {
   const trimmed = input.plaintext.trim();
+  const authorization = input.authorization ?? FULL_TOKEN_AUTHORIZATION;
   const parsed = parseServiceApiToken(trimmed);
   if (parsed) {
     const token_hash = await hashServiceApiTokenSecret(parsed.secret);
@@ -183,7 +182,7 @@ export async function importServiceApiTokenFromPlaintext(input: {
         prefix: parsed.prefix,
         token_hash,
         token_secret: parsed.secret,
-        scopes: input.scopes,
+        authorization,
       }),
     );
     return { token, plaintext: trimmed };
@@ -197,7 +196,7 @@ export async function importServiceApiTokenFromPlaintext(input: {
       prefix: parts.prefix,
       token_hash,
       token_secret: trimmed,
-      scopes: input.scopes,
+      authorization,
     }),
   );
   return { token, plaintext: `${SERVICE_API_TOKEN_PREFIX}${parts.prefix}_${trimmed}` };

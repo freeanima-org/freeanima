@@ -84,9 +84,9 @@ export function flattenVisibleProjectTree(
   return out;
 }
 
-export function readExpandedProjectFolders(subjectKind: string): Set<number> {
+export function readExpandedProjectFolders(subjectId: number): Set<number> {
   try {
-    const raw = localStorage.getItem(`${EXPANDED_KEY_PREFIX}:${subjectKind}`);
+    const raw = localStorage.getItem(`${EXPANDED_KEY_PREFIX}:${subjectId}`);
     if (!raw) return new Set();
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return new Set();
@@ -96,10 +96,10 @@ export function readExpandedProjectFolders(subjectKind: string): Set<number> {
   }
 }
 
-export function writeExpandedProjectFolders(subjectKind: string, ids: Set<number>): void {
+export function writeExpandedProjectFolders(subjectId: number, ids: Set<number>): void {
   try {
     localStorage.setItem(
-      `${EXPANDED_KEY_PREFIX}:${subjectKind}`,
+      `${EXPANDED_KEY_PREFIX}:${subjectId}`,
       JSON.stringify([...ids].toSorted((a, b) => a - b)),
     );
   } catch {
@@ -109,17 +109,17 @@ export function writeExpandedProjectFolders(subjectKind: string, ids: Set<number
 
 const HIDE_COMPLETED_KEY_PREFIX = "freeanima.project.hide-completed";
 
-export function readHideCompleted(subjectKind: string): boolean {
+export function readHideCompleted(subjectId: number): boolean {
   try {
-    return localStorage.getItem(`${HIDE_COMPLETED_KEY_PREFIX}:${subjectKind}`) === "1";
+    return localStorage.getItem(`${HIDE_COMPLETED_KEY_PREFIX}:${subjectId}`) === "1";
   } catch {
     return false;
   }
 }
 
-export function writeHideCompleted(subjectKind: string, hide: boolean): void {
+export function writeHideCompleted(subjectId: number, hide: boolean): void {
   try {
-    localStorage.setItem(`${HIDE_COMPLETED_KEY_PREFIX}:${subjectKind}`, hide ? "1" : "0");
+    localStorage.setItem(`${HIDE_COMPLETED_KEY_PREFIX}:${subjectId}`, hide ? "1" : "0");
   } catch {
     // ignore
   }

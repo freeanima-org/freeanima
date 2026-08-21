@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { taskContainerSchema } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import { taskItemPrioritySchema, taskItemStatusSchema } from "./components/task-item.ts";
 
 /** 相对 CST 日历日（Asia/Shanghai） */
@@ -21,6 +22,13 @@ export const taskItemSearchFiltersSchema = z
     due_on: taskRelativeDaySchema.optional(),
     /** 相对今天（CST）的天数上限；0 = 今天及已过期 */
     due_on_or_before_days: z.number().int().nonnegative().optional(),
+    /** 有计划开始（start_at） */
+    has_start_at: z.boolean().optional(),
+    /**
+     * 计划结束时刻上界（不含）：COALESCE(end_at, start_at) < plan_before。
+     * 议程「计划逾期」常用今天 00:00。
+     */
+    plan_before: z.string().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     /** 相对今天（CST）向前 N 天起（含今天）；6 = 最近 7 个自然日 */
     completed_on_or_after_days: z.number().int().nonnegative().optional(),
@@ -30,7 +38,14 @@ export const taskItemSearchFiltersSchema = z
     completed_before: z.string().optional(),
     /** 限定归属项目 entity id */
     project_id: z.number().int().positive().optional(),
-    /** true = 仅未归属项目的任务（Backlog） */
+    /**
+     * 任务容器：list=清单侧、project=项目侧、any=跨容器。
+     * 优先于遗留 in_backlog。
+     */
+    container: taskContainerSchema.optional(),
+    /**
+     * @deprecated 用 container。true→list，false→any（兼容旧客户端）。
+     */
     in_backlog: z.boolean().optional(),
     /** 子任务父 id */
     parent_id: z.number().int().positive().optional(),

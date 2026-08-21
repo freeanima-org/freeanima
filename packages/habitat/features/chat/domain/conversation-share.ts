@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import {
   isRedisConfigured,
@@ -43,7 +44,22 @@ export type ConversationShareListItem = {
   /** Redis 剩余 TTL 秒；未知为 null */
   ttl_remaining_seconds: number | null;
   url_path: string;
+  /** 配置了 public.origin 时的绝对可复制链接 */
+  url?: string;
 };
+
+/** Web 壳 URL 前缀（与 habitat-api/web-static WEB_URL_PREFIX 对齐） */
+export const CONVERSATION_SHARE_WEB_PREFIX = "/web";
+
+export function conversationShareUrlPath(id: string): string {
+  return `/share/${id}`;
+}
+
+/** 由对外 origin 拼绝对分享链接：`{origin}/web/share/{id}` */
+export function buildConversationSharePublicUrl(id: string, publicOrigin: string): string {
+  const origin = publicOrigin.replace(/\/$/, "");
+  return `${origin}${CONVERSATION_SHARE_WEB_PREFIX}/share/${id}`;
+}
 
 const SHARE_KEY_PREFIX = `${REDIS_KV_KEY_PREFIX}conversation-share:`;
 
@@ -78,7 +94,7 @@ export function filterDisplayByPosList(
 
 function parseSnapshot(raw: string): ConversationShareSnapshot | null {
   try {
-    const parsed = JSON.parse(raw) as ConversationShareSnapshot;
+    const parsed = assertNarrow<ConversationShareSnapshot>(JSON.parse(raw));
     if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.display)) return null;
     return parsed;
   } catch {
@@ -126,7 +142,7 @@ export async function listConversationShares(): Promise<ConversationShareListIte
       expires_at: snapshot.expires_at,
       message_count: snapshot.display.filter((d) => d.type === "message").length,
       ttl_remaining_seconds,
-      url_path: `/share/${id}`,
+      url_path: conversationShareUrlPath(id),
     });
   }
   items.sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));

@@ -18,9 +18,11 @@ import {
   useContextMenuCapability,
   useHabitatConnection,
   useNetworkOnline,
-  useSubjectScope,
+  useUserSubjectId,
+  useShellQuickIdSet,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/client/portal-sdk";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 
@@ -72,8 +74,25 @@ type ListFilter = "unread" | "all";
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type FormState = { mode: "create" | "edit"; account?: EmailAccountRow | null };
 
+function readUrlEmailAccountId(): number | null {
+  const raw = new URLSearchParams(window.location.search).get("account");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+function writeUrlEmailAccountId(id: number | null): void {
+  const url = new URL(window.location.href);
+  if (id == null) url.searchParams.delete("account");
+  else url.searchParams.set("account", String(id));
+  if (url.href !== window.location.href) {
+    window.history.replaceState(null, "", url);
+  }
+}
+
 export function EmailApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
+  const quickIds = useShellQuickIdSet();
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
   const writesDisabled = !networkOnline || habitatConnection !== "connected";
@@ -130,7 +149,7 @@ export function EmailApp() {
   const [messageHasTask, setMessageHasTask] = useState<Record<number, boolean>>({});
 
   const accountsQuery = usePortalRead({
-    queryKey: ["email", "accounts", subjectKind],
+    queryKey: ["email", "accounts", subjectId],
     queryFn: () => fetchEmailAccounts(),
   });
 
@@ -251,7 +270,9 @@ export function EmailApp() {
         if (row.direction === "inbound" && row.unread && !writesDisabled) {
           try {
             await markEmailMessageRead(row.id);
-            // 未读 tab：不立刻从列表剔除，等切 tab / 手动刷新 / 同步再 loadMessages
+            // 未读 tab：不立刻从列表剔除（等切 tab / 手动刷新 / 同步再 loadMessages），
+            // 但本地清掉未读圆点与加粗，避免仍显示「未读」。
+            setMessages((prev) => prev.map((m) => (m.id === row.id ? { ...m, unread: false } : m)));
             setDetail((prev) => (prev?.id === row.id ? { ...prev, unread: false } : prev));
           } catch (markErr) {
             console.warn("markEmailMessageRead failed:", markErr);
@@ -310,19 +331,25 @@ export function EmailApp() {
       setAccounts(rows);
       if (rows.length === 0) {
         setActiveAccountId(null);
+        writeUrlEmailAccountId(null);
         setMailboxes([]);
         setActiveMailbox(null);
         setMessages([]);
         return;
       }
 
+      const fromUrl = readUrlEmailAccountId();
       const stored = readModuleSelection("email");
       const enabled = rows.filter((a) => a.enabled);
       const fallback = enabled[0] ?? rows[0];
-      const account = rows.find((a) => a.id === stored?.accountId) ?? fallback;
+      const account =
+        (fromUrl != null ? rows.find((a) => a.id === fromUrl) : undefined) ??
+        rows.find((a) => a.id === stored?.accountId) ??
+        fallback;
       if (!account) return;
 
       setActiveAccountId(account.id);
+      writeUrlEmailAccountId(account.id);
       if (useDrawer) setListOpen(false);
 
       const boxes = await loadMailboxes(account.id);
@@ -342,7 +369,7 @@ export function EmailApp() {
         setMessages(messageRows);
 
         const storedMessage =
-          stored?.messageId != null
+          fromUrl == null && stored?.messageId != null
             ? messageRows.find((row) => row.id === stored.messageId)
             : undefined;
 
@@ -396,7 +423,7 @@ export function EmailApp() {
 
   useEffect(() => {
     resetForSubjectKind();
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
     if (layoutMode !== "compact") {
@@ -408,6 +435,7 @@ export function EmailApp() {
 
   const selectMailbox = async (account: EmailAccountRow, mailbox: string) => {
     setActiveAccountId(account.id);
+    writeUrlEmailAccountId(account.id);
     if (account.id !== activeAccountId || mailboxes.length === 0) {
       await loadMailboxes(account.id);
     }
@@ -575,6 +603,15 @@ export function EmailApp() {
         onClick: () => setDeleteAccountTarget(account),
       });
     }
+    const attached = quickIds.has(account.id);
+    items.push({
+      label: attached ? "移出快捷" : "加入快捷",
+      onClick: () => {
+        void toggleShellQuick(account.id).catch(() => {
+          /* ignore */
+        });
+      },
+    });
     return items;
   };
 

@@ -1,6 +1,5 @@
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config";
-import type { CalendarSubjectKind } from "./types.ts";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 
-export async function resolveCalendarWorldId(kind: CalendarSubjectKind): Promise<number> {
-  return resolveSubjectWorldId(kind);
+export async function resolveCalendarWorldId(subjectId: number): Promise<number> {
+  return resolvePrivateWorldId(subjectId);
 }

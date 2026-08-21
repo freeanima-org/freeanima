@@ -10,10 +10,9 @@ import {
 import {
   conversationExists,
   listStaleConversationIdsForCleanup,
-  upsertConversationMeta,
 } from "@freeanima/habitat/core/db/pg/conversation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { appendTestMessage } from "../../helpers/pg-test.ts";
+import { appendTestMessage, upsertTestConversationMeta } from "../../helpers/pg-test.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
@@ -23,7 +22,7 @@ import {
 const STALE_UPDATED_AT = "2020-01-01T00:00:00+08:00";
 
 async function seedMeta(conversationId: string, opts?: { debug?: boolean }): Promise<void> {
-  await upsertConversationMeta(conversationId, {
+  await upsertTestConversationMeta(conversationId, {
     model: "test-model",
     cached_toolsets: [],
     functions: [],

@@ -20,6 +20,7 @@ import {
   resolveFirefoxAddonVersion,
 } from "@freeanima/habitat/core/config/firefox-addon.ts";
 import { resolvePackArtifactMeta } from "@freeanima/habitat/core/config/pack-artifact-names.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const root = join(import.meta.dir, "..");
 const extOutDir = join(root, "dist/browser-extension");
@@ -89,16 +90,15 @@ if (!existsSync(firefoxDir)) {
 }
 
 // 核对 manifest.version
-const manifest = JSON.parse(await readFile(join(firefoxDir, "manifest.json"), "utf8")) as {
-  version?: string;
-  browser_specific_settings?: { gecko?: { id?: string; update_url?: string } };
-};
+const manifest = asRecord(JSON.parse(await readFile(join(firefoxDir, "manifest.json"), "utf8")));
+if (!manifest) throw new Error("invalid firefox manifest.json");
 if (manifest.version !== addonVersion) {
   throw new Error(
-    `firefox manifest.version mismatch: built=${manifest.version} expected=${addonVersion}`,
+    `firefox manifest.version mismatch: built=${String(manifest.version)} expected=${addonVersion}`,
   );
 }
-if (!manifest.browser_specific_settings?.gecko?.id) {
+const gecko = asRecord(asRecord(manifest.browser_specific_settings)?.gecko);
+if (!gecko?.id) {
   throw new Error("firefox manifest missing browser_specific_settings.gecko.id");
 }
 

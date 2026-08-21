@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import type { SemanticFtsHit } from "@freeanima/habitat/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
 import { and, asc, sql } from "drizzle-orm";
@@ -43,6 +44,7 @@ export async function searchSemanticMemoryVector(
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
     cluster_id?: number | null;
+    world_id?: number;
   },
 ): Promise<VectorSemanticHit[]> {
   const q = query.trim();
@@ -72,6 +74,7 @@ export async function searchSemanticMemoryVector(
         status,
         source_conversations,
         cluster_id: opts?.cluster_id,
+        world_id: opts?.world_id,
       }),
     ),
   ];
@@ -90,6 +93,7 @@ export async function searchSemanticMemoryVector(
   return rows.map((r) => {
     const entityRow: EntityRow = {
       id: r.id,
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PG text → EntityRow.type
       type: r.type as EntityRow["type"],
       world_id: r.world_id,
       components: [...r.components],
@@ -97,7 +101,7 @@ export async function searchSemanticMemoryVector(
       title: r.title ?? "",
       summary: r.summary ?? "",
       content: r.content ?? "",
-      body: (r.body ?? {}) as Record<string, unknown>,
+      body: asRecord(r.body) ?? {},
       pinned: r.pinned ?? false,
       reference_count: r.reference_count ?? 0,
       tag_ids: [],

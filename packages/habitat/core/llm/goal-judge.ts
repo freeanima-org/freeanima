@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/habitat/core/provider";
@@ -101,7 +102,10 @@ export function parseGoalJudgeOutput(raw: string): GoalJudgeResult {
     };
   }
   try {
-    const parsed = JSON.parse(trimmed.slice(start, end + 1)) as Record<string, unknown>;
+    const parsed = asRecord(JSON.parse(trimmed.slice(start, end + 1)));
+    if (!parsed) {
+      return { ok: false, error: "judge JSON must be an object" };
+    }
     if (typeof parsed.done !== "boolean") {
       return { ok: false, error: "judge JSON missing boolean done" };
     }

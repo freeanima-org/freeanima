@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -18,6 +19,7 @@ export const LLM_PRESET_DEEPSEEK = "deepseek";
 export const LLM_PRESET_OPENROUTER = "openrouter";
 export const LLM_PRESET_OPENCODE_GO = "opencode_go";
 export const LLM_PRESET_ALIBABA_TOKEN_PLAN = "alibaba_token_plan";
+export const LLM_PRESET_OLLAMA = "ollama";
 export const LLM_PRESET_CUSTOM = "custom";
 
 export const LLM_PRESET_IDS = [
@@ -25,6 +27,7 @@ export const LLM_PRESET_IDS = [
   LLM_PRESET_OPENROUTER,
   LLM_PRESET_OPENCODE_GO,
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
+  LLM_PRESET_OLLAMA,
   LLM_PRESET_CUSTOM,
 ] as const;
 
@@ -186,8 +189,8 @@ function protocolSet(val: {
 
 /** 连接草稿归一：trim title；custom 缺 preset。不给非文本 custom 补文本协议。 */
 export function normalizeConnectionRaw(raw: unknown): unknown {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const src = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return raw;
+  const src = raw;
   const out: Record<string, unknown> = { ...src };
   if (out.audio_protocol == null && typeof out.voice_protocol === "string") {
     out.audio_protocol = out.voice_protocol;

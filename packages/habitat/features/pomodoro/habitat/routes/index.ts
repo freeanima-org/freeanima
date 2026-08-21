@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   type PomodoroActiveChangedEvent,
@@ -17,7 +17,7 @@ type PomodoroRemoteToolsServerDeps = RemoteToolsServerDeps & {
 };
 
 function depsOf(deps: unknown): PomodoroRemoteToolsServerDeps {
-  return deps as PomodoroRemoteToolsServerDeps;
+  return asRouteDeps<PomodoroRemoteToolsServerDeps>(deps);
 }
 
 function broadcastActiveChanged(
@@ -25,7 +25,7 @@ function broadcastActiveChanged(
   event: PomodoroActiveChangedEvent,
 ): void {
   deps.hubSessionRegistry.broadcastToSubject(
-    event.subject_kind,
+    event.subject_id,
     POMODORO_ACTIVE_CHANGED_EVENT,
     event,
   );
@@ -55,7 +55,7 @@ export const pomodoroHabitatRoutes = bindHabitatRouteHandlers(pomodoroMethodDefs
     const d = depsOf(deps);
     const result = await service.servicePomodoroActivePut(d.runtime.runtimeDeps(), input);
     broadcastActiveChanged(d, {
-      subject_kind: input.subject_kind,
+      subject_id: input.subject_id,
       active: result.active,
     });
     return result;
@@ -64,7 +64,7 @@ export const pomodoroHabitatRoutes = bindHabitatRouteHandlers(pomodoroMethodDefs
     const d = depsOf(deps);
     const result = await service.servicePomodoroActiveClear(d.runtime.runtimeDeps(), input);
     broadcastActiveChanged(d, {
-      subject_kind: input.subject_kind,
+      subject_id: input.subject_id,
       active: null,
     });
     return result;

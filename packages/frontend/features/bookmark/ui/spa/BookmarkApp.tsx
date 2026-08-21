@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Bookmark, ExternalLink, Folder, Search } from "lucide-react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button, Input, Spinner } from "@freeanima/ui-kit";
 import { EmptyState, StatusAlert, PullToRefresh } from "@freeanima/ui-kit/composite";
 
@@ -12,7 +12,7 @@ function isHttpUrl(url: string | null): boolean {
 }
 
 export function BookmarkApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const [items, setItems] = useState<BookmarkRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -22,11 +22,15 @@ export function BookmarkApp() {
   const currentParentId = folderStack.length === 0 ? null : (folderStack.at(-1)?.id ?? null);
 
   const load = useCallback(async () => {
+    if (subjectId == null) {
+      setLoading(true);
+      return;
+    }
     setError("");
     try {
       const q = searchQuery.trim();
       const rows = await fetchBookmarks(
-        subjectKind,
+        subjectId,
         q ? { query: q, limit: 200 } : { parent_id: currentParentId, limit: 2000 },
       );
       setItems(rows.filter((r) => !r.deleted_at));
@@ -35,7 +39,7 @@ export function BookmarkApp() {
     } finally {
       setLoading(false);
     }
-  }, [subjectKind, searchQuery, currentParentId]);
+  }, [subjectId, searchQuery, currentParentId]);
 
   useEffect(() => {
     setLoading(true);
@@ -54,7 +58,6 @@ export function BookmarkApp() {
             栖息地中的书签实体；与浏览器扩展双向同步。
           </p>
         </div>
-        <SubjectScopeToggle />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -167,7 +170,7 @@ export function BookmarkApp() {
                     onClick={() => {
                       void (async () => {
                         try {
-                          await deleteBookmarkRemote(subjectKind, item.id);
+                          await deleteBookmarkRemote(subjectId, item.id);
                           await load();
                         } catch (e) {
                           setError(e instanceof Error ? e.message : String(e));

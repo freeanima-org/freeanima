@@ -36,6 +36,7 @@ import type {
   TaskRecurrenceSkip,
   TaskReminderAnchor,
 } from "../lib/task-item-display.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import {
   PRIORITY_LABEL,
   hasTaskDeadline,
@@ -474,7 +475,8 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
     let cancelled = false;
     const focusTarget = () => {
       if (cancelled) return;
-      const target = rootRef.current?.querySelector(`[aria-label="${aria}"]`) as HTMLElement | null;
+      const el = rootRef.current?.querySelector(`[aria-label="${aria}"]`);
+      const target = el instanceof HTMLElement ? el : null;
       if (target && document.activeElement !== target) {
         target.focus({ preventScroll: true });
       }
@@ -854,7 +856,7 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                             if (keys === "all") return;
                             const key = [...keys][0];
                             if (typeof key !== "string") return;
-                            const freq = key as TaskItemRecurrenceDisplay["freq"];
+                            const freq = assertNarrow<TaskItemRecurrenceDisplay["freq"]>(key);
                             const lunarOk = freq === "monthly" || freq === "yearly";
                             onChange(
                               patchRecurrence(item, {
@@ -872,13 +874,13 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                             );
                           }}
                         >
-                          {(Object.keys(FREQ_UNIT) as TaskItemRecurrenceDisplay["freq"][]).map(
-                            (freq) => (
-                              <DropdownMenuItem key={freq} id={freq}>
-                                {FREQ_UNIT[freq]}
-                              </DropdownMenuItem>
-                            ),
-                          )}
+                          {assertNarrow<TaskItemRecurrenceDisplay["freq"][]>(
+                            Object.keys(FREQ_UNIT),
+                          ).map((freq) => (
+                            <DropdownMenuItem key={freq} id={freq}>
+                              {FREQ_UNIT[freq]}
+                            </DropdownMenuItem>
+                          ))}
                         </DropdownMenu>
                       </DropdownMenuTrigger>
                     </div>
@@ -979,14 +981,20 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
                               if (keys === "all") return;
                               const key = [...keys][0];
                               if (typeof key !== "string") return;
-                              onChange(patchRecurrence(item, { skip: key as TaskRecurrenceSkip }));
+                              onChange(
+                                patchRecurrence(item, {
+                                  skip: assertNarrow<TaskRecurrenceSkip>(key),
+                                }),
+                              );
                             }}
                           >
-                            {(Object.keys(SKIP_LABEL) as TaskRecurrenceSkip[]).map((skip) => (
-                              <DropdownMenuItem key={skip} id={skip}>
-                                {SKIP_LABEL[skip]}
-                              </DropdownMenuItem>
-                            ))}
+                            {assertNarrow<TaskRecurrenceSkip[]>(Object.keys(SKIP_LABEL)).map(
+                              (skip) => (
+                                <DropdownMenuItem key={skip} id={skip}>
+                                  {SKIP_LABEL[skip]}
+                                </DropdownMenuItem>
+                              ),
+                            )}
                           </DropdownMenu>
                         </DropdownMenuTrigger>
                       ) : null}
@@ -1102,12 +1110,13 @@ export function TaskDetailEditor<T extends TaskItemDisplay>({
             onSelectionChange={(keys: Iterable<string | number> | "all") => {
               if (keys === "all") return;
               const key = [...keys][0];
-              if (typeof key === "string") onChange({ ...item, priority: key as TaskItemPriority });
+              if (typeof key === "string")
+                onChange({ ...item, priority: assertNarrow<TaskItemPriority>(key) });
             }}
           >
             <DropdownMenuLabel>优先级</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {(Object.keys(PRIORITY_LABEL) as TaskItemPriority[]).map((value) => (
+            {assertNarrow<TaskItemPriority[]>(Object.keys(PRIORITY_LABEL)).map((value) => (
               <DropdownMenuItem key={value} id={value} className="gap-2">
                 <span
                   className={`size-2 shrink-0 rounded-full ${priorityToneBg(value)}`}

@@ -1,6 +1,5 @@
 import { WebSocket, type RawData } from "ws";
-
-import { randomPublicId } from "@freeanima/shared/util";
+import { asRecord, randomPublicId } from "@freeanima/shared/util";
 
 /** OpenAI 兼容根 → DashScope 音频推理 WebSocket */
 export function alibabaAudioWsUrl(openaiCompatibleBaseUrl: string): string {
@@ -143,10 +142,11 @@ export async function synthesizeAlibabaTts(
           }
         }
         try {
-          const parsed = JSON.parse(buf.toString("utf8")) as {
-            header?: { event?: string; error_message?: string; error_code?: string };
-          };
-          const event = parsed.header?.event;
+          const parsedUnknown: unknown = JSON.parse(buf.toString("utf8"));
+          const parsed = asRecord(parsedUnknown);
+          if (!parsed) continue;
+          const header = asRecord(parsed.header);
+          const event = typeof header?.event === "string" ? header.event : undefined;
           if (event === "task-started") {
             ws.send(
               JSON.stringify({
@@ -180,7 +180,9 @@ export async function synthesizeAlibabaTts(
           if (event === "task-failed") {
             fail(
               new Error(
-                parsed.header?.error_message || parsed.header?.error_code || "阿里云语音合成失败",
+                (typeof header?.error_message === "string" && header.error_message) ||
+                  (typeof header?.error_code === "string" && header.error_code) ||
+                  "阿里云语音合成失败",
               ),
             );
           }

@@ -57,6 +57,7 @@ function ShareMessageList({ display }: { display: DisplayItem[] }) {
 
 /** 公开临时分享只读页（无 AppFrame / 无需登录） */
 export function ShareView() {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const { shareId } = useParams({ strict: false }) as { shareId?: string };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

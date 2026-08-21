@@ -39,7 +39,7 @@ const deleteEntityComponentMock = mock(
 // 先捕获真实实现，mock 后在 afterAll 恢复，避免 mock.module 全局泄漏污染其他测试文件。
 const realPg = await import("@freeanima/habitat/core/db/pg");
 const pgOriginal = { ...realPg };
-const realWorldContext = await import("@freeanima/habitat/core/config/world-context");
+const realWorldContext = await import("@freeanima/habitat/core/config/world-context-pg");
 const worldContextOriginal = { ...realWorldContext };
 const realEntity = await import("@freeanima/habitat/core/db/pg/entity");
 const entityOriginal = { ...realEntity };
@@ -49,9 +49,9 @@ mock.module("@freeanima/habitat/core/db/pg", () => ({
   isPostgresPrimary: () => true,
 }));
 
-mock.module("@freeanima/habitat/core/config/world-context", () => ({
+mock.module("@freeanima/habitat/core/config/world-context-pg", () => ({
   ...worldContextOriginal,
-  resolveSubjectWorldId: (kind: "user" | "agent") => (kind === "agent" ? 20 : 10),
+  resolvePrivateWorldId: async (subjectId: number) => (subjectId === 2 ? 20 : 10),
 }));
 
 mock.module("@freeanima/habitat/core/db/pg/entity", () => ({
@@ -98,6 +98,8 @@ function bindWorlds() {
     user_world_id: 10,
     agent_world_id: 20,
     commons_world_id: 30,
+    default_chat_agent_subject_id: 2,
+    default_chat_agent_world_id: 20,
   });
 }
 
@@ -144,11 +146,7 @@ describe("serviceEntityList filters and search", () => {
     const hit = row({ id: 42, title: "exact" });
     getEntityMock.mockImplementation(async (id) => (id === 42 ? hit : null));
 
-    const result = await serviceEntityList(
-      testDeps(),
-      { subject_kind: "user", query: "42" },
-      auth(),
-    );
+    const result = await serviceEntityList(testDeps(), { subject_id: 1, query: "42" }, auth());
 
     expect(result).toEqual({
       items: [
@@ -181,11 +179,7 @@ describe("serviceEntityList filters and search", () => {
     });
     getEntityMock.mockImplementation(async () => hit);
 
-    const result = await serviceEntityList(
-      testDeps(),
-      { subject_kind: "user", query: "11" },
-      auth(),
-    );
+    const result = await serviceEntityList(testDeps(), { subject_id: 1, query: "11" }, auth());
     expect(result.items[0]?.summary).toBe("记忆正文预览内容足够长");
   });
 
@@ -194,11 +188,7 @@ describe("serviceEntityList filters and search", () => {
       row({ id: 5, deleted_at: new Date("2026-02-01T00:00:00.000Z") }),
     );
 
-    const result = await serviceEntityList(
-      testDeps(),
-      { subject_kind: "user", query: "anima:5" },
-      auth(),
-    );
+    const result = await serviceEntityList(testDeps(), { subject_id: 1, query: "anima:5" }, auth());
     expect(result).toEqual({ items: [], count: 0 });
   });
 
@@ -211,7 +201,7 @@ describe("serviceEntityList filters and search", () => {
 
     const result = await serviceEntityTrashList(
       testDeps(),
-      { subject_kind: "user", query: "anima:5" },
+      { subject_id: 1, query: "anima:5" },
       auth(),
     );
     expect(result.count).toBe(1);
@@ -232,7 +222,7 @@ describe("serviceEntityList filters and search", () => {
     const result = await serviceEntityList(
       testDeps(),
       {
-        subject_kind: "user",
+        subject_id: 1,
         query: "notes",
         type: "content",
         primary_component: "task_item",
@@ -270,11 +260,7 @@ describe("serviceEntityList filters and search", () => {
       results: [hit],
     }));
 
-    const result = await serviceEntityList(
-      testDeps(),
-      { subject_kind: "user", query: "hybrid" },
-      auth(),
-    );
+    const result = await serviceEntityList(testDeps(), { subject_id: 1, query: "hybrid" }, auth());
     expect(result.items[0]?.summary).toBe("snippet from hybrid");
   });
 
@@ -286,7 +272,7 @@ describe("serviceEntityList filters and search", () => {
     const result = await serviceEntityList(
       testDeps(),
       {
-        subject_kind: "user",
+        subject_id: 1,
         type: "content",
         primary_component: "vault_item",
         limit: 20,
@@ -352,7 +338,7 @@ describe("serviceEntityGet", () => {
     expect(assertSubjectCanAccessWorldMock).toHaveBeenCalledWith(1, 10, { access: "read" });
   });
 
-  it("user reading agent-world entity skips ACL", async () => {
+  it("user reading agent-world entity uses ACL", async () => {
     const hit = row({
       id: 99,
       world_id: 20,
@@ -367,7 +353,7 @@ describe("serviceEntityGet", () => {
 
     expect(result.item.id).toBe(99);
     expect(result.item.content).toBe("agent memory");
-    expect(assertSubjectCanAccessWorldMock).not.toHaveBeenCalled();
+    expect(assertSubjectCanAccessWorldMock).toHaveBeenCalledWith(1, 20, { access: "read" });
   });
 
   it("agent token still uses ACL on agent world", async () => {
@@ -433,7 +419,7 @@ describe("serviceEntityAddComponent / setPrimaryComponent", () => {
     const result = await serviceEntityAddComponent(
       testDeps(),
       {
-        subject_kind: "user",
+        subject_id: 1,
         id: 5,
         component: "diary_entry",
         body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
@@ -468,7 +454,7 @@ describe("serviceEntityAddComponent / setPrimaryComponent", () => {
     await serviceEntityAddComponent(
       testDeps(),
       {
-        subject_kind: "user",
+        subject_id: 1,
         id: 5,
         component: "diary_entry",
         body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
@@ -492,7 +478,7 @@ describe("serviceEntityAddComponent / setPrimaryComponent", () => {
     await expect(
       serviceEntityAddComponent(
         testDeps(),
-        { subject_kind: "user", id: 5, component: "agent_config", body: {} },
+        { subject_id: 1, id: 5, component: "agent_config", body: {} },
         auth(),
       ),
     ).rejects.toThrow(/identity/);
@@ -511,7 +497,7 @@ describe("serviceEntityAddComponent / setPrimaryComponent", () => {
     await expect(
       serviceEntityAddComponent(
         testDeps(),
-        { subject_kind: "user", id: 5, component: "note", body: {} },
+        { subject_id: 1, id: 5, component: "note", body: {} },
         auth(),
       ),
     ).rejects.toThrow(/content/);
@@ -536,7 +522,7 @@ describe("serviceEntityAddComponent / setPrimaryComponent", () => {
 
     const result = await serviceEntitySetPrimaryComponent(
       testDeps(),
-      { subject_kind: "user", id: 5, component: "diary_entry" },
+      { subject_id: 1, id: 5, component: "diary_entry" },
       auth(),
     );
 

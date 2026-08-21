@@ -6,6 +6,7 @@ import {
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
 import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 import {
   completeTaskItem,
@@ -87,7 +88,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   const title = coerceString(args.title ?? "").trim();
   if (!title) return toolError("title is required");
 
-  // 省略 list_id/project_id → 默认清单（Backlog）；二者都传则互斥错误
+  // 省略 list_id/project_id → 默认清单（清单侧）；二者都传则互斥错误
   if (hasListId && hasProjectId) {
     return toolError("list_id and project_id are mutually exclusive");
   }
@@ -333,7 +334,7 @@ async function handleList(args: Record<string, unknown>): Promise<string> {
 
   const items = await listTaskItems(worldId, {
     ...(listId !== undefined ? { list_id: listId } : {}),
-    ...(projectId !== undefined ? { project_id: projectId } : {}),
+    ...(projectId !== undefined ? { project_id: projectId } : { container: TaskContainer.LIST }),
     status,
     ...(tagIds !== undefined ? { tag_ids: tagIds } : {}),
     limit,
@@ -472,7 +473,7 @@ export function buildTaskItemToolDefs() {
             },
             recurrence: TASK_RECURRENCE_TOOL_SCHEMA,
           },
-          required: ["subject_kind", "title"],
+          required: ["subject_id", "title"],
         },
         handler: handleCreate,
       },
@@ -496,7 +497,7 @@ export function buildTaskItemToolDefs() {
             list_id: { type: "integer" },
             project_id: {
               type: "integer",
-              description: "Move to project; null to return to Backlog",
+              description: "Move to project; null to return to list module (TaskContainer.LIST)",
             },
             priority: { type: "string", enum: TASK_PRIORITIES },
             start_at: { type: "string", description: "Planned start ISO8601" },
@@ -525,7 +526,7 @@ export function buildTaskItemToolDefs() {
               description: "When changing plan clock with recurrence: true = this occurrence only",
             },
           },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleUpdate,
       },
@@ -537,7 +538,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: (args) => handleComplete(args, false),
       },
@@ -548,7 +549,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = Number(args.id);
@@ -571,7 +572,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = Number(args.id);
@@ -597,7 +598,7 @@ export function buildTaskItemToolDefs() {
             series_task_id: { type: "integer", description: "Live task_item id" },
             limit: { type: "integer" },
           },
-          required: ["subject_kind", "series_task_id"],
+          required: ["subject_id", "series_task_id"],
         },
         handler: async (args) => {
           const seriesTaskId = Number(args.series_task_id);
@@ -622,7 +623,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: (args) => handleComplete(args, true),
       },
@@ -633,7 +634,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleDelete,
       },
@@ -645,7 +646,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleConvertToEvent,
       },
@@ -656,14 +657,14 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleGet,
       },
       {
         name: "task_list",
         description:
-          "List task items with optional list, project, status, and tag filters. Default (no project_id) is Backlog only. project_id lists in-project tasks; mutually exclusive with list_id. list_id/project_id scopes world; omit for caller default world.",
+          "List task items with optional list, project, status, and tag filters. Default (no project_id) is list-side only (TaskContainer.LIST). project_id lists in-project tasks; mutually exclusive with list_id. list_id/project_id scopes world; omit for caller default world.",
         exposeMcp: true,
         parameters: {
           type: "object",
@@ -678,7 +679,7 @@ export function buildTaskItemToolDefs() {
             tag_ids: { type: "array", items: { type: "integer" } },
             limit: { type: "integer" },
           },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: handleList,
       },
@@ -703,7 +704,7 @@ export function buildTaskItemToolDefs() {
             status: { type: "string", enum: ["pending", "completed", "all"] },
             limit: { type: "integer", description: "Max results, default 30, cap 50" },
           },
-          required: ["subject_kind", "query"],
+          required: ["subject_id", "query"],
         },
         handler: handleSearch,
       },

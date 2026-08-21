@@ -41,6 +41,16 @@ mock.module("@freeanima/habitat/core/db/pg/conversation", () => ({
   isCronSession,
 }));
 
+const resolveBoundAgentForConversation = mock(async () => ({
+  agent_subject_id: 1,
+  agent_world_id: 100,
+  title: "Agent 1",
+}));
+
+mock.module("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts", () => ({
+  resolveBoundAgentForConversation,
+}));
+
 mock.module("@freeanima/habitat/core/db/pg/semantic-memory", () => ({
   listResidentSemanticMemory,
 }));
@@ -95,6 +105,7 @@ describe("createPassiveMemoryRecallHandler", () => {
       limit: 5,
       min_score: 0.016,
       min_relative_score: 0.55,
+      world_id: 100,
       debug: false,
     });
     expect(messages).toHaveLength(2);
@@ -122,6 +133,7 @@ describe("createPassiveMemoryRecallHandler", () => {
       limit: 5,
       min_score: 0.016,
       min_relative_score: 0.55,
+      world_id: 100,
       debug: true,
     });
     expect(llmDebugExtras.passive_recall).toBeDefined();
@@ -141,5 +153,55 @@ describe("createPassiveMemoryRecallHandler", () => {
     const messages: StoredMessage[] = [{ role: "user", content: "hello" }];
     await createPassiveMemoryRecallHandler()({ conversationId: "cron-session", messages });
     expect(semanticPassiveRecallSearchDetailed).not.toHaveBeenCalled();
+  });
+
+  it("excludes hits sourced from the current conversation", async () => {
+    bindTestConfig(true);
+    semanticPassiveRecallSearchDetailed.mockResolvedValueOnce({
+      hits: [
+        {
+          memory_type: "semantic" as const,
+          score: 0.9,
+          semantic_memory_id: 10,
+          type: "preference",
+          pinned: false,
+          content: "from this chat",
+          source_conversations: ["c1"],
+          observed_at: null,
+          occurred_at: null,
+          status: "active",
+        },
+        {
+          memory_type: "semantic" as const,
+          score: 0.8,
+          semantic_memory_id: 11,
+          type: "preference",
+          pinned: false,
+          content: "from other chat",
+          source_conversations: ["other"],
+          observed_at: null,
+          occurred_at: null,
+          status: "active",
+        },
+      ],
+    });
+    const messages: StoredMessage[] = [{ role: "user", content: "hello" }];
+    const llmDebugExtras: Record<string, unknown> = {};
+    await createPassiveMemoryRecallHandler()({
+      conversationId: "c1",
+      messages,
+      llm_debug: true,
+      llmDebugExtras,
+    });
+
+    expect(messages).toHaveLength(2);
+    const injected = messages[0];
+    expect(injected?.role).toBe("assistant");
+    if (injected?.role === "assistant") {
+      expect(injected.content).toContain('id="11"');
+      expect(injected.content).not.toContain('id="10"');
+    }
+    const trace = llmDebugExtras.passive_recall as { excluded_current_conversation_ids?: number[] };
+    expect(trace.excluded_current_conversation_ids).toEqual([10]);
   });
 });

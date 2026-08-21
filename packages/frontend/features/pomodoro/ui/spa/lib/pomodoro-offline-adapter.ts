@@ -11,10 +11,24 @@ import {
 } from "@freeanima/client/portal-sdk/offline-outbox";
 import { flushOfflineModule } from "@freeanima/client/portal-sdk/offline-sync";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 
 import { POMODORO_OUTBOX_MODULE_ID } from "./pomodoro-offline-store.ts";
 
-type PomodoroSubjectKind = "user" | "agent";
+const POMODORO_FLUSH_METHODS = [
+  "pomodoro.config.update",
+  "pomodoro.active.put",
+  "pomodoro.active.clear",
+] as const;
+type PomodoroFlushMethod = (typeof POMODORO_FLUSH_METHODS)[number];
+
+function isPomodoroFlushMethod(v: string): v is PomodoroFlushMethod {
+  return (POMODORO_FLUSH_METHODS as readonly string[]).includes(v);
+}
+
+function isPositiveSubjectId(v: unknown): v is number {
+  return typeof v === "number" && Number.isInteger(v) && v > 0;
+}
 
 const NAMESPACE = "pomodoro";
 const COMPACT_METHODS = new Set([
@@ -23,16 +37,16 @@ const COMPACT_METHODS = new Set([
   "pomodoro.active.clear",
 ]);
 
-function configCacheId(subjectKind: PomodoroSubjectKind): string {
-  return `config:${subjectKind}`;
+function configCacheId(subjectId: number): string {
+  return `config:${subjectId}`;
 }
 
-function sessionsCacheId(subjectKind: PomodoroSubjectKind): string {
-  return `sessions:${subjectKind}`;
+function sessionsCacheId(subjectId: number): string {
+  return `sessions:${subjectId}`;
 }
 
-function statsCacheId(subjectKind: PomodoroSubjectKind, period: "today" | "week"): string {
-  return `stats:${subjectKind}:${period}`;
+function statsCacheId(subjectId: number, period: "today" | "week"): string {
+  return `stats:${subjectId}:${period}`;
 }
 
 export function compactPomodoroOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
@@ -56,9 +70,16 @@ async function flushPomodoroOp(
 ): Promise<import("@freeanima/client/portal-sdk/offline-module-types").FlushOpOutcome> {
   const habitatClient = getTypedHabitatClient();
   try {
-    await habitatClient.call(op.method as "pomodoro.config.update", {
+    if (!isPomodoroFlushMethod(op.method)) {
+      return { status: "failed", error: `unknown method ${op.method}` };
+    }
+    const subjectId = op.payload.subject_id;
+    if (!isPositiveSubjectId(subjectId)) {
+      return { status: "failed", error: "invalid subject_id" };
+    }
+    await habitatClient.call(op.method, {
       ...op.payload,
-      subject_kind: op.payload.subject_kind as "user" | "agent",
+      subject_id: subjectId,
     });
     return { status: "done" };
   } catch (e) {
@@ -75,31 +96,35 @@ export const pomodoroRpcAdapter: RpcModuleAdapter = {
   flushOp: async (op, ctx) => flushPomodoroOp(op, ctx.scope),
   refreshAll: async (scope) => {
     const habitatClient = getTypedHabitatClient();
-    for (const subjectKind of ["user", "agent"] as const) {
-      try {
-        const [configData, sessions, statsToday, statsWeek] = await Promise.all([
-          habitatClient.call("pomodoro.config.get", { subject_kind: subjectKind }),
-          habitatClient.call("pomodoro.session.list", {
-            subject_kind: subjectKind,
-            limit: 20,
-            offset: 0,
-          }),
-          habitatClient.call("pomodoro.session.stats", {
-            subject_kind: subjectKind,
-            period: "today",
-          }),
-          habitatClient.call("pomodoro.session.stats", {
-            subject_kind: subjectKind,
-            period: "week",
-          }),
-        ]);
-        await writeOfflineCache(scope, NAMESPACE, configCacheId(subjectKind), configData.config);
-        await writeOfflineCache(scope, NAMESPACE, sessionsCacheId(subjectKind), sessions);
-        await writeOfflineCache(scope, NAMESPACE, statsCacheId(subjectKind, "today"), statsToday);
-        await writeOfflineCache(scope, NAMESPACE, statsCacheId(subjectKind, "week"), statsWeek);
-      } catch {
-        /* keep snapshot */
-      }
+    let subjectId: number;
+    try {
+      subjectId = await getUserSubjectId();
+    } catch {
+      return;
+    }
+    try {
+      const [configData, sessions, statsToday, statsWeek] = await Promise.all([
+        habitatClient.call("pomodoro.config.get", { subject_id: subjectId }),
+        habitatClient.call("pomodoro.session.list", {
+          subject_id: subjectId,
+          limit: 20,
+          offset: 0,
+        }),
+        habitatClient.call("pomodoro.session.stats", {
+          subject_id: subjectId,
+          period: "today",
+        }),
+        habitatClient.call("pomodoro.session.stats", {
+          subject_id: subjectId,
+          period: "week",
+        }),
+      ]);
+      await writeOfflineCache(scope, NAMESPACE, configCacheId(subjectId), configData.config);
+      await writeOfflineCache(scope, NAMESPACE, sessionsCacheId(subjectId), sessions);
+      await writeOfflineCache(scope, NAMESPACE, statsCacheId(subjectId, "today"), statsToday);
+      await writeOfflineCache(scope, NAMESPACE, statsCacheId(subjectId, "week"), statsWeek);
+    } catch {
+      /* keep snapshot */
     }
   },
 };
@@ -113,24 +138,24 @@ export function schedulePomodoroFlush(): void {
   void flushOfflineModule(POMODORO_OUTBOX_MODULE_ID, resolveOutboxScope()).catch(() => {});
 }
 
-export async function readCachedPomodoroConfig(scope: string, subjectKind: PomodoroSubjectKind) {
-  return readOfflineCache(scope, NAMESPACE, configCacheId(subjectKind));
+export async function readCachedPomodoroConfig(scope: string, subjectId: number) {
+  return readOfflineCache(scope, NAMESPACE, configCacheId(subjectId));
 }
 
-export async function readCachedPomodoroSessions(scope: string, subjectKind: PomodoroSubjectKind) {
+export async function readCachedPomodoroSessions(scope: string, subjectId: number) {
   return readOfflineCache<{ items: unknown[]; total: number }>(
     scope,
     NAMESPACE,
-    sessionsCacheId(subjectKind),
+    sessionsCacheId(subjectId),
   );
 }
 
 export async function readCachedPomodoroStats(
   scope: string,
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   period: "today" | "week",
 ) {
-  return readOfflineCache(scope, NAMESPACE, statsCacheId(subjectKind, period));
+  return readOfflineCache(scope, NAMESPACE, statsCacheId(subjectId, period));
 }
 
 export async function countPomodoroPendingOps(): Promise<number> {

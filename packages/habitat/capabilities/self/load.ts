@@ -27,10 +27,10 @@ function emptyPlaceholderBlocks(): SelfBlockRow[] {
   }));
 }
 
-/** Load the five self blocks as structured views */
-export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
+/** Load the five self blocks as structured views for one agent */
+export async function loadSelfBlocks(agentSubjectId: number): Promise<SelfBlockView[]> {
   try {
-    const rows = await listSelfBlocks();
+    const rows = await listSelfBlocks(agentSubjectId);
     return rows.map(toSelfBlockView);
   } catch {
     return emptyPlaceholderBlocks().map(toSelfBlockView);
@@ -41,30 +41,30 @@ export async function loadSelfBlocks(): Promise<SelfBlockView[]> {
  * Nested self-block XML only (`<existence_anchor>…</existence_anchor>` …).
  * systemPromptBuild folds this with outer `<self_layer>` + frame.
  */
-export async function loadSelfLayerInner(): Promise<string> {
-  const cached = getSelfLayerPromptCache();
+export async function loadSelfLayerInner(agentSubjectId: number): Promise<string> {
+  const cached = getSelfLayerPromptCache(agentSubjectId);
   if (cached) return cached;
 
   try {
-    const rows = await listSelfBlocks();
+    const rows = await listSelfBlocks(agentSubjectId);
     const inner = renderSelfLayerPrompt(rows);
-    setSelfLayerPromptCache(inner);
+    setSelfLayerPromptCache(inner, agentSubjectId);
     return inner;
   } catch {
     const inner = renderSelfLayerPrompt(emptyPlaceholderBlocks());
-    setSelfLayerPromptCache(inner);
+    setSelfLayerPromptCache(inner, agentSubjectId);
     return inner;
   }
 }
 
 /** Full self-layer segment (frame + `<self_layer>` + nested blocks) for non-fold consumers */
-export async function loadSelfLayerPrompt(): Promise<string> {
-  return wrapSelfLayerForSystemPrompt(await loadSelfLayerInner());
+export async function loadSelfLayerPrompt(agentSubjectId: number): Promise<string> {
+  return wrapSelfLayerForSystemPrompt(await loadSelfLayerInner(agentSubjectId));
 }
 
 /** Refresh cache after self block updates */
-export function refreshSelfLayerPromptCache(prompt: string): void {
-  setSelfLayerPromptCache(prompt);
+export function refreshSelfLayerPromptCache(prompt: string, agentSubjectId: number): void {
+  setSelfLayerPromptCache(prompt, agentSubjectId);
 }
 
 export { invalidateSelfLayerPromptCache };

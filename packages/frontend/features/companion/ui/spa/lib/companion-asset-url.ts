@@ -22,7 +22,9 @@ export function parseCompanionAssetPath(path: string): CompanionAssetRef | null 
   const normalized = path.startsWith("/") ? path : `/${path}`;
   const m = normalized.match(/^\/(models|motions)\/(.+)$/);
   if (!m) return null;
-  const kind = m[1] as "models" | "motions";
+  const kindRaw = m[1];
+  if (kindRaw !== "models" && kindRaw !== "motions") return null;
+  const kind = kindRaw;
   const fileName = decodeURIComponent(m[2] ?? "");
   if (!fileName) return null;
   return { kind, fileName };

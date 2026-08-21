@@ -10,8 +10,10 @@ import {
 } from "@freeanima/client/portal-sdk/settings";
 import {
   parseShellDebugConfig,
-  type ShellDebugConfig,
+  normalizeShellDebugConfig,
 } from "@freeanima/client/portal-sdk/shell-debug-config";
+import { normalizeShellClientConfig } from "@freeanima/client/portal-sdk";
+import { isRecord } from "@freeanima/shared/util";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("dev backend 不支持 file scope");
@@ -38,22 +40,26 @@ function loadKvScope(scope: SettingsStorageScope): unknown {
 function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
   if (scope.kind !== "kv") throw new Error("dev backend 不支持 file scope");
   if (scope.id === "habitat") {
-    const raw = value as { habitatUrl: string; remoteAuthToken: string; launchAtLogin?: boolean };
-    localStorage.setItem(HABITAT_URL_KEY, raw.habitatUrl);
-    localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, raw.remoteAuthToken);
-    if (typeof raw.launchAtLogin === "boolean") {
-      localStorage.setItem(LAUNCH_AT_LOGIN_KEY, raw.launchAtLogin ? "1" : "0");
+    if (!isRecord(value)) throw new Error("无效的 habitat 设置");
+    const cfg = normalizeShellClientConfig({
+      habitatUrl: typeof value.habitatUrl === "string" ? value.habitatUrl : "",
+      remoteAuthToken: typeof value.remoteAuthToken === "string" ? value.remoteAuthToken : "",
+    });
+    localStorage.setItem(HABITAT_URL_KEY, cfg.habitatUrl);
+    localStorage.setItem(REMOTE_AUTH_TOKEN_KEY, cfg.remoteAuthToken);
+    if (typeof value.launchAtLogin === "boolean") {
+      localStorage.setItem(LAUNCH_AT_LOGIN_KEY, value.launchAtLogin ? "1" : "0");
     }
     return;
   }
   if (scope.id === "debug") {
-    const cfg = value as ShellDebugConfig;
+    const cfg = normalizeShellDebugConfig(parseShellDebugConfig(value));
     localStorage.setItem(DEBUG_VCONSOLE_ENABLED_KEY, cfg.vConsoleEnabled ? "1" : "0");
     return;
   }
   if (scope.id === "companion-shell") {
-    const raw = value as { visible?: boolean };
-    localStorage.setItem(COMPANION_VISIBLE_KEY, raw.visible === false ? "0" : "1");
+    const visible = !isRecord(value) || value.visible !== false;
+    localStorage.setItem(COMPANION_VISIBLE_KEY, visible ? "1" : "0");
     return;
   }
   throw new Error(`未知 kv scope: ${(scope as SettingsStorageScope).id}`);

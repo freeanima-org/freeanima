@@ -16,7 +16,7 @@ export type WorldGrant = z.infer<typeof worldGrantSchema>;
 export const worldConfigBodySchema = z
   .object({
     private: z.boolean().default(false),
-    /** 唯一公共 Commons world；强制 public */
+    /** 唯一公共 Commons world；强制 public（DB：idx_entities_world_common） */
     common: z.boolean().default(false),
     owner_subject_id: z.number().int().positive().optional(),
     default_private: z.boolean().default(false),

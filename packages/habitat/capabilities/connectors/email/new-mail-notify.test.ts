@@ -1,17 +1,32 @@
-import { describe, expect, test } from "bun:test";
-import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/habitat/core/config/world-context";
 import {
   bucketNewMailSubjectsByWorld,
   buildNewMailNotificationContent,
 } from "./new-mail-notify.ts";
 import type { NewMailNotifyItem } from "@freeanima/features/email/domain";
 
-bindResolvedWorldContext({
-  user_world_id: 10,
-  agent_world_id: 20,
-  commons_world_id: 30,
-  user_subject_id: 1,
-  agent_subject_id: 2,
+function bindTestWorldContext(): void {
+  bindResolvedWorldContext({
+    user_world_id: 10,
+    agent_world_id: 20,
+    default_chat_agent_subject_id: 2,
+    default_chat_agent_world_id: 20,
+    commons_world_id: 30,
+    user_subject_id: 1,
+    agent_subject_id: 2,
+  });
+}
+
+beforeEach(() => {
+  bindTestWorldContext();
+});
+
+afterEach(() => {
+  resetResolvedWorldContextForTest();
 });
 
 function mail(

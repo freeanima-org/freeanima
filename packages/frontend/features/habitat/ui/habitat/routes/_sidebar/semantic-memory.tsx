@@ -1,5 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
+import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SemanticMemoryRow } from "@freeanima/shared/db-shapes";
 import {
@@ -38,6 +39,7 @@ import {
   updateSemanticMemoryPinned,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
 import { useMemoryPipeline } from "@freeanima/features/habitat/ui/habitat/lib/use-memory-pipeline.ts";
 
 const PAGE_SIZE = 20;
@@ -57,6 +59,10 @@ const SEMANTIC_TYPES = [
 
 const BROWSE_SORT_OPTIONS = ["updated_at", "created_at", "reference_count"] as const;
 type BrowseSortBy = (typeof BROWSE_SORT_OPTIONS)[number];
+
+function isBrowseSortBy(v: string): v is BrowseSortBy {
+  return (BROWSE_SORT_OPTIONS as readonly string[]).includes(v);
+}
 
 type SemanticRow = SemanticMemoryRow & { rank?: number; cluster_id?: number | null };
 
@@ -90,12 +96,23 @@ export const Route = createFileRoute("/_sidebar/semantic-memory")({
           ? ("1" as const)
           : undefined,
     }),
-  component: SemanticMemoryPage,
+  component: () => <RedirectToObserver subpath="/semantic-memory" />,
 });
 
-function SemanticMemoryPage() {
-  const navigate = useNavigate({ from: Route.fullPath });
-  const { passive } = Route.useSearch();
+export function SemanticMemoryPage() {
+  // 勿用 Route.fullPath / Route.useSearch：卧室 SPA 无 /_sidebar/* 路由
+  const navigate = useNavigate();
+  const search = useRouterState({
+    select: (s) =>
+      typeof s.location.search === "object" && s.location.search != null
+        ? (s.location.search as Record<string, unknown>)
+        : {},
+  });
+  const passive =
+    search.passive === "1" || search.passive === 1 || search.passive === true
+      ? ("1" as const)
+      : undefined;
+  const agentSubjectId = useObserverAgentSubjectId();
   const [passiveOpen, setPassiveOpen] = useState(passive === "1");
   const [consolidationOpen, setConsolidationOpen] = useState(false);
 
@@ -151,7 +168,12 @@ function SemanticMemoryPage() {
   const setPassiveSheetOpen = (open: boolean) => {
     setPassiveOpen(open);
     void navigate({
-      search: (prev) => omitUndefined({ ...prev, passive: open ? ("1" as const) : undefined }),
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- TanStack search reducer 本地类型过窄
+      search: ((prev: Record<string, unknown>) =>
+        omitUndefined({
+          ...prev,
+          passive: open ? ("1" as const) : undefined,
+        })) as never,
       replace: true,
     });
   };
@@ -181,6 +203,7 @@ function SemanticMemoryPage() {
       const effectiveSortBy = trimmedQuery ? "rank" : sortBy;
       const effectiveCluster = clusterOverride !== undefined ? clusterOverride : clusterFilter;
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const data = (await listSemanticMemories({
           offset: nextOffset,
           limit: PAGE_SIZE,
@@ -191,6 +214,7 @@ function SemanticMemoryPage() {
             types: typeFilter ? [typeFilter] : undefined,
             source_conversation: sourceConversation.trim() || undefined,
             cluster_id: effectiveCluster,
+            agent_subject_id: agentSubjectId ?? undefined,
           }),
         })) as { items: SemanticRow[]; total: number };
         setItems(data.items ?? []);
@@ -207,12 +231,17 @@ function SemanticMemoryPage() {
         setLoading(false);
       }
     },
-    [query, typeFilter, statusFilter, sourceConversation, clusterFilter, sortBy],
+    [query, typeFilter, statusFilter, sourceConversation, clusterFilter, sortBy, agentSubjectId],
   );
 
   useEffect(() => {
     fetchListRef.current = fetchList;
   }, [fetchList]);
+
+  useEffect(() => {
+    if (agentSubjectId == null) return;
+    void fetchListRef.current(0);
+  }, [agentSubjectId]);
 
   const runSearch = () => {
     void fetchList(0);
@@ -402,7 +431,9 @@ function SemanticMemoryPage() {
                   <Select
                     selectedKey={sortBy}
                     onSelectionChange={(key) => {
-                      if (key != null) setSortBy(String(key) as BrowseSortBy);
+                      if (key == null) return;
+                      const v = String(key);
+                      if (isBrowseSortBy(v)) setSortBy(v);
                     }}
                   >
                     <SelectTrigger size="sm" className="w-full">

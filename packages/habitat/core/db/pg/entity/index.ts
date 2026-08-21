@@ -19,6 +19,7 @@ export {
   deleteTaskItemsByListId,
   deleteEmailEntitiesByAccountId,
   listEntities,
+  listCommonWorldEntities,
   countEntities,
   countEntitiesByBodyListId,
   countPendingTaskItemsByListId,
@@ -44,6 +45,7 @@ export {
   createSubjectEntityRecord,
   createDefaultPrivateWorldForSubject,
   buildWorldConfigBody,
+  assertAtMostOneUser,
   EntitySubjectBootstrapError,
   type EnsuredWorldSubjects,
 } from "./subject-world.ts";
@@ -57,6 +59,7 @@ export {
 export {
   resolveDefaultPrivateWorldForSubject,
   assertSubjectCanAccessWorld,
+  assertCallerTokenComponent,
   getSubjectWorldAccessLevel,
   resolveWorldFromEntityId,
   resolveDefaultWorldForToolCaller,

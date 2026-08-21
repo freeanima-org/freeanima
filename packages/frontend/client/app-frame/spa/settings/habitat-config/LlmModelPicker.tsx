@@ -87,7 +87,9 @@ export function LlmModelPicker({
       ? "文生图模型 id，例如 qwen-image-3.0-pro"
       : purpose === "voice_generate"
         ? "语音合成模型 id，例如 qwen-audio-3.0-tts-plus"
-        : "供应方模型 id，例如 deepseek-chat";
+        : purpose === "embedding"
+          ? "嵌入模型 id，例如 bge-m3"
+          : "供应方模型 id，例如 deepseek-chat";
 
   useEffect(() => {
     if (!open) return () => {};

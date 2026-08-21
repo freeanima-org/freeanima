@@ -1,6 +1,7 @@
 /// <reference lib="dom" />
-import { getSubjectKind } from "./subject-scope-store.ts";
-import type { SubjectKind } from "./subject-scope.ts";
+import { isRecord } from "@freeanima/shared/util";
+
+import { getCachedUserSubjectId } from "./world-context.ts";
 
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
 import { normalizeRestoredActiveState, switchWorkFocusTask } from "./pomodoro-focus-segments.ts";
@@ -15,68 +16,66 @@ function storage(): Storage | null {
   }
 }
 
-function storageKey(subjectKind: SubjectKind): string {
-  return `${STORAGE_PREFIX}:${subjectKind}`;
+function storageKey(subjectId: number): string {
+  return `${STORAGE_PREFIX}:${subjectId}`;
 }
 
 function parseStoredState(raw: string): PomodoroActiveState | null {
-  const parsed = JSON.parse(raw) as PomodoroActiveState;
+  const parsed: unknown = JSON.parse(raw);
+  if (!isRecord(parsed)) return null;
   if (parsed.runState !== "running" && parsed.runState !== "paused") return null;
-  return parsed;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- localStorage JSON → PomodoroActiveState（后续 normalizeRestoredActiveState 再归一）
+  return parsed as PomodoroActiveState;
 }
 
-function isLegacyKeyForSubject(key: string, subjectKind: SubjectKind): boolean {
+function isLegacyKeyForSubject(key: string, subjectId: number): boolean {
   if (!key.startsWith(`${STORAGE_PREFIX}:`)) return false;
-  if (key === storageKey(subjectKind)) return false;
-  return key.endsWith(`:${subjectKind}`) || key.endsWith(`:${subjectKind}:${subjectKind}`);
+  if (key === storageKey(subjectId)) return false;
+  return key.endsWith(`:${subjectId}`) || key.endsWith(`:${subjectId}:${subjectId}`);
 }
 
 /** 读取时兼容历史 habitatScope 键名，找到后迁移到 subject-only 键。 */
-function findStoredRaw(subjectKind: SubjectKind): { raw: string; legacyKey: string | null } | null {
+function findStoredRaw(subjectId: number): { raw: string; legacyKey: string | null } | null {
   const store = storage();
   if (!store) return null;
 
-  const primary = store.getItem(storageKey(subjectKind));
+  const primary = store.getItem(storageKey(subjectId));
   if (primary) return { raw: primary, legacyKey: null };
 
   for (let i = 0; i < store.length; i++) {
     const key = store.key(i);
-    if (!key || !isLegacyKeyForSubject(key, subjectKind)) continue;
+    if (!key || !isLegacyKeyForSubject(key, subjectId)) continue;
     const raw = store.getItem(key);
     if (raw) return { raw, legacyKey: key };
   }
   return null;
 }
 
-function removeLegacyKeysForSubject(subjectKind: SubjectKind, keepKey?: string): void {
+function removeLegacyKeysForSubject(subjectId: number, keepKey?: string): void {
   const store = storage();
   if (!store) return;
   for (let i = 0; i < store.length; i++) {
     const key = store.key(i);
-    if (!key || key === keepKey || !isLegacyKeyForSubject(key, subjectKind)) continue;
+    if (!key || key === keepKey || !isLegacyKeyForSubject(key, subjectId)) continue;
     store.removeItem(key);
   }
 }
 
-function migrateToPrimaryKey(
-  subjectKind: SubjectKind,
-  raw: string,
-  legacyKey: string | null,
-): void {
+function migrateToPrimaryKey(subjectId: number, raw: string, legacyKey: string | null): void {
   const store = storage();
   if (!store) return;
-  const key = storageKey(subjectKind);
+  const key = storageKey(subjectId);
   store.setItem(key, raw);
   if (legacyKey && legacyKey !== key) store.removeItem(legacyKey);
-  removeLegacyKeysForSubject(subjectKind, key);
+  removeLegacyKeysForSubject(subjectId, key);
 }
 
 export function readPomodoroActiveState(
   _hubPart?: string,
-  subjectKind?: SubjectKind,
+  subjectId?: number,
 ): PomodoroActiveState | null {
   try {
-    const kind = subjectKind ?? getSubjectKind();
+    const kind = subjectId ?? getCachedUserSubjectId();
     const found = findStoredRaw(kind);
     if (!found) return null;
     const parsed = parseStoredState(found.raw);
@@ -93,10 +92,10 @@ export function readPomodoroActiveState(
 export function writePomodoroActiveState(
   state: PomodoroActiveState | null,
   _hubPart?: string,
-  subjectKind?: SubjectKind,
+  subjectId?: number,
 ): void {
   try {
-    const kind = subjectKind ?? getSubjectKind();
+    const kind = subjectId ?? getCachedUserSubjectId();
     const store = storage();
     if (!store) return;
     const key = storageKey(kind);
@@ -105,7 +104,7 @@ export function writePomodoroActiveState(
       removeLegacyKeysForSubject(kind);
       if (typeof window !== "undefined") {
         window.dispatchEvent(
-          new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectKind: kind } }),
+          new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectId: kind } }),
         );
       }
       return;
@@ -115,7 +114,7 @@ export function writePomodoroActiveState(
     removeLegacyKeysForSubject(kind, key);
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectKind: kind } }),
+        new CustomEvent("freeanima:pomodoro-active-changed", { detail: { subjectId: kind } }),
       );
       // Tauri 移动：同步主屏小组件快照（失败忽略）
       if (window.portalShell?.isTauri) {
@@ -141,11 +140,11 @@ export function writePomodoroActiveState(
 export function switchPomodoroActiveTask(
   taskItemId: number,
   _hubPart?: string,
-  subjectKind?: SubjectKind,
+  subjectId?: number,
 ): boolean {
-  const active = readPomodoroActiveState(undefined, subjectKind);
+  const active = readPomodoroActiveState(undefined, subjectId);
   if (!active) return false;
-  writePomodoroActiveState(switchWorkFocusTask(active, taskItemId), undefined, subjectKind);
+  writePomodoroActiveState(switchWorkFocusTask(active, taskItemId), undefined, subjectId);
   return true;
 }
 

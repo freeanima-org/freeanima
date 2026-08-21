@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const emailSubjectKindSchema = notificationRecipientKindSchema;
-
 export const emailAccountRowSchema = z.object({
   id: z.number().int().positive(),
   display_name: z.string(),
@@ -77,7 +73,7 @@ export const emailThreadRowSchema = z.object({
 export type EmailThreadRowPayload = z.infer<typeof emailThreadRowSchema>;
 
 export const emailAccountListInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type EmailAccountListInput = z.infer<typeof emailAccountListInputSchema>;
 export const emailAccountListOutputSchema = z.object({
@@ -86,7 +82,7 @@ export const emailAccountListOutputSchema = z.object({
 export type EmailAccountListOutput = z.infer<typeof emailAccountListOutputSchema>;
 
 export const emailMessageListInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive().optional(),
   thread_id: z.number().int().positive().optional(),
   mailbox: z.string().min(1).optional(),
@@ -102,7 +98,7 @@ export const emailMessageListOutputSchema = z.object({
 export type EmailMessageListOutput = z.infer<typeof emailMessageListOutputSchema>;
 
 export const emailMessageReadInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   raw: z.boolean().optional(),
 });
@@ -111,7 +107,7 @@ export const emailMessageReadOutputSchema = z.object({ message: emailMessageRowS
 export type EmailMessageReadOutput = z.infer<typeof emailMessageReadOutputSchema>;
 
 export const emailMessageAttachTaskInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   due_at: z.string().nullable().optional(),
   remind_at: z.string().nullable().optional(),
@@ -133,7 +129,7 @@ export const emailMessageAttachTaskOutputSchema = z.object({
 export type EmailMessageAttachTaskOutput = z.infer<typeof emailMessageAttachTaskOutputSchema>;
 
 export const emailMessageDetachTaskInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type EmailMessageDetachTaskInput = z.infer<typeof emailMessageDetachTaskInputSchema>;
@@ -141,7 +137,7 @@ export const emailMessageDetachTaskOutputSchema = z.object({ ok: z.literal(true)
 export type EmailMessageDetachTaskOutput = z.infer<typeof emailMessageDetachTaskOutputSchema>;
 
 export const emailMessageMarkReadInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type EmailMessageMarkReadInput = z.infer<typeof emailMessageMarkReadInputSchema>;
@@ -154,7 +150,7 @@ export const emailMessageMarkUnreadOutputSchema = emailMessageMarkReadOutputSche
 export type EmailMessageMarkUnreadOutput = z.infer<typeof emailMessageMarkUnreadOutputSchema>;
 
 export const emailMessageDeleteInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type EmailMessageDeleteInput = z.infer<typeof emailMessageDeleteInputSchema>;
@@ -162,7 +158,7 @@ export const emailMessageDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type EmailMessageDeleteOutput = z.infer<typeof emailMessageDeleteOutputSchema>;
 
 export const emailSendInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive().optional(),
   to: z.string().min(1),
   subject: z.string(),
@@ -181,7 +177,7 @@ export const emailSendOutputSchema = z.object({
 export type EmailSendOutput = z.infer<typeof emailSendOutputSchema>;
 
 export const emailAttachmentUploadInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type EmailAttachmentUploadInput = z.infer<typeof emailAttachmentUploadInputSchema>;
 export const emailAttachmentUploadOutputSchema = z.object({
@@ -193,7 +189,7 @@ export const emailAttachmentUploadOutputSchema = z.object({
 export type EmailAttachmentUploadOutput = z.infer<typeof emailAttachmentUploadOutputSchema>;
 
 export const emailSyncInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive().optional(),
   limit: z.number().int().positive().optional(),
 });
@@ -212,7 +208,7 @@ export const emailSyncOutputSchema = z.object({
 export type EmailSyncOutput = z.infer<typeof emailSyncOutputSchema>;
 
 export const emailThreadListInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive().optional(),
   has_unread: z.boolean().optional(),
   limit: z.number().int().positive().optional(),
@@ -224,7 +220,7 @@ export const emailThreadListOutputSchema = z.object({
 export type EmailThreadListOutput = z.infer<typeof emailThreadListOutputSchema>;
 
 export const emailMessageSearchInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().optional(),
   account_id: z.number().int().positive().optional(),
   mailbox: z.string().min(1).optional(),
@@ -258,7 +254,7 @@ export const emailProviderPresetSchema = z.object({
 export type EmailProviderPresetPayload = z.infer<typeof emailProviderPresetSchema>;
 
 export const emailProviderListInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type EmailProviderListInput = z.infer<typeof emailProviderListInputSchema>;
 export const emailProviderListOutputSchema = z.object({
@@ -275,7 +271,7 @@ const emailAccountHostFields = {
 };
 
 export const emailAccountCreateInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   password: z.string().min(1),
   address: z.string().email(),
   display_name: z.string().optional(),
@@ -290,7 +286,7 @@ export const emailAccountCreateOutputSchema = z.object({ account: emailAccountRo
 export type EmailAccountCreateOutput = z.infer<typeof emailAccountCreateOutputSchema>;
 
 export const emailAccountPatchInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   password: z.string().min(1).optional(),
   address: z.string().email().optional(),
@@ -306,7 +302,7 @@ export const emailAccountPatchOutputSchema = z.object({ account: emailAccountRow
 export type EmailAccountPatchOutput = z.infer<typeof emailAccountPatchOutputSchema>;
 
 export const emailAccountDeleteInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type EmailAccountDeleteInput = z.infer<typeof emailAccountDeleteInputSchema>;
@@ -321,7 +317,7 @@ export const emailMailboxInfoSchema = z.object({
 });
 
 export const emailMailboxListInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive(),
 });
 export type EmailMailboxListInput = z.infer<typeof emailMailboxListInputSchema>;
@@ -331,7 +327,7 @@ export const emailMailboxListOutputSchema = z.object({
 export type EmailMailboxListOutput = z.infer<typeof emailMailboxListOutputSchema>;
 
 export const emailMailboxCreateInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive(),
   path: z.string().min(1),
 });
@@ -344,7 +340,7 @@ export const emailMailboxCreateOutputSchema = z.object({
 export type EmailMailboxCreateOutput = z.infer<typeof emailMailboxCreateOutputSchema>;
 
 export const emailMailboxRenameInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive(),
   from: z.string().min(1),
   to: z.string().min(1),
@@ -359,7 +355,7 @@ export const emailMailboxRenameOutputSchema = z.object({
 export type EmailMailboxRenameOutput = z.infer<typeof emailMailboxRenameOutputSchema>;
 
 export const emailMailboxDeleteInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive(),
   path: z.string().min(1),
 });
@@ -372,7 +368,7 @@ export const emailMailboxDeleteOutputSchema = z.object({
 export type EmailMailboxDeleteOutput = z.infer<typeof emailMailboxDeleteOutputSchema>;
 
 export const emailMessageMoveInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   target_mailbox: z.string().min(1),
 });
@@ -394,7 +390,7 @@ export const emailMessageMarkUnflaggedOutputSchema = emailMessageMarkReadOutputS
 export type EmailMessageMarkUnflaggedOutput = z.infer<typeof emailMessageMarkUnflaggedOutputSchema>;
 
 export const emailDraftSaveInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   account_id: z.number().int().positive().optional(),
   message_id: z.number().int().positive().optional(),
   to: z.string().optional(),
@@ -410,7 +406,7 @@ export const emailDraftSaveOutputSchema = z.object({
 export type EmailDraftSaveOutput = z.infer<typeof emailDraftSaveOutputSchema>;
 
 export const emailDraftSendInputSchema = z.object({
-  subject_kind: emailSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   message_id: z.number().int().positive(),
 });
 export type EmailDraftSendInput = z.infer<typeof emailDraftSendInputSchema>;

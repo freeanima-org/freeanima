@@ -13,6 +13,7 @@ function readMap(): Record<string, boolean> {
     if (!raw) return {};
     const parsed = JSON.parse(raw) as unknown;
     if (!parsed || typeof parsed !== "object") return {};
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     return parsed as Record<string, boolean>;
   } catch {
     return {};

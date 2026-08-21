@@ -28,6 +28,7 @@ import type {
   CalendarStoreContext,
 } from "./types.ts";
 import { listCompletedActivity } from "@freeanima/features/task/domain/completed-activity.ts";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 const ALL_KINDS: CalendarRangeKind[] = ["event", "task", "project", "holiday"];
 
@@ -107,6 +108,8 @@ async function listCompletedTasksForRange(
       completed_after: from,
       completed_before: to,
       roots_only: true,
+      // 跨清单侧与项目侧（#18911）
+      container: TaskContainer.ANY,
     },
     { limit: 500 },
   );
@@ -238,7 +241,7 @@ export async function listCalendarRange(
       filters: {
         status: "pending",
         roots_only: true,
-        // 不设 in_backlog：同时包含清单/backlog 与项目内带计划任务
+        // 不设 container：跨清单侧与项目侧带计划任务（等同 TaskContainer.ANY）
       },
       limit: 500,
       mode: "filter_only",

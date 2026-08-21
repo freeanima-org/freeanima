@@ -77,6 +77,7 @@ export async function uploadChatAttachment(file: File): Promise<{
   const form = new FormData();
   form.append("file", file, file.name);
   const res = await habitat().callRaw("chat.attachment.upload", {}, { body: form });
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const body = (await parseHabitatRestResponse(res)) as {
     temp_id: string;
     filename: string;

@@ -89,24 +89,14 @@ backend。
 
 ## 收件人
 
-Subject 实体 id 在栖息地启动时绑定进 **`ResolvedWorldContext`**，并持久化到
-`habitat_runtime_config.worlds`（见 [`entity-model.md`](../product/entity-model.md)）。新实例上运维**不必**手工维护这些 id。
+Subject 实体 id 在栖息地启动时绑定进内存 **`ResolvedWorldContext`**（唯一 user + commons；默认聊天 Anima 在 `chat.default_agent_subject_id`）。**已废除** `habitat_runtime_config.worlds` 持久化段；新实例上运维不必手工维护这些 id。
 
-可选覆盖（高级；很少需要）：
+通知以 **`recipient_id`（subject 实体 id）** 为准；写入方应显式传入目标 subject，勿依赖「隐式默认 agent」。
 
-```yaml
-# habitat_runtime_config（壳 → 栖息地服务设置 → worlds），或冷启动后由 boot 自动回写
-worlds:
-  user_subject_id: 109 # type=user entity
-  agent_subject_id: 110 # type=agent entity
-```
-
-遗留的 `notifications.user_subject_id` / `agent_subject_id` 在 `worlds` 未设置时仍作回退读取。
-
-`user_world_id` / `agent_world_id` 在栖息地启动时由各 subject 的 `default_private_world_id` 推导。
+`user_world_id` 由唯一 user 的 `default_private_world_id` 推导；agent 私有 world 按具体 `subject_id` 解析。
 
 每行存储 `recipient_kind`（`user` | `agent`）与 `recipient_id`
-（来自 `ResolvedWorldContext` 的实体 id 字符串）。
+（实体 id 字符串）。
 
 | 写入方                              | 典型收件人                                      |
 | ----------------------------------- | ----------------------------------------------- |

@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { CONFIG_MASKED_SECRET, isConfigSecretKey } from "./config-sanitize.ts";
 
 /**
@@ -11,11 +12,7 @@ export function restoreMaskedSecrets(
   incoming: Record<string, unknown>,
   existing: unknown,
 ): Record<string, unknown> {
-  const existingRecord =
-    existing != null && typeof existing === "object" && !Array.isArray(existing)
-      ? (existing as Record<string, unknown>)
-      : undefined;
-  return restoreRecord(incoming, existingRecord);
+  return restoreRecord(incoming, asRecord(existing) ?? undefined);
 }
 
 function restoreRecord(
@@ -35,40 +32,27 @@ function restoreRecord(
         out[key] = value;
         continue;
       }
-      if (value != null && typeof value === "object" && !Array.isArray(value)) {
-        out[key] = restoreRecord(
-          value as Record<string, unknown>,
-          prev != null && typeof prev === "object" && !Array.isArray(prev)
-            ? (prev as Record<string, unknown>)
-            : undefined,
-        );
+      const valueRec = asRecord(value);
+      if (valueRec) {
+        out[key] = restoreRecord(valueRec, asRecord(prev) ?? undefined);
         continue;
       }
       out[key] = value;
       continue;
     }
 
-    if (value != null && typeof value === "object" && !Array.isArray(value)) {
-      out[key] = restoreRecord(
-        value as Record<string, unknown>,
-        prev != null && typeof prev === "object" && !Array.isArray(prev)
-          ? (prev as Record<string, unknown>)
-          : undefined,
-      );
+    const nested = asRecord(value);
+    if (nested) {
+      out[key] = restoreRecord(nested, asRecord(prev) ?? undefined);
       continue;
     }
 
     if (Array.isArray(value)) {
       const prevArr = Array.isArray(prev) ? prev : undefined;
       out[key] = value.map((item, i) => {
-        if (item != null && typeof item === "object" && !Array.isArray(item)) {
-          const prevItem: unknown = prevArr?.[i];
-          return restoreRecord(
-            item as Record<string, unknown>,
-            prevItem != null && typeof prevItem === "object" && !Array.isArray(prevItem)
-              ? (prevItem as Record<string, unknown>)
-              : undefined,
-          );
+        const itemRec = asRecord(item);
+        if (itemRec) {
+          return restoreRecord(itemRec, asRecord(prevArr?.[i]) ?? undefined);
         }
         return item;
       });

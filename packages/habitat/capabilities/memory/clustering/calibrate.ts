@@ -31,6 +31,7 @@ export type CalibrateFullResult = {
 
 export async function calibrateSemanticMemoryClusters(opts?: {
   config?: ResolvedMemoryClusteringConfig;
+  world_id?: number;
 }): Promise<CalibrateFullResult> {
   const cfg = opts?.config ?? resolveMemoryClusteringConfig(getActiveRuntimeConfig().data);
   if (!cfg.enabled) {
@@ -40,7 +41,9 @@ export async function calibrateSemanticMemoryClusters(opts?: {
     return { ok: true, skipped: true, reason: "embedding_disabled" };
   }
 
-  const rows = await listActiveSemanticMemoryEmbeddings();
+  const rows = await listActiveSemanticMemoryEmbeddings(
+    opts?.world_id != null ? { world_id: opts.world_id } : undefined,
+  );
   const n = rows.length;
   if (n === 0) {
     return { ok: true, skipped: true, reason: "empty", n: 0 };

@@ -25,6 +25,7 @@ import { mapOpenAiCompatibleError } from "../map-error.ts";
 import { defaultModelInfo, defaultModelInfoEnriched } from "../catalog.ts";
 import { enrichCatalogFromModelsDev } from "../models-dev/enrich.ts";
 import { normalizeUsage } from "../usage.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export const OPENAI_RESPONSES_FORMAT_ID = LLM_FORMAT_OPENAI_RESPONSES;
 
@@ -121,8 +122,8 @@ function extractToolCallsFromResponse(output: unknown): ToolCall[] {
   if (!Array.isArray(output)) return [];
   const calls: ToolCall[] = [];
   for (const item of output) {
-    if (!item || typeof item !== "object") continue;
-    const row = item as Record<string, unknown>;
+    const row = asRecord(item);
+    if (!row) continue;
     if (row.type !== "function_call") continue;
     const id =
       typeof row.call_id === "string" ? row.call_id : typeof row.id === "string" ? row.id : "";
@@ -157,8 +158,10 @@ export async function* runOpenAiResponsesStream(
     const stream = await client.responses.create(
       omitUndefined({
         model,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenAI responses input 边界
         input: turnsToResponseInput(request.messages, request.systemPrompt) as never,
         max_output_tokens: request.params.maxOutputTokens,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenAI responses tools 边界
         tools: buildTools(request) as never,
         stream: true as const,
         temperature: request.params.temperature,
@@ -168,6 +171,7 @@ export async function* runOpenAiResponsesStream(
       { signal: mergeAbortSignals(timeouts.signal, request.signal) },
     );
 
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenAI responses stream 事件边界
     for await (const event of stream as AsyncIterable<{
       type?: string;
       delta?: string;

@@ -10,6 +10,7 @@ import {
   ensureCompanionDataDir,
 } from "./paths.ts";
 import { habitatUrlFromConfig, remoteAuthTokenFromShell } from "./config.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 type SyncPullResponse = {
   config: Record<string, unknown>;
@@ -46,10 +47,10 @@ function localCompanionHasLegacyData(): boolean {
   const configPath = companionConfigPath();
   if (existsSync(configPath)) {
     try {
-      const raw = JSON.parse(readFileSync(configPath, "utf-8")) as {
+      const raw = assertNarrow<{
         models?: unknown[];
         motion_library?: unknown[];
-      };
+      }>(JSON.parse(readFileSync(configPath, "utf-8")));
       if ((raw.models?.length ?? 0) > 0 || (raw.motion_library?.length ?? 0) > 0) {
         return true;
       }
@@ -79,7 +80,7 @@ async function hubRpcCall<T>(method: string, payload: Record<string, unknown> = 
   const token = remoteAuthTokenFromShell();
   const options = token !== undefined ? { authToken: token } : undefined;
   const res = await fetchHabitatRestRaw(habitatUrlFromConfig(), method, payload, options);
-  return (await parseHabitatRestResponse(res)) as T;
+  return assertNarrow<T>(await parseHabitatRestResponse(res));
 }
 
 async function downloadAsset(asset: {

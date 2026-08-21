@@ -112,6 +112,9 @@ export type ReflectInput = {
   /** 巩固作业范围；缺省由实现决定 */
   conversation_ids?: string[];
   force?: boolean;
+  /** 按 agent 私有 world 分桶 */
+  world_id?: number;
+  agent_subject_id?: number;
 };
 
 export type ReflectResult = {

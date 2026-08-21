@@ -49,7 +49,8 @@ export async function chat(
   const resolvedId = resolveRuntime(opts).resolveProfileId(opts?.profileId);
   const profile = resolveRuntime(opts).profiles.resolve(resolvedId);
   const input = isSimpleChatOnly(messages)
-    ? simpleMessagesToInvokeInput(messages as SimpleChatMessage[])
+    ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- isSimpleChatOnly 已收窄
+      simpleMessagesToInvokeInput(messages as SimpleChatMessage[])
     : storedMessagesToInvokeInput(messages);
 
   return profile.chat(

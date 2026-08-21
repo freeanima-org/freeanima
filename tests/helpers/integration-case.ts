@@ -101,11 +101,16 @@ export async function syncIntegrationSelfLayer(
   selfModel?: string,
 ): Promise<void> {
   if (selfModel !== undefined) {
-    await upsertSelfBlock({
-      block_key: "self_model",
-      content: selfModel,
-      updated_by: "test",
-    });
+    const { getResolvedWorldContext } =
+      await import("@freeanima/habitat/core/config/world-context");
+    await upsertSelfBlock(
+      {
+        block_key: "self_model",
+        content: selfModel,
+        updated_by: "test",
+      },
+      getResolvedWorldContext().default_chat_agent_subject_id,
+    );
   }
   invalidateSelfLayerPromptCache();
 }

@@ -8,6 +8,10 @@ import {
   filterImageGenerateCatalog,
 } from "@freeanima/habitat/core/llm/image-generate-models.ts";
 import {
+  filterChatCatalog,
+  filterEmbeddingCatalog,
+} from "@freeanima/habitat/core/llm/embedding-models.ts";
+import {
   alibabaBuiltinVoiceGenerateEntries,
   filterVoiceGenerateCatalog,
 } from "@freeanima/habitat/core/llm/voice-generate-models.ts";
@@ -25,6 +29,8 @@ import {
 
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
+import { asRecord as sharedAsRecord } from "@freeanima/shared/util";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 export type ListProviderModelsPurpose =
   | "chat"
@@ -57,10 +63,7 @@ export type ListProviderModelsResult = {
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
-  if (value != null && typeof value === "object" && !Array.isArray(value)) {
-    return value as Record<string, unknown>;
-  }
-  return {};
+  return sharedAsRecord(value) ?? {};
 }
 
 function serializeModel(info: ModelInfo): ListProviderModelsEntry {
@@ -98,7 +101,9 @@ function entriesToModelInfo(
     contextWindow: entry.contextWindow ?? CATALOG_DEFAULT_CONTEXT_WINDOW,
     maxOutputTokens: entry.maxOutputTokens ?? CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
     ...(entry.outputModalities
-      ? { outputModalities: [...entry.outputModalities] as ModelOutputModality[] }
+      ? {
+          outputModalities: assertNarrow<ModelOutputModality[]>([...entry.outputModalities]),
+        }
       : {}),
   }));
 }
@@ -141,6 +146,19 @@ function applyPurposeFilter(
       };
     });
   }
+  if (purpose === "embedding") {
+    return filterEmbeddingCatalog(models, {
+      ...(query != null && query !== "" ? { query } : {}),
+      limit,
+    });
+  }
+  if (purpose === "chat") {
+    return filterChatCatalog(models, {
+      ...(query != null && query !== "" ? { query } : {}),
+      limit,
+    });
+  }
+  // 缺省（连接探测等）：全量，不做用途裁剪
   return filterModels(models, query, limit);
 }
 
@@ -177,6 +195,9 @@ export async function listProviderModels(
     return { models: [], source: "provider" };
   }
   if (input.purpose === "voice_generate" && !modalities.voice_protocol) {
+    return { models: [], source: "provider" };
+  }
+  if (input.purpose === "embedding" && !modalities.embeddings_protocol) {
     return { models: [], source: "provider" };
   }
 

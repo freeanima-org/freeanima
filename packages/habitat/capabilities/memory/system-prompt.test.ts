@@ -62,7 +62,9 @@ describe("system-prompt", () => {
         updated_at: new Date("2026-01-01T00:00:00.000Z"),
       },
     ]) as never);
-    const parts = await decomposeSystemPromptParts("self layer content");
+    const parts = await decomposeSystemPromptParts("self layer content", null, {
+      world_id: 1,
+    });
     expect(parts.resident).toContain(RESIDENT_MEMORY_SYSTEM_FRAME);
     expect(parts.resident).toContain("<resident_memory>");
     expect(parts.resident).toContain("</resident_memory>");

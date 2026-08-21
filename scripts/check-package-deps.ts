@@ -7,6 +7,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { isRecord, omitUndefined } from "@freeanima/shared/util";
+
 const ROOT = join(import.meta.dir, "..");
 
 type Pkg = {
@@ -16,7 +18,27 @@ type Pkg = {
 };
 
 function load(rel: string): Pkg {
-  return JSON.parse(readFileSync(join(ROOT, rel), "utf8")) as Pkg;
+  const raw: unknown = JSON.parse(readFileSync(join(ROOT, rel), "utf8"));
+  if (!isRecord(raw)) return {};
+  const dependencies = isRecord(raw.dependencies)
+    ? Object.fromEntries(
+        Object.entries(raw.dependencies).filter(
+          (e): e is [string, string] => typeof e[1] === "string",
+        ),
+      )
+    : undefined;
+  const devDependencies = isRecord(raw.devDependencies)
+    ? Object.fromEntries(
+        Object.entries(raw.devDependencies).filter(
+          (e): e is [string, string] => typeof e[1] === "string",
+        ),
+      )
+    : undefined;
+  return omitUndefined({
+    name: typeof raw.name === "string" ? raw.name : undefined,
+    dependencies,
+    devDependencies,
+  });
 }
 
 function allDeps(pkg: Pkg): string[] {

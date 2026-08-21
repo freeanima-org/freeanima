@@ -51,11 +51,15 @@ export {
 } from "./pomodoro-active.ts";
 export * from "./task-recurrence.ts";
 export {
+  TaskContainer,
+  taskContainerSchema,
+  resolveTaskContainer,
   taskItemStatusSchema,
   taskItemPrioritySchema,
   vaultItemTypeSchema,
   selfBlockKeySchema,
   conversationScenarioSchema,
+  type TaskContainerKind,
   type TaskItemStatus,
   type TaskItemPriority,
   type VaultItemType,

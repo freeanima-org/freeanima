@@ -6,6 +6,7 @@ export {
   type HabitatCallRawOptions,
   type HabitatClient,
   type HabitatClientOptions,
+  type HabitatHttpFetch,
 } from "./client.ts";
 export {
   createFullHabitatClient,

@@ -1,6 +1,10 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeEach, afterEach, describe, expect, it, mock } from "bun:test";
 import { spawnSync } from "node:child_process";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/habitat/core/config/resolved-world-context.ts";
 
 const resolveAgentVaultSecretMock = mock(async () => "secret-value-xyz");
 const resolveUserVaultSecretMock = mock(async () => {
@@ -15,10 +19,9 @@ mock.module("@freeanima/habitat/capabilities/connectors/vault", () => ({
 
 mock.module("@freeanima/features/vault/domain/tool-world-resolve", () => ({
   resolveVaultToolWorld: resolveVaultToolWorldMock,
-  SUBJECT_KIND_TOOL_PROPERTY: {
-    type: "string",
-    enum: ["user", "agent"],
-    description: "Vault library",
+  SUBJECT_ID_TOOL_PROPERTY: {
+    type: "integer",
+    description: "Owning subject entity id",
   },
   WORLD_ID_TOOL_PROPERTY: {
     type: "integer",
@@ -80,14 +83,14 @@ describe("parseSecretsArg", () => {
   });
 
   it("keeps explicit subject_kind", () => {
-    const out = parseSecretsArg([{ id: 12, env_name: "GH_TOKEN", subject_kind: "agent" }]);
+    const out = parseSecretsArg([{ id: 12, env_name: "GH_TOKEN", subject_id: 20 }]);
     expect(Array.isArray(out)).toBe(true);
     if (!Array.isArray(out)) return;
     expect(out).toEqual([
       {
         id: 12,
         env_name: "GH_TOKEN",
-        subject_kind: "agent",
+        subject_id: 20,
       },
     ]);
   });
@@ -95,6 +98,15 @@ describe("parseSecretsArg", () => {
 
 describe("resolveVaultSecretValue", () => {
   beforeEach(() => {
+    bindResolvedWorldContext({
+      user_subject_id: 1,
+      agent_subject_id: 20,
+      user_world_id: 10,
+      agent_world_id: 200,
+      default_chat_agent_subject_id: 20,
+      default_chat_agent_world_id: 200,
+      commons_world_id: 30,
+    });
     resolveAgentVaultSecretMock.mockClear();
     resolveUserVaultSecretMock.mockClear();
     resolveVaultToolWorldMock.mockClear();
@@ -102,11 +114,15 @@ describe("resolveVaultSecretValue", () => {
     resolveVaultToolWorldMock.mockImplementation(async () => 1);
   });
 
+  afterEach(() => {
+    resetResolvedWorldContextForTest();
+  });
+
   it("resolves agent secret without writing Habitat process.env", async () => {
     const resolved = await resolveVaultSecretValue({
       id: 99,
       field: "password",
-      subject_kind: "agent",
+      subject_id: 20,
     });
     expect(resolved).toEqual({ value: "secret-value-xyz" });
     expect(resolveAgentVaultSecretMock).toHaveBeenCalled();
@@ -117,6 +133,15 @@ describe("resolveSubprocessSecrets", () => {
   const KEY = "FA_VAULT_SECRETS_TEST";
 
   beforeEach(() => {
+    bindResolvedWorldContext({
+      user_subject_id: 1,
+      agent_subject_id: 20,
+      user_world_id: 10,
+      agent_world_id: 200,
+      default_chat_agent_subject_id: 20,
+      default_chat_agent_world_id: 200,
+      commons_world_id: 30,
+    });
     resolveAgentVaultSecretMock.mockClear();
     resolveUserVaultSecretMock.mockClear();
     resolveVaultToolWorldMock.mockClear();
@@ -125,19 +150,19 @@ describe("resolveSubprocessSecrets", () => {
     delete process.env[KEY];
   });
 
+  afterEach(() => {
+    resetResolvedWorldContextForTest();
+  });
+
   it("resolves agent secrets without writing Habitat process.env", async () => {
-    const resolved = await resolveSubprocessSecrets([
-      { id: 99, env_name: KEY, subject_kind: "agent" },
-    ]);
+    const resolved = await resolveSubprocessSecrets([{ id: 99, env_name: KEY, subject_id: 20 }]);
     expect(resolved).toEqual({ [KEY]: "secret-value-xyz" });
     expect(process.env[KEY]).toBeUndefined();
     expect(resolveAgentVaultSecretMock).toHaveBeenCalled();
   });
 
   it("child printenv sees secrets via buildSubprocessEnv; Habitat env stays clean", async () => {
-    const resolved = await resolveSubprocessSecrets([
-      { id: 99, env_name: KEY, subject_kind: "agent" },
-    ]);
+    const resolved = await resolveSubprocessSecrets([{ id: 99, env_name: KEY, subject_id: 20 }]);
     expect(typeof resolved).toBe("object");
     if (typeof resolved === "string") return;
 

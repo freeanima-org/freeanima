@@ -17,6 +17,8 @@ import {
   conversationSubscribeInputSchema,
   conversationTailInputSchema,
   conversationTailOutputSchema,
+  conversationSetAgentInputSchema,
+  conversationSetAgentOutputSchema,
   conversationUnarchiveInputSchema,
   conversationUnpinInputSchema,
   conversationUnreadCountInputSchema,
@@ -70,6 +72,11 @@ export const chatMethodDefs = {
   "conversation.create": defineHabitatMethod({
     input: conversationCreateInputSchema,
     output: conversationCreateOutputSchema,
+    meta: dualTransportMeta(false),
+  }),
+  "conversation.setAgent": defineHabitatMethod({
+    input: conversationSetAgentInputSchema,
+    output: conversationSetAgentOutputSchema,
     meta: dualTransportMeta(false),
   }),
   "conversation.list": defineHabitatMethod({

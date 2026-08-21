@@ -1,4 +1,5 @@
 import { navigateAppModulePath } from "./pomodoro-launch.ts";
+import { writeModuleSelection } from "./module-selection.ts";
 
 export type AnimaPresent = "navigate" | "overlay";
 
@@ -25,6 +26,8 @@ const DEFAULT_PRESENT_BY_COMPONENT: Record<string, AnimaPresent> = {
   calendar_event: "overlay",
   project: "overlay",
   note: "navigate",
+  diary_entry: "navigate",
+  email_account: "navigate",
   object_file: "overlay",
 };
 
@@ -159,6 +162,20 @@ function parseShellPathAsAnimaUri(pathWithSearch: string): ParseAnimaUriResult {
     if (id == null) return { ok: false, error: "invalid id" };
     return { ok: true, ref: { id, component: "note", present: "navigate" } };
   }
+  if (path === "/diary") {
+    const idRaw = url.searchParams.get("id")?.trim();
+    if (!idRaw) return { ok: false, error: "diary path missing id" };
+    const id = parsePositiveIntId(idRaw);
+    if (id == null) return { ok: false, error: "invalid id" };
+    return { ok: true, ref: { id, component: "diary_entry", present: "navigate" } };
+  }
+  if (path === "/email") {
+    const accountRaw = url.searchParams.get("account")?.trim();
+    if (!accountRaw) return { ok: false, error: "email path missing account" };
+    const id = parsePositiveIntId(accountRaw);
+    if (id == null) return { ok: false, error: "invalid account id" };
+    return { ok: true, ref: { id, component: "email_account", present: "navigate" } };
+  }
   return { ok: false, error: "unsupported shell path" };
 }
 
@@ -185,6 +202,12 @@ export function animaUriToShellPath(ref: AnimaUriRef): string | null {
   if (component === "note") {
     return `/note?id=${ref.id}`;
   }
+  if (component === "diary_entry") {
+    return `/diary?id=${ref.id}`;
+  }
+  if (component === "email_account") {
+    return `/email?account=${ref.id}`;
+  }
   return null;
 }
 
@@ -195,6 +218,10 @@ export function navigateAnimaUri(ref: AnimaUriRef): boolean {
     present: ref.present ?? defaultPresentForComponent(ref.component),
   });
   if (!path) return false;
+  // 同模块内切清单时 TaskApp 已挂载，需同步持久化选型，避免只改 URL 不换列表
+  if (ref.component === "task_list" && Number.isInteger(ref.id) && ref.id > 0) {
+    writeModuleSelection("tasks", { kind: "list", id: ref.id });
+  }
   navigateAppModulePath(path);
   return true;
 }

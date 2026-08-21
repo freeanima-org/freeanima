@@ -156,8 +156,10 @@ Call tools directly to persist.`;
 export const REFLECT_TASK_SPEC = REFLECT_CONSOLIDATE_TASK_SPEC;
 
 /** Fetch all active memories needed for reflect */
-export async function fetchAllActiveMemories(): Promise<SemanticMemoryRow[]> {
-  return listActiveSemanticMemory();
+export async function fetchAllActiveMemories(opts?: {
+  world_id?: number;
+}): Promise<SemanticMemoryRow[]> {
+  return listActiveSemanticMemory(opts?.world_id != null ? { world_id: opts.world_id } : undefined);
 }
 
 /** Reflect LLM tool allowlist（完整巩固） */

@@ -127,6 +127,7 @@ export async function uploadMotionFile(file: File) {
     {},
     { body: form },
   );
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const body = (await parseHabitatRestResponse(res)) as {
     library?: MotionLibraryEntry[];
     entries?: MotionLibraryEntry[];

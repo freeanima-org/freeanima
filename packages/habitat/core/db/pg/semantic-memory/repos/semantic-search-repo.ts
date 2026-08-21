@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, desc, sql as drizzleSql } from "drizzle-orm";
 import { entities, searchDocuments } from "@freeanima/habitat/core/db/schema";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
@@ -22,7 +23,14 @@ function normalizeSearchOpts(opts: SemanticSearchFilterOpts) {
   const source_conversations =
     opts.source_conversations?.map((s: string) => s.trim()).filter(Boolean) ?? [];
   const q = opts.query?.trim() ?? "";
-  return { types, status, source_conversations, q, cluster_id: opts.cluster_id };
+  return {
+    types,
+    status,
+    source_conversations,
+    q,
+    cluster_id: opts.cluster_id,
+    world_id: opts.world_id,
+  };
 }
 
 function resolveEffectiveSort(
@@ -79,6 +87,7 @@ function mapBrowseRow(row: {
 }): SemanticFtsHit {
   const entityRow: EntityRow = {
     id: row.id,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PG text → EntityRow.type
     type: row.type as EntityRow["type"],
     world_id: row.world_id,
     components: [...row.components],
@@ -86,7 +95,7 @@ function mapBrowseRow(row: {
     title: row.title ?? "",
     summary: row.summary ?? "",
     content: row.content ?? "",
-    body: (row.body ?? {}) as Record<string, unknown>,
+    body: asRecord(row.body) ?? {},
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [],
@@ -107,7 +116,8 @@ export async function searchSemanticMemory(
 ): Promise<SemanticFtsHit[]> {
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const offset = Math.max(0, opts.offset ?? 0);
-  const { types, status, source_conversations, q, cluster_id } = normalizeSearchOpts(opts);
+  const { types, status, source_conversations, q, cluster_id, world_id } =
+    normalizeSearchOpts(opts);
   const effectiveSort = resolveEffectiveSort(q, opts.sort_by);
 
   const db = getDb();
@@ -120,6 +130,7 @@ export async function searchSemanticMemory(
           status,
           source_conversations,
           cluster_id,
+          world_id,
           sortBy: "updated_at" as const,
           offset,
           limit,
@@ -135,6 +146,7 @@ export async function searchSemanticMemory(
         status,
         source_conversations,
         cluster_id,
+        world_id,
       }),
     );
   }
@@ -146,6 +158,7 @@ export async function searchSemanticMemory(
       status,
       source_conversations,
       cluster_id,
+      world_id,
       sortBy: effectiveSort,
       offset,
       limit,
@@ -160,18 +173,20 @@ async function searchSemanticMemoryBrowse(
     status: "active" | "deprecated" | "all";
     source_conversations: string[];
     cluster_id?: number | null;
+    world_id?: number;
     sortBy: Exclude<SemanticMemorySortBy, "rank">;
     offset: number;
     limit: number;
   },
 ): Promise<SemanticFtsHit[]> {
-  const { types, status, source_conversations, cluster_id, sortBy, offset, limit } = args;
+  const { types, status, source_conversations, cluster_id, world_id, sortBy, offset, limit } = args;
   const conditions = buildSemanticConditions(
     omitUndefined({
       types,
       status,
       source_conversations,
       cluster_id,
+      world_id,
     }),
   );
   const rows = await db
@@ -186,13 +201,14 @@ async function searchSemanticMemoryBrowse(
 }
 
 export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts): Promise<number> {
-  const { types, status, source_conversations, q, cluster_id } = normalizeSearchOpts(opts);
+  const { types, status, source_conversations, q, cluster_id, world_id } =
+    normalizeSearchOpts(opts);
 
   const db = getDb();
   if (q) {
     return hybridCountSemanticMemory(
       q,
-      omitUndefined({ types, status, source_conversations, cluster_id }),
+      omitUndefined({ types, status, source_conversations, cluster_id, world_id }),
     );
   }
 
@@ -202,6 +218,7 @@ export async function countSemanticMemorySearch(opts: SemanticSearchFilterOpts):
       status,
       source_conversations,
       cluster_id,
+      world_id,
     }),
   );
   const rows = await db

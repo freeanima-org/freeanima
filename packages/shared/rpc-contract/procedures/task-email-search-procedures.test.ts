@@ -13,7 +13,7 @@ describe("task/email SAP search procedures", () => {
 
   it("validates task.search input", () => {
     taskSearchInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       query: "买牛奶",
       list_id: 3,
       status: "pending",
@@ -23,13 +23,13 @@ describe("task/email SAP search procedures", () => {
 
   it("validates email.message.search input", () => {
     emailMessageSearchInputSchema.parse({
-      subject_kind: "agent",
+      subject_id: 2,
       query: "invoice",
       account_id: 1,
       limit: 10,
     });
     emailMessageSearchInputSchema.parse({
-      subject_kind: "agent",
+      subject_id: 2,
       mailbox: "INBOX",
       flagged: true,
       limit: 10,

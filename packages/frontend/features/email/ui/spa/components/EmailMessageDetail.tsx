@@ -20,6 +20,7 @@ import {
   type EmailMessageRow,
 } from "../lib/api.ts";
 import { buildEmailHtmlSrcDoc, looksLikeHtmlBody } from "../lib/email-html.ts";
+import { EmailContactMailbox } from "./EmailContactLinkPanel.tsx";
 
 function formatWhen(iso: string): string {
   if (!iso) return "";
@@ -297,12 +298,14 @@ export function EmailMessageDetail({
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <div className="text-muted-foreground mb-4 space-y-1">
-          <div>
-            {"发件人："} {message.from}
+        <div className="text-muted-foreground mb-4 space-y-2 text-sm">
+          <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+            <span className="shrink-0">{"发件人："}</span>
+            <EmailContactMailbox addressRaw={message.from} writesDisabled={writesDisabled} />
           </div>
-          <div>
-            {"收件人："} {message.to}
+          <div className="flex flex-wrap items-baseline gap-x-1 gap-y-1">
+            <span className="shrink-0">{"收件人："}</span>
+            <EmailContactMailbox addressRaw={message.to} writesDisabled={writesDisabled} />
           </div>
           <div>
             {"时间："} {formatWhen(message.sent_at)}

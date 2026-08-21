@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
-import { getSubjectKind } from "@freeanima/client/portal-sdk/subject-scope-store.ts";
 import {
   useHabitatConnection,
   useNetworkOnline,
-  useSubjectScope,
+  useUserSubjectId,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   getPomodoroSyncSnapshot,
@@ -24,12 +23,13 @@ import {
   pullPomodoroActive,
   runPhaseComplete,
 } from "./lib/pomodoro-sync.ts";
+import { bindPomodoroShellActiveSync } from "./lib/pomodoro-shell-sync.ts";
 import { remainingMs } from "./lib/timer-engine.ts";
 
 const POLL_MS = 1_000;
 
 export function PomodoroShellWatcher() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
   const tickRef = useRef(0);
@@ -41,12 +41,13 @@ export function PomodoroShellWatcher() {
     };
     const unsub = subscribePomodoroSync(bump);
     const onCustom = (event: Event) => {
-      const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
-      if (detail?.subjectKind === subjectKind) bump();
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
+      const detail = (event as CustomEvent<{ subjectId?: number }>).detail;
+      if (detail?.subjectId === subjectId) bump();
     };
     const onStorage = (event: StorageEvent) => {
       if (!event.key?.startsWith("freeanima.pomodoro.active:")) return;
-      if (event.key.endsWith(`:${subjectKind}`)) bump();
+      if (event.key.endsWith(`:${subjectId}`)) bump();
     };
     window.addEventListener("freeanima:pomodoro-active-changed", onCustom);
     window.addEventListener("storage", onStorage);
@@ -55,23 +56,27 @@ export function PomodoroShellWatcher() {
       window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
       window.removeEventListener("storage", onStorage);
     };
-  }, [subjectKind]);
+  }, [subjectId]);
+
+  useEffect(() => {
+    return bindPomodoroShellActiveSync(subjectId);
+  }, [subjectId]);
 
   useEffect(() => {
     if (!networkOnline || habitatConnection !== "connected") return;
-    void pullPomodoroActive(subjectKind);
+    void pullPomodoroActive(subjectId);
     flushPomodoroOutbox();
-  }, [networkOnline, habitatConnection, subjectKind]);
+  }, [networkOnline, habitatConnection, subjectId]);
 
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
-      void pullPomodoroActive(subjectKind);
+      void pullPomodoroActive(subjectId);
       flushPomodoroOutbox();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [subjectKind]);
+  }, [subjectId]);
 
   /** 伴侣显隐变化：可见则取消 OS 预登记；隐藏则按当前阶段重新 schedule */
   useEffect(() => {
@@ -80,18 +85,18 @@ export function PomodoroShellWatcher() {
     return shell.listenConfigChanged(() => {
       void (async () => {
         const active =
-          getPomodoroSyncSnapshot(subjectKind).active ??
-          readPomodoroActiveState(undefined, subjectKind);
+          getPomodoroSyncSnapshot(subjectId).active ??
+          readPomodoroActiveState(undefined, subjectId);
         if (!active || active.runState !== "running") return;
         try {
-          const config = await fetchPomodoroConfig(subjectKind);
+          const config = await fetchPomodoroConfig(subjectId);
           await syncPomodoroPhaseLocalAlert(active, active, config);
         } catch {
           /* 忽略：下次 tick / 配置变更再试 */
         }
       })();
     });
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
     if (!networkOnline || habitatConnection !== "connected") return () => {};
@@ -102,29 +107,29 @@ export function PomodoroShellWatcher() {
       off = rpc.onEvent(POMODORO_ACTIVE_CHANGED_EVENT, (payload) => {
         const parsed = pomodoroActiveChangedEventSchema.safeParse(payload);
         if (!parsed.success) return;
-        if (parsed.data.subject_kind !== subjectKind) return;
-        applyPomodoroActiveChangedEvent(subjectKind, parsed.data.active);
+        if (parsed.data.subject_id !== subjectId) return;
+        applyPomodoroActiveChangedEvent(subjectId, parsed.data.active);
       });
     });
     return () => {
       cancelled = true;
       off?.();
     };
-  }, [networkOnline, habitatConnection, subjectKind]);
+  }, [networkOnline, habitatConnection, subjectId]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
       void (async () => {
         if (completingRef.current) return;
         const active =
-          getPomodoroSyncSnapshot(subjectKind).active ??
-          readPomodoroActiveState(undefined, subjectKind);
+          getPomodoroSyncSnapshot(subjectId).active ??
+          readPomodoroActiveState(undefined, subjectId);
         if (!active || active.runState !== "running") return;
         if (remainingMs(active) > 0) return;
         completingRef.current = true;
         try {
-          const config = await fetchPomodoroConfig(subjectKind);
-          await runPhaseComplete({ state: active, config, subjectKind });
+          const config = await fetchPomodoroConfig(subjectId);
+          await runPhaseComplete({ state: active, config, subjectId });
         } catch {
           /* 下次 tick 重试 */
         } finally {
@@ -133,41 +138,7 @@ export function PomodoroShellWatcher() {
       })();
     }, POLL_MS);
     return () => clearInterval(id);
-  }, [subjectKind]);
-
-  /** 桌面：有进行中会话则显示番茄迷你窗；结束后 hide */
-  useEffect(() => {
-    const shell = window.portalShell;
-    if (!shell?.setPomodoroFloatVisible) return () => {};
-    let lastVisible: boolean | null = null;
-    const syncFloat = () => {
-      const active =
-        getPomodoroSyncSnapshot(subjectKind).active ??
-        readPomodoroActiveState(undefined, subjectKind);
-      const visible =
-        active != null && (active.runState === "running" || active.runState === "paused");
-      if (lastVisible === visible) return;
-      lastVisible = visible;
-      void shell.setPomodoroFloatVisible?.(visible).catch(() => undefined);
-    };
-    const unsub = subscribePomodoroSync(syncFloat);
-    const onCustom = (event: Event) => {
-      const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
-      if (detail?.subjectKind === subjectKind) syncFloat();
-    };
-    window.addEventListener("freeanima:pomodoro-active-changed", onCustom);
-    syncFloat();
-    return () => {
-      unsub();
-      window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
-      void shell.setPomodoroFloatVisible?.(false).catch(() => undefined);
-    };
-  }, [subjectKind]);
+  }, [subjectId]);
 
   return null;
-}
-
-/** 供非 React 场景读取 subject（测试）。 */
-export function readWatcherSubjectKind(): "user" | "agent" {
-  return getSubjectKind();
 }

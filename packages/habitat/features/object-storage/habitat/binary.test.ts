@@ -34,6 +34,8 @@ function bindWorlds() {
     agent_subject_id: 2,
     user_world_id: 10,
     agent_world_id: 20,
+    default_chat_agent_subject_id: 2,
+    default_chat_agent_world_id: 20,
     commons_world_id: 30,
   });
 }
@@ -49,7 +51,7 @@ function ctx(partial: {
       token_id: 1,
       subject_id: partial.subject_id,
       subject_type: partial.subject_type,
-      scopes: [],
+      authorization: { full: true },
     },
     sendEvent() {},
   };
@@ -63,15 +65,9 @@ describe("isUserAgentPrivateWorldPassthrough", () => {
     resetResolvedWorldContextForTest();
   });
 
-  it("allows user on agent private world", () => {
-    expect(isUserAgentPrivateWorldPassthrough("user", 20)).toBe(true);
-  });
-
-  it("denies user on user private world", () => {
+  it("never passthrough (user ACL covers agent private worlds)", () => {
+    expect(isUserAgentPrivateWorldPassthrough("user", 20)).toBe(false);
     expect(isUserAgentPrivateWorldPassthrough("user", 10)).toBe(false);
-  });
-
-  it("denies agent on agent private world (no reverse passthrough)", () => {
     expect(isUserAgentPrivateWorldPassthrough("agent", 20)).toBe(false);
   });
 });
@@ -87,10 +83,10 @@ describe("assertHttpCallerCanReadObjectFile", () => {
     resetResolvedWorldContextForTest();
   });
 
-  it("user reading agent-world object_file skips ACL", async () => {
+  it("user reading agent-world object_file still uses ACL", async () => {
     resolveWorldFromEntityIdMock.mockImplementation(async () => 20);
     await assertHttpCallerCanReadObjectFile(ctx({ subject_id: 1, subject_type: "user" }), 99);
-    expect(assertSubjectCanAccessWorldMock).not.toHaveBeenCalled();
+    expect(assertSubjectCanAccessWorldMock).toHaveBeenCalledWith(1, 20, { access: "read" });
   });
 
   it("user reading non-agent world still uses ACL", async () => {

@@ -7,6 +7,7 @@ import type { DisplayItem, DisplayToolCall } from "@freeanima/features/chat/ui/s
 import { upsertDisplayItem } from "@freeanima/features/chat/ui/spa/lib/upsert-tool-block.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import type { StreamApiLikeEvent } from "@freeanima/shared/rpc-contract/frames/message.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export type CodingThreadState = {
   display: DisplayItem[];
@@ -55,6 +56,7 @@ function asDisplayItem(raw: unknown): DisplayItem | null {
     const calls: DisplayToolCall[] = [];
     for (const c of block.calls) {
       if (!c || typeof c !== "object") continue;
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const row = c as Record<string, unknown>;
       const name = typeof row.name === "string" ? row.name : "?";
       const tool_call_id =
@@ -65,7 +67,7 @@ function asDisplayItem(raw: unknown): DisplayItem | null {
         tool_call_id,
         status: typeof row.status === "string" ? row.status : "done",
         ...(row.args && typeof row.args === "object" && !Array.isArray(row.args)
-          ? { args: row.args as Record<string, unknown> }
+          ? { args: asRecord(row.args) ?? {} }
           : {}),
         ...(typeof row.result === "string" ? { result: row.result } : {}),
       });

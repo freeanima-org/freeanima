@@ -14,6 +14,7 @@ type MpegPlayerState = {
 };
 
 function playerState(): MpegPlayerState {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- globalThis 挂载模块级播放状态
   const root = globalThis as typeof globalThis & Record<string, MpegPlayerState | undefined>;
   if (!root[MPEG_PLAYER_STATE_KEY]) {
     root[MPEG_PLAYER_STATE_KEY] = {
@@ -478,6 +479,5 @@ export async function consumeMpegStream(
 }
 
 export function resetMpegPlayerStateForTests(): void {
-  const root = globalThis as typeof globalThis & Record<string, MpegPlayerState | undefined>;
-  delete root[MPEG_PLAYER_STATE_KEY];
+  Reflect.deleteProperty(globalThis, MPEG_PLAYER_STATE_KEY);
 }

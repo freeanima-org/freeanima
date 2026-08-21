@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 
 import { formatCstIso } from "@freeanima/habitat/core/util";
@@ -131,8 +132,8 @@ export function reshapeLegacyTaskTimes(obj: Record<string, unknown>): boolean {
 function applyDefaultReminderAnchors(obj: Record<string, unknown>, anchor: ReminderAnchor): void {
   if (!Array.isArray(obj.reminders)) return;
   obj.reminders = obj.reminders.map((r) => {
-    if (r == null || typeof r !== "object") return r;
-    const entry = r as Record<string, unknown>;
+    if (!isRecord(r)) return r;
+    const entry = r;
     if (entry.anchor === "start" || entry.anchor === "end" || entry.anchor === "due") return r;
     return { ...entry, anchor };
   });

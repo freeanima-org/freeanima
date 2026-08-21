@@ -8,6 +8,7 @@ import { getEntityOverlay } from "./entity-overlay-registry.ts";
 import { GenericEntityOverlay } from "./GenericEntityOverlay.tsx";
 import {
   bindOpenEntityResourceToWindow,
+  notifyEntityOverlayClosed,
   setAnimaUriPrimaryComponentResolver,
   setEntityOverlayOpener,
   type EntityOverlayOpenRequest,
@@ -36,6 +37,15 @@ export function EntityOverlayHost(): JSX.Element | null {
     };
   }, []);
 
+  const closeOverlay = () => {
+    setReq((current) => {
+      if (current != null) {
+        notifyEntityOverlayClosed({ id: current.id, component: current.component });
+      }
+      return null;
+    });
+  };
+
   if (req == null) return null;
 
   const Overlay = getEntityOverlay(req.component) ?? GenericEntityOverlay;
@@ -50,14 +60,14 @@ export function EntityOverlayHost(): JSX.Element | null {
   const openInModule = () => {
     const component = req.component.trim();
     if (!component) return;
-    setReq(null);
+    closeOverlay();
     navigateAnimaUri({ id: req.id, component, present: "navigate" });
   };
 
   return (
     <ModalSheetPresent
       open
-      onClose={() => setReq(null)}
+      onClose={closeOverlay}
       aria-label="实体详情"
       showCloseButton
       className="flex min-h-[min(40vh,20rem)] flex-col md:max-w-2xl"
@@ -65,7 +75,7 @@ export function EntityOverlayHost(): JSX.Element | null {
       <DialogHeader className="sr-only">
         <DialogTitle>实体详情</DialogTitle>
       </DialogHeader>
-      <Overlay id={req.id} component={req.component} onClose={() => setReq(null)} />
+      <Overlay id={req.id} component={req.component} onClose={closeOverlay} />
       {canOpenInModule ? (
         <div className="shrink-0 border-t px-4 py-3 pr-10">
           <Button type="button" variant="outline" className="w-full" onPress={openInModule}>

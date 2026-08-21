@@ -25,6 +25,11 @@ import { uploadChatAttachmentDrafts } from "@freeanima/features/chat/ui/spa/lib/
 import type { TranscriptScrollApi } from "@freeanima/features/chat/ui/spa/hooks/useStickToBottomScroll.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { ConversationListItem as ConversationListRow } from "@freeanima/features/chat/ui/spa/components/ConversationListItem.tsx";
+import { ConversationAnimaControl } from "@freeanima/features/chat/ui/spa/components/ConversationAnimaControl.tsx";
+import {
+  listAgentSubjects,
+  type AgentSubjectOption,
+} from "@freeanima/features/chat/ui/spa/lib/agent-subjects.ts";
 import { useEdgeSwipeOpen } from "@freeanima/features/chat/ui/spa/hooks/useEdgeSwipeOpen.ts";
 import { useKeyboardInset } from "@freeanima/features/chat/ui/spa/hooks/useKeyboardInset.ts";
 import {
@@ -57,7 +62,7 @@ import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-
 import { useViewportConversationRead } from "@freeanima/features/chat/ui/spa/hooks/use-viewport-conversation-read.ts";
 import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
 import { ListDetailLayout, useDrawerNav, useCompactLayout } from "@freeanima/ui-kit/layout";
-import { omitUndefined } from "@freeanima/shared/util";
+import { asRecord, omitUndefined } from "@freeanima/shared/util";
 import {
   reconnectHabitat,
   useActionSheetCapability,
@@ -119,6 +124,19 @@ import {
 import type { SlashCommandItem } from "@freeanima/features/chat/ui/spa/lib/slash-command-menu.ts";
 
 type CommandItem = SlashCommandItem;
+
+function readCommandList(raw: unknown): CommandItem[] {
+  const rec = asRecord(raw);
+  const commands = rec?.commands;
+  if (!Array.isArray(commands)) return [];
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- commands 列表契约边界
+  return commands as CommandItem[];
+}
+
+function readClarifyTimeoutSec(v: unknown): number {
+  return typeof v === "number" ? v : 1800;
+}
+
 type ClarifyPending = {
   items: Array<{ question: string; choices?: string[] }>;
   timeout_sec?: number;
@@ -163,6 +181,12 @@ function absoluteShareUrl(urlPath: string): string {
   const raw = (import.meta.env?.BASE_URL ?? "/").replace(/\/$/, "");
   const basepath = raw && raw !== "." && raw.startsWith("/") ? raw : "";
   return `${window.location.origin}${basepath}${urlPath}`;
+}
+
+function resolveShareCopyUrl(result: { url?: string; url_path: string }): string {
+  const absolute = result.url?.trim();
+  if (absolute) return absolute;
+  return absoluteShareUrl(result.url_path);
 }
 
 function isTransportFailureMessage(msg: string): boolean {
@@ -211,6 +235,7 @@ export function ChatApp() {
   const fetchConversations = useConversationsStore((s) => s.fetchConversations);
   const selectConversation = useConversationsStore((s) => s.selectConversation);
   const newConversationFn = useConversationsStore((s) => s.newConversation);
+  const setConversationAgentFn = useConversationsStore((s) => s.setConversationAgent);
   const renameConversation = useConversationsStore((s) => s.renameConversation);
   const showArchived = useConversationsStore((s) => s.showArchived);
   const setShowArchived = useConversationsStore((s) => s.setShowArchived);
@@ -299,6 +324,8 @@ export function ChatApp() {
   const [selectedPosSet, setSelectedPosSet] = useState<Set<number>>(() => new Set());
   const [selectionShareTtl, setSelectionShareTtl] = useState<ConversationShareTtl>("1h");
   const [selectionShareBusy, setSelectionShareBusy] = useState(false);
+  const [agentOptions, setAgentOptions] = useState<AgentSubjectOption[]>([]);
+  const [animaChanging, setAnimaChanging] = useState(false);
   const pendingRecoveryKeyRef = useRef<string | null>(null);
   const mobileLayout = useCompactLayout();
   const canOpenHabitatSettingsUi = useOpenHabitatSettingsCapability();
@@ -395,7 +422,7 @@ export function ChatApp() {
       void getChatRpcStreamClient()
         .whenReady()
         .then(() => listConversationCommands())
-        .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
+        .then((raw) => setCommandList(readCommandList(raw)))
         .catch((e) => console.error("commands:", e));
     },
     [fetchConversations, newConversationFn, selectConversation],
@@ -473,6 +500,26 @@ export function ChatApp() {
     }));
     return [...synced, ...pendingOutbox];
   }, [currentId, display, outboxEntries]);
+
+  const hasUserMessage = useMemo(
+    () => mergedDisplay.some((item) => item.type === "message" && item.role === "user"),
+    [mergedDisplay],
+  );
+
+  const canChangeAnima = Boolean(currentId) && !messagesLoading && !hasUserMessage;
+
+  const handleChangeAnima = useCallback(
+    async (agentSubjectId: number) => {
+      if (!currentId) return;
+      setAnimaChanging(true);
+      try {
+        await setConversationAgentFn(currentId, agentSubjectId);
+      } finally {
+        setAnimaChanging(false);
+      }
+    },
+    [currentId, setConversationAgentFn],
+  );
 
   /** 等待助手回复：流式中 / 恢复中；stalled 或用户停止时不占位（改出【继续】） */
   const awaitingAssistant = shouldShowAwaitingPlaceholder({
@@ -611,6 +658,13 @@ export function ChatApp() {
 
   useEffect(() => {
     if (!ready) return;
+    void listAgentSubjects()
+      .then((items) => setAgentOptions(items))
+      .catch((e) => console.error("listAgentSubjects:", e));
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready) return;
     void listChatOutboxEntries().then((entries) => {
       outboxHydrate(entries);
     });
@@ -660,7 +714,7 @@ export function ChatApp() {
         ttl: opts.ttl,
         ...(opts.posList?.length ? { posList: opts.posList } : {}),
       });
-      return absoluteShareUrl(result.url_path);
+      return resolveShareCopyUrl(result);
     },
     [currentId],
   );
@@ -880,8 +934,9 @@ export function ChatApp() {
           if (!isViewingOrigin()) return;
           if (Array.isArray(data.items) && data.items.length > 0) {
             setClarifyPending({
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- clarify items 契约边界
               items: data.items as ClarifyPending["items"],
-              timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+              timeout_sec: readClarifyTimeoutSec(data.timeout_sec),
             });
           }
           scrollResume();
@@ -1100,6 +1155,7 @@ export function ChatApp() {
   useEffect(() => {
     chatFlushHandlersRef.current = {
       onStreamEvent: (conversationId: string, ev: unknown) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- stream 事件契约边界
         const streamEv = ev as StreamApiEvent;
         if (useConversationsStore.getState().currentId !== conversationId) return;
         switch (streamEv.event) {
@@ -1226,8 +1282,9 @@ export function ChatApp() {
               if (!isViewingOrigin()) return;
               if (Array.isArray(data.items) && data.items.length > 0) {
                 setClarifyPending({
+                  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- clarify items 契约边界
                   items: data.items as ClarifyPending["items"],
-                  timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+                  timeout_sec: readClarifyTimeoutSec(data.timeout_sec),
                 });
               }
               scrollDown();
@@ -1349,8 +1406,9 @@ export function ChatApp() {
             if (!isViewingOrigin()) return;
             if (Array.isArray(data.items) && data.items.length > 0) {
               setClarifyPending({
+                // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- clarify items 契约边界
                 items: data.items as ClarifyPending["items"],
-                timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+                timeout_sec: readClarifyTimeoutSec(data.timeout_sec),
               });
             }
             scrollDown();
@@ -1682,6 +1740,21 @@ export function ChatApp() {
           ☰
         </Button>
         <span className="truncate text-sm font-medium">{headerTitle}</span>
+        {currentId ? (
+          <ConversationAnimaControl
+            {...(currentConversation?.agentSubjectId != null
+              ? { agentSubjectId: currentConversation.agentSubjectId }
+              : {})}
+            {...(currentConversation?.agentTitle
+              ? { agentTitle: currentConversation.agentTitle }
+              : {})}
+            agents={agentOptions}
+            canChange={canChangeAnima}
+            changing={animaChanging}
+            onChange={(id) => void handleChangeAnima(id)}
+            className="max-w-[40%] shrink"
+          />
+        ) : null}
         <span className="flex-1" />
         <Button
           type="button"

@@ -21,6 +21,7 @@ import {
 } from "@freeanima/habitat/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/habitat/core/db/pg/entity";
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import {
   createEntity,
   deleteEntity,
@@ -53,6 +54,18 @@ async function assertProjectActiveForTask(projectId: number, worldId: number): P
   if (parsed.status === "on_hold") {
     throw new Error("project is on hold");
   }
+}
+
+/** bodyPatch 为 Record；仅读我们写入的 string|null 字段 */
+function readPatchIso(value: unknown): string | null {
+  if (value == null) return null;
+  return typeof value === "string" ? value : null;
+}
+
+function readPatchId(value: unknown): number | null | undefined {
+  if (value === undefined) return undefined;
+  if (value == null) return null;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
 function normalizeTagIds(tagIds: number[] | undefined): number[] {
@@ -151,13 +164,12 @@ export async function listTaskItems(
     if (opts.due_today) filters.due_today = true;
     if (opts.tag_ids?.length) filters.tag_ids = opts.tag_ids;
     if (opts.project_id != null) filters.project_id = opts.project_id;
-    else if (opts.in_backlog !== false) filters.in_backlog = true;
+    // 显式 container / 遗留 in_backlog；不再静默默认 LIST（由清单模块入口传入）
+    if (opts.container != null) filters.container = opts.container;
+    else if (opts.in_backlog !== undefined) filters.in_backlog = opts.in_backlog;
     if (opts.parent_id != null) filters.parent_id = opts.parent_id;
     else if (opts.roots_only !== false) filters.roots_only = true;
   } else {
-    if (opts.filters.project_id == null && opts.filters.in_backlog !== false) {
-      filters.in_backlog = true;
-    }
     if (opts.parent_id != null) filters.parent_id = opts.parent_id;
     else if (opts.roots_only !== false && opts.filters.parent_id == null) {
       filters.roots_only = opts.filters.roots_only ?? true;
@@ -226,16 +238,18 @@ export async function createTaskItem(
     throw new Error("exactly one of list_id or project_id required");
   }
 
+  let listId: number | null = null;
+  let projectId: number | null = null;
   if (input.list_id != null) {
     await assertListAcceptsTasks(input.list_id, worldId);
+    listId = input.list_id;
   }
   if (input.project_id != null) {
     await assertProjectActiveForTask(input.project_id, worldId);
+    projectId = input.project_id;
   }
   const tagIds = normalizeTagIds(input.tag_ids);
   await assertTagIdsInWorld(worldId, tagIds);
-  const listId = hasProject ? null : (input.list_id as number);
-  const projectId = hasProject ? (input.project_id as number) : null;
 
   // 未显式传 sort_order：min(pending)-STEP（允许负值），只写新行；拖拽有空隙时也只改一项。
   let sortOrder = input.sort_order;
@@ -427,23 +441,25 @@ export async function updateTaskItem(
 
   const mergedStart =
     bodyPatch.start_at !== undefined
-      ? (bodyPatch.start_at as string | null)
+      ? readPatchIso(bodyPatch.start_at)
       : (parsedExisting.start_at ?? null);
   const mergedEnd =
     bodyPatch.end_at !== undefined
-      ? (bodyPatch.end_at as string | null)
+      ? readPatchIso(bodyPatch.end_at)
       : (parsedExisting.end_at ?? null);
   const mergedDue =
     bodyPatch.due_at !== undefined
-      ? (bodyPatch.due_at as string | null)
+      ? readPatchIso(bodyPatch.due_at)
       : (parsedExisting.due_at ?? null);
 
-  if (nonEmptyIso(mergedEnd) != null && nonEmptyIso(mergedStart) == null) {
+  const startIso = nonEmptyIso(mergedStart);
+  const endIso = nonEmptyIso(mergedEnd);
+  if (endIso != null && startIso == null) {
     throw new Error("end_at requires start_at");
   }
-  if (nonEmptyIso(mergedStart) != null && nonEmptyIso(mergedEnd) != null) {
-    const startMs = Date.parse(mergedStart as string);
-    const endMs = Date.parse(mergedEnd as string);
+  if (startIso != null && endIso != null) {
+    const startMs = Date.parse(startIso);
+    const endMs = Date.parse(endIso);
     if (Number.isFinite(startMs) && Number.isFinite(endMs) && startMs > endMs) {
       throw new Error("start_at must be <= end_at");
     }
@@ -497,13 +513,11 @@ export async function updateTaskItem(
       const nextList =
         input.list_id !== undefined
           ? input.list_id
-          : ((bodyPatch.list_id as number | null | undefined) ?? parsedExisting.list_id ?? null);
+          : (readPatchId(bodyPatch.list_id) ?? parsedExisting.list_id ?? null);
       const nextProject =
         input.project_id !== undefined
           ? input.project_id
-          : ((bodyPatch.project_id as number | null | undefined) ??
-            parsedExisting.project_id ??
-            null);
+          : (readPatchId(bodyPatch.project_id) ?? parsedExisting.project_id ?? null);
       await assertValidParentTask(worldId, input.parent_id, {
         listId: nextList,
         projectId: nextProject,
@@ -514,7 +528,7 @@ export async function updateTaskItem(
         const kids = await listTaskItems(worldId, {
           parent_id: input.id,
           roots_only: false,
-          in_backlog: false,
+          container: TaskContainer.ANY,
           ...(parsedExisting.project_id != null
             ? { project_id: parsedExisting.project_id }
             : parsedExisting.list_id != null
@@ -775,7 +789,7 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   const children = await listTaskItems(worldId, {
     parent_id: id,
     roots_only: false,
-    in_backlog: false,
+    container: TaskContainer.ANY,
     ...(parsed.project_id != null
       ? { project_id: parsed.project_id }
       : parsed.list_id != null
@@ -798,7 +812,7 @@ export async function countSubtasks(
     parent_id: parentId,
     roots_only: false,
     status: "all",
-    in_backlog: false,
+    container: TaskContainer.ANY,
   });
   const done = kids.filter((k) => k.status === "completed").length;
   return { done, total: kids.length };

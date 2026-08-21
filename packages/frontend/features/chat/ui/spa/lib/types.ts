@@ -41,6 +41,10 @@ export type ConversationListItem = {
   pinnedAt?: string | null;
   /** 用户未读 */
   unread?: boolean;
+  /** 绑定的 Anima subject id */
+  agentSubjectId?: number;
+  /** Anima 展示名（列表/头；缺省用 subjects 缓存或 #id） */
+  agentTitle?: string;
 };
 
 export type LlmDebugSnapshotPayload = {
@@ -82,6 +86,7 @@ export type LlmDebugSnapshotPayload = {
     after_score_filter: Array<{ id: number; score: number; content_preview: string }>;
     after_resident_filter: Array<{ id: number; score: number; content_preview: string }>;
     excluded_resident_ids: number[];
+    excluded_current_conversation_ids?: number[];
     injected: Array<{ id: number; score: number; content_preview: string }>;
     skipped_reason?: string;
     elapsed_ms: number;

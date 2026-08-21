@@ -104,6 +104,7 @@ export function MotionPreviewCanvas({ modelPath, motionFile, width, className }:
         const vrmLoader = new GLTFLoader();
         vrmLoader.register((parser) => new VRMLoaderPlugin(parser));
         const gltf = await vrmLoader.loadAsync(cached.url);
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
         const loaded = gltf.userData.vrm as VRM | undefined;
         if (!loaded || disposed) return;
 

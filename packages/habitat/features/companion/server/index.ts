@@ -14,6 +14,7 @@ import { advanceBubble, bubbleState } from "./runtime-state.ts";
 import { handleRuntimeWsClose, handleRuntimeWsOpen, runtimeWsPayload } from "./runtime-ws.ts";
 import { createNodeHttpServer, listenServer, type DevMiddleware } from "./http/node-bridge.ts";
 import { syncCompanionFromHabitat } from "./habitat-sync.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export type StartCompanionServerOptions = {
   port?: number;
@@ -42,7 +43,7 @@ function isAddrInUse(error: unknown): boolean {
     typeof error === "object" &&
     error != null &&
     "code" in error &&
-    (error as { code?: string }).code === "EADDRINUSE"
+    asRecord(error)?.code === "EADDRINUSE"
   );
 }
 

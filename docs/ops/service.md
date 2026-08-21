@@ -52,7 +52,7 @@ Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.
 
 | 概念     | 配置                    | 含义                                                                                                                 |
 | -------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| 连接     | `connections.<id>`      | 内置：`preset` ∈ deepseek / openrouter / opencode_go / alibaba_token_plan；自定义：`custom` + `custom_kind`          |
+| 连接     | `connections.<id>`      | 内置：`preset` ∈ deepseek / openrouter / opencode_go / alibaba_token_plan / ollama；自定义：`custom` + `custom_kind` |
 | 文本协议 | `text_protocol`         | Completions / Responses / Messages；仅自定义文本层可改                                                               |
 | 能力段   | 五个顶层键              | `text_generate` / `image_generate` / `audio_generate` / `video_generate` / `embedding`                               |
 | 绑定     | `{ connection, model }` | 子场景省略或 `null` = 同 main。文本子场景：summary / reflect / goal_judge / skill_review；音频：tts / voice_realtime |
@@ -63,6 +63,7 @@ Discord / 微信消息网关的配置见 [`message-gateway.md`](message-gateway.
 - **单格式预设**（`deepseek`、`openrouter`）：固定文本协议 + 默认 `base_url`（不落盘）。
 - **多格式网关预设**（`opencode_go`）：base 为 `https://opencode.ai/zen/go/v1`；格式**按模型**选择。
 - **阿里云 Token Plan**：厂商协议（`alibaba_multimodal` / `alibaba_audio`），不必 OpenAI 封装；不出现在自定义协议下拉。
+- **Ollama**（自建）：对话 `openai_compatible` + 向量 `openai_embeddings`；默认 `http://127.0.0.1:11434/v1`，**可改** `base_url`（局域网/远程）；`api_key` 填占位即可（如 `ollama`）。不声明文生图 / TTS / 视频（与产品 Images/Speech 协议不对齐）。视觉理解走对话多模态模型。
 - **Custom**：只选一层通用协议 + `base_url`。无 `format` / `backend` 别名。
 - **没有**内置 `openai` 预设。
 - **API 密钥**：配置中明文，或 `vault(...)` / `env(...)` 引用。设置 UI **不会**自动掩码密钥。

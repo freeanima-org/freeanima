@@ -89,7 +89,9 @@ export async function redisGetJson<T>(key: string): Promise<T | null> {
   const raw = await redisGet(key);
   if (raw == null) return null;
   try {
-    return JSON.parse(raw) as T;
+    const parsed: unknown = JSON.parse(raw);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- KV 调用方约定 T
+    return parsed as T;
   } catch {
     return null;
   }

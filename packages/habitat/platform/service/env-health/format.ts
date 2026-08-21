@@ -22,9 +22,24 @@ const LABEL: Record<keyof EnvHealthMarkers, string> = {
   disk_free_band: "Disk free (FREEANIMA_HOME)",
 };
 
+const MARKER_KEYS: (keyof EnvHealthMarkers)[] = [
+  "hostname",
+  "os",
+  "timezone",
+  "hub_version",
+  "boot_started_at",
+  "postgres",
+  "redis",
+  "rss_band",
+  "mcp_connected",
+  "mcp_servers",
+  "acp_connected",
+  "acp_agents",
+  "disk_free_band",
+];
+
 export function formatMarkersBlock(markers: EnvHealthMarkers): string {
-  const keys = Object.keys(LABEL) as (keyof EnvHealthMarkers)[];
-  return keys.map((k) => `- ${LABEL[k]}: ${String(markers[k])}`).join("\n");
+  return MARKER_KEYS.map((k) => `- ${LABEL[k]}: ${String(markers[k])}`).join("\n");
 }
 
 /** Inner body for systemPromptBuild (fold wraps `<env_health>`). */

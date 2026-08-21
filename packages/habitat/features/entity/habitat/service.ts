@@ -1,7 +1,7 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config/world-context";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import {
+  assertCallerTokenComponent,
   assertSubjectCanAccessWorld,
   collectEntityReferences,
   countEntities,
@@ -40,26 +40,26 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (!subject_kind || subject_kind === auth.subject_type) return;
-  if (auth.subject_type === "user" && subject_kind === "agent") return;
+function assertSubjectIdAllowed(auth: RpcRequestAuthContext, subjectId: number): void {
+  if (auth.subject_id === subjectId) return;
+  if (auth.subject_type === "user") return;
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
-  if (subject_kind !== "user" && subject_kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+function requireSubjectId(subject_id: number | undefined): number {
+  if (subject_id == null || !Number.isInteger(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
   }
-  return subject_kind;
+  return subject_id;
 }
 
 async function entityWorldIdForAuth(
   auth: RpcRequestAuthContext,
-  subject_kind?: SubjectKind,
+  subject_id: number | undefined,
 ): Promise<number> {
-  const kind = resolveSubjectKind(subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  return resolveSubjectWorldId(kind);
+  const subjectId = requireSubjectId(subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  return resolvePrivateWorldId(subjectId);
 }
 
 function truncatePreview(text: string, max = LIST_PREVIEW_MAX): string {
@@ -114,8 +114,8 @@ async function assertEntityInWorld(id: number, world_id: number, include_deleted
   return row;
 }
 
-type EntityAdminListInput = Omit<EntityListInput, "subject_kind"> & {
-  subject_kind?: SubjectKind;
+type EntityAdminListInput = Omit<EntityListInput, "subject_id"> & {
+  subject_id?: number;
 };
 
 function matchesAdminFilters(
@@ -144,12 +144,19 @@ async function serviceEntityAdminList(
   deleted: "alive" | "deleted",
 ) {
   assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input?.subject_kind);
+  const world_id = await entityWorldIdForAuth(auth, input?.subject_id);
   const limit = input?.limit ?? 100;
   const offset = input?.offset ?? 0;
   const type = input?.type;
   const primary_component = input?.primary_component?.trim() || undefined;
   const query = input?.query?.trim() || undefined;
+
+  if (primary_component) {
+    assertCallerTokenComponent(primary_component, "read");
+  } else {
+    // 未指定组件的宽查：要求 component:*
+    assertCallerTokenComponent("*", "read");
+  }
 
   if (query) {
     const id = parseEntityListQueryId(query);
@@ -239,16 +246,26 @@ export async function serviceEntityGet(
       throw e;
     }
   }
+  if (row.primary_component) {
+    try {
+      assertCallerTokenComponent(row.primary_component, "read");
+    } catch (e) {
+      if (e instanceof ToolWorldAccessError) {
+        throw new Error("entity not found", { cause: e });
+      }
+      throw e;
+    }
+  }
   return { item: toDetailRow(row) };
 }
 
 export async function serviceEntityDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; force?: boolean },
+  input: { subject_id?: number; id: number; force?: boolean },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_id);
   await assertEntityInWorld(input.id, world_id);
 
   if (!input.force) {
@@ -265,11 +282,11 @@ export async function serviceEntityDelete(
 
 export async function serviceEntityRestore(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_id);
   await assertEntityInWorld(input.id, world_id, true);
   const row = await restoreEntity(input.id);
   if (!row) throw new Error("entity not found");
@@ -278,11 +295,11 @@ export async function serviceEntityRestore(
 
 export async function serviceEntityDeleteComponent(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; component: string },
+  input: { subject_id?: number; id: number; component: string },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_id);
   await assertEntityInWorld(input.id, world_id);
   const row = await deleteEntityComponent(input.id, input.component);
   if (!row) throw new Error("entity not found");
@@ -292,7 +309,7 @@ export async function serviceEntityDeleteComponent(
 export async function serviceEntityAddComponent(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     component: string;
     body?: Record<string, unknown>;
@@ -301,7 +318,7 @@ export async function serviceEntityAddComponent(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_id);
   const existing = await assertEntityInWorld(input.id, world_id);
   assertAttachAllowed(existing, input.component);
   const row = await addEntityComponent({
@@ -316,11 +333,11 @@ export async function serviceEntityAddComponent(
 
 export async function serviceEntitySetPrimaryComponent(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; component: string },
+  input: { subject_id?: number; id: number; component: string },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const world_id = await entityWorldIdForAuth(auth, input.subject_kind);
+  const world_id = await entityWorldIdForAuth(auth, input.subject_id);
   const existing = await assertEntityInWorld(input.id, world_id);
   assertPromoteAllowed(existing, input.component);
   const row = await promoteEntityComponent({ id: input.id, component: input.component });

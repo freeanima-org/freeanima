@@ -6,6 +6,7 @@ import {
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
+  LLM_PRESET_OLLAMA,
   LLM_PRESET_OPENCODE_GO,
   llmProviderSchema,
 } from "@freeanima/habitat/core/config";
@@ -13,6 +14,7 @@ import {
   effectiveProviderModalities,
   materializeConnection,
   connectionEndpointUrl,
+  presetAllowsBaseUrlOverride,
   providerConfigToSpec,
   resolveOpencodeGoFormat,
 } from "./presets.ts";
@@ -37,6 +39,36 @@ describe("materializeConnection", () => {
     expect(m.formatId).toBe(LLM_FORMAT_OPENAI_COMPATIBLE);
     expect(m.baseUrl).toBe("https://api.deepseek.com");
     expect(m.resolveFormat).toBeUndefined();
+  });
+
+  it("ignores base_url override on cloud presets", () => {
+    const cfg = llmProviderSchema.parse({
+      preset: LLM_PRESET_DEEPSEEK,
+      api_key: "k",
+      base_url: "http://127.0.0.1:9999/v1",
+    });
+    expect(materializeConnection(cfg).baseUrl).toBe("https://api.deepseek.com");
+    expect(connectionEndpointUrl(cfg)).toBe("https://api.deepseek.com");
+    expect(presetAllowsBaseUrlOverride(LLM_PRESET_DEEPSEEK)).toBe(false);
+  });
+
+  it("ollama defaults and allows base_url override", () => {
+    expect(presetAllowsBaseUrlOverride(LLM_PRESET_OLLAMA)).toBe(true);
+    const def = llmProviderSchema.parse({
+      preset: LLM_PRESET_OLLAMA,
+      api_key: "ollama",
+    });
+    expect(materializeConnection(def).baseUrl).toBe("http://127.0.0.1:11434/v1");
+    expect(effectiveProviderModalities(def).embeddings_protocol).toBe("openai_embeddings");
+    expect(effectiveProviderModalities(def).image_protocol).toBeNull();
+
+    const overridden = llmProviderSchema.parse({
+      preset: LLM_PRESET_OLLAMA,
+      api_key: "ollama",
+      base_url: "http://192.168.1.10:11434/v1",
+    });
+    expect(materializeConnection(overridden).baseUrl).toBe("http://192.168.1.10:11434/v1");
+    expect(connectionEndpointUrl(overridden)).toBe("http://192.168.1.10:11434/v1");
   });
 
   it("opencode_go is a gateway", () => {

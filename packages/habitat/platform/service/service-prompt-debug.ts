@@ -165,7 +165,10 @@ async function buildSystemView(
   composed: string;
   fold: PromptDebugFold;
 }> {
-  const selfContent = await loadSelfLayerPrompt();
+  const selfContent = await loadSelfLayerPrompt(
+    (await import("@freeanima/habitat/core/config/world-context")).getResolvedWorldContext()
+      .default_chat_agent_subject_id,
+  );
   const memoryParts = await decomposeSystemPromptParts(selfContent, cwd ?? undefined);
   const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
   const parts: SystemPromptParts = { ...memoryParts, toolsets };

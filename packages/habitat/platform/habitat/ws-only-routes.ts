@@ -20,6 +20,8 @@ import { wsOnlyMeta } from "@freeanima/shared/habitat-contract";
 import {
   defineHabitatRoute,
   mergeFeatureRoutes,
+  asRouteDeps,
+  asRouteCtx,
 } from "@freeanima/shared/habitat-contract/route.ts";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { z } from "zod";
@@ -36,11 +38,11 @@ const okSchema = z.object({ ok: z.literal(true) });
 const sapDetachInputSchema = z.object({}).strict();
 
 function depsOf(deps: unknown): RemoteToolsServerDeps {
-  return deps as RemoteToolsServerDeps;
+  return asRouteDeps<RemoteToolsServerDeps>(deps);
 }
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
-  return ctx as RemoteToolsRequestContext;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx);
 }
 
 export const wsOnlyHabitatRoutes = mergeFeatureRoutes([

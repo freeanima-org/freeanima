@@ -2,6 +2,7 @@ import type { Config } from "@freeanima/habitat/platform/config";
 import { resolveValue } from "@freeanima/habitat/platform/config";
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import type { MessagingPort } from "@freeanima/habitat/platform/ports/messaging-port";
+import { asRecord } from "@freeanima/shared/util";
 
 import { loadWeixinCredentials } from "./weixin/weixin-credentials.ts";
 
@@ -20,10 +21,10 @@ export async function discoverPlatforms(
   config: Config,
 ): Promise<PlatformAdapter[]> {
   const adapters: PlatformAdapter[] = [];
-  const cfg = config.data as Record<string, unknown>;
+  const cfg = asRecord(config.data) ?? {};
 
   try {
-    const discordCfg = (cfg.discord ?? {}) as Record<string, unknown>;
+    const discordCfg = asRecord(cfg.discord) ?? {};
     if (sectionEnabled(discordCfg)) {
       const tokenRef = discordCfg.token;
       if (typeof tokenRef !== "string" || !tokenRef.trim()) {
@@ -39,7 +40,7 @@ export async function discoverPlatforms(
     logComponent("gateway").info(`Discord not configured: ${msg}`);
   }
 
-  const weixinSection = (cfg.weixin ?? {}) as Record<string, unknown>;
+  const weixinSection = asRecord(cfg.weixin) ?? {};
   if (sectionEnabled(weixinSection)) {
     const weixinCreds = loadWeixinCredentials();
     if (weixinCreds) {

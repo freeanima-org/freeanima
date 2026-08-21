@@ -8,6 +8,7 @@ import {
   redisSetJson,
 } from "@freeanima/habitat/core/redis";
 import type { EnvHealthMarkers } from "./types.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export const ENV_HEALTH_BASELINE_FILENAME = "env-health-baseline.json";
 export const ENV_HEALTH_BASELINE_KV_KEY = `${REDIS_KV_KEY_PREFIX}env-health-baseline`;
@@ -24,8 +25,8 @@ export function baselineFilePath(): string {
 }
 
 function isMarkers(value: unknown): value is EnvHealthMarkers {
-  if (value == null || typeof value !== "object") return false;
-  const o = value as Record<string, unknown>;
+  const o = asRecord(value);
+  if (!o) return false;
   return (
     typeof o.hostname === "string" &&
     typeof o.os === "string" &&

@@ -8,6 +8,7 @@ import {
 } from "./memory-config.ts";
 import { notificationsConfigSchema } from "./notifications.ts";
 import { ttsConfigSchema } from "./tts.ts";
+import { chatConfigSchema } from "./chat.ts";
 import { worldsConfigSchema } from "./worlds.ts";
 import { connectionsConfigSchema } from "./llm-config.ts";
 import {
@@ -33,6 +34,7 @@ import { objectStorageConfigSchema } from "./object-storage.ts";
 import { companionConfigSchema } from "./companion.ts";
 import { promptSchema } from "./prompt.ts";
 import { identityConfigSchema } from "./identity.ts";
+import { publicConfigSchema } from "./public.ts";
 import { BOOTSTRAP_CONFIG_KEYS, registerSection } from "@freeanima/habitat/kernel/config-mechanism";
 
 /**
@@ -75,13 +77,18 @@ const runtimeConfigObjectSchema = z.object({
   weixin: weixinConfigSchema,
   push: sectionSchema.optional(),
   notifications: notificationsConfigSchema,
+  /** @deprecated 启动不再读写；保留 schema 以免旧 PG 行校验失败 */
   worlds: worldsConfigSchema,
+  /** 聊天：默认 agent（仅新建会话）与 LLM debug */
+  chat: chatConfigSchema.optional(),
   tts: ttsConfigSchema,
   object_storage: objectStorageConfigSchema.optional(),
   /** 桌面伴侣模块配置（行为 / 模型与动作注册表）；字节在 object_file */
   companion: companionConfigSchema.optional(),
   /** Habitat 实例身份与主体密钥（私钥仅服务端） */
   identity: identityConfigSchema.optional(),
+  /** 对外访问根（临时分享等）；不改监听 / 证书 / habitat_url */
+  public: publicConfigSchema,
 });
 
 /** 将各产品段 Zod 挂入 kernel section 注册表（幂等合并） */
@@ -98,6 +105,7 @@ export const runtimeConfigSchema = runtimeConfigObjectSchema.partial().passthrou
 export type RuntimeConfig = z.infer<typeof runtimeConfigSchema>;
 
 /** 已知运行时段（与静态 shape / registerSection 同源） */
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.keys 擦除 keyof
 export const RUNTIME_CONFIG_SECTION_KEYS = Object.keys(runtimeConfigObjectSchema.shape) as Array<
   keyof typeof runtimeConfigObjectSchema.shape
 >;

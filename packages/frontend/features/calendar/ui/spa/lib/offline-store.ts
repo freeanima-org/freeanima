@@ -1,4 +1,3 @@
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
 import { loadIdMap, resolveIdFields } from "@freeanima/client/portal-sdk/offline-id-map";
 import {
   registerOfflineModule,
@@ -31,7 +30,7 @@ import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-type
 import { randomPublicId } from "@freeanima/shared/util";
 import { readOfflineCache, writeOfflineCache } from "@freeanima/client/portal-sdk/offline-cache";
 
-import type { CalendarEventRow, SubjectKind } from "./api.ts";
+import type { CalendarEventRow } from "./api.ts";
 
 const MODULE_ID = "calendar";
 const NAMESPACE = "calendar";
@@ -76,9 +75,7 @@ export async function reconcileServerCalendarEvents(items: CalendarEventRow[]): 
   const scope = resolveOutboxScope();
   const ops = await listOutboxOps(scope, MODULE_ID);
   const pendingTemp = new Set(
-    ops
-      .filter((op) => op.method === "calendar.create" && typeof op.tempEntityId === "number")
-      .map((op) => op.tempEntityId as number),
+    ops.map((op) => op.tempEntityId).filter((id): id is number => typeof id === "number"),
   );
   const locals = await readLocalEvents(scope);
   const keptTemps = locals.filter((row) => isTempId(row.id) && pendingTemp.has(row.id));
@@ -90,6 +87,7 @@ async function flushCalendarOp(op: OfflineOutboxOp, scope: string): Promise<Flus
     const idMap = await loadIdMap(scope, MODULE_ID);
     const payload = resolveIdFields(op.payload, idMap, ["id"]);
     if (op.method === "calendar.create") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       const data = await habitat().call("calendar.create", payload as never);
       if (typeof op.tempEntityId === "number") {
         await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, data.item.id);
@@ -99,11 +97,13 @@ async function flushCalendarOp(op: OfflineOutboxOp, scope: string): Promise<Flus
       return { status: "done" };
     }
     if (op.method === "calendar.patch") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       const data = await habitat().call("calendar.patch", payload as never);
       await upsertLocalEvent(scope, data.item);
       return { status: "done" };
     }
     if (op.method === "calendar.delete") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       await habitat().call("calendar.delete", payload as never);
       const id = Number((payload as { id?: number }).id);
       if (Number.isFinite(id)) await removeLocalEvent(scope, id);
@@ -136,7 +136,7 @@ function compactCalendarOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
       const patches = group.filter((op) => op.method === "calendar.patch");
       let payload = { ...create.payload };
       for (const patch of patches) {
-        payload = { ...payload, ...patch.payload, subject_kind: create.payload.subject_kind };
+        payload = { ...payload, ...patch.payload, subject_id: create.payload.subject_kind };
         delete (payload as { id?: number }).id;
       }
       compacted.push({ ...create, payload });
@@ -155,15 +155,14 @@ export const calendarRpcAdapter: RpcModuleAdapter = {
   resolvePayloadIds: (payload, idMap) => resolveIdFields(payload, idMap, ["id"]),
   flushOp: async (op, ctx) => flushCalendarOp(op, ctx.scope),
   refreshAll: async (_scope) => {
-    for (const subject_kind of ["user", "agent"] as const) {
-      try {
-        const data = await habitat().call("calendar.list", { subject_kind, limit: 200 });
-        if (subject_kind === getSubjectKind()) {
-          await reconcileServerCalendarEvents(data.items);
-        }
-      } catch {
-        /* offline */
-      }
+    try {
+      const subject_id = await (
+        await import("@freeanima/client/portal-sdk/world-context.ts")
+      ).getUserSubjectId();
+      const data = await habitat().call("calendar.list", { subject_id, limit: 200 });
+      await reconcileServerCalendarEvents(data.items);
+    } catch {
+      /* offline */
     }
   },
 };
@@ -174,7 +173,7 @@ export function registerCalendarOfflineModule(): void {
 }
 
 export async function offlineCreateCalendarEvent(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     title: string;
     content?: string;
@@ -195,7 +194,7 @@ export async function offlineCreateCalendarEvent(
       const data = await habitat().call(
         "calendar.create",
         omitUndefined({
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           title: input.title,
           content: input.content,
           start_at: input.start_at,
@@ -231,7 +230,7 @@ export async function offlineCreateCalendarEvent(
         moduleId: MODULE_ID,
         method: "calendar.create",
         payload: omitUndefined({
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           title: input.title,
           content: input.content,
           start_at: input.start_at,
@@ -251,7 +250,7 @@ export async function offlineCreateCalendarEvent(
 }
 
 export async function offlineUpdateCalendarEvent(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     id: number;
     title?: string;
@@ -271,7 +270,7 @@ export async function offlineUpdateCalendarEvent(
       const data = await habitat().call(
         "calendar.patch",
         omitUndefined({
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           id: input.id,
           title: input.title,
           content: input.content,
@@ -307,7 +306,7 @@ export async function offlineUpdateCalendarEvent(
         moduleId: MODULE_ID,
         method: "calendar.patch",
         payload: omitUndefined({
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           id: input.id,
           title: input.title,
           content: input.content,
@@ -327,16 +326,13 @@ export async function offlineUpdateCalendarEvent(
   );
 }
 
-export async function offlineDeleteCalendarEvent(
-  subjectKind: SubjectKind,
-  id: number,
-): Promise<void> {
+export async function offlineDeleteCalendarEvent(subjectId: number, id: number): Promise<void> {
   const scope = resolveOutboxScope();
   await ensureAllocatorSeeded(scope);
 
   await preferOnlineWrite(
     async () => {
-      await habitat().call("calendar.delete", { subject_kind: subjectKind, id });
+      await habitat().call("calendar.delete", { subject_id: subjectId, id });
       await removeLocalEvent(scope, id);
     },
     async () => {
@@ -353,7 +349,7 @@ export async function offlineDeleteCalendarEvent(
         id: opId,
         moduleId: MODULE_ID,
         method: "calendar.delete",
-        payload: { subject_kind: subjectKind, id, client_op_id: opId },
+        payload: { subject_id: subjectId, id, client_op_id: opId },
         createdAt: formatCstIso(),
       });
       scheduleFlush(scope);

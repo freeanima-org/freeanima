@@ -7,9 +7,11 @@ import {
 } from "./habitat-config-field-helpers.tsx";
 import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { isRecord } from "@freeanima/shared/util";
 
 export const ADVANCED_SECTIONS = [
   "i18n",
+  "public",
   "gateway",
   "discord",
   "weixin",
@@ -28,6 +30,7 @@ export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 /** 侧栏一等运维项：已并入能力层 Tab 的段不重复列出 */
 export const SIDEBAR_OPS_SECTIONS = [
   "i18n",
+  "public",
   "gateway",
   "discord",
   "weixin",
@@ -35,13 +38,13 @@ export const SIDEBAR_OPS_SECTIONS = [
   "browser",
   "cjk",
   "fts",
-  "worlds",
   "object_storage",
 ] as const satisfies ReadonlyArray<AdvancedSectionId>;
 
 /** Shell 侧边栏标题；未列出的段用 section id。注意：这是运维段列表，不是名为「高级」的产品分类。 */
 export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>> = {
   i18n: "时区",
+  public: "公网访问",
   gateway: "网关",
   discord: "Discord",
   weixin: "微信",
@@ -108,6 +111,32 @@ function I18nForm({
             })
           : null}
       </div>
+    </div>
+  );
+}
+
+function PublicForm({
+  value,
+  onChange,
+}: {
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        对外访问根（origin）。配置后，临时分享等可复制链接将使用该地址；不改监听、证书或客户端
+        Habitat URL。留空则仍按当前页面 origin 拼链接。
+      </p>
+      {hubConfigTextField(
+        "origin",
+        coerceString(value.origin ?? ""),
+        (v) => onChange({ ...value, origin: v }),
+        {
+          placeholder: "https://anima.example.com",
+          hint: "须为绝对 origin（含协议），勿带 path；例如 https://anima.example.com",
+        },
+      )}
     </div>
   );
 }
@@ -192,7 +221,7 @@ function BrowserForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
-  const camofox = (value.camofox ?? {}) as Record<string, unknown>;
+  const camofox = isRecord(value.camofox) ? value.camofox : {};
   const setCamofox = (patch: Record<string, unknown>) =>
     onChange({ ...value, camofox: { ...camofox, ...patch } });
 
@@ -301,7 +330,7 @@ function FtsForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
-  const trgm = (value.trgm ?? {}) as Record<string, unknown>;
+  const trgm = isRecord(value.trgm) ? value.trgm : {};
   const setTrgm = (patch: Record<string, unknown>) =>
     onChange({ ...value, trgm: { ...trgm, ...patch } });
 
@@ -355,10 +384,7 @@ function AutoLlmForm({
   value: Record<string, unknown>;
   onChange: (v: Record<string, unknown>) => void;
 }) {
-  const subagent =
-    value.subagent && typeof value.subagent === "object" && !Array.isArray(value.subagent)
-      ? (value.subagent as Record<string, unknown>)
-      : {};
+  const subagent = isRecord(value.subagent) ? value.subagent : {};
   const patchSubagent = (patch: Record<string, unknown>) =>
     onChange({ ...value, subagent: { ...subagent, ...patch } });
   return (
@@ -547,6 +573,8 @@ export function AdvancedSectionForm({
   switch (section) {
     case "i18n":
       return <I18nForm value={value} onChange={onChange} />;
+    case "public":
+      return <PublicForm value={value} onChange={onChange} />;
     case "gateway":
       return <GatewayForm value={value} onChange={onChange} />;
     case "discord":
@@ -575,8 +603,8 @@ export function AdvancedSectionForm({
 }
 
 function cloneSectionValue(raw: unknown): Record<string, unknown> {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  return structuredClone(raw) as Record<string, unknown>;
+  if (!isRecord(raw)) return {};
+  return structuredClone(raw);
 }
 
 export function readAdvancedSectionDraft(raw: unknown): Record<string, unknown> {

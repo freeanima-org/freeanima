@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
@@ -61,8 +61,8 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
-  return { subject_kind: getSubjectKind(), ...payload };
+async function withSubjectId<T extends Record<string, unknown>>(payload: T) {
+  return { subject_id: await getUserSubjectId(), ...payload };
 }
 
 export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promise<TaskListRow[]> {
@@ -75,7 +75,7 @@ export async function fetchTaskLists(opts?: { includeClosed?: boolean }): Promis
       fetch: async () => {
         const data = await habitat().call(
           "tasklist.list",
-          withSubjectKind({ include_closed: opts?.includeClosed }),
+          await withSubjectId({ include_closed: opts?.includeClosed }),
         );
         return reconcileServerTaskLists(data.lists);
       },
@@ -92,14 +92,14 @@ export async function fetchTaskListStats(opts?: {
   if (!isHabitatFetchAvailable()) return new Map();
   const data = await habitat().call(
     "tasklist.stats",
-    withSubjectKind({ include_closed: opts?.includeClosed }),
+    await withSubjectId({ include_closed: opts?.includeClosed }),
   );
   return new Map(data.counts.map((row) => [row.id, row.item_count]));
 }
 
 export async function fetchSmartListStats(): Promise<Map<string, number>> {
   if (!isHabitatFetchAvailable()) return new Map();
-  const data = await habitat().call("smartlist.stats", withSubjectKind({}));
+  const data = await habitat().call("smartlist.stats", await withSubjectId({}));
   const map = new Map<string, number>();
   for (const row of data.counts) {
     if (row.preset != null) map.set(row.preset, row.item_count);
@@ -155,7 +155,7 @@ export async function fetchTaskItems(listId: number): Promise<TaskItemRow[]> {
       fetch: async () => {
         const data = await habitat().call(
           "tasklist.item.list",
-          withSubjectKind({ list_id: listId, status: "all" }),
+          await withSubjectId({ list_id: listId, status: "all" }),
         );
         const items = normalizeTaskItemRows(data.items);
         return reconcileServerTaskItems(listId, items);
@@ -171,7 +171,7 @@ export async function fetchTaskItemsByFilters(
   filters: TaskItemSearchFilters,
 ): Promise<TaskItemRow[]> {
   if (!isHabitatFetchAvailable()) return [];
-  const data = await habitat().call("tasklist.item.list", withSubjectKind({ filters }));
+  const data = await habitat().call("tasklist.item.list", await withSubjectId({ filters }));
   const items = normalizeTaskItemRows(data.items);
   void seedLocalTaskItems(items);
   return items;
@@ -182,7 +182,7 @@ export async function fetchSubtasks(parentId: number): Promise<TaskItemRow[]> {
   if (!isHabitatFetchAvailable()) return [];
   const data = await habitat().call(
     "tasklist.item.list",
-    withSubjectKind({ parent_id: parentId, roots_only: false, status: "all" }),
+    await withSubjectId({ parent_id: parentId, roots_only: false, status: "all" }),
   );
   return normalizeTaskItemRows(data.items);
 }
@@ -190,7 +190,7 @@ export async function fetchSubtasks(parentId: number): Promise<TaskItemRow[]> {
 /** 按 id 取单条任务（含项目内；供 entity overlay / 日历入口）。 */
 export async function fetchTaskItemById(id: number): Promise<TaskItemRow | null> {
   if (!isHabitatFetchAvailable()) return null;
-  const data = await habitat().call("task.get", withSubjectKind({ id }));
+  const data = await habitat().call("task.get", await withSubjectId({ id }));
   if (!data.item) return null;
   const [row] = normalizeTaskItemRows([data.item]);
   if (row) void seedLocalTaskItems([row]);
@@ -201,7 +201,7 @@ export async function fetchSmartLists(): Promise<SmartListRow[]> {
   if (!isHabitatFetchAvailable()) {
     return [];
   }
-  const data = await habitat().call("smartlist.list", withSubjectKind({}));
+  const data = await habitat().call("smartlist.list", await withSubjectId({}));
   return data.smart_lists;
 }
 
@@ -210,7 +210,7 @@ export async function createSmartList(input: {
   filters: TaskItemSearchFilters;
   sort_order?: number;
 }): Promise<SmartListRow> {
-  const data = await habitat().call("smartlist.create", withSubjectKind(input));
+  const data = await habitat().call("smartlist.create", await withSubjectId(input));
   return data.item;
 }
 
@@ -218,12 +218,12 @@ export async function updateSmartList(
   id: number,
   patch: { title?: string; filters?: TaskItemSearchFilters; sort_order?: number },
 ): Promise<SmartListRow> {
-  const data = await habitat().call("smartlist.patch", withSubjectKind({ id, ...patch }));
+  const data = await habitat().call("smartlist.patch", await withSubjectId({ id, ...patch }));
   return data.item;
 }
 
 export async function deleteSmartList(id: number): Promise<void> {
-  await habitat().call("smartlist.delete", withSubjectKind({ id }));
+  await habitat().call("smartlist.delete", await withSubjectId({ id }));
 }
 
 export async function searchTaskItems(input: {
@@ -235,7 +235,7 @@ export async function searchTaskItems(input: {
 }): Promise<TaskItemRow[]> {
   const data = await habitat().call(
     "task.search",
-    withSubjectKind({
+    await withSubjectId({
       query: input.query,
       list_id: input.list_id,
       status: input.status,
@@ -313,7 +313,7 @@ export async function moveTaskItemToProject(
 export type ProjectPickerRow = { id: number; title: string; status: string };
 
 export async function fetchProjectsForMove(): Promise<ProjectPickerRow[]> {
-  const data = await habitat().call("project.list", withSubjectKind({}));
+  const data = await habitat().call("project.list", await withSubjectId({}));
   return data.projects.map((p) => ({ id: p.id, title: p.title, status: p.status }));
 }
 
@@ -335,7 +335,7 @@ export async function deleteTaskItem(id: number): Promise<void> {
 /** 同 id 有损转为日历事件（需联网） */
 export async function convertTaskItemToEvent(id: number): Promise<{ id: number; title: string }> {
   const data = await habitat().call("task.convertToEvent", {
-    subject_kind: "user",
+    subject_id: await getUserSubjectId(),
     id,
   });
   return { id: data.item.id, title: data.item.title };
@@ -358,6 +358,7 @@ export function subscribeTaskAdvanceReminders(onEvent: (event: TaskAdvanceRemind
     {},
     {
       onData: (payload) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- WS 事件载荷边界
         const record = payload as Partial<TaskAdvanceReminderEvent>;
         if (
           typeof record.task_item_id === "number" &&

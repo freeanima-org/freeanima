@@ -1,6 +1,10 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 
 import { pumpTaskAdvanceReminders } from "../advance-reminder-stream.ts";
 import { taskMethodDefs } from "../method-defs.ts";
@@ -15,15 +19,15 @@ type TaskRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): TaskRemoteToolsServerDeps {
-  return deps as TaskRemoteToolsServerDeps;
+  return asRouteDeps<TaskRemoteToolsServerDeps>(deps);
 }
 
 function ctxAuth(ctx: unknown) {
-  return (ctx as RemoteToolsRequestContext).auth;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx).auth;
 }
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
-  return ctx as RemoteToolsRequestContext;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx);
 }
 
 export const taskHabitatRoutes = bindHabitatRouteHandlers(taskMethodDefs, {

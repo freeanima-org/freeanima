@@ -1,3 +1,4 @@
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import {
   Outlet,
   RouterProvider,
@@ -12,7 +13,7 @@ import { useMemo, type ComponentType, type ReactElement } from "react";
 import { shouldUseNativeShellNavigation } from "@freeanima/client/portal-sdk/shell-runtime.ts";
 
 import { shellLazyRoute } from "./lazy-route.tsx";
-import { loadHabitatShellRoute } from "./features/feature-shell-routes.ts";
+import { loadHabitatShellRoute, loadBedroomShellRoute } from "./features/feature-shell-routes.ts";
 import { listShellFeatureRoutes } from "./features/shell-registry.ts";
 import { AppFrame } from "./main/AppFrame.tsx";
 import { SettingsPage } from "./settings/SettingsPage.tsx";
@@ -36,7 +37,7 @@ const setupAliasRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/setup",
   beforeLoad: () => {
-    throw redirect({ to: "/settings" as never });
+    throw redirect({ to: assertNarrow<never>("/settings") });
   },
 });
 
@@ -50,7 +51,7 @@ const mainLayoutRoute = createRoute({
   component: AppFrame,
   beforeLoad: ({ location }) => {
     if (needsHabitatSetup() && !isSettingsPath(location.pathname)) {
-      throw redirect({ to: "/settings" as never });
+      throw redirect({ to: assertNarrow<never>("/settings") });
     }
   },
 });
@@ -59,17 +60,19 @@ const indexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/",
   beforeLoad: () => {
-    throw redirect({ to: "/chat" as never });
+    throw redirect({ to: assertNarrow<never>("/chat") });
   },
 });
 
 function createLazyShellRoute(path: string, component: ComponentType<object>) {
-  return createRoute({
-    getParentRoute: () => mainLayoutRoute,
-    path,
-    component: asRouteComponent(component),
-    // Windows tsgo + exactOptionalPropertyTypes 下 lazy RouteComponent 与 RouteOptions 不兼容
-  } as never);
+  return createRoute(
+    assertNarrow<Parameters<typeof createRoute>[0]>({
+      getParentRoute: () => mainLayoutRoute,
+      path,
+      component: asRouteComponent(component),
+      // Windows tsgo + exactOptionalPropertyTypes 下 lazy RouteComponent 与 RouteOptions 不兼容
+    }),
+  );
 }
 
 const featureRoutes = listShellFeatureRoutes().map((entry) =>
@@ -80,13 +83,42 @@ const habitatIndexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/habitat",
   beforeLoad: () => {
-    throw redirect({ to: "/habitat/dashboard" as never });
+    throw redirect({ to: assertNarrow<never>("/habitat/dashboard") });
   },
 });
 
 const habitatDashboardRoute = createLazyShellRoute("/habitat/dashboard", loadHabitatShellRoute());
 
 const habitatCatchAllRoute = createLazyShellRoute("/habitat/$", loadHabitatShellRoute());
+
+const observerIndexRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/observer",
+  beforeLoad: () => {
+    throw redirect({ to: assertNarrow<never>("/bedroom/self-layer") });
+  },
+});
+
+const observerCatchAllRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/observer/$",
+  beforeLoad: ({ location }) => {
+    const next = location.pathname.replace(/\/observer(?=\/|$)/, "/bedroom");
+    throw redirect({ to: assertNarrow<never>(next) });
+  },
+});
+
+const bedroomIndexRoute = createRoute({
+  getParentRoute: () => mainLayoutRoute,
+  path: "/bedroom",
+  beforeLoad: () => {
+    throw redirect({ to: assertNarrow<never>("/bedroom/self-layer") });
+  },
+});
+
+const bedroomSelfLayerRoute = createLazyShellRoute("/bedroom/self-layer", loadBedroomShellRoute());
+
+const bedroomCatchAllRoute = createLazyShellRoute("/bedroom/$", loadBedroomShellRoute());
 
 const settingsRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
@@ -116,6 +148,11 @@ const routeTree = rootRoute.addChildren([
     habitatIndexRoute,
     habitatDashboardRoute,
     habitatCatchAllRoute,
+    observerIndexRoute,
+    observerCatchAllRoute,
+    bedroomIndexRoute,
+    bedroomSelfLayerRoute,
+    bedroomCatchAllRoute,
     settingsRoute,
   ]),
 ]);

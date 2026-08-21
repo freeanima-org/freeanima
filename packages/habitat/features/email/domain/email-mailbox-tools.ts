@@ -58,7 +58,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             account_id: { type: "number" },
             limit: { type: "number" },
           },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: async (args) => {
           try {
@@ -101,7 +101,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             unread: { type: "boolean" },
             limit: { type: "number" },
           },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: async (args) => {
           try {
@@ -169,7 +169,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             },
             limit: { type: "number" },
           },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: async (args) => {
           const query = args.query != null ? coerceString(args.query).trim() : "";
@@ -372,7 +372,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
                 "Optional object_file entity ids to attach (upload via object_storage_upload or email.attachment.upload first)",
             },
           },
-          required: ["subject_kind", "to", "subject", "body"],
+          required: ["subject_id", "to", "subject", "body"],
         },
         handler: async (args) => {
           const accountId = parseAccountId(args.account_id);
@@ -382,9 +382,9 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             access: "write",
           });
           if (typeof worldId === "string") return worldId;
-          const subjectKind =
-            args.subject_kind === "user" || args.subject_kind === "agent"
-              ? args.subject_kind
+          const subjectId =
+            typeof args.subject_id === "number" && args.subject_id > 0
+              ? args.subject_id
               : undefined;
           const attachmentIds = Array.isArray(args.attachment_object_file_ids)
             ? args.attachment_object_file_ids
@@ -395,7 +395,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             const result = await io.sendEmail(
               omitUndefined({
                 account_id: accountId,
-                subject_kind: subjectKind,
+                subject_id: subjectId,
                 world_id: accountId == null ? worldId : undefined,
                 to: coerceString(args.to ?? ""),
                 subject: coerceString(args.subject ?? ""),
@@ -424,7 +424,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             subject: { type: "string" },
             body: { type: "string" },
           },
-          required: ["subject_kind", "subject", "body"],
+          required: ["subject_id", "subject", "body"],
         },
         handler: async (args) => {
           const accountId = parseAccountId(args.account_id);
@@ -434,9 +434,9 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             access: "write",
           });
           if (typeof worldId === "string") return worldId;
-          const subjectKind =
-            args.subject_kind === "user" || args.subject_kind === "agent"
-              ? args.subject_kind
+          const subjectId =
+            typeof args.subject_id === "number" && args.subject_id > 0
+              ? args.subject_id
               : undefined;
           try {
             const { saveDraft } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -444,7 +444,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
               await saveDraft(
                 omitUndefined({
                   account_id: accountId,
-                  subject_kind: subjectKind,
+                  subject_id: subjectId,
                   world_id: accountId == null ? worldId : undefined,
                   message_id: parseAccountId(args.message_id),
                   to: args.to != null ? coerceString(args.to) : undefined,
@@ -588,7 +588,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             has_unread: { type: "boolean" },
             limit: { type: "number" },
           },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: async (args) => {
           try {
@@ -679,7 +679,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             title: { type: "string", description: "Override task title (default email subject)" },
             priority: { type: "string", enum: ["high", "medium", "low", "none"] },
           },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           try {
@@ -729,7 +729,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
             ...WORLD_ID_OPTIONAL,
             id: { type: "integer", description: "email_message entity id" },
           },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           try {

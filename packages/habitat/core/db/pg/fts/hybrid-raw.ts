@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import type { SemanticFtsHit } from "@freeanima/habitat/core/db/schema/rows";
 import type { EntityRow } from "@freeanima/habitat/core/db/schema/entity";
 import { and, desc, eq, notLike, sql } from "drizzle-orm";
@@ -49,6 +50,7 @@ function mapHit(row: {
 }): SemanticFtsHit {
   const entityRow: EntityRow = {
     id: row.id,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PG text → EntityRow.type
     type: row.type as EntityRow["type"],
     world_id: row.world_id,
     components: [...row.components],
@@ -56,7 +58,7 @@ function mapHit(row: {
     title: row.title ?? "",
     summary: row.summary ?? "",
     content: row.content ?? "",
-    body: (row.body ?? {}) as Record<string, unknown>,
+    body: asRecord(row.body) ?? {},
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [],
@@ -80,6 +82,7 @@ export async function searchSemanticMemoryFtsRaw(
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
     cluster_id?: number | null;
+    world_id?: number;
   },
 ): Promise<SemanticFtsHit[]> {
   const q = query.trim();
@@ -107,6 +110,7 @@ export async function searchSemanticMemoryFtsRaw(
         status,
         source_conversations,
         cluster_id: opts?.cluster_id,
+        world_id: opts?.world_id,
       }),
     ),
   ];

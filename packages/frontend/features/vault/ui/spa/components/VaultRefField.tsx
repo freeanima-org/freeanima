@@ -10,7 +10,7 @@ import {
   Label,
   Spinner,
 } from "@freeanima/ui-kit";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
+import { getCachedResolvedWorldContext } from "@freeanima/client/portal-sdk/world-context.ts";
 import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
 
 import { fetchVaultItems } from "../lib/api.ts";
@@ -24,8 +24,8 @@ export type VaultRefFieldProps = {
   disabled?: boolean;
   type?: "text" | "password";
   placeholder?: string;
-  /** Habitat 运行时 resolve 固定 Agent 库；默认 agent */
-  subjectKind?: SubjectKind;
+  /** 缺省时用 worlds.context 默认 chat agent subject */
+  subjectId?: number;
 };
 
 export function VaultRefField({
@@ -36,8 +36,10 @@ export function VaultRefField({
   disabled = false,
   type = "text",
   placeholder = "未设置",
-  subjectKind = "agent",
+  subjectId: subjectIdProp,
 }: VaultRefFieldProps): ReactNode {
+  const subjectId =
+    subjectIdProp ?? getCachedResolvedWorldContext()?.default_chat_agent_subject_id ?? null;
   const [open, setOpen] = useState(false);
   const parsed = useMemo(() => parseVaultRef(value), [value]);
   const inputType = parsed ? "text" : type;
@@ -60,7 +62,7 @@ export function VaultRefField({
           size="sm"
           variant="outline"
           className="shrink-0"
-          isDisabled={disabled}
+          isDisabled={disabled || subjectId == null}
           onClick={() => setOpen(true)}
         >
           从 Vault 选择
@@ -72,23 +74,25 @@ export function VaultRefField({
         </p>
       ) : null}
       {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
-      <VaultRefPickerDialog
-        open={open}
-        subjectKind={subjectKind}
-        initial={parsed}
-        onClose={() => setOpen(false)}
-        onSelect={(itemId, field) => {
-          onChange(formatVaultRef(itemId, field));
-          setOpen(false);
-        }}
-      />
+      {subjectId != null ? (
+        <VaultRefPickerDialog
+          open={open}
+          subjectId={subjectId}
+          initial={parsed}
+          onClose={() => setOpen(false)}
+          onSelect={(itemId, field) => {
+            onChange(formatVaultRef(itemId, field));
+            setOpen(false);
+          }}
+        />
+      ) : null}
     </div>
   );
 }
 
 type VaultRefPickerDialogProps = {
   open: boolean;
-  subjectKind: SubjectKind;
+  subjectId: number;
   initial: { itemId: number; field: string } | null;
   onSelect: (itemId: number, field: string) => void;
   onClose: () => void;
@@ -96,7 +100,7 @@ type VaultRefPickerDialogProps = {
 
 function VaultRefPickerDialog({
   open,
-  subjectKind,
+  subjectId,
   initial,
   onSelect,
   onClose,
@@ -113,7 +117,7 @@ function VaultRefPickerDialog({
       setLoading(true);
       setError("");
       try {
-        const rows = await fetchVaultItems(subjectKind, {
+        const rows = await fetchVaultItems(subjectId, {
           ...(searchQuery.trim() ? { query: searchQuery.trim() } : {}),
           limit: 200,
         });
@@ -125,7 +129,7 @@ function VaultRefPickerDialog({
         setLoading(false);
       }
     },
-    [subjectKind],
+    [subjectId],
   );
 
   useEffect(() => {

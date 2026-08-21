@@ -31,6 +31,7 @@ import { OBJECT_FOLDER_COMPONENT, objectFolderBodySchema } from "./object-folder
 import { SKILL_COMPONENT, skillBodySchema } from "./skill.ts";
 import { SKILL_RESOURCE_COMPONENT, skillResourceBodySchema } from "./skill-resource.ts";
 import { SUBAGENT_COMPONENT, subagentBodySchema } from "./subagent.ts";
+import { SHELL_QUICK_ENTRY_COMPONENT, shellQuickEntryBodySchema } from "./shell-quick-entry.ts";
 import { SEMANTIC_MEMORY_COMPONENT, semanticMemoryBodySchema } from "./semantic-memory.ts";
 import { SEMANTIC_REF_COMPONENT, semanticRefBodySchema } from "./semantic-ref.ts";
 import { TASK_ITEM_COMPONENT, taskItemBodySchema } from "./task-item.ts";
@@ -39,6 +40,7 @@ import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
 import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
 import { PROJECT_FOLDER_COMPONENT, projectFolderBodySchema } from "./project-folder.ts";
 import { PROJECT_COMPONENT, projectBodySchema } from "./project.ts";
+import { OBJECTIVE_COMPONENT, objectiveBodySchema } from "./objective.ts";
 import { TAG_COMPONENT, tagBodySchema } from "./tag.ts";
 import { TEMPORAL_SUMMARY_COMPONENT, temporalSummaryBodySchema } from "./temporal-summary.ts";
 import { SELF_BLOCK_COMPONENT, selfBlockBodySchema } from "./self-block.ts";
@@ -46,6 +48,7 @@ import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
 import { CODING_NOTE_COMPONENT, codingNoteBodySchema } from "./coding-note.ts";
 import { BOOKMARK_COMPONENT, bookmarkBodySchema } from "./bookmark.ts";
+import { CONTACT_COMPONENT, contactBodySchema } from "./contact.ts";
 import {
   COMPONENT_IDS,
   type ComponentId,
@@ -68,6 +71,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [TASK_OCCURRENCE_COMPONENT]: 31,
   [PROJECT_FOLDER_COMPONENT]: 35,
   [PROJECT_COMPONENT]: 40,
+  [OBJECTIVE_COMPONENT]: 42,
   [TAG_COMPONENT]: 45,
   [DIARY_ENTRY_COMPONENT]: 50,
   [NOTE_COMPONENT]: 51,
@@ -76,6 +80,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: 55,
   [CODING_NOTE_COMPONENT]: 58,
   [BOOKMARK_COMPONENT]: 59,
+  [CONTACT_COMPONENT]: 57,
   [CONTENT_BLOCK_COMPONENT]: 60,
   [LIMBIC_COMPONENT]: 70,
   [NARRATIVE_COMPONENT]: 71,
@@ -99,6 +104,8 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [SKILL_COMPONENT]: 140,
   [SKILL_RESOURCE_COMPONENT]: 141,
   [SUBAGENT_COMPONENT]: 145,
+  /** 附属快捷：几乎不升主 */
+  [SHELL_QUICK_ENTRY_COMPONENT]: 900,
 };
 
 const DEFAULT_COMPONENT_PRIORITY = 500;
@@ -130,6 +137,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [TASK_OCCURRENCE_COMPONENT]: taskOccurrenceBodySchema,
   [PROJECT_FOLDER_COMPONENT]: projectFolderBodySchema,
   [PROJECT_COMPONENT]: projectBodySchema,
+  [OBJECTIVE_COMPONENT]: objectiveBodySchema,
   [TAG_COMPONENT]: tagBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
   [NOTE_COMPONENT]: noteBodySchema,
@@ -138,6 +146,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: diaryBlockTemplateBodySchema,
   [CODING_NOTE_COMPONENT]: codingNoteBodySchema,
   [BOOKMARK_COMPONENT]: bookmarkBodySchema,
+  [CONTACT_COMPONENT]: contactBodySchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
   [LIMBIC_COMPONENT]: limbicBodySchema,
   [NARRATIVE_COMPONENT]: narrativeBodySchema,
@@ -161,6 +170,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [SKILL_COMPONENT]: skillBodySchema,
   [SKILL_RESOURCE_COMPONENT]: skillResourceBodySchema,
   [SUBAGENT_COMPONENT]: subagentBodySchema,
+  [SHELL_QUICK_ENTRY_COMPONENT]: shellQuickEntryBodySchema,
 };
 
 export function componentBodySchema(component: ComponentId): z.ZodTypeAny {
@@ -182,6 +192,7 @@ export * from "./task-item.ts";
 export * from "./task-occurrence.ts";
 export * from "./project-folder.ts";
 export * from "./project.ts";
+export * from "./objective.ts";
 export * from "./tag.ts";
 export * from "./diary-entry.ts";
 export * from "./note.ts";
@@ -190,6 +201,7 @@ export * from "./calendar-ui-prefs.ts";
 export * from "./diary-block-template.ts";
 export * from "./coding-note.ts";
 export * from "./bookmark.ts";
+export * from "./contact.ts";
 export * from "./dream.ts";
 export * from "./content-block.ts";
 export * from "./limbic.ts";
@@ -213,3 +225,4 @@ export * from "./object-folder.ts";
 export * from "./skill.ts";
 export * from "./skill-resource.ts";
 export * from "./subagent.ts";
+export * from "./shell-quick-entry.ts";

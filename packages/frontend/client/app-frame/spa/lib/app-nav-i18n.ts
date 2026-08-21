@@ -5,7 +5,9 @@ import {
   Bookmark,
   Boxes,
   CalendarDays,
+  Eye,
   FolderKanban,
+  Target,
   LayoutDashboard,
   ListTodo,
   Lock,
@@ -14,6 +16,7 @@ import {
   Settings,
   StickyNote,
   Timer,
+  ContactRound,
 } from "lucide-react";
 
 import type { ShellModuleId } from "@freeanima/client/portal-sdk/shell-module-visibility";
@@ -66,7 +69,7 @@ export function appNavItems(): AppNavItem[] {
       "tasks",
       "/tasks",
       "/tasks",
-      shellNavLabel(() => "✅ 任务"),
+      shellNavLabel(() => "✅ 清单"),
       ListTodo,
     ),
     navItem(
@@ -75,6 +78,13 @@ export function appNavItems(): AppNavItem[] {
       "/projects",
       shellNavLabel(() => "📁 项目"),
       FolderKanban,
+    ),
+    navItem(
+      "objectives",
+      "/objectives",
+      "/objectives",
+      shellNavLabel(() => "目标"),
+      Target,
     ),
     navItem(
       "calendar",
@@ -119,6 +129,13 @@ export function appNavItems(): AppNavItem[] {
       Bookmark,
     ),
     navItem(
+      "contacts",
+      "/contacts",
+      "/contacts",
+      shellNavLabel(() => "通讯录"),
+      ContactRound,
+    ),
+    navItem(
       "entity",
       "/entity",
       "/entity",
@@ -138,6 +155,13 @@ export function appNavItems(): AppNavItem[] {
       "/notifications",
       shellNavLabel(() => "通知"),
       Bell,
+    ),
+    navItem(
+      "bedroom",
+      "/bedroom/self-layer",
+      "/bedroom",
+      shellNavLabel(() => "卧室"),
+      Eye,
     ),
     navItem(
       "habitat",

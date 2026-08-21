@@ -1,7 +1,7 @@
 import { randomPublicId } from "@freeanima/shared/util";
 
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { resolveNotificationRecipients } from "@freeanima/habitat/core/config";
+import { parsePublicOrigin, resolveNotificationRecipients } from "@freeanima/habitat/core/config";
 import {
   countUnreadConversations,
   getConversationLastReadPos,
@@ -11,7 +11,11 @@ import {
 } from "@freeanima/habitat/core/db/pg/conversation";
 import { getConversationUpdatedAt } from "@freeanima/habitat/core/db/pg/conversation/repos/conversation-repo.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "../method-defs.ts";
@@ -28,6 +32,8 @@ import {
 import { streamSessionRegistry } from "../stream-session-registry.ts";
 import { sweepExpiredChatAttachmentTemps } from "../../domain/attachment-temp.ts";
 import {
+  buildConversationSharePublicUrl,
+  conversationShareUrlPath,
   deleteConversationShare,
   filterDisplayByPosList,
   getConversationShare,
@@ -43,11 +49,20 @@ sweepExpiredChatAttachmentTemps();
 type ChatHubDeps = RemoteToolsServerDeps;
 
 function depsOf(deps: unknown): ChatHubDeps {
-  return deps as ChatHubDeps;
+  return asRouteDeps<ChatHubDeps>(deps);
 }
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
-  return ctx as RemoteToolsRequestContext;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx);
+}
+
+function readConfiguredPublicOrigin(deps: ChatHubDeps): string | undefined {
+  const section = deps.runtime.getConfig().config.public;
+  if (section == null || typeof section !== "object" || Array.isArray(section)) {
+    return undefined;
+  }
+  const origin = (section as { origin?: unknown }).origin;
+  return typeof origin === "string" ? parsePublicOrigin(origin) : undefined;
 }
 
 function resolveUserSubjectId(deps: ChatHubDeps): number {
@@ -88,11 +103,21 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
       undefined,
       Object.keys(platformExtra).length > 0 ? platformExtra : undefined,
       scenario,
+      input.agent_subject_id,
     );
     if (input.title?.trim()) {
       await depsOf(deps).runtime.setConversationTitle(sid, input.title.trim(), platform);
     }
     return { conversation_id: sid };
+  },
+  "conversation.setAgent": async (deps, input) => {
+    await resolveConversationPlatform(depsOf(deps), input.conversation_id);
+    const result = await depsOf(deps).runtime.conversation.setConversationAgent(
+      input.conversation_id,
+      input.agent_subject_id,
+    );
+    depsOf(deps).runtime.emitSessionUpdated(input.conversation_id);
+    return { ok: true as const, agent_subject_id: result.agent_subject_id };
   },
   "conversation.list": async (deps, input, _ctx) => {
     const platform = input.platform?.trim() || undefined;
@@ -118,6 +143,7 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
           archived_at: s.archived_at?.toISOString() ?? null,
           pinned_at: s.pinned_at?.toISOString() ?? null,
           unread: s.unread === true ? true : s.unread === false ? false : undefined,
+          agent_subject_id: s.agent_subject_id,
         }),
       ),
     };
@@ -301,11 +327,13 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     if (!ok) {
       throw new Error("临时分享需要 Redis，当前未配置或写入失败");
     }
-    return {
+    const publicOrigin = readConfiguredPublicOrigin(depsOf(deps));
+    return omitUndefined({
       id,
       expires_at: expiresAt.toISOString(),
-      url_path: `/share/${id}`,
-    };
+      url_path: conversationShareUrlPath(id),
+      url: publicOrigin ? buildConversationSharePublicUrl(id, publicOrigin) : undefined,
+    });
   },
   "conversation.share.get": async (_deps, input) => {
     const snapshot = await getConversationShare(input.id);
@@ -322,9 +350,17 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
       expires_at: snapshot.expires_at,
     });
   },
-  "conversation.share.list": async () => {
+  "conversation.share.list": async (deps) => {
+    const publicOrigin = readConfiguredPublicOrigin(depsOf(deps));
     const items = await listConversationShares();
-    return { items };
+    return {
+      items: items.map((item) =>
+        omitUndefined({
+          ...item,
+          url: publicOrigin ? buildConversationSharePublicUrl(item.id, publicOrigin) : undefined,
+        }),
+      ),
+    };
   },
   "conversation.share.delete": async (_deps, input) => {
     const existing = await getConversationShare(input.id);

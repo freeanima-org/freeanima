@@ -4,15 +4,18 @@ export type ShellModuleId =
   | "chat"
   | "tasks"
   | "projects"
+  | "objectives"
   | "calendar"
   | "pomodoro"
   | "email"
   | "diary"
   | "notes"
   | "bookmarks"
+  | "contacts"
   | "entity"
   | "vault"
   | "notifications"
+  | "bedroom"
   | "habitat"
   | "settings";
 
@@ -20,15 +23,18 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "chat",
   "tasks",
   "projects",
+  "objectives",
   "calendar",
   "pomodoro",
   "email",
   "diary",
   "notes",
   "bookmarks",
+  "contacts",
   "entity",
   "vault",
   "notifications",
+  "bedroom",
   "habitat",
   "settings",
 ];
@@ -51,9 +57,15 @@ function storage(): Storage | null {
   }
 }
 
-/** 旧 localStorage 值 `console` → `habitat`（只读兼容，写出用新 id） */
+export function isShellModuleId(id: string): id is ShellModuleId {
+  return (SHELL_MODULE_IDS as readonly string[]).includes(id);
+}
+
+/** 旧 localStorage 值 `console` → `habitat`；`observer` → `bedroom`（只读兼容，写出用新 id） */
 function migrateModuleId(id: string): string {
-  return id === "console" ? "habitat" : id;
+  if (id === "console") return "habitat";
+  if (id === "observer") return "bedroom";
+  return id;
 }
 
 function parseVisible(raw: string | null): Set<ShellModuleId> {
@@ -64,10 +76,12 @@ function parseVisible(raw: string | null): Set<ShellModuleId> {
     const ids = parsed
       .filter((id): id is string => typeof id === "string")
       .map(migrateModuleId)
-      .filter((id): id is ShellModuleId => SHELL_MODULE_IDS.includes(id as ShellModuleId));
+      .filter((id): id is ShellModuleId => isShellModuleId(id));
     for (const locked of SHELL_MODULE_LOCKED) {
       if (!ids.includes(locked)) ids.push(locked);
     }
+    // 新顶级模块默认可见（旧 localStorage 未列出时补上）
+    if (!ids.includes("bedroom")) ids.push("bedroom");
     return ids.length > 0 ? new Set(ids) : new Set(DEFAULT_VISIBLE);
   } catch {
     return new Set(DEFAULT_VISIBLE);
@@ -120,15 +134,18 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/chat")) return "chat";
   if (path.startsWith("/tasks")) return "tasks";
   if (path.startsWith("/projects")) return "projects";
+  if (path.startsWith("/objectives")) return "objectives";
   if (path.startsWith("/calendar")) return "calendar";
   if (path.startsWith("/pomodoro")) return "pomodoro";
   if (path.startsWith("/email")) return "email";
   if (path.startsWith("/diary")) return "diary";
   if (path.startsWith("/note")) return "notes";
   if (path.startsWith("/bookmarks")) return "bookmarks";
+  if (path.startsWith("/contacts")) return "contacts";
   if (path.startsWith("/entity")) return "entity";
   if (path.startsWith("/vault")) return "vault";
   if (path.startsWith("/notifications")) return "notifications";
+  if (path.startsWith("/bedroom") || path.startsWith("/observer")) return "bedroom";
   if (path.startsWith("/habitat") || path.startsWith("/console")) return "habitat";
   if (path.startsWith("/settings")) return "settings";
   return null;
@@ -138,15 +155,18 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   chat: "/chat",
   tasks: "/tasks",
   projects: "/projects",
+  objectives: "/objectives",
   calendar: "/calendar",
   pomodoro: "/pomodoro",
   email: "/email",
   diary: "/diary",
   notes: "/note",
   bookmarks: "/bookmarks",
+  contacts: "/contacts",
   entity: "/entity",
   vault: "/vault",
   notifications: "/notifications",
+  bedroom: "/bedroom/self-layer",
   habitat: "/habitat/dashboard",
   settings: "/settings",
 };

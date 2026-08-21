@@ -231,11 +231,17 @@ describePg("server memory API", () => {
   });
 
   it("listSelfBlocks returns five blocks in order", async () => {
-    await upsertSelfBlock({
-      block_key: "direction",
-      content: "self layer list probe",
-      updated_by: "test",
-    });
+    const { getResolvedWorldContext } =
+      await import("@freeanima/habitat/core/config/world-context");
+    const agentId = getResolvedWorldContext().default_chat_agent_subject_id;
+    await upsertSelfBlock(
+      {
+        block_key: "direction",
+        content: "self layer list probe",
+        updated_by: "test",
+      },
+      agentId,
+    );
 
     const { blocks } = await getAppRuntime().listSelfBlocks();
     expect(blocks.length).toBe(SELF_BLOCK_KEYS.length);

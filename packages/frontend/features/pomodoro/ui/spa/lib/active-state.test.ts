@@ -5,10 +5,7 @@ import {
   readPomodoroActiveState,
   writePomodoroActiveState,
 } from "@freeanima/client/portal-sdk/pomodoro-active.ts";
-import {
-  resetSubjectScopeForTest,
-  setSubjectKind,
-} from "@freeanima/client/portal-sdk/subject-scope-store.ts";
+import { resetSubjectScopeForTest } from "@freeanima/client/portal-sdk/subject-scope-store.ts";
 
 import { createInitialActiveState } from "./timer-engine.ts";
 import type { PomodoroConfigRow } from "./api.ts";
@@ -61,18 +58,17 @@ afterEach(() => {
 
 describe("pomodoro active-state", () => {
   test("round-trips running state with subject-only key", () => {
-    setSubjectKind("user");
     const state = createInitialActiveState(config, { taskItemId: 42 }, 1_000_000);
-    writePomodoroActiveState(state, undefined, "user");
-    expect(localStorage.getItem("freeanima.pomodoro.active:user")).not.toBeNull();
-    expect(readPomodoroActiveState(undefined, "user")).toEqual(state);
+    writePomodoroActiveState(state, undefined, 1);
+    expect(localStorage.getItem("freeanima.pomodoro.active:1")).not.toBeNull();
+    expect(readPomodoroActiveState(undefined, 1)).toEqual(state);
   });
 
   test("reads and migrates legacy habitat-scoped storage key", () => {
     const state = createInitialActiveState(config, {}, 1_000_000);
-    localStorage.setItem(`freeanima.pomodoro.active:${HABITAT}:user:user`, JSON.stringify(state));
-    expect(readPomodoroActiveState(undefined, "user")).toEqual(state);
-    expect(localStorage.getItem("freeanima.pomodoro.active:user")).not.toBeNull();
-    expect(localStorage.getItem(`freeanima.pomodoro.active:${HABITAT}:user:user`)).toBeNull();
+    localStorage.setItem(`freeanima.pomodoro.active:${HABITAT}:1:1`, JSON.stringify(state));
+    expect(readPomodoroActiveState(undefined, 1)).toEqual(state);
+    expect(localStorage.getItem("freeanima.pomodoro.active:1")).not.toBeNull();
+    expect(localStorage.getItem(`freeanima.pomodoro.active:${HABITAT}:1:1`)).toBeNull();
   });
 });

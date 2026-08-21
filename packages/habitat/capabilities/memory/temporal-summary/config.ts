@@ -1,5 +1,6 @@
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
 import type { SysRollKind } from "./buckets.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 /** sys_roll TTL：与时间粒度对齐（不复用 peer_roll_ttl） */
 export const SYS_ROLL_TTL_SECONDS: Record<SysRollKind, number> = {
@@ -36,18 +37,25 @@ export type TemporalSummaryConfigInput = {
   peer_roll_ttl_seconds?: number;
 };
 
+function configNum(v: unknown, d: number): number {
+  return typeof v === "number" && Number.isFinite(v) ? v : d;
+}
+
+function configStr(v: unknown): string | undefined {
+  return typeof v === "string" ? v : undefined;
+}
+
 export function resolveTemporalSummaryConfig(cfg: RuntimeConfig): ResolvedTemporalSummaryConfig {
-  const raw = (cfg.memory as { temporal_summary?: TemporalSummaryConfigInput } | undefined)
-    ?.temporal_summary;
+  const raw = asRecord(asRecord(cfg.memory)?.temporal_summary) ?? {};
   return {
-    enabled: raw?.enabled ?? true,
-    chunk_max_chars: raw?.chunk_max_chars ?? 50,
-    peer_roll_max_chars: raw?.peer_roll_max_chars ?? 100,
-    global_day_max_chars: raw?.global_day_max_chars ?? 100,
-    month_max_chars: raw?.month_max_chars ?? 100,
-    year_max_chars: raw?.year_max_chars ?? 100,
-    system_prompt_max_chars: raw?.system_prompt_max_chars ?? 1500,
-    redis_key_prefix: raw?.redis_key_prefix?.trim() || "anima:temporal",
-    peer_roll_ttl_seconds: raw?.peer_roll_ttl_seconds ?? 36 * 60 * 60,
+    enabled: typeof raw.enabled === "boolean" ? raw.enabled : true,
+    chunk_max_chars: configNum(raw.chunk_max_chars, 50),
+    peer_roll_max_chars: configNum(raw.peer_roll_max_chars, 100),
+    global_day_max_chars: configNum(raw.global_day_max_chars, 100),
+    month_max_chars: configNum(raw.month_max_chars, 100),
+    year_max_chars: configNum(raw.year_max_chars, 100),
+    system_prompt_max_chars: configNum(raw.system_prompt_max_chars, 1500),
+    redis_key_prefix: configStr(raw.redis_key_prefix)?.trim() || "anima:temporal",
+    peer_roll_ttl_seconds: configNum(raw.peer_roll_ttl_seconds, 36 * 60 * 60),
   };
 }

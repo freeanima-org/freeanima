@@ -1,5 +1,4 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config/world-context";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
@@ -22,42 +21,42 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (!subject_kind || subject_kind === auth.subject_type) return;
-  if (auth.subject_type === "user" && subject_kind === "agent") return;
+function assertSubjectIdAllowed(auth: RpcRequestAuthContext, subjectId: number): void {
+  if (auth.subject_id === subjectId) return;
+  if (auth.subject_type === "user") return;
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
-  if (subject_kind !== "user" && subject_kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+function requireSubjectId(subject_id: number | undefined): number {
+  if (subject_id == null || !Number.isInteger(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
   }
-  return subject_kind;
+  return subject_id;
 }
 
 async function tagWorldIdForAuth(
   auth: RpcRequestAuthContext,
-  subject_kind?: SubjectKind,
+  subject_id: number | undefined,
 ): Promise<number> {
-  const kind = resolveSubjectKind(subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  return resolveSubjectWorldId(kind);
+  const subjectId = requireSubjectId(subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  return resolvePrivateWorldId(subjectId);
 }
 
 export async function serviceTagList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind } | undefined,
+  input: { subject_id?: number } | undefined,
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const tags = await listTags(await tagWorldIdForAuth(auth, input?.subject_kind));
+  const tags = await listTags(await tagWorldIdForAuth(auth, input?.subject_id));
   return { tags };
 }
 
 export async function serviceTagSearch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     query?: string;
     limit?: number;
     offset?: number;
@@ -65,14 +64,14 @@ export async function serviceTagSearch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...opts } = input;
-  return searchTags(await tagWorldIdForAuth(auth, subject_kind), omitUndefined(opts));
+  const { subject_id, ...opts } = input;
+  return searchTags(await tagWorldIdForAuth(auth, subject_id), omitUndefined(opts));
 }
 
 export async function serviceTagSuggest(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     primary_component: string;
     query?: string;
     limit?: number;
@@ -80,9 +79,9 @@ export async function serviceTagSuggest(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, primary_component, ...opts } = input;
+  const { subject_id, primary_component, ...opts } = input;
   const items = await suggestTags(
-    await tagWorldIdForAuth(auth, subject_kind),
+    await tagWorldIdForAuth(auth, subject_id),
     primary_component,
     omitUndefined(opts),
   );
@@ -92,7 +91,7 @@ export async function serviceTagSuggest(
 export async function serviceTagCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     title: string;
     sort_order?: number;
     client_op_id?: string;
@@ -100,15 +99,15 @@ export async function serviceTagCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...createInput } = input;
-  const item = await createTag(await tagWorldIdForAuth(auth, subject_kind), createInput);
+  const { subject_id, ...createInput } = input;
+  const item = await createTag(await tagWorldIdForAuth(auth, subject_id), createInput);
   return { item };
 }
 
 export async function serviceTagPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     title?: string;
     sort_order?: number;
@@ -116,9 +115,9 @@ export async function serviceTagPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, id, ...patch } = input;
+  const { subject_id, id, ...patch } = input;
   const item = await updateTag(
-    await tagWorldIdForAuth(auth, subject_kind),
+    await tagWorldIdForAuth(auth, subject_id),
     omitUndefined({ id, ...patch }),
   );
   if (!item) throw new Error("tag not found");
@@ -127,11 +126,11 @@ export async function serviceTagPatch(
 
 export async function serviceTagDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const ok = await deleteTag(await tagWorldIdForAuth(auth, input.subject_kind), input.id);
+  const ok = await deleteTag(await tagWorldIdForAuth(auth, input.subject_id), input.id);
   if (!ok) throw new Error("tag not found");
   return { ok: true as const };
 }
@@ -139,7 +138,7 @@ export async function serviceTagDelete(
 export async function serviceTagSetOnEntity(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     entity_id: number;
     tag_ids: number[];
   },
@@ -147,7 +146,7 @@ export async function serviceTagSetOnEntity(
 ) {
   assertPg(deps);
   return setEntityTagIds(
-    await tagWorldIdForAuth(auth, input.subject_kind),
+    await tagWorldIdForAuth(auth, input.subject_id),
     input.entity_id,
     input.tag_ids,
   );

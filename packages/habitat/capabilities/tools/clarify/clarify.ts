@@ -13,6 +13,7 @@ import {
 import { safeParseOrNull } from "@freeanima/habitat/core/util";
 import { parseToolResult } from "@freeanima/habitat/core/tool";
 import type { ConversationPort } from "@freeanima/habitat/core/tool/conversation-port.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;
@@ -178,22 +179,17 @@ export function parseClarifyToolResult(
   const resolved = safeParseOrNull(clarifyToolResolvedResultSchema, data);
   if (resolved) return resolved;
 
-  if (
-    data &&
-    typeof data === "object" &&
-    !Array.isArray(data) &&
-    (data as { status?: string }).status === "awaiting" &&
-    Array.isArray((data as { items?: unknown }).items)
-  ) {
+  const awaitingRec = asRecord(data);
+  if (awaitingRec && awaitingRec.status === "awaiting" && Array.isArray(awaitingRec.items)) {
+    const timeoutRaw = awaitingRec.timeout_sec;
     const timeout =
-      typeof (data as { timeout_sec?: unknown }).timeout_sec === "number" &&
-      (data as { timeout_sec: number }).timeout_sec >= 60
-        ? (data as { timeout_sec: number }).timeout_sec
+      typeof timeoutRaw === "number" && timeoutRaw >= 60
+        ? timeoutRaw
         : getClarifyConfig().timeout_sec;
     const items: ClarifyItem[] = [];
-    for (const item of (data as { items: unknown[] }).items) {
-      if (!item || typeof item !== "object") continue;
-      const q = item as Record<string, unknown>;
+    for (const item of awaitingRec.items) {
+      const q = asRecord(item);
+      if (!q) continue;
       if (typeof q.question !== "string" || !q.question.trim()) continue;
       const out: ClarifyItem = { question: q.question.trim() };
       if (Array.isArray(q.choices)) {

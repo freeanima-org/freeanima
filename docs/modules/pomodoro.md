@@ -8,10 +8,17 @@ title: 番茄钟
 
 ## 进行中指示
 
-| 表面           | 范围                                                               |
-| -------------- | ------------------------------------------------------------------ |
-| 导航倒计时     | Web / 移动 / 桌面主壳：Rail 与底栏番茄入口显示剩余 `MM:SS`         |
-| 桌面迷你窗     | 仅 Tauri desktop：置顶 `pomodoro-float` 小窗（倒计时 + 暂停/继续） |
-| Android 小组件 | 主屏小组件 MVP（`set_pomodoro_widget_state`）                      |
+| 表面           | 范围                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| 导航倒计时     | Web / 移动 / 桌面主壳：Rail 与底栏番茄入口显示剩余 `MM:SS`                                      |
+| 桌面迷你窗     | 仅 Tauri desktop：置顶 `pomodoro-float`（独立显隐；可贴边折叠为进度条，悬停展开开始/暂停/结束） |
+| Android 小组件 | 主屏小组件 MVP（`set_pomodoro_widget_state`）                                                   |
 
-离开 `/pomodoro` 后，主壳 `PomodoroShellWatcher` 继续阶段完成与同步。
+离开 `/pomodoro` 后，主壳 `PomodoroShellWatcher` 继续阶段完成与同步（**不**再驱动迷你窗显隐）。
+
+## 桌面迷你窗
+
+- 显隐由壳 prefs `pomodoroFloatVisible`（设置页「显示番茄迷你窗」/ 托盘「番茄迷你窗」），**不随**番茄会话起停。
+- 拖到屏幕边缘松手 → 折叠为细进度条；鼠标悬停展开常用操作；离开再折回。
+- **状态同步**：主窗与迷你窗是独立 WebView，localStorage 不共享；经壳事件 `pomodoro:active-sync` 互相同步，迷你窗 pull 时 `preferRemote` 以 Habitat 为准。
+- Web / 移动端无此窗。

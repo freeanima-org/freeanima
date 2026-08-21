@@ -24,6 +24,7 @@ export default function CompanionClientSettingsSection({ store }: SettingsPanelP
     const refresh = async (): Promise<void> => {
       try {
         if (store) {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 壳设置加载边界
           const raw = (await store.load()) as CompanionShellSettings;
           if (!cancelled && typeof raw?.visible === "boolean") {
             setVisible(raw.visible);

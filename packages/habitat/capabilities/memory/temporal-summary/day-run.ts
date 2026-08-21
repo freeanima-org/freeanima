@@ -1,6 +1,7 @@
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
 import { listConversationIdsWithMessagesBetween } from "@freeanima/habitat/core/db/pg/conversation";
 import { upsertTemporalSummary } from "@freeanima/habitat/core/db/pg/temporal-summary";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 import { collectConversationBlocks, cstDayRange } from "../day-window/build-messages.ts";
 import { summarizeTemporalText, TEMPORAL_SUMMARY_INSTRUCTIONS } from "./summarize.ts";
 import type { ResolvedTemporalSummaryConfig } from "./config.ts";
@@ -11,6 +12,8 @@ export type TemporalSummaryDayResult = {
   entity_id?: number;
   summary: string;
   skipped?: string;
+  agent_subject_id?: number;
+  world_id?: number;
 };
 
 async function upsertEmptyDay(opts: {
@@ -18,6 +21,8 @@ async function upsertEmptyDay(opts: {
   empty_reason: string;
   source_count: number;
   summary: string;
+  world_id: number;
+  agent_subject_id: number;
 }): Promise<TemporalSummaryDayResult> {
   const entity_id = await upsertTemporalSummary({
     window: "day",
@@ -25,6 +30,7 @@ async function upsertEmptyDay(opts: {
     content: "",
     empty_reason: opts.empty_reason,
     source_count: opts.source_count,
+    world_id: opts.world_id,
   });
   return {
     ok: true,
@@ -32,25 +38,39 @@ async function upsertEmptyDay(opts: {
     entity_id,
     summary: opts.summary,
     skipped: opts.empty_reason,
+    agent_subject_id: opts.agent_subject_id,
+    world_id: opts.world_id,
   };
 }
 
 export async function runTemporalSummaryDay(opts: {
   config: ResolvedTemporalSummaryConfig;
   day?: string;
+  agent_subject_id: number;
+  world_id: number;
 }): Promise<TemporalSummaryDayResult> {
   if (!opts.config.enabled) {
-    return { ok: true, day: cstDayRange(opts.day).day, summary: "disabled", skipped: "disabled" };
+    return {
+      ok: true,
+      day: cstDayRange(opts.day).day,
+      summary: "disabled",
+      skipped: "disabled",
+      agent_subject_id: opts.agent_subject_id,
+      world_id: opts.world_id,
+    };
   }
   const range = cstDayRange(opts.day);
-  // Align with tick: message payload.timestamp activity, not conversations.updated_at.
-  const conversationIds = await listConversationIdsWithMessagesBetween(range.fromIso, range.toIso);
+  const conversationIds = await listConversationIdsWithMessagesBetween(range.fromIso, range.toIso, {
+    agent_subject_id: opts.agent_subject_id,
+  });
   if (conversationIds.length === 0) {
     return upsertEmptyDay({
       day: range.day,
       empty_reason: "no_sessions",
       source_count: 0,
-      summary: "No conversation activity; skip global day",
+      summary: "No conversation activity; skip agent day",
+      world_id: opts.world_id,
+      agent_subject_id: opts.agent_subject_id,
     });
   }
 
@@ -62,6 +82,8 @@ export async function runTemporalSummaryDay(opts: {
       empty_reason: "empty",
       source_count: conversationIds.length,
       summary: "Empty dialogue; skip",
+      world_id: opts.world_id,
+      agent_subject_id: opts.agent_subject_id,
     });
   }
 
@@ -72,16 +94,20 @@ export async function runTemporalSummaryDay(opts: {
       params: { day: range.day },
       material,
       maxChars: opts.config.global_day_max_chars,
+      agent_subject_id: opts.agent_subject_id,
     });
   } catch (e) {
     logComponent("memory").warn("temporal day summarize failed", {
       day: range.day,
+      agent_subject_id: opts.agent_subject_id,
       error: e instanceof Error ? e.message : String(e),
     });
     return {
       ok: false,
       day: range.day,
       summary: e instanceof Error ? e.message : String(e),
+      agent_subject_id: opts.agent_subject_id,
+      world_id: opts.world_id,
     };
   }
   if (!content.trim()) {
@@ -90,20 +116,27 @@ export async function runTemporalSummaryDay(opts: {
       empty_reason: "empty_summary",
       source_count: conversationIds.length,
       summary: "empty summary",
+      world_id: opts.world_id,
+      agent_subject_id: opts.agent_subject_id,
     });
   }
 
-  const entity_id = await upsertTemporalSummary({
-    window: "day",
-    period_start: range.day,
-    content,
-    empty_reason: null,
-    source_count: conversationIds.length,
-  });
+  const entity_id = await upsertTemporalSummary(
+    omitUndefined({
+      window: "day" as const,
+      period_start: range.day,
+      content,
+      empty_reason: null,
+      source_count: conversationIds.length,
+      world_id: opts.world_id,
+    }),
+  );
   return {
     ok: true,
     day: range.day,
     entity_id,
-    summary: `global day ${range.day} → entity ${entity_id}`,
+    summary: `agent ${opts.agent_subject_id} day ${range.day} → entity ${entity_id}`,
+    agent_subject_id: opts.agent_subject_id,
+    world_id: opts.world_id,
   };
 }

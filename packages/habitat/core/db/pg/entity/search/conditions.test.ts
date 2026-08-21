@@ -126,6 +126,17 @@ test("task_item due_on_or_before_days: 0 为今天及已过期", () => {
   expect(blob).toContain("0");
 });
 
+test("task_item plan_before 约束计划时钟上界", () => {
+  const conds = buildComponentFilterConditions({
+    component: TASK_ITEM_COMPONENT,
+    filters: { plan_before: "2026-08-19T00:00:00+08:00" },
+  });
+  const blob = sqlBlob(conds[0]!);
+  expect(blob).toContain("start_at");
+  expect(blob).toContain("end_at");
+  expect(blob).toContain("2026-08-19T00:00:00+08:00");
+});
+
 test("task_item completed_on / completed_on_or_after_days 走 completed_at", () => {
   const onToday = buildComponentFilterConditions({
     component: TASK_ITEM_COMPONENT,

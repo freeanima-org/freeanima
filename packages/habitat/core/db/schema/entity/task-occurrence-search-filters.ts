@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { taskContainerSchema } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import { taskRelativeDaySchema } from "./task-item-search-filters.ts";
 
 /** task_occurrence 结构化搜索 filters */
@@ -9,6 +10,8 @@ export const taskOccurrenceSearchFiltersSchema = z
     list_id: z.number().int().positive().optional(),
     list_ids: z.array(z.number().int().positive()).min(1).optional(),
     project_id: z.number().int().positive().optional(),
+    container: taskContainerSchema.optional(),
+    /** @deprecated 用 container。true→list，false→any */
     in_backlog: z.boolean().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     completed_on_or_after_days: z.number().int().nonnegative().optional(),

@@ -12,6 +12,10 @@ import {
 } from "@freeanima/habitat/core/tool";
 import { getActiveRuntimeConfig, getProfileHopModel } from "@freeanima/habitat/core/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
+import {
+  assertBindableAgentSubject,
+  resolveConversationAgentSubjectId,
+} from "./resolve-conversation-agent.ts";
 import { CST_OFFSET_MS, formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
 import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
 import { buildSystemPrompt } from "@freeanima/habitat/core/hooks/prompt";
@@ -60,6 +64,7 @@ import {
 } from "./conversation-store-pg-bridge.ts";
 import type { ConversationSummaryRow } from "@freeanima/habitat/core/db/pg/conversation/types";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { isRecord } from "@freeanima/shared/util";
 
 export type Message = StoredMessage;
 
@@ -72,7 +77,7 @@ export function allocateConversationCwd(sid: string): string {
       mkdirSync(path, { recursive: false, mode: 0o700 });
       return path;
     } catch (e) {
-      if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
+      if (!isRecord(e) || e.code !== "EEXIST") throw e;
     }
   }
   return mkdtempSync(join(tmpdir(), "anima-cwd-"));
@@ -229,7 +234,12 @@ export async function appendMessage(msg: StoredMessage, conversationId: string):
       out.subject_id = ctx.user_subject_id;
     } else {
       const meta = await loadConversationMeta(conversationId);
-      out.subject_id = isConversationMeta(meta) ? meta.agent_subject_id : ctx.agent_subject_id;
+      if (!isConversationMeta(meta) || meta.agent_subject_id == null) {
+        throw new Error(
+          `conversation ${conversationId} missing agent_subject_id; cannot attribute assistant/tool message`,
+        );
+      }
+      out.subject_id = meta.agent_subject_id;
     }
   }
   await pgWriteMessage(conversationId, out);
@@ -239,15 +249,16 @@ export async function appendConversationMeta(
   conversationId: string,
   tools: string[],
   model: string,
-  opts?: { platform?: string; functions?: string[] },
+  opts?: { platform?: string; functions?: string[]; agent_subject_id?: number },
 ): Promise<void> {
+  const agent_subject_id = await resolveConversationAgentSubjectId(opts?.agent_subject_id);
   const meta: ConversationMetaMessage = {
     model,
     cached_toolsets: tools,
     staged_toolsets: [],
     functions: opts?.functions ?? [],
     timestamp: formatCstIso(),
-    agent_subject_id: getResolvedWorldContext().agent_subject_id,
+    agent_subject_id,
   };
   if (opts?.platform) meta.platform = opts.platform;
   await pgWriteMeta(conversationId, meta);
@@ -262,6 +273,7 @@ export async function initConversation(
     functions?: string[];
     platform_extra?: Record<string, unknown>;
     scenario?: "digital_human" | "coding_agent";
+    agent_subject_id: number;
   },
 ): Promise<void> {
   const cwd = allocateConversationCwd(sid);
@@ -277,7 +289,7 @@ export async function initConversation(
     timestamp: formatCstIso(),
     platform: opts.platform,
     cwd,
-    agent_subject_id: getResolvedWorldContext().agent_subject_id,
+    agent_subject_id: opts.agent_subject_id,
     ...(opts.scenario ? { scenario: opts.scenario } : {}),
     platform_extra:
       platform_extra && Object.keys(platform_extra).length > 0 ? platform_extra : undefined,
@@ -291,9 +303,11 @@ export async function newConversation(
   model?: string,
   platformExtra?: Record<string, unknown>,
   scenario?: "digital_human" | "coding_agent",
+  agentSubjectId?: number,
 ): Promise<string> {
   const cfg = getActiveRuntimeConfig().data;
   const sid = generateConversationId();
+  const agent_subject_id = await resolveConversationAgentSubjectId(agentSubjectId);
   await initConversation(
     tools,
     sid,
@@ -302,6 +316,7 @@ export async function newConversation(
       platform,
       platform_extra: platformExtra,
       scenario,
+      agent_subject_id,
     }),
   );
   // 尽力预热；失败不影响创建（首条消息 ensure 会同步补齐）
@@ -419,6 +434,22 @@ export async function updateConversationMetaField(
   await pgWritePatchMeta(conversationId, patch);
 }
 
+export async function setConversationAgent(
+  conversationId: string,
+  agentSubjectId: number,
+): Promise<{ agent_subject_id: number; title: string }> {
+  const userCount = await countUserMessages(conversationId);
+  if (userCount > 0) {
+    throw new Error("会话已有用户消息，不能改绑 Anima");
+  }
+  const bound = await assertBindableAgentSubject(agentSubjectId);
+  await updateConversationMetaField(conversationId, {
+    agent_subject_id: bound.agent_subject_id,
+  });
+  void rebuildConversationSystemPrompt(conversationId).catch(() => undefined);
+  return { agent_subject_id: bound.agent_subject_id, title: bound.title };
+}
+
 export async function patchConversationOrigin(
   conversationId: string,
   platform: string,
@@ -533,15 +564,13 @@ export async function appendUserTurn(
       return existing.content;
     }
   }
-  await appendMessage(
-    omitUndefined({
-      role: "user",
-      content,
-      client_op_id: opts?.client_op_id,
-      attachments: opts?.attachments?.length ? opts.attachments : undefined,
-    }) as StoredMessage,
-    conversationId,
-  );
+  const msg: StoredMessage = {
+    role: "user",
+    content,
+    ...(opts?.client_op_id ? { client_op_id: opts.client_op_id } : {}),
+    ...(opts?.attachments?.length ? { attachments: opts.attachments } : {}),
+  };
+  await appendMessage(msg, conversationId);
   return content;
 }
 

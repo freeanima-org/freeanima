@@ -11,7 +11,7 @@ async function readRequestBody(req: IncomingMessage): Promise<Buffer | undefined
   }
   const chunks: Buffer[] = [];
   for await (const chunk of req) {
-    chunks.push(chunk as Buffer);
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
   return Buffer.concat(chunks);
 }

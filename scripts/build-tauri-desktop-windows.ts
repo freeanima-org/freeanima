@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 import { emitPackArtifact } from "./emit-pack-artifact.ts";
+import { resolveTauriRustBuildEnv } from "./tauri-rust-build-env.ts";
 
 const TARGET = "x86_64-pc-windows-msvc";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -169,13 +170,15 @@ function main(): void {
 
   // ring 交叉会产生海量 -Wunsafe-buffer-usage，易撑爆 CI 日志；
   // 默认 4 并行（速度优先）；若 xwin+ring OOM，可设 CARGO_BUILD_JOBS=2。
-  const buildEnv = {
-    ...process.env,
-    FREEANIMA_BUILD_CHANNEL: identity.channel,
-    CARGO_BUILD_JOBS: process.env.CARGO_BUILD_JOBS?.trim() || "4",
-    CFLAGS: [process.env.CFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
-    CXXFLAGS: [process.env.CXXFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
-  };
+  const buildEnv = resolveTauriRustBuildEnv(
+    {
+      ...process.env,
+      FREEANIMA_BUILD_CHANNEL: identity.channel,
+      CFLAGS: [process.env.CFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
+      CXXFLAGS: [process.env.CXXFLAGS, "-Wno-unsafe-buffer-usage", "-w"].filter(Boolean).join(" "),
+    },
+    { logPrefix: "[pack tauri-windows]", defaultJobs: 4 },
+  );
 
   const build = spawnSync(
     "bun",

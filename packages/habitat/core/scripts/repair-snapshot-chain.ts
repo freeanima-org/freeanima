@@ -20,7 +20,9 @@ const MIGRATIONS_DIR = join(import.meta.dir, "../migrations");
 const SCHEMA_SNAPSHOT = join(import.meta.dir, "fixtures/drizzle-schema-snapshot.json");
 
 function loadSnapshot(path: string): Snapshot {
-  return JSON.parse(readFileSync(path, "utf-8")) as Snapshot;
+  const parsed: unknown = JSON.parse(readFileSync(path, "utf-8"));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- drizzle snapshot fixture 形
+  return parsed as Snapshot;
 }
 
 function writeSnapshot(dir: string, snap: Snapshot): void {

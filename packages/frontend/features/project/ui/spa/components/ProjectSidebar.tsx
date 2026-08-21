@@ -22,7 +22,7 @@ import {
 import { useProjectDndUi } from "./ProjectDndRoot.tsx";
 
 type ProjectSidebarProps = {
-  subjectKind: string;
+  subjectId: number;
   folders: ProjectFolderRow[];
   projects: ProjectRow[];
   inactiveProjects: ProjectRow[];
@@ -281,13 +281,13 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
   const { dragging, overRoot } = useProjectDndUi();
   const { setNodeRef: setProjectRootRef } = useDroppable({ id: PROJECT_ROOT_DND_ID });
   const [expandedFolderIds, setExpandedFolderIds] = useState(() =>
-    readExpandedProjectFolders(props.subjectKind),
+    readExpandedProjectFolders(props.subjectId),
   );
   const contextMenuEnabled = props.contextMenuEnabled === true;
 
   useEffect(() => {
-    setExpandedFolderIds(readExpandedProjectFolders(props.subjectKind));
-  }, [props.subjectKind]);
+    setExpandedFolderIds(readExpandedProjectFolders(props.subjectId));
+  }, [props.subjectId]);
 
   const tree = useMemo(
     () => buildProjectTree(props.folders, props.projects),
@@ -313,7 +313,7 @@ export function ProjectSidebar(props: ProjectSidebarProps) {
       const next = new Set(prev);
       if (next.has(folderId)) next.delete(folderId);
       else next.add(folderId);
-      writeExpandedProjectFolders(props.subjectKind, next);
+      writeExpandedProjectFolders(props.subjectId, next);
       return next;
     });
   };

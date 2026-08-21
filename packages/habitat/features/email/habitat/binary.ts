@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import { createObjectFile } from "@freeanima/features/object-storage/domain";
 
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
@@ -17,7 +17,7 @@ function requireHttpRequest(ctx: RemoteToolsRequestContext): Request {
 }
 
 const uploadInputSchema = z.object({
-  subject_kind: z.enum(["user", "agent"]),
+  subject_id: z.number().int().positive(),
 });
 
 export async function handleEmailAttachmentUpload(
@@ -31,7 +31,7 @@ export async function handleEmailAttachmentUpload(
   size: number;
 }> {
   const input = uploadInputSchema.parse(payload);
-  const worldId = resolveSubjectWorldId(input.subject_kind);
+  const worldId = await resolvePrivateWorldId(input.subject_id);
   const request = requireHttpRequest(ctx);
 
   let form: FormData;

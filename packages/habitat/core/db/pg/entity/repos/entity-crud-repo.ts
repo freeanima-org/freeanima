@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, asc, count, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { entities, entityTypeSchema } from "@freeanima/habitat/core/db/schema";
 import {
@@ -322,7 +323,7 @@ export async function deleteEntity(id: number): Promise<boolean> {
       title: row.title,
       summary: row.summary,
       content: row.content,
-      body: row.body as Record<string, unknown>,
+      body: asRecord(row.body) ?? {},
       primary_component: row.primary_component,
     });
     await indexEntitySearchDoc({
@@ -356,7 +357,7 @@ export async function restoreEntity(id: number): Promise<EntityRow | null> {
       title: row.title,
       summary: row.summary,
       content: row.content,
-      body: row.body as Record<string, unknown>,
+      body: asRecord(row.body) ?? {},
       primary_component: row.primary_component,
     });
     await indexEntitySearchDoc({
@@ -741,7 +742,7 @@ export async function collectEntityReferences(id: number): Promise<EntityReferen
     .limit(200);
 
   for (const row of fkRows) {
-    const body = (row.body ?? {}) as Record<string, unknown>;
+    const body = asRecord(row.body) ?? {};
     if (coerceString(body.list_id ?? "") === idStr)
       hits.push({ entity_id: row.id, via: "body.list_id" });
     if (coerceString(body.project_id ?? "") === idStr)
@@ -903,6 +904,24 @@ export async function listEntities(
     .orderBy(listOrderBy(opts))
     .limit(limit)
     .offset(offset);
+  return rows.map(mapRow);
+}
+
+/** 全库 `world_config.common=true`（按 id 升序）；不受 listEntities limit 500 截断 */
+export async function listCommonWorldEntities(session?: DbSession): Promise<EntityRow[]> {
+  const db = session ?? getDb();
+  const rows = await db
+    .select(entityRowSelectColumns)
+    .from(entities)
+    .where(
+      and(
+        eq(entities.type, "world"),
+        eq(entities.primary_component, "world_config"),
+        isNull(entities.deleted_at),
+        sql`${entities.body}->>'common' = 'true'`,
+      ),
+    )
+    .orderBy(asc(entities.id));
   return rows.map(mapRow);
 }
 

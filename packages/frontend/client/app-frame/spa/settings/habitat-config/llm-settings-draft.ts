@@ -3,6 +3,7 @@ import {
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
+  LLM_PRESET_OLLAMA,
   LLM_PRESET_OPENCODE_GO,
   LLM_PRESET_OPENROUTER,
   LLM_FORMAT_OPENAI_RESPONSES,
@@ -12,15 +13,18 @@ import {
   DEFAULT_EDGE_TTS_BASE_URL,
   AUDIO_PROTOCOL_EDGE_TTS,
   type CustomKindId,
+  type LlmPresetId,
+  LLM_PRESET_IDS,
 } from "@freeanima/habitat/core/config";
 import {
   getLlmPreset,
+  presetAllowsBaseUrlOverride,
   presetModalityFields,
   connectionSupportsLayer,
 } from "@freeanima/habitat/core/llm/presets";
 import { readHabitatConfigRecord } from "./habitat-config-field-helpers.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { randomPublicId } from "@freeanima/shared/util";
+import { isRecord, randomPublicId } from "@freeanima/shared/util";
 
 export type ConnectionLayerId = CustomKindId;
 
@@ -32,23 +36,37 @@ export const CONNECTION_LAYERS = [
   { id: "embeddings", label: "文本嵌入" },
 ] as const satisfies ReadonlyArray<{ id: ConnectionLayerId; label: string }>;
 
+function isLlmPresetId(value: string): value is LlmPresetId {
+  return (LLM_PRESET_IDS as readonly string[]).includes(value);
+}
+
+function isConnectionLayerId(value: string): value is ConnectionLayerId {
+  return CONNECTION_LAYERS.some((l) => l.id === value);
+}
+
 export function providersDraftToPatch(
   draft: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> {
   const entries = readHabitatConfigRecord(draft);
   const out: Record<string, unknown> = {};
   for (const [id, provider] of Object.entries(entries)) {
-    const normalized = normalizeConnectionRaw(provider) as Record<string, unknown>;
+    const normalizedRaw = normalizeConnectionRaw(provider);
+    const normalized: Record<string, unknown> = isRecord(normalizedRaw) ? { ...normalizedRaw } : {};
     delete normalized.format;
     delete normalized.backend;
     delete normalized.voice_protocol;
     const preset = coerceString(normalized.preset ?? LLM_PRESET_CUSTOM);
-    if (preset !== LLM_PRESET_CUSTOM) {
-      const suite = presetModalityFields(preset as typeof LLM_PRESET_DEEPSEEK);
+    if (isLlmPresetId(preset) && preset !== LLM_PRESET_CUSTOM) {
+      const suite = presetModalityFields(preset);
       for (const [k, v] of Object.entries(suite)) {
         normalized[k] = v;
       }
-      delete normalized.base_url;
+      if (!presetAllowsBaseUrlOverride(preset)) {
+        delete normalized.base_url;
+      } else if (!coerceString(normalized.base_url)) {
+        const def = getLlmPreset(preset);
+        if (def) normalized.base_url = def.defaultBaseUrl;
+      }
       delete normalized.custom_kind;
     } else {
       stripProtocolsNotForKind(normalized);
@@ -93,6 +111,11 @@ export const LLM_SETTINGS_PRESETS = [
     id: LLM_PRESET_OPENCODE_GO,
     label: "OpenCode Go",
     hint: "多格式对话网关 · 无文生图/向量/语音",
+  },
+  {
+    id: LLM_PRESET_OLLAMA,
+    label: "Ollama",
+    hint: "对话 + 向量 · 默认可改本机/自建 Base URL",
   },
   {
     id: LLM_PRESET_CUSTOM,
@@ -176,7 +199,13 @@ export function connectionListSubtitle(entry: Record<string, unknown>): string {
   const preset = coerceString(entry.preset ?? LLM_PRESET_CUSTOM);
   const label = llmPresetLabel(preset);
   if (preset !== LLM_PRESET_CUSTOM) {
-    const def = getLlmPreset(preset as typeof LLM_PRESET_DEEPSEEK);
+    if (isLlmPresetId(preset) && presetAllowsBaseUrlOverride(preset)) {
+      const override = typeof entry.base_url === "string" ? entry.base_url.trim() : "";
+      const def = getLlmPreset(preset);
+      const url = override || def?.defaultBaseUrl || "";
+      return url ? `${label} · ${url}` : label;
+    }
+    const def = isLlmPresetId(preset) ? getLlmPreset(preset) : null;
     const fixed = def?.defaultBaseUrl;
     return fixed ? `${label} · ${fixed}` : label;
   }
@@ -189,7 +218,7 @@ export function connectionListSubtitle(entry: Record<string, unknown>): string {
 
 export function connectionDefaultBaseUrl(presetId: string): string | null {
   if (presetId === LLM_PRESET_CUSTOM) return null;
-  const def = getLlmPreset(presetId as typeof LLM_PRESET_DEEPSEEK);
+  const def = isLlmPresetId(presetId) ? getLlmPreset(presetId) : null;
   return def?.defaultBaseUrl ?? null;
 }
 
@@ -206,8 +235,9 @@ export function applyPresetToConnectionEntry(
   lockedKind?: ConnectionLayerId,
 ): Record<string, unknown> {
   if (presetId === LLM_PRESET_CUSTOM) {
-    const kind = (lockedKind ?? coerceString(entry.custom_kind) ?? "text") || "text";
-    const next = emptyConnectionEntry(kind as ConnectionLayerId, {
+    const kindRaw = (lockedKind ?? coerceString(entry.custom_kind) ?? "text") || "text";
+    const kind: ConnectionLayerId = isConnectionLayerId(kindRaw) ? kindRaw : "text";
+    const next = emptyConnectionEntry(kind, {
       title: coerceString(entry.title ?? ""),
     });
     if (entry.api_key != null) next.api_key = entry.api_key;
@@ -219,14 +249,26 @@ export function applyPresetToConnectionEntry(
     if (entry.base_url != null && entry.base_url !== "") next.base_url = entry.base_url;
     return next;
   }
-  const modalities = presetModalityFields(presetId as typeof LLM_PRESET_DEEPSEEK);
+  if (!isLlmPresetId(presetId) || presetId === LLM_PRESET_CUSTOM) {
+    return entry;
+  }
+  const modalities = presetModalityFields(presetId);
   const next: Record<string, unknown> = {
     ...entry,
     preset: presetId,
     ...modalities,
   };
-  delete next.base_url;
   delete next.custom_kind;
+  if (presetAllowsBaseUrlOverride(presetId)) {
+    const def = getLlmPreset(presetId);
+    const existing = coerceString(entry.base_url);
+    next.base_url = existing || def?.defaultBaseUrl || "";
+    if (presetId === LLM_PRESET_OLLAMA && !coerceString(entry.api_key)) {
+      next.api_key = "ollama";
+    }
+  } else {
+    delete next.base_url;
+  }
   return next;
 }
 
@@ -247,7 +289,7 @@ function protocolLabel(kind: "text" | "image" | "embeddings" | "audio", id: stri
 
 export function presetModalitySuiteSummary(presetId: string): string | null {
   if (presetId === LLM_PRESET_CUSTOM) return null;
-  const def = getLlmPreset(presetId as typeof LLM_PRESET_DEEPSEEK);
+  const def = isLlmPresetId(presetId) ? getLlmPreset(presetId) : null;
   if (!def) return null;
   const text = def.modalities.text === "gateway" ? "gateway" : def.modalities.text;
   return [
@@ -367,15 +409,12 @@ export function withSceneDraftVoice(draft: SceneBindingDraft, voice: string): Sc
 }
 
 export function readSceneBindingDraft(raw: unknown): SceneBindingDraft | null {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-  const o = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return null;
+  const o = raw;
   const connection = typeof o.connection === "string" ? o.connection.trim() : "";
   const model = typeof o.model === "string" ? o.model.trim() : "";
   if (!connection && !model) return null;
-  const params =
-    o.params && typeof o.params === "object" && !Array.isArray(o.params)
-      ? (o.params as Record<string, unknown>)
-      : undefined;
+  const params = isRecord(o.params) ? o.params : undefined;
   return {
     connection,
     model,
@@ -469,17 +508,14 @@ export function emptyCallParamsDraft(): CallParamsDraft {
 }
 
 export function readCallParamsDraft(raw: unknown): CallParamsDraft {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return emptyCallParamsDraft();
-  const params = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return emptyCallParamsDraft();
+  const params = raw;
   const stop = params.stop;
   let stopText = "";
   if (typeof stop === "string") stopText = stop;
   else if (Array.isArray(stop)) stopText = stop.map(String).join("\n");
 
-  const preservedExtra =
-    params.extra && typeof params.extra === "object" && !Array.isArray(params.extra)
-      ? (params.extra as Record<string, unknown>)
-      : undefined;
+  const preservedExtra = isRecord(params.extra) ? params.extra : undefined;
 
   return {
     temperature: typeof params.temperature === "number" ? params.temperature : "",

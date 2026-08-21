@@ -213,6 +213,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      # 默认只编 aarch64；真机主流。模拟器 / 全 ABI：FREEANIMA_ANDROID_TARGETS=all
+      FREEANIMA_ANDROID_TARGETS: aarch64
     steps:
       - uses: actions/checkout@v7
         with:
@@ -227,16 +230,23 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-          cache: gradle
-          cache-dependency-path: |
-            packages/frontend/portal/app/tauri/src-tauri/gen/android/**/*.gradle*
-            packages/frontend/portal/app/tauri/src-tauri/gen/android/gradle/wrapper/gradle-wrapper.properties
-            bun.lock
+          # gen/android 在 checkout 时尚不存在（gitignore），setup-java 的 gradle 缓存永远 miss；
+          # 改用下方显式 ~/.gradle 缓存。
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-android-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            gradle-android-${{ runner.os }}-
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+          targets: aarch64-linux-android
 
       - name: Cache cargo (Android)
         uses: Swatinem/rust-cache@v2

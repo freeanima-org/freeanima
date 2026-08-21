@@ -208,7 +208,12 @@ export function EmailAccountFormDialog({
             className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
             value={form.provider}
             disabled={disabled || saving}
-            onChange={(e) => onProviderChange(e.target.value as EmailProviderId)}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "aliyun" || v === "gmail" || v === "qq" || v === "custom") {
+                onProviderChange(v);
+              }
+            }}
           >
             <option value="custom">{"自定义"}</option>
             {providers.map((p) => (

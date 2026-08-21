@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
+  ensureChatLlmDebugPrefsLoaded,
   readChatLlmDebugEnabled,
   subscribeChatLlmDebugEnabled,
   writeChatLlmDebugEnabled,
@@ -12,7 +13,7 @@ export function useChatLlmDebugEnabled(): boolean {
   const sync = useCallback(() => setEnabled(readChatLlmDebugEnabled()), []);
 
   useEffect(() => {
-    sync();
+    void ensureChatLlmDebugPrefsLoaded().then(sync);
     return subscribeChatLlmDebugEnabled(sync);
   }, [sync]);
 
@@ -20,5 +21,7 @@ export function useChatLlmDebugEnabled(): boolean {
 }
 
 export function useSetChatLlmDebugEnabled(): (enabled: boolean) => void {
-  return useCallback((enabled: boolean) => writeChatLlmDebugEnabled(enabled), []);
+  return useCallback((enabled: boolean) => {
+    writeChatLlmDebugEnabled(enabled);
+  }, []);
 }

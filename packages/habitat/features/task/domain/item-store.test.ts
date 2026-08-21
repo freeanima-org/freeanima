@@ -5,7 +5,7 @@ describe("listTaskItems filters", () => {
     mock.restore();
   });
 
-  test("传 filters 时走 filter_only 搜索", async () => {
+  test("传 filters 时不静默注入 container/LIST", async () => {
     const entityMod = await import("@freeanima/habitat/core/db/pg/entity");
     const searchSpy = spyOn(entityMod, "searchEntities").mockImplementation(async () => ({
       query: null,
@@ -27,14 +27,41 @@ describe("listTaskItems filters", () => {
         filters: {
           status: "pending",
           due_on: "today",
-          in_backlog: true,
           roots_only: true,
         },
       }),
     );
   });
 
-  test("传 project_id 时按项目过滤且不加 in_backlog", async () => {
+  test("显式 container=list 写入 filters", async () => {
+    const entityMod = await import("@freeanima/habitat/core/db/pg/entity");
+    const searchSpy = spyOn(entityMod, "searchEntities").mockImplementation(async () => ({
+      query: null,
+      limit: 500,
+      offset: 0,
+      count: 0,
+      results: [],
+    }));
+
+    const { listTaskItems } = await import("./item-store.ts");
+    const { TaskContainer } = await import("@freeanima/shared/pg-shapes/entity/enums.ts");
+    await listTaskItems(1, {
+      status: "pending",
+      container: TaskContainer.LIST,
+    });
+
+    expect(searchSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filters: {
+          status: "pending",
+          container: "list",
+          roots_only: true,
+        },
+      }),
+    );
+  });
+
+  test("传 project_id 时按项目过滤且不加 container", async () => {
     const entityMod = await import("@freeanima/habitat/core/db/pg/entity");
     const searchSpy = spyOn(entityMod, "searchEntities").mockImplementation(async () => ({
       query: null,
@@ -79,7 +106,6 @@ describe("searchTaskItems filters", () => {
       expect.objectContaining({
         world_id: 1,
         mode: "hybrid",
-        query: "foo",
         filters: { project_id: 42 },
       }),
     );

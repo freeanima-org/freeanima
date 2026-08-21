@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 
 import { taskRecurrenceSchema } from "../task-recurrence.ts";
@@ -49,8 +50,8 @@ const taskItemBodyFieldsSchema = schedulableBodySchema.extend({
  */
 export const taskItemBodySchema = z.preprocess(
   (val) => {
-    if (val == null || typeof val !== "object") return val;
-    let obj = { ...(val as Record<string, unknown>) };
+    if (!isRecord(val)) return val;
+    let obj = { ...val };
     if (obj.project_id != null && obj.project_id !== "") {
       obj = { ...obj, list_id: null };
     }

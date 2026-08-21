@@ -21,6 +21,7 @@ import {
 } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { MEMORY_SEMANTIC_CITATION_TOOL_HINT } from "./memory-reference.ts";
 import { getToolConversationIdForMemory } from "./tool-conversation-port.ts";
+import { assertSemanticMemoryInWorld, resolveToolCallerAgentWorldId } from "./tool-agent-world.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 const MEMORY_TYPES = [
@@ -43,11 +44,13 @@ async function handleCreateSemanticMemory(args: Record<string, unknown>): Promis
   const content = coerceString(args.content ?? "").trim();
   if (!content) return toolError("content is required");
 
+  const { agent_world_id } = await resolveToolCallerAgentWorldId();
   const { getActiveRetainProvenance } = await import("./service/retain-context.ts");
   const retainSource = getActiveRetainProvenance();
 
   const row: SemanticMemoryCreateInput = omitUndefined({
     content,
+    world_id: agent_world_id,
     type: args.type !== undefined ? coerceString(args.type) : undefined,
     pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
     source_conversations:
@@ -108,8 +111,11 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
   const semanticMemoryId = resolveSemanticMemoryId(args);
   if (semanticMemoryId == null) return toolError("semantic_memory_id is required");
 
+  const { agent_world_id } = await resolveToolCallerAgentWorldId();
   const existing = await getSemanticMemory(semanticMemoryId);
   if (!existing) return toolError(`Memory not found: ${semanticMemoryId}`);
+  const worldErr = assertSemanticMemoryInWorld(existing, agent_world_id);
+  if (worldErr) return toolError(worldErr);
 
   const patch: SemanticMemoryUpdateInput = { id: semanticMemoryId };
   if (args.content !== undefined) {
@@ -141,6 +147,11 @@ async function handleUpdateSemanticMemory(args: Record<string, unknown>): Promis
 async function handleDeprecateSemanticMemory(args: Record<string, unknown>): Promise<string> {
   const semanticMemoryId = resolveSemanticMemoryId(args);
   if (semanticMemoryId == null) return toolError("semantic_memory_id is required");
+  const { agent_world_id } = await resolveToolCallerAgentWorldId();
+  const existing = await getSemanticMemory(semanticMemoryId);
+  if (!existing) return toolError(`Memory not found: ${semanticMemoryId}`);
+  const worldErr = assertSemanticMemoryInWorld(existing, agent_world_id);
+  if (worldErr) return toolError(worldErr);
   const ok = await deprecateSemanticMemory(semanticMemoryId);
   if (!ok) return toolError(`Memory not found: ${semanticMemoryId}`);
   return toolResult({
@@ -164,10 +175,12 @@ async function handleSearchSemanticMemory(args: Record<string, unknown>): Promis
 
   try {
     if (query) validateFtsQueryInput(query);
+    const { agent_world_id } = await resolveToolCallerAgentWorldId();
 
     const rows = await searchSemanticMemory({
       ...(query ? { query } : {}),
       limit: Number.isFinite(limit) ? limit : 10,
+      world_id: agent_world_id,
       ...(types !== undefined ? { types } : {}),
       status,
       ...(sourceConversations !== undefined ? { source_conversations: sourceConversations } : {}),
@@ -208,7 +221,8 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   const targetContent = coerceString(args.target_content ?? "").trim();
   if (!targetContent) return toolError("target_content is required");
 
-  // Look up all source memories
+  const { agent_world_id } = await resolveToolCallerAgentWorldId();
+
   const sources: {
     id: number;
     source_conversations: string[];
@@ -218,6 +232,7 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
   for (const id of sourceIds) {
     const row = await getSemanticMemory(id);
     if (!row) continue;
+    if (assertSemanticMemoryInWorld(row, agent_world_id)) continue;
     sources.push({
       id: row.id,
       source_conversations: row.source_conversations,
@@ -233,10 +248,8 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     );
   }
 
-  // Union source_conversations (deduplicated)
   const mergedSessions = [...new Set(sources.flatMap((s) => s.source_conversations))];
 
-  // Merge observed_at (earliest non-null)
   let earliestObserved: string | null = null;
   for (const s of sources) {
     if (!s.observed_at) continue;
@@ -245,7 +258,6 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     }
   }
 
-  // Merge occurred_at (earliest non-null string; fuzzy times approximated lexicographically)
   let earliestOccurred: string | null = null;
   for (const s of sources) {
     const raw = s.occurred_at?.trim();
@@ -260,10 +272,10 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
       ? coerceString(args.target_occurred_at)
       : (earliestOccurred ?? undefined);
 
-  // Create new memory
   const newId = await createSemanticMemory(
     omitUndefined({
       content: targetContent,
+      world_id: agent_world_id,
       type: args.target_type !== undefined ? coerceString(args.target_type) : undefined,
       pinned: args.target_pinned !== undefined ? Boolean(args.target_pinned) : undefined,
       source_conversations: mergedSessions,
@@ -273,7 +285,6 @@ async function handleMergeSemanticMemories(args: Record<string, unknown>): Promi
     }),
   );
 
-  // Deprecate all source memories
   const deprecatedIds: number[] = [];
   for (const s of sources) {
     const ok = await deprecateSemanticMemory(s.id);
@@ -304,7 +315,7 @@ function resolveObservedAt(
 /** Shared create logic for remember and light sleep */
 export async function createSemanticMemoryFromArgs(
   args: Record<string, unknown>,
-  defaults?: { source_conversations?: string[]; observed_at?: string },
+  defaults?: { source_conversations?: string[]; observed_at?: string; world_id?: number },
 ): Promise<number> {
   const content = coerceString(args.content ?? "").trim();
   if (!content) throw new Error("content is required");
@@ -314,9 +325,12 @@ export async function createSemanticMemoryFromArgs(
       ? (parseStringArray(args.source_conversations) ?? [])
       : (defaults?.source_conversations ?? []);
 
+  const world_id = defaults?.world_id ?? (await resolveToolCallerAgentWorldId()).agent_world_id;
+
   return createSemanticMemory(
     omitUndefined({
       content,
+      world_id,
       type: args.type !== undefined ? coerceString(args.type) : undefined,
       pinned: args.pinned !== undefined ? Boolean(args.pinned) : undefined,
       source_conversations: sourceConversations,
@@ -449,6 +463,11 @@ export async function rememberFromArgs(args: Record<string, unknown>): Promise<s
   if (action === "delete") {
     const semanticMemoryId = resolveSemanticMemoryId(args);
     if (!semanticMemoryId) return toolError("semantic_memory_id is required for delete");
+    const { agent_world_id } = await resolveToolCallerAgentWorldId();
+    const existing = await getSemanticMemory(semanticMemoryId);
+    if (!existing) return toolError(`Memory not found: ${semanticMemoryId}`);
+    const worldErr = assertSemanticMemoryInWorld(existing, agent_world_id);
+    if (worldErr) return toolError(worldErr);
     const deleted = await deleteSemanticMemory(semanticMemoryId);
     return rememberResult("delete", semanticMemoryId, { ok: deleted });
   }

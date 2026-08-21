@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, desc, eq, sql as drizzleSql } from "drizzle-orm";
 import {
   SEMANTIC_MEMORY_COMPONENT,
@@ -88,6 +89,7 @@ type SemanticSelectRow = {
 function mapDbRow(row: SemanticSelectRow): SemanticMemoryRow {
   const entityRow: EntityRow = {
     id: row.id,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PG text → EntityRow.type
     type: row.type as EntityRow["type"],
     world_id: row.world_id,
     components: [...row.components],
@@ -95,7 +97,7 @@ function mapDbRow(row: SemanticSelectRow): SemanticMemoryRow {
     title: row.title ?? "",
     summary: row.summary ?? "",
     content: row.content ?? "",
-    body: (row.body ?? {}) as Record<string, unknown>,
+    body: asRecord(row.body) ?? {},
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [],
@@ -232,11 +234,15 @@ export async function countSemanticMemory(): Promise<number> {
   return rows[0]?.n ?? 0;
 }
 
-export async function listResidentSemanticMemory(topN?: number): Promise<SemanticMemoryRow[]> {
+export async function listResidentSemanticMemory(
+  topN?: number,
+  opts?: { world_id?: number },
+): Promise<SemanticMemoryRow[]> {
   const resident = resolveMemoryResidentConfig(peekActiveRuntimeConfig()?.data);
   const limit = Math.max(1, Math.min(100, topN ?? resident.top_n));
   const pinnedMax = Math.max(1, Math.min(200, resident.pinned_max));
   const db = getDb();
+  const worldFilter = opts?.world_id != null ? eq(entities.world_id, opts.world_id) : undefined;
 
   const pinnedRows = await db
     .select(semanticSelect)
@@ -246,6 +252,7 @@ export async function listResidentSemanticMemory(topN?: number): Promise<Semanti
         eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
         drizzleSql`${entities.body}->>'status' = 'active'`,
         eq(entities.pinned, true),
+        worldFilter,
       ),
     )
     .orderBy(desc(entities.updated_at))
@@ -257,6 +264,7 @@ export async function listResidentSemanticMemory(topN?: number): Promise<Semanti
       pinned_count: pinnedRows.length,
       pinned_max: pinnedMax,
       omitted_ids: omitted.map((r) => r.id),
+      ...(opts?.world_id != null ? { world_id: opts.world_id } : {}),
     });
   }
 
@@ -275,6 +283,7 @@ export async function listResidentSemanticMemory(topN?: number): Promise<Semanti
           drizzleSql`${entities.body}->>'status' = 'active'`,
           eq(entities.pinned, false),
           drizzleSql`${entities.reference_count} > 0`,
+          worldFilter,
         ),
       )
       .orderBy(desc(entities.reference_count), desc(entities.updated_at))
@@ -288,7 +297,9 @@ export async function listResidentSemanticMemory(topN?: number): Promise<Semanti
   return topReferenced;
 }
 
-export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
+export async function listActiveSemanticMemory(opts?: {
+  world_id?: number;
+}): Promise<SemanticMemoryRow[]> {
   const db = getDb();
   const rows = await db
     .select(semanticSelect)
@@ -297,6 +308,7 @@ export async function listActiveSemanticMemory(): Promise<SemanticMemoryRow[]> {
       and(
         eq(entities.primary_component, SEMANTIC_MEMORY_COMPONENT),
         drizzleSql`${entities.body}->>'status' = 'active'`,
+        opts?.world_id != null ? eq(entities.world_id, opts.world_id) : undefined,
       ),
     )
     .orderBy(desc(entities.updated_at));

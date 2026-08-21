@@ -18,24 +18,27 @@ export function createNotificationInjectHandler() {
     if (!lastMsg || lastMsg.role !== "user") return;
 
     const conversationId = ctx.conversationId.trim();
-    if (conversationId) {
-      const meta = await getConversationMeta(conversationId);
-      if (
-        meta != null &&
-        isConversationMeta(meta) &&
-        resolveScenarioProfile(meta.scenario).prompt === "work"
-      ) {
-        return;
-      }
+    if (!conversationId) return;
+
+    const meta = await getConversationMeta(conversationId);
+    if (
+      meta != null &&
+      isConversationMeta(meta) &&
+      resolveScenarioProfile(meta.scenario).prompt === "work"
+    ) {
+      return;
     }
+
+    const agentSubjectId =
+      meta != null && isConversationMeta(meta) ? meta.agent_subject_id : undefined;
+    if (agentSubjectId == null || agentSubjectId <= 0) return;
 
     const port = getNotificationPort();
     if (!port) return;
 
-    const agent = port.getAgentRecipient();
     const rows = await port.list({
-      recipient_kind: agent.kind,
-      recipient_id: agent.id,
+      recipient_kind: "agent",
+      recipient_id: agentSubjectId,
       read_filter: "unread",
       limit: NOTIFICATION_INJECT_LIMIT,
     });

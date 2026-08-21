@@ -7,6 +7,7 @@ import {
   semanticMemoryListBodySchema,
   semanticMemoryClustersBodySchema,
   semanticMemoryPinBodySchema,
+  selfBlocksBodySchema,
   subjectEntityCreateBodySchema,
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
@@ -20,6 +21,7 @@ import {
   worldEntityPatchInputSchema,
   redisLocksDeleteBodySchema,
 } from "./schemas.ts";
+import { serviceApiTokenAuthorizationSchema } from "@freeanima/shared/service-api-auth";
 import {
   binaryHttpMeta,
   defineHabitatMethod,
@@ -399,7 +401,7 @@ export const habitatMethodDefs = {
     meta: dualTransportMeta(false),
   }),
   "self.blocks": defineHabitatMethod({
-    input: emptyInputSchema,
+    input: selfBlocksBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),
@@ -520,6 +522,9 @@ export const habitatMethodDefs = {
     input: z.object({
       id: z.coerce.number().int().positive(),
       name: z.string().min(1),
+      preset: z.enum(["full", "app", "extension", "mcp"]).optional(),
+      world_ids: z.array(z.coerce.number().int().positive()).optional(),
+      authorization: serviceApiTokenAuthorizationSchema.optional(),
     }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(false),

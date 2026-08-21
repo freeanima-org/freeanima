@@ -17,6 +17,7 @@ import {
  * 「无高级」= 不设名为「高级」的收纳桶；网关 / worlds / 对象存储等仍为一等侧栏项。
  */
 export type HabitatConfigSectionKey =
+  | "chat"
   | "compression"
   | "memory"
   | "connections"
@@ -37,18 +38,16 @@ export type HabitatConfigSectionKey =
 const HABITAT_CONFIG_DESCRIPTION =
   "保存在栖息地数据库，影响全体客户端；保存后立即在内存中生效，无需重启。";
 
-const OPS_SECTION_TITLES: Record<AdvancedSectionId, string> = {
+const OPS_SECTION_TITLES: Record<(typeof SIDEBAR_OPS_SECTIONS)[number], string> = {
   i18n: ADVANCED_SECTION_TITLES.i18n ?? "时区",
+  public: ADVANCED_SECTION_TITLES.public ?? "公网访问",
   gateway: ADVANCED_SECTION_TITLES.gateway ?? "网关",
   discord: ADVANCED_SECTION_TITLES.discord ?? "Discord",
   weixin: ADVANCED_SECTION_TITLES.weixin ?? "微信",
   firecrawl: ADVANCED_SECTION_TITLES.firecrawl ?? "Firecrawl",
   browser: ADVANCED_SECTION_TITLES.browser ?? "浏览器",
-  embedding: ADVANCED_SECTION_TITLES.embedding ?? "文本嵌入",
   cjk: ADVANCED_SECTION_TITLES.cjk ?? "中文分词",
   fts: ADVANCED_SECTION_TITLES.fts ?? "全文检索",
-  worlds: ADVANCED_SECTION_TITLES.worlds ?? "世界",
-  auto_llm: ADVANCED_SECTION_TITLES.auto_llm ?? "自动 LLM",
   object_storage: ADVANCED_SECTION_TITLES.object_storage ?? "对象存储",
 };
 
@@ -57,6 +56,7 @@ const HABITAT_CONFIG_SECTION_DEFS: Array<{
   title: string;
   order: number;
 }> = [
+  { id: "chat", title: "聊天", order: 49 },
   { id: "compression", title: "压缩", order: 50 },
   { id: "memory", title: "语义记忆", order: 51 },
   { id: "connections", title: "连接", order: 52 },

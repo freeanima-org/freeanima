@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
+import { resolveToolCallerSubjectId } from "@freeanima/habitat/core/tool/tool-context.ts";
 import { SELF_TOOL_RETURNS } from "./return-schemas.ts";
 import type { SelfBlockKey } from "@freeanima/habitat/core/db/pg/self-layer/types";
 import { SELF_BLOCK_KEYS } from "@freeanima/habitat/core/db/pg/self-layer/types";
@@ -13,9 +14,19 @@ import { invalidateSelfLayerPromptCache } from "./cache.ts";
 import { loadSelfBlocks, loadSelfLayerPrompt } from "./load.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
+const SELF_BLOCK_KEY_SET = new Set<string>(SELF_BLOCK_KEYS);
+
+function isSelfBlockKey(value: string): value is SelfBlockKey {
+  return SELF_BLOCK_KEY_SET.has(value);
+}
+
 function parseBlockKey(raw: unknown): SelfBlockKey | null {
-  const key = coerceString(raw ?? "").trim() as SelfBlockKey;
-  return SELF_BLOCK_KEYS.includes(key) ? key : null;
+  const key = coerceString(raw ?? "").trim();
+  return isSelfBlockKey(key) ? key : null;
+}
+
+function resolveAgentSubjectId(): number {
+  return resolveToolCallerSubjectId();
 }
 
 export function registerSelfTools(toolSets: ToolSetRegistry): void {
@@ -27,14 +38,15 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
         {
           name: "self_get_blocks",
           description:
-            "Read self layer five blocks (existence anchor, self model, personality baseline, direction, metacognition).",
+            "Read self layer five blocks (existence anchor, self model, personality baseline, direction, metacognition) for the current conversation agent.",
           parameters: {
             type: "object",
             properties: {},
           },
           handler: async () => {
             try {
-              const blocks = await loadSelfBlocks();
+              const agentSubjectId = resolveAgentSubjectId();
+              const blocks = await loadSelfBlocks(agentSubjectId);
               return toolResult({ blocks });
             } catch (err) {
               return toolError(err instanceof Error ? err.message : String(err));
@@ -44,7 +56,7 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
         {
           name: "self_update_block",
           description:
-            "Update a self layer block. existence_anchor is locked by default; use force=true to override. For Inbox self-layer maintenance proposals (source_ref=self-layer-proposal), ask the user first; only write after they approve, then notification_mark_read.",
+            "Update a self layer block for the current conversation agent. existence_anchor is locked by default; use force=true to override. For Inbox self-layer maintenance proposals (source_ref=self-layer-proposal), ask the user first; only write after they approve, then notification_mark_read.",
           parameters: {
             type: "object",
             properties: {
@@ -71,22 +83,27 @@ export function registerSelfTools(toolSets: ToolSetRegistry): void {
             const force = args.force !== undefined ? Boolean(args.force) : false;
 
             try {
-              const existing = await getSelfBlock(blockKey);
+              const agentSubjectId = resolveAgentSubjectId();
+              const existing = await getSelfBlock(blockKey, agentSubjectId);
               if (existing) {
                 await updateSelfBlock(
                   { block_key: blockKey, content, updated_by: "tool" },
+                  agentSubjectId,
                   { force },
                 );
               } else {
-                await upsertSelfBlock({
-                  block_key: blockKey,
-                  content,
-                  locked: blockKey === "existence_anchor",
-                  updated_by: "tool",
-                });
+                await upsertSelfBlock(
+                  {
+                    block_key: blockKey,
+                    content,
+                    locked: blockKey === "existence_anchor",
+                    updated_by: "tool",
+                  },
+                  agentSubjectId,
+                );
               }
-              invalidateSelfLayerPromptCache();
-              await loadSelfLayerPrompt();
+              invalidateSelfLayerPromptCache(agentSubjectId);
+              await loadSelfLayerPrompt(agentSubjectId);
               return toolResult({ ok: true, block_key: blockKey });
             } catch (err) {
               return toolError(err instanceof Error ? err.message : String(err));

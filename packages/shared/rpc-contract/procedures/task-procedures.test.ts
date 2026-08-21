@@ -33,35 +33,35 @@ describe("task SAP procedures", () => {
   });
 
   it("validates task procedure inputs", () => {
-    tasklistListInputSchema.parse({ subject_kind: "user" });
-    tasklistListInputSchema.parse({ subject_kind: "user", include_closed: true });
-    smartlistListInputSchema.parse({ subject_kind: "user" });
+    tasklistListInputSchema.parse({ subject_id: 1 });
+    tasklistListInputSchema.parse({ subject_id: 1, include_closed: true });
+    smartlistListInputSchema.parse({ subject_id: 1 });
     smartlistCreateInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       title: "我的清单",
       filters: { status: "pending" },
     });
-    tasklistItemListInputSchema.parse({ subject_kind: "user", list_id: 1, status: "pending" });
+    tasklistItemListInputSchema.parse({ subject_id: 1, list_id: 1, status: "pending" });
     tasklistItemListInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       filters: { status: "completed", completed_on: "today" },
     });
     tasklistItemListInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       filters: { status: "pending", list_ids: [1, 2] },
     });
-    tasklistItemCreateInputSchema.parse({ subject_kind: "user", title: "写文档", list_id: 2 });
-    projectItemCreateInputSchema.parse({ subject_kind: "user", title: "项目任务", project_id: 3 });
-    taskMoveToProjectInputSchema.parse({ subject_kind: "user", id: 1, project_id: 9 });
-    taskMoveToListInputSchema.parse({ subject_kind: "user", id: 1, list_id: 2 });
+    tasklistItemCreateInputSchema.parse({ subject_id: 1, title: "写文档", list_id: 2 });
+    projectItemCreateInputSchema.parse({ subject_id: 1, title: "项目任务", project_id: 3 });
+    taskMoveToProjectInputSchema.parse({ subject_id: 1, id: 1, project_id: 9 });
+    taskMoveToListInputSchema.parse({ subject_id: 1, id: 1, list_id: 2 });
     tasklistCreateInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       name: "工作",
       is_folder: true,
       parent_id: 10,
     });
     tasklistPatchInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       id: 3,
       parent_id: null,
       is_folder: false,

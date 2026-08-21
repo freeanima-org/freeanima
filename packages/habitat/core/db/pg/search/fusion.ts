@@ -8,6 +8,7 @@ export function fuseSearchHits(
   opts?: { limit?: number; fuse?: "rrf" | "none" },
 ): SearchHit[] {
   const fuse = opts?.fuse ?? "rrf";
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.keys 擦除 keyof
   const channels = Object.keys(byChannel) as SearchChannel[];
   const lists = channels
     .map((ch) => byChannel[ch])

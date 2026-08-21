@@ -3,6 +3,11 @@ import { Tabs, TabsList, TabsTrigger } from "@freeanima/ui-kit";
 import { useCompanionStore } from "@freeanima/features/companion/ui/spa/stores/companion.ts";
 
 const TAB_IDS = ["behavior", "models", "library", "slots"] as const;
+type SettingsTabId = (typeof TAB_IDS)[number];
+
+function isSettingsTabId(v: string): v is SettingsTabId {
+  return (TAB_IDS as readonly string[]).includes(v);
+}
 
 export function SettingsTabs() {
   const tab = useCompanionStore((s) => s.settingsTab);
@@ -21,8 +26,8 @@ export function SettingsTabs() {
       onSelectionChange={(key: Key) => {
         if (key == null) return;
         const value = String(key);
-        if ((TAB_IDS as readonly string[]).includes(value)) {
-          setTab(value as (typeof TAB_IDS)[number]);
+        if (isSettingsTabId(value)) {
+          setTab(value);
         }
       }}
       className="mx-5 mt-2 mb-0 shrink-0 gap-0"

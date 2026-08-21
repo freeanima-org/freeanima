@@ -9,19 +9,20 @@ title: 远程访问
 
 ## 概述
 
-| 层                       | 作用                                                                                                                                |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **Service API Token**    | 绑定 `user` / `agent` subject；栖息地 RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer               |
-| **CLI 冷启动**           | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                       |
-| **`http.host`**          | 栖息地监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                                           |
-| **`http.port`**          | HTTP 监听端口（默认 **2658**）；CLI `--port` 优先                                                                                   |
-| **`http.tls.port`**      | HTTPS 监听端口（默认 **2659**）                                                                                                     |
-| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出）；`mode=mkcert` 时变更后重启自动重签                                     |
-| **`http.tls.mode`**      | 证书来源：`mkcert`（默认）/ `acme` / `manual`                                                                                       |
-| **`http.tls.acme`**      | `mode=acme` 时必填：Let's Encrypt HTTP-01（email + domains）                                                                        |
-| **客户端设置**           | 桌面 / 移动壳 / **浏览器 Web** 在**栖息地设置**中填写栖息地 URL 与 token                                                            |
-| **远程 UI**              | 浏览器/PWA 从栖息地 `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../product/architecture.md) Client UI |
-| **PWA**                  | `/web/*` 支持 manifest + Service Worker；布局跟视口（phone ≠ 必 compact；宽屏可为 expanded）                                        |
+| 层                       | 作用                                                                                                                                            |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Service API Token**    | 绑定 `user` / `agent` subject；栖息地 RPC HTTP `Authorization: Bearer`；WS `connect.auth_token`；MCP `/mcp` 同 Bearer                           |
+| **CLI 冷启动**           | `anima token create --subject-id <id> --name bootstrap`（直连 PG，不经 HTTP）                                                                   |
+| **`http.host`**          | 栖息地监听绑定（IP 或可解析主机名）；默认 `127.0.0.1`；局域网用 `0.0.0.0`                                                                       |
+| **`http.port`**          | HTTP 监听端口（默认 **2658**）；CLI `--port` 优先                                                                                               |
+| **`http.tls.port`**      | HTTPS 监听端口（默认 **2659**）                                                                                                                 |
+| **`http.allowed_hosts`** | TLS 证书 SAN 额外主机名 / IP（`http.host: 0.0.0.0` 时列出）；`mode=mkcert` 时变更后重启自动重签                                                 |
+| **`http.tls.mode`**      | 证书来源：`mkcert`（默认）/ `acme` / `manual`                                                                                                   |
+| **`http.tls.acme`**      | `mode=acme` 时必填：Let's Encrypt HTTP-01（email + domains）                                                                                    |
+| **客户端设置**           | 桌面 / 移动壳 / **浏览器 Web** 在**栖息地设置**中填写栖息地 URL 与 token                                                                        |
+| **`public.origin`**      | **运行时**配置（设置 → Habitat 服务 → 公网访问）；临时分享等可复制链接的对外根。**非** `config.yaml` bootstrap，不改监听 / 证书 / `habitat_url` |
+| **远程 UI**              | 浏览器/PWA 从栖息地 `/web/*` 加载；Desktop/Mobile 默认安装包内本地 UI；见 [`architecture.md`](../product/architecture.md) Client UI             |
+| **PWA**                  | `/web/*` 支持 manifest + Service Worker；布局跟视口（phone ≠ 必 compact；宽屏可为 expanded）                                                    |
 
 默认仍建议局域网、`http.tls.mode: mkcert`、VPN 或反向代理。可选 `mode: acme`（Let's Encrypt HTTP-01）便于有公网域名的部署；**不替代** harden / WAF / 最小暴露面。旧版 `tunnel` 配置段已废弃并忽略。
 
@@ -45,7 +46,20 @@ Registry 标记 `auth: optional` 的栖息地 RPC 方法（如 `health.probe`、
 anima token create --subject-id 1 --name bootstrap
 # 终端打印 fa_at_... → 填入客户端 Habitat 设置
 # 之后可用 anima token reveal <id> 再次输出明文
+
+# 细粒度预设（防其它 agent/工具越权；默认仍为 full）
+anima token create --subject-id 1 --name mcp --preset mcp --world-id 12
+anima token create --subject-id 1 --name ext --preset extension
 ```
+
+`authorization`（jsonb，取代旧 `scopes`）语义：
+
+| 形态                                             | 含义                                                                                                   |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `{ "full": true }`                               | 全部权限（boot / 主人级；管理 `tokens.*` 必须）                                                        |
+| `{ "full": false, "portal", "modules", "data" }` | 凭证维（入口/模块）+ 数据维（component / world / read\|write）；`data` 与 `CapabilityPolicy.data` 同形 |
+
+预设：`full`（默认）/ `app` / `extension` / `mcp`。数据维再与 subject 的 world **grants** 求交。
 
 列出 / 再次复制 / 改名 / 撤销：
 
@@ -56,10 +70,10 @@ anima token rename <token_id> --name desktop
 anima token revoke <token_id>
 ```
 
-栖息地 RPC REST（需已认证 `full` token）：
+栖息地 RPC REST（需已认证 **full** token）：
 
-- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `createTypedHabitatClient().call("tokens.listForSubject", { id })`）— 项含 `revealable`（旧行无存档 secret 时为 `false`）
-- `POST /rpc/v1/tokens/createForSubject` — body `{ "id": <subject_id>, "name": "desktop" }`，响应含 `plaintext`（同时存档 secret，可再次 reveal）
+- `GET /rpc/v1/tokens/listForSubject?id=:id`（或 `createTypedHabitatClient().call("tokens.listForSubject", { id })`）— 项含 `revealable`、`authorization`
+- `POST /rpc/v1/tokens/createForSubject` — body `{ "id", "name", "preset?", "world_ids?" }`，响应含 `plaintext`
 - `POST /rpc/v1/tokens/reveal` — body `{ "id": <token_id> }`，响应 `{ "plaintext": "fa_at_…" }`
 - `POST /rpc/v1/tokens/updateName` — body `{ "id": <token_id>, "name": "desktop" }`
 - `POST /rpc/v1/tokens/revoke` — body `{ "id": <token_id> }`

@@ -21,6 +21,14 @@ export type PatrolScreenInfo = {
 
 export type CompanionWindowRole = "overlay" | "settings";
 
+/** 主窗 ↔ 番茄迷你窗跨 WebView 同步（壳事件载荷） */
+export type PomodoroActiveShellSyncPayload = {
+  subject_id: number;
+  /** JSON 可序列化的 active；null = 已清空 */
+  active: unknown;
+  meta: { device_id: string; updated_at_ms: number } | null;
+};
+
 /** companion host → overlay runtime 推送（与 RuntimeWsMessage 对齐） */
 export type CompanionRuntimeMessage = {
   type: "runtime";
@@ -172,11 +180,19 @@ export type ShellApi = {
   /** Coding 前哨窗显隐（hide 保 attach） */
   getCodingVisible?: () => Promise<boolean>;
   setCodingVisible?: (visible: boolean) => Promise<void>;
-  /** 番茄迷你置顶窗显隐（会话驱动；hide 不 close） */
+  /** 番茄迷你置顶窗显隐（壳 prefs；hide 不 close） */
   getPomodoroFloatVisible?: () => Promise<boolean>;
   setPomodoroFloatVisible?: (visible: boolean) => Promise<void>;
   /** 聚焦主窗并打开番茄钟页 */
   openPomodoro?: () => Promise<void>;
+  /**
+   * 桌面多 WebView 同步番茄 active（主窗 ↔ pomodoro-float）。
+   * localStorage / CustomEvent 跨窗不可达，须走壳事件。
+   */
+  emitPomodoroActiveSync?: (payload: PomodoroActiveShellSyncPayload) => Promise<void>;
+  listenPomodoroActiveSync?: (
+    handler: (payload: PomodoroActiveShellSyncPayload) => void,
+  ) => () => void;
   /** 设置页 → overlay：入队文字气泡（测试 / 调试） */
   enqueueCompanionBubble?: (text: string) => Promise<void>;
   /** overlay：监听入队气泡请求 */

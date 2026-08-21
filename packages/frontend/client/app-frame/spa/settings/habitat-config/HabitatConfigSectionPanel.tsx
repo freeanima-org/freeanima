@@ -1,10 +1,16 @@
 import type { ReactNode, Key } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { isRecord } from "@freeanima/shared/util";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
   CardContent,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Tabs,
   TabsContent,
   TabsList,
@@ -18,6 +24,12 @@ import {
   fetchHabitatConfigSection,
   patchHabitatConfigSection,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
+import { setChatLlmDebugEnabledCache } from "@freeanima/client/portal-sdk/chat-prefs.ts";
+import {
+  formatAgentSubjectLabel,
+  listAgentSubjects,
+  type AgentSubjectOption,
+} from "@freeanima/features/chat/ui/spa/lib/agent-subjects.ts";
 
 import {
   AdvancedSectionForm,
@@ -36,9 +48,7 @@ type Props = SettingsPanelProps & {
 type SemanticMemoryTabId = "passive_recall" | "semantic_clustering";
 
 function asConfigRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
+  return isRecord(value) ? value : {};
 }
 
 function pickConfigRecord(
@@ -75,6 +85,7 @@ function numberField(
 
 function isAdvancedSectionKey(key: HabitatConfigSectionKey): key is AdvancedSectionId {
   return (
+    key !== "chat" &&
     key !== "compression" &&
     key !== "memory" &&
     key !== "llm" &&
@@ -141,6 +152,15 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
   const [advancedDraft, setAdvancedDraft] = useState<Record<string, unknown>>({});
   const [autoLlmDraft, setAutoLlmDraft] = useState<Record<string, unknown>>({});
 
+  const [chat, setChat] = useState<{
+    llm_debug_enabled: boolean;
+    default_agent_subject_id: number | "";
+  }>({
+    llm_debug_enabled: false,
+    default_agent_subject_id: "",
+  });
+  const [chatAgentOptions, setChatAgentOptions] = useState<AgentSubjectOption[]>([]);
+  const [chatAgentsReady, setChatAgentsReady] = useState(false);
   const [compression, setCompression] = useState({
     enabled: true,
     max_message_pairs: 50,
@@ -167,6 +187,26 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
   const load = useCallback(async () => {
     setError("");
     try {
+      if (configKey === "chat") {
+        setChatAgentsReady(false);
+        const [section, agents] = await Promise.all([
+          fetchHabitatConfigSection(configKey),
+          listAgentSubjects({ force: true }).catch(() => [] as AgentSubjectOption[]),
+        ]);
+        const asRecord = asConfigRecord(section);
+        setChatAgentOptions(agents);
+        setChatAgentsReady(true);
+        setChat({
+          llm_debug_enabled: asRecord.llm_debug_enabled === true,
+          default_agent_subject_id:
+            typeof asRecord.default_agent_subject_id === "number"
+              ? asRecord.default_agent_subject_id
+              : "",
+        });
+        setConfig({});
+        return;
+      }
+
       if (configKey === "compression") {
         const section = await fetchHabitatConfigSection(configKey);
         const asRecord = asConfigRecord(section);
@@ -281,6 +321,27 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
     [load],
   );
 
+  const saveChat = async () => {
+    setSaving(true);
+    setError("");
+    setSavedHint("");
+    try {
+      const patch: Record<string, unknown> = {
+        llm_debug_enabled: chat.llm_debug_enabled,
+      };
+      if (chat.default_agent_subject_id !== "") {
+        patch.default_agent_subject_id = chat.default_agent_subject_id;
+      }
+      await patchHabitatConfigSection("chat", patch);
+      setChatLlmDebugEnabledCache(chat.llm_debug_enabled);
+      await afterSave("chat");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const saveCompression = async () => {
     setSaving(true);
     setError("");
@@ -373,6 +434,15 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
     }
   };
 
+  const chatDefaultAgentId =
+    typeof chat.default_agent_subject_id === "number" ? chat.default_agent_subject_id : null;
+  const chatAgentSelectOptions = useMemo(() => {
+    if (chatDefaultAgentId != null && !chatAgentOptions.some((a) => a.id === chatDefaultAgentId)) {
+      return [{ id: chatDefaultAgentId, title: `#${chatDefaultAgentId}` }, ...chatAgentOptions];
+    }
+    return chatAgentOptions;
+  }, [chatAgentOptions, chatDefaultAgentId]);
+
   if (config == null && !error) {
     return <p className="text-sm text-muted-foreground">加载 Habitat 配置…</p>;
   }
@@ -385,6 +455,59 @@ export default function HabitatConfigSectionPanel({ configKey }: Props) {
     <div className="space-y-4">
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}
       {savedHint ? <StatusAlert variant="success">{savedHint}</StatusAlert> : null}
+
+      {configKey === "chat" ? (
+        <Card className="bg-muted py-0">
+          <CardContent className="gap-4 py-4">
+            <FormToggle
+              className="w-full"
+              label="启用 LLM 调试"
+              hint="开启后每次发送在栖息地捕获 invoke 快照，Chat 调试面板可拉取"
+              checked={chat.llm_debug_enabled}
+              onChange={(llm_debug_enabled) => setChat((c) => ({ ...c, llm_debug_enabled }))}
+            />
+            <div className="space-y-1">
+              <Label className="text-sm">默认聊天 Anima</Label>
+              <Select
+                selectedKey={chatDefaultAgentId != null ? String(chatDefaultAgentId) : null}
+                isDisabled={!chatAgentsReady || chatAgentSelectOptions.length === 0}
+                aria-label="选择默认聊天 Anima"
+                onSelectionChange={(key) => {
+                  if (key == null) return;
+                  const id = Number(String(key));
+                  if (!Number.isInteger(id) || id <= 0) return;
+                  setChat((c) => ({ ...c, default_agent_subject_id: id }));
+                }}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue
+                    placeholder={
+                      !chatAgentsReady
+                        ? "加载 Anima…"
+                        : chatAgentSelectOptions.length === 0
+                          ? "暂无可用 Anima"
+                          : "选择 Anima"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {chatAgentSelectOptions.map((a) => (
+                    <SelectItem key={a.id} id={String(a.id)}>
+                      {formatAgentSubjectLabel(a.id, a.title)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                新建 Chat/Coding 会话预选的 Anima；须为已启用的 agent subject
+              </p>
+            </div>
+            <Button type="button" isDisabled={saving} onClick={() => void saveChat()}>
+              保存聊天配置
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {configKey === "compression" ? (
         <Card className="bg-muted py-0">

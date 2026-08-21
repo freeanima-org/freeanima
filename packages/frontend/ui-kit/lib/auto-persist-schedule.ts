@@ -3,6 +3,8 @@
  * 语义对齐 lodash debounce 的 maxWait。
  */
 
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+
 export type AutoPersistTiming = {
   /** 闲置满该时长后触发（trailing debounce） */
   debounceMs: number;
@@ -25,8 +27,9 @@ export const AUTO_PERSIST_SHORT: AutoPersistTiming = {
 export type CreateAutoPersistSchedulerOptions = AutoPersistTiming & {
   onFire: () => void;
   now?: () => number;
-  setTimeoutFn?: (fn: () => void, ms: number) => unknown;
-  clearTimeoutFn?: (id: unknown) => void;
+  /** 可注入假时钟；句柄类型随运行时（DOM number / Node Timeout）变化，故用 unknown */
+  setTimeoutFn?: (handler: () => void, timeout: number) => unknown;
+  clearTimeoutFn?: (timeoutId: unknown) => void;
 };
 
 export type AutoPersistScheduler = {
@@ -42,14 +45,14 @@ export type AutoPersistScheduler = {
 export function createAutoPersistScheduler(
   opts: CreateAutoPersistSchedulerOptions,
 ): AutoPersistScheduler {
-  const {
-    debounceMs,
-    maxWaitMs,
-    onFire,
-    now = () => Date.now(),
-    setTimeoutFn = setTimeout as (fn: () => void, ms: number) => unknown,
-    clearTimeoutFn = clearTimeout as (id: unknown) => void,
-  } = opts;
+  const { debounceMs, maxWaitMs, onFire, now = () => Date.now() } = opts;
+  const setTimeoutFn =
+    opts.setTimeoutFn ?? ((handler: () => void, timeout: number) => setTimeout(handler, timeout));
+  const clearTimeoutFn =
+    opts.clearTimeoutFn ??
+    ((timeoutId: unknown) => {
+      clearTimeout(assertNarrow<ReturnType<typeof setTimeout>>(timeoutId));
+    });
 
   if (debounceMs < 0 || maxWaitMs < 0) {
     throw new Error("auto-persist: debounceMs and maxWaitMs must be >= 0");

@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import type { Writable } from "node:stream";
 
 import type { DownloadProgress } from "./download.ts";
@@ -54,10 +55,8 @@ export function createCliDownloadProgressSink(opts: {
 }): CliDownloadProgressSink {
   const stream = opts.stream ?? process.stderr;
   const nowMs = opts.nowMs ?? Date.now;
-  const isTty =
-    opts.isTty ??
-    (typeof (stream as NodeJS.WriteStream).isTTY === "boolean" &&
-      (stream as NodeJS.WriteStream).isTTY);
+  const streamRec = isRecord(stream) ? stream : null;
+  const isTty = opts.isTty ?? (typeof streamRec?.isTTY === "boolean" && streamRec.isTTY);
   let wrote = false;
   const startedAt = nowMs();
   let lastReceived = 0;

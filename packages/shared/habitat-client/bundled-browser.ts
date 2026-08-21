@@ -5,11 +5,14 @@ import {
 } from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 
 import { createFullHabitatClient, habitatHttpFromWsUrl, type HabitatClient } from "./index.ts";
+import type { HabitatHttpFetch } from "./client.ts";
 
 type PortalShell = {
   remoteAuth?: { token?: string };
   habitatWsUrl?: string;
   habitatUrl?: string;
+  isNativeShell?: boolean;
+  isTauri?: boolean;
 };
 
 function portalShell(): PortalShell | undefined {
@@ -22,7 +25,7 @@ export type BundledHabitatClientOptions = {
   habitatUrl?: string;
   authToken?: string;
   profile?: "habitat" | "outpost";
-  fetch?: typeof fetch;
+  fetch?: HabitatHttpFetch;
 };
 
 let sharedHabitatClient: HabitatClient | null = null;
@@ -33,11 +36,23 @@ function resolveAuthToken(explicit?: string): string | undefined {
   return explicit?.trim() || shell?.remoteAuth?.token?.trim() || undefined;
 }
 
+function resolveDefaultHttpOrigin(): string {
+  if (typeof window !== "undefined") {
+    const shell = portalShell();
+    const native = Boolean(shell?.isNativeShell || shell?.isTauri);
+    if (!native && window.location?.origin) {
+      return window.location.origin.replace(/\/$/, "");
+    }
+  }
+  return "http://127.0.0.1:2658";
+}
+
 function resolveHabitatRpcWsUrl(options: BundledHabitatClientOptions): string {
   if (options.habitatRpcWsUrl?.trim()) return options.habitatRpcWsUrl.trim();
   const shell = portalShell();
   if (shell?.habitatWsUrl?.trim()) return shell.habitatWsUrl.trim();
-  const http = options.habitatUrl?.trim() || shell?.habitatUrl?.trim() || "http://127.0.0.1:2658";
+  const http =
+    options.habitatUrl?.trim() || shell?.habitatUrl?.trim() || resolveDefaultHttpOrigin();
   return `${http.replace(/\/$/, "").replace(/^http/i, "ws")}/rpc/v1`;
 }
 

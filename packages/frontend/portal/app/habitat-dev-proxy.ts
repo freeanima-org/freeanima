@@ -1,8 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import type { Socket } from "node:net";
 import { createLogger, type Logger, type Plugin, type ProxyOptions } from "vite";
+
+import { isRecord } from "@freeanima/shared/util";
 
 const DEFAULT_PROXY_HABITAT_URL = "http://127.0.0.1:2658";
 
@@ -12,11 +13,10 @@ function animaHome(env: NodeJS.ProcessEnv = process.env): string {
 
 /** Habitat 主动断开 / 浏览器刷新时 http-proxy 常见竞态，非配置错误 */
 export function isBenignWsProxyDisconnect(err: unknown): boolean {
-  if (!err || typeof err !== "object") return false;
-  const e = err as NodeJS.ErrnoException & { message?: string };
-  const code = e.code ?? "";
+  if (!isRecord(err)) return false;
+  const code = typeof err.code === "string" ? err.code : "";
   if (code === "EPIPE" || code === "ECONNRESET" || code === "ECONNABORTED") return true;
-  const msg = e.message ?? "";
+  const msg = typeof err.message === "string" ? err.message : "";
   return /ended by the other party|EPIPE|ECONNRESET|write after end/i.test(msg);
 }
 
@@ -45,11 +45,8 @@ export function resolveProxyHabitatUrl(env: NodeJS.ProcessEnv = process.env): {
   try {
     const statusPath = join(animaHome(env), "server.status.json");
     if (existsSync(statusPath)) {
-      const status = JSON.parse(readFileSync(statusPath, "utf-8")) as {
-        host?: unknown;
-        port?: unknown;
-        phase?: unknown;
-      };
+      const status: unknown = JSON.parse(readFileSync(statusPath, "utf-8"));
+      if (!isRecord(status)) return { url: DEFAULT_PROXY_HABITAT_URL, source: "default" };
       const port = typeof status.port === "number" ? status.port : Number(status.port);
       if (Number.isFinite(port) && port > 0 && port <= 65535) {
         const rawHost = typeof status.host === "string" ? status.host.trim() : "127.0.0.1";
@@ -66,14 +63,13 @@ export function resolveProxyHabitatUrl(env: NodeJS.ProcessEnv = process.env): {
 }
 
 function destroySocketQuietly(socket: unknown): void {
-  if (!socket || typeof socket !== "object") return;
-  const s = socket as Socket;
-  if (typeof s.destroy === "function" && !s.destroyed) {
-    try {
-      s.destroy();
-    } catch {
-      /* ignore */
-    }
+  if (!isRecord(socket)) return;
+  const destroy = socket.destroy;
+  if (typeof destroy !== "function" || socket.destroyed === true) return;
+  try {
+    destroy.call(socket);
+  } catch {
+    /* ignore */
   }
 }
 

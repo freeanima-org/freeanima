@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const bookmarkSubjectKindSchema = notificationRecipientKindSchema;
-
 export const bookmarkKindSchema = z.enum(["folder", "url"]);
 
 export const bookmarkRowSchema = z.object({
@@ -22,7 +18,7 @@ export const bookmarkRowSchema = z.object({
 export type BookmarkRowPayload = z.infer<typeof bookmarkRowSchema>;
 
 export const bookmarkListInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   parent_id: z.number().int().positive().nullable().optional(),
   kind: bookmarkKindSchema.optional(),
   limit: z.number().int().positive().max(5000).optional(),
@@ -35,7 +31,7 @@ export const bookmarkListOutputSchema = z.object({
 export type BookmarkListOutput = z.infer<typeof bookmarkListOutputSchema>;
 
 export const bookmarkGetInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type BookmarkGetInput = z.infer<typeof bookmarkGetInputSchema>;
@@ -43,7 +39,7 @@ export const bookmarkGetOutputSchema = z.object({ item: bookmarkRowSchema });
 export type BookmarkGetOutput = z.infer<typeof bookmarkGetOutputSchema>;
 
 export const bookmarkSearchInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().min(1),
   limit: z.number().int().positive().max(500).optional(),
   offset: z.number().int().nonnegative().optional(),
@@ -56,7 +52,7 @@ export const bookmarkSearchOutputSchema = z.object({
 export type BookmarkSearchOutput = z.infer<typeof bookmarkSearchOutputSchema>;
 
 export const bookmarkCreateInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string(),
   kind: bookmarkKindSchema,
   url: z.string().nullable().optional(),
@@ -70,7 +66,7 @@ export const bookmarkCreateOutputSchema = z.object({ item: bookmarkRowSchema });
 export type BookmarkCreateOutput = z.infer<typeof bookmarkCreateOutputSchema>;
 
 export const bookmarkPatchInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().optional(),
   kind: bookmarkKindSchema.optional(),
@@ -85,7 +81,7 @@ export const bookmarkPatchOutputSchema = z.object({ item: bookmarkRowSchema });
 export type BookmarkPatchOutput = z.infer<typeof bookmarkPatchOutputSchema>;
 
 export const bookmarkDeleteInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -109,7 +105,7 @@ export const bookmarkUpsertItemSchema = z.object({
 });
 
 export const bookmarkUpsertBatchInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   items: z.array(bookmarkUpsertItemSchema).min(1).max(500),
 });
 export type BookmarkUpsertBatchInput = z.infer<typeof bookmarkUpsertBatchInputSchema>;
@@ -119,7 +115,7 @@ export const bookmarkUpsertBatchOutputSchema = z.object({
 export type BookmarkUpsertBatchOutput = z.infer<typeof bookmarkUpsertBatchOutputSchema>;
 
 export const bookmarkSyncPullInputSchema = z.object({
-  subject_kind: bookmarkSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   updated_after: z.string().optional(),
   limit: z.number().int().positive().max(5000).optional(),
 });

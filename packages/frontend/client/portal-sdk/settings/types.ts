@@ -1,6 +1,8 @@
 import type { ComponentType } from "react";
 import type { ZodType } from "zod";
 
+import { isRecord } from "@freeanima/shared/util";
+
 import type { SettingsStore } from "./settings-store.ts";
 
 export type SettingsPlatform = "desktop" | "mobile";
@@ -90,14 +92,16 @@ export function defineSettingsForm(fields: SettingsFormFields): SettingsFormFiel
   return fields;
 }
 
+function isZodType(value: unknown): value is ZodType {
+  return typeof value === "object" && value != null && "safeParse" in value;
+}
+
 function getZodObjectKeys(schema: ZodType): Set<string> {
-  const def = schema as { shape?: Record<string, unknown> };
-  if (def.shape && typeof def.shape === "object") {
-    return new Set(Object.keys(def.shape));
+  if ("shape" in schema && isRecord(schema.shape)) {
+    return new Set(Object.keys(schema.shape));
   }
-  const inner = schema as { _def?: { innerType?: ZodType } };
-  if (inner._def?.innerType) {
-    return getZodObjectKeys(inner._def.innerType);
+  if ("_def" in schema && isRecord(schema._def) && isZodType(schema._def.innerType)) {
+    return getZodObjectKeys(schema._def.innerType);
   }
   return new Set();
 }

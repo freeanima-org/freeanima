@@ -48,6 +48,7 @@ export const starlightSidebar = [
           { label: "聊天室", link: "/docs/modules/chat/" },
           { label: "桌面伴侣", link: "/docs/modules/companion/" },
           { label: "日记", link: "/docs/modules/diary/" },
+          { label: "通讯录", link: "/docs/modules/contact/" },
           { label: "会话目标", link: "/docs/modules/goal/" },
           { label: "项目", link: "/docs/modules/project/" },
           { label: "移动端 APP（Android）", link: "/docs/modules/mobile-app/" },

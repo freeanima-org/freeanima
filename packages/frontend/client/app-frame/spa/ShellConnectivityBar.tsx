@@ -54,9 +54,11 @@ export function ShellConnectivityBar(): null {
             clearLocalPrefer();
             if (reconnectingRef.current || habitatConnection === "connecting") return;
             reconnectingRef.current = true;
-            void reconnectHabitat().finally(() => {
-              reconnectingRef.current = false;
-            });
+            void reconnectHabitat()
+              .catch(() => undefined)
+              .finally(() => {
+                reconnectingRef.current = false;
+              });
           },
         },
       });
@@ -74,9 +76,11 @@ export function ShellConnectivityBar(): null {
         onClick: () => {
           if (reconnectingRef.current || habitatConnection === "connecting") return;
           reconnectingRef.current = true;
-          void reconnectHabitat().finally(() => {
-            reconnectingRef.current = false;
-          });
+          void reconnectHabitat()
+            .catch(() => undefined)
+            .finally(() => {
+              reconnectingRef.current = false;
+            });
         },
       },
       ...(canOpenHabitatSettings

@@ -3,9 +3,19 @@ import type {
   ServiceSnapshot,
 } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import type { LlmUsageTotals } from "@freeanima/shared/llm-usage";
+import type { ServiceApiTokenAuthorization } from "@freeanima/shared/service-api-auth";
 import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client/bundled-browser.ts";
+import {
+  semanticMemoryListBodySchema,
+  subjectEntityCreateBodySchema,
+  worldEntityCreateBodySchema,
+  worldEntityPatchInputSchema,
+} from "@freeanima/shared/habitat-contract";
+import { isRecord } from "@freeanima/shared/util";
 import { resolveCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
+import type { HabitatMethodInputs } from "@freeanima/client/portal-sdk/habitat-typed-client";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { reviveDates } from "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts";
 
 import { getHabitatRpcClient } from "./habitat-client.ts";
@@ -26,6 +36,25 @@ export function resetApiClientCache(): void {
   resetHabitatFetchCache();
 }
 
+function readAdminConversationRow(value: unknown): {
+  conversation_id: string;
+  title?: string;
+  platform?: string;
+  updated_at?: string;
+  archived_at?: string | null;
+} | null {
+  if (!isRecord(value) || typeof value.conversation_id !== "string") return null;
+  return {
+    conversation_id: value.conversation_id,
+    ...(typeof value.title === "string" ? { title: value.title } : {}),
+    ...(typeof value.platform === "string" ? { platform: value.platform } : {}),
+    ...(typeof value.updated_at === "string" ? { updated_at: value.updated_at } : {}),
+    ...(value.archived_at === null || typeof value.archived_at === "string"
+      ? { archived_at: value.archived_at }
+      : {}),
+  };
+}
+
 export async function listConversations(opts?: { offset?: number; limit?: number }) {
   // 运维面必须走 adminListAll：conversation.list 会按 SAP 上下文默认 platform，
   // Habitat HTTP REST 的 app_id/instance_id 为空时会落到 "remote::" 过滤，列表恒为空。
@@ -36,19 +65,13 @@ export async function listConversations(opts?: { offset?: number; limit?: number
       limit: opts?.limit,
     }),
   );
-  const rows = (
-    raw as {
-      conversations: Array<{
-        conversation_id: string;
-        title?: string;
-        platform?: string;
-        updated_at?: string;
-        archived_at?: string | null;
-      }>;
-      total?: number;
-    }
-  ).conversations;
-  const total = (raw as { total?: number }).total;
+  if (!isRecord(raw) || !Array.isArray(raw.conversations)) {
+    throw new Error("conversation.adminListAll: invalid payload");
+  }
+  const rows = raw.conversations
+    .map(readAdminConversationRow)
+    .filter((row): row is NonNullable<typeof row> => row != null);
+  const total = typeof raw.total === "number" ? raw.total : undefined;
   return reviveDates({
     conversations: rows.map((s): ConversationSummary => ({
       id: s.conversation_id,
@@ -133,7 +156,11 @@ export async function getStatus(): Promise<ServiceSnapshot> {
     scope,
     namespace: HABITAT_STATUS_CACHE_NS,
     id: HABITAT_STATUS_CACHE_KEY,
-    fetch: async () => (await hubCall(habitat().call("status.get", {}))) as ServiceSnapshot,
+    fetch: async () => {
+      const raw = await hubCall(habitat().call("status.get", {}));
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- status.get 契约为 unknownOutputSchema，收窄到 ServiceSnapshot
+      return raw as ServiceSnapshot;
+    },
     offlineError: "status.get unavailable offline",
   });
 }
@@ -146,7 +173,9 @@ export type UsageTodayResult = {
 };
 
 export async function getUsageToday(): Promise<UsageTodayResult> {
-  return hubCall(habitat().call("usage.today", {})) as Promise<UsageTodayResult>;
+  const raw = await hubCall(habitat().call("usage.today", {}));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- usage.today 契约为 unknownOutputSchema，收窄到 UsageTodayResult
+  return raw as UsageTodayResult;
 }
 
 export async function getToolsStatus(scope?: "default" | "all") {
@@ -154,7 +183,9 @@ export async function getToolsStatus(scope?: "default" | "all") {
 }
 
 export async function listHabitatSkills() {
-  return hubCall(habitat().call("skill.list", {})) as Promise<{
+  const raw = await hubCall(habitat().call("skill.list", {}));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- skill.list 契约为 unknownOutputSchema，收窄到技能列表形
+  return raw as {
     skills: Array<{
       name: string;
       description: string;
@@ -165,7 +196,7 @@ export async function listHabitatSkills() {
       allowed_tools: string[];
       denied_tools: string[];
     }>;
-  }>;
+  };
 }
 
 export type HabitatSubagentRow = {
@@ -185,14 +216,15 @@ export type HabitatSubagentRow = {
   updated_at: string;
 };
 
-export async function listHabitatSubagents(subjectKind: "user" | "agent" = "agent") {
-  return hubCall(habitat().call("subagent.list", { subject_kind: subjectKind })) as Promise<{
+export async function listHabitatSubagents(subjectId?: number) {
+  const subject_id = subjectId ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.list", { subject_id })) as Promise<{
     items: HabitatSubagentRow[];
   }>;
 }
 
 export async function createHabitatSubagent(input: {
-  subject_kind: "user" | "agent";
+  subject_id?: number;
   slug: string;
   title: string;
   summary?: string;
@@ -204,13 +236,14 @@ export async function createHabitatSubagent(input: {
   denied_tools?: string[];
   prompt_includes?: Array<"self" | "world" | "time">;
 }) {
-  return hubCall(habitat().call("subagent.create", input)) as Promise<{
+  const subject_id = input.subject_id ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.create", { ...input, subject_id })) as Promise<{
     item: HabitatSubagentRow;
   }>;
 }
 
 export async function patchHabitatSubagent(input: {
-  subject_kind: "user" | "agent";
+  subject_id?: number;
   id: number;
   slug?: string;
   title?: string;
@@ -223,19 +256,23 @@ export async function patchHabitatSubagent(input: {
   denied_tools?: string[];
   prompt_includes?: Array<"self" | "world" | "time">;
 }) {
-  return hubCall(habitat().call("subagent.patch", input)) as Promise<{
+  const subject_id = input.subject_id ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.patch", { ...input, subject_id })) as Promise<{
     item: HabitatSubagentRow;
   }>;
 }
 
-export async function deleteHabitatSubagent(subjectKind: "user" | "agent", id: number) {
-  return hubCall(habitat().call("subagent.delete", { subject_kind: subjectKind, id })) as Promise<{
+export async function deleteHabitatSubagent(id: number, subjectId?: number) {
+  const subject_id = subjectId ?? (await getUserSubjectId());
+  return hubCall(habitat().call("subagent.delete", { subject_id, id })) as Promise<{
     ok: true;
   }>;
 }
 
 export async function getHabitatSkill(name: string) {
-  return hubCall(habitat().call("skill.get", { name })) as Promise<{
+  const raw = await hubCall(habitat().call("skill.get", { name }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- skill.get 契约为 unknownOutputSchema，收窄到技能详情形
+  return raw as {
     name: string;
     description: string;
     origin: string;
@@ -248,7 +285,7 @@ export async function getHabitatSkill(name: string) {
     compatibility?: string;
     content: string;
     resources: Array<{ path: string; entity_id: number; kind: string }>;
-  }>;
+  };
 }
 
 export async function getPromptDebug(conversationId?: string) {
@@ -337,19 +374,7 @@ export async function getAutoLlmRun(id: string) {
 }
 
 export async function listConversationShares() {
-  return hubCall(habitat().call("conversation.share.list", {})) as Promise<{
-    items: Array<{
-      id: string;
-      conversation_id: string;
-      scope: "full" | "selected";
-      title?: string;
-      created_at: string;
-      expires_at: string;
-      message_count: number;
-      ttl_remaining_seconds: number | null;
-      url_path: string;
-    }>;
-  }>;
+  return hubCall(habitat().call("conversation.share.list", {}));
 }
 
 export async function deleteConversationShare(id: string) {
@@ -360,41 +385,30 @@ export async function restartService() {
   return hubCall(habitat().call("status.restart", {}));
 }
 
-export async function passiveRecallDebug(input: { user_text: string; limit?: number }) {
-  return hubCall(habitat().call("memory.passiveRecallDebug", input as never));
+export async function passiveRecallDebug(input: HabitatMethodInputs["memory.passiveRecallDebug"]) {
+  return hubCall(habitat().call("memory.passiveRecallDebug", input));
 }
 
-export async function listTemporalSummaries(input: {
-  window?: "day" | "month" | "year";
-  period_start_from?: string;
-  period_start_to?: string;
-  offset?: number;
-  limit?: number;
-}) {
-  return hubCall(habitat().call("memory.temporalList", input as never));
+export async function listTemporalSummaries(input: HabitatMethodInputs["memory.temporalList"]) {
+  return hubCall(habitat().call("memory.temporalList", input));
 }
 
-export async function regenerateTemporalSummary(input: {
-  window: "day" | "month" | "year";
-  period_start: string;
-}) {
-  return hubCall(habitat().call("memory.temporalRegenerate", input as never));
+export async function regenerateTemporalSummary(
+  input: HabitatMethodInputs["memory.temporalRegenerate"],
+) {
+  return hubCall(habitat().call("memory.temporalRegenerate", input));
 }
 
-export async function backfillMissingTemporalSummaries(input: {
-  window: "day" | "month" | "year";
-  period_start_from: string;
-  period_start_to: string;
-}) {
-  return hubCall(habitat().call("memory.temporalBackfillMissing", input as never));
+export async function backfillMissingTemporalSummaries(
+  input: HabitatMethodInputs["memory.temporalBackfillMissing"],
+) {
+  return hubCall(habitat().call("memory.temporalBackfillMissing", input));
 }
 
-export async function rebuildTemporalSummariesInRange(input: {
-  window: "day" | "month" | "year";
-  period_start_from: string;
-  period_start_to: string;
-}) {
-  return hubCall(habitat().call("memory.temporalRebuildRange", input as never));
+export async function rebuildTemporalSummariesInRange(
+  input: HabitatMethodInputs["memory.temporalRebuildRange"],
+) {
+  return hubCall(habitat().call("memory.temporalRebuildRange", input));
 }
 
 export async function getTemporalBatchJobStatus() {
@@ -405,16 +419,16 @@ export async function listTemporalSystemRolls() {
   return hubCall(habitat().call("memory.temporalSystemRollList", {}));
 }
 
-export async function regenerateTemporalSystemRoll(input: {
-  kind: "past_days" | "past_months" | "past_years";
-}) {
-  return hubCall(habitat().call("memory.temporalSystemRollRegenerate", input as never));
+export async function regenerateTemporalSystemRoll(
+  input: HabitatMethodInputs["memory.temporalSystemRollRegenerate"],
+) {
+  return hubCall(habitat().call("memory.temporalSystemRollRegenerate", input));
 }
 
-export async function startTemporalSystemRollBatch(input?: {
-  kinds?: Array<"past_days" | "past_months" | "past_years">;
-}) {
-  return hubCall(habitat().call("memory.temporalSystemRollBatchStart", (input ?? {}) as never));
+export async function startTemporalSystemRollBatch(
+  input?: HabitatMethodInputs["memory.temporalSystemRollBatchStart"],
+) {
+  return hubCall(habitat().call("memory.temporalSystemRollBatchStart", input ?? {}));
 }
 
 export async function getTemporalSystemRollBatchStatus() {
@@ -434,23 +448,27 @@ export async function listSemanticMemories(input: {
   source_conversation?: string;
   sort_by?: "created_at" | "updated_at" | "reference_count" | "rank";
   cluster_id?: number | null;
+  agent_subject_id?: number;
 }) {
+  const payload = semanticMemoryListBodySchema.parse(input);
   const scope = resolveCacheScope(resolveApiOrigin());
-  const cacheId = JSON.stringify(input);
+  const cacheId = JSON.stringify(payload);
   return withOfflineCache({
     scope,
     namespace: HABITAT_MEMORY_CACHE_NS,
     id: cacheId,
-    fetch: async () => hubCall(habitat().call("memory.semanticList", input as never)),
+    fetch: async () => hubCall(habitat().call("memory.semanticList", payload)),
     reconcile: (result) => reviveDates(result),
     offlineError: "memory.semanticList unavailable offline",
   });
 }
 
 export async function listSemanticMemoryClusters() {
-  return hubCall(habitat().call("memory.semanticClusters", {})) as Promise<{
+  const raw = await hubCall(habitat().call("memory.semanticClusters", {}));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- memory.semanticClusters 契约为 unknownOutputSchema，收窄到聚类列表形
+  return raw as {
     items: Array<{ cluster_id: number | null; count: number; title: string | null }>;
-  }>;
+  };
 }
 
 export async function updateSemanticMemoryPinned(input: { id: number; pinned: boolean }) {
@@ -481,11 +499,15 @@ export type HabitatRedisLocksSnapshot = {
 };
 
 export async function listRedisLocks() {
-  return hubCall(habitat().call("redisLocks.list", {})) as Promise<HabitatRedisLocksSnapshot>;
+  const raw = await hubCall(habitat().call("redisLocks.list", {}));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- redisLocks.list 契约为 unknownOutputSchema，收窄到 HabitatRedisLocksSnapshot
+  return raw as HabitatRedisLocksSnapshot;
 }
 
 export async function deleteRedisLock(key: string) {
-  return hubCall(habitat().call("redisLocks.delete", { key })) as Promise<{ deleted: boolean }>;
+  const raw = await hubCall(habitat().call("redisLocks.delete", { key }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- redisLocks.delete 契约为 unknownOutputSchema，收窄到 { deleted }
+  return raw as { deleted: boolean };
 }
 
 export type DataIntegrityIssue = {
@@ -503,11 +525,15 @@ export type DataIntegrityReport = {
 };
 
 export async function runDataIntegrityCheck() {
-  return hubCall(habitat().call("dataIntegrity.run", {})) as Promise<DataIntegrityReport>;
+  const raw = await hubCall(habitat().call("dataIntegrity.run", {}));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dataIntegrity.run 契约为 unknownOutputSchema，收窄到 DataIntegrityReport
+  return raw as DataIntegrityReport;
 }
 
-export async function getSelfBlocks() {
-  return hubCall(habitat().call("self.blocks", {}));
+export async function getSelfBlocks(input?: { agent_subject_id?: number }) {
+  return hubCall(
+    habitat().call("self.blocks", omitUndefined({ agent_subject_id: input?.agent_subject_id })),
+  );
 }
 
 export async function getMcpStatus() {
@@ -539,9 +565,9 @@ export type EntityRow = import("@freeanima/shared/pg-shapes/rows/entity-row.ts")
 type EntityListResponse = { items: EntityRow[]; total: number };
 
 export async function listWorldEntities(opts?: { offset?: number; limit?: number }) {
-  return hubCall(
-    habitat().call("entity.worldsList", omitUndefined(opts ?? {})),
-  ) as Promise<EntityListResponse>;
+  const raw = await hubCall(habitat().call("entity.worldsList", omitUndefined(opts ?? {})));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entity.worldsList 契约为 unknownOutputSchema，收窄到 EntityListResponse
+  return raw as EntityListResponse;
 }
 
 export type WorldGrantInput = {
@@ -558,7 +584,10 @@ export async function createWorldEntity(body: {
   grants?: WorldGrantInput[];
   stable_key?: string;
 }) {
-  return hubCall(habitat().call("entity.worldsCreate", body as never)) as Promise<EntityRow>;
+  const input = worldEntityCreateBodySchema.parse(body);
+  const raw = await hubCall(habitat().call("entity.worldsCreate", input));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entity.worldsCreate 契约为 unknownOutputSchema，收窄到 EntityRow
+  return raw as EntityRow;
 }
 
 export async function updateWorldEntity(
@@ -573,14 +602,16 @@ export async function updateWorldEntity(
     stable_key?: string;
   },
 ) {
-  const payload = { id: String(id), ...body };
-  return hubCall(habitat().call("entity.worldsPatch", payload as never)) as Promise<EntityRow>;
+  const input = worldEntityPatchInputSchema.parse({ id: String(id), ...body });
+  const raw = await hubCall(habitat().call("entity.worldsPatch", input));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entity.worldsPatch 契约为 unknownOutputSchema，收窄到 EntityRow
+  return raw as EntityRow;
 }
 
 export async function listSubjectEntities(opts?: { offset?: number; limit?: number }) {
-  return hubCall(
-    habitat().call("entity.subjectsList", omitUndefined(opts ?? {})),
-  ) as Promise<EntityListResponse>;
+  const raw = await hubCall(habitat().call("entity.subjectsList", omitUndefined(opts ?? {})));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entity.subjectsList 契约为 unknownOutputSchema，收窄到 EntityListResponse
+  return raw as EntityListResponse;
 }
 
 export async function createSubjectEntity(body: {
@@ -589,7 +620,10 @@ export async function createSubjectEntity(body: {
   summary?: string;
   content?: string;
 }) {
-  return hubCall(habitat().call("entity.subjectsCreate", body as never)) as Promise<EntityRow>;
+  const input = subjectEntityCreateBodySchema.parse(body);
+  const raw = await hubCall(habitat().call("entity.subjectsCreate", input));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entity.subjectsCreate 契约为 unknownOutputSchema，收窄到 EntityRow
+  return raw as EntityRow;
 }
 
 export async function updateSubjectEntity(
@@ -601,9 +635,9 @@ export async function updateSubjectEntity(
     default_private_world_id?: number;
   },
 ) {
-  return hubCall(
-    habitat().call("entity.subjectsPatch", { id: String(id), ...body }),
-  ) as Promise<EntityRow>;
+  const raw = await hubCall(habitat().call("entity.subjectsPatch", { id: String(id), ...body }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entity.subjectsPatch 契约为 unknownOutputSchema，收窄到 EntityRow
+  return raw as EntityRow;
 }
 
 export type ServiceApiTokenPublic = {
@@ -611,7 +645,7 @@ export type ServiceApiTokenPublic = {
   subject_id: number;
   name: string;
   prefix: string;
-  scopes: string[];
+  authorization: ServiceApiTokenAuthorization;
   created_at: Date;
   expires_at: Date | null;
   last_used_at: Date | null;
@@ -620,31 +654,55 @@ export type ServiceApiTokenPublic = {
 };
 
 export async function listSubjectApiTokens(subjectId: number) {
-  return hubCall(habitat().call("tokens.listForSubject", { id: subjectId })) as Promise<{
-    items: ServiceApiTokenPublic[];
-  }>;
+  const raw = await hubCall(habitat().call("tokens.listForSubject", { id: subjectId }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tokens.listForSubject 契约为 unknownOutputSchema，收窄到 token 列表形
+  return raw as { items: ServiceApiTokenPublic[] };
 }
 
-export async function createSubjectApiToken(subjectId: number, body: { name: string }) {
-  return hubCall(
-    habitat().call("tokens.createForSubject", { id: subjectId, name: body.name }),
-  ) as Promise<{ token: ServiceApiTokenPublic; plaintext: string }>;
+export async function getSubjectEntity(id: number) {
+  const raw = await hubCall(habitat().call("entity.subjectsGet", { id: String(id) }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entity.subjectsGet 契约为 unknownOutputSchema，收窄到 EntityRow
+  return raw as EntityRow;
+}
+
+export async function createSubjectApiToken(
+  subjectId: number,
+  body: {
+    name: string;
+    preset?: "full" | "app" | "extension" | "mcp";
+    world_ids?: number[];
+    authorization?: ServiceApiTokenAuthorization;
+  },
+) {
+  const raw = await hubCall(
+    habitat().call("tokens.createForSubject", {
+      id: subjectId,
+      name: body.name,
+      ...(body.preset ? { preset: body.preset } : {}),
+      ...(body.world_ids && body.world_ids.length > 0 ? { world_ids: body.world_ids } : {}),
+      ...(body.authorization ? { authorization: body.authorization } : {}),
+    }),
+  );
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tokens.createForSubject 契约为 unknownOutputSchema，收窄到创建结果形
+  return raw as { token: ServiceApiTokenPublic; plaintext: string };
 }
 
 export async function revokeSubjectApiToken(tokenId: number) {
-  return hubCall(habitat().call("tokens.revoke", { id: tokenId })) as Promise<{ ok: true }>;
+  const raw = await hubCall(habitat().call("tokens.revoke", { id: tokenId }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tokens.revoke 契约为 unknownOutputSchema，收窄到 { ok: true }
+  return raw as { ok: true };
 }
 
 export async function revealSubjectApiToken(tokenId: number) {
-  return hubCall(habitat().call("tokens.reveal", { id: tokenId })) as Promise<{
-    plaintext: string;
-  }>;
+  const raw = await hubCall(habitat().call("tokens.reveal", { id: tokenId }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tokens.reveal 契约为 unknownOutputSchema，收窄到 { plaintext }
+  return raw as { plaintext: string };
 }
 
 export async function updateSubjectApiTokenName(tokenId: number, name: string) {
-  return hubCall(habitat().call("tokens.updateName", { id: tokenId, name })) as Promise<{
-    token: ServiceApiTokenPublic;
-  }>;
+  const raw = await hubCall(habitat().call("tokens.updateName", { id: tokenId, name }));
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- tokens.updateName 契约为 unknownOutputSchema，收窄到 { token }
+  return raw as { token: ServiceApiTokenPublic };
 }
 
 export type HabitatIdentityPublic = {

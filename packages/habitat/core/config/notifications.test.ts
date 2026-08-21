@@ -18,11 +18,12 @@ describe("resolveNotificationRecipients", () => {
       agent_subject_id: 20,
       user_world_id: 11,
       agent_world_id: 21,
+      default_chat_agent_subject_id: 20,
+      default_chat_agent_world_id: 200,
       commons_world_id: 30,
     });
     const config = {
       connections: {},
-      worlds: { user_subject_id: 2, agent_subject_id: 1 },
     } as RuntimeConfig;
 
     expect(resolveNotificationRecipients(config)).toEqual({
@@ -31,35 +32,11 @@ describe("resolveNotificationRecipients", () => {
     });
   });
 
-  it("uses configured subject entity ids from worlds when unbound", () => {
-    const config = {
-      connections: {},
-      worlds: { user_subject_id: 2, agent_subject_id: 1 },
-    } as RuntimeConfig;
-
-    expect(resolveNotificationRecipients(config)).toEqual({
-      user: { kind: "user", id: 2 },
-      agent: { kind: "agent", id: 1 },
-    });
-  });
-
-  it("falls back to legacy notifications section when unbound", () => {
-    const config = {
-      connections: {},
-      notifications: { user_subject_id: 3, agent_subject_id: 4 },
-    } as RuntimeConfig;
-
-    expect(resolveNotificationRecipients(config)).toEqual({
-      user: { kind: "user", id: 3 },
-      agent: { kind: "agent", id: 4 },
-    });
-  });
-
-  it("throws when unset and unbound", () => {
+  it("throws when ResolvedWorldContext unbound", () => {
     const config = {
       connections: {},
     } as RuntimeConfig;
 
-    expect(() => resolveNotificationRecipients(config)).toThrow(/未解析/);
+    expect(() => resolveNotificationRecipients(config)).toThrow(/ResolvedWorldContext not bound/);
   });
 });

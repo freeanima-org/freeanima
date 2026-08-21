@@ -5,6 +5,7 @@ export type TemporalSummaryEngineInput = {
   systemPrompt: string;
   /** 已含 task_params / source_data 等 user 段 */
   userMessages: string[];
+  agent_subject_id?: number;
 };
 
 export type TemporalSummaryEngineResult = {

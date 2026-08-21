@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { FileText, Plus, Search, Trash2 } from "lucide-react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import { useUserSubjectId, useShellQuickIdSet } from "@freeanima/client/portal-sdk/react.tsx";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { Button, Input, Spinner, Textarea } from "@freeanima/ui-kit";
@@ -54,7 +55,9 @@ function useUrlNoteId(): [number | null, (id: number | null) => void] {
     const url = new URL(window.location.href);
     if (next == null) url.searchParams.delete("id");
     else url.searchParams.set("id", String(next));
-    window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    if (url.href !== window.location.href) {
+      window.history.replaceState(null, "", url);
+    }
     setIdState(next);
   }, []);
 
@@ -199,7 +202,8 @@ function MarkdownBlockEditor({
           className="prose prose-sm dark:prose-invert max-w-none min-h-24"
           dangerouslySetInnerHTML={{ __html: html }}
           onClick={(e) => {
-            const t = e.target as HTMLElement | null;
+            const t = e.target instanceof HTMLElement ? e.target : null;
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
             const a = t?.closest?.(
               "a[data-anima-uri], a[href^='anima:']",
             ) as HTMLAnchorElement | null;
@@ -236,7 +240,8 @@ function MarkdownBlockEditor({
 }
 
 export function NoteApp(): JSX.Element {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
+  const quickIds = useShellQuickIdSet();
   const [selectedId, setSelectedId] = useUrlNoteId();
   const [items, setItems] = useState<NoteRow[]>([]);
   const [detail, setDetail] = useState<NoteRow | null>(null);
@@ -310,15 +315,15 @@ export function NoteApp(): JSX.Element {
     try {
       const q = searchQuery.trim();
       const rows = q
-        ? await searchNotes(subjectKind, q, 50)
-        : await fetchNotes(subjectKind, { limit: 50 });
+        ? await searchNotes(subjectId, q, 50)
+        : await fetchNotes(subjectId, { limit: 50 });
       setItems(rows);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
-  }, [subjectKind, searchQuery]);
+  }, [subjectId, searchQuery]);
 
   useEffect(() => {
     setLoading(true);
@@ -329,7 +334,7 @@ export function NoteApp(): JSX.Element {
     void fetchTags()
       .then(setTagPool)
       .catch(() => setTagPool([]));
-  }, [subjectKind]);
+  }, [subjectId]);
 
   const persistTitle = useCallback(async () => {
     if (!detail) return;
@@ -338,7 +343,7 @@ export function NoteApp(): JSX.Element {
     titleSavingRef.current = true;
     setTitleStatus("saving");
     try {
-      const item = await updateNote(subjectKind, detail.id, { title: next });
+      const item = await updateNote(subjectId, detail.id, { title: next });
       titleSavedRef.current = item.title;
       setTitleDraft(item.title);
       setDetail(item);
@@ -350,7 +355,7 @@ export function NoteApp(): JSX.Element {
     } finally {
       titleSavingRef.current = false;
     }
-  }, [detail, loadList, subjectKind]);
+  }, [detail, loadList, subjectId]);
 
   const persistTitleRef = useRef(persistTitle);
   persistTitleRef.current = persistTitle;
@@ -375,7 +380,7 @@ export function NoteApp(): JSX.Element {
     let cancelled = false;
     setDetailLoading(true);
     titleScheduler.cancel();
-    void getNote(subjectKind, selectedId)
+    void getNote(subjectId, selectedId)
       .then((row) => {
         if (cancelled) return;
         setDetail(row);
@@ -392,7 +397,7 @@ export function NoteApp(): JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [subjectKind, selectedId, titleScheduler]);
+  }, [subjectId, selectedId, titleScheduler]);
 
   const selectNote = useCallback(
     (id: number, after?: () => void) => {
@@ -409,7 +414,7 @@ export function NoteApp(): JSX.Element {
     try {
       titleScheduler.cancel();
       await persistTitle();
-      const item = await createNote(subjectKind, {
+      const item = await createNote(subjectId, {
         title: "未命名笔记",
         content: "",
       });
@@ -424,7 +429,7 @@ export function NoteApp(): JSX.Element {
     if (!detail) return;
     titleScheduler.cancel();
     await persistTitle();
-    const item = await updateNote(subjectKind, detail.id, { tag_ids: tagIds });
+    const item = await updateNote(subjectId, detail.id, { tag_ids: tagIds });
     setDetail(item);
     await loadList();
   };
@@ -433,9 +438,7 @@ export function NoteApp(): JSX.Element {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex flex-wrap items-center justify-end gap-2 border-b px-3 py-2">
-        <SubjectScopeToggle />
-      </div>
+      <div className="flex flex-wrap items-center justify-end gap-2 border-b px-3 py-2"></div>
       {error ? (
         <div className="px-3 pt-2">
           <StatusAlert variant="error">{error}</StatusAlert>
@@ -450,20 +453,34 @@ export function NoteApp(): JSX.Element {
         defaultListWidthPx={280}
         detailActions={
           detail ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                void (async () => {
-                  await deleteNote(subjectKind, detail.id);
-                  setSelectedId(null);
-                  await loadList();
-                })();
-              }}
-            >
-              删除
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void toggleShellQuick(detail.id).catch(() => {
+                    /* ignore */
+                  });
+                }}
+              >
+                {quickIds.has(detail.id) ? "移出快捷" : "加入快捷"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void (async () => {
+                    await deleteNote(subjectId, detail.id);
+                    setSelectedId(null);
+                    await loadList();
+                  })();
+                }}
+              >
+                删除
+              </Button>
+            </div>
           ) : null
         }
         list={(ctx) => (
@@ -588,14 +605,14 @@ export function NoteApp(): JSX.Element {
                   key={block.id}
                   block={block}
                   onSave={async (content) => {
-                    const updated = await updateNoteBlock(subjectKind, block.id, { content });
+                    const updated = await updateNoteBlock(subjectId, block.id, { content });
                     setDetail({
                       ...detail,
                       blocks: detail.blocks.map((b) => (b.id === updated.id ? updated : b)),
                     });
                   }}
                   onDelete={async () => {
-                    await deleteNoteBlock(subjectKind, block.id);
+                    await deleteNoteBlock(subjectId, block.id);
                     setDetail({
                       ...detail,
                       blocks: detail.blocks.filter((b) => b.id !== block.id),
@@ -609,7 +626,7 @@ export function NoteApp(): JSX.Element {
               variant="outline"
               onClick={() => {
                 void (async () => {
-                  const block = await createNoteBlock(subjectKind, detail.id, "");
+                  const block = await createNoteBlock(subjectId, detail.id, "");
                   setDetail({ ...detail, blocks: [...detail.blocks, block] });
                 })();
               }}

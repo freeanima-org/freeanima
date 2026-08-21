@@ -14,7 +14,12 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
+import {
+  getActivePgTestContext,
+  testConv,
+  testAgentToolContextOpts,
+  testChatAgentSubjectId,
+} from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId } from "../../helpers/world-context.ts";
 
@@ -46,6 +51,7 @@ describePg("content_block tool", () => {
     const sid = "sess-content-block";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     const worldId = testAgentWorldId();
@@ -80,7 +86,7 @@ describePg("content_block tool", () => {
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     const rejected = JSON.parse(rejectedOut) as { ok?: boolean; error?: string };
@@ -115,7 +121,7 @@ describePg("content_block tool", () => {
         const del = toolSets.getTool("content_block_delete")!;
         deleteOut = await Promise.resolve(del.handler({ id: textId }));
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     const listed = JSON.parse(listOut) as {

@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { codingMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -12,7 +12,7 @@ type CodingRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): CodingRemoteToolsServerDeps {
-  return deps as CodingRemoteToolsServerDeps;
+  return asRouteDeps<CodingRemoteToolsServerDeps>(deps);
 }
 
 export const codingHabitatRoutes = bindHabitatRouteHandlers(codingMethodDefs, {

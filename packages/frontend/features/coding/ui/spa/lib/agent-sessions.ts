@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 /**
  * Coding Agent Window：多 Agent 会话。
  * 硬约束：一对话一根工作区（可 null）；创建后不可变（为 worktree 留口）。
@@ -79,6 +80,7 @@ export function loadAgentSessions(): AgentSessionsState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse 边界
       const parsed = JSON.parse(raw) as AgentSessionsState;
       return normalizeState(parsed);
     }
@@ -126,7 +128,7 @@ function migrateV1(raw: unknown): AgentSessionsState {
 
 function migrateSessionRow(row: unknown): Partial<CodingAgentSession> & Record<string, unknown> {
   if (!row || typeof row !== "object") return {};
-  const s = row as Record<string, unknown>;
+  const s = asRecord(row) ?? {};
   if (typeof s.workspaceRoot === "string" || s.workspaceRoot === null) {
     return s;
   }

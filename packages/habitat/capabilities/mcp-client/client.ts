@@ -104,6 +104,7 @@ function createTransport(serverName: string, cfg: McpServerConfig): Transport {
       const opts: StreamableHTTPClientTransportOptions = {};
       if (headers) opts.requestInit = { headers };
       // SDK StreamableHTTPClientTransport.sessionId 为 string|undefined，与 Transport 严格可选不完全一致
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- MCP SDK Transport sessionId 可选性边界
       return new StreamableHTTPClientTransport(url, opts) as Transport;
     }
 
@@ -220,6 +221,7 @@ export class McpClientSession {
     const result = await this.client.callTool({ name: toolName, arguments: args });
     if ("content" in result && Array.isArray(result.content)) {
       return {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- MCP CallToolResult.content 边界
         content: result.content as Array<{ type: string; text?: string }>,
         isError: Boolean(result.isError),
       };

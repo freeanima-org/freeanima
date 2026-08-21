@@ -6,6 +6,7 @@ import {
   type SettingsStore,
 } from "@freeanima/client/portal-sdk/settings";
 import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/client/portal-sdk";
+import { isRecord } from "@freeanima/shared/util";
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
 import type { CompanionShellSettings } from "@freeanima/features/companion/ui/spa/settings/companion-shell-settings.ts";
@@ -21,11 +22,7 @@ export type DesktopSettingsStores = {
 
 function parseDesktopGeneralSettings(raw: unknown): DesktopGeneralSettings {
   const launchAtLogin =
-    raw != null &&
-    typeof raw === "object" &&
-    typeof (raw as Record<string, unknown>).launchAtLogin === "boolean"
-      ? ((raw as Record<string, unknown>).launchAtLogin as boolean)
-      : false;
+    isRecord(raw) && typeof raw.launchAtLogin === "boolean" ? raw.launchAtLogin : false;
   return { ...parseHabitatClientSettings(raw), launchAtLogin };
 }
 
@@ -35,12 +32,8 @@ function normalizeDesktopGeneralSettings(input: DesktopGeneralSettings): Desktop
 }
 
 function parseCompanionShellSettings(raw: unknown): CompanionShellSettings {
-  if (
-    raw != null &&
-    typeof raw === "object" &&
-    typeof (raw as CompanionShellSettings).visible === "boolean"
-  ) {
-    return { visible: (raw as CompanionShellSettings).visible };
+  if (isRecord(raw) && typeof raw.visible === "boolean") {
+    return { visible: raw.visible };
   }
   return { visible: true };
 }

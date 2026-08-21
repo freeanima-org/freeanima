@@ -1,4 +1,3 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
 import { toolError } from "@freeanima/habitat/core/tool";
 
@@ -7,16 +6,15 @@ function parseWorldId(raw: unknown): number | null {
   return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
 }
 
-function parseSubjectKind(raw: unknown): SubjectKind | undefined {
-  if (raw === "user" || raw === "agent") return raw;
-  return undefined;
+function parseSubjectId(raw: unknown): number | null {
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
 }
 
-export const SUBJECT_KIND_TOOL_PROPERTY = {
-  type: "string",
-  enum: ["user", "agent"],
+export const SUBJECT_ID_TOOL_PROPERTY = {
+  type: "integer",
   description:
-    "Owning subject: user or agent (required unless world_id or entity id resolves world)",
+    "Owning subject entity id (required unless world_id / entity id / conversation tool context resolves world)",
 } as const;
 
 export const WORLD_ID_TOOL_PROPERTY = {
@@ -25,10 +23,11 @@ export const WORLD_ID_TOOL_PROPERTY = {
 } as const;
 
 export const SUBJECT_WORLD_OPTIONAL = {
-  subject_kind: SUBJECT_KIND_TOOL_PROPERTY,
+  subject_id: SUBJECT_ID_TOOL_PROPERTY,
   world_id: {
     ...WORLD_ID_TOOL_PROPERTY,
-    description: "Optional world override; otherwise subject_kind selects the private world",
+    description:
+      "Optional world override; otherwise subject_id or conversation subject selects the private world",
   },
 } as const;
 
@@ -40,7 +39,7 @@ export async function resolveEmailToolWorld(opts: {
 }): Promise<number | string> {
   try {
     const explicit = parseWorldId(opts.args.world_id);
-    const subjectKind = parseSubjectKind(opts.args.subject_kind);
+    const subjectId = parseSubjectId(opts.args.subject_id);
     const entityId =
       opts.entityId ?? (opts.accountId != null && opts.accountId > 0 ? opts.accountId : undefined);
     const access = opts.access ?? "read";
@@ -51,10 +50,20 @@ export async function resolveEmailToolWorld(opts: {
     if (entityId != null) {
       return await resolveToolWorld({ entityId, access });
     }
-    if (subjectKind == null) {
-      return toolError("subject_kind is required (user|agent) when world_id omitted");
+    if (subjectId != null) {
+      return await resolveToolWorld({ subjectId, access });
     }
-    return await resolveToolWorld({ subjectKind, access });
+    try {
+      return await resolveToolWorld({ access });
+    } catch (inner) {
+      const innerMsg = inner instanceof Error ? inner.message : String(inner);
+      if (innerMsg.includes("subject_id") || innerMsg.includes("tool caller subject")) {
+        return toolError(
+          "subject_id is required when world_id omitted and no tool conversation subject",
+        );
+      }
+      throw inner;
+    }
   } catch (e) {
     const msg = e instanceof ToolWorldAccessError ? e.message : String(e);
     return toolError(msg);
@@ -64,5 +73,5 @@ export async function resolveEmailToolWorld(opts: {
 /** @deprecated use SUBJECT_WORLD_OPTIONAL */
 export const WORLD_ID_OPTIONAL = {
   world_id: SUBJECT_WORLD_OPTIONAL.world_id,
-  subject_kind: SUBJECT_KIND_TOOL_PROPERTY,
+  subject_id: SUBJECT_ID_TOOL_PROPERTY,
 } as const;

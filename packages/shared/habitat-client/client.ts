@@ -21,6 +21,7 @@ import {
   parseHabitatRestResponse,
   throwHabitatRestError,
 } from "@freeanima/shared/habitat-rpc";
+import { asRecord } from "@freeanima/shared/util";
 
 export type HabitatCallOptions = {
   transport?: "auto" | TransportKind;
@@ -34,10 +35,16 @@ export type HabitatCallRawOptions = HabitatCallOptions & {
   body?: BodyInit;
 };
 
+/** 可注入 HTTP fetch；故意窄于 typeof fetch（无 preconnect 等 DOM 扩展） */
+export type HabitatHttpFetch = (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => Promise<Response>;
+
 export type HabitatClientOptions = {
   httpOrigin: string;
   authToken?: string;
-  fetch?: typeof fetch;
+  fetch?: HabitatHttpFetch;
   getRpcClient: () => Promise<RpcClient>;
   profile?: HabitatClientProfile;
 };
@@ -115,7 +122,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
     if (isNonJsonHabitatHttpMethod(method)) {
       throw new Error(`habitat method ${method} requires callRaw() for non-JSON HTTP`);
     }
-    const recordPayload = (payload ?? {}) as Record<string, unknown>;
+    const recordPayload = asRecord(payload) ?? {};
     const cacheKey = conditionalGetCacheKey(method, recordPayload);
     const cached = conditionalGetCache.get(cacheKey);
     const { url, init } = buildHabitatRestRequest(
@@ -233,7 +240,7 @@ export function createHabitatClient(options: HabitatClientOptions) {
           ? timeoutSignal
           : undefined;
 
-    const recordPayload = (payload ?? {}) as Record<string, unknown>;
+    const recordPayload = asRecord(payload) ?? {};
     const { url, init } = buildHabitatRestRequest(
       options.httpOrigin,
       method,

@@ -41,7 +41,8 @@ export function renderMarkdownHtml(text: string, labels?: AnimaUriLabelMap): str
   if (!text) return "";
   let html: string;
   try {
-    html = marked.parse(text, { breaks: true, gfm: true }) as string;
+    const parsed = marked.parse(text, { breaks: true, gfm: true });
+    html = typeof parsed === "string" ? parsed : escapeHtml(text);
   } catch {
     html = escapeHtml(text);
   }

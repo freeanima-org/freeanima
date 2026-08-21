@@ -82,6 +82,7 @@ export async function summarizeTemporalText(opts: {
   maxChars: number;
   /** 填空；自动合并 max_chars */
   params?: AutoLlmTaskParams;
+  agent_subject_id?: number;
 }): Promise<string> {
   const taskSpec = formatTemporalSummaryTaskSpec({ instruction: opts.instruction });
   const { systemPrompt, userMessages } = composeAutoLlmPrompt({
@@ -96,6 +97,7 @@ export async function summarizeTemporalText(opts: {
   const { content } = await runTemporalSummaryEngine({
     systemPrompt,
     userMessages,
+    ...(opts.agent_subject_id != null ? { agent_subject_id: opts.agent_subject_id } : {}),
   });
   const trimmed = stripTemporalSummaryPreamble(content);
   const hardCap = temporalSummaryHardCap(opts.maxChars);

@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isRecord } from "@freeanima/shared/util";
+
 const repoRoot = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const lcovPath = join(repoRoot, "coverage", "lcov.info");
 const baselinePath = join(repoRoot, "scripts", "coverage-baseline.json");
@@ -16,8 +18,13 @@ function loadBaseline(): Baseline {
   if (!existsSync(baselinePath)) {
     return { lines: 0, functions: 0, slack: 0 };
   }
-  const raw = JSON.parse(readFileSync(baselinePath, "utf-8")) as Baseline;
-  return raw;
+  const raw: unknown = JSON.parse(readFileSync(baselinePath, "utf-8"));
+  if (!isRecord(raw)) return { lines: 0, functions: 0, slack: 0 };
+  return {
+    lines: typeof raw.lines === "number" ? raw.lines : 0,
+    functions: typeof raw.functions === "number" ? raw.functions : 0,
+    slack: typeof raw.slack === "number" ? raw.slack : 0,
+  };
 }
 
 function parseLcovRates(lcov: string): { lines: number; functions: number } {

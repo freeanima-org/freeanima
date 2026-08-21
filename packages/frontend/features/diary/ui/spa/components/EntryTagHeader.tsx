@@ -48,7 +48,7 @@ export function EntryTagAddMenu({
   readOnly = false,
   onTagCreated,
 }: {
-  subjectKind?: "user" | "agent";
+  subjectId?: number | null;
   tagIds: number[];
   onTagIdsChange: (tagIds: number[]) => void;
   readOnly?: boolean;

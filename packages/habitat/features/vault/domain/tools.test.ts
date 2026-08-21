@@ -118,7 +118,7 @@ mock.module("./tool-world-resolve.ts", () => ({
     created_at: row.created_at,
     updated_at: row.updated_at,
   }),
-  SUBJECT_KIND_TOOL_PROPERTY: {
+  SUBJECT_ID_TOOL_PROPERTY: {
     type: "string",
     enum: ["user", "agent"],
     description: "Vault library",
@@ -266,7 +266,7 @@ describe("vault CRUD tools", () => {
   it("vault_create rejects user library", async () => {
     if (!tools.getTool("vault_create")) registerVaultTools(tools);
     const out = await tools.getTool("vault_create")!.handler({
-      subject_kind: "user",
+      subject_id: "user",
       title: "x",
       secrets: { password: "p" },
     });
@@ -293,7 +293,7 @@ describe("vault CRUD tools", () => {
   it("vault_update rejects user library", async () => {
     if (!tools.getTool("vault_update")) registerVaultTools(tools);
     const out = await tools.getTool("vault_update")!.handler({
-      subject_kind: "user",
+      subject_id: "user",
       id: 1,
       title: "x",
     });

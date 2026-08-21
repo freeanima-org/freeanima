@@ -25,8 +25,25 @@ export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
     async (ctx) => {
-      const selfContent = ctx.mode === "work" ? "" : await loadSelfLayerInner();
-      const sections = await buildMemorySystemPromptSections(selfContent, ctx.cwd, ctx.mode);
+      const agentId = ctx.meta?.agent_subject_id;
+      let worldId: number | undefined;
+      if (agentId != null && agentId > 0) {
+        try {
+          const { assertBindableAgentSubject } =
+            await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+          worldId = (await assertBindableAgentSubject(agentId)).agent_world_id;
+        } catch {
+          worldId = undefined;
+        }
+      }
+      const selfContent =
+        ctx.mode === "work" || agentId == null ? "" : await loadSelfLayerInner(agentId);
+      const sections = await buildMemorySystemPromptSections(
+        selfContent,
+        ctx.cwd,
+        ctx.mode,
+        worldId != null ? { world_id: worldId } : undefined,
+      );
       if (sections.length === 0) return { status: "ok" };
       return { status: "ok", data: { sections } };
     },
@@ -157,6 +174,8 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
     systemPromptBuild,
     async (ctx) => {
       if (ctx.mode === "work") return { status: "ok" };
+      const agentId = ctx.meta?.agent_subject_id;
+      if (agentId == null || agentId <= 0) return { status: "ok" };
       try {
         const { getActiveRuntimeConfig } = await import("@freeanima/habitat/core/config");
         const { buildTemporalSummarySystemBody, resolveTemporalSummaryConfig } =

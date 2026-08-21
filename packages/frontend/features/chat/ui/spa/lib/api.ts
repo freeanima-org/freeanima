@@ -7,6 +7,7 @@ import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-type
 import { getChatRpcStreamClient, chatPlatform } from "./habitat-stream-client.ts";
 import { omitUndefined } from "@freeanima/shared/util";
 import { readCachedConversations } from "./offline-cache.ts";
+import { formatAgentSubjectLabel, listAgentSubjects } from "./agent-subjects.ts";
 
 type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -24,6 +25,8 @@ function mapConversationList(raw: {
     archived_at?: string | null | undefined;
     pinned_at?: string | null | undefined;
     unread?: boolean | undefined;
+    agent_subject_id?: number | undefined;
+    agent_title?: string | undefined;
   }>;
 }): { conversations: ConversationListItem[] } {
   return {
@@ -35,8 +38,28 @@ function mapConversationList(raw: {
       archivedAt: s.archived_at ?? null,
       pinnedAt: s.pinned_at ?? null,
       ...(s.unread === true ? { unread: true } : {}),
+      ...(s.agent_subject_id != null ? { agentSubjectId: s.agent_subject_id } : {}),
+      ...(s.agent_title?.trim() ? { agentTitle: s.agent_title.trim() } : {}),
     })),
   };
+}
+
+async function enrichAgentTitles(
+  conversations: ConversationListItem[],
+): Promise<ConversationListItem[]> {
+  const needEnrich = conversations.some((c) => c.agentSubjectId != null && !c.agentTitle?.trim());
+  if (!needEnrich) return conversations;
+  let agents: Awaited<ReturnType<typeof listAgentSubjects>> = [];
+  try {
+    agents = await listAgentSubjects();
+  } catch {
+    return conversations;
+  }
+  return conversations.map((c) => {
+    if (c.agentSubjectId == null || c.agentTitle?.trim()) return c;
+    const title = formatAgentSubjectLabel(c.agentSubjectId, null, agents);
+    return title ? { ...c, agentTitle: title } : c;
+  });
 }
 
 function habitat() {
@@ -69,7 +92,7 @@ export async function listConversations(opts?: { includeArchived?: boolean }) {
           platform: chatPlatform(),
           include_archived: opts?.includeArchived,
         });
-        return mapConversationList(result).conversations;
+        return enrichAgentTitles(mapConversationList(result).conversations);
       },
       offlineError: "conversation.list unavailable offline",
     });
@@ -80,9 +103,27 @@ export async function listConversations(opts?: { includeArchived?: boolean }) {
   }
 }
 
-export async function createConversation() {
-  const result = await habitat().call("conversation.create", { platform: chatPlatform() });
+export async function createConversation(opts?: { agent_subject_id?: number }) {
+  const result = await habitat().call(
+    "conversation.create",
+    omitUndefined({
+      platform: chatPlatform(),
+      agent_subject_id: opts?.agent_subject_id,
+    }),
+  );
   return { conversation_id: result.conversation_id };
+}
+
+/** 空会话（尚无用户消息）时可改绑 Anima */
+export async function setConversationAgent(
+  conversationId: string,
+  agentSubjectId: number,
+): Promise<{ ok: true; agent_subject_id: number }> {
+  requireHabitatFetch("conversation.setAgent");
+  return habitat().call("conversation.setAgent", {
+    conversation_id: conversationId,
+    agent_subject_id: agentSubjectId,
+  });
 }
 
 export type ConversationShareTtl = "1h" | "1d" | "1w" | "1mo";
@@ -91,9 +132,9 @@ export async function createConversationShare(input: {
   conversationId: string;
   ttl?: ConversationShareTtl;
   posList?: number[];
-}): Promise<{ id: string; expires_at: string; url_path: string }> {
+}): Promise<{ id: string; expires_at: string; url_path: string; url?: string }> {
   requireHabitatFetch("conversation.share.create");
-  return habitat().call(
+  const result = await habitat().call(
     "conversation.share.create",
     omitUndefined({
       conversation_id: input.conversationId,
@@ -101,6 +142,12 @@ export async function createConversationShare(input: {
       pos_list: input.posList,
     }),
   );
+  return omitUndefined({
+    id: result.id,
+    expires_at: result.expires_at,
+    url_path: result.url_path,
+    url: result.url,
+  });
 }
 
 export async function getConversationTail(conversationId: string) {
@@ -290,6 +337,7 @@ export async function lookupActiveStream(
   requireHabitatFetch("stream.lookup");
   const raw = await habitat().call("stream.lookup", { conversation_id: conversationId });
   if (!raw || typeof raw !== "object") return {};
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   return raw as { stream_id?: string; status?: string };
 }
 
@@ -316,6 +364,7 @@ export async function loadConfig() {
   if (!ct.includes("application/json")) {
     throw new Error("网络错误");
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse 边界
   return res.json() as Promise<{
     app_id: string;
     habitat_ws_url?: string;

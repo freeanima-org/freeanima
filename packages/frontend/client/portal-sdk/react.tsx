@@ -1,6 +1,19 @@
 export { SubjectScopeProvider, useSubjectScope } from "./subject-scope-react.tsx";
 export { SubjectToggle } from "./SubjectToggle.tsx";
 export { SubjectScopeToggle } from "./SubjectScopeToggle.tsx";
+export { useUserSubjectId } from "./use-user-subject-id.ts";
+export {
+  getUserSubjectId,
+  getBootUserSubjectId,
+  loadResolvedWorldContext,
+  getCachedUserSubjectId,
+  getCachedBootUserSubjectId,
+  getCachedResolvedWorldContext,
+} from "./world-context.ts";
+export {
+  getPortalSubjectIdOverride,
+  setPortalSubjectIdOverride,
+} from "./portal-subject-override.ts";
 export {
   hasEnterToSendCapability,
   hasFinePointerCapability,
@@ -35,6 +48,7 @@ export {
 } from "./shell-module-primary-count-react.tsx";
 export { useColorTheme, useSetColorTheme } from "./color-theme-react.tsx";
 export { useChatLlmDebugEnabled, useSetChatLlmDebugEnabled } from "./chat-prefs-react.tsx";
+export { useShellQuickEntries, useShellQuickIdSet } from "./shell-quick-react.tsx";
 export { useNetworkOnline } from "./use-network-status.ts";
 export { useHabitatConnection } from "./use-habitat-connection.ts";
 export { useLocalPrefer } from "./use-local-prefer.ts";

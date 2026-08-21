@@ -1,5 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
 import type { Key } from "react-aria-components";
 import type { ConversationSummary } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import type { PromptDebugResponse } from "@freeanima/features/habitat/protocol/habitat-contract/api/response-types.ts";
@@ -71,7 +72,7 @@ export const Route = createFileRoute("/_sidebar/system-prompt")({
           ? search.conversation
           : undefined,
     }),
-  component: SystemPromptPage,
+  component: () => <RedirectToObserver subpath="/system-prompt" />,
 });
 
 function ToolSchemaCard({ tool }: { tool: PromptDebugResponse["tools"]["items"][number] }) {
@@ -164,9 +165,17 @@ function BreakdownBar({ data }: { data: PromptDebugResponse["system"]["breakdown
   );
 }
 
-function SystemPromptPage() {
-  const { conversation: conversationFromUrl } = Route.useSearch();
-  const navigate = useNavigate({ from: Route.fullPath });
+export function SystemPromptPage() {
+  // 勿用 Route.fullPath / Route.useSearch：卧室 SPA 无 /_sidebar/* 路由
+  const search = useRouterState({
+    select: (s) =>
+      typeof s.location.search === "object" && s.location.search != null
+        ? (s.location.search as Record<string, unknown>)
+        : {},
+  });
+  const conversationFromUrl =
+    typeof search.conversation === "string" ? search.conversation : undefined;
+  const navigate = useNavigate();
   const [recentConversations, setRecentConversations] = useState<ConversationSummary[]>([]);
   const [tab, setTab] = useState<TabId>("parts");
   const [loading, setLoading] = useState(true);
@@ -201,6 +210,7 @@ function SystemPromptPage() {
     setError("");
     void getPromptDebug(selectedConversation || undefined)
       .then((result) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         if (!cancelled) setData(result as PromptDebugResponse);
       })
       .catch((e) => {
@@ -239,7 +249,8 @@ function SystemPromptPage() {
 
   const handleConversationChange = (value: string) => {
     void navigate({
-      search: value ? { conversation: value } : {},
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- TanStack search 本地类型过窄
+      search: (value ? { conversation: value } : {}) as never,
     });
   };
 
@@ -356,7 +367,10 @@ function SystemPromptPage() {
           <Tabs
             selectedKey={tab}
             onSelectionChange={(key: Key) => {
-              if (key != null) setTab(String(key) as TabId);
+              if (key != null) {
+                const v = String(key);
+                if (v === "parts" || v === "full" || v === "tools") setTab(v);
+              }
             }}
             className="mb-4"
           >

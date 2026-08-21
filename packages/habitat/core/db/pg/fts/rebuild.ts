@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, asc, eq, gt, sql as drizzleSql, type SQL } from "drizzle-orm";
 import {
   entities,
@@ -559,7 +560,7 @@ async function rebuildEntitiesEmbeddings(
       title: row.title,
       summary: row.summary,
       content: row.content,
-      body: (row.body ?? {}) as Record<string, unknown>,
+      body: asRecord(row.body) ?? {},
       primary_component: row.primary_component,
     });
     await getSearchBackend().upsert([
@@ -663,7 +664,7 @@ async function rebuildEntitiesFtsSegmented(
         title: row.title,
         summary: row.summary,
         content: row.content,
-        body: (row.body ?? {}) as Record<string, unknown>,
+        body: asRecord(row.body) ?? {},
         primary_component: row.primary_component,
       });
       const fts_segmented = indexText.trim() ? await segmentForFts(indexText) : null;

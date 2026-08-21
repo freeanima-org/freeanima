@@ -1,5 +1,6 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { logApiError } from "../api-logging.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 export class ApiHandlerError extends Error {
   readonly status: 400 | 403 | 404 | 500 | 503;
@@ -27,7 +28,7 @@ export function apiErrorBody(error: ApiHandlerError): {
   const code = typeof error.context?.code === "string" ? error.context.code : undefined;
   const params =
     error.context?.params && typeof error.context.params === "object"
-      ? (error.context.params as Record<string, string>)
+      ? assertNarrow<Record<string, string>>(error.context.params)
       : undefined;
   return { error: error.message, ...(code ? omitUndefined({ code, params }) : {}) };
 }

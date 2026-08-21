@@ -6,10 +6,20 @@ import {
   revokeServiceApiToken,
   updateServiceApiTokenName,
 } from "@freeanima/habitat/core/db/pg/service-api-token";
+import { expandTokenPreset, FULL_TOKEN_AUTHORIZATION } from "@freeanima/shared/service-api-auth";
 import type { Command } from "commander";
 
 import { printCliError } from "../output/errors.ts";
 import { writeStatusLine } from "../output/status.ts";
+
+function formatAuthorization(authz: {
+  full: boolean;
+  portal?: string;
+  modules?: readonly string[];
+}): string {
+  if (authz.full) return "full";
+  return `${authz.portal};modules=${(authz.modules ?? []).join(",")}`;
+}
 
 export function registerTokenCommand(program: Command): void {
   const tokenCmd = program
@@ -21,27 +31,50 @@ export function registerTokenCommand(program: Command): void {
     .description("为 subject 创建 API token（明文输出；之后可用 reveal 再取）")
     .requiredOption("--subject-id <id>", "user/agent subject entity id", parseInt)
     .requiredOption("--name <name>", "token 名称，如 bootstrap / desktop")
-    .action(async (opts: { subjectId: number; name: string }) => {
-      try {
-        const result = await withPlatformDb(
-          async () =>
-            createServiceApiTokenWithSecret({
-              subject_id: opts.subjectId,
-              name: opts.name.trim(),
-            }),
-          { bindWorldContext: true },
-        );
-        console.log(result.plaintext);
-        writeStatusLine(
-          "ok",
-          `已创建 token id=${result.token.id} subject_id=${result.token.subject_id} name=${result.token.name}`,
-        );
-        writeStatusLine("hint", "请在客户端连接设置中配置 Service API Token");
-      } catch (e) {
-        printCliError(e);
-        process.exit(1);
-      }
-    });
+    .option("--preset <preset>", "授权预设：full | app | extension | mcp", "full")
+    .option(
+      "--world-id <id>",
+      "限制可访问 world（可重复；仅非 full 预设）",
+      (value: string, prev: number[]) => {
+        prev.push(parseInt(value, 10));
+        return prev;
+      },
+      [] as number[],
+    )
+    .action(
+      async (opts: { subjectId: number; name: string; preset: string; worldId: number[] }) => {
+        try {
+          const presetRaw = opts.preset.trim().toLowerCase();
+          const worldIds = opts.worldId.filter((id) => Number.isFinite(id) && id > 0);
+          const authorization =
+            presetRaw === "full"
+              ? FULL_TOKEN_AUTHORIZATION
+              : presetRaw === "app" || presetRaw === "extension" || presetRaw === "mcp"
+                ? expandTokenPreset(presetRaw, worldIds.length > 0 ? { worldIds } : undefined)
+                : (() => {
+                    throw new Error(`unknown preset: ${presetRaw} (use full|app|extension|mcp)`);
+                  })();
+          const result = await withPlatformDb(
+            async () =>
+              createServiceApiTokenWithSecret({
+                subject_id: opts.subjectId,
+                name: opts.name.trim(),
+                authorization,
+              }),
+            { bindWorldContext: true },
+          );
+          console.log(result.plaintext);
+          writeStatusLine(
+            "ok",
+            `已创建 token id=${result.token.id} subject_id=${result.token.subject_id} name=${result.token.name} auth=${formatAuthorization(result.token.authorization)}`,
+          );
+          writeStatusLine("hint", "请在客户端连接设置中配置 Service API Token");
+        } catch (e) {
+          printCliError(e);
+          process.exit(1);
+        }
+      },
+    );
 
   tokenCmd
     .command("list")
@@ -58,7 +91,7 @@ export function registerTokenCommand(program: Command): void {
         }
         for (const row of items) {
           console.log(
-            `${row.id}\t${row.prefix}\t${row.name}\t${row.scopes.join(",")}\trevealable=${row.revealable ? "yes" : "no"}\trevoked=${row.revoked_at ? "yes" : "no"}`,
+            `${row.id}\t${row.prefix}\t${row.name}\t${formatAuthorization(row.authorization)}\trevealable=${row.revealable ? "yes" : "no"}\trevoked=${row.revoked_at ? "yes" : "no"}`,
           );
         }
       } catch (e) {

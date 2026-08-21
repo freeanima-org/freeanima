@@ -1,17 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import {
+  getCachedResolvedWorldContext,
   getUserVaultSession,
-  SubjectScopeToggle,
+  loadResolvedWorldContext,
   useHabitatConnection,
   useNetworkOnline,
-  useSubjectScope,
+  useUserSubjectId,
   VAULT_UI_SCOPE,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button, Card, CardContent, Input, Spinner } from "@freeanima/ui-kit";
 import { ConfirmDialog, EmptyState, StatusAlert } from "@freeanima/ui-kit/composite";
 import { ListDetailLayout } from "@freeanima/ui-kit/layout";
-import type { VaultItemMetaRowPayload } from "@freeanima/shared/rpc-contract";
+import type {
+  VaultItemMetaRowPayload,
+  VaultSecretsViewPayload,
+} from "@freeanima/shared/rpc-contract";
+import { isRecord } from "@freeanima/shared/util";
 import {
   extractCustomFieldNames,
   type VaultCustomField,
@@ -41,7 +46,6 @@ import {
   initVaultCryptoConfig,
   patchVaultItem,
   patchVaultItemPlain,
-  type VaultSecretsViewPayload,
 } from "./lib/api.ts";
 import { newUserVaultSalt } from "./lib/crypto-client.ts";
 import { ChangeMasterPasswordDialog } from "./components/ChangeMasterPasswordDialog.tsx";
@@ -50,6 +54,23 @@ import { VaultItemHistoryDialog } from "./components/VaultItemHistoryDialog.tsx"
 
 /** 与 UserVaultSession 默认一致；壳内显式 configure 便于 onLocked */
 const VAULT_UI_TIMEOUT_MS = 60 * 60 * 1000;
+
+function secretsFromAgentView(secrets?: VaultSecretsViewPayload): VaultDetailSecrets {
+  if (!secrets) return {};
+  const out: VaultDetailSecrets = {};
+  if (typeof secrets.password === "string") out.password = secrets.password;
+  if (typeof secrets.notes === "string") out.notes = secrets.notes;
+  if (typeof secrets.totp === "string") out.totp = secrets.totp;
+  const custom = secrets.custom_fields;
+  if (Array.isArray(custom)) {
+    out.custom_fields = custom.flatMap((field) => {
+      if (!isRecord(field)) return [];
+      if (typeof field.name !== "string" || typeof field.value !== "string") return [];
+      return [{ name: field.name, value: field.value }];
+    });
+  }
+  return out;
+}
 
 function normalizeCustomFields(secrets: VaultSecretsPayload): VaultCustomField[] {
   const raw = secrets.custom_fields;
@@ -69,27 +90,6 @@ function normalizeCustomFields(secrets: VaultSecretsPayload): VaultCustomField[]
     }));
 }
 
-function secretsFromAgentView(secrets?: VaultSecretsViewPayload): VaultDetailSecrets {
-  if (!secrets) return {};
-  const out: VaultDetailSecrets = {};
-  if (typeof secrets.password === "string") out.password = secrets.password;
-  if (typeof secrets.notes === "string") out.notes = secrets.notes;
-  if (typeof secrets.totp === "string") out.totp = secrets.totp;
-  const custom = secrets.custom_fields;
-  if (Array.isArray(custom)) {
-    out.custom_fields = custom
-      .filter(
-        (field): field is { name: string; value: string } =>
-          !!field &&
-          typeof field === "object" &&
-          typeof (field as { name?: unknown }).name === "string" &&
-          typeof (field as { value?: unknown }).value === "string",
-      )
-      .map((field) => ({ name: field.name, value: field.value }));
-  }
-  return out;
-}
-
 function buildSecretsPayload(
   values: VaultItemFormValues,
   existing?: VaultSecretsPayload,
@@ -107,7 +107,24 @@ function buildSecretsPayload(
 }
 
 export function VaultApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
+  const [bootUserSubjectId, setBootUserSubjectId] = useState(
+    () => getCachedResolvedWorldContext()?.user_subject_id ?? 0,
+  );
+  useEffect(() => {
+    let cancelled = false;
+    void loadResolvedWorldContext()
+      .then((ctx) => {
+        if (!cancelled) setBootUserSubjectId(ctx.user_subject_id);
+      })
+      .catch(() => {
+        /* Habitat 未连通 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
   const writesDisabled = !networkOnline || habitatConnection !== "connected";
@@ -130,14 +147,14 @@ export function VaultApp() {
   const [detailSecretsLoading, setDetailSecretsLoading] = useState(false);
   const [editInitial, setEditInitial] = useState<VaultItemFormValues | null>(null);
   const [editExistingSecrets, setEditExistingSecrets] = useState<VaultSecretsPayload | undefined>();
-  const [selectionSubjectKind, setSelectionSubjectKind] = useState(subjectKind);
+  const [selectionSubjectId, setSelectionSubjectId] = useState(subjectId);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState("");
 
-  if (selectionSubjectKind !== subjectKind) {
-    setSelectionSubjectKind(subjectKind);
+  if (selectionSubjectId !== subjectId) {
+    setSelectionSubjectId(subjectId);
     setSelectedId(null);
     setDetailSecrets(null);
     setCreating(false);
@@ -148,7 +165,9 @@ export function VaultApp() {
   }
 
   const session = useMemo(() => getUserVaultSession(), []);
-  const isUserVault = subjectKind === "user";
+  const subjectReady = subjectId > 0 && bootUserSubjectId > 0;
+  /** 用户库要主密码；卧室切到 Anima 时 subjectId ≠ boot user → Agent 库（服务端解密） */
+  const isUserVault = subjectReady && subjectId === bootUserSubjectId;
   const showLockScreen = isUserVault && !userUnlocked;
 
   const touchVaultActivity = useCallback(() => {
@@ -179,7 +198,7 @@ export function VaultApp() {
     return () => {
       cancelled = true;
     };
-  }, [showLockScreen, subjectKind]);
+  }, [showLockScreen, subjectId]);
 
   const selectedItem = useMemo(
     () => items.find((item) => item.id === selectedId) ?? null,
@@ -188,37 +207,38 @@ export function VaultApp() {
 
   const vaultListQuery = usePortalRead({
     queryKey:
-      showLockScreen || (isUserVault && userSetupMode)
+      !subjectReady || showLockScreen || (isUserVault && userSetupMode)
         ? null
-        : ["vault", "list", subjectKind, searchQuery.trim(), tagFilterId],
+        : ["vault", "list", subjectId, searchQuery.trim(), tagFilterId],
     queryFn: async () => {
       touchVaultActivity();
       const query = searchQuery.trim();
-      return fetchVaultItems(subjectKind, {
+      return fetchVaultItems(subjectId, {
         ...(query ? { query } : {}),
         ...(tagFilterId != null ? { tag_ids: [tagFilterId] } : {}),
       });
     },
-    enabled: !showLockScreen,
+    enabled: subjectReady && !showLockScreen,
   });
 
   const reloadVaultList = vaultListQuery.reload;
 
   const reload = useCallback(async () => {
+    if (!subjectReady) return;
     setError("");
     touchVaultActivity();
     try {
       if (isUserVault) {
-        const config = await getVaultCryptoConfig("user");
+        const config = await getVaultCryptoConfig(subjectId);
         setUserSetupMode(!config);
       } else {
-        await ensureAgentVaultConfig();
+        await ensureAgentVaultConfig(subjectId);
       }
       await reloadVaultList();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [isUserVault, reloadVaultList, touchVaultActivity]);
+  }, [isUserVault, reloadVaultList, subjectId, subjectReady, touchVaultActivity]);
 
   useEffect(() => {
     const list = vaultListQuery.data;
@@ -242,7 +262,7 @@ export function VaultApp() {
 
   useEffect(() => {
     void reload();
-  }, [reload, subjectKind, userUnlocked]);
+  }, [reload, subjectId, userUnlocked]);
 
   useEffect(() => {
     if (!selectedId || creating || editing) {
@@ -252,8 +272,8 @@ export function VaultApp() {
     setDetailSecretsLoading(true);
     void (async () => {
       try {
-        const detail = await getVaultItem(subjectKind, selectedId, true);
-        if (subjectKind === "agent") {
+        const detail = await getVaultItem(subjectId, selectedId, true);
+        if (!isUserVault) {
           setDetailSecrets(secretsFromAgentView(detail.secrets));
           return;
         }
@@ -286,13 +306,13 @@ export function VaultApp() {
         setDetailSecretsLoading(false);
       }
     })();
-  }, [selectedId, session, subjectKind, userUnlocked, creating, editing]);
+  }, [selectedId, session, subjectId, isUserVault, userUnlocked, creating, editing]);
 
   const handleUserUnlock = async (password: string) => {
     setActionLoading(true);
     setError("");
     try {
-      const config = await getVaultCryptoConfig("user");
+      const config = await getVaultCryptoConfig(bootUserSubjectId);
       if (!config?.salt || !config.verifier) {
         throw new Error("vault_config_missing");
       }
@@ -330,7 +350,7 @@ export function VaultApp() {
     try {
       const salt = newUserVaultSalt();
       const { verifier } = await session.initCrypto(password, salt);
-      await initVaultCryptoConfig("user", { salt, verifier });
+      await initVaultCryptoConfig(bootUserSubjectId, { salt, verifier });
       await session.unlock({
         masterPassword: password,
         salt,
@@ -359,10 +379,10 @@ export function VaultApp() {
       const secrets = buildSecretsPayload(values);
       const uris = normalizeFormUris(values.uris);
       const url = primaryUrlFromForm(values) || undefined;
-      if (subjectKind === "user") {
+      if (isUserVault) {
         if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
         const sealed = await session.sealSecrets(secrets);
-        await createVaultItem("user", {
+        await createVaultItem(subjectId, {
           title: values.title,
           item_type: values.item_type,
           ...(url ? { url } : {}),
@@ -374,14 +394,14 @@ export function VaultApp() {
           custom_field_names: extractCustomFieldNames(secrets),
         });
       } else {
-        await createVaultItemPlain({
+        await createVaultItemPlain(subjectId, {
           title: values.title,
           item_type: values.item_type,
           ...(url ? { url } : {}),
           ...(uris.length > 0 ? { uris } : {}),
           ...(values.username ? { username: values.username } : {}),
           ...(values.tag_ids.length > 0 ? { tag_ids: values.tag_ids } : {}),
-          secrets: secrets,
+          secrets,
         });
       }
       setCreating(false);
@@ -398,9 +418,9 @@ export function VaultApp() {
     setActionLoading(true);
     setError("");
     try {
-      const detail = await getVaultItem(subjectKind, selectedItem.id, true);
+      const detail = await getVaultItem(subjectId, selectedItem.id, true);
       let secrets: VaultSecretsPayload = {};
-      if (subjectKind === "agent") {
+      if (!isUserVault) {
         secrets = detail.secrets ?? {};
       } else {
         if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
@@ -443,10 +463,10 @@ export function VaultApp() {
       const secrets = buildSecretsPayload(values, editExistingSecrets);
       const uris = normalizeFormUris(values.uris);
       const url = primaryUrlFromForm(values);
-      if (subjectKind === "user") {
+      if (isUserVault) {
         if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
         const sealed = await session.sealSecrets(secrets);
-        await patchVaultItem("user", {
+        await patchVaultItem(subjectId, {
           id: selectedItem.id,
           title: values.title,
           item_type: values.item_type,
@@ -459,7 +479,7 @@ export function VaultApp() {
           custom_field_names: extractCustomFieldNames(secrets),
         });
       } else {
-        await patchVaultItemPlain({
+        await patchVaultItemPlain(subjectId, {
           id: selectedItem.id,
           title: values.title,
           item_type: values.item_type,
@@ -467,7 +487,7 @@ export function VaultApp() {
           uris,
           username: values.username,
           tag_ids: values.tag_ids,
-          secrets: secrets,
+          secrets,
         });
       }
       setEditing(false);
@@ -487,7 +507,7 @@ export function VaultApp() {
     setActionLoading(true);
     setError("");
     try {
-      await deleteVaultItem(subjectKind, selectedId);
+      await deleteVaultItem(subjectId, selectedId);
       setSelectedId(null);
       setEditing(false);
       await reload();
@@ -526,7 +546,7 @@ export function VaultApp() {
     }
     setActionLoading(true);
     try {
-      const config = await getVaultCryptoConfig("user");
+      const config = await getVaultCryptoConfig(bootUserSubjectId);
       if (!config?.salt || !config.verifier) {
         throw new Error("vault_config_missing");
       }
@@ -548,7 +568,7 @@ export function VaultApp() {
         });
         setUserUnlocked(true);
       }
-      const wrapped = await fetchVaultWrappedDeks("user");
+      const wrapped = await fetchVaultWrappedDeks(bootUserSubjectId);
       const prep = await session.prepareMasterPasswordChange(input.newPassword, wrapped);
       await changeVaultCryptoConfig({
         salt: prep.salt,
@@ -595,7 +615,6 @@ export function VaultApp() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-3 py-2 md:px-4 md:py-3">
         <h1 className="text-base font-semibold md:text-lg">保险库</h1>
-        <SubjectScopeToggle />
         {!isUserVault ? (
           <span className="hidden text-xs text-muted-foreground sm:inline">Agent 库无需主密码</span>
         ) : null}
@@ -853,7 +872,7 @@ export function VaultApp() {
       {selectedItem ? (
         <VaultItemHistoryDialog
           open={historyOpen}
-          subjectKind={subjectKind}
+          subjectId={subjectId}
           itemId={selectedItem.id}
           itemTitle={selectedItem.title}
           disabled={writesDisabled || actionLoading}

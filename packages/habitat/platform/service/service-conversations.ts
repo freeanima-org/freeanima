@@ -8,6 +8,7 @@ import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
 import type { CommandResult } from "@freeanima/habitat/capabilities/tools/slash-commands";
 import type { MessagesDisplay } from "@freeanima/habitat/platform/schemas/display";
 import type { ConversationSummary } from "@freeanima/habitat/platform/schemas/snapshot";
+import { asRecord } from "@freeanima/shared/util";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { buildMessagesDisplay } from "./build-messages-display.ts";
 import { statsReport, billedUsageFromStats, computeStats } from "./conversation-stats.ts";
@@ -107,14 +108,12 @@ export async function applyCommandConversationEffects(
   platform: string,
   originExtra?: Record<string, unknown>,
 ): Promise<void> {
-  const data = result.data as { new_conversation_id?: string } | undefined;
-  if (data?.new_conversation_id && originExtra !== undefined) {
-    await deps.conversation.patchConversationOrigin(
-      data.new_conversation_id,
-      platform,
-      originExtra,
-    );
-    await deps.conversation.activateConversationOrigin(data.new_conversation_id);
+  const data = asRecord(result.data);
+  const newConversationId =
+    typeof data?.new_conversation_id === "string" ? data.new_conversation_id : undefined;
+  if (newConversationId && originExtra !== undefined) {
+    await deps.conversation.patchConversationOrigin(newConversationId, platform, originExtra);
+    await deps.conversation.activateConversationOrigin(newConversationId);
   }
 }
 

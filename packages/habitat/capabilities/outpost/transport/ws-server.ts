@@ -75,6 +75,7 @@ export function createRemoteToolsServerHandlers(
       if (isHabitatMethod(method)) {
         const featureHandler = getFeatureRpcHandler(method);
         if (featureHandler) {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- habitatDispatch 输出与 RpcRouterOutputs 对齐边界
           return habitatDispatch(deps, method, payload, ctx) as Promise<
             import("@freeanima/shared/rpc-contract").RpcRouterOutputs[typeof method]
           >;
@@ -144,7 +145,7 @@ export function attachSapWebSocket(
       subject_id: 0,
       subject_type: "user",
       token_id: 0,
-      scopes: [],
+      authorization: { full: true },
     },
     sendEvent(method, payload) {
       sendEnvelope({ kind: "evt", method, payload });
@@ -321,7 +322,9 @@ export function attachSapWebSocket(
 
       try {
         const result = await handlers.handle(
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- WS envelope.method 运行时边界
           envelope.method as RpcMethod,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- WS envelope.payload 运行时边界
           envelope.payload as RpcRouterInputs[RpcMethod],
           ctxFor(),
         );

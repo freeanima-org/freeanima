@@ -77,6 +77,7 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 - 空壳由主人在 Entity 模块或工具侧决定：补组件、或 `deleteEntity`。
 - 壳 **Entity** 模块（[`docs/modules/entity.md`](../modules/entity.md)）：分页列出存活实体（`updated_at` 倒序）+ 回收站。
 - **任务 facet**：清单 / complete / 提醒扫描认 `components` **包含** `task_item`（不要求 primary）；primary 仍为 `email_message` 的挂载任务可进 Inbox。对挂载体执行 `task.delete` → **detach**，禁止误删邮件。
+- **壳快捷**：应用布局 Rail /「更多」直达入口 = 在实体上 **attach** `shell_quick_entry`（不改 primary；body 仅 `quick_sort_order`）；列举经 `component=shell_quick_entry`；RPC `shell_quick.list|attach|detach`。
 
 ## Subject（`agent` / `user`）
 
@@ -116,16 +117,18 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
   - `private: false` — 公开 world
   - `private: true` + `owner_subject_id` — 由 `agent` 或 `user` 实体拥有的私有 world
   - `default_private: true` — 标记 subject 的**独占**默认私有 world（每个 `owner_subject_id` 至多一个）
-  - `grants: [{ subject_id, permission: "read" | "write" }]` — 显式 subject 授权（**write 含 read**；`subject_id` 不得等于 owner）。在栖息地 Worlds UI 配置；源码中永不按 subject 硬编码。
+  - `grants: [{ subject_id, permission: "read" | "write" }]` — 显式 subject 授权（**write 含 read**；`subject_id` 不得等于 owner）。在栖息地 Worlds UI 配置；源码中永不按 subject **id** 硬编码。
+  - `common: true` — 全库唯一 Commons（`idx_entities_world_common`）；启动 `ensureCommonsWorld` 按 body 点查，重复则保留最小 id。
   - `stable_key?: string` — 可选的 World **跨机逻辑身份**（如 `git:github.com/org/foo`、`novel:…`、`manual:…`）。显示名仍在 `entities.title`。设置时须在 `world_config` 行间唯一（部分唯一索引）。编码笔记/任务优先用**公开**项目 World（一项目一个）——见 [`coding.md`](../modules/coding.md)。**永不**把该字段命名为 `repo_key`。
-- **访问规则**（MCP / LLM 工具经 `resolveToolWorld`）：
+- **访问规则**（MCP / LLM 工具经 `resolveToolWorld` / `assertSubjectCanAccessWorld`）：
 
-  | World   | 读                    | 写                      |
-  | ------- | --------------------- | ----------------------- |
-  | public  | 全部 subject          | owner **或** write 授权 |
-  | private | owner **或** 任意授权 | owner **或** write 授权 |
+  | World / 主体            | 读                    | 写                          |
+  | ----------------------- | --------------------- | --------------------------- |
+  | **`type=user`（主人）** | 任意 world            | 任意 world（不依赖 grants） |
+  | public（非 user）       | 全部 subject          | owner **或** write 授权     |
+  | private（非 user）      | owner **或** 任意授权 | owner **或** write 授权     |
 
-- Owner 始终有完整访问，无需授权行。跨 world 工具调用必须用授权——开源构建不得按 subject id 特判。
+- Owner 始终有完整访问，无需授权行。跨 world 工具调用对 **agent** 必须用授权——开源构建不得按 subject **id** 特判；**`type=user` 满权限**是产品约定（全局唯一主人），实现于 `getSubjectWorldAccessLevel`。
 - **LLM 工具：** `subject_kind: user|agent` 解析到该 subject 的默认私有 world，再走与显式 `world_id` **相同**的 `assertSubjectCanAccessWorld` 路径（无旁路）。壳 SAP/REST `subject_kind` 仍是 UI 作用域选择（已认证人类切换 user/agent world），不是这条 LLM 授权路径。
 - 勿与语义记忆 **`type=world`**（[`memory.md`](../cognition/memory.md) 中的事实分类）混淆——未来迁移后变为 `body.memory_kind=world`。
 
@@ -138,7 +141,19 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 
 壳 UI 用 **Anima URI**（`anima:{id}?component=…`）定位实体，而非把 URI 字符串存入 PG。FK 字段仍为数字 id（如 `task_item_id`）。省略 `component` 时打开默认本实体的 `primary_component`。见 [`anima-uri.md`](anima-uri.md)——尤其 **分层 vs 持久化**。
 
-## 任务模块（首个消费者）
+## 模块（业务边界）
+
+**模块** = 一组实体组件 + 对应功能特性的业务边界。模块之间可以有交集（共享实体类型），只是壳与功能上的划分。三层勿混：
+
+| 层                 | 例                                    | 代码                                                    |
+| ------------------ | ------------------------------------- | ------------------------------------------------------- |
+| 壳模块             | 清单模块、项目模块、日程              | `ShellModuleId`（如 `tasks` / `projects` / `calendar`） |
+| 实体组件           | `task_list` / `task_item` / `project` | `ComponentId` / `*_COMPONENT`                           |
+| 任务容器（查询轴） | 清单侧 / 项目侧 / 跨容器              | `TaskContainer`：`list` \| `project` \| `any`           |
+
+术语见 [`i18n/glossary.md`](../../i18n/glossary.md)。
+
+## 清单模块（首个消费者；原「任务模块」）
 
 滴答清单式列表与条目映射为：
 
@@ -149,7 +164,7 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 | 条目（任务） | `type=content` | `task_item`       |
 | 发生次       | `type=content` | `task_occurrence` |
 
-条目经 `body.list_id`（实体 id）引用清单。任务条目把 **title** 与 **content** 存在实体列；**标签**用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。每个 world 在首次使用任务时**懒创建**一个**默认清单**（`is_default: true`，名称如「收件箱」）（`ensureDefaultTaskListForWorld`）；不可删除或归档，但可重命名。清单 **`body.closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 `include_closed`），经 `tasklist.patch({ closed: false })` 恢复；所含任务条目保留。
+条目经 `body.list_id`（实体 id）引用清单（`TaskContainer.LIST`）；或经 `body.project_id` 归属项目（`TaskContainer.PROJECT`），二者 XOR。任务条目把 **title** 与 **content** 存在实体列；**标签**用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。每个 world 在首次使用任务时**懒创建**一个**默认清单**（`is_default: true`，名称如「收件箱」）（`ensureDefaultTaskListForWorld`）；不可删除或归档，但可重命名。清单 **`body.closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 `include_closed`），经 `tasklist.patch({ closed: false })` 恢复；所含任务条目保留。
 
 **重复任务**（`task_item.body.recurrence` + `task_occurrence` 完成历史）、**一层子任务**（`body.parent_id`）、**时段**（`start_at` / `due_at`）、**多提醒**（`reminders[]` / 兼容 `remind_at`）见 [`docs/modules/task.md`](../modules/task.md)。滴答 CSV 一次性导入入口在栖息地数据维护。
 
@@ -170,6 +185,7 @@ LLM ToolSets：`@freeanima/feature-task/domain` — `task`（条目 CRUD + `task
 | `/calendar`      | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
 | `/projects`      | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
 | `/email`         | 经 SAP `subject_kind` 跟随壳作用域          | 无（继承顶栏）             |
+| `/contacts`      | **Commons**（不跟私有 world 切换）          | 无                         |
 | `/notifications` | `recipient_kind` + subject 实体 id          | 无（继承顶栏）             |
 | `/diary`         | 经 `subject_kind` 的 subject 默认私有 world | 无（继承顶栏）             |
 | `/vault`         | 默认 **user** 库；可选 Agent 视图           | User：主密码锁             |
@@ -201,16 +217,43 @@ SAP 任务/邮件方法接受可选 `subject_kind`（默认：任务 `user`，�
 
 ## 项目模块（v1 规格）
 
-项目管理使用与任务清单文件夹**分开的文件夹树**。任务要么属于任务模块（Backlog，`project_id` null），要么恰好属于一个项目——UI 上不同时属于两边。
+项目管理使用与任务清单文件夹**分开的文件夹树**。任务要么属于清单模块（`TaskContainer.LIST`，`project_id` null），要么恰好属于一个项目（`TaskContainer.PROJECT`）——UI 上不同时属于两边。
 
 | 概念       | 实体           | 组件             |
 | ---------- | -------------- | ---------------- |
 | 项目文件夹 | `type=content` | `project_folder` |
 | 项目       | `type=content` | `project`        |
 
-`task_item.body.project_id` 把条目链到项目。可选项目背景说明用实体 `content`（非 `body`）。任务模块智能清单默认只含无 `project_id` 的任务。壳路由 `/projects`；栖息地 RPC `projectfolder.*`、`project.*`、`project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
+`task_item.body.project_id` 把条目链到项目。可选项目背景说明用实体 `content`（非 `body`）。清单模块智能清单默认只含清单侧任务（`container=list`）。壳路由 `/projects`；栖息地 RPC `projectfolder.*`、`project.*`、`project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
 
 完整规格：[`docs/modules/project.md`](../modules/project.md)。
+
+## 目标模块（v1 规格）
+
+个人多层级目标，位于项目之上。组件 `objective`（**≠** 会话 `goal`）。
+
+| 概念 | 实体           | 组件        |
+| ---- | -------------- | ----------- |
+| 目标 | `type=content` | `objective` |
+
+Body：`parent_id`（可嵌套）、`status`（`not_started` / `in_progress` / `completed` / `cancelled` / `on_hold`）、可选 `start_at`/`end_at`、`completion`（定性 / 手工量化 / 自动统计）、`links`（弱引用执行面）、`sort_order`、`client_op_id`。壳 `/objectives`；RPC `objective.*`。
+
+完整规格：[`docs/modules/objective.md`](../modules/objective.md)。
+
+## 通讯录模块
+
+Commons 内的联系人（识别用，非 Subject）：
+
+| 概念   | 实体           | 组件      |
+| ------ | -------------- | --------- |
+| 联系人 | `type=content` | `contact` |
+
+- 固定 `world_id = commons_world_id`；**user** 经全局规则对任意 world 满权限；**agent** 仍须手动 write grant
+- Body：`emails` / `phones` / `addresses` / `wechats` 通道数组；`identity_key` 值须实例内该通道全局唯一；`addresses` 禁止 identity_key
+- 可选 `subject_id` 挂本机 user/agent
+- 邮件详情按 `from`/`to` **实时** `resolveByAddress`，不在 `email_message` 上存联系人 FK
+
+见 [`docs/modules/contact.md`](../modules/contact.md)。
 
 ## 邮件模块（资源层）
 

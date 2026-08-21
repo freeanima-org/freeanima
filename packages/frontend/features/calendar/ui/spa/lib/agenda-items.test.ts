@@ -7,7 +7,9 @@ import {
   isOverdueTask,
   mergeCalendarItems,
   partitionAgendaDay,
+  planOverdueFiltersForAgenda,
   shouldHideEndedEvents,
+  structureAgendaDay,
 } from "./agenda-items.ts";
 
 function event(
@@ -43,15 +45,23 @@ describe("agenda-items", () => {
   const today = "2026-08-19";
   const now = new Date("2026-08-19T15:00:00+08:00");
 
-  test("dueFiltersForAgenda：今天含逾期，其它日只取当日", () => {
+  test("dueFiltersForAgenda：今天含逾期，其它日只取当日，且含项目内", () => {
     expect(dueFiltersForAgenda("day", today, today)).toMatchObject({
       due_on_or_before_days: 0,
+      container: "any",
     });
     const tomorrow = dueFiltersForAgenda("day", "2026-08-20", today);
     expect(tomorrow?.due_after?.startsWith("2026-08-20T00:00:00")).toBe(true);
     expect(tomorrow?.due_on_or_before_days).toBeUndefined();
-    expect(dueFiltersForAgenda("next3", today, today)?.due_on_or_before_days).toBe(2);
-    expect(dueFiltersForAgenda("next7", today, today)?.due_on_or_before_days).toBe(6);
+    expect(tomorrow?.container).toBe("any");
+    expect(dueFiltersForAgenda("next3", today, today)).toMatchObject({
+      due_on_or_before_days: 2,
+      container: "any",
+    });
+    expect(dueFiltersForAgenda("next7", today, today)).toMatchObject({
+      due_on_or_before_days: 6,
+      container: "any",
+    });
     expect(dueFiltersForAgenda("month", today, today)).toBeNull();
   });
 
@@ -95,6 +105,39 @@ describe("agenda-items", () => {
     expect(tomorrowPart.dayItems).toEqual([]);
   });
 
+  test("逾期含计划结束日早于今天（无截止也可）", () => {
+    const planOverdue = task({
+      id: 20,
+      start_at: "2026-08-17T09:00:00+08:00",
+      end_at: "2026-08-17T10:00:00+08:00",
+    });
+    const planToday = task({
+      id: 21,
+      start_at: "2026-08-19T09:00:00+08:00",
+    });
+    const dueOverdue = task({ id: 22, due_at: "2026-08-16T09:00:00+08:00" });
+    expect(isOverdueTask(planOverdue, today)).toBe(true);
+    expect(isOverdueTask(planToday, today)).toBe(false);
+    expect(isOverdueTask(dueOverdue, today)).toBe(true);
+    const part = partitionAgendaDay([planOverdue, planToday, dueOverdue], today, today);
+    expect(part.overdue.map((i) => i.id)).toEqual(expect.arrayContaining([20, 22]));
+    expect(part.overdue).toHaveLength(2);
+    expect(part.dayItems.map((i) => i.id)).toEqual([21]);
+  });
+
+  test("planOverdueFiltersForAgenda：仅今日议程拉取计划已结束", () => {
+    const filters = planOverdueFiltersForAgenda("day", today, today);
+    expect(filters).toMatchObject({
+      status: "pending",
+      container: "any",
+      roots_only: true,
+    });
+    expect(filters?.plan_before?.startsWith("2026-08-19T00:00:00")).toBe(true);
+    expect(planOverdueFiltersForAgenda("day", "2026-08-20", today)).toBeNull();
+    expect(planOverdueFiltersForAgenda("next3", today, today)?.plan_before).toBeTruthy();
+    expect(planOverdueFiltersForAgenda("month", today, today)).toBeNull();
+  });
+
   test("mergeCalendarItems 按 live 任务 id 去重", () => {
     const planned = task({
       id: 1,
@@ -106,5 +149,104 @@ describe("agenda-items", () => {
     const merged = mergeCalendarItems([planned], [dueOnly, other]);
     expect(merged.map((i) => i.id)).toEqual([1, 2]);
     expect(merged[0]?.start_at).toBe("2026-08-19T09:00:00+08:00");
+  });
+});
+
+describe("structureAgendaDay", () => {
+  const today = "2026-08-19";
+
+  function project(
+    partial: Partial<Extract<CalendarRangeItem, { kind: "project" }>> & { id: number },
+  ): CalendarRangeItem {
+    return {
+      kind: "project",
+      title: "proj",
+      start_at: "2026-08-01T00:00:00+08:00",
+      end_at: "2026-08-31T00:00:00+08:00",
+      status: "active",
+      ...partial,
+    };
+  }
+
+  test("逾期不进项目折叠；项目内 pending/完成嵌套；无项目完成沉底", () => {
+    const items: CalendarRangeItem[] = [
+      project({ id: 1, title: "FA" }),
+      task({
+        id: 10,
+        title: "overdue in project",
+        project_id: 1,
+        due_at: "2026-08-17T09:00:00+08:00",
+      }),
+      task({
+        id: 11,
+        title: "pending in project",
+        project_id: 1,
+        start_at: "2026-08-19T10:00:00+08:00",
+        priority: "high",
+      }),
+      task({
+        id: 12,
+        title: "done in project",
+        project_id: 1,
+        status: "completed",
+        completed_at: "2026-08-19T11:00:00+08:00",
+        priority: "none",
+      }),
+      event({
+        id: 20,
+        title: "meeting",
+        start_at: "2026-08-19T09:00:00+08:00",
+        end_at: "2026-08-19T10:00:00+08:00",
+      }),
+      task({
+        id: 13,
+        title: "solo done",
+        status: "completed",
+        completed_at: "2026-08-19T12:00:00+08:00",
+      }),
+      {
+        kind: "holiday",
+        id: "h-1",
+        source: "cn_holiday",
+        title: "节日",
+        start_at: "2026-08-19T00:00:00+08:00",
+        end_at: null,
+        all_day: true,
+      },
+    ];
+
+    const sections = structureAgendaDay(items, today, today);
+    expect(sections.overdue.map((i) => i.id)).toEqual([10]);
+    expect(sections.schedule.map((i) => i.id)).toEqual([20]);
+    expect(sections.projectGroups).toHaveLength(1);
+    expect(sections.projectGroups[0]?.projectId).toBe(1);
+    expect(sections.projectGroups[0]?.children.map((i) => i.id)).toEqual([11, 12]);
+    expect(sections.holidays.map((i) => i.id)).toEqual(["h-1"]);
+    expect(sections.completed.map((i) => i.id)).toEqual([13]);
+  });
+
+  test("同刻安排：高优先级任务排在事件后仍按时间，同刻高优先在前", () => {
+    const items: CalendarRangeItem[] = [
+      task({
+        id: 1,
+        title: "low",
+        start_at: "2026-08-19T09:00:00+08:00",
+        priority: "low",
+      }),
+      task({
+        id: 2,
+        title: "high",
+        start_at: "2026-08-19T09:00:00+08:00",
+        priority: "high",
+      }),
+      event({
+        id: 3,
+        title: "e",
+        start_at: "2026-08-19T09:00:00+08:00",
+        end_at: "2026-08-19T09:30:00+08:00",
+      }),
+    ];
+    const sections = structureAgendaDay(items, today, today);
+    expect(sections.schedule.map((i) => i.id)).toEqual([2, 1, 3]);
   });
 });

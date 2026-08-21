@@ -16,9 +16,11 @@ export type MotionSlotsConfig = Record<MotionSlotId, number[]>;
 export type LocomotionManifest = Partial<Record<LocomotionSlot, string>>;
 
 export function emptyMotionSlots(): MotionSlotsConfig {
-  const slots = {} as MotionSlotsConfig;
-  for (const id of MOTION_SLOT_IDS) {
-    slots[id] = [];
-  }
-  return slots;
+  return {
+    idle: [],
+    rest: [],
+    walk: [],
+    climb: [],
+    in_place: [],
+  };
 }

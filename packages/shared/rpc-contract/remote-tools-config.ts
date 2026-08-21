@@ -1,4 +1,5 @@
 /// <reference lib="dom" />
+import { asRecord } from "@freeanima/shared/util";
 import { formatRemotePlatform } from "./naming.ts";
 
 export type DirectOutpostConfig = {
@@ -14,19 +15,20 @@ export async function loadDirectOutpostConfig(
   if (!res.ok) {
     throw new Error(`加载 config 失败: HTTP ${res.status}`);
   }
-  const raw = (await res.json()) as Partial<{
-    habitat_ws_url?: string;
-    app_id?: string;
-    instance_id?: string;
-  }>;
-  const ws = raw.habitat_ws_url?.trim() || "";
+  const raw: unknown = await res.json();
+  const record = asRecord(raw);
+  if (!record) {
+    throw new Error("config.json 不是对象");
+  }
+  const ws = typeof record.habitat_ws_url === "string" ? record.habitat_ws_url.trim() : "";
   if (!ws) {
     throw new Error("config.json 缺少 habitat_ws_url");
   }
-  const instanceId = raw.instance_id?.trim();
+  const instanceId = typeof record.instance_id === "string" ? record.instance_id.trim() : undefined;
   return {
     habitat_ws_url: ws,
-    app_id: raw.app_id?.trim() || "chat",
+    app_id:
+      typeof record.app_id === "string" && record.app_id.trim() ? record.app_id.trim() : "chat",
     ...(instanceId ? { instance_id: instanceId } : {}),
   };
 }

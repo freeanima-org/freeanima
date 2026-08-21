@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef, Context, ReactNode } from "react";
 import { LabelContext, Label as LabelPrimitive } from "react-aria-components";
 
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import { cn } from "../../lib/utils.ts";
 
 type LabelProps = {
@@ -10,8 +11,8 @@ type LabelProps = {
   children?: ReactNode;
 } & Omit<ComponentPropsWithoutRef<"label">, "className" | "htmlFor" | "children" | "slot">;
 
-/** oxlint type-aware 对 RAC LabelContext 解析为 error type；经 unknown 收窄后使用 Provider。 */
-const LabelContextSafe = LabelContext as unknown as Context<null>;
+/** RAC LabelContext 在 type-aware lint 下易 error 化；经 assertNarrow 单点收窄。 */
+const LabelContextSafe = assertNarrow<Context<null>>(LabelContext);
 
 function Label({ className, htmlFor, slot, ...props }: LabelProps) {
   const label = (

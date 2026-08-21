@@ -1,5 +1,4 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config/world-context";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
@@ -21,26 +20,23 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (!subject_kind || subject_kind === auth.subject_type) return;
-  if (auth.subject_type === "user" && subject_kind === "agent") return;
+function assertSubjectIdAllowed(auth: RpcRequestAuthContext, subjectId: number): void {
+  if (auth.subject_id === subjectId) return;
+  if (auth.subject_type === "user") return;
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
-  if (subject_kind !== "user" && subject_kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+function requireSubjectId(subject_id: number | undefined): number {
+  if (subject_id == null || !Number.isInteger(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
   }
-  return subject_kind;
+  return subject_id;
 }
 
-async function worldIdForAuth(
-  auth: RpcRequestAuthContext,
-  subject_kind?: SubjectKind,
-): Promise<number> {
-  const kind = resolveSubjectKind(subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  return resolveSubjectWorldId(kind);
+async function worldIdForAuth(auth: RpcRequestAuthContext, subject_id?: number): Promise<number> {
+  const subjectId = requireSubjectId(subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  return resolvePrivateWorldId(subjectId);
 }
 
 function toPayload(row: NonNullable<Awaited<ReturnType<typeof getSubagent>>>) {
@@ -64,21 +60,21 @@ function toPayload(row: NonNullable<Awaited<ReturnType<typeof getSubagent>>>) {
 
 export async function serviceSubagentList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind } | undefined,
+  input: { subject_id?: number } | undefined,
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const items = await listSubagents(await worldIdForAuth(auth, input?.subject_kind));
+  const items = await listSubagents(await worldIdForAuth(auth, input?.subject_id));
   return { items: items.map(toPayload) };
 }
 
 export async function serviceSubagentGet(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id?: number; slug?: string },
+  input: { subject_id?: number; id?: number; slug?: string },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await worldIdForAuth(auth, input.subject_kind);
+  const worldId = await worldIdForAuth(auth, input.subject_id);
   let row = null;
   if (input.id != null) {
     row = await getSubagent(input.id);
@@ -95,7 +91,7 @@ export async function serviceSubagentGet(
 export async function serviceSubagentCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     slug: string;
     title: string;
     summary?: string;
@@ -110,8 +106,8 @@ export async function serviceSubagentCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await worldIdForAuth(auth, input.subject_kind);
-  const { subject_kind: _sk, ...rest } = input;
+  const worldId = await worldIdForAuth(auth, input.subject_id);
+  const { subject_id: _sid, ...rest } = input;
   const item = await createSubagent(worldId, omitUndefined(rest));
   return { item: toPayload(item) };
 }
@@ -119,7 +115,7 @@ export async function serviceSubagentCreate(
 export async function serviceSubagentPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     slug?: string;
     title?: string;
@@ -135,19 +131,19 @@ export async function serviceSubagentPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await worldIdForAuth(auth, input.subject_kind);
-  const { subject_kind: _sk, id, ...rest } = input;
+  const worldId = await worldIdForAuth(auth, input.subject_id);
+  const { subject_id: _sid, id, ...rest } = input;
   const item = await updateSubagent(worldId, { id, ...omitUndefined(rest) });
   return { item: toPayload(item) };
 }
 
 export async function serviceSubagentDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await worldIdForAuth(auth, input.subject_kind);
+  const worldId = await worldIdForAuth(auth, input.subject_id);
   await deleteSubagent(worldId, input.id);
   return { ok: true as const };
 }

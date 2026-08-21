@@ -1,27 +1,58 @@
 import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
 import { PROMPT_XML_TAGS, systemPromptBuild } from "@freeanima/habitat/core/hooks/prompt";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg.ts";
 
 export function registerWorldContextSystemPromptHook(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
-    () => {
-      let ctx;
+    async (ctx) => {
+      let userLine: string;
+      let commonsLine: string;
       try {
-        ctx = getResolvedWorldContext();
+        const world = getResolvedWorldContext();
+        userLine = `- user subject_id=${world.user_subject_id} world_id=${world.user_world_id}`;
+        commonsLine = `- commons_world_id=${world.commons_world_id}`;
       } catch {
         return { status: "ok" };
       }
+
+      const currentAgentId = ctx.meta?.agent_subject_id;
+      let currentLines: string[];
+      if (currentAgentId == null || currentAgentId <= 0) {
+        currentLines = ["- current agent: （本会话未绑定）"];
+      } else {
+        let title = `Agent ${currentAgentId}`;
+        let worldId: string | number = "?";
+        try {
+          const row = await getEntity(currentAgentId);
+          if (row?.title?.trim()) title = row.title.trim();
+        } catch {
+          /* keep fallback title */
+        }
+        try {
+          worldId = await resolvePrivateWorldId(currentAgentId);
+        } catch {
+          /* keep "?" */
+        }
+        currentLines = [
+          `- current agent subject_id=${currentAgentId} title=${JSON.stringify(title)} world_id=${worldId}`,
+        ];
+      }
+
       const content = [
-        "对话 LLM 工具默认在 **agent 专属 private world**（`agent_subject_id` → `default_private_world_id`）操作；task/tasklist/entity/diary/email 等 toolset 多数调用可省略 `world_id`。",
-        "按 `id` / `list_id` / `account_id` 操作时 world 从实体反查。通知工具用 `subject_id`（非 world_id）指定收件主体。",
+        "World / Subject 作用域：工具省略 world_id/subject_id 时落在**当前会话 agent**的私有 World。",
+        "操作其他主体必须显式传 subject_id 或 world_id。",
         "",
-        `- agent_subject_id: ${ctx.agent_subject_id}`,
-        `- agent_world_id: ${ctx.agent_world_id}`,
-        `- user_subject_id: ${ctx.user_subject_id}`,
-        `- user_world_id: ${ctx.user_world_id}`,
-        `- commons_world_id: ${ctx.commons_world_id}`,
+        "实例固定：",
+        userLine,
+        commonsLine,
+        "",
+        "当前会话：",
+        ...currentLines,
       ].join("\n");
+
       return {
         status: "ok",
         data: {
@@ -31,7 +62,7 @@ export function registerWorldContextSystemPromptHook(registry: HookRegistry): vo
               content,
               order: 4,
               priority: 3,
-              budgetChars: 1_200,
+              budgetChars: 800,
               xmlTag: PROMPT_XML_TAGS.worldContext,
             },
           ],

@@ -1,6 +1,7 @@
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import { PATHS } from "@freeanima/habitat/core/config/paths";
+import { asRecord } from "@freeanima/shared/util";
 import { expandConfigPath } from "../tls-paths.ts";
 
 export type AcmeAccountStore = {
@@ -22,8 +23,9 @@ export function readAcmeAccount(accountPath = defaultAcmeAccountPath()): AcmeAcc
   const path = expandConfigPath(accountPath);
   if (!existsSync(path)) return null;
   try {
-    const raw = JSON.parse(readFileSync(path, "utf-8")) as Partial<AcmeAccountStore>;
+    const raw = asRecord(JSON.parse(readFileSync(path, "utf-8")));
     if (
+      !raw ||
       typeof raw.accountUrl !== "string" ||
       typeof raw.accountKeyPem !== "string" ||
       typeof raw.directoryUrl !== "string" ||

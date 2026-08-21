@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
 import {
   taskItemPrioritySchema,
   taskItemStatusSchema,
+  taskContainerSchema,
 } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import {
   taskRecurrenceSchema,
@@ -11,8 +11,6 @@ import {
   type TaskRecurrence,
   type TaskRecurrenceInput,
 } from "@freeanima/shared/pg-shapes/entity/task-recurrence.ts";
-
-const taskSubjectKindSchema = notificationRecipientKindSchema;
 
 const taskPrioritySchema = taskItemPrioritySchema;
 const taskStatusSchema = taskItemStatusSchema;
@@ -35,11 +33,20 @@ export const taskItemSearchFiltersSchema = z
     has_due_at: z.boolean().optional(),
     due_on: taskRelativeDaySchema.optional(),
     due_on_or_before_days: z.number().int().nonnegative().optional(),
+    /** 有计划开始（start_at） */
+    has_start_at: z.boolean().optional(),
+    /**
+     * 计划结束时刻上界（不含）：COALESCE(end_at, start_at) < plan_before。
+     * 议程「计划逾期」常用今天 00:00。
+     */
+    plan_before: z.string().optional(),
     completed_on: taskRelativeDaySchema.optional(),
     completed_on_or_after_days: z.number().int().nonnegative().optional(),
     completed_after: z.string().optional(),
     completed_before: z.string().optional(),
     project_id: z.number().int().positive().optional(),
+    container: taskContainerSchema.optional(),
+    /** @deprecated 用 container */
     in_backlog: z.boolean().optional(),
     parent_id: z.number().int().positive().optional(),
     roots_only: z.boolean().optional(),
@@ -133,7 +140,7 @@ export const taskOccurrenceRowSchema = z.object({
 export type TaskOccurrenceRowPayload = z.infer<typeof taskOccurrenceRowSchema>;
 
 export const tasklistListInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   include_closed: z.boolean().optional(),
 });
 export type TasklistListInput = z.infer<typeof tasklistListInputSchema>;
@@ -143,7 +150,7 @@ export const tasklistListOutputSchema = z.object({
 export type TasklistListOutput = z.infer<typeof tasklistListOutputSchema>;
 
 export const tasklistStatsInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   include_closed: z.boolean().optional(),
 });
 export type TasklistStatsInput = z.infer<typeof tasklistStatsInputSchema>;
@@ -158,7 +165,7 @@ export const tasklistStatsOutputSchema = z.object({
 export type TasklistStatsOutput = z.infer<typeof tasklistStatsOutputSchema>;
 
 export const tasklistCreateInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   name: z.string().min(1),
   sort_order: z.number().int().optional(),
   color: z.string().nullable().optional(),
@@ -171,7 +178,7 @@ export const tasklistCreateOutputSchema = z.object({ item: taskListRowSchema });
 export type TasklistCreateOutput = z.infer<typeof tasklistCreateOutputSchema>;
 
 export const tasklistPatchInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   name: z.string().min(1).optional(),
   sort_order: z.number().int().optional(),
@@ -186,7 +193,7 @@ export const tasklistPatchOutputSchema = z.object({ item: taskListRowSchema });
 export type TasklistPatchOutput = z.infer<typeof tasklistPatchOutputSchema>;
 
 export const tasklistDeleteInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   cascade: z.boolean().optional(),
   client_op_id: z.string().min(1).optional(),
@@ -208,7 +215,7 @@ export const smartListRowSchema = z.object({
 export type SmartListRowPayload = z.infer<typeof smartListRowSchema>;
 
 export const smartlistListInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type SmartlistListInput = z.infer<typeof smartlistListInputSchema>;
 export const smartlistListOutputSchema = z.object({
@@ -217,7 +224,7 @@ export const smartlistListOutputSchema = z.object({
 export type SmartlistListOutput = z.infer<typeof smartlistListOutputSchema>;
 
 export const smartlistStatsInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type SmartlistStatsInput = z.infer<typeof smartlistStatsInputSchema>;
 export const smartlistStatsCountSchema = z.object({
@@ -231,7 +238,7 @@ export const smartlistStatsOutputSchema = z.object({
 export type SmartlistStatsOutput = z.infer<typeof smartlistStatsOutputSchema>;
 
 export const smartlistCreateInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   filters: taskItemSearchFiltersSchema,
   sort_order: z.number().int().optional(),
@@ -241,7 +248,7 @@ export const smartlistCreateOutputSchema = z.object({ item: smartListRowSchema }
 export type SmartlistCreateOutput = z.infer<typeof smartlistCreateOutputSchema>;
 
 export const smartlistPatchInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   filters: taskItemSearchFiltersSchema.optional(),
@@ -252,7 +259,7 @@ export const smartlistPatchOutputSchema = z.object({ item: smartListRowSchema })
 export type SmartlistPatchOutput = z.infer<typeof smartlistPatchOutputSchema>;
 
 export const smartlistDeleteInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type SmartlistDeleteInput = z.infer<typeof smartlistDeleteInputSchema>;
@@ -260,7 +267,7 @@ export const smartlistDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type SmartlistDeleteOutput = z.infer<typeof smartlistDeleteOutputSchema>;
 
 export const taskListInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   list_id: z.number().int().positive().optional(),
   filters: taskItemSearchFiltersSchema.optional(),
   status: taskStatusSchema.or(z.literal("all")).optional(),
@@ -282,7 +289,7 @@ export const tasklistItemListOutputSchema = taskListOutputSchema;
 export type TasklistItemListOutput = TaskListOutput;
 
 export const projectItemListInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   project_id: z.number().int().positive(),
   status: taskStatusSchema.or(z.literal("all")).optional(),
   limit: z.number().int().positive().optional(),
@@ -294,7 +301,7 @@ export type ProjectItemListOutput = z.infer<typeof projectItemListOutputSchema>;
 
 /** 任务模块建任务：只认 list_id（省略则默认收件箱） */
 export const tasklistItemCreateInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   list_id: z.number().int().positive().optional(),
   content: z.string().optional(),
@@ -319,7 +326,7 @@ export type TasklistItemCreateOutput = z.infer<typeof tasklistItemCreateOutputSc
 
 /** 项目模块建任务：只认 project_id */
 export const projectItemCreateInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   project_id: z.number().int().positive(),
   content: z.string().optional(),
@@ -346,7 +353,7 @@ export const taskCreateOutputSchema = tasklistItemCreateOutputSchema;
 export type TaskCreateOutput = TasklistItemCreateOutput;
 
 export const taskMoveToProjectInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   project_id: z.number().int().positive(),
   sort_order: z.number().int().optional(),
@@ -357,7 +364,7 @@ export const taskMoveToProjectOutputSchema = z.object({ item: taskItemRowSchema 
 export type TaskMoveToProjectOutput = z.infer<typeof taskMoveToProjectOutputSchema>;
 
 export const taskMoveToListInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   list_id: z.number().int().positive(),
   sort_order: z.number().int().optional(),
@@ -369,7 +376,7 @@ export type TaskMoveToListOutput = z.infer<typeof taskMoveToListOutputSchema>;
 
 /** 按 id 取单条任务（含清单/backlog 与项目内） */
 export const taskGetInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type TaskGetInput = z.infer<typeof taskGetInputSchema>;
@@ -378,7 +385,7 @@ export type TaskGetOutput = z.infer<typeof taskGetOutputSchema>;
 
 /** 共享内容字段 patch；归属变更请用 task.moveToProject / task.moveToList */
 export const taskPatchInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   title: z.string().min(1).optional(),
   content: z.string().optional(),
@@ -402,7 +409,7 @@ export const taskPatchOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskPatchOutput = z.infer<typeof taskPatchOutputSchema>;
 
 export const taskCompleteInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -411,7 +418,7 @@ export const taskCompleteOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskCompleteOutput = z.infer<typeof taskCompleteOutputSchema>;
 
 export const taskSkipInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -420,7 +427,7 @@ export const taskSkipOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskSkipOutput = z.infer<typeof taskSkipOutputSchema>;
 
 export const taskCompleteForeverInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -429,7 +436,7 @@ export const taskCompleteForeverOutputSchema = z.object({ item: taskItemRowSchem
 export type TaskCompleteForeverOutput = z.infer<typeof taskCompleteForeverOutputSchema>;
 
 export const taskListOccurrencesInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   series_task_id: z.number().int().positive(),
   limit: z.number().int().positive().optional(),
   offset: z.number().int().nonnegative().optional(),
@@ -441,7 +448,7 @@ export const taskListOccurrencesOutputSchema = z.object({
 export type TaskListOccurrencesOutput = z.infer<typeof taskListOccurrencesOutputSchema>;
 
 export const taskUncompleteInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -450,7 +457,7 @@ export const taskUncompleteOutputSchema = z.object({ item: taskItemRowSchema });
 export type TaskUncompleteOutput = z.infer<typeof taskUncompleteOutputSchema>;
 
 export const taskDeleteInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -459,7 +466,7 @@ export const taskDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type TaskDeleteOutput = z.infer<typeof taskDeleteOutputSchema>;
 
 export const taskConvertToEventInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type TaskConvertToEventInput = z.infer<typeof taskConvertToEventInputSchema>;
@@ -481,7 +488,7 @@ export const taskConvertToEventOutputSchema = z.object({
 export type TaskConvertToEventOutput = z.infer<typeof taskConvertToEventOutputSchema>;
 
 export const taskSearchInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().min(1),
   list_id: z.number().int().positive().optional(),
   status: taskStatusSchema.or(z.literal("all")).optional(),
@@ -511,7 +518,7 @@ export type TaskAdvanceReminderEvent = z.infer<typeof taskAdvanceReminderEventSc
 
 /** 滴答清单 CSV 备份导入 */
 export const taskImportDidaCsvInputSchema = z.object({
-  subject_kind: taskSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   csv_text: z.string().min(1),
   mode: z.enum(["upsert", "create_only"]).optional(),
 });

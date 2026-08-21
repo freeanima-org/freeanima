@@ -12,6 +12,8 @@ export const conversationCreateInputSchema = z.object({
   /** Coding / Companion outpost：写入 platform_extra */
   outpost_app_id: z.string().optional(),
   outpost_instance_id: z.string().optional(),
+  /** 绑定的 Anima（type=agent）；缺省 = chat.default_agent_subject_id */
+  agent_subject_id: z.number().int().positive().optional(),
 });
 
 export type ConversationCreateInput = z.infer<typeof conversationCreateInputSchema>;
@@ -41,6 +43,10 @@ export const conversationSummarySchema = z.object({
   pinned_at: z.string().nullable().optional(),
   /** 用户未读：存在尚未读到的 assistant 回复 */
   unread: z.boolean().optional(),
+  /** 绑定的 Anima subject id */
+  agent_subject_id: z.number().int().positive().optional(),
+  /** 展示用；列表可附带 */
+  agent_title: z.string().optional(),
 });
 
 export type ConversationSummary = z.infer<typeof conversationSummarySchema>;
@@ -205,3 +211,18 @@ export const conversationCommandOutputSchema = z.discriminatedUnion("delivery", 
 ]);
 
 export type ConversationCommandOutput = z.infer<typeof conversationCommandOutputSchema>;
+
+/** 空会话（尚无用户消息）时可改绑 agent */
+export const conversationSetAgentInputSchema = z.object({
+  conversation_id: z.string().min(1),
+  agent_subject_id: z.number().int().positive(),
+});
+
+export type ConversationSetAgentInput = z.infer<typeof conversationSetAgentInputSchema>;
+
+export const conversationSetAgentOutputSchema = z.object({
+  ok: z.literal(true),
+  agent_subject_id: z.number().int().positive(),
+});
+
+export type ConversationSetAgentOutput = z.infer<typeof conversationSetAgentOutputSchema>;

@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 
 import { entities, entityTypeSchema, type EntitySelect } from "./entity.ts";
@@ -17,6 +18,7 @@ import {
   SMART_LIST_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
+  OBJECTIVE_COMPONENT,
   TAG_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
@@ -30,6 +32,7 @@ import {
   OBJECT_FOLDER_COMPONENT,
   SUBAGENT_COMPONENT,
   BOOKMARK_COMPONENT,
+  CONTACT_COMPONENT,
   calendarEventBodySchema,
   calendarUiPrefsBodySchema,
   contentBlockBodySchema,
@@ -45,6 +48,7 @@ import {
   smartListBodySchema,
   projectFolderBodySchema,
   projectBodySchema,
+  objectiveBodySchema,
   tagBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
@@ -58,6 +62,7 @@ import {
   objectFolderBodySchema,
   subagentBodySchema,
   bookmarkBodySchema,
+  contactBodySchema,
   type CalendarEventBody,
   type CalendarUiPrefsBody,
   type ContentBlockBody,
@@ -73,6 +78,7 @@ import {
   type SmartListBody,
   type ProjectFolderBody,
   type ProjectBody,
+  type ObjectiveBody,
   type TagBody,
   type VaultConfigBody,
   type VaultItemBody,
@@ -86,6 +92,7 @@ import {
   type ObjectFolderBody,
   type SubagentBody,
   type BookmarkBody,
+  type ContactBody,
 } from "./components/index.ts";
 import { parseEntityRevisions, type EntityRevision } from "./revisions.ts";
 
@@ -167,7 +174,7 @@ export function mapEntityRow(
     title: row.title ?? "",
     summary: row.summary ?? "",
     content: row.content ?? "",
-    body: (row.body ?? {}) as Record<string, unknown>,
+    body: asRecord(row.body) ?? {},
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [...(row.tag_ids ?? [])],
@@ -378,6 +385,16 @@ export function asProject(
     : null;
 }
 
+export function asObjective(
+  row: EntityRow,
+): (ObjectiveBody & { id: number; title: string; content: string }) | null {
+  if (row.primary_component !== OBJECTIVE_COMPONENT) return null;
+  const parsed = objectiveBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
+}
+
 export function asObjectFile(
   row: EntityRow,
 ): (ObjectFileBody & { id: number; title: string; world_id: number }) | null {
@@ -422,6 +439,33 @@ export function asBookmark(row: EntityRow):
         title: row.title,
         content: row.content,
         deleted_at: row.deleted_at,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        ...parsed.data,
+      }
+    : null;
+}
+
+export function asContact(row: EntityRow):
+  | (ContactBody & {
+      id: number;
+      title: string;
+      summary: string;
+      content: string;
+      world_id: number;
+      created_at: Date;
+      updated_at: Date;
+    })
+  | null {
+  if (row.primary_component !== CONTACT_COMPONENT) return null;
+  const parsed = contactBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        content: row.content,
+        world_id: row.world_id,
         created_at: row.created_at,
         updated_at: row.updated_at,
         ...parsed.data,

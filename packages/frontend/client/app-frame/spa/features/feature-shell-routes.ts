@@ -36,6 +36,15 @@ export function registerFeaturePluginShellRoutes(): void {
       load: lazyNamedComponent(() => import("@freeanima/features/project/ui/spa"), "ProjectApp"),
     },
     {
+      featureId: "objective",
+      path: "/objectives",
+      navLabel: "目标",
+      load: lazyNamedComponent(
+        () => import("@freeanima/features/objective/ui/spa"),
+        "ObjectiveApp",
+      ),
+    },
+    {
       featureId: "calendar",
       path: "/calendar",
       navLabel: "Calendar",
@@ -87,6 +96,12 @@ export function registerFeaturePluginShellRoutes(): void {
       load: lazyNamedComponent(() => import("@freeanima/features/bookmark/ui/spa"), "BookmarkApp"),
     },
     {
+      featureId: "contact",
+      path: "/contacts",
+      navLabel: "通讯录",
+      load: lazyNamedComponent(() => import("@freeanima/features/contact/ui/spa"), "ContactApp"),
+    },
+    {
       featureId: "email",
       path: "/email",
       navLabel: "Email",
@@ -105,5 +120,19 @@ export function loadHabitatShellRoute() {
       }) as Promise<{ default: import("react").ComponentType<object> }>,
   );
 }
+
+/** 顶级「卧室」SPA：统一 Anima + 子模块（Anima 私有空间；与栖息地=实例运维成对）。 */
+export function loadBedroomShellRoute() {
+  return shellLazyRoute(
+    () =>
+      import("@freeanima/features/observer/ui/spa").then(async (mod) => {
+        await import("@freeanima/features/habitat/ui/habitat/styles.css");
+        return { default: mod.ObserverShell as import("react").ComponentType<object> };
+      }) as Promise<{ default: import("react").ComponentType<object> }>,
+  );
+}
+
+/** @deprecated 使用 loadBedroomShellRoute */
+export const loadObserverShellRoute = loadBedroomShellRoute;
 
 registerFeaturePluginShellRoutes();

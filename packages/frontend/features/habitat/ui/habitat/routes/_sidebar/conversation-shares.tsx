@@ -31,12 +31,13 @@ type ShareRow = {
   id: string;
   conversation_id: string;
   scope: "full" | "selected";
-  title?: string;
+  title?: string | undefined;
   created_at: string;
   expires_at: string;
   message_count: number;
   ttl_remaining_seconds: number | null;
   url_path: string;
+  url?: string | undefined;
 };
 
 function formatTtlRemaining(seconds: number | null): string {
@@ -48,7 +49,7 @@ function formatTtlRemaining(seconds: number | null): string {
   return `${Math.floor(seconds / 86400)} 天`;
 }
 
-/** 与 Chat 创建分享一致：相对壳 basepath 的公开路径 */
+/** 与 Chat 创建分享一致：有绝对 url 优先，否则相对壳 basepath 拼当前 origin */
 function absoluteShareUrl(urlPath: string): string {
   if (shouldUseNativeShellNavigation()) {
     const base = window.location.href.split("#")[0] ?? window.location.origin;
@@ -57,6 +58,12 @@ function absoluteShareUrl(urlPath: string): string {
   const raw = (import.meta.env?.BASE_URL ?? "/").replace(/\/$/, "");
   const basepath = raw && raw !== "." && raw.startsWith("/") ? raw : "";
   return `${window.location.origin}${basepath}${urlPath}`;
+}
+
+function resolveShareCopyUrl(row: Pick<ShareRow, "url" | "url_path">): string {
+  const absolute = row.url?.trim();
+  if (absolute) return absolute;
+  return absoluteShareUrl(row.url_path);
 }
 
 function ConversationSharesPage() {
@@ -106,7 +113,7 @@ function ConversationSharesPage() {
   };
 
   const onCopy = async (row: ShareRow) => {
-    const url = absoluteShareUrl(row.url_path);
+    const url = resolveShareCopyUrl(row);
     const ok = await copyText(url);
     toast(ok ? "链接已复制" : "复制失败", { duration: 2000 });
   };

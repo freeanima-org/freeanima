@@ -2,6 +2,7 @@ import { deleteCronJob } from "@freeanima/habitat/core/db/pg/cron";
 import { withRedisLock } from "@freeanima/habitat/core/redis";
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import { notifyInprocessBuiltinFailure } from "@freeanima/habitat/platform/ports/cron-notify";
+import { asRecord } from "@freeanima/shared/util";
 
 import { resolveBunSchedule } from "./bun-schedule.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
@@ -111,13 +112,13 @@ function shouldLogSuccessOutput(_id: string, output: string): boolean {
 export function extractInprocessFailureMessage(output: string | null): string | null {
   if (output == null) return "builtin handler not registered";
   try {
-    const parsed = JSON.parse(output) as {
-      ok?: boolean;
-      error?: string;
-      summary?: string;
-    };
-    if (parsed && typeof parsed === "object" && parsed.ok === false) {
-      const detail = parsed.error ?? parsed.summary ?? output;
+    const parsed: unknown = JSON.parse(output);
+    const rec = asRecord(parsed);
+    if (rec && rec.ok === false) {
+      const detail =
+        (typeof rec.error === "string" ? rec.error : undefined) ??
+        (typeof rec.summary === "string" ? rec.summary : undefined) ??
+        output;
       return detail.slice(0, 4000);
     }
   } catch {

@@ -47,6 +47,7 @@ export function HabitatShell() {
       const inner = router.state.location.pathname;
       const currentSub = resolveHabitatSubpath(shellPathRef.current);
       if (currentSub === inner) return;
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       void shellNavigate({ to: habitatSubpathToShellPath(inner) as never });
     });
   }, [router, shellNavigate]);

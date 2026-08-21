@@ -38,7 +38,7 @@ const CODING_H: f64 = 800.0;
 #[cfg(desktop)]
 const POMODORO_FLOAT_W: f64 = 220.0;
 #[cfg(desktop)]
-const POMODORO_FLOAT_H: f64 = 88.0;
+const POMODORO_FLOAT_H: f64 = 120.0;
 const DEFAULT_HABITAT: &str = "http://127.0.0.1:2658";
 const SHELL_PREFS_FILE: &str = "desktop-shell.json";
 
@@ -82,6 +82,20 @@ struct PersistedShellPrefs {
   companion_visible: bool,
   #[serde(default)]
   coding_visible: bool,
+  /// 番茄迷你窗显隐（独立开关，不随会话起停）
+  #[serde(default)]
+  pomodoro_float_visible: bool,
+}
+
+#[cfg(desktop)]
+fn prefs_snapshot(state: &ShellState, habitat: &HabitatClientConfig) -> PersistedShellPrefs {
+  PersistedShellPrefs {
+    habitat_url: habitat.habitat_url.clone(),
+    remote_auth_token: habitat.remote_auth_token.clone(),
+    companion_visible: *state.companion_visible.lock().expect("cv"),
+    coding_visible: *state.coding_visible.lock().expect("coding_vis"),
+    pomodoro_float_visible: *state.pomodoro_float_visible.lock().expect("pfv"),
+  }
 }
 
 fn default_companion_visible() -> bool {
@@ -290,7 +304,7 @@ struct ShellState {
   companion_visible: Mutex<bool>,
   #[cfg(desktop)]
   coding_visible: Mutex<bool>,
-  /// 番茄迷你窗显隐（会话驱动，不持久化）
+  /// 番茄迷你窗显隐（壳 prefs 持久化）
   #[cfg(desktop)]
   pomodoro_float_visible: Mutex<bool>,
   #[cfg(desktop)]
@@ -327,7 +341,7 @@ impl Default for ShellState {
       #[cfg(desktop)]
       coding_visible: Mutex::new(prefs.coding_visible),
       #[cfg(desktop)]
-      pomodoro_float_visible: Mutex::new(false),
+      pomodoro_float_visible: Mutex::new(prefs.pomodoro_float_visible),
       #[cfg(desktop)]
       clickthrough: Mutex::new(false),
       #[cfg(desktop)]
@@ -502,22 +516,22 @@ fn set_habitat_config(
   };
   *state.habitat.lock().expect("habitat lock") = cfg.clone();
   #[cfg(desktop)]
-  let companion_visible = *state.companion_visible.lock().expect("cv");
-  #[cfg(desktop)]
-  let coding_visible = *state.coding_visible.lock().expect("coding_vis");
+  {
+    save_shell_prefs(&app, &prefs_snapshot(&*state, &cfg))?;
+  }
   #[cfg(not(desktop))]
-  let companion_visible = true;
-  #[cfg(not(desktop))]
-  let coding_visible = false;
-  save_shell_prefs(
-    &app,
-    &PersistedShellPrefs {
-      habitat_url: cfg.habitat_url,
-      remote_auth_token: cfg.remote_auth_token,
-      companion_visible,
-      coding_visible,
-    },
-  )?;
+  {
+    save_shell_prefs(
+      &app,
+      &PersistedShellPrefs {
+        habitat_url: cfg.habitat_url,
+        remote_auth_token: cfg.remote_auth_token,
+        companion_visible: true,
+        coding_visible: false,
+        pomodoro_float_visible: false,
+      },
+    )?;
+  }
   let _ = app.emit("shell:config-changed", ());
   Ok(())
 }
@@ -656,16 +670,7 @@ fn get_companion_visible(state: State<'_, ShellState>) -> bool {
 fn set_companion_visible(app: AppHandle, state: State<'_, ShellState>, visible: bool) -> Result<(), String> {
   *state.companion_visible.lock().expect("cv") = visible;
   let habitat = state.habitat.lock().expect("habitat lock").clone();
-  let coding_visible = *state.coding_visible.lock().expect("coding_vis");
-  save_shell_prefs(
-    &app,
-    &PersistedShellPrefs {
-      habitat_url: habitat.habitat_url,
-      remote_auth_token: habitat.remote_auth_token,
-      companion_visible: visible,
-      coding_visible,
-    },
-  )?;
+  save_shell_prefs(&app, &prefs_snapshot(&*state, &habitat))?;
   if visible {
     ensure_companion(&app)?;
     if let Some(win) = app.get_webview_window("companion") {
@@ -700,16 +705,7 @@ fn get_coding_visible(state: State<'_, ShellState>) -> bool {
 fn set_coding_visible(app: AppHandle, state: State<'_, ShellState>, visible: bool) -> Result<(), String> {
   *state.coding_visible.lock().expect("coding_vis") = visible;
   let habitat = state.habitat.lock().expect("habitat lock").clone();
-  let companion_visible = *state.companion_visible.lock().expect("cv");
-  save_shell_prefs(
-    &app,
-    &PersistedShellPrefs {
-      habitat_url: habitat.habitat_url,
-      remote_auth_token: habitat.remote_auth_token,
-      companion_visible,
-      coding_visible: visible,
-    },
-  )?;
+  save_shell_prefs(&app, &prefs_snapshot(&*state, &habitat))?;
   if visible {
     ensure_coding(&app)?;
     if let Some(win) = app.get_webview_window("coding") {
@@ -740,6 +736,8 @@ fn set_pomodoro_float_visible(
   visible: bool,
 ) -> Result<(), String> {
   *state.pomodoro_float_visible.lock().expect("pfv") = visible;
+  let habitat = state.habitat.lock().expect("habitat lock").clone();
+  save_shell_prefs(&app, &prefs_snapshot(&*state, &habitat))?;
   if visible {
     ensure_pomodoro_float(&app)?;
     if let Some(win) = app.get_webview_window("pomodoro-float") {
@@ -1041,9 +1039,10 @@ fn dirs_next_home() -> std::path::PathBuf {
 fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
   let show = MenuItem::with_id(app, "show", "打开主窗口", true, None::<&str>)?;
   let coding = MenuItem::with_id(app, "coding", "编码工作台", true, None::<&str>)?;
+  let pomodoro_float = MenuItem::with_id(app, "pomodoro-float", "番茄迷你窗", true, None::<&str>)?;
   let settings = MenuItem::with_id(app, "settings", "设置…", true, None::<&str>)?;
   let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-  let menu = Menu::with_items(app, &[&show, &coding, &settings, &quit])?;
+  let menu = Menu::with_items(app, &[&show, &coding, &pomodoro_float, &settings, &quit])?;
 
   let icon = app
     .default_window_icon()
@@ -1063,6 +1062,11 @@ fn build_tray(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
       "coding" => {
         let state = app.state::<ShellState>();
         let _ = set_coding_visible(app.clone(), state, true);
+      }
+      "pomodoro-float" => {
+        let state = app.state::<ShellState>();
+        let next = !*state.pomodoro_float_visible.lock().expect("pfv");
+        let _ = set_pomodoro_float_visible(app.clone(), state, next);
       }
       "settings" => {
         let _ = open_settings(app.clone());
@@ -1191,6 +1195,11 @@ pub fn run() {
           if coding_visible {
             let _ = set_coding_visible(handle.clone(), state, true);
           }
+          let state = handle.state::<ShellState>();
+          let pomodoro_float_visible = *state.pomodoro_float_visible.lock().expect("pfv");
+          if pomodoro_float_visible {
+            let _ = set_pomodoro_float_visible(handle.clone(), state, true);
+          }
         });
         Ok(())
       })
@@ -1200,14 +1209,14 @@ pub fn run() {
           if let tauri::WindowEvent::CloseRequested { api, .. } = event {
             if !IS_QUITTING.load(Ordering::SeqCst) {
               api.prevent_close();
-              let _ = window.hide();
               if window.label() == "coding" {
                 let state = window.app_handle().state::<ShellState>();
-                *state.coding_visible.lock().expect("coding_vis") = false;
-              }
-              if window.label() == "pomodoro-float" {
+                let _ = set_coding_visible(window.app_handle().clone(), state, false);
+              } else if window.label() == "pomodoro-float" {
                 let state = window.app_handle().state::<ShellState>();
-                *state.pomodoro_float_visible.lock().expect("pfv") = false;
+                let _ = set_pomodoro_float_visible(window.app_handle().clone(), state, false);
+              } else {
+                let _ = window.hide();
               }
             }
           }

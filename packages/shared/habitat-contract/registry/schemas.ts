@@ -13,6 +13,7 @@ export {
   semanticMemoryListBodySchema,
   semanticMemoryClustersBodySchema,
   semanticMemoryPinBodySchema,
+  selfBlocksBodySchema,
   streamApiEventSchema,
   subjectEntityCreateBodySchema,
   subjectEntityUpdateBodySchema,

@@ -16,6 +16,12 @@ mock.module("@freeanima/habitat/core/db/pg/service-api-token", () => ({
   },
   listServiceApiTokensBySubject: async () => [],
   getServiceApiTokenById: async () => null,
+  revealServiceApiTokenPlaintext: async () => {
+    throw new Error("not mocked");
+  },
+  updateServiceApiTokenName: async () => {
+    throw new Error("not mocked");
+  },
   countServiceApiTokens: async () => 0,
   importServiceApiTokenFromPlaintext: async () => {
     throw new Error("not mocked");
@@ -31,7 +37,7 @@ describe("evaluateServiceAuthAuthed", () => {
       token_id: 1,
       subject_id: 53,
       subject_type: "user",
-      scopes: ["full"],
+      authorization: { full: true },
     });
 
     const req = new Request("http://127.0.0.1:2658/rpc/v1/health/probe", {

@@ -15,6 +15,8 @@ import { listEntities, deleteEntity } from "@freeanima/habitat/core/db/pg/entity
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import { mergeBehavior } from "./behavior.ts";
 import type { CompanionConfig } from "./types.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 type PatchableConfig = {
   replaceSection(section: string, value: Record<string, unknown>): Promise<unknown>;
@@ -37,7 +39,7 @@ function coerceCompanionConfig(raw: unknown): CompanionConfig {
 function tryGetPatchableConfig(): PatchableConfig | null {
   try {
     const cfg = getActiveRuntimeConfig();
-    const maybe = cfg as unknown as PatchableConfig;
+    const maybe = assertNarrow<PatchableConfig>(cfg);
     if (typeof maybe.replaceSection === "function") return maybe;
   } catch {
     /* boot / unit 未 bind */
@@ -86,7 +88,8 @@ async function migrateLegacyCompanionIfNeeded(): Promise<void> {
   let behavior = defaultCompanionRuntimeConfig().behavior;
   const body = rows[0]?.body;
   if (body && typeof body === "object" && "behavior" in body) {
-    const parsed = companionBehaviorSchema.safeParse((body as { behavior: unknown }).behavior);
+    const bodyRec = asRecord(body);
+    const parsed = companionBehaviorSchema.safeParse(bodyRec?.behavior);
     if (parsed.success) behavior = parsed.data;
   }
 
@@ -139,7 +142,7 @@ export async function loadCompanionConfig(): Promise<CompanionConfig> {
 }
 
 async function persistCompanionConfig(next: CompanionRuntimeConfig): Promise<void> {
-  const value = companionConfigSchema.parse(next) as unknown as Record<string, unknown>;
+  const value = assertNarrow<Record<string, unknown>>(companionConfigSchema.parse(next));
   const store = tryGetPatchableConfig();
   if (store) {
     await store.replaceSection("companion", value);

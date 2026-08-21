@@ -1,4 +1,3 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config";
 import { getToolConversationId } from "@freeanima/habitat/core/tool/tool-context";
 import { toolError } from "@freeanima/habitat/core/tool";
@@ -9,10 +8,11 @@ import {
 } from "@freeanima/habitat/capabilities/connectors/vault";
 import {
   resolveVaultToolWorld,
-  SUBJECT_KIND_TOOL_PROPERTY,
+  SUBJECT_ID_TOOL_PROPERTY,
   WORLD_ID_TOOL_PROPERTY,
 } from "@freeanima/features/vault/domain/tool-world-resolve";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 /** Vault item ref without env mapping (browser_type secret). */
 export type BrowserSecretRef = {
@@ -24,7 +24,7 @@ export type BrowserSecretRef = {
 export type VaultSecretRef = {
   id: number;
   field?: string;
-  subject_kind?: SubjectKind;
+  subject_id?: number;
   world_id?: number;
 };
 
@@ -67,23 +67,23 @@ export const SECRETS_TOOL_PROPERTY = {
     "Discover items via vault_list/vault_search/vault_get_meta first; set field to password/notes/totp " +
     "(totp → current code) " +
     "or a custom_field_names entry (flat name, no path). " +
-    "Pass subject_kind (user|agent) when needed; world_id optional override.",
+    "Pass subject_id when needed; world_id optional override.",
   items: {
     type: "object",
     properties: {
       id: SECRET_ID_PROPERTY,
       env_name: { type: "string", description: "Env var name for this subprocess (e.g. GH_TOKEN)" },
       field: SECRET_FIELD_PROPERTY,
-      subject_kind: SUBJECT_KIND_TOOL_PROPERTY,
+      subject_id: SUBJECT_ID_TOOL_PROPERTY,
       world_id: WORLD_ID_TOOL_PROPERTY,
     },
     required: ["id", "env_name"],
   },
 } as const;
 
-function parseSubjectKind(raw: unknown): SubjectKind | undefined {
-  if (raw === "user" || raw === "agent") return raw;
-  return undefined;
+function parseSubjectId(raw: unknown): number | null {
+  const id = Number(raw);
+  return Number.isFinite(id) && id > 0 ? Math.floor(id) : null;
 }
 
 function parseVaultSecretFields(
@@ -94,10 +94,11 @@ function parseVaultSecretFields(
   if (!Number.isFinite(id) || id <= 0) return toolError(idError);
   const fieldRaw = rec.field != null ? coerceString(rec.field).trim() : "";
   const worldRaw = Number(rec.world_id);
+  const subjectId = parseSubjectId(rec.subject_id);
   return omitUndefined({
     id,
     field: fieldRaw || undefined,
-    subject_kind: parseSubjectKind(rec.subject_kind),
+    subject_id: subjectId ?? undefined,
     world_id: Number.isFinite(worldRaw) && worldRaw > 0 ? Math.floor(worldRaw) : undefined,
   });
 }
@@ -108,7 +109,8 @@ export function parseSecretArg(raw: unknown): BrowserSecretRef | null | string {
   if (typeof raw !== "object" || Array.isArray(raw)) {
     return toolError("secret must be an object");
   }
-  const rec = raw as Record<string, unknown>;
+  const rec = asRecord(raw);
+  if (!rec) return toolError("secret must be an object");
   const id = Number(rec.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("secret.id is required");
   const field = coerceString(rec.field).trim();
@@ -124,7 +126,8 @@ export function parseSecretsArg(raw: unknown): SubprocessSecretRef[] | string {
     if (item == null || typeof item !== "object") {
       return toolError("secrets[] entries must be objects");
     }
-    const rec = item as Record<string, unknown>;
+    const rec = asRecord(item);
+    if (!rec) continue;
     const base = parseVaultSecretFields(rec, "secrets[].id is required");
     if (typeof base === "string") return base;
     const envName = coerceString(rec.env_name).trim();
@@ -143,7 +146,7 @@ export async function resolveVaultSecretValue(
 ): Promise<{ value: string } | string> {
   const field = (ref.field ?? "password").trim() || "password";
   const args: Record<string, unknown> = omitUndefined({
-    subject_kind: ref.subject_kind,
+    subject_id: ref.subject_id,
     world_id: ref.world_id,
   });
   const worldId = await resolveVaultToolWorld({
@@ -153,17 +156,25 @@ export async function resolveVaultSecretValue(
   });
   if (typeof worldId === "string") return worldId;
 
-  let subjectKind = ref.subject_kind;
-  if (subjectKind == null) {
+  let subjectId = ref.subject_id;
+  if (subjectId == null) {
     const ctx = getResolvedWorldContext();
-    if (worldId === ctx.user_world_id) subjectKind = "user";
-    else if (worldId === ctx.agent_world_id) subjectKind = "agent";
-    else return toolError("subject_kind is required (user|agent) when world cannot be inferred");
+    if (worldId === ctx.user_world_id) subjectId = ctx.user_subject_id;
+    else if (worldId === ctx.default_chat_agent_world_id || worldId === ctx.agent_world_id) {
+      subjectId = ctx.default_chat_agent_subject_id ?? ctx.agent_subject_id;
+    } else {
+      return toolError("subject_id is required when world cannot be inferred");
+    }
+  }
+  if (subjectId == null || subjectId <= 0) {
+    return toolError("subject_id is required when world cannot be inferred");
   }
 
   try {
     let value: string;
-    if (subjectKind === "user") {
+    const ctx = getResolvedWorldContext();
+    const isUser = subjectId === ctx.user_subject_id;
+    if (isUser) {
       const conversationId = getToolConversationId() ?? undefined;
       value = await resolveUserVaultSecret(
         omitUndefined({
@@ -180,8 +191,9 @@ export async function resolveVaultSecretValue(
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (msg === "vault_locked" || msg === "vault_locked_user" || msg === "VAULT_SHELL_OFFLINE") {
+      const ctx = getResolvedWorldContext();
       return toolError(
-        subjectKind === "user"
+        subjectId === ctx.user_subject_id
           ? "user vault locked; unlock via Vault UI or Chat dedicated control"
           : "agent vault secret unavailable",
       );

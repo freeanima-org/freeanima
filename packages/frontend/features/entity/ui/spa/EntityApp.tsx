@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
-import { SubjectScopeToggle, useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
+import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   Input,
@@ -29,6 +29,9 @@ const PAGE_SIZE = 20;
 const TYPE_ALL = "__all__";
 const COMPONENT_ALL = "__all__";
 const ENTITY_TYPES: EntityAdminType[] = ["content", "world", "agent", "user"];
+function isEntityAdminType(v: string): v is EntityAdminType {
+  return (ENTITY_TYPES as readonly string[]).includes(v);
+}
 
 type EntityTab = "all" | "trash";
 
@@ -125,7 +128,7 @@ function EntityRowActions({
 }
 
 export function EntityApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const [tab, setTab] = useState<EntityTab>("all");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -166,7 +169,7 @@ export function EntityApp() {
         setLoading(false);
       }
     },
-    [subjectKind, searchQuery, typeFilter, primaryComponent],
+    [subjectId, searchQuery, typeFilter, primaryComponent],
   );
 
   useEffect(() => {
@@ -218,7 +221,6 @@ export function EntityApp() {
             <p className="text-sm text-muted-foreground">浏览与管理当前 world 下的实体</p>
           </div>
         </div>
-        <SubjectScopeToggle />
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2 md:px-6">
@@ -244,7 +246,7 @@ export function EntityApp() {
           onSelectionChange={(key) => {
             if (key == null) return;
             const v = String(key);
-            setTypeFilter(v === TYPE_ALL ? "" : (v as EntityAdminType));
+            setTypeFilter(v === TYPE_ALL ? "" : isEntityAdminType(v) ? v : "");
           }}
         >
           <SelectTrigger size="sm" className="w-[8.5rem]">

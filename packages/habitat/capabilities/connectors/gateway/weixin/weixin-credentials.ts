@@ -1,5 +1,6 @@
 import { getActiveRuntimeConfig } from "@freeanima/habitat/platform/config";
 import { logComponent } from "@freeanima/habitat/platform/logging";
+import { asRecord } from "@freeanima/shared/util";
 
 import { ILINK_BASE_URL } from "./ilink-api.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
@@ -35,8 +36,8 @@ function buildCredentials(data: Record<string, unknown>, source: string): Weixin
 /** Habitat runtime `weixin` section or env WEIXIN_ILINK_TOKEN；`enabled: false` 时不加载 */
 export function loadWeixinCredentials(): WeixinCredentials | null {
   try {
-    const cfg = getActiveRuntimeConfig().data as Record<string, unknown>;
-    const weixin = (cfg.weixin ?? {}) as Record<string, unknown>;
+    const cfg = asRecord(getActiveRuntimeConfig().data) ?? {};
+    const weixin = asRecord(cfg.weixin) ?? {};
     if (weixin.enabled === false) return null;
     const tokenEnv = process.env.WEIXIN_ILINK_TOKEN?.trim();
     const token = coerceString(weixin.token ?? tokenEnv ?? "").trim();

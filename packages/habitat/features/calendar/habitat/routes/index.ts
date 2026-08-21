@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { calendarMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -10,7 +10,7 @@ type CalendarRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): CalendarRemoteToolsServerDeps {
-  return deps as CalendarRemoteToolsServerDeps;
+  return asRouteDeps<CalendarRemoteToolsServerDeps>(deps);
 }
 
 export const calendarHabitatRoutes = bindHabitatRouteHandlers(calendarMethodDefs, {

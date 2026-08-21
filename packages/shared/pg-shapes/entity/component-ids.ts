@@ -9,6 +9,7 @@ export const TASK_ITEM_COMPONENT = "task_item" as const;
 export const TASK_OCCURRENCE_COMPONENT = "task_occurrence" as const;
 export const PROJECT_FOLDER_COMPONENT = "project_folder" as const;
 export const PROJECT_COMPONENT = "project" as const;
+export const OBJECTIVE_COMPONENT = "objective" as const;
 export const TAG_COMPONENT = "tag" as const;
 export const DIARY_ENTRY_COMPONENT = "diary_entry" as const;
 export const NOTE_COMPONENT = "note" as const;
@@ -16,6 +17,7 @@ export const CALENDAR_EVENT_COMPONENT = "calendar_event" as const;
 export const DIARY_BLOCK_TEMPLATE_COMPONENT = "diary_block_template" as const;
 export const CODING_NOTE_COMPONENT = "coding_note" as const;
 export const BOOKMARK_COMPONENT = "bookmark" as const;
+export const CONTACT_COMPONENT = "contact" as const;
 export const CONTENT_BLOCK_COMPONENT = "content_block" as const;
 export const LIMBIC_COMPONENT = "limbic" as const;
 export const NARRATIVE_COMPONENT = "narrative" as const;
@@ -40,6 +42,8 @@ export const OBJECT_FOLDER_COMPONENT = "object_folder" as const;
 export const SKILL_COMPONENT = "skill" as const;
 export const SKILL_RESOURCE_COMPONENT = "skill_resource" as const;
 export const SUBAGENT_COMPONENT = "subagent" as const;
+/** 壳层快捷入口附属组件（attach 到实体；非主路由面） */
+export const SHELL_QUICK_ENTRY_COMPONENT = "shell_quick_entry" as const;
 
 export const COMPONENT_IDS = [
   WORLD_CONFIG_COMPONENT,
@@ -51,6 +55,7 @@ export const COMPONENT_IDS = [
   TASK_OCCURRENCE_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
+  OBJECTIVE_COMPONENT,
   TAG_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   NOTE_COMPONENT,
@@ -58,6 +63,7 @@ export const COMPONENT_IDS = [
   DIARY_BLOCK_TEMPLATE_COMPONENT,
   CODING_NOTE_COMPONENT,
   BOOKMARK_COMPONENT,
+  CONTACT_COMPONENT,
   CONTENT_BLOCK_COMPONENT,
   LIMBIC_COMPONENT,
   NARRATIVE_COMPONENT,
@@ -82,6 +88,7 @@ export const COMPONENT_IDS = [
   SKILL_COMPONENT,
   SKILL_RESOURCE_COMPONENT,
   SUBAGENT_COMPONENT,
+  SHELL_QUICK_ENTRY_COMPONENT,
 ] as const;
 
 export type ComponentId = (typeof COMPONENT_IDS)[number];

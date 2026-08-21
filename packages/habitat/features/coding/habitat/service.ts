@@ -7,6 +7,7 @@ import type {
   CodingProjectContextSyncInput,
 } from "@freeanima/shared/rpc-contract/frames/coding.ts";
 import type { ProjectAgentContextSnapshot } from "@freeanima/shared/coding/project-agent-context";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { createCodingNote, listCodingNotes, type CodingNoteRow } from "../domain/note-store.ts";
 import { setProjectAgentContext } from "@freeanima/shared/coding/project-context-cache.ts";
@@ -60,7 +61,7 @@ export async function serviceProjectContextSync(
   _deps: RuntimeDeps,
   input: CodingProjectContextSyncInput,
 ) {
-  const snapshot = input.snapshot as unknown as ProjectAgentContextSnapshot;
+  const snapshot = assertNarrow<ProjectAgentContextSnapshot>(input.snapshot);
   setProjectAgentContext(input.conversation_id, snapshot);
   // 清空缓存 prompt，下次 turn / ensureSystemPromptFresh 会全量重建并读到新 snapshot
   try {

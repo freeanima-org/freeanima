@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import { useUserSubjectId, useShellQuickIdSet } from "@freeanima/client/portal-sdk/react.tsx";
+import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
 import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
 import { usePortalInfiniteQuery } from "@freeanima/client/portal-sdk/portal-query";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
@@ -62,6 +63,22 @@ function sortEntries(items: DiaryEntryRow[]): DiaryEntryRow[] {
 
 const DIARY_PAGE_SIZE = 20;
 
+function readUrlDiaryId(): number | null {
+  const raw = new URLSearchParams(window.location.search).get("id");
+  if (!raw) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
+function writeUrlDiaryId(id: number | null): void {
+  const url = new URL(window.location.href);
+  if (id == null) url.searchParams.delete("id");
+  else url.searchParams.set("id", String(id));
+  if (url.href !== window.location.href) {
+    window.history.replaceState(null, "", url);
+  }
+}
+
 function applyEntryToList(prev: DiaryEntryRow[], item: DiaryEntryRow): DiaryEntryRow[] {
   const next = prev.filter((e) => e.id !== item.id);
   next.push(item);
@@ -69,10 +86,11 @@ function applyEntryToList(prev: DiaryEntryRow[], item: DiaryEntryRow): DiaryEntr
 }
 
 export function DiaryApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
+  const quickIds = useShellQuickIdSet();
   const [pendingOps, setPendingOps] = useState(0);
   const writesDisabled = false;
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedIdState] = useState<number | null>(() => readUrlDiaryId());
   const [draft, setDraft] = useState<EntryDraft | null>(null);
   const [draftBaseline, setDraftBaseline] = useState<EntryDraft | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,20 +104,38 @@ export function DiaryApp() {
   const saveStatusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectedIdRef = useRef<number | null>(null);
   const initialTodayOpenedRef = useRef(false);
+  const urlOpenAttemptedRef = useRef(false);
+
+  const setSelectedId = useCallback(
+    (next: number | null | ((prev: number | null) => number | null)) => {
+      setSelectedIdState((prev) => {
+        const resolved = typeof next === "function" ? next(prev) : next;
+        writeUrlDiaryId(resolved);
+        return resolved;
+      });
+    },
+    [],
+  );
 
   selectedIdRef.current = selectedId;
+
+  useEffect(() => {
+    const onPop = () => setSelectedIdState(readUrlDiaryId());
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const searchTrimmed = searchQuery.trim();
   const diaryListQuery = usePortalInfiniteQuery<DiaryEntryRow[]>({
     queryKey: searchTrimmed
-      ? ["diary", "search", subjectKind, searchTrimmed]
-      : ["diary", "list", subjectKind],
+      ? ["diary", "search", subjectId, searchTrimmed]
+      : ["diary", "list", subjectId],
     queryFn: async ({ pageParam }) => {
       const offset = typeof pageParam === "number" ? pageParam : 0;
       if (searchTrimmed) {
-        return searchDiaryEntries(subjectKind, searchTrimmed);
+        return searchDiaryEntries(subjectId, searchTrimmed);
       }
-      return fetchDiaryEntries(subjectKind, { limit: DIARY_PAGE_SIZE, offset });
+      return fetchDiaryEntries(subjectId, { limit: DIARY_PAGE_SIZE, offset });
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
@@ -248,7 +284,7 @@ export function DiaryApp() {
 
   useEffect(() => {
     let cancelled = false;
-    void fetchDiaryBlockTemplates(subjectKind)
+    void fetchDiaryBlockTemplates(subjectId)
       .then((items) => {
         if (!cancelled) setTemplates(items);
       })
@@ -258,14 +294,15 @@ export function DiaryApp() {
     return () => {
       cancelled = true;
     };
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
     setSelectedId(null);
     setDraft(null);
     setDraftBaseline(null);
     initialTodayOpenedRef.current = false;
-  }, [subjectKind]);
+    urlOpenAttemptedRef.current = false;
+  }, [subjectId, setSelectedId]);
 
   useEffect(() => {
     return () => {
@@ -285,7 +322,7 @@ export function DiaryApp() {
   const openEntryById = useCallback(
     async (id: number): Promise<boolean> => {
       try {
-        const full = await getDiaryEntry(subjectKind, id);
+        const full = await getDiaryEntry(subjectId, id);
         setEntries((prev) =>
           applyEntryToList(prev, {
             ...full,
@@ -299,7 +336,7 @@ export function DiaryApp() {
         return false;
       }
     },
-    [openEntry, subjectKind],
+    [openEntry, subjectId],
   );
 
   const persistDraft = useCallback(async (): Promise<boolean> => {
@@ -313,7 +350,7 @@ export function DiaryApp() {
       let entry = selectedEntry;
 
       if (isEntryMetaDirty(savingSnapshot, draftBaseline)) {
-        entry = await updateDiaryEntry(subjectKind, selectedEntry.id, {
+        entry = await updateDiaryEntry(subjectId, selectedEntry.id, {
           title: titleFromDateLocal(savingSnapshot.entryDateLocal),
           summary: "",
           entry_at: dateLocalToEntryAtIso(savingSnapshot.entryDateLocal),
@@ -326,7 +363,7 @@ export function DiaryApp() {
 
       for (const base of draftBaseline.blocks) {
         if (!draftIds.has(base.id)) {
-          await deleteDiaryBlock(subjectKind, entry.id, base.id);
+          await deleteDiaryBlock(subjectId, entry.id, base.id);
         }
       }
 
@@ -334,7 +371,7 @@ export function DiaryApp() {
       for (const block of savingSnapshot.blocks) {
         const base = baselineById.get(block.id);
         if (!base) {
-          const created = await createDiaryBlock(subjectKind, entry.id, {
+          const created = await createDiaryBlock(subjectId, entry.id, {
             content: block.content,
             title: block.title,
             tag_ids: block.tag_ids,
@@ -359,7 +396,7 @@ export function DiaryApp() {
           [...base.tag_ids].toSorted((a, b) => a - b).join(",") !==
           [...block.tag_ids].toSorted((a, b) => a - b).join(",");
         if (titleChanged || contentChanged || tagsChanged) {
-          const updated = await updateDiaryBlock(subjectKind, block.id, {
+          const updated = await updateDiaryBlock(subjectId, block.id, {
             content: block.content,
             title: block.title,
             tag_ids: block.tag_ids,
@@ -381,7 +418,7 @@ export function DiaryApp() {
       const ordered = nextBlocks.map((b, index) => ({ ...b, sort_order: index }));
       const reorderPatch = sortOrderUpdates(ordered);
       if (reorderPatch.length > 0) {
-        await reorderDiaryBlocks(subjectKind, entry.id, reorderPatch);
+        await reorderDiaryBlocks(subjectId, entry.id, reorderPatch);
       }
 
       entry = {
@@ -434,7 +471,7 @@ export function DiaryApp() {
     } finally {
       setSaving(false);
     }
-  }, [draft, draftBaseline, markSaved, saving, selectedEntry, subjectKind, writesDisabled]);
+  }, [draft, draftBaseline, markSaved, saving, selectedEntry, subjectId, writesDisabled]);
 
   const openTodayEntry = useCallback(async (): Promise<boolean> => {
     const today = defaultEntryDateLocal();
@@ -449,7 +486,7 @@ export function DiaryApp() {
     setCreating(true);
     setError("");
     try {
-      const item = await createDiaryEntry(subjectKind, {
+      const item = await createDiaryEntry(subjectId, {
         title: titleFromDateLocal(today),
         summary: "",
         entry_at: dateLocalToEntryAtIso(today),
@@ -480,13 +517,17 @@ export function DiaryApp() {
     } finally {
       setCreating(false);
     }
-  }, [creating, entries, openEntry, openEntryById, subjectKind, writesDisabled]);
+  }, [creating, entries, openEntry, openEntryById, subjectId, writesDisabled]);
 
   useEffect(() => {
     if (loading) return;
     if (searchQuery.trim()) return;
     if (selectedId != null) {
       initialTodayOpenedRef.current = true;
+      if (!urlOpenAttemptedRef.current && draft == null) {
+        urlOpenAttemptedRef.current = true;
+        void openEntryById(selectedId);
+      }
       return;
     }
     if (initialTodayOpenedRef.current) return;
@@ -512,6 +553,7 @@ export function DiaryApp() {
     })();
   }, [
     creating,
+    draft,
     entries,
     loading,
     openEntryById,
@@ -601,7 +643,6 @@ export function DiaryApp() {
   const listPane = (
     <div className="flex h-full min-h-0 min-w-0 flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <SubjectScopeToggle />
         <div className="flex shrink-0 items-center gap-1">
           <Button
             type="button"
@@ -683,8 +724,20 @@ export function DiaryApp() {
         ) : saveStatus === "error" ? (
           <span className="text-destructive text-xs">保存失败</span>
         ) : null}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            void toggleShellQuick(selectedEntry.id).catch(() => {
+              /* ignore */
+            });
+          }}
+        >
+          {quickIds.has(selectedEntry.id) ? "移出快捷" : "加入快捷"}
+        </Button>
         <EntryTagAddMenu
-          subjectKind={subjectKind}
+          subjectId={subjectId}
           tagIds={draft.tag_ids}
           onTagIdsChange={(tag_ids) => setDraft({ ...draft, tag_ids })}
         />
@@ -738,7 +791,7 @@ export function DiaryApp() {
       </ListDetailLayout>
       <DiaryBlockTemplateDialog
         open={templateDialogOpen}
-        subjectKind={subjectKind}
+        subjectId={subjectId}
         onClose={() => setTemplateDialogOpen(false)}
         onChanged={setTemplates}
       />

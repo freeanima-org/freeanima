@@ -8,7 +8,7 @@ title: 项目管理
 
 **模型说明（v0.2 简化）：** 已移除里程碑与必填完成条件。项目保留日程 + 终态状态；可选背景说明放在实体 `content`（仅在项目编辑对话框中编辑）。任务仅经 `body.project_id` 关联项目。
 
-**v1** 交付：项目文件夹树、项目实体、任务归属迁移。OKR、跨实体链接、甘特、**项目文件夹级**看板、文件资产为 **[v2+]**（任务模块 `/tasks` 看板已落地，见 [`task.md`](./task.md)）。
+**v1** 交付：项目文件夹树、项目实体、任务归属迁移。OKR、跨实体链接、甘特、**项目文件夹级**看板、文件资产为 **[v2+]**（清单模块 `/tasks` 看板已落地，见 [`task.md`](./task.md)）。
 
 ## 概念层级
 
@@ -19,7 +19,7 @@ project_folder (organizational tree, independent from task_list folders)
 task module (/tasks) — lists, smart lists, backlog tasks (body.project_id empty)
 ```
 
-项目文件夹与任务清单文件夹是**两套独立树**。任务模块仍是未派入项目条目的 **Backlog / 临时任务池**。
+项目文件夹与任务清单文件夹是**两套独立树**。清单模块仍是未派入项目条目的 **清单侧临时任务池**。
 
 ---
 
@@ -35,7 +35,7 @@ task module (/tasks) — lists, smart lists, backlog tasks (body.project_id empt
 | 防环       | 同任务清单文件夹——嵌套不得成环                                     |
 | 删除       | 递归移除子文件夹；所含项目置 `folder_id: null`（项目**不被**删除） |
 
-**[v2+]** 文件夹级甘特 / 看板，聚合文件夹下全部项目（任务模块看板不覆盖此范围）。
+**[v2+]** 文件夹级甘特 / 看板，聚合文件夹下全部项目（清单模块看板不覆盖此范围）。
 
 示例布局：
 
@@ -65,8 +65,8 @@ FreeAnima (product tag or top folder name)
 **不算项目：**
 
 - 持续产品维护（无明确结束）
-- 临时杂务如「清理冰箱压缩机」（无计划日程——留在任务模块）
-- `task_list` 文件夹或多个任务清单（属于**任务模块**，非项目管理）
+- 临时杂务如「清理冰箱压缩机」（无计划日程——留在清单模块）
+- `task_list` 文件夹或多个任务清单（属于**清单模块**，非项目管理）
 
 ### 项目生命周期与任务
 
@@ -95,46 +95,46 @@ FreeAnima (product tag or top folder name)
 
 ---
 
-## Backlog / 任务模块（`/tasks`）
+## 清单模块（`/tasks`）
 
-**任务模块**即既有 `/tasks` 壳路由：多个 `task_list`、文件夹树、智能清单、已归档清单。
+**清单模块**即既有 `/tasks` 壳路由：多个 `task_list`、文件夹树、智能清单、已归档清单。
 
-| 规则         | 细节                                                                                               |
-| ------------ | -------------------------------------------------------------------------------------------------- |
-| 范围         | 「不在任何项目」表示 `task_item.body.project_id` 为 **null**                                       |
-| 多清单       | 未派入项目的任务可落在**任一**普通清单（含默认清单 `is_default`，如收件箱）——不是单一 Backlog 清单 |
-| 可见性       | 已设 `project_id` 的任务在任务模块列表视图中**隐藏**                                               |
-| 默认清单     | 懒创建的默认清单仍是任务模块内的普通清单——**不是**任务模块与项目之间的同步收件箱                   |
-| 无同步收件箱 | **没有**自动双向同步或两边都要整理的「inbox」。任一时刻任务属于**要么**任务模块**要么**某个项目    |
+| 规则         | 细节                                                                                                            |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| 范围         | 「不在任何项目」表示 `task_item.body.project_id` 为 **null**                                                    |
+| 多清单       | 未派入项目的任务可落在**任一**普通清单（含默认清单 `is_default`，如收件箱）——不是单一「收件箱」以外的专用池清单 |
+| 可见性       | 已设 `project_id` 的任务在清单模块列表视图中**隐藏**                                                            |
+| 默认清单     | 懒创建的默认清单仍是清单模块内的普通清单——**不是**清单模块与项目之间的同步收件箱                                |
+| 无同步收件箱 | **没有**自动双向同步或两边都要整理的「inbox」。任一时刻任务属于**要么**清单模块**要么**某个项目                 |
 
 智能清单与已归档清单同属该模块；见 [智能清单](#智能清单)。
 
 ---
 
-## 任务归属（任务模块 ↔ 项目）
+## 任务归属（清单模块 ↔ 项目）
 
 ### 核心规则
 
-任务**一次只属于一侧**：要么任务模块（Backlog），**要么**恰好一个项目。归属在 body 字段上**互斥**。
+任务**一次只属于一侧**：要么清单模块（清单侧），**要么**恰好一个项目。归属在 body 字段上**互斥**。
 
-| 动作                          | 效果                                                                                          |
-| ----------------------------- | --------------------------------------------------------------------------------------------- |
-| 从 Backlog 拖 / 移任务 → 项目 | 设 `project_id`；**清空 `list_id`**；任务从任务模块视图与清单计数中消失                       |
-| 从项目移任务 → 清单           | 设 `list_id`（用户选清单）；清空 `project_id`——无「恢复上一清单」/ 移回清单                   |
-| 任务从项目 A → 项目 B         | 直接转移；`list_id` 保持 null                                                                 |
-| 全局搜索                      | 匹配全部任务；结果展示归属 `Backlog / {清单名}` 或 `Project / {项目标题}`；点击导航到所属表面 |
+| 动作                       | 效果                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------ |
+| 从清单侧拖 / 移任务 → 项目 | 设 `project_id`；**清空 `list_id`**；任务从清单模块视图与清单计数中消失                    |
+| 从项目移任务 → 清单        | 设 `list_id`（用户选清单）；清空 `project_id`——无「恢复上一清单」/ 移回清单                |
+| 任务从项目 A → 项目 B      | 直接转移；`list_id` 保持 null                                                              |
+| 全局搜索                   | 匹配全部任务；结果展示归属 `清单 / {清单名}` 或 `Project / {项目标题}`；点击导航到所属表面 |
 
 ### 数据模型（`task_item` 扩展）
 
-| 字段         | 类型             | 规则                                                                           |
-| ------------ | ---------------- | ------------------------------------------------------------------------------ |
-| `list_id`    | `number \| null` | 在 Backlog 时必填（`project_id` null）。**在项目内为 null**——勿保留上一清单 id |
-| `project_id` | `number \| null` | 任务在项目内时设置；在 Backlog 时为 null                                       |
+| 字段         | 类型             | 规则                                                                        |
+| ------------ | ---------------- | --------------------------------------------------------------------------- |
+| `list_id`    | `number \| null` | 在清单侧时必填（`project_id` null）。**在项目内为 null**——勿保留上一清单 id |
+| `project_id` | `number \| null` | 任务在项目内时设置；在清单侧时为 null                                       |
 
 **不变量：**
 
 - `list_id` / `project_id` 恰好其一非 null
-- 任务模块可见 ⇔ `project_id IS NULL`（且 `list_id` 已设）
+- 清单模块可见 ⇔ `project_id IS NULL`（且 `list_id` 已设）
 - 项目模块可见 ⇔ `project_id = {当前项目}`（且 `list_id` null）
 - `list_id` 不得指向文件夹（`task_list.is_folder`）
 - 清单 `item_count` 只计该 `list_id` 下的 backlog 任务（`project_id` null）
@@ -145,12 +145,12 @@ FreeAnima (product tag or top folder name)
 
 ## 智能清单
 
-既有 `smart_list` 实体与完成类内置预设（今日完成等）留在任务模块；到期浏览在日历。
+既有 `smart_list` 实体与完成类内置预设（今日完成等）留在清单模块；到期浏览在日历。
 
 | 规则      | 细节                                                                           |
 | --------- | ------------------------------------------------------------------------------ |
 | 默认范围  | 智能清单查询仅含 **`project_id` null** 的任务，除非过滤器显式包含 `project_id` |
-| v1        | **不要**把项目内任务混入智能清单结果（与仅 Backlog 的任务模块视图一致）        |
+| v1        | **不要**把项目内任务混入智能清单结果（与仅清单侧的清单模块视图一致）           |
 | **[v2+]** | 按 `project_id` 过滤的预设或跨项目视图                                         |
 
 ---
@@ -167,11 +167,11 @@ FreeAnima (product tag or top folder name)
 
 ## 搜索与 LLM 工具
 
-| 表面                            | v1 行为                                                                                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `task.search` / `entity_search` | 结果含 `project_id`、`project_title`、`list_name`                                                                                          |
-| ToolSet `project`               | 文件夹与项目 CRUD（经 `toolset_load` 加载）；`project_create` / `project_patch` 接受可选 `content` 作背景说明                              |
-| ToolSet `task`                  | `task_create` / `task_update` 支持 `project_id`；`task_list` / `task_search` 按 `project_id` 过滤（与 `list_id` 互斥；默认清单仅 Backlog） |
+| 表面                            | v1 行为                                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `task.search` / `entity_search` | 结果含 `project_id`、`project_title`、`list_name`                                                                                    |
+| ToolSet `project`               | 文件夹与项目 CRUD（经 `toolset_load` 加载）；`project_create` / `project_patch` 接受可选 `content` 作背景说明                        |
+| ToolSet `task`                  | `task_create` / `task_update` 支持 `project_id`；`task_list` / `task_search` 按 `project_id` 过滤（与 `list_id` 互斥；默认仅清单侧） |
 
 ---
 
@@ -204,13 +204,13 @@ FreeAnima (product tag or top folder name)
 
 ---
 
-## 与任务模块的关系
+## 与清单模块的关系
 
 | 方面     | 决策                                                 |
 | -------- | ---------------------------------------------------- |
 | 文件夹树 | **分开** — `project_folder` vs `task_list.is_folder` |
-| 任务模块 | **保留** — Backlog + 临时池                          |
-| 收敛     | 若 Backlog 使用减少再重新考虑；**不要**预先合并模块  |
+| 清单模块 | **保留** — 清单侧临时池                              |
+| 收敛     | 若清单侧使用减少再重新考虑；**不要**预先合并模块     |
 
 ---
 
@@ -239,8 +239,8 @@ FreeAnima (product tag or top folder name)
 
 首版实现**明确范围外**：
 
-- OKR 实体与 KR → 项目映射
-- 甘特 / **文件夹级**看板（跨项目聚合）；任务模块看板见 [`task.md`](./task.md)
+- OKR / 个人目标实体已由[目标模块](./objective.md)承担（`objective`；v1 含 KR 式子目标与项目链接）
+- 甘特 / **文件夹级**看板（跨项目聚合）；清单模块看板见 [`task.md`](./task.md)
 - 笔记、剪藏、文件/照片库与项目材料上传
 - 跨实体引用 UI 与已归档引用上下文
 - 栖息地管理台项目表面
@@ -278,7 +278,7 @@ FreeAnima (product tag or top folder name)
 | 位置 | 字段         | 类型           | 说明                                         |
 | ---- | ------------ | -------------- | -------------------------------------------- |
 | body | `project_id` | number \| null | 在项目内时设置                               |
-| body | `list_id`    | number         | 既有；见 [任务归属](#任务归属任务模块--项目) |
+| body | `list_id`    | number         | 既有；见 [任务归属](#任务归属清单模块--项目) |
 
 ---
 
@@ -314,17 +314,17 @@ FreeAnima (product tag or top folder name)
 
 ### 任务条目栖息地方法（归属拆分）
 
-| 方法                                      | 用途                                             |
-| ----------------------------------------- | ------------------------------------------------ |
-| `tasklist.item.list`                      | 任务模块列任务（清单 / Backlog；默认排除项目内） |
-| `tasklist.item.create`                    | 任务模块建任务（只认 `list_id`，可省略→收件箱）  |
-| `project.item.list`                       | 项目模块列任务（必填 `project_id`）              |
-| `project.item.create`                     | 项目模块建任务（只认 `project_id`）              |
-| `task.moveToProject`                      | 显式移入项目（清空 `list_id`）                   |
-| `task.moveToList`                         | 显式移回清单（清空 `project_id`）                |
-| `task.patch`                              | 仅内容字段（标题/优先级/截止等；不含归属）       |
-| `task.search`                             | 跨归属搜索；结果含 project/list 归属             |
-| `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                   |
+| 方法                                      | 用途                                            |
+| ----------------------------------------- | ----------------------------------------------- |
+| `tasklist.item.list`                      | 清单模块列任务（清单侧；默认排除项目内）        |
+| `tasklist.item.create`                    | 清单模块建任务（只认 `list_id`，可省略→收件箱） |
+| `project.item.list`                       | 项目模块列任务（必填 `project_id`）             |
+| `project.item.create`                     | 项目模块建任务（只认 `project_id`）             |
+| `task.moveToProject`                      | 显式移入项目（清空 `list_id`）                  |
+| `task.moveToList`                         | 显式移回清单（清空 `project_id`）               |
+| `task.patch`                              | 仅内容字段（标题/优先级/截止等；不含归属）      |
+| `task.search`                             | 跨归属搜索；结果含 project/list 归属            |
+| `task.complete` / `uncomplete` / `delete` | 按 id 共享操作                                  |
 
 实现目标：`packages/habitat/features/project/`（domain + habitat + `plugin.ts`）与 `packages/frontend/features/project/`（`ui/spa`）；schema 在 `packages/habitat/core/db/schema/entity/components/`；SAP frames 在 `packages/shared/rpc-contract/frames/`。
 

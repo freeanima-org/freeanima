@@ -9,11 +9,10 @@ import {
   shiftMessagePositions,
   sumConversationUsage,
   updateCompression,
-  upsertConversationMeta,
 } from "@freeanima/habitat/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { appendTestMessage } from "../../helpers/pg-test.ts";
+import { appendTestMessage, upsertTestConversationMeta } from "../../helpers/pg-test.ts";
 import {
   beginIntegrationCase,
   endIntegrationCase,
@@ -42,7 +41,7 @@ describePg("db conversation (PostgreSQL)", () => {
 
   it("append/read conversation meta and messages", async () => {
     const conversationId = "20260530_test_db";
-    await upsertConversationMeta(conversationId, {
+    await upsertTestConversationMeta(conversationId, {
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -82,7 +81,7 @@ describePg("db conversation (PostgreSQL)", () => {
 
   it("sums cached/uncached/output from assistant usage", async () => {
     const conversationId = `20260819_usage_${randomUUID()}`;
-    await upsertConversationMeta(conversationId, {
+    await upsertTestConversationMeta(conversationId, {
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -118,7 +117,7 @@ describePg("db conversation (PostgreSQL)", () => {
 
   it("JSONB assistant tool_calls round-trip", async () => {
     const conversationId = "db_jsonb_tool_calls";
-    await upsertConversationMeta(conversationId, {
+    await upsertTestConversationMeta(conversationId, {
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -150,7 +149,7 @@ describePg("db conversation (PostgreSQL)", () => {
 
   it("concurrent appendMessage", async () => {
     const conversationId = "db_concurrent_append";
-    await upsertConversationMeta(conversationId, {
+    await upsertTestConversationMeta(conversationId, {
       model: "test-model",
       cached_toolsets: [],
       functions: [],
@@ -175,7 +174,7 @@ describePg("db conversation (PostgreSQL)", () => {
 
   it("shiftMessagePositions makes room for mid-stream insert", async () => {
     const conversationId = "20260531_shift_test";
-    await upsertConversationMeta(conversationId, {
+    await upsertTestConversationMeta(conversationId, {
       model: "test-model",
       cached_toolsets: [],
       functions: [],

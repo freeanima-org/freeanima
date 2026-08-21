@@ -53,7 +53,12 @@ describePg("habitat conversation.list dual transport", () => {
     const ctx = {
       app_id: "chat",
       instance_id: "default",
-      auth: { subject_id: 1, subject_type: "agent" as const, token_id: 1, scopes: ["full"] },
+      auth: {
+        subject_id: 1,
+        subject_type: "agent" as const,
+        token_id: 1,
+        authorization: { full: true as const },
+      },
       sendEvent: () => {},
     };
     const input = { platform: TEST_SAP_CHAT_PLATFORM };

@@ -1,5 +1,6 @@
 import { omitUndefined } from "./omit-undefined.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 export type ApiProtocolPayload = {
   error?: string;
@@ -47,7 +48,7 @@ export function translateApiErrorValue(value: unknown): string {
     return normalizeNetworkErrorMessage(value);
   }
   if (typeof value === "object") {
-    const obj = value as Record<string, unknown>;
+    const obj = asRecord(value) ?? {};
     if (typeof obj.code === "string" || typeof obj.error === "string") {
       return translateApiPayload(
         omitUndefined({
@@ -56,7 +57,8 @@ export function translateApiErrorValue(value: unknown): string {
           message: typeof obj.message === "string" ? obj.message : undefined,
           params:
             obj.params && typeof obj.params === "object"
-              ? (obj.params as Record<string, string>)
+              ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
+                (obj.params as Record<string, string>)
               : undefined,
         }),
       );

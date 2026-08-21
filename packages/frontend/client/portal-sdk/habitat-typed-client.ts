@@ -28,13 +28,16 @@ import { mcpMethodDefs } from "@freeanima/features/mcp/habitat/method-defs.ts";
 import { notificationMethodDefs } from "@freeanima/features/notification/habitat/method-defs.ts";
 import { objectStorageMethodDefs } from "@freeanima/features/object-storage/habitat/method-defs.ts";
 import { pomodoroMethodDefs } from "@freeanima/features/pomodoro/habitat/method-defs.ts";
+import { shellQuickMethodDefs } from "@freeanima/features/shell-quick/habitat/method-defs.ts";
 import { projectMethodDefs } from "@freeanima/features/project/habitat/method-defs.ts";
+import { objectiveMethodDefs } from "@freeanima/features/objective/habitat/method-defs.ts";
 import { tagMethodDefs } from "@freeanima/features/tag/habitat/method-defs.ts";
 import { subagentMethodDefs } from "@freeanima/features/subagent/habitat/method-defs.ts";
 import { entityMethodDefs } from "@freeanima/features/entity/habitat/method-defs.ts";
 import { taskMethodDefs } from "@freeanima/features/task/habitat/method-defs.ts";
 import { vaultMethodDefs } from "@freeanima/features/vault/habitat/method-defs.ts";
 import { bookmarkMethodDefs } from "@freeanima/features/bookmark/habitat/method-defs.ts";
+import { contactMethodDefs } from "@freeanima/features/contact/habitat/method-defs.ts";
 
 /** 聚合各 feature method-defs（浏览器 client registry；无 handler） */
 export const FEATURE_METHOD_DEFS = {
@@ -42,16 +45,19 @@ export const FEATURE_METHOD_DEFS = {
   ...codingMethodDefs,
   ...taskMethodDefs,
   ...projectMethodDefs,
+  ...objectiveMethodDefs,
   ...tagMethodDefs,
   ...subagentMethodDefs,
   ...entityMethodDefs,
   ...vaultMethodDefs,
   ...bookmarkMethodDefs,
+  ...contactMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,
   ...noteMethodDefs,
   ...calendarMethodDefs,
   ...pomodoroMethodDefs,
+  ...shellQuickMethodDefs,
   ...notificationMethodDefs,
   ...companionMethodDefs,
   ...objectStorageMethodDefs,
@@ -92,12 +98,15 @@ export function createTypedHabitatClient(options: HabitatClientOptions) {
   ensureClientHabitatMethodRegistry();
   const client = createFullHabitatClient(options);
   return {
-    call<K extends HabitatMethod>(
+    async call<K extends HabitatMethod>(
       method: K,
       payload: HabitatMethodInputs[K],
       opts?: HabitatCallOptions,
     ): Promise<HabitatMethodOutputs[K]> {
-      return client.call(method, payload, opts) as Promise<HabitatMethodOutputs[K]>;
+      // FullHabitatClient.call 已 output.parse；再经 portal-sdk registry 对齐本地 HabitatMethodOutputs
+      const raw = await client.call(method, payload, opts);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Zod.parse 对泛型 K 无法收窄到 HabitatMethodOutputs[K]
+      return CLIENT_METHOD_REGISTRY[method].output.parse(raw) as HabitatMethodOutputs[K];
     },
     callRaw<K extends HabitatMethod>(
       method: K,
@@ -105,6 +114,10 @@ export function createTypedHabitatClient(options: HabitatClientOptions) {
       opts?: HabitatCallRawOptions,
     ): Promise<Response> {
       return client.callRaw(method, payload, opts);
+    },
+    /** outbox 等动态 method 名：绕过 HabitatMethod 字面量联合 */
+    callByName(method: string, payload: unknown, opts?: HabitatCallOptions): Promise<unknown> {
+      return client.call(method, payload, opts);
     },
     callViaWs: client.callViaWs.bind(client),
     callViaHttp: client.callViaHttp.bind(client),

@@ -23,6 +23,8 @@ import { resolveValue } from "@freeanima/habitat/platform/config/resolve.ts";
 import { CONFIG_MASKED_SECRET } from "@freeanima/habitat/platform/config";
 import { createBunS3Client } from "@freeanima/features/object-storage/domain/bun-s3.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord as sharedAsRecord } from "@freeanima/shared/util";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import { z } from "zod";
 
 import { ApiHandlerError } from "./errors.ts";
@@ -60,8 +62,7 @@ function runtimeConfig(): RuntimeConfig {
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  return value as Record<string, unknown>;
+  return sharedAsRecord(value) ?? {};
 }
 
 /** 表单草稿优先；仅 *** 或未提供时回退到已保存配置（未脱敏） */
@@ -161,7 +162,7 @@ async function testCamofox(draft: Record<string, unknown>): Promise<ConfigTestCo
     }
     let vncPort: number | undefined;
     try {
-      const data = (await resp.json()) as Record<string, unknown>;
+      const data = sharedAsRecord(await resp.json()) ?? {};
       if (typeof data.vncPort === "number") vncPort = data.vncPort;
     } catch {
       /* 非 JSON 也视为连通 */
@@ -386,12 +387,14 @@ function formatS3ClientError(err: unknown, hints: string[] = []): string {
   if (!(err instanceof Error) && (err === null || typeof err !== "object")) {
     return String(err);
   }
-  const e = err as Error & {
-    name?: string;
-    Code?: string;
-    code?: string;
-    $metadata?: { httpStatusCode?: number; requestId?: string };
-  };
+  const e = assertNarrow<
+    Error & {
+      name?: string;
+      Code?: string;
+      code?: string;
+      $metadata?: { httpStatusCode?: number; requestId?: string };
+    }
+  >(err);
   const code =
     (typeof e.Code === "string" && e.Code) ||
     (typeof e.code === "string" && e.code) ||

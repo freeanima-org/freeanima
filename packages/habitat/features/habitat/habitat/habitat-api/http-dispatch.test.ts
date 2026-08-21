@@ -88,7 +88,7 @@ describe("http-dispatch", () => {
             token_id: 1,
             subject_id: 53,
             subject_type: "user",
-            scopes: ["full"],
+            authorization: { full: true },
           },
         };
       },
@@ -96,16 +96,16 @@ describe("http-dispatch", () => {
     const req = new Request("http://127.0.0.1:2658/rpc/v1/task/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject_kind: "user", title: "auth-body-test" }),
+      body: JSON.stringify({ subject_id: "user", title: "auth-body-test" }),
     });
     const result = await applyHttpAuth(req, "127.0.0.1", serviceAuth);
     expect(result.blocked).toBeNull();
-    expect(await result.req.json()).toEqual({ subject_kind: "user", title: "auth-body-test" });
+    expect(await result.req.json()).toEqual({ subject_id: "user", title: "auth-body-test" });
     expect(result.auth).toEqual({
       token_id: 1,
       subject_id: 53,
       subject_type: "user",
-      scopes: ["full"],
+      authorization: { full: true },
     });
     expect(result.req.headers.get("x-anima-remote-address")).toBe("127.0.0.1");
   });

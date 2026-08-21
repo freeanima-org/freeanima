@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, unlinkSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { randomPublicId } from "@freeanima/shared/util";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { PATHS } from "@freeanima/habitat/core/config/paths.ts";
 import type { MessageAttachmentMeta } from "@freeanima/shared/pg-shapes/jsonb/message-payload.ts";
@@ -58,7 +59,7 @@ export function putChatAttachmentTemp(input: {
 export function getChatAttachmentTemp(tempId: string): ChatAttachmentTempRecord | null {
   try {
     const raw = readFileSync(metaPath(tempId), "utf8");
-    const parsed = JSON.parse(raw) as ChatAttachmentTempRecord;
+    const parsed = assertNarrow<ChatAttachmentTempRecord>(JSON.parse(raw));
     if (!parsed?.temp_id || !parsed.path) return null;
     if (Date.now() - parsed.created_at_ms > CHAT_ATTACHMENT_TTL_MS) {
       deleteChatAttachmentTemp(tempId);

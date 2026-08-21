@@ -40,6 +40,7 @@ export class VrmAnimationPlayer {
   private activeLocomotionSlot: "walk" | "climb" | null = null;
   private oneShotPlaying = false;
   private loaded = false;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
   private motionConfig: MotionBindConfig = { library: [], slots: {} as MotionSlotsConfig };
 
   async bind(

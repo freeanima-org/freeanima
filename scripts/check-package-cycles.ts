@@ -5,11 +5,22 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { isRecord } from "@freeanima/shared/util";
+
 const ROOT = join(import.meta.dir, "..");
 
 const WORKSPACE_DIRS = ["packages", "site"];
 
 type PkgGraph = Map<string, string[]>;
+
+function readPkgNameDeps(pkgPath: string): { name: string; deps: string[] } | null {
+  const raw: unknown = JSON.parse(readFileSync(pkgPath, "utf8"));
+  if (!isRecord(raw) || typeof raw.name !== "string") return null;
+  const deps = isRecord(raw.dependencies)
+    ? Object.keys(raw.dependencies).filter((d) => d.startsWith("@freeanima/"))
+    : [];
+  return { name: raw.name, deps };
+}
 
 function collectPackages(): PkgGraph {
   const graph: PkgGraph = new Map();
@@ -28,27 +39,17 @@ function collectPackages(): PkgGraph {
       const dir = ent.name === "." ? base : join(base, ent.name);
       const pkgPath = join(dir, "package.json");
       if (!existsSync(pkgPath)) continue;
-      const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as {
-        name?: string;
-        dependencies?: Record<string, string>;
-      };
-      if (!pkg.name) continue;
-      const deps = Object.keys(pkg.dependencies ?? {}).filter((d) => d.startsWith("@freeanima/"));
-      graph.set(pkg.name, deps);
+      const pkg = readPkgNameDeps(pkgPath);
+      if (!pkg) continue;
+      graph.set(pkg.name, pkg.deps);
     }
   }
 
   // Root orchestrator
   const rootPkgPath = join(ROOT, "package.json");
   if (existsSync(rootPkgPath)) {
-    const pkg = JSON.parse(readFileSync(rootPkgPath, "utf8")) as {
-      name?: string;
-      dependencies?: Record<string, string>;
-    };
-    if (pkg.name) {
-      const deps = Object.keys(pkg.dependencies ?? {}).filter((d) => d.startsWith("@freeanima/"));
-      graph.set(pkg.name, deps);
-    }
+    const pkg = readPkgNameDeps(rootPkgPath);
+    if (pkg) graph.set(pkg.name, pkg.deps);
   }
 
   return graph;

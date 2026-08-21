@@ -9,110 +9,55 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root";
-import { Route as WorkshopRouteImport } from "./routes/workshop";
-import { Route as SidebarRouteRouteImport } from "./routes/_sidebar/route";
 import { Route as IndexRouteImport } from "./routes/index";
-import { Route as WorkshopPathRouteImport } from "./routes/workshop/$path";
-import { Route as SidebarWorldsRouteImport } from "./routes/_sidebar/worlds";
-import { Route as SidebarDataMaintenanceRouteImport } from "./routes/_sidebar/data-maintenance";
-import { Route as SidebarToolsRouteImport } from "./routes/_sidebar/tools";
-import { Route as SidebarSystemPromptRouteImport } from "./routes/_sidebar/system-prompt";
-import { Route as SidebarSubjectsRouteImport } from "./routes/_sidebar/subjects";
-import { Route as SidebarSemanticMemoryRouteImport } from "./routes/_sidebar/semantic-memory";
-import { Route as SidebarSelfLayerRouteImport } from "./routes/_sidebar/self-layer";
-import { Route as SidebarOutpostsRouteImport } from "./routes/_sidebar/outposts";
-import { Route as SidebarTemporalSummaryRouteImport } from "./routes/_sidebar/temporal-summary";
-import { Route as SidebarMcpRouteImport } from "./routes/_sidebar/mcp";
-import { Route as SidebarDashboardRouteImport } from "./routes/_sidebar/dashboard";
-import { Route as SidebarCronRouteImport } from "./routes/_sidebar/cron";
-import { Route as SidebarCommandsRouteImport } from "./routes/_sidebar/commands";
+import { Route as SidebarRouteRouteImport } from "./routes/_sidebar/route";
+import { Route as WorkshopRouteImport } from "./routes/workshop";
 import { Route as SidebarAutoLlmRunsRouteImport } from "./routes/_sidebar/auto-llm-runs";
+import { Route as SidebarCommandsRouteImport } from "./routes/_sidebar/commands";
 import { Route as SidebarConversationSharesRouteImport } from "./routes/_sidebar/conversation-shares";
-import { Route as SidebarSubagentsRouteImport } from "./routes/_sidebar/subagents";
-import { Route as SidebarSkillsRouteRouteImport } from "./routes/_sidebar/skills/route";
-import { Route as SidebarSkillsIndexRouteImport } from "./routes/_sidebar/skills/index";
-import { Route as SidebarSkillsNameRouteImport } from "./routes/_sidebar/skills/$name";
 import { Route as SidebarConversationsRouteRouteImport } from "./routes/_sidebar/conversations/route";
+import { Route as SidebarCronRouteImport } from "./routes/_sidebar/cron";
+import { Route as SidebarDashboardRouteImport } from "./routes/_sidebar/dashboard";
+import { Route as SidebarDataMaintenanceRouteImport } from "./routes/_sidebar/data-maintenance";
+import { Route as SidebarMcpRouteImport } from "./routes/_sidebar/mcp";
+import { Route as SidebarOutpostsRouteImport } from "./routes/_sidebar/outposts";
+import { Route as SidebarSelfLayerRouteImport } from "./routes/_sidebar/self-layer";
+import { Route as SidebarSemanticMemoryRouteImport } from "./routes/_sidebar/semantic-memory";
+import { Route as SidebarSkillsRouteRouteImport } from "./routes/_sidebar/skills/route";
+import { Route as SidebarSubagentsRouteImport } from "./routes/_sidebar/subagents";
+import { Route as SidebarSubjectsRouteRouteImport } from "./routes/_sidebar/subjects/route";
+import { Route as SidebarSystemPromptRouteImport } from "./routes/_sidebar/system-prompt";
+import { Route as SidebarTemporalSummaryRouteImport } from "./routes/_sidebar/temporal-summary";
+import { Route as SidebarToolsRouteImport } from "./routes/_sidebar/tools";
+import { Route as SidebarWorldsRouteImport } from "./routes/_sidebar/worlds";
+import { Route as WorkshopPathRouteImport } from "./routes/workshop/$path";
 import { Route as SidebarConversationsIndexRouteImport } from "./routes/_sidebar/conversations/index";
 import { Route as SidebarConversationsConversationIdRouteImport } from "./routes/_sidebar/conversations/$conversationId";
+import { Route as SidebarSkillsIndexRouteImport } from "./routes/_sidebar/skills/index";
+import { Route as SidebarSkillsNameRouteImport } from "./routes/_sidebar/skills/$name";
+import { Route as SidebarSubjectsIndexRouteImport } from "./routes/_sidebar/subjects/index";
+import { Route as SidebarSubjectsSubjectIdRouteRouteImport } from "./routes/_sidebar/subjects/$subjectId/route";
+import { Route as SidebarSubjectsSubjectIdTokensRouteRouteImport } from "./routes/_sidebar/subjects/$subjectId/tokens/route";
+import { Route as SidebarSubjectsSubjectIdTokensIndexRouteImport } from "./routes/_sidebar/subjects/$subjectId/tokens/index";
+import { Route as SidebarSubjectsSubjectIdTokensCreateRouteImport } from "./routes/_sidebar/subjects/$subjectId/tokens/create";
 
-const WorkshopRoute = WorkshopRouteImport.update({
-  id: "/workshop",
-  path: "/workshop",
+const IndexRoute = IndexRouteImport.update({
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
 } as any);
 const SidebarRouteRoute = SidebarRouteRouteImport.update({
   id: "/_sidebar",
   getParentRoute: () => rootRouteImport,
 } as any);
-const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+const WorkshopRoute = WorkshopRouteImport.update({
+  id: "/workshop",
+  path: "/workshop",
   getParentRoute: () => rootRouteImport,
 } as any);
-const WorkshopPathRoute = WorkshopPathRouteImport.update({
-  id: "/$path",
-  path: "/$path",
-  getParentRoute: () => WorkshopRoute,
-} as any);
-const SidebarWorldsRoute = SidebarWorldsRouteImport.update({
-  id: "/worlds",
-  path: "/worlds",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarDataMaintenanceRoute = SidebarDataMaintenanceRouteImport.update({
-  id: "/data-maintenance",
-  path: "/data-maintenance",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarToolsRoute = SidebarToolsRouteImport.update({
-  id: "/tools",
-  path: "/tools",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarSystemPromptRoute = SidebarSystemPromptRouteImport.update({
-  id: "/system-prompt",
-  path: "/system-prompt",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarSubjectsRoute = SidebarSubjectsRouteImport.update({
-  id: "/subjects",
-  path: "/subjects",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarSemanticMemoryRoute = SidebarSemanticMemoryRouteImport.update({
-  id: "/semantic-memory",
-  path: "/semantic-memory",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarSelfLayerRoute = SidebarSelfLayerRouteImport.update({
-  id: "/self-layer",
-  path: "/self-layer",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarOutpostsRoute = SidebarOutpostsRouteImport.update({
-  id: "/outposts",
-  path: "/outposts",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarTemporalSummaryRoute = SidebarTemporalSummaryRouteImport.update({
-  id: "/temporal-summary",
-  path: "/temporal-summary",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarMcpRoute = SidebarMcpRouteImport.update({
-  id: "/mcp",
-  path: "/mcp",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarDashboardRoute = SidebarDashboardRouteImport.update({
-  id: "/dashboard",
-  path: "/dashboard",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
-const SidebarCronRoute = SidebarCronRouteImport.update({
-  id: "/cron",
-  path: "/cron",
+const SidebarAutoLlmRunsRoute = SidebarAutoLlmRunsRouteImport.update({
+  id: "/auto-llm-runs",
+  path: "/auto-llm-runs",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarCommandsRoute = SidebarCommandsRouteImport.update({
@@ -120,19 +65,49 @@ const SidebarCommandsRoute = SidebarCommandsRouteImport.update({
   path: "/commands",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarAutoLlmRunsRoute = SidebarAutoLlmRunsRouteImport.update({
-  id: "/auto-llm-runs",
-  path: "/auto-llm-runs",
-  getParentRoute: () => SidebarRouteRoute,
-} as any);
 const SidebarConversationSharesRoute = SidebarConversationSharesRouteImport.update({
   id: "/conversation-shares",
   path: "/conversation-shares",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarSubagentsRoute = SidebarSubagentsRouteImport.update({
-  id: "/subagents",
-  path: "/subagents",
+const SidebarConversationsRouteRoute = SidebarConversationsRouteRouteImport.update({
+  id: "/conversations",
+  path: "/conversations",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarCronRoute = SidebarCronRouteImport.update({
+  id: "/cron",
+  path: "/cron",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarDashboardRoute = SidebarDashboardRouteImport.update({
+  id: "/dashboard",
+  path: "/dashboard",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarDataMaintenanceRoute = SidebarDataMaintenanceRouteImport.update({
+  id: "/data-maintenance",
+  path: "/data-maintenance",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarMcpRoute = SidebarMcpRouteImport.update({
+  id: "/mcp",
+  path: "/mcp",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarOutpostsRoute = SidebarOutpostsRouteImport.update({
+  id: "/outposts",
+  path: "/outposts",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarSelfLayerRoute = SidebarSelfLayerRouteImport.update({
+  id: "/self-layer",
+  path: "/self-layer",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarSemanticMemoryRoute = SidebarSemanticMemoryRouteImport.update({
+  id: "/semantic-memory",
+  path: "/semantic-memory",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
 const SidebarSkillsRouteRoute = SidebarSkillsRouteRouteImport.update({
@@ -140,20 +115,40 @@ const SidebarSkillsRouteRoute = SidebarSkillsRouteRouteImport.update({
   path: "/skills",
   getParentRoute: () => SidebarRouteRoute,
 } as any);
-const SidebarSkillsIndexRoute = SidebarSkillsIndexRouteImport.update({
-  id: "/",
-  path: "/",
-  getParentRoute: () => SidebarSkillsRouteRoute,
-} as any);
-const SidebarSkillsNameRoute = SidebarSkillsNameRouteImport.update({
-  id: "/$name",
-  path: "/$name",
-  getParentRoute: () => SidebarSkillsRouteRoute,
-} as any);
-const SidebarConversationsRouteRoute = SidebarConversationsRouteRouteImport.update({
-  id: "/conversations",
-  path: "/conversations",
+const SidebarSubagentsRoute = SidebarSubagentsRouteImport.update({
+  id: "/subagents",
+  path: "/subagents",
   getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarSubjectsRouteRoute = SidebarSubjectsRouteRouteImport.update({
+  id: "/subjects",
+  path: "/subjects",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarSystemPromptRoute = SidebarSystemPromptRouteImport.update({
+  id: "/system-prompt",
+  path: "/system-prompt",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarTemporalSummaryRoute = SidebarTemporalSummaryRouteImport.update({
+  id: "/temporal-summary",
+  path: "/temporal-summary",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarToolsRoute = SidebarToolsRouteImport.update({
+  id: "/tools",
+  path: "/tools",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const SidebarWorldsRoute = SidebarWorldsRouteImport.update({
+  id: "/worlds",
+  path: "/worlds",
+  getParentRoute: () => SidebarRouteRoute,
+} as any);
+const WorkshopPathRoute = WorkshopPathRouteImport.update({
+  id: "/$path",
+  path: "/$path",
+  getParentRoute: () => WorkshopRoute,
 } as any);
 const SidebarConversationsIndexRoute = SidebarConversationsIndexRouteImport.update({
   id: "/",
@@ -166,58 +161,104 @@ const SidebarConversationsConversationIdRoute =
     path: "/$conversationId",
     getParentRoute: () => SidebarConversationsRouteRoute,
   } as any);
+const SidebarSkillsIndexRoute = SidebarSkillsIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => SidebarSkillsRouteRoute,
+} as any);
+const SidebarSkillsNameRoute = SidebarSkillsNameRouteImport.update({
+  id: "/$name",
+  path: "/$name",
+  getParentRoute: () => SidebarSkillsRouteRoute,
+} as any);
+const SidebarSubjectsIndexRoute = SidebarSubjectsIndexRouteImport.update({
+  id: "/",
+  path: "/",
+  getParentRoute: () => SidebarSubjectsRouteRoute,
+} as any);
+const SidebarSubjectsSubjectIdRouteRoute = SidebarSubjectsSubjectIdRouteRouteImport.update({
+  id: "/$subjectId",
+  path: "/$subjectId",
+  getParentRoute: () => SidebarSubjectsRouteRoute,
+} as any);
+const SidebarSubjectsSubjectIdTokensRouteRoute =
+  SidebarSubjectsSubjectIdTokensRouteRouteImport.update({
+    id: "/tokens",
+    path: "/tokens",
+    getParentRoute: () => SidebarSubjectsSubjectIdRouteRoute,
+  } as any);
+const SidebarSubjectsSubjectIdTokensIndexRoute =
+  SidebarSubjectsSubjectIdTokensIndexRouteImport.update({
+    id: "/",
+    path: "/",
+    getParentRoute: () => SidebarSubjectsSubjectIdTokensRouteRoute,
+  } as any);
+const SidebarSubjectsSubjectIdTokensCreateRoute =
+  SidebarSubjectsSubjectIdTokensCreateRouteImport.update({
+    id: "/create",
+    path: "/create",
+    getParentRoute: () => SidebarSubjectsSubjectIdTokensRouteRoute,
+  } as any);
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/conversations": typeof SidebarConversationsRouteRouteWithChildren;
-  "/subagents": typeof SidebarSubagentsRoute;
+  "/skills": typeof SidebarSkillsRouteRouteWithChildren;
+  "/subjects": typeof SidebarSubjectsRouteRouteWithChildren;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
-  "/conversation-shares": typeof SidebarConversationSharesRoute;
   "/commands": typeof SidebarCommandsRoute;
+  "/conversation-shares": typeof SidebarConversationSharesRoute;
   "/cron": typeof SidebarCronRoute;
   "/dashboard": typeof SidebarDashboardRoute;
+  "/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/mcp": typeof SidebarMcpRoute;
-  "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
-  "/subjects": typeof SidebarSubjectsRoute;
+  "/subagents": typeof SidebarSubagentsRoute;
   "/system-prompt": typeof SidebarSystemPromptRoute;
+  "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/tools": typeof SidebarToolsRoute;
-  "/skills": typeof SidebarSkillsRouteRouteWithChildren;
-  "/skills/$name": typeof SidebarSkillsNameRoute;
   "/worlds": typeof SidebarWorldsRoute;
-  "/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
+  "/subjects/$subjectId": typeof SidebarSubjectsSubjectIdRouteRouteWithChildren;
   "/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
+  "/skills/$name": typeof SidebarSkillsNameRoute;
   "/conversations/": typeof SidebarConversationsIndexRoute;
   "/skills/": typeof SidebarSkillsIndexRoute;
+  "/subjects/": typeof SidebarSubjectsIndexRoute;
+  "/subjects/$subjectId/tokens": typeof SidebarSubjectsSubjectIdTokensRouteRouteWithChildren;
+  "/subjects/$subjectId/tokens/create": typeof SidebarSubjectsSubjectIdTokensCreateRoute;
+  "/subjects/$subjectId/tokens/": typeof SidebarSubjectsSubjectIdTokensIndexRoute;
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/workshop": typeof WorkshopRouteWithChildren;
-  "/subagents": typeof SidebarSubagentsRoute;
   "/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
-  "/conversation-shares": typeof SidebarConversationSharesRoute;
   "/commands": typeof SidebarCommandsRoute;
+  "/conversation-shares": typeof SidebarConversationSharesRoute;
   "/cron": typeof SidebarCronRoute;
   "/dashboard": typeof SidebarDashboardRoute;
+  "/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/mcp": typeof SidebarMcpRoute;
-  "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/outposts": typeof SidebarOutpostsRoute;
   "/self-layer": typeof SidebarSelfLayerRoute;
   "/semantic-memory": typeof SidebarSemanticMemoryRoute;
-  "/subjects": typeof SidebarSubjectsRoute;
+  "/subagents": typeof SidebarSubagentsRoute;
   "/system-prompt": typeof SidebarSystemPromptRoute;
+  "/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/tools": typeof SidebarToolsRoute;
-  "/skills/$name": typeof SidebarSkillsNameRoute;
   "/worlds": typeof SidebarWorldsRoute;
-  "/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
+  "/subjects/$subjectId": typeof SidebarSubjectsSubjectIdRouteRouteWithChildren;
   "/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
+  "/skills/$name": typeof SidebarSkillsNameRoute;
   "/conversations": typeof SidebarConversationsIndexRoute;
   "/skills": typeof SidebarSkillsIndexRoute;
+  "/subjects": typeof SidebarSubjectsIndexRoute;
+  "/subjects/$subjectId/tokens/create": typeof SidebarSubjectsSubjectIdTokensCreateRoute;
+  "/subjects/$subjectId/tokens": typeof SidebarSubjectsSubjectIdTokensIndexRoute;
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport;
@@ -225,28 +266,33 @@ export interface FileRoutesById {
   "/_sidebar": typeof SidebarRouteRouteWithChildren;
   "/workshop": typeof WorkshopRouteWithChildren;
   "/_sidebar/conversations": typeof SidebarConversationsRouteRouteWithChildren;
-  "/_sidebar/subagents": typeof SidebarSubagentsRoute;
+  "/_sidebar/skills": typeof SidebarSkillsRouteRouteWithChildren;
+  "/_sidebar/subjects": typeof SidebarSubjectsRouteRouteWithChildren;
   "/_sidebar/auto-llm-runs": typeof SidebarAutoLlmRunsRoute;
-  "/_sidebar/conversation-shares": typeof SidebarConversationSharesRoute;
   "/_sidebar/commands": typeof SidebarCommandsRoute;
+  "/_sidebar/conversation-shares": typeof SidebarConversationSharesRoute;
   "/_sidebar/cron": typeof SidebarCronRoute;
   "/_sidebar/dashboard": typeof SidebarDashboardRoute;
+  "/_sidebar/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/_sidebar/mcp": typeof SidebarMcpRoute;
-  "/_sidebar/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/_sidebar/outposts": typeof SidebarOutpostsRoute;
   "/_sidebar/self-layer": typeof SidebarSelfLayerRoute;
   "/_sidebar/semantic-memory": typeof SidebarSemanticMemoryRoute;
-  "/_sidebar/subjects": typeof SidebarSubjectsRoute;
+  "/_sidebar/subagents": typeof SidebarSubagentsRoute;
   "/_sidebar/system-prompt": typeof SidebarSystemPromptRoute;
+  "/_sidebar/temporal-summary": typeof SidebarTemporalSummaryRoute;
   "/_sidebar/tools": typeof SidebarToolsRoute;
-  "/_sidebar/skills": typeof SidebarSkillsRouteRouteWithChildren;
-  "/_sidebar/skills/$name": typeof SidebarSkillsNameRoute;
   "/_sidebar/worlds": typeof SidebarWorldsRoute;
-  "/_sidebar/data-maintenance": typeof SidebarDataMaintenanceRoute;
   "/workshop/$path": typeof WorkshopPathRoute;
+  "/_sidebar/subjects/$subjectId": typeof SidebarSubjectsSubjectIdRouteRouteWithChildren;
   "/_sidebar/conversations/$conversationId": typeof SidebarConversationsConversationIdRoute;
+  "/_sidebar/skills/$name": typeof SidebarSkillsNameRoute;
   "/_sidebar/conversations/": typeof SidebarConversationsIndexRoute;
   "/_sidebar/skills/": typeof SidebarSkillsIndexRoute;
+  "/_sidebar/subjects/": typeof SidebarSubjectsIndexRoute;
+  "/_sidebar/subjects/$subjectId/tokens": typeof SidebarSubjectsSubjectIdTokensRouteRouteWithChildren;
+  "/_sidebar/subjects/$subjectId/tokens/create": typeof SidebarSubjectsSubjectIdTokensCreateRoute;
+  "/_sidebar/subjects/$subjectId/tokens/": typeof SidebarSubjectsSubjectIdTokensIndexRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
@@ -254,81 +300,94 @@ export interface FileRouteTypes {
     | "/"
     | "/workshop"
     | "/conversations"
-    | "/subagents"
+    | "/skills"
+    | "/subjects"
     | "/auto-llm-runs"
-    | "/conversation-shares"
     | "/commands"
+    | "/conversation-shares"
     | "/cron"
     | "/dashboard"
+    | "/data-maintenance"
     | "/mcp"
-    | "/temporal-summary"
     | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
-    | "/subjects"
+    | "/subagents"
     | "/system-prompt"
+    | "/temporal-summary"
     | "/tools"
-    | "/skills"
-    | "/skills/$name"
     | "/worlds"
-    | "/data-maintenance"
     | "/workshop/$path"
+    | "/subjects/$subjectId"
     | "/conversations/$conversationId"
+    | "/skills/$name"
     | "/conversations/"
-    | "/skills/";
+    | "/skills/"
+    | "/subjects/"
+    | "/subjects/$subjectId/tokens"
+    | "/subjects/$subjectId/tokens/create"
+    | "/subjects/$subjectId/tokens/";
   fileRoutesByTo: FileRoutesByTo;
   to:
     | "/"
     | "/workshop"
-    | "/subagents"
     | "/auto-llm-runs"
-    | "/conversation-shares"
     | "/commands"
+    | "/conversation-shares"
     | "/cron"
     | "/dashboard"
+    | "/data-maintenance"
     | "/mcp"
-    | "/temporal-summary"
     | "/outposts"
     | "/self-layer"
     | "/semantic-memory"
-    | "/subjects"
+    | "/subagents"
     | "/system-prompt"
+    | "/temporal-summary"
     | "/tools"
-    | "/skills/$name"
     | "/worlds"
-    | "/data-maintenance"
     | "/workshop/$path"
+    | "/subjects/$subjectId"
     | "/conversations/$conversationId"
+    | "/skills/$name"
     | "/conversations"
-    | "/skills";
+    | "/skills"
+    | "/subjects"
+    | "/subjects/$subjectId/tokens/create"
+    | "/subjects/$subjectId/tokens";
   id:
     | "__root__"
     | "/"
     | "/_sidebar"
     | "/workshop"
     | "/_sidebar/conversations"
-    | "/_sidebar/subagents"
+    | "/_sidebar/skills"
+    | "/_sidebar/subjects"
     | "/_sidebar/auto-llm-runs"
-    | "/_sidebar/conversation-shares"
     | "/_sidebar/commands"
+    | "/_sidebar/conversation-shares"
     | "/_sidebar/cron"
     | "/_sidebar/dashboard"
+    | "/_sidebar/data-maintenance"
     | "/_sidebar/mcp"
-    | "/_sidebar/temporal-summary"
     | "/_sidebar/outposts"
     | "/_sidebar/self-layer"
     | "/_sidebar/semantic-memory"
-    | "/_sidebar/subjects"
+    | "/_sidebar/subagents"
     | "/_sidebar/system-prompt"
+    | "/_sidebar/temporal-summary"
     | "/_sidebar/tools"
-    | "/_sidebar/skills"
-    | "/_sidebar/skills/$name"
     | "/_sidebar/worlds"
-    | "/_sidebar/data-maintenance"
     | "/workshop/$path"
+    | "/_sidebar/subjects/$subjectId"
     | "/_sidebar/conversations/$conversationId"
+    | "/_sidebar/skills/$name"
     | "/_sidebar/conversations/"
-    | "/_sidebar/skills/";
+    | "/_sidebar/skills/"
+    | "/_sidebar/subjects/"
+    | "/_sidebar/subjects/$subjectId/tokens"
+    | "/_sidebar/subjects/$subjectId/tokens/create"
+    | "/_sidebar/subjects/$subjectId/tokens/";
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
@@ -339,11 +398,11 @@ export interface RootRouteChildren {
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/workshop": {
-      id: "/workshop";
-      path: "/workshop";
-      fullPath: "/workshop";
-      preLoaderRoute: typeof WorkshopRouteImport;
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/_sidebar": {
@@ -353,123 +412,18 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarRouteRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
+    "/workshop": {
+      id: "/workshop";
+      path: "/workshop";
+      fullPath: "/workshop";
+      preLoaderRoute: typeof WorkshopRouteImport;
       parentRoute: typeof rootRouteImport;
     };
-    "/workshop/$path": {
-      id: "/workshop/$path";
-      path: "/$path";
-      fullPath: "/workshop/$path";
-      preLoaderRoute: typeof WorkshopPathRouteImport;
-      parentRoute: typeof WorkshopRoute;
-    };
-    "/_sidebar/worlds": {
-      id: "/_sidebar/worlds";
-      path: "/worlds";
-      fullPath: "/worlds";
-      preLoaderRoute: typeof SidebarWorldsRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/data-maintenance": {
-      id: "/_sidebar/data-maintenance";
-      path: "/data-maintenance";
-      fullPath: "/data-maintenance";
-      preLoaderRoute: typeof SidebarDataMaintenanceRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/tools": {
-      id: "/_sidebar/tools";
-      path: "/tools";
-      fullPath: "/tools";
-      preLoaderRoute: typeof SidebarToolsRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/skills": {
-      id: "/_sidebar/skills";
-      path: "/skills";
-      fullPath: "/skills";
-      preLoaderRoute: typeof SidebarSkillsRouteRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/skills/$name": {
-      id: "/_sidebar/skills/$name";
-      path: "/$name";
-      fullPath: "/skills/$name";
-      preLoaderRoute: typeof SidebarSkillsNameRouteImport;
-      parentRoute: typeof SidebarSkillsRouteRoute;
-    };
-    "/_sidebar/skills/": {
-      id: "/_sidebar/skills/";
-      path: "/";
-      fullPath: "/skills/";
-      preLoaderRoute: typeof SidebarSkillsIndexRouteImport;
-      parentRoute: typeof SidebarSkillsRouteRoute;
-    };
-    "/_sidebar/system-prompt": {
-      id: "/_sidebar/system-prompt";
-      path: "/system-prompt";
-      fullPath: "/system-prompt";
-      preLoaderRoute: typeof SidebarSystemPromptRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/subjects": {
-      id: "/_sidebar/subjects";
-      path: "/subjects";
-      fullPath: "/subjects";
-      preLoaderRoute: typeof SidebarSubjectsRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/semantic-memory": {
-      id: "/_sidebar/semantic-memory";
-      path: "/semantic-memory";
-      fullPath: "/semantic-memory";
-      preLoaderRoute: typeof SidebarSemanticMemoryRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/self-layer": {
-      id: "/_sidebar/self-layer";
-      path: "/self-layer";
-      fullPath: "/self-layer";
-      preLoaderRoute: typeof SidebarSelfLayerRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/outposts": {
-      id: "/_sidebar/outposts";
-      path: "/outposts";
-      fullPath: "/outposts";
-      preLoaderRoute: typeof SidebarOutpostsRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/temporal-summary": {
-      id: "/_sidebar/temporal-summary";
-      path: "/temporal-summary";
-      fullPath: "/temporal-summary";
-      preLoaderRoute: typeof SidebarTemporalSummaryRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/mcp": {
-      id: "/_sidebar/mcp";
-      path: "/mcp";
-      fullPath: "/mcp";
-      preLoaderRoute: typeof SidebarMcpRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/dashboard": {
-      id: "/_sidebar/dashboard";
-      path: "/dashboard";
-      fullPath: "/dashboard";
-      preLoaderRoute: typeof SidebarDashboardRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
-    "/_sidebar/cron": {
-      id: "/_sidebar/cron";
-      path: "/cron";
-      fullPath: "/cron";
-      preLoaderRoute: typeof SidebarCronRouteImport;
+    "/_sidebar/auto-llm-runs": {
+      id: "/_sidebar/auto-llm-runs";
+      path: "/auto-llm-runs";
+      fullPath: "/auto-llm-runs";
+      preLoaderRoute: typeof SidebarAutoLlmRunsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/commands": {
@@ -479,18 +433,74 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarCommandsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
-    "/_sidebar/auto-llm-runs": {
-      id: "/_sidebar/auto-llm-runs";
-      path: "/auto-llm-runs";
-      fullPath: "/auto-llm-runs";
-      preLoaderRoute: typeof SidebarAutoLlmRunsRouteImport;
-      parentRoute: typeof SidebarRouteRoute;
-    };
     "/_sidebar/conversation-shares": {
       id: "/_sidebar/conversation-shares";
       path: "/conversation-shares";
       fullPath: "/conversation-shares";
       preLoaderRoute: typeof SidebarConversationSharesRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/conversations": {
+      id: "/_sidebar/conversations";
+      path: "/conversations";
+      fullPath: "/conversations";
+      preLoaderRoute: typeof SidebarConversationsRouteRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/cron": {
+      id: "/_sidebar/cron";
+      path: "/cron";
+      fullPath: "/cron";
+      preLoaderRoute: typeof SidebarCronRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/dashboard": {
+      id: "/_sidebar/dashboard";
+      path: "/dashboard";
+      fullPath: "/dashboard";
+      preLoaderRoute: typeof SidebarDashboardRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/data-maintenance": {
+      id: "/_sidebar/data-maintenance";
+      path: "/data-maintenance";
+      fullPath: "/data-maintenance";
+      preLoaderRoute: typeof SidebarDataMaintenanceRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/mcp": {
+      id: "/_sidebar/mcp";
+      path: "/mcp";
+      fullPath: "/mcp";
+      preLoaderRoute: typeof SidebarMcpRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/outposts": {
+      id: "/_sidebar/outposts";
+      path: "/outposts";
+      fullPath: "/outposts";
+      preLoaderRoute: typeof SidebarOutpostsRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/self-layer": {
+      id: "/_sidebar/self-layer";
+      path: "/self-layer";
+      fullPath: "/self-layer";
+      preLoaderRoute: typeof SidebarSelfLayerRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/semantic-memory": {
+      id: "/_sidebar/semantic-memory";
+      path: "/semantic-memory";
+      fullPath: "/semantic-memory";
+      preLoaderRoute: typeof SidebarSemanticMemoryRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/skills": {
+      id: "/_sidebar/skills";
+      path: "/skills";
+      fullPath: "/skills";
+      preLoaderRoute: typeof SidebarSkillsRouteRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
     "/_sidebar/subagents": {
@@ -500,12 +510,47 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof SidebarSubagentsRouteImport;
       parentRoute: typeof SidebarRouteRoute;
     };
-    "/_sidebar/conversations": {
-      id: "/_sidebar/conversations";
-      path: "/conversations";
-      fullPath: "/conversations";
-      preLoaderRoute: typeof SidebarConversationsRouteRouteImport;
+    "/_sidebar/subjects": {
+      id: "/_sidebar/subjects";
+      path: "/subjects";
+      fullPath: "/subjects";
+      preLoaderRoute: typeof SidebarSubjectsRouteRouteImport;
       parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/system-prompt": {
+      id: "/_sidebar/system-prompt";
+      path: "/system-prompt";
+      fullPath: "/system-prompt";
+      preLoaderRoute: typeof SidebarSystemPromptRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/temporal-summary": {
+      id: "/_sidebar/temporal-summary";
+      path: "/temporal-summary";
+      fullPath: "/temporal-summary";
+      preLoaderRoute: typeof SidebarTemporalSummaryRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/tools": {
+      id: "/_sidebar/tools";
+      path: "/tools";
+      fullPath: "/tools";
+      preLoaderRoute: typeof SidebarToolsRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/_sidebar/worlds": {
+      id: "/_sidebar/worlds";
+      path: "/worlds";
+      fullPath: "/worlds";
+      preLoaderRoute: typeof SidebarWorldsRouteImport;
+      parentRoute: typeof SidebarRouteRoute;
+    };
+    "/workshop/$path": {
+      id: "/workshop/$path";
+      path: "/$path";
+      fullPath: "/workshop/$path";
+      preLoaderRoute: typeof WorkshopPathRouteImport;
+      parentRoute: typeof WorkshopRoute;
     };
     "/_sidebar/conversations/": {
       id: "/_sidebar/conversations/";
@@ -520,6 +565,55 @@ declare module "@tanstack/react-router" {
       fullPath: "/conversations/$conversationId";
       preLoaderRoute: typeof SidebarConversationsConversationIdRouteImport;
       parentRoute: typeof SidebarConversationsRouteRoute;
+    };
+    "/_sidebar/skills/": {
+      id: "/_sidebar/skills/";
+      path: "/";
+      fullPath: "/skills/";
+      preLoaderRoute: typeof SidebarSkillsIndexRouteImport;
+      parentRoute: typeof SidebarSkillsRouteRoute;
+    };
+    "/_sidebar/skills/$name": {
+      id: "/_sidebar/skills/$name";
+      path: "/$name";
+      fullPath: "/skills/$name";
+      preLoaderRoute: typeof SidebarSkillsNameRouteImport;
+      parentRoute: typeof SidebarSkillsRouteRoute;
+    };
+    "/_sidebar/subjects/": {
+      id: "/_sidebar/subjects/";
+      path: "/";
+      fullPath: "/subjects/";
+      preLoaderRoute: typeof SidebarSubjectsIndexRouteImport;
+      parentRoute: typeof SidebarSubjectsRouteRoute;
+    };
+    "/_sidebar/subjects/$subjectId": {
+      id: "/_sidebar/subjects/$subjectId";
+      path: "/$subjectId";
+      fullPath: "/subjects/$subjectId";
+      preLoaderRoute: typeof SidebarSubjectsSubjectIdRouteRouteImport;
+      parentRoute: typeof SidebarSubjectsRouteRoute;
+    };
+    "/_sidebar/subjects/$subjectId/tokens": {
+      id: "/_sidebar/subjects/$subjectId/tokens";
+      path: "/tokens";
+      fullPath: "/subjects/$subjectId/tokens";
+      preLoaderRoute: typeof SidebarSubjectsSubjectIdTokensRouteRouteImport;
+      parentRoute: typeof SidebarSubjectsSubjectIdRouteRoute;
+    };
+    "/_sidebar/subjects/$subjectId/tokens/": {
+      id: "/_sidebar/subjects/$subjectId/tokens/";
+      path: "/";
+      fullPath: "/subjects/$subjectId/tokens/";
+      preLoaderRoute: typeof SidebarSubjectsSubjectIdTokensIndexRouteImport;
+      parentRoute: typeof SidebarSubjectsSubjectIdTokensRouteRoute;
+    };
+    "/_sidebar/subjects/$subjectId/tokens/create": {
+      id: "/_sidebar/subjects/$subjectId/tokens/create";
+      path: "/create";
+      fullPath: "/subjects/$subjectId/tokens/create";
+      preLoaderRoute: typeof SidebarSubjectsSubjectIdTokensCreateRouteImport;
+      parentRoute: typeof SidebarSubjectsSubjectIdTokensRouteRoute;
     };
   }
 }
@@ -552,46 +646,87 @@ const SidebarSkillsRouteRouteWithChildren = SidebarSkillsRouteRoute._addFileChil
   SidebarSkillsRouteRouteChildren,
 );
 
+interface SidebarSubjectsSubjectIdTokensRouteRouteChildren {
+  SidebarSubjectsSubjectIdTokensCreateRoute: typeof SidebarSubjectsSubjectIdTokensCreateRoute;
+  SidebarSubjectsSubjectIdTokensIndexRoute: typeof SidebarSubjectsSubjectIdTokensIndexRoute;
+}
+
+const SidebarSubjectsSubjectIdTokensRouteRouteChildren: SidebarSubjectsSubjectIdTokensRouteRouteChildren =
+  {
+    SidebarSubjectsSubjectIdTokensCreateRoute: SidebarSubjectsSubjectIdTokensCreateRoute,
+    SidebarSubjectsSubjectIdTokensIndexRoute: SidebarSubjectsSubjectIdTokensIndexRoute,
+  };
+
+const SidebarSubjectsSubjectIdTokensRouteRouteWithChildren =
+  SidebarSubjectsSubjectIdTokensRouteRoute._addFileChildren(
+    SidebarSubjectsSubjectIdTokensRouteRouteChildren,
+  );
+
+interface SidebarSubjectsSubjectIdRouteRouteChildren {
+  SidebarSubjectsSubjectIdTokensRouteRoute: typeof SidebarSubjectsSubjectIdTokensRouteRouteWithChildren;
+}
+
+const SidebarSubjectsSubjectIdRouteRouteChildren: SidebarSubjectsSubjectIdRouteRouteChildren = {
+  SidebarSubjectsSubjectIdTokensRouteRoute: SidebarSubjectsSubjectIdTokensRouteRouteWithChildren,
+};
+
+const SidebarSubjectsSubjectIdRouteRouteWithChildren =
+  SidebarSubjectsSubjectIdRouteRoute._addFileChildren(SidebarSubjectsSubjectIdRouteRouteChildren);
+
+interface SidebarSubjectsRouteRouteChildren {
+  SidebarSubjectsSubjectIdRouteRoute: typeof SidebarSubjectsSubjectIdRouteRouteWithChildren;
+  SidebarSubjectsIndexRoute: typeof SidebarSubjectsIndexRoute;
+}
+
+const SidebarSubjectsRouteRouteChildren: SidebarSubjectsRouteRouteChildren = {
+  SidebarSubjectsSubjectIdRouteRoute: SidebarSubjectsSubjectIdRouteRouteWithChildren,
+  SidebarSubjectsIndexRoute: SidebarSubjectsIndexRoute,
+};
+
+const SidebarSubjectsRouteRouteWithChildren = SidebarSubjectsRouteRoute._addFileChildren(
+  SidebarSubjectsRouteRouteChildren,
+);
+
 interface SidebarRouteRouteChildren {
   SidebarConversationsRouteRoute: typeof SidebarConversationsRouteRouteWithChildren;
-  SidebarSubagentsRoute: typeof SidebarSubagentsRoute;
+  SidebarSkillsRouteRoute: typeof SidebarSkillsRouteRouteWithChildren;
+  SidebarSubjectsRouteRoute: typeof SidebarSubjectsRouteRouteWithChildren;
   SidebarAutoLlmRunsRoute: typeof SidebarAutoLlmRunsRoute;
-  SidebarConversationSharesRoute: typeof SidebarConversationSharesRoute;
   SidebarCommandsRoute: typeof SidebarCommandsRoute;
+  SidebarConversationSharesRoute: typeof SidebarConversationSharesRoute;
   SidebarCronRoute: typeof SidebarCronRoute;
   SidebarDashboardRoute: typeof SidebarDashboardRoute;
+  SidebarDataMaintenanceRoute: typeof SidebarDataMaintenanceRoute;
   SidebarMcpRoute: typeof SidebarMcpRoute;
-  SidebarTemporalSummaryRoute: typeof SidebarTemporalSummaryRoute;
   SidebarOutpostsRoute: typeof SidebarOutpostsRoute;
   SidebarSelfLayerRoute: typeof SidebarSelfLayerRoute;
   SidebarSemanticMemoryRoute: typeof SidebarSemanticMemoryRoute;
-  SidebarSubjectsRoute: typeof SidebarSubjectsRoute;
+  SidebarSubagentsRoute: typeof SidebarSubagentsRoute;
   SidebarSystemPromptRoute: typeof SidebarSystemPromptRoute;
+  SidebarTemporalSummaryRoute: typeof SidebarTemporalSummaryRoute;
   SidebarToolsRoute: typeof SidebarToolsRoute;
-  SidebarSkillsRouteRoute: typeof SidebarSkillsRouteRouteWithChildren;
   SidebarWorldsRoute: typeof SidebarWorldsRoute;
-  SidebarDataMaintenanceRoute: typeof SidebarDataMaintenanceRoute;
 }
 
 const SidebarRouteRouteChildren: SidebarRouteRouteChildren = {
   SidebarConversationsRouteRoute: SidebarConversationsRouteRouteWithChildren,
-  SidebarSubagentsRoute: SidebarSubagentsRoute,
+  SidebarSkillsRouteRoute: SidebarSkillsRouteRouteWithChildren,
+  SidebarSubjectsRouteRoute: SidebarSubjectsRouteRouteWithChildren,
   SidebarAutoLlmRunsRoute: SidebarAutoLlmRunsRoute,
-  SidebarConversationSharesRoute: SidebarConversationSharesRoute,
   SidebarCommandsRoute: SidebarCommandsRoute,
+  SidebarConversationSharesRoute: SidebarConversationSharesRoute,
   SidebarCronRoute: SidebarCronRoute,
   SidebarDashboardRoute: SidebarDashboardRoute,
+  SidebarDataMaintenanceRoute: SidebarDataMaintenanceRoute,
   SidebarMcpRoute: SidebarMcpRoute,
-  SidebarTemporalSummaryRoute: SidebarTemporalSummaryRoute,
   SidebarOutpostsRoute: SidebarOutpostsRoute,
   SidebarSelfLayerRoute: SidebarSelfLayerRoute,
   SidebarSemanticMemoryRoute: SidebarSemanticMemoryRoute,
-  SidebarSubjectsRoute: SidebarSubjectsRoute,
+  SidebarSubagentsRoute: SidebarSubagentsRoute,
   SidebarSystemPromptRoute: SidebarSystemPromptRoute,
+  SidebarTemporalSummaryRoute: SidebarTemporalSummaryRoute,
   SidebarToolsRoute: SidebarToolsRoute,
-  SidebarSkillsRouteRoute: SidebarSkillsRouteRouteWithChildren,
   SidebarWorldsRoute: SidebarWorldsRoute,
-  SidebarDataMaintenanceRoute: SidebarDataMaintenanceRoute,
 };
 
 const SidebarRouteRouteWithChildren = SidebarRouteRoute._addFileChildren(SidebarRouteRouteChildren);

@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 export type ColumnSplits = {
   list?: number;
   middle?: number;
@@ -29,9 +31,13 @@ export function readColumnSplits(key: string): ColumnSplits | null {
   try {
     const raw = localStorage.getItem(`${STORAGE_PREFIX}${key}`);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as ColumnSplits;
-    if (parsed == null || typeof parsed !== "object") return null;
-    return parsed;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed)) return null;
+    const splits: ColumnSplits = {};
+    if (typeof parsed.list === "number") splits.list = parsed.list;
+    if (typeof parsed.middle === "number") splits.middle = parsed.middle;
+    if (splits.list === undefined && splits.middle === undefined) return null;
+    return splits;
   } catch {
     return null;
   }

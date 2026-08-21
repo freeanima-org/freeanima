@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const entitySubjectKindSchema = notificationRecipientKindSchema;
-
 export const entityAdminRowSchema = z.object({
   id: z.number().int().positive(),
   type: z.string(),
@@ -40,7 +36,7 @@ export const entityAdminTypeSchema = z.enum(["content", "world", "agent", "user"
 export type EntityAdminType = z.infer<typeof entityAdminTypeSchema>;
 
 export const entityListInputSchema = z.object({
-  subject_kind: entitySubjectKindSchema,
+  subject_id: z.number().int().positive(),
   limit: z.number().int().positive().max(500).optional(),
   offset: z.number().int().nonnegative().optional(),
   /** 实体 type 过滤 */
@@ -76,7 +72,7 @@ export const entityGetOutputSchema = z.object({
 export type EntityGetOutput = z.infer<typeof entityGetOutputSchema>;
 
 export const entityDeleteInputSchema = z.object({
-  subject_kind: entitySubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   force: z.boolean().optional(),
 });
@@ -88,7 +84,7 @@ export const entityDeleteOutputSchema = z.object({
 export type EntityDeleteOutput = z.infer<typeof entityDeleteOutputSchema>;
 
 export const entityRestoreInputSchema = z.object({
-  subject_kind: entitySubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type EntityRestoreInput = z.infer<typeof entityRestoreInputSchema>;
@@ -96,7 +92,7 @@ export const entityRestoreOutputSchema = z.object({ ok: z.literal(true) });
 export type EntityRestoreOutput = z.infer<typeof entityRestoreOutputSchema>;
 
 export const entityDeleteComponentInputSchema = z.object({
-  subject_kind: entitySubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   component: z.string().min(1),
 });
@@ -105,7 +101,7 @@ export const entityDeleteComponentOutputSchema = z.object({ item: entityAdminRow
 export type EntityDeleteComponentOutput = z.infer<typeof entityDeleteComponentOutputSchema>;
 
 export const entityAddComponentInputSchema = z.object({
-  subject_kind: entitySubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   component: z.string().min(1),
   body: z.record(z.string(), z.unknown()).optional(),
@@ -116,7 +112,7 @@ export const entityAddComponentOutputSchema = z.object({ item: entityAdminRowSch
 export type EntityAddComponentOutput = z.infer<typeof entityAddComponentOutputSchema>;
 
 export const entitySetPrimaryComponentInputSchema = z.object({
-  subject_kind: entitySubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   component: z.string().min(1),
 });

@@ -10,10 +10,11 @@ import type {
   TaskItemRowPayload,
   TaskItemSearchFiltersPayload,
 } from "@freeanima/shared/rpc-contract/frames/task.ts";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 import {
@@ -56,15 +57,15 @@ function taskRowToRangeItem(row: TaskItemRowPayload): CalendarRangeItem {
   };
 }
 
-/** 议程用：按截止日拉取 pending 根任务（含仅有 due_at、无计划） */
+/** 议程用：按截止日拉取 pending 根任务（含项目内、仅有 due_at） */
 export async function fetchDueTasksForAgenda(
-  subjectKind: SubjectKind,
+  subjectId: number,
   filters: TaskItemSearchFiltersPayload,
 ): Promise<CalendarRangeItem[]> {
   try {
     const data = await habitat().call("tasklist.item.list", {
-      subject_kind: subjectKind,
-      filters,
+      subject_id: subjectId,
+      filters: { ...filters, container: TaskContainer.ANY },
       roots_only: true,
       limit: 500,
     });
@@ -76,13 +77,13 @@ export async function fetchDueTasksForAgenda(
 
 /** 日历拖拽改任务 due（仅此一次） */
 export async function patchTaskDueAt(
-  subjectKind: SubjectKind,
+  subjectId: number,
   taskId: number,
   day: string,
 ): Promise<void> {
   const due_at = `${day}T09:00:00+08:00`;
   await habitat().call("task.patch", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id: taskId,
     due_at,
     only_this: true,
@@ -90,7 +91,7 @@ export async function patchTaskDueAt(
 }
 
 export async function fetchCalendarRange(
-  subjectKind: SubjectKind,
+  subjectId: number,
   opts: {
     from: string;
     to: string;
@@ -109,7 +110,7 @@ export async function fetchCalendarRange(
     id: `range:${opts.from}:${opts.to}:${kindsKey}:${sourcesKey}:${completedKey}`,
     fetch: async () => {
       const data = await habitat().call("calendar.range", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         from: opts.from,
         to: opts.to,
         ...(opts.kinds?.length ? { kinds: opts.kinds } : {}),
@@ -122,16 +123,14 @@ export async function fetchCalendarRange(
   });
 }
 
-export async function fetchCalendarPrefs(
-  subjectKind: SubjectKind,
-): Promise<CalendarUiPrefsPayload> {
+export async function fetchCalendarPrefs(subjectId: number): Promise<CalendarUiPrefsPayload> {
   const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
     namespace: "calendar",
-    id: `prefs:${subjectKind}`,
+    id: `prefs:${subjectId}`,
     fetch: async () => {
-      const data = await habitat().call("calendar.prefs.get", { subject_kind: subjectKind });
+      const data = await habitat().call("calendar.prefs.get", { subject_id: subjectId });
       return data.prefs;
     },
     offlineError: "calendar.prefs unavailable offline",
@@ -139,7 +138,7 @@ export async function fetchCalendarPrefs(
 }
 
 export async function updateCalendarPrefs(
-  subjectKind: SubjectKind,
+  subjectId: number,
   patch: {
     viewMode?: CalendarUiPrefsPayload["viewMode"];
     byView?: Partial<
@@ -148,7 +147,7 @@ export async function updateCalendarPrefs(
   },
 ): Promise<CalendarUiPrefsPayload> {
   const data = await habitat().call("calendar.prefs.update", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...patch,
   });
   return data.prefs;
@@ -157,7 +156,7 @@ export async function updateCalendarPrefs(
 export type { CalendarUiPrefsPayload };
 
 export async function createCalendarEvent(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     title: string;
     content?: string;
@@ -170,11 +169,11 @@ export async function createCalendarEvent(
   },
 ): Promise<CalendarEventRow> {
   ensureCalendarOfflineModule();
-  return offlineCreateCalendarEvent(subjectKind, input);
+  return offlineCreateCalendarEvent(subjectId, input);
 }
 
 export async function updateCalendarEvent(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: {
     id: number;
     title?: string;
@@ -187,35 +186,31 @@ export async function updateCalendarEvent(
   },
 ): Promise<CalendarEventRow> {
   ensureCalendarOfflineModule();
-  return offlineUpdateCalendarEvent(subjectKind, input);
+  return offlineUpdateCalendarEvent(subjectId, input);
 }
 
-export async function deleteCalendarEvent(subjectKind: SubjectKind, id: number): Promise<void> {
+export async function deleteCalendarEvent(subjectId: number, id: number): Promise<void> {
   ensureCalendarOfflineModule();
-  await offlineDeleteCalendarEvent(subjectKind, id);
+  await offlineDeleteCalendarEvent(subjectId, id);
 }
 
-/** 按 id 拉取单条日历事件；先当前 subject，失败再试另一侧。 */
+/** 按 id 拉取单条日历事件（产品固定 user subject）。 */
 export async function fetchCalendarEventById(id: number): Promise<CalendarEventRow | null> {
-  const primary = getSubjectKind();
-  const kinds = primary === "agent" ? (["agent", "user"] as const) : (["user", "agent"] as const);
-  for (const subject_kind of kinds) {
-    try {
-      const data = await habitat().call("calendar.get", { subject_kind, id });
-      return data.item;
-    } catch {
-      // try next subject_kind
-    }
+  const subject_id = await getUserSubjectId();
+  try {
+    const data = await habitat().call("calendar.get", { subject_id, id });
+    return data.item;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 export async function convertCalendarEventToTask(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
 ): Promise<{ id: number; title: string }> {
   const data = await habitat().call("calendar.convertToTask", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
   });
   return { id: data.item.id, title: data.item.title };

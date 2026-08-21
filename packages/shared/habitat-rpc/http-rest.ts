@@ -202,9 +202,12 @@ export async function throwHabitatRestError(res: Response): Promise<never> {
   } catch {
     throw new Error(text || `HTTP ${res.status}`);
   }
-  const errBody = parsed as Partial<HabitatRestErrorBody> | null;
   const message =
-    errBody?.error?.message ?? (typeof parsed === "string" ? parsed : text || `HTTP ${res.status}`);
+    isPlainObject(parsed) && isPlainObject(parsed.error) && typeof parsed.error.message === "string"
+      ? parsed.error.message
+      : typeof parsed === "string"
+        ? parsed
+        : text || `HTTP ${res.status}`;
   throw new Error(message);
 }
 
@@ -249,9 +252,14 @@ export async function parseHabitatRestResponse(res: Response): Promise<unknown> 
   }
 
   if (!res.ok) {
-    const errBody = parsed as Partial<HabitatRestErrorBody>;
     const message =
-      errBody?.error?.message ?? (typeof parsed === "string" ? parsed : `HTTP ${res.status}`);
+      isPlainObject(parsed) &&
+      isPlainObject(parsed.error) &&
+      typeof parsed.error.message === "string"
+        ? parsed.error.message
+        : typeof parsed === "string"
+          ? parsed
+          : `HTTP ${res.status}`;
     throw new Error(message);
   }
 

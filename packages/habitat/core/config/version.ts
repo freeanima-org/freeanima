@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -15,8 +16,8 @@ export function readAppVersion(repoRoot?: string): string {
   const root = repoRoot ?? getRepoRoot();
   const path = join(root, "package.json");
   try {
-    const pkg = JSON.parse(readFileSync(path, "utf8")) as { version?: string };
-    if (!pkg.version) {
+    const pkg = asRecord(JSON.parse(readFileSync(path, "utf8")));
+    if (!pkg || typeof pkg.version !== "string" || !pkg.version) {
       throw new Error(`root package.json missing version field: ${path}`);
     }
     return pkg.version;

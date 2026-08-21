@@ -20,33 +20,33 @@ describe("http-rest feature methods", () => {
     const { url, init } = buildHabitatRestRequest(
       "http://127.0.0.1:2658",
       "tasklist.item.list",
-      { subject_kind: "user", list_id: 1 },
+      { subject_id: "user", list_id: 1 },
       "fa_at_test",
     );
-    expect(url).toBe("http://127.0.0.1:2658/rpc/v1/tasklist/item/list?subject_kind=user&list_id=1");
+    expect(url).toBe("http://127.0.0.1:2658/rpc/v1/tasklist/item/list?subject_id=user&list_id=1");
     expect(init.method).toBe("GET");
     expect((init.headers as Record<string, string>).Authorization).toBe("Bearer fa_at_test");
   });
 
   test("buildHabitatRestRequest POST tasklist.item.create", () => {
     const { url, init } = buildHabitatRestRequest("http://127.0.0.1:2658", "tasklist.item.create", {
-      subject_kind: "user",
+      subject_id: "user",
       title: "x",
       list_id: 1,
     });
     expect(url).toBe("http://127.0.0.1:2658/rpc/v1/tasklist/item/create");
     expect(init.method).toBe("POST");
-    expect(init.body).toBe(JSON.stringify({ subject_kind: "user", title: "x", list_id: 1 }));
+    expect(init.body).toBe(JSON.stringify({ subject_id: "user", title: "x", list_id: 1 }));
   });
 
   test("buildHabitatRestRequest GET diary.get path id", () => {
     const http = getHabitatMethodDef("diary.get").meta.http!;
     expect(http.pathParams ?? []).toEqual(["id"]);
     const { url } = buildHabitatRestRequest("http://127.0.0.1:2658", "diary.get", {
-      subject_kind: "agent",
+      subject_id: "agent",
       id: 1,
     });
-    expect(url).toBe("http://127.0.0.1:2658/rpc/v1/diary/get/1?subject_kind=agent");
+    expect(url).toBe("http://127.0.0.1:2658/rpc/v1/diary/get/1?subject_id=agent");
   });
 
   test("buildHabitatRestRequest POST vault.get path id", () => {
@@ -54,24 +54,24 @@ describe("http-rest feature methods", () => {
     expect(http.verb).toBe("POST");
     const { url, init } = buildHabitatRestRequest("http://127.0.0.1:2658", "vault.get", {
       id: 3,
-      subject_kind: "user",
+      subject_id: "user",
     });
     expect(url).toBe("http://127.0.0.1:2658/rpc/v1/vault/get/3");
     expect(init.method).toBe("POST");
-    expect(init.body).toBe(JSON.stringify({ subject_kind: "user" }));
+    expect(init.body).toBe(JSON.stringify({ subject_id: "user" }));
   });
 
   test("buildHabitatRestRequest GET tasklist.item.list with filters object", () => {
     const { url } = buildHabitatRestRequest("http://127.0.0.1:2658", "tasklist.item.list", {
-      subject_kind: "user",
-      filters: { status: "pending", in_backlog: true },
+      subject_id: "user",
+      filters: { status: "pending", container: "list" },
     });
     const parsed = new URL(url);
     expect(parsed.pathname).toBe("/rpc/v1/tasklist/item/list");
-    expect(parsed.searchParams.get("subject_kind")).toBe("user");
+    expect(parsed.searchParams.get("subject_id")).toBe("user");
     expect(JSON.parse(parsed.searchParams.get("filters") ?? "")).toEqual({
       status: "pending",
-      in_backlog: true,
+      container: "list",
     });
   });
 
@@ -102,9 +102,9 @@ describe("http-rest feature methods", () => {
 
   test("buildHabitatRestRequest GET emailaccount.list", () => {
     const { url, init } = buildHabitatRestRequest("http://127.0.0.1:2658", "emailaccount.list", {
-      subject_kind: "user",
+      subject_id: "user",
     });
-    expect(url).toBe("http://127.0.0.1:2658/rpc/v1/emailaccount/list?subject_kind=user");
+    expect(url).toBe("http://127.0.0.1:2658/rpc/v1/emailaccount/list?subject_id=user");
     expect(init.method).toBe("GET");
   });
 

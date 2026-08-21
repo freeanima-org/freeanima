@@ -1,3 +1,5 @@
+import type { ServiceApiTokenAuthorization } from "@freeanima/shared/service-api-auth";
+import { FULL_TOKEN_AUTHORIZATION } from "@freeanima/shared/service-api-auth";
 import type { ServiceApiTokenRow } from "@freeanima/habitat/core/db/schema/rows";
 
 export type ServiceApiTokenPublic = {
@@ -5,7 +7,7 @@ export type ServiceApiTokenPublic = {
   subject_id: number;
   name: string;
   prefix: string;
-  scopes: string[];
+  authorization: ServiceApiTokenAuthorization;
   created_at: Date;
   expires_at: Date | null;
   last_used_at: Date | null;
@@ -14,13 +16,25 @@ export type ServiceApiTokenPublic = {
   revealable: boolean;
 };
 
+export type VerifiedServiceApiToken = {
+  token_id: number;
+  subject_id: number;
+  subject_type: "user" | "agent";
+  authorization: ServiceApiTokenAuthorization;
+};
+
+export type CreateServiceApiTokenResult = {
+  token: ServiceApiTokenPublic;
+  plaintext: string;
+};
+
 export type CreateServiceApiTokenInput = {
   subject_id: number;
   name: string;
   prefix: string;
   token_hash: string;
   token_secret?: string | null;
-  scopes?: string[];
+  authorization?: ServiceApiTokenAuthorization;
   expires_at?: Date | null;
 };
 
@@ -30,7 +44,7 @@ export function toServiceApiTokenPublic(row: ServiceApiTokenRow): ServiceApiToke
     subject_id: row.subject_id,
     name: row.name,
     prefix: row.prefix,
-    scopes: row.scopes,
+    authorization: row.authorization,
     created_at: row.created_at,
     expires_at: row.expires_at,
     last_used_at: row.last_used_at,
@@ -38,3 +52,5 @@ export function toServiceApiTokenPublic(row: ServiceApiTokenRow): ServiceApiToke
     revealable: Boolean(row.token_secret),
   };
 }
+
+export { FULL_TOKEN_AUTHORIZATION };

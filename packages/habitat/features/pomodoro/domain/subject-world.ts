@@ -1,6 +1,5 @@
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config";
-import type { PomodoroSubjectKind } from "./types.ts";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 
-export async function resolvePomodoroWorldId(kind: PomodoroSubjectKind): Promise<number> {
-  return resolveSubjectWorldId(kind);
+export async function resolvePomodoroWorldId(subjectId: number): Promise<number> {
+  return resolvePrivateWorldId(subjectId);
 }

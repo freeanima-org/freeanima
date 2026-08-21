@@ -1,7 +1,6 @@
 import type { NotificationRecipientKind } from "@freeanima/habitat/core/db/pg/notifications/types";
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import { getResolvedWorldContext } from "./resolved-world-context.ts";
-import { resolveWorldSubjectIds } from "./worlds.ts";
 
 export type NotificationRecipientRef = {
   kind: NotificationRecipientKind;
@@ -13,28 +12,14 @@ export type ResolvedNotificationRecipients = {
   agent: NotificationRecipientRef;
 };
 
-/** 从 ResolvedWorldContext（boot 后）或 config worlds/legacy 解析通知收件主体 */
+/** 从 ResolvedWorldContext（boot 后）解析通知收件主体；agent = 默认聊天 agent（仅收件别名） */
 export function resolveNotificationRecipients(
   config: RuntimeConfig,
 ): ResolvedNotificationRecipients {
-  try {
-    const ctx = getResolvedWorldContext();
-    return {
-      user: { kind: "user", id: ctx.user_subject_id },
-      agent: { kind: "agent", id: ctx.agent_subject_id },
-    };
-  } catch {
-    /* WorldContext 尚未 bind：回退到配置 */
-  }
-
-  const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
-  if (user_subject_id == null || agent_subject_id == null) {
-    throw new Error(
-      "worlds subject ids 未解析；请等待 Habitat 启动完成 ensureWorldSubjects，或配置 worlds.user_subject_id / agent_subject_id",
-    );
-  }
+  void config;
+  const ctx = getResolvedWorldContext();
   return {
-    user: { kind: "user", id: user_subject_id },
-    agent: { kind: "agent", id: agent_subject_id },
+    user: { kind: "user", id: ctx.user_subject_id },
+    agent: { kind: "agent", id: ctx.default_chat_agent_subject_id },
   };
 }

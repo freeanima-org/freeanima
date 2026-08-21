@@ -36,8 +36,10 @@ describe("formatExistingMemoriesMessage", () => {
 });
 
 describe("RETAIN_TASK_SPEC", () => {
-  it("asks to distinguish speaker role", () => {
+  it("asks to distinguish speaker role and focus on create/update dedupe", () => {
     expect(RETAIN_TASK_SPEC).toContain("role");
     expect(RETAIN_TASK_SPEC).toContain("<memory>");
+    expect(RETAIN_TASK_SPEC).toContain("create / update");
+    expect(RETAIN_TASK_SPEC).toContain("reflect");
   });
 });

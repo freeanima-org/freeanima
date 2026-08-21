@@ -329,6 +329,7 @@ async function cmdSethome(ctx: CommandContext): Promise<CommandResult> {
 }
 
 async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- summarizeConversation 返回扩展字段边界
   const r = (await conv().summarizeConversation(ctx.conversationId)) as Record<string, unknown> &
     CompressionAnalysis & {
       updated?: boolean;
@@ -388,6 +389,7 @@ async function cmdSummarize(ctx: CommandContext): Promise<CommandResult> {
 
 async function cmdCompress(ctx: CommandContext): Promise<CommandResult> {
   const force = ctx.args.includes("--force") || ctx.args.includes("-f");
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- recompressConversation 返回扩展字段边界
   const r = (await conv().recompressConversation(ctx.conversationId, { force })) as Record<
     string,
     unknown

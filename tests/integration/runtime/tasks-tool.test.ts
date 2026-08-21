@@ -13,7 +13,12 @@ import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { registerTaskTools, getDefaultTaskList } from "@freeanima/features/task/domain";
 import { createProject } from "@freeanima/features/project/domain";
 import { createTag, listTags } from "@freeanima/features/tag/domain";
-import { getActivePgTestContext, testConv } from "../../helpers/pg-test.ts";
+import {
+  getActivePgTestContext,
+  testConv,
+  testAgentToolContextOpts,
+  testChatAgentSubjectId,
+} from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId } from "../../helpers/world-context.ts";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
@@ -48,13 +53,9 @@ describePg("tasks tool (enhanced)", () => {
       sid,
       async () => {
         const create = toolSets.getTool("task_create")!;
-        await Promise.resolve(
-          create.handler({ subject_kind: "agent", title: "MCP scoped task", list_id: list.id }),
-        );
+        await Promise.resolve(create.handler({ title: "MCP scoped task", list_id: list.id }));
         const tool = toolSets.getTool("task_list")!;
-        output = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", list_id: list.id, status: "all" }),
-        );
+        output = await Promise.resolve(tool.handler({ list_id: list.id, status: "all" }));
       },
       {
         tools: toolSets,
@@ -63,7 +64,7 @@ describePg("tasks tool (enhanced)", () => {
           token_id: 1,
           subject_id: agentSubjectId,
           subject_type: "agent",
-          scopes: ["full"],
+          authorization: { full: true as const },
         },
       },
     );
@@ -77,6 +78,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-list-project";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     const worldId = testAgentWorldId();
@@ -94,14 +96,13 @@ describePg("tasks tool (enhanced)", () => {
         const create = toolSets.getTool("task_create")!;
         const out = await Promise.resolve(
           create.handler({
-            subject_kind: "agent",
             title: "In-project task",
             project_id: project.id,
           }),
         );
         createdId = (JSON.parse(out) as { item: { id: number } }).item.id;
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     let backlogOut = "";
@@ -111,17 +112,13 @@ describePg("tasks tool (enhanced)", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("task_list")!;
-        backlogOut = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", list_id: list.id }),
-        );
-        projectOut = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", project_id: project.id }),
-        );
+        backlogOut = await Promise.resolve(tool.handler({ list_id: list.id }));
+        projectOut = await Promise.resolve(tool.handler({ project_id: project.id }));
         conflictOut = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", project_id: project.id, list_id: list.id }),
+          tool.handler({ project_id: project.id, list_id: list.id }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     const backlog = JSON.parse(backlogOut) as { items: { id: number }[] };
@@ -146,6 +143,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-tags";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     const worldId = testAgentWorldId();
@@ -156,13 +154,12 @@ describePg("tasks tool (enhanced)", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
-            subject_kind: "agent",
             title: "Tagged by name",
             tags: ["bug"],
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     const parsed = JSON.parse(output) as {
@@ -181,6 +178,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-tags-ci";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     const worldId = testAgentWorldId();
@@ -195,13 +193,12 @@ describePg("tasks tool (enhanced)", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
-            subject_kind: "agent",
             title: "Reuse tag",
             tags: [tagTitle.toLowerCase()],
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     const parsed = JSON.parse(output) as {
@@ -217,6 +214,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-tags-merge";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     const worldId = testAgentWorldId();
@@ -231,14 +229,13 @@ describePg("tasks tool (enhanced)", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
-            subject_kind: "agent",
             title: "Merged tags",
             tag_ids: [work.id],
             tags: [bugTitle],
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     const parsed = JSON.parse(output) as {
@@ -254,6 +251,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-bad-tag-ids";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     let output = "";
@@ -263,13 +261,12 @@ describePg("tasks tool (enhanced)", () => {
         const tool = toolSets.getTool("task_create")!;
         output = await Promise.resolve(
           tool.handler({
-            subject_kind: "agent",
             title: "Bad tag_ids",
             tag_ids: ["bug"],
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
 
     const parsed = JSON.parse(output) as { error?: string };

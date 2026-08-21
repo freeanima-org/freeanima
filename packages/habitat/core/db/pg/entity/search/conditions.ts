@@ -34,6 +34,7 @@ import {
   BOOKMARK_COMPONENT,
   parseBookmarkSearchFilters,
 } from "@freeanima/habitat/core/db/schema";
+import { TaskContainer, resolveTaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import { pgBigintArray } from "../../utils/pg-sql.ts";
 import type { EntitySearchOpts } from "../types.ts";
 
@@ -57,7 +58,9 @@ export function resolveWorldScope(opts: EntitySearchOpts): SQL[] {
       );
     }
     if (ids.length === 1) {
-      return [eq(entities.world_id, ids[0] as number)];
+      const only = ids[0];
+      if (only === undefined) return [];
+      return [eq(entities.world_id, only)];
     }
     return [inArray(entities.world_id, ids)];
   }
@@ -211,6 +214,24 @@ function buildTaskItemBodyConditions(
         AND (${entities.body}->>'due_at')::timestamptz::date <= ${CST_TODAY} + ${filters.due_on_or_before_days}`,
     );
   }
+  if (filters.has_start_at) {
+    conditions.push(
+      sql`${entities.body}->>'start_at' IS NOT NULL AND ${entities.body}->>'start_at' <> ''`,
+    );
+  }
+  if (filters.plan_before) {
+    // 计划时钟 = COALESCE(end_at, start_at)，与 taskPlanClock 一致
+    conditions.push(
+      sql`COALESCE(
+          NULLIF(${entities.body}->>'end_at', ''),
+          NULLIF(${entities.body}->>'start_at', '')
+        ) IS NOT NULL
+        AND COALESCE(
+          NULLIF(${entities.body}->>'end_at', ''),
+          NULLIF(${entities.body}->>'start_at', '')
+        )::timestamptz < ${filters.plan_before}::timestamptz`,
+    );
+  }
   if (filters.completed_on != null) {
     conditions.push(buildTaskItemCompletedOnCondition(filters.completed_on));
   }
@@ -235,9 +256,14 @@ function buildTaskItemBodyConditions(
   if (filters.project_id != null) {
     conditions.push(sql`${entities.body}->>'project_id' = ${String(filters.project_id)}`);
   }
-  if (filters.in_backlog === true) {
+  const taskContainer = resolveTaskContainer(filters);
+  if (taskContainer === TaskContainer.LIST) {
     conditions.push(
       sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
+    );
+  } else if (taskContainer === TaskContainer.PROJECT) {
+    conditions.push(
+      sql`(${entities.body}->>'project_id' IS NOT NULL AND ${entities.body}->>'project_id' <> '')`,
     );
   }
   if (filters.parent_id != null) {
@@ -278,9 +304,14 @@ function buildTaskOccurrenceBodyConditions(
   if (filters.project_id != null) {
     conditions.push(sql`${entities.body}->>'project_id' = ${String(filters.project_id)}`);
   }
-  if (filters.in_backlog === true) {
+  const occurrenceContainer = resolveTaskContainer(filters);
+  if (occurrenceContainer === TaskContainer.LIST) {
     conditions.push(
       sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
+    );
+  } else if (occurrenceContainer === TaskContainer.PROJECT) {
+    conditions.push(
+      sql`(${entities.body}->>'project_id' IS NOT NULL AND ${entities.body}->>'project_id' <> '')`,
     );
   }
   if (filters.completed_on != null) {

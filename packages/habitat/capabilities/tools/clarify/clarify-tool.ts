@@ -1,5 +1,6 @@
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/core/tool";
+import { asRecord } from "@freeanima/shared/util";
 import { CLARIFY_TOOL_RETURNS } from "./return-schemas.ts";
 import { getClarifyConfig } from "./clarify.ts";
 import type { ClarifyItem as ClarifyItemType } from "./clarify.ts";
@@ -18,8 +19,8 @@ function normalizeItems(args: ClarifyArgs): ClarifyItemType[] | string {
   if (Array.isArray(args.items) && args.items.length > 0) {
     const items: ClarifyItemType[] = [];
     for (const raw of args.items.slice(0, max_items)) {
-      if (!raw || typeof raw !== "object") continue;
-      const row = raw as Record<string, unknown>;
+      const row = asRecord(raw);
+      if (!row) continue;
       const question = typeof row.question === "string" ? row.question.trim() : "";
       if (!question) continue;
       const item: ClarifyItemType = { question };
