@@ -18,7 +18,13 @@ import {
   resetNotificationPortForTests,
 } from "@freeanima/habitat/capabilities/tools/notification";
 import { createNotificationPort } from "@freeanima/habitat/platform/service/notification-helpers";
-import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
+import {
+  getActivePgTestContext,
+  getTestEngine,
+  testConv,
+  testAgentToolContextOpts,
+  testChatAgentSubjectId,
+} from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId, testUserWorldId } from "../../helpers/world-context.ts";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
@@ -84,7 +90,7 @@ describePg("world scope tools", () => {
     const sid = "sess-diary-world";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
-      agent_subject_id: 2,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     let agentOut = "";
@@ -93,10 +99,10 @@ describePg("world scope tools", () => {
       async () => {
         const tool = toolSets.getTool("diary_append")!;
         agentOut = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", content: "agent diary note", date: "2026-07-01" }),
+          tool.handler({ content: "agent diary note", date: "2026-07-01" }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     expect(JSON.parse(agentOut).ok).toBe(true);
 
@@ -107,7 +113,6 @@ describePg("world scope tools", () => {
         const tool = toolSets.getTool("diary_append")!;
         userOut = await Promise.resolve(
           tool.handler({
-            subject_kind: "user",
             content: "user diary note",
             date: "2026-07-01",
             world_id: testUserWorldId(),
@@ -123,11 +128,9 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("diary_get")!;
-        agentGet = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", date: "2026-07-01" }),
-        );
+        agentGet = await Promise.resolve(tool.handler({ date: "2026-07-01" }));
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     const agentParsed = JSON.parse(agentGet) as {
       ok: boolean;
@@ -144,7 +147,7 @@ describePg("world scope tools", () => {
       async () => {
         const tool = toolSets.getTool("diary_get")!;
         userGet = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", date: "2026-07-01", world_id: testUserWorldId() }),
+          tool.handler({ date: "2026-07-01", world_id: testUserWorldId() }),
         );
       },
       { tools: toolSets, callerAuth: userCallerAuth() },
@@ -161,7 +164,7 @@ describePg("world scope tools", () => {
     const sid = "sess-email-world";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
-      agent_subject_id: 2,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     const accountInput = {
@@ -187,9 +190,9 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("email_list_accounts")!;
-        agentOut = await Promise.resolve(tool.handler({ subject_kind: "agent" }));
+        agentOut = await Promise.resolve(tool.handler({}));
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     const agentParsed = JSON.parse(agentOut) as { accounts: { address: string }[] };
     expect(agentParsed.accounts.some((a) => a.address === "agent@scope.test")).toBe(true);
@@ -200,9 +203,7 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("email_list_accounts")!;
-        userOut = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", world_id: testUserWorldId() }),
-        );
+        userOut = await Promise.resolve(tool.handler({ world_id: testUserWorldId() }));
       },
       {
         tools: toolSets,
@@ -218,7 +219,7 @@ describePg("world scope tools", () => {
     const sid = "sess-notif-subject";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
-      agent_subject_id: 2,
+      agent_subject_id: testChatAgentSubjectId(),
     });
 
     const { user_subject_id } = getResolvedWorldContext();
@@ -230,14 +231,13 @@ describePg("world scope tools", () => {
         const tool = toolSets.getTool("notification_send")!;
         sendOut = await Promise.resolve(
           tool.handler({
-            subject_kind: "agent",
             title: "User scoped",
             body: "hello user inbox",
             subject_id: user_subject_id,
           }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     expect(JSON.parse(sendOut).ok).toBe(true);
 
@@ -247,10 +247,10 @@ describePg("world scope tools", () => {
       async () => {
         const tool = toolSets.getTool("notification_list")!;
         userList = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", subject_id: user_subject_id, read_filter: "all" }),
+          tool.handler({ subject_id: user_subject_id, read_filter: "all" }),
         );
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     const userParsed = JSON.parse(userList) as { items: { title: string }[] };
     expect(userParsed.items.some((i) => i.title === "User scoped")).toBe(true);
@@ -260,11 +260,9 @@ describePg("world scope tools", () => {
       sid,
       async () => {
         const tool = toolSets.getTool("notification_list")!;
-        agentList = await Promise.resolve(
-          tool.handler({ subject_kind: "agent", recipient: "agent", read_filter: "all" }),
-        );
+        agentList = await Promise.resolve(tool.handler({ recipient: "agent", read_filter: "all" }));
       },
-      { tools: toolSets },
+      testAgentToolContextOpts(toolSets),
     );
     const agentParsed = JSON.parse(agentList) as { items: { title: string }[] };
     expect(agentParsed.items.some((i) => i.title === "User scoped")).toBe(false);

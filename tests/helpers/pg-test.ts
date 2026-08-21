@@ -29,6 +29,7 @@ import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved
 import { ensureWorldSubjects } from "@freeanima/habitat/core/db/pg/entity/subject-world";
 import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
 import type { StoredMessage, ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
+import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { relations } from "@freeanima/habitat/core/db/schema";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
@@ -177,7 +178,29 @@ export function withTestSubjectId(msg: StoredMessage): StoredMessage {
   if (msg.role === "user") {
     return { ...msg, subject_id: ctx.user_subject_id };
   }
-  return { ...msg, subject_id: ctx.agent_subject_id };
+  return { ...msg, subject_id: ctx.default_chat_agent_subject_id };
+}
+
+/** 默认聊天 agent subject（多 Anima 后集成测应显式使用，勿硬编码 2） */
+export function testChatAgentSubjectId(): number {
+  return getResolvedWorldContext().default_chat_agent_subject_id;
+}
+
+/**
+ * 补齐 conversation meta.agent_subject_id（transform 强制要求）。
+ * 直接 upsertConversationMeta 的集成测应经此函数或 upsertTestConversationMeta。
+ */
+export function withTestAgentSubjectId(meta: ConversationMetaMessage): ConversationMetaMessage {
+  if (meta.agent_subject_id != null) return meta;
+  return { ...meta, agent_subject_id: testChatAgentSubjectId() };
+}
+
+/** PG 层 upsertConversationMeta，自动补 agent_subject_id */
+export async function upsertTestConversationMeta(
+  conversationId: string,
+  meta: ConversationMetaMessage,
+): Promise<void> {
+  await upsertConversationMeta(conversationId, withTestAgentSubjectId(meta));
 }
 
 /** PG 层 appendMessage，自动补 subject_id */
@@ -192,10 +215,18 @@ export async function seedSession(
   meta: ConversationMetaMessage,
   messages: StoredMessage[] = [],
 ): Promise<void> {
-  await upsertConversationMeta(conversationId, meta);
+  await upsertTestConversationMeta(conversationId, meta);
   for (const msg of messages) {
     await appendTestMessage(conversationId, msg);
   }
+}
+
+/** 集成测直接调 tool handler 时传入 runWithToolContext 的默认 opts（禁止回退默认 agent） */
+export function testAgentToolContextOpts(tools: ToolSetRegistry): {
+  tools: ToolSetRegistry;
+  subjectId: number;
+} {
+  return { tools, subjectId: testChatAgentSubjectId() };
 }
 
 export function getTestEngine(): Engine {
