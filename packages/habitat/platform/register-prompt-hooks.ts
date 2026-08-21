@@ -177,13 +177,17 @@ export function registerTemporalSummarySystemPromptHook(registry: HookRegistry):
       const agentId = ctx.meta?.agent_subject_id;
       if (agentId == null || agentId <= 0) return { status: "ok" };
       try {
+        const { assertBindableAgentSubject } =
+          await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
         const { getActiveRuntimeConfig } = await import("@freeanima/habitat/core/config");
         const { buildTemporalSummarySystemBody, resolveTemporalSummaryConfig } =
           await import("@freeanima/habitat/capabilities/memory/temporal-summary");
         const { cacheGetJson, cacheSetJson } = await import("@freeanima/habitat/core/redis");
+        const bound = await assertBindableAgentSubject(agentId);
         const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
         // 只读 Redis sys_roll；miss 跳过，不在拼装路径打 LLM
         const { body, truncated } = await buildTemporalSummarySystemBody(config, {
+          world_id: bound.agent_world_id,
           peerCache: {
             getJson: cacheGetJson,
             setJson: cacheSetJson,

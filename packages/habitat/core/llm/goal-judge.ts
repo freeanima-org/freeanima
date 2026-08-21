@@ -1,6 +1,5 @@
 import { asRecord } from "@freeanima/shared/util";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/habitat/core/provider";
 import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 import {
@@ -141,7 +140,6 @@ export async function judgeGoal(
           ? `goal-judge:${opts.parentConversationId}`
           : "goal-judge",
         runKind: AUTO_LLM_RUN_KIND_GOAL_JUDGE,
-        subjectId: getResolvedWorldContext().agent_subject_id,
         messages: composedAutoLlmPromptToChatMessages(composed),
         profileId: PROFILE_GOAL_JUDGE,
         runtime: opts?.runtime,

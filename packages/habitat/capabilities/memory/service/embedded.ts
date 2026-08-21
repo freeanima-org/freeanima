@@ -424,6 +424,8 @@ export function createEmbeddedMemoryService(
       async list(input = {}) {
         const { listTemporalSummaries } =
           await import("@freeanima/habitat/core/db/pg/temporal-summary");
+        const { resolveToolCallerAgentWorldId } = await import("../tool-agent-world.ts");
+        const { agent_world_id } = await resolveToolCallerAgentWorldId();
         const window =
           input.bucket === "month"
             ? ("month" as const)
@@ -435,6 +437,7 @@ export function createEmbeddedMemoryService(
             window,
             offset: input.offset,
             limit: input.limit ?? 50,
+            world_id: agent_world_id,
           }),
         );
         return items.map((r) => ({
@@ -460,7 +463,11 @@ export function createEmbeddedMemoryService(
         if (input.bucket && input.key) {
           const { getTemporalSummary } =
             await import("@freeanima/habitat/core/db/pg/temporal-summary");
-          const row = await getTemporalSummary(input.bucket, input.key);
+          const { resolveToolCallerAgentWorldId } = await import("../tool-agent-world.ts");
+          const { agent_world_id } = await resolveToolCallerAgentWorldId();
+          const row = await getTemporalSummary(input.bucket, input.key, {
+            world_id: agent_world_id,
+          });
           if (!row) return null;
           return {
             id: row.id,

@@ -82,6 +82,7 @@ export type AppRuntimeOpsPort = {
     name: string;
     schedule: string;
     prompt: string;
+    subject_id: number;
     notify_on_success?: boolean;
   }): Promise<CronJobData>;
   deleteCronJob(id: string): Promise<boolean>;
@@ -111,14 +112,21 @@ export type AppRuntimeConversationPort = {
 /** 语义记忆 / 时间摘要 / FTS / 自我层 */
 export type AppRuntimeMemoryPort = {
   passiveRecallDebug(opts: Record<string, unknown>): Promise<unknown>;
-  listTemporalSummaries(opts?: Record<string, unknown>): Promise<unknown>;
+  listTemporalSummaries(opts: {
+    agent_subject_id: number;
+    window?: string;
+    period_start_from?: string;
+    period_start_to?: string;
+    offset?: number;
+    limit?: number;
+  }): Promise<unknown>;
   regenerateTemporalSummary(opts: Record<string, unknown>): Promise<unknown>;
   backfillMissingTemporalSummaries(opts: Record<string, unknown>): Promise<unknown>;
   rebuildTemporalSummariesInRange(opts: Record<string, unknown>): Promise<unknown>;
   getTemporalSummaryBatchJobStatus(): unknown;
-  listTemporalSystemRolls(): Promise<unknown>;
+  listTemporalSystemRolls(args: { agent_subject_id: number }): Promise<unknown>;
   regenerateTemporalSystemRoll(opts: Record<string, unknown>): Promise<unknown>;
-  startTemporalSystemRollBatch(opts?: Record<string, unknown>): unknown;
+  startTemporalSystemRollBatch(opts: Record<string, unknown>): unknown;
   getTemporalSystemRollBatchStatus(): unknown;
   countSemanticMemory(): Promise<{ index_rows: number }>;
   listSemanticMemories(opts?: Record<string, unknown>): Promise<unknown>;
@@ -132,7 +140,7 @@ export type AppRuntimeMemoryPort = {
   getFtsStatus(): Promise<unknown>;
   startRebuildFtsIndex(opts?: { onlyMissing?: boolean }): unknown;
   getRebuildFtsJobStatus(): unknown;
-  listSelfBlocks(agentSubjectId?: number): Promise<unknown>;
+  listSelfBlocks(agentSubjectId: number): Promise<unknown>;
 };
 
 /** 记忆维护与 auto-llm 审计 */

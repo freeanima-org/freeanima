@@ -68,6 +68,7 @@ export async function createCronJob(payload: {
   name: string;
   schedule: string;
   prompt: string;
+  subject_id: number;
   notify_on_success?: boolean;
 }) {
   try {

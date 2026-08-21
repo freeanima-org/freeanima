@@ -14,6 +14,7 @@ export type TemporalSystemRollWarmRegenerate = typeof regenerateTemporalSystemRo
 export function scheduleTemporalSystemRollWarm(opts: {
   kinds: readonly SysRollKind[];
   config: ResolvedTemporalSummaryConfig;
+  world_id: number;
   peerCache?: PeerRollCache;
   nowMs?: number;
   /** 测试注入 */
@@ -28,12 +29,14 @@ export function scheduleTemporalSystemRollWarm(opts: {
         await regenerate({
           kind,
           config: opts.config,
+          world_id: opts.world_id,
           ...(opts.peerCache ? { peerCache: opts.peerCache } : {}),
           ...(opts.nowMs !== undefined ? { nowMs: opts.nowMs } : {}),
         });
       } catch (e) {
         logComponent("memory").warn("sys_roll warm failed", {
           kind,
+          world_id: opts.world_id,
           error: e instanceof Error ? e.message : String(e),
         });
       }

@@ -69,15 +69,15 @@ export async function listTemporalSummaryMemories(args: {
   period_start_to?: string;
   offset?: number;
   limit?: number;
-  agent_subject_id?: number;
+  agent_subject_id: number;
 }) {
   const { offset, limit } = clampPagination(args.offset, args.limit);
-  let world_id: number | undefined;
-  if (args.agent_subject_id != null) {
-    const { resolvePrivateWorldId } =
-      await import("@freeanima/habitat/core/config/world-context-pg.ts");
-    world_id = await resolvePrivateWorldId(args.agent_subject_id);
+  if (args.agent_subject_id == null || args.agent_subject_id <= 0) {
+    throw new Error("agent_subject_id is required for temporal summary list");
   }
+  const { resolvePrivateWorldId } =
+    await import("@freeanima/habitat/core/config/world-context-pg.ts");
+  const world_id = await resolvePrivateWorldId(args.agent_subject_id);
   const result = await listTemporalSummaries(
     omitUndefined({
       window: args.window,
@@ -229,17 +229,34 @@ export async function backfillMissingTemporalSummaries(args: {
     });
   }
   const { from, to } = clamped;
-  const existing = await listTemporalSummariesInRange({
-    window: args.window,
-    period_start_from: from,
-    period_start_to: to,
-  });
+  const { listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  const agents = await listEnabledBoundAgents();
+  let existingIntersection: Set<string> | null = null;
+  for (const agent of agents) {
+    const rows = await listTemporalSummariesInRange({
+      window: args.window,
+      period_start_from: from,
+      period_start_to: to,
+      world_id: agent.agent_world_id,
+    });
+    const periods = new Set<string>(rows.map((r) => r.period_start));
+    if (existingIntersection == null) {
+      existingIntersection = periods;
+    } else {
+      const next = new Set<string>();
+      for (const p of existingIntersection) {
+        if (periods.has(p)) next.add(p);
+      }
+      existingIntersection = next;
+    }
+  }
   const missing = listMissingPeriodStarts({
     window: args.window,
     from,
     to,
     today: clamped.today,
-    existing: new Set(existing.map((r) => r.period_start)),
+    existing: existingIntersection ?? new Set<string>(),
   });
   const clampNote = clamped.clamped ? ` (capped to CST today ${clamped.today})` : "";
   return startTemporalBatchJob({
@@ -317,30 +334,54 @@ async function regenerateOneTemporalSummary(args: {
   return { ok: result.ok, summary: result.summary };
 }
 
-export async function listTemporalSystemRollMemories() {
+export async function listTemporalSystemRollMemories(args: { agent_subject_id: number }) {
+  if (args.agent_subject_id == null || args.agent_subject_id <= 0) {
+    throw new Error("agent_subject_id is required for temporal system rolls");
+  }
+  const { resolvePrivateWorldId } =
+    await import("@freeanima/habitat/core/config/world-context-pg.ts");
+  const world_id = await resolvePrivateWorldId(args.agent_subject_id);
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  return listTemporalSystemRolls({ config, peerCache: peerCache() });
+  return listTemporalSystemRolls({ config, world_id, peerCache: peerCache() });
 }
 
-export async function regenerateTemporalSystemRollMemory(args: { kind: SysRollKind }) {
+export async function regenerateTemporalSystemRollMemory(args: {
+  kind: SysRollKind;
+  agent_subject_id: number;
+}) {
+  if (args.agent_subject_id == null || args.agent_subject_id <= 0) {
+    throw new Error("agent_subject_id is required for temporal system roll regenerate");
+  }
+  const { resolvePrivateWorldId } =
+    await import("@freeanima/habitat/core/config/world-context-pg.ts");
+  const world_id = await resolvePrivateWorldId(args.agent_subject_id);
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
   const item = await regenerateTemporalSystemRoll({
     kind: args.kind,
     config,
+    world_id,
     peerCache: peerCache(),
   });
   return { ok: true as const, item };
 }
 
 /** Start async system-roll batch; returns job status immediately. */
-export function startTemporalSystemRollBatch(args?: {
+export function startTemporalSystemRollBatch(args: {
   kinds?: SysRollKind[];
+  agent_subject_id: number;
 }): TemporalSystemRollBatchJobStatus {
-  const kinds = args?.kinds?.length ? args.kinds : ALL_SYS_ROLL_KINDS;
+  if (args.agent_subject_id == null || args.agent_subject_id <= 0) {
+    throw new Error("agent_subject_id is required for temporal system roll batch");
+  }
+  const kinds = args.kinds?.length ? args.kinds : ALL_SYS_ROLL_KINDS;
+  const agentSubjectId = args.agent_subject_id;
   return startTemporalSystemRollBatchJob({
     kinds,
     regenerateOne: async (kind) => {
-      const result = await regenerateTemporalSystemRollMemory({ kind });
+      const result = await regenerateTemporalSystemRollMemory({
+        kind,
+        agent_subject_id: agentSubjectId,
+      });
       return { ok: result.ok, summary: result.item.summary };
     },
   });

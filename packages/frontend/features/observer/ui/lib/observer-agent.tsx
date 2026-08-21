@@ -7,9 +7,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { fetchHabitatConfigSection } from "@freeanima/client/portal-sdk/habitat-config-api.ts";
-import { loadResolvedWorldContext } from "@freeanima/client/portal-sdk/world-context.ts";
-import { asRecord } from "@freeanima/shared/util";
 import {
   Select,
   SelectContent,
@@ -61,24 +58,6 @@ function writeStoredAgentSubjectId(id: number): void {
   }
 }
 
-/** 默认聊天 Anima：优先 worlds.context，其次 config chat.default_agent_subject_id。 */
-async function resolveDefaultChatAgentSubjectId(): Promise<number | undefined> {
-  try {
-    const ctx = await loadResolvedWorldContext();
-    const fromCtx = positiveInt(ctx.default_chat_agent_subject_id ?? ctx.agent_subject_id);
-    if (fromCtx != null) return fromCtx;
-  } catch {
-    /* Habitat 未就绪时再试 config */
-  }
-  try {
-    const section = await fetchHabitatConfigSection("chat");
-    const rec = asRecord(section);
-    return positiveInt(rec?.default_agent_subject_id);
-  } catch {
-    return undefined;
-  }
-}
-
 function parseAgentSubjects(raw: {
   items: Array<{ id: number; type?: string; title?: string }>;
 }): ObserverAgentOption[] {
@@ -92,14 +71,12 @@ function parseAgentSubjects(raw: {
   return out;
 }
 
+/** 初选 Anima：localStorage → 列表首项（禁止用默认聊天 agent 静默回退）。 */
 function pickInitialAgentId(
   agents: ObserverAgentOption[],
   stored: number | undefined,
-  fallback: number | undefined,
 ): number | null {
   if (stored != null && agents.some((a) => a.id === stored)) return stored;
-  if (fallback != null && agents.some((a) => a.id === fallback)) return fallback;
-  if (fallback != null) return fallback;
   return agents[0]?.id ?? null;
 }
 
@@ -112,13 +89,10 @@ export function ObserverAgentProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     void (async () => {
       try {
-        const [subjects, defaultId] = await Promise.all([
-          listSubjectEntities({ limit: 500 }),
-          resolveDefaultChatAgentSubjectId(),
-        ]);
+        const subjects = await listSubjectEntities({ limit: 500 });
         if (cancelled) return;
         const nextAgents = parseAgentSubjects(subjects);
-        const initial = pickInitialAgentId(nextAgents, readStoredAgentSubjectId(), defaultId);
+        const initial = pickInitialAgentId(nextAgents, readStoredAgentSubjectId());
         setAgents(nextAgents);
         setAgentSubjectIdState(initial);
         if (initial != null) writeStoredAgentSubjectId(initial);

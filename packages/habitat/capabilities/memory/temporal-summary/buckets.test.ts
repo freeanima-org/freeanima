@@ -27,11 +27,21 @@ describe("cascade period helpers", () => {
 describe("sysRoll keys", () => {
   it("builds stable redis keys without fingerprint", () => {
     expect(
-      sysRollRedisKey({ prefix: "anima:temporal", kind: "past_days", anchor: "2026-08-04" }),
-    ).toBe("anima:temporal:sys_roll:past_days:2026-08-04");
+      sysRollRedisKey({
+        prefix: "anima:temporal",
+        kind: "past_days",
+        anchor: "2026-08-04",
+        world_id: 42,
+      }),
+    ).toBe("anima:temporal:sys_roll:w42:past_days:2026-08-04");
     expect(
-      sysRollRedisKey({ prefix: "anima:temporal", kind: "past_months", anchor: "2026-08" }),
-    ).toBe("anima:temporal:sys_roll:past_months:2026-08");
+      sysRollRedisKey({
+        prefix: "anima:temporal",
+        kind: "past_months",
+        anchor: "2026-08",
+        world_id: 7,
+      }),
+    ).toBe("anima:temporal:sys_roll:w7:past_months:2026-08");
   });
 
   it("fingerprints source rows order-independently", () => {

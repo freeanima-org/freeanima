@@ -47,6 +47,7 @@ const mockConv = {
     timestamp: "2026-01-01T00:00:00+08:00",
     system_prompt: "",
     cwd: "/tmp/project",
+    agent_subject_id: 2,
   })),
   loadConversationTools: mock(async () => [
     {
@@ -200,6 +201,7 @@ describe("service-prompt-debug", () => {
       timestamp: "2026-01-01T00:00:00+08:00",
       system_prompt: preview.system.composed,
       cwd: "/tmp/project",
+      agent_subject_id: 2,
     }));
 
     const out = await getPromptDebug(testDeps, "sess_ok");

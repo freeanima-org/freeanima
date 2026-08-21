@@ -36,4 +36,8 @@ describe("mapAutoLlmRunRow", () => {
     expect(row.max_duration_ms).toBe(1000);
     expect(typeof row.created_at).toBe("string");
   });
+
+  test("subject_id 可空", () => {
+    expect(mapAutoLlmRunRow(rawRun({ subject_id: null })).subject_id).toBeNull();
+  });
 });

@@ -4,7 +4,6 @@
  */
 
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_SUMMARY } from "@freeanima/habitat/core/provider";
 import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 import {
@@ -101,7 +100,6 @@ export async function generateSemanticClusterTitle(
       omitUndefined({
         runName: "semantic-cluster-title",
         runKind: AUTO_LLM_RUN_KIND_SEMANTIC_CLUSTER_TITLE,
-        subjectId: getResolvedWorldContext().agent_subject_id,
         messages: composedAutoLlmPromptToChatMessages(composed),
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,

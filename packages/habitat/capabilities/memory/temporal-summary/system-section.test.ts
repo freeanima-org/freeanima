@@ -42,6 +42,7 @@ describe("buildTemporalSummarySystemBody（只读缓存）", () => {
       },
     };
     const { body, truncated } = await buildTemporalSummarySystemBody(baseConfig, {
+      world_id: 42,
       peerCache,
       nowMs: Date.parse("2026-08-15T04:00:00.000Z"),
     });
@@ -68,6 +69,7 @@ describe("buildTemporalSummarySystemBody（只读缓存）", () => {
       },
     };
     const { body } = await buildTemporalSummarySystemBody(baseConfig, {
+      world_id: 42,
       peerCache,
       nowMs: Date.parse("2026-08-15T04:00:00.000Z"),
     });

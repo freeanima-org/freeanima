@@ -74,7 +74,7 @@ async function insertMessageRows(
     msgs.map((m) => ({
       id: m.id ?? randomPublicId(),
       run_id: runId,
-      subject_id: m.subject_id,
+      subject_id: m.subject_id ?? null,
       pos: m.pos,
       payload: m.payload,
     })),
@@ -141,7 +141,7 @@ export async function insertRunningAutoLlmRun(row: AutoLlmRunInsertRunningInput)
       id: row.id,
       run_name: row.run_name,
       run_kind: row.run_kind,
-      subject_id: row.subject_id,
+      subject_id: row.subject_id ?? null,
       output: "",
       status: "running",
       duration_ms: 0,

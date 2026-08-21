@@ -7,7 +7,6 @@ import {
   runAutoLlmChat,
 } from "@freeanima/habitat/core/llm";
 import { PROFILE_SUMMARY } from "@freeanima/habitat/core/provider";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
@@ -97,7 +96,6 @@ export async function generateConversationSummary(
       omitUndefined({
         runName: opts?.parentConversationId ? `${runKind}:${opts.parentConversationId}` : runKind,
         runKind,
-        subjectId: getResolvedWorldContext().agent_subject_id,
         messages: composedAutoLlmPromptToChatMessages(composed),
         model: opts?.model,
         profileId: PROFILE_SUMMARY,

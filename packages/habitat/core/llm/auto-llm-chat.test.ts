@@ -69,7 +69,6 @@ describe("runAutoLlmChat", () => {
     const result = await runAutoLlmChat({
       runName: "conversation-title",
       runKind: "conversation-title",
-      subjectId: 2,
       messages: [
         { role: "system", content: "sys" },
         { role: "user", content: "user" },
@@ -80,8 +79,11 @@ describe("runAutoLlmChat", () => {
     expect(result.output).toBe("hello title");
     expect(insertCalls.length).toBe(1);
     expect(insertCalls[0]?.run_kind).toBe("conversation-title");
+    expect(insertCalls[0]?.subject_id).toBeNull();
     expect(insertCalls[0]?.messages?.length).toBe(2);
+    expect(insertCalls[0]?.messages?.[0]?.subject_id).toBeNull();
     expect(appendCalls.length).toBe(1);
+    expect(appendCalls[0]?.msgs[0]?.subject_id).toBeNull();
     expect(appendCalls[0]?.msgs[0]?.payload.role).toBe("assistant");
     expect(appendCalls[0]?.msgs[0]?.payload).toMatchObject({
       role: "assistant",
@@ -97,6 +99,24 @@ describe("runAutoLlmChat", () => {
     expect(persistLog.at(-1)).toBe("finish");
   });
 
+  it("persists optional subjectId when provided", async () => {
+    const chatSpy = spyOn(llm, "chat").mockResolvedValue({
+      content: "with subject",
+      model: "test-model",
+    });
+    restores.push(chatSpy);
+
+    await runAutoLlmChat({
+      runName: "with-subject",
+      runKind: "custom",
+      subjectId: 2,
+      messages: [{ role: "user", content: "hi" }],
+    });
+
+    expect(insertCalls[0]?.subject_id).toBe(2);
+    expect(appendCalls[0]?.msgs[0]?.subject_id).toBe(2);
+  });
+
   it("finishes error without writing an assistant message", async () => {
     const chatSpy = spyOn(llm, "chat").mockRejectedValue(new Error("boom"));
     restores.push(chatSpy);
@@ -104,13 +124,13 @@ describe("runAutoLlmChat", () => {
     const result = await runAutoLlmChat({
       runName: "goal-judge",
       runKind: "goal-judge",
-      subjectId: 2,
       messages: [{ role: "user", content: "judge" }],
     });
 
     expect(result.status).toBe("error");
     expect(result.output).toBe("");
     expect(insertCalls.length).toBe(1);
+    expect(insertCalls[0]?.subject_id).toBeNull();
     expect(appendCalls.length).toBe(0);
     expect(finishCalls.length).toBe(1);
     expect(finishCalls[0]?.status).toBe("error");

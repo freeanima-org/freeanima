@@ -161,7 +161,9 @@ export async function resolveVaultSecretValue(
     const ctx = getResolvedWorldContext();
     if (worldId === ctx.user_world_id) subjectId = ctx.user_subject_id;
     else if (worldId === ctx.default_chat_agent_world_id || worldId === ctx.agent_world_id) {
-      subjectId = ctx.default_chat_agent_subject_id ?? ctx.agent_subject_id;
+      return toolError(
+        "subject_id is required for agent vault when world cannot be tied to the tool caller",
+      );
     } else {
       return toolError("subject_id is required when world cannot be inferred");
     }

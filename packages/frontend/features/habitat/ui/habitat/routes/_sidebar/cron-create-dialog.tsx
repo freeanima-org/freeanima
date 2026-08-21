@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
@@ -7,16 +7,31 @@ import {
   DialogTitle,
   Input,
   Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Spinner,
   Switch,
   Textarea,
 } from "@freeanima/ui-kit";
 import { FormField } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
-import { createCronJob } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
+import {
+  createCronJob,
+  listSubjectEntities,
+} from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 
 type CronJob = Record<string, unknown> & { id: string; name?: string; paused?: boolean };
+
+type AgentOption = { id: number; title: string };
+
+function formatAgentLabel(id: number, title: string): string {
+  const trimmed = title.trim();
+  return trimmed || `#${id}`;
+}
 
 export function CronCreateDialog({
   onClose,
@@ -28,15 +43,52 @@ export function CronCreateDialog({
   const [name, setName] = useState("");
   const [schedule, setSchedule] = useState("");
   const [prompt, setPrompt] = useState("");
+  const [subjectId, setSubjectId] = useState<number | null>(null);
+  const [agents, setAgents] = useState<AgentOption[]>([]);
+  const [agentsReady, setAgentsReady] = useState(false);
   const [notifyOnSuccess, setNotifyOnSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const subjects = await listSubjectEntities({ limit: 500 });
+        if (cancelled) return;
+        const next: AgentOption[] = [];
+        for (const row of subjects.items) {
+          if (row.type !== "agent") continue;
+          if (!Number.isInteger(row.id) || row.id <= 0) continue;
+          next.push({
+            id: row.id,
+            title: typeof row.title === "string" ? row.title.trim() : "",
+          });
+        }
+        setAgents(next);
+      } catch (e) {
+        if (!cancelled) {
+          logCaughtError("routes/_sidebar/cron-create-dialog agents", e);
+          setAgents([]);
+        }
+      } finally {
+        if (!cancelled) setAgentsReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const canSubmit =
-    name.trim().length > 0 && schedule.trim().length > 0 && prompt.trim().length > 0;
+    name.trim().length > 0 &&
+    schedule.trim().length > 0 &&
+    prompt.trim().length > 0 &&
+    subjectId != null &&
+    subjectId > 0;
 
   const onSubmit = async () => {
-    if (!canSubmit || saving) return;
+    if (!canSubmit || saving || subjectId == null) return;
     setSaving(true);
     setError("");
     try {
@@ -44,6 +96,7 @@ export function CronCreateDialog({
         name: name.trim(),
         schedule: schedule.trim(),
         prompt: prompt.trim(),
+        subject_id: subjectId,
         notify_on_success: notifyOnSuccess,
       });
       const job = (data as { job?: CronJob }).job;
@@ -84,6 +137,41 @@ export function CronCreateDialog({
             disabled={saving}
             focusOnMount
           />
+        </FormField>
+        <FormField label="Anima" className="text-xs">
+          <Select
+            selectedKey={subjectId != null ? String(subjectId) : null}
+            isDisabled={saving || !agentsReady || agents.length === 0}
+            aria-label="选择执行 Anima"
+            onSelectionChange={(key) => {
+              if (key == null) {
+                setSubjectId(null);
+                return;
+              }
+              const id = Number(String(key));
+              if (!Number.isInteger(id) || id <= 0) return;
+              setSubjectId(id);
+            }}
+          >
+            <SelectTrigger className="w-full h-8">
+              <SelectValue
+                placeholder={
+                  !agentsReady
+                    ? "加载 Anima…"
+                    : agents.length === 0
+                      ? "暂无可用 Anima"
+                      : "选择 Anima"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {agents.map((a) => (
+                <SelectItem key={a.id} id={String(a.id)}>
+                  {formatAgentLabel(a.id, a.title)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormField>
         <FormField label="调度" className="text-xs">
           <Input

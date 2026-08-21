@@ -25,6 +25,7 @@ export {
   temporalSystemRollRegenerateBodySchema,
   temporalSystemRollBatchStartBodySchema,
   temporalSystemRollBatchJobStatusSchema,
+  temporalSystemRollListBodySchema,
   toolsStatusResponseSchema,
   worldEntityCreateBodySchema,
   worldEntityPatchInputSchema,

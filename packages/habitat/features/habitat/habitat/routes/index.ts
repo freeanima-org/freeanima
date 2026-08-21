@@ -339,8 +339,8 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "memory.temporalSystemRollList",
     habitatMethodDefs["memory.temporalSystemRollList"],
-    asLooseRouteHandler(habitatMethodDefs["memory.temporalSystemRollList"], () =>
-      Promise.resolve(listTemporalSystemRolls()),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalSystemRollList"], (_deps, input) =>
+      Promise.resolve(listTemporalSystemRolls(input)),
     ),
   ),
   defineHabitatRouteFromDef(

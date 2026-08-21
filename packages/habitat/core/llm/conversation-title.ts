@@ -1,5 +1,4 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_SUMMARY } from "@freeanima/habitat/core/provider";
 import type { ChatCompletion } from "@freeanima/habitat/core/provider";
 import { PROMPT_XML_TAGS } from "@freeanima/habitat/core/hooks/prompt";
@@ -107,7 +106,6 @@ export async function generateConversationTitle(
           ? `conversation-title:${opts.parentConversationId}`
           : "conversation-title",
         runKind: AUTO_LLM_RUN_KIND_CONVERSATION_TITLE,
-        subjectId: getResolvedWorldContext().agent_subject_id,
         messages: composedAutoLlmPromptToChatMessages(composed),
         profileId: PROFILE_SUMMARY,
         runtime: opts?.runtime,

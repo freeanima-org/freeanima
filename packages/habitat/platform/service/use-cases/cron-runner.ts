@@ -1,6 +1,5 @@
 import { formatSkillsPrefix, skillPolicyFragments } from "@freeanima/habitat/core/skill";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { PROFILE_CHAT } from "@freeanima/habitat/core/provider";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import {
@@ -65,12 +64,16 @@ export async function runCronEngineTurn(
 
   const maxLoopIterations = 50;
 
+  if (job.subject_id == null || job.subject_id <= 0) {
+    throw new Error("cron job missing subject_id; refusing default chat agent fallback");
+  }
+
   const result = await runAutoLlm(
     deps,
     omitUndefined({
       runName,
       runKind: "cron",
-      subjectId: job.subject_id ?? getResolvedWorldContext().agent_subject_id,
+      subjectId: job.subject_id,
       systemPrompt,
       userMessages,
       model,

@@ -67,9 +67,12 @@ export async function bootRuntimePhase(
   registerTemporalSummaryPeerInject({ kernel });
   invalidateSelfLayerPromptCache();
   {
-    const { getResolvedWorldContext } =
-      await import("@freeanima/habitat/core/config/world-context");
-    await loadSelfLayerPrompt(getResolvedWorldContext().default_chat_agent_subject_id);
+    const { listEnabledBoundAgents } =
+      await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+    const agents = await listEnabledBoundAgents();
+    for (const agent of agents) {
+      await loadSelfLayerPrompt(agent.agent_subject_id);
+    }
   }
 
   registerMemoryEngines(runtime.fullDeps());

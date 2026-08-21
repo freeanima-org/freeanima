@@ -244,6 +244,11 @@ export function TemporalSummaryPage() {
       nextOffset: number,
       opts?: { silent?: boolean; claimOp?: boolean },
     ) => {
+      if (agentSubjectId == null) {
+        setItems([]);
+        setTotal(0);
+        return;
+      }
       const silent = opts?.silent === true;
       const claimOp = opts?.claimOp !== false && !silent;
       if (claimOp) {
@@ -261,7 +266,7 @@ export function TemporalSummaryPage() {
             period_start_to: to.trim() ? normalizeRangeValue(to, window) : undefined,
             offset: nextOffset,
             limit: PAGE_SIZE,
-            agent_subject_id: agentSubjectId ?? undefined,
+            agent_subject_id: agentSubjectId,
           }),
         )) as { items: TemporalRow[]; total: number };
         setItems(data.items ?? []);
@@ -280,29 +285,38 @@ export function TemporalSummaryPage() {
     [from, setOffset, to, agentSubjectId],
   );
 
-  const fetchRolls = useCallback(async (opts?: { silent?: boolean; claimOp?: boolean }) => {
-    const silent = opts?.silent === true;
-    const claimOp = opts?.claimOp !== false && !silent;
-    if (claimOp) {
-      if (opRef.current) return;
-      opRef.current = "list";
-      setListLoading(true);
-    }
-    if (!silent) setError("");
-    try {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
-      const data = (await listTemporalSystemRolls()) as { items: SystemRollRow[] };
-      setRolls(data.items ?? []);
-    } catch (e) {
-      logCaughtError("routes/_sidebar/temporal-summary/system-rolls", e);
-      setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
-    } finally {
-      if (claimOp) {
-        setListLoading(false);
-        if (opRef.current === "list") opRef.current = null;
+  const fetchRolls = useCallback(
+    async (opts?: { silent?: boolean; claimOp?: boolean }) => {
+      if (agentSubjectId == null) {
+        setRolls([]);
+        return;
       }
-    }
-  }, []);
+      const silent = opts?.silent === true;
+      const claimOp = opts?.claimOp !== false && !silent;
+      if (claimOp) {
+        if (opRef.current) return;
+        opRef.current = "list";
+        setListLoading(true);
+      }
+      if (!silent) setError("");
+      try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
+        const data = (await listTemporalSystemRolls({
+          agent_subject_id: agentSubjectId,
+        })) as { items: SystemRollRow[] };
+        setRolls(data.items ?? []);
+      } catch (e) {
+        logCaughtError("routes/_sidebar/temporal-summary/system-rolls", e);
+        setError(`加载失败: ${e instanceof Error ? e.message : String(e)}`);
+      } finally {
+        if (claimOp) {
+          setListLoading(false);
+          if (opRef.current === "list") opRef.current = null;
+        }
+      }
+    },
+    [agentSubjectId],
+  );
 
   const stopBatchPoll = useCallback(() => {
     if (batchPollRef.current) {
@@ -528,12 +542,17 @@ export function TemporalSummaryPage() {
 
   const onRegenerateRoll = async (kind: SystemRollRow["kind"]) => {
     if (opRef.current) return;
+    if (agentSubjectId == null) {
+      setError("请先选择 Anima");
+      return;
+    }
     opRef.current = "batch";
     setError("");
     setInfo("");
     try {
       const started = await startTemporalSystemRollBatch({
         kinds: [kind],
+        agent_subject_id: agentSubjectId,
       });
       setRollBatchJob(started);
       if (started.running) {
@@ -550,6 +569,10 @@ export function TemporalSummaryPage() {
 
   const onBackfillMissingRolls = async () => {
     if (opRef.current) return;
+    if (agentSubjectId == null) {
+      setError("请先选择 Anima");
+      return;
+    }
     const missing = rolls.filter((r) => !r.cache_hit || !r.summary.trim()).map((r) => r.kind);
     if (missing.length === 0) {
       setInfo("没有缺失的系统汇总。");
@@ -561,6 +584,7 @@ export function TemporalSummaryPage() {
     try {
       const started = await startTemporalSystemRollBatch({
         kinds: missing,
+        agent_subject_id: agentSubjectId,
       });
       setRollBatchJob(started);
       if (started.running) {

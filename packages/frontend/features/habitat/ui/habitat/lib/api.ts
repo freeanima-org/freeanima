@@ -314,6 +314,7 @@ export async function createCronJob(body: {
   name: string;
   schedule: string;
   prompt: string;
+  subject_id: number;
   notify_on_success?: boolean;
 }) {
   return hubCall(habitat().call("status.cronJobCreate", body));
@@ -415,8 +416,8 @@ export async function getTemporalBatchJobStatus() {
   return hubCall(habitat().call("memory.temporalBatchStatus", {}));
 }
 
-export async function listTemporalSystemRolls() {
-  return hubCall(habitat().call("memory.temporalSystemRollList", {}));
+export async function listTemporalSystemRolls(input: { agent_subject_id: number }) {
+  return hubCall(habitat().call("memory.temporalSystemRollList", input));
 }
 
 export async function regenerateTemporalSystemRoll(
@@ -426,9 +427,9 @@ export async function regenerateTemporalSystemRoll(
 }
 
 export async function startTemporalSystemRollBatch(
-  input?: HabitatMethodInputs["memory.temporalSystemRollBatchStart"],
+  input: HabitatMethodInputs["memory.temporalSystemRollBatchStart"],
 ) {
-  return hubCall(habitat().call("memory.temporalSystemRollBatchStart", input ?? {}));
+  return hubCall(habitat().call("memory.temporalSystemRollBatchStart", input));
 }
 
 export async function getTemporalSystemRollBatchStatus() {
@@ -530,10 +531,8 @@ export async function runDataIntegrityCheck() {
   return raw as DataIntegrityReport;
 }
 
-export async function getSelfBlocks(input?: { agent_subject_id?: number }) {
-  return hubCall(
-    habitat().call("self.blocks", omitUndefined({ agent_subject_id: input?.agent_subject_id })),
-  );
+export async function getSelfBlocks(input: { agent_subject_id: number }) {
+  return hubCall(habitat().call("self.blocks", { agent_subject_id: input.agent_subject_id }));
 }
 
 export async function getMcpStatus() {

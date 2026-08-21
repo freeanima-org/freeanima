@@ -3,7 +3,6 @@ import { toSelfBlockView } from "@freeanima/habitat/capabilities/self";
 import type { SelfBlockDisplay } from "@freeanima/features/habitat/protocol/habitat-contract/self-block-display.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listSelfBlocks as listPgSelfBlocks } from "@freeanima/habitat/core/db/pg/self-layer";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 
 export type { SelfBlockDisplay };
 
@@ -30,12 +29,15 @@ function emptyPlaceholderBlocks(): SelfBlockDisplay[] {
   }));
 }
 
-/** Habitat self-layer five blocks read-only display（缺省展示默认聊天 agent；观测页应传 agent_subject_id） */
+/** Habitat self-layer five blocks read-only display（须显式 agent_subject_id） */
 export async function listSelfBlocks(
   _deps: RuntimeDeps,
-  agentSubjectId?: number,
+  agentSubjectId: number,
 ): Promise<{ blocks: SelfBlockDisplay[] }> {
-  const id = agentSubjectId ?? getResolvedWorldContext().default_chat_agent_subject_id;
+  if (agentSubjectId == null || agentSubjectId <= 0) {
+    throw new Error("agent_subject_id is required for self-layer display");
+  }
+  const id = agentSubjectId;
   try {
     const rows = await listPgSelfBlocks(id);
     const blocks = rows.map((row) => {

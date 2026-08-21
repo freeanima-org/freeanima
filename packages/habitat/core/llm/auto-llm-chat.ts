@@ -19,8 +19,8 @@ export type AutoLlmChatMessage = SimpleChatMessage;
 export type AutoLlmChatInput = {
   runName: string;
   runKind: string;
-  /** Acting subject for audit / multi-anima (required) */
-  subjectId: number;
+  /** 行动主体；无工具侧车（title / 压缩等）通常省略 */
+  subjectId?: number;
   messages: AutoLlmChatMessage[];
   profileId?: string;
   model?: string;
@@ -106,7 +106,7 @@ async function persistChatStart(row: {
       id: row.id,
       run_name: row.input.runName,
       run_kind: row.input.runKind,
-      subject_id: row.input.subjectId,
+      subject_id: row.input.subjectId ?? null,
       max_loop_iterations: row.input.maxLoopIterations ?? 1,
       max_duration_ms: row.input.maxDurationMs ?? null,
       metadata: buildChatMetadata(row.input),
@@ -114,7 +114,7 @@ async function persistChatStart(row: {
       messages: row.inputPayloads.map((payload, pos) => ({
         pos,
         payload,
-        subject_id: row.input.subjectId,
+        subject_id: row.input.subjectId ?? null,
       })),
     });
   } catch {
@@ -124,7 +124,7 @@ async function persistChatStart(row: {
 
 async function persistChatAssistant(
   runId: string,
-  subjectId: number,
+  subjectId: number | null | undefined,
   pos: number,
   content: string,
   completion: LlmResponse,
@@ -133,7 +133,11 @@ async function persistChatAssistant(
   try {
     if (!isPostgresPrimary()) return;
     await appendAutoLlmMessages(runId, [
-      { pos, payload: assistantPayload(content, completion, latencyMs), subject_id: subjectId },
+      {
+        pos,
+        payload: assistantPayload(content, completion, latencyMs),
+        subject_id: subjectId ?? null,
+      },
     ]);
   } catch {
     // ignore
