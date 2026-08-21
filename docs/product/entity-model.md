@@ -141,7 +141,19 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 
 壳 UI 用 **Anima URI**（`anima:{id}?component=…`）定位实体，而非把 URI 字符串存入 PG。FK 字段仍为数字 id（如 `task_item_id`）。省略 `component` 时打开默认本实体的 `primary_component`。见 [`anima-uri.md`](anima-uri.md)——尤其 **分层 vs 持久化**。
 
-## 任务模块（首个消费者）
+## 模块（业务边界）
+
+**模块** = 一组实体组件 + 对应功能特性的业务边界。模块之间可以有交集（共享实体类型），只是壳与功能上的划分。三层勿混：
+
+| 层                 | 例                                    | 代码                                                    |
+| ------------------ | ------------------------------------- | ------------------------------------------------------- |
+| 壳模块             | 清单模块、项目模块、日程              | `ShellModuleId`（如 `tasks` / `projects` / `calendar`） |
+| 实体组件           | `task_list` / `task_item` / `project` | `ComponentId` / `*_COMPONENT`                           |
+| 任务容器（查询轴） | 清单侧 / 项目侧 / 跨容器              | `TaskContainer`：`list` \| `project` \| `any`           |
+
+术语见 [`i18n/glossary.md`](../../i18n/glossary.md)。
+
+## 清单模块（首个消费者；原「任务模块」）
 
 滴答清单式列表与条目映射为：
 
@@ -152,7 +164,7 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 | 条目（任务） | `type=content` | `task_item`       |
 | 发生次       | `type=content` | `task_occurrence` |
 
-条目经 `body.list_id`（实体 id）引用清单。任务条目把 **title** 与 **content** 存在实体列；**标签**用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。每个 world 在首次使用任务时**懒创建**一个**默认清单**（`is_default: true`，名称如「收件箱」）（`ensureDefaultTaskListForWorld`）；不可删除或归档，但可重命名。清单 **`body.closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 `include_closed`），经 `tasklist.patch({ closed: false })` 恢复；所含任务条目保留。
+条目经 `body.list_id`（实体 id）引用清单（`TaskContainer.LIST`）；或经 `body.project_id` 归属项目（`TaskContainer.PROJECT`），二者 XOR。任务条目把 **title** 与 **content** 存在实体列；**标签**用顶层 `tag_ids`（指向同 World 的 `tag` entity，见下节）。**禁止** `body.tags` 字符串数组（存量已迁移剥离）。每个 world 在首次使用任务时**懒创建**一个**默认清单**（`is_default: true`，名称如「收件箱」）（`ensureDefaultTaskListForWorld`）；不可删除或归档，但可重命名。清单 **`body.closed: true`** 表示已归档：默认从主侧栏隐藏（`tasklist.list` 除非 `include_closed`），经 `tasklist.patch({ closed: false })` 恢复；所含任务条目保留。
 
 **重复任务**（`task_item.body.recurrence` + `task_occurrence` 完成历史）、**一层子任务**（`body.parent_id`）、**时段**（`start_at` / `due_at`）、**多提醒**（`reminders[]` / 兼容 `remind_at`）见 [`docs/modules/task.md`](../modules/task.md)。滴答 CSV 一次性导入入口在栖息地数据维护。
 
@@ -205,14 +217,14 @@ SAP 任务/邮件方法接受可选 `subject_kind`（默认：任务 `user`，�
 
 ## 项目模块（v1 规格）
 
-项目管理使用与任务清单文件夹**分开的文件夹树**。任务要么属于任务模块（Backlog，`project_id` null），要么恰好属于一个项目——UI 上不同时属于两边。
+项目管理使用与任务清单文件夹**分开的文件夹树**。任务要么属于清单模块（`TaskContainer.LIST`，`project_id` null），要么恰好属于一个项目（`TaskContainer.PROJECT`）——UI 上不同时属于两边。
 
 | 概念       | 实体           | 组件             |
 | ---------- | -------------- | ---------------- |
 | 项目文件夹 | `type=content` | `project_folder` |
 | 项目       | `type=content` | `project`        |
 
-`task_item.body.project_id` 把条目链到项目。可选项目背景说明用实体 `content`（非 `body`）。任务模块智能清单默认只含无 `project_id` 的任务。壳路由 `/projects`；栖息地 RPC `projectfolder.*`、`project.*`、`project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
+`task_item.body.project_id` 把条目链到项目。可选项目背景说明用实体 `content`（非 `body`）。清单模块智能清单默认只含清单侧任务（`container=list`）。壳路由 `/projects`；栖息地 RPC `projectfolder.*`、`project.*`、`project.item.*`；跨边界归属用 `task.moveToProject` / `task.moveToList`。
 
 完整规格：[`docs/modules/project.md`](../modules/project.md)。
 

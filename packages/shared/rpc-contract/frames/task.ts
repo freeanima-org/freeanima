@@ -4,6 +4,7 @@ import { notificationRecipientKindSchema } from "./notification.ts";
 import {
   taskItemPrioritySchema,
   taskItemStatusSchema,
+  taskContainerSchema,
 } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import {
   taskRecurrenceSchema,
@@ -47,6 +48,8 @@ export const taskItemSearchFiltersSchema = z
     completed_after: z.string().optional(),
     completed_before: z.string().optional(),
     project_id: z.number().int().positive().optional(),
+    container: taskContainerSchema.optional(),
+    /** @deprecated 用 container */
     in_backlog: z.boolean().optional(),
     parent_id: z.number().int().positive().optional(),
     roots_only: z.boolean().optional(),

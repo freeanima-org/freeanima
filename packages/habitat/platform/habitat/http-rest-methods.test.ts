@@ -64,14 +64,14 @@ describe("http-rest feature methods", () => {
   test("buildHabitatRestRequest GET tasklist.item.list with filters object", () => {
     const { url } = buildHabitatRestRequest("http://127.0.0.1:2658", "tasklist.item.list", {
       subject_kind: "user",
-      filters: { status: "pending", in_backlog: true },
+      filters: { status: "pending", container: "list" },
     });
     const parsed = new URL(url);
     expect(parsed.pathname).toBe("/rpc/v1/tasklist/item/list");
     expect(parsed.searchParams.get("subject_kind")).toBe("user");
     expect(JSON.parse(parsed.searchParams.get("filters") ?? "")).toEqual({
       status: "pending",
-      in_backlog: true,
+      container: "list",
     });
   });
 

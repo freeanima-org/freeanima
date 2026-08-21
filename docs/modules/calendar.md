@@ -59,10 +59,9 @@ private world（壳 `subject_kind`）。
 `calendar.range` 规则：
 
 - **event**：区间与 `[from,to]` 相交
-- **task**：`status=pending` 根任务（**不**按 `in_backlog` 过滤：含清单/backlog
-  与项目内）；**计划区间**（`start_at`/`end_at`）与查询窗相交，或带 `recurrence` 时在区间内 **虚拟展开**后续实例（`virtual:
+- **task**：`status=pending` 根任务（**不**按清单侧过滤：`TaskContainer.ANY`，含清单与项目内）；**计划区间**（`start_at`/`end_at`）与查询窗相交，或带 `recurrence` 时在区间内 **虚拟展开**后续实例（`virtual:
 true`，不写库）。独立 `due_at` 不作为日历条带终点。
-- **`include_completed`**：另并入已完成根任务（清单 + 项目内；含 occurrence 历史）：计划与窗相交，**或** `completed_at` 落窗。同一 live id 只返回一条（保留计划字段 + `completed_at`）；前端按**计划段 + 完成日**双轴展示，同日去重。
+- **`include_completed`**：另并入已完成根任务（`TaskContainer.ANY`：清单 + 项目内；含 occurrence 历史）：计划与窗相交，**或** `completed_at` 落窗。同一 live id 只返回一条（保留计划字段 + `completed_at`）；前端按**计划段 + 完成日**双轴展示，同日去重。
 - **project**：`status=active`，有 `start_at`，且与区间相交（不含已完成 / 搁置 / 取消）
 - **holiday**：内置日历源合成的只读全天项（不写库、无提醒）。`kinds` 含 `holiday` 且未传 `sources` 时启用全部已实现源；按公历年懒加载并 Redis 缓存（`anima:cache:calendar:builtin:{source}:{year}`）。
 

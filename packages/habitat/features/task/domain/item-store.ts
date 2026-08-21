@@ -21,6 +21,7 @@ import {
 } from "@freeanima/habitat/core/db/schema/entity";
 import { assertEntityInWorld, assertSameWorldReferent } from "@freeanima/habitat/core/db/pg/entity";
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import {
   createEntity,
   deleteEntity,
@@ -163,13 +164,12 @@ export async function listTaskItems(
     if (opts.due_today) filters.due_today = true;
     if (opts.tag_ids?.length) filters.tag_ids = opts.tag_ids;
     if (opts.project_id != null) filters.project_id = opts.project_id;
-    else if (opts.in_backlog !== false) filters.in_backlog = true;
+    // 显式 container / 遗留 in_backlog；不再静默默认 LIST（由清单模块入口传入）
+    if (opts.container != null) filters.container = opts.container;
+    else if (opts.in_backlog !== undefined) filters.in_backlog = opts.in_backlog;
     if (opts.parent_id != null) filters.parent_id = opts.parent_id;
     else if (opts.roots_only !== false) filters.roots_only = true;
   } else {
-    if (opts.filters.project_id == null && opts.filters.in_backlog !== false) {
-      filters.in_backlog = true;
-    }
     if (opts.parent_id != null) filters.parent_id = opts.parent_id;
     else if (opts.roots_only !== false && opts.filters.parent_id == null) {
       filters.roots_only = opts.filters.roots_only ?? true;
@@ -528,7 +528,7 @@ export async function updateTaskItem(
         const kids = await listTaskItems(worldId, {
           parent_id: input.id,
           roots_only: false,
-          in_backlog: false,
+          container: TaskContainer.ANY,
           ...(parsedExisting.project_id != null
             ? { project_id: parsedExisting.project_id }
             : parsedExisting.list_id != null
@@ -789,7 +789,7 @@ export async function deleteTaskItem(worldId: number, id: number): Promise<boole
   const children = await listTaskItems(worldId, {
     parent_id: id,
     roots_only: false,
-    in_backlog: false,
+    container: TaskContainer.ANY,
     ...(parsed.project_id != null
       ? { project_id: parsed.project_id }
       : parsed.list_id != null
@@ -812,7 +812,7 @@ export async function countSubtasks(
     parent_id: parentId,
     roots_only: false,
     status: "all",
-    in_backlog: false,
+    container: TaskContainer.ANY,
   });
   const done = kids.filter((k) => k.status === "completed").length;
   return { done, total: kids.length };

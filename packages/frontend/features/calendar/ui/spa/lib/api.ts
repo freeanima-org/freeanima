@@ -10,6 +10,7 @@ import type {
   TaskItemRowPayload,
   TaskItemSearchFiltersPayload,
 } from "@freeanima/shared/rpc-contract/frames/task.ts";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
@@ -64,7 +65,7 @@ export async function fetchDueTasksForAgenda(
   try {
     const data = await habitat().call("tasklist.item.list", {
       subject_kind: subjectKind,
-      filters: { ...filters, in_backlog: false },
+      filters: { ...filters, container: TaskContainer.ANY },
       roots_only: true,
       limit: 500,
     });

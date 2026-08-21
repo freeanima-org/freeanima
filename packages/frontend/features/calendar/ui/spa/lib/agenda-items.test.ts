@@ -47,19 +47,19 @@ describe("agenda-items", () => {
   test("dueFiltersForAgenda：今天含逾期，其它日只取当日，且含项目内", () => {
     expect(dueFiltersForAgenda("day", today, today)).toMatchObject({
       due_on_or_before_days: 0,
-      in_backlog: false,
+      container: "any",
     });
     const tomorrow = dueFiltersForAgenda("day", "2026-08-20", today);
     expect(tomorrow?.due_after?.startsWith("2026-08-20T00:00:00")).toBe(true);
     expect(tomorrow?.due_on_or_before_days).toBeUndefined();
-    expect(tomorrow?.in_backlog).toBe(false);
+    expect(tomorrow?.container).toBe("any");
     expect(dueFiltersForAgenda("next3", today, today)).toMatchObject({
       due_on_or_before_days: 2,
-      in_backlog: false,
+      container: "any",
     });
     expect(dueFiltersForAgenda("next7", today, today)).toMatchObject({
       due_on_or_before_days: 6,
-      in_backlog: false,
+      container: "any",
     });
     expect(dueFiltersForAgenda("month", today, today)).toBeNull();
   });
@@ -128,7 +128,7 @@ describe("agenda-items", () => {
     const filters = planOverdueFiltersForAgenda("day", today, today);
     expect(filters).toMatchObject({
       status: "pending",
-      in_backlog: false,
+      container: "any",
       roots_only: true,
     });
     expect(filters?.plan_before?.startsWith("2026-08-19T00:00:00")).toBe(true);
