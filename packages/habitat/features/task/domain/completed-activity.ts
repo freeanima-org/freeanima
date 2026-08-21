@@ -1,4 +1,5 @@
 import type { TaskItemSearchFilters } from "@freeanima/habitat/core/db/schema";
+import { resolveTaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
 import { listTaskItems } from "./item-store.ts";
 import { listTaskOccurrencesByFilters } from "./occurrence-store.ts";
@@ -36,7 +37,8 @@ export async function listCompletedActivity(
   if (filters.completed_before != null) {
     occurrenceFilters.completed_before = filters.completed_before;
   }
-  if (filters.in_backlog === true) occurrenceFilters.in_backlog = true;
+  const container = resolveTaskContainer(filters);
+  if (container != null) occurrenceFilters.container = container;
   if (filters.list_id != null) occurrenceFilters.list_id = filters.list_id;
   if (filters.list_ids != null) occurrenceFilters.list_ids = filters.list_ids;
   if (filters.project_id != null) occurrenceFilters.project_id = filters.project_id;
@@ -46,7 +48,6 @@ export async function listCompletedActivity(
       filters: itemFilters,
       limit: limit + offset,
       offset: 0,
-      // listTaskItems 对显式 filters 仍可能加 in_backlog；与 filters 一致
     }),
     listTaskOccurrencesByFilters(worldId, occurrenceFilters, {
       limit: limit + offset,

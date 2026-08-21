@@ -1,4 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import {
   completeTaskItem,
   completeTaskItemForever,
@@ -228,7 +229,7 @@ export async function serviceSmartlistDelete(
   return { ok: true as const };
 }
 
-/** 任务模块列任务（Backlog / 清单）；不含项目内任务（默认 in_backlog） */
+/** 清单模块列任务（清单侧）；不含项目内任务（显式 TaskContainer.LIST） */
 export async function serviceTasklistItemList(
   deps: RuntimeDeps,
   input: {
@@ -251,10 +252,19 @@ export async function serviceTasklistItemList(
   }
   const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
   await ensureDefaultTaskListForWorld(worldId);
-  if (input.filters != null && shouldListCompletedActivity(input.filters)) {
+  let filters = input.filters;
+  if (
+    filters != null &&
+    filters.project_id == null &&
+    filters.container == null &&
+    filters.in_backlog == null
+  ) {
+    filters = { ...filters, container: TaskContainer.LIST };
+  }
+  if (filters != null && shouldListCompletedActivity(filters)) {
     const items = await listCompletedActivity(
       worldId,
-      input.filters,
+      filters,
       omitUndefined({ limit: input.limit, offset: input.offset }),
     );
     return { items };
@@ -263,10 +273,12 @@ export async function serviceTasklistItemList(
     worldId,
     omitUndefined({
       list_id: input.list_id,
-      filters: input.filters,
-      status: input.filters == null ? (input.status ?? "all") : undefined,
-      due_today: input.filters == null ? input.due_today : undefined,
-      tag_ids: input.filters == null ? input.tag_ids : undefined,
+      filters,
+      status: filters == null ? (input.status ?? "all") : undefined,
+      due_today: filters == null ? input.due_today : undefined,
+      tag_ids: filters == null ? input.tag_ids : undefined,
+      // 无 filters 时（按 list_id / status）仍限定清单侧
+      container: filters == null ? TaskContainer.LIST : undefined,
       roots_only: input.parent_id != null ? false : (input.roots_only ?? true),
       parent_id: input.parent_id,
       limit: input.limit,

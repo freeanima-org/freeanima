@@ -1,5 +1,6 @@
 import type { TaskItemPriority } from "@freeanima/habitat/core/db/schema/entity";
 import type { TaskItemSearchFilters } from "@freeanima/habitat/core/db/schema";
+import type { TaskContainerKind } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import type {
   TaskRecurrence,
   TaskRecurrenceInput,
@@ -41,7 +42,7 @@ export type TaskItemCreateInput = {
   title: string;
   content?: string;
   tag_ids?: number[];
-  /** 任务模块必填；与 project_id 互斥 */
+  /** 清单侧必填；与 project_id 互斥 */
   list_id?: number | null;
   priority?: TaskItemPriority;
   /** 计划开始（单点或时段起点） */
@@ -109,6 +110,9 @@ export type TaskItemListOpts = {
   due_today?: boolean;
   tag_ids?: number[];
   project_id?: number;
+  /** 任务容器；清单模块入口应显式 LIST */
+  container?: TaskContainerKind;
+  /** @deprecated 用 container */
   in_backlog?: boolean;
   filters?: TaskItemSearchFilters;
   /** 默认 true：只返回根任务 */

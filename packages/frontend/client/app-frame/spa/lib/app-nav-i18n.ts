@@ -67,7 +67,7 @@ export function appNavItems(): AppNavItem[] {
       "tasks",
       "/tasks",
       "/tasks",
-      shellNavLabel(() => "✅ 任务"),
+      shellNavLabel(() => "✅ 清单"),
       ListTodo,
     ),
     navItem(

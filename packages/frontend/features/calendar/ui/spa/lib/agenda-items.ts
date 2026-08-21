@@ -1,4 +1,5 @@
 import type { TaskItemSearchFiltersPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import type { CalendarRangeItem } from "./api.ts";
 import { dayKeyFromIso, dayRangeIso } from "./format-calendar.ts";
 
@@ -7,13 +8,12 @@ export function dueFiltersForAgenda(
   selectedDay: string,
   today: string,
 ): TaskItemSearchFiltersPayload | null {
-  // 显式 in_backlog:false：与 calendar.range / 文档一致，含项目内仅有截止的任务；
-  // 否则 tasklist.item.list 会默认注入 in_backlog:true，逾期区只剩清单内任务。
+  // TaskContainer.ANY：与 calendar.range 一致，含项目内仅有截止的任务
   const base: TaskItemSearchFiltersPayload = {
     status: "pending",
     has_due_at: true,
     roots_only: true,
-    in_backlog: false,
+    container: TaskContainer.ANY,
   };
   if (viewMode === "day") {
     if (selectedDay === today) return { ...base, due_on_or_before_days: 0 };
@@ -37,7 +37,7 @@ export function planOverdueFiltersForAgenda(
   return {
     status: "pending",
     roots_only: true,
-    in_backlog: false,
+    container: TaskContainer.ANY,
     plan_before: dayRangeIso(today).from,
   };
 }

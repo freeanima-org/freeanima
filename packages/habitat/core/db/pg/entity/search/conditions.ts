@@ -34,6 +34,7 @@ import {
   BOOKMARK_COMPONENT,
   parseBookmarkSearchFilters,
 } from "@freeanima/habitat/core/db/schema";
+import { TaskContainer, resolveTaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import { pgBigintArray } from "../../utils/pg-sql.ts";
 import type { EntitySearchOpts } from "../types.ts";
 
@@ -255,9 +256,14 @@ function buildTaskItemBodyConditions(
   if (filters.project_id != null) {
     conditions.push(sql`${entities.body}->>'project_id' = ${String(filters.project_id)}`);
   }
-  if (filters.in_backlog === true) {
+  const taskContainer = resolveTaskContainer(filters);
+  if (taskContainer === TaskContainer.LIST) {
     conditions.push(
       sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
+    );
+  } else if (taskContainer === TaskContainer.PROJECT) {
+    conditions.push(
+      sql`(${entities.body}->>'project_id' IS NOT NULL AND ${entities.body}->>'project_id' <> '')`,
     );
   }
   if (filters.parent_id != null) {
@@ -298,9 +304,14 @@ function buildTaskOccurrenceBodyConditions(
   if (filters.project_id != null) {
     conditions.push(sql`${entities.body}->>'project_id' = ${String(filters.project_id)}`);
   }
-  if (filters.in_backlog === true) {
+  const occurrenceContainer = resolveTaskContainer(filters);
+  if (occurrenceContainer === TaskContainer.LIST) {
     conditions.push(
       sql`(${entities.body}->>'project_id' IS NULL OR ${entities.body}->>'project_id' = '')`,
+    );
+  } else if (occurrenceContainer === TaskContainer.PROJECT) {
+    conditions.push(
+      sql`(${entities.body}->>'project_id' IS NOT NULL AND ${entities.body}->>'project_id' <> '')`,
     );
   }
   if (filters.completed_on != null) {

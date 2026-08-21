@@ -8,10 +8,19 @@ import {
   countPendingTaskItemsGroupedByListId,
   listEntities,
 } from "@freeanima/habitat/core/db/pg/entity";
+import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
+import type { TaskItemSearchFilters } from "@freeanima/habitat/core/db/schema";
 
 import { countCompletedActivity, shouldListCompletedActivity } from "./completed-activity.ts";
 import { type SmartListPreset } from "./smart-list-presets.ts";
 import { listSmartListsMerged } from "./smart-list-store.ts";
+
+function withListContainerDefault(filters: TaskItemSearchFilters): TaskItemSearchFilters {
+  if (filters.project_id != null || filters.container != null || filters.in_backlog != null) {
+    return filters;
+  }
+  return { ...filters, container: TaskContainer.LIST };
+}
 
 export type TaskListCountRow = {
   id: number;
@@ -54,12 +63,13 @@ export async function listSmartListStats(worldId: number): Promise<SmartListCoun
   const smartLists = await listSmartListsMerged(worldId);
   const result: SmartListCountRow[] = [];
   for (const row of smartLists) {
-    const item_count = shouldListCompletedActivity(row.filters)
-      ? await countCompletedActivity(worldId, row.filters)
+    const filters = withListContainerDefault(row.filters);
+    const item_count = shouldListCompletedActivity(filters)
+      ? await countCompletedActivity(worldId, filters)
       : await countEntitiesSearch({
           world_id: worldId,
           component: TASK_ITEM_COMPONENT,
-          filters: row.filters,
+          filters,
           mode: "filter_only",
         });
     if (row.preset != null) {
