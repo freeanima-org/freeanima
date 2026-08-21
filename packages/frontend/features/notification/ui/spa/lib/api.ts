@@ -64,6 +64,7 @@ export function subscribeUserNotificationInbox(
     {},
     {
       onData: (payload) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- WS 事件载荷边界
         const record = payload as Partial<NotificationCreatedEvent>;
         if (
           typeof record.id === "string" &&

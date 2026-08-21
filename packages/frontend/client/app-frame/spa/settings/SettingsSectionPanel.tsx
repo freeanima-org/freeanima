@@ -1,3 +1,4 @@
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import { useNavigate } from "@tanstack/react-router";
 import type { SettingsBinding, SettingsPlatform } from "@freeanima/client/portal-sdk/settings";
 
@@ -31,7 +32,7 @@ export function SettingsSectionPanel({ binding, platform }: Props) {
         platform={platform}
         sectionId={section.id}
         enterAfterSave={gateMode}
-        onEnterAfterSave={() => void navigate({ to: "/chat" as never })}
+        onEnterAfterSave={() => void navigate({ to: assertNarrow<never>("/chat") })}
       />
     );
   }

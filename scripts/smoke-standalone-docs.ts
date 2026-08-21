@@ -22,6 +22,7 @@ import {
   resetEmbeddedDocsForTest,
 } from "@freeanima/habitat/capabilities/tools/docs-embedded";
 import { listEmbeddedDocsFromDir } from "@freeanima/habitat/capabilities/tools/docs-dir-import";
+import { asRecord } from "@freeanima/shared/util";
 
 const ROOT = join(import.meta.dir, "..");
 const BIN = join(ROOT, "dist/anima-executable/anima");
@@ -97,8 +98,8 @@ async function waitForHealth(port: number, timeoutMs = 120_000): Promise<void> {
     try {
       const res = await fetch(`http://127.0.0.1:${port}/rpc/v1/health/probe`);
       if (res.ok) {
-        const body = (await res.json()) as { status?: string };
-        if (body.status === "ok") return;
+        const body = asRecord(await res.json());
+        if (body?.status === "ok") return;
       }
     } catch (err) {
       lastError = err;
@@ -214,10 +215,15 @@ async function assertLiveStandaloneRegistersDocsTools(): Promise<void> {
     if (!res.ok) {
       throw new Error(`prompt.debug failed: HTTP ${res.status}`);
     }
-    const body = (await res.json()) as {
-      tools?: { items?: Array<{ name: string }> };
-    };
-    const names = new Set((body.tools?.items ?? []).map((t) => t.name));
+    const body = asRecord(await res.json());
+    const tools = asRecord(body?.tools);
+    const items = Array.isArray(tools?.items) ? tools.items : [];
+    const names = new Set(
+      items
+        .map((t) => asRecord(t))
+        .filter((t): t is Record<string, unknown> => t != null && typeof t.name === "string")
+        .map((t) => String(t.name)),
+    );
     for (const n of ["freeanima_docs_list", "freeanima_docs_get", "freeanima_docs_search"]) {
       if (!names.has(n)) throw new Error(`live standalone missing tool ${n}`);
     }

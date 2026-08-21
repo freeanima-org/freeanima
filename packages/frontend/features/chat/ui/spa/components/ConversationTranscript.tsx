@@ -116,7 +116,8 @@ export type ConversationTranscriptProps = {
 
 function onMdClick(e: MouseEvent<HTMLDivElement>, onAnimaUriClick?: (uri: string) => void): void {
   if (!onAnimaUriClick) return;
-  const target = e.target as HTMLElement | null;
+  const target = e.target instanceof HTMLElement ? e.target : null;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
   const anchor = target?.closest?.("a[data-anima-uri]") as HTMLAnchorElement | null;
   if (!anchor) return;
   e.preventDefault();

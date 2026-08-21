@@ -1,4 +1,5 @@
 import type { ReactNode, Key } from "react";
+import { isRecord } from "@freeanima/shared/util";
 import { useCallback, useEffect, useState } from "react";
 import {
   Button,
@@ -36,9 +37,7 @@ type Props = SettingsPanelProps & {
 type SemanticMemoryTabId = "passive_recall" | "semantic_clustering";
 
 function asConfigRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
+  return isRecord(value) ? value : {};
 }
 
 function pickConfigRecord(

@@ -54,6 +54,7 @@ export function PomodoroFloatApp() {
     const refresh = () => setActive(readActive(subjectKind));
     const unsub = subscribePomodoroSync(() => refresh());
     const onCustom = (event: Event) => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
       const detail = (event as CustomEvent<{ subjectKind?: string }>).detail;
       if (detail?.subjectKind === subjectKind) refresh();
     };

@@ -14,14 +14,16 @@ import { join } from "node:path";
 
 import { getRepoRoot } from "@freeanima/habitat/core/config/repo-root.ts";
 import { formatCanaryVersion } from "@freeanima/habitat/core/config/canary-version.ts";
+import { isRecord } from "@freeanima/shared/util";
 
 const ROOT = getRepoRoot();
 
 function readManifestVersion(): string {
-  const raw = JSON.parse(readFileSync(join(ROOT, ".release-please-manifest.json"), "utf8")) as {
-    "."?: string;
-  };
-  const v = raw["."]?.trim();
+  const raw: unknown = JSON.parse(
+    readFileSync(join(ROOT, ".release-please-manifest.json"), "utf8"),
+  );
+  if (!isRecord(raw)) throw new Error("invalid .release-please-manifest.json");
+  const v = typeof raw["."] === "string" ? raw["."].trim() : "";
   if (!v) throw new Error(".release-please-manifest.json missing '.' version");
   return v;
 }
@@ -44,18 +46,25 @@ async function fetchReleasePrPackageVersion(): Promise<string | null> {
     console.error(`[resolve-canary-version] list PRs failed: ${listRes.status}`);
     return null;
   }
-  const prs = (await listRes.json()) as Array<{
-    title?: string;
-    labels?: Array<{ name?: string }>;
-    head?: { sha?: string; ref?: string };
-  }>;
-  const pending = prs.find((p) => (p.labels ?? []).some((l) => l.name === "autorelease: pending"));
-  if (!pending?.head?.sha) return null;
+  const prsRaw: unknown = await listRes.json();
+  if (!Array.isArray(prsRaw)) return null;
+  const pendingUnknown: unknown = prsRaw.find((p) => {
+    if (!isRecord(p)) return false;
+    const labels = p.labels;
+    return (
+      Array.isArray(labels) && labels.some((l) => isRecord(l) && l.name === "autorelease: pending")
+    );
+  });
+  if (!isRecord(pendingUnknown)) return null;
+  const pending = pendingUnknown;
+  const head = pending.head;
+  const sha = isRecord(head) && typeof head.sha === "string" ? head.sha : null;
+  if (!sha) return null;
 
-  // 标题 chore: release X.Y.Z 可作兜底
-  const titleVer = pending.title?.match(/^chore:\s*release\s+(\d+\.\d+\.\d+)/i)?.[1];
+  const title = typeof pending.title === "string" ? pending.title : undefined;
+  const titleVer = title?.match(/^chore:\s*release\s+(\d+\.\d+\.\d+)/i)?.[1];
 
-  const contentsUrl = `https://api.github.com/repos/${repo}/contents/package.json?ref=${encodeURIComponent(pending.head.sha)}`;
+  const contentsUrl = `https://api.github.com/repos/${repo}/contents/package.json?ref=${encodeURIComponent(sha)}`;
   const pkgRes = await fetch(contentsUrl, {
     headers: {
       Accept: "application/vnd.github+json",
@@ -69,13 +78,13 @@ async function fetchReleasePrPackageVersion(): Promise<string | null> {
     console.error(`[resolve-canary-version] fetch package.json failed: ${pkgRes.status}`);
     return null;
   }
-  const body = (await pkgRes.json()) as { content?: string; encoding?: string };
-  if (body.encoding === "base64" && body.content) {
-    const pkg = JSON.parse(Buffer.from(body.content, "base64").toString("utf8")) as {
-      version?: string;
-    };
-    const v = pkg.version?.trim();
-    if (v) return v.replace(/^v/i, "");
+  const body: unknown = await pkgRes.json();
+  if (isRecord(body) && body.encoding === "base64" && typeof body.content === "string") {
+    const pkgRaw: unknown = JSON.parse(Buffer.from(body.content, "base64").toString("utf8"));
+    if (isRecord(pkgRaw) && typeof pkgRaw.version === "string") {
+      const v = pkgRaw.version.trim();
+      if (v) return v.replace(/^v/i, "");
+    }
   }
   return titleVer ?? null;
 }

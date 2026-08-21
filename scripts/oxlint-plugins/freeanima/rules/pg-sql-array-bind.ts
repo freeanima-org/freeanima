@@ -1,15 +1,16 @@
 import { findPgSqlArrayHitsInTemplateBody } from "../lib/pg-sql-array.ts";
+import { isRecord } from "../lib/is-record.ts";
 import { relToRepo } from "../lib/repo-path.ts";
 import type { RuleModule } from "../lib/types.ts";
 
 function tagName(tag: unknown): string | null {
-  if (!tag || typeof tag !== "object") return null;
-  const t = tag as { type?: string; name?: string; property?: unknown };
-  if (t.type === "Identifier" && typeof t.name === "string") return t.name;
-  // sql.raw / rare — ignore
-  if (t.type === "MemberExpression") {
-    const prop = t.property as { type?: string; name?: string } | undefined;
-    if (prop?.type === "Identifier" && typeof prop.name === "string") return prop.name;
+  if (!isRecord(tag)) return null;
+  if (tag.type === "Identifier" && typeof tag.name === "string") return tag.name;
+  if (tag.type === "MemberExpression") {
+    const prop = tag.property;
+    if (isRecord(prop) && prop.type === "Identifier" && typeof prop.name === "string") {
+      return prop.name;
+    }
   }
   return null;
 }
@@ -28,11 +29,10 @@ export const pgSqlArrayBind: RuleModule = {
 
     return {
       TaggedTemplateExpression(node: unknown) {
-        const n = node as { tag?: unknown; quasi?: unknown };
-        const name = tagName(n.tag);
+        if (!isRecord(node)) return;
+        const name = tagName(node.tag);
         if (name !== "sql" && name !== "drizzleSql") return;
-        const quasiText = context.sourceCode.getText(n.quasi);
-        // TemplateLiteral getText 含外层反引号
+        const quasiText = context.sourceCode.getText(node.quasi);
         if (quasiText.length < 2 || quasiText[0] !== "`" || quasiText.at(-1) !== "`") return;
         const body = quasiText.slice(1, -1);
         for (const hit of findPgSqlArrayHitsInTemplateBody(body)) {

@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 import type { ShellClientConfig } from "./shell-client-config.ts";
 import { parseShellClientConfig } from "./shell-client-config.ts";
 import {
@@ -17,10 +19,9 @@ export const DEFAULT_SHELL_SETTINGS: ShellSettings = {
 };
 
 export function parseShellSettings(raw: unknown): ShellSettings {
-  if (!raw || typeof raw !== "object") return { ...DEFAULT_SHELL_SETTINGS };
-  const obj = raw as Record<string, unknown>;
-  const habitat = parseShellClientConfig(obj.habitat);
-  const debug = parseShellDebugConfig(obj.debug);
+  if (!isRecord(raw)) return { ...DEFAULT_SHELL_SETTINGS };
+  const habitat = parseShellClientConfig(raw.habitat);
+  const debug = parseShellDebugConfig(raw.debug);
   return { habitat, debug };
 }
 

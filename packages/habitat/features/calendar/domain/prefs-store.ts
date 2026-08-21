@@ -8,6 +8,7 @@ import {
 } from "@freeanima/habitat/core/db/schema/entity";
 import { createEntity, searchEntities, updateEntity } from "@freeanima/habitat/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import type { CalendarStoreContext } from "./types.ts";
 
@@ -64,7 +65,8 @@ export async function updateCalendarUiPrefs(
   const current = await getCalendarUiPrefs(ctx);
   const nextByView = { ...current.byView };
   if (patch.byView) {
-    for (const mode of Object.keys(patch.byView) as CalendarViewMode[]) {
+    for (const modeKey of Object.keys(patch.byView)) {
+      const mode = assertNarrow<CalendarViewMode>(modeKey);
       const modePatch = patch.byView[mode];
       if (!modePatch) continue;
       nextByView[mode] = {

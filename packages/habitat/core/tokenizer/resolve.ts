@@ -134,7 +134,9 @@ async function fetchHubSearchIds(query: string): Promise<string[]> {
   try {
     const res = await fetchWithTimeout(url);
     if (!res.ok) return [];
-    const entries = (await res.json()) as HabitatModelEntry[];
+    const entriesUnknown: unknown = await res.json();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Habitat 模型目录条目
+    const entries = entriesUnknown as HabitatModelEntry[];
     const ids: string[] = [];
     const seen = new Set<string>();
     for (const entry of entries) {

@@ -1,5 +1,6 @@
 import { REDIS_CACHE_KEY_PREFIX, cacheGetJson, cacheSetJson } from "@freeanima/habitat/core/redis";
 import type { ProviderMap } from "@opencode-ai/models";
+import { asRecord } from "@freeanima/shared/util";
 
 /** Cross-process models.dev providers TTL (seconds). */
 export const MODELS_DEV_CACHE_TTL_SECONDS = 6 * 60 * 60;
@@ -7,15 +8,12 @@ export const MODELS_DEV_CACHE_TTL_SECONDS = 6 * 60 * 60;
 export const MODELS_DEV_REDIS_KEY = `${REDIS_CACHE_KEY_PREFIX}models-dev:providers`;
 
 function isProviderMap(value: unknown): value is ProviderMap {
-  if (value == null || typeof value !== "object" || Array.isArray(value)) return false;
-  return Object.values(value as Record<string, unknown>).every(
-    (entry) =>
-      entry != null &&
-      typeof entry === "object" &&
-      typeof (entry as { id?: unknown }).id === "string" &&
-      (entry as { models?: unknown }).models != null &&
-      typeof (entry as { models: unknown }).models === "object",
-  );
+  const root = asRecord(value);
+  if (!root) return false;
+  return Object.values(root).every((entry) => {
+    const rec = asRecord(entry);
+    return rec != null && typeof rec.id === "string" && asRecord(rec.models) != null;
+  });
 }
 
 export async function loadModelsDevProvidersCache(): Promise<ProviderMap | null> {

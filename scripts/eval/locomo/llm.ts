@@ -6,6 +6,7 @@ import {
   resolveLocomoBaseUrl,
   resolveLocomoModel,
 } from "./env.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export type LlmAnswerOpts = {
   dryRun: boolean;
@@ -58,10 +59,11 @@ export async function completeText(opts: LlmAnswerOpts): Promise<string> {
     const body = await res.text().catch(() => "");
     throw new Error(`LoCoMo LLM HTTP ${res.status}: ${body.slice(0, 400)}`);
   }
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = json.choices?.[0]?.message?.content;
+  const json = asRecord(await res.json());
+  const choices = Array.isArray(json?.choices) ? json.choices : [];
+  const first = asRecord(choices[0]);
+  const message = asRecord(first?.message);
+  const content = message?.content;
   if (typeof content !== "string") {
     throw new Error("LoCoMo LLM: empty completion content");
   }

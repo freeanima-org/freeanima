@@ -18,6 +18,7 @@ import {
   FIREFOX_ADDON_UPDATE_URL,
   buildFirefoxAddonUpdatesJson,
 } from "@freeanima/habitat/core/config/firefox-addon.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outPath = join(root, "site/public/extension/firefox/updates.json");
@@ -33,8 +34,8 @@ async function fetchCanaryUpdates(): Promise<string | null> {
       return null;
     }
     const text = await res.text();
-    const parsed = JSON.parse(text) as { addons?: Record<string, unknown> };
-    if (!parsed.addons?.[FIREFOX_ADDON_ID]) {
+    const parsed = asRecord(JSON.parse(text));
+    if (!asRecord(parsed?.addons)?.[FIREFOX_ADDON_ID]) {
       console.warn("[sync-firefox-updates] canary JSON missing addon id");
       return null;
     }

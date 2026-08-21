@@ -10,6 +10,7 @@ import { readGithubReleaseProxyPref } from "@freeanima/client/portal-sdk/github-
 import { resolveAboutNativeBuildMeta } from "@freeanima/client/portal-sdk/native-build-meta.resolve";
 import { getShellBuildTarget } from "@freeanima/client/portal-sdk/shell-build-target";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
+import { isRecord } from "@freeanima/shared/util";
 import { useEffect, useRef, useState } from "react";
 
 import { formatApplyingMessage, type ShellApplyProgress } from "./shell-update-progress.ts";
@@ -54,6 +55,17 @@ export type ShellUpdateRequestDetail = {
   intent?: "check" | "switch";
   targetChannel?: UpdateTrack;
 };
+
+function readShellUpdateDetail(ev: CustomEvent): ShellUpdateRequestDetail | undefined {
+  const detail: unknown = ev.detail;
+  if (!isRecord(detail)) return undefined;
+  const out: ShellUpdateRequestDetail = {};
+  if (detail.intent === "check" || detail.intent === "switch") out.intent = detail.intent;
+  if (detail.targetChannel === "release" || detail.targetChannel === "canary") {
+    out.targetChannel = detail.targetChannel;
+  }
+  return out;
+}
 
 export function requestShellUpdateCheck(detail?: ShellUpdateRequestDetail): void {
   window.dispatchEvent(new CustomEvent(SHELL_UPDATE_CHECK_EVENT, { detail }));
@@ -139,8 +151,8 @@ export function ShellUpdateBanner(): null {
       if (document.visibilityState === "visible") void runCheck(false);
     };
     const onManual = (ev: Event) => {
-      const detail = (ev as CustomEvent<ShellUpdateRequestDetail>).detail;
-      void runCheck(true, detail);
+      if (!(ev instanceof CustomEvent)) return;
+      void runCheck(true, readShellUpdateDetail(ev));
     };
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener(SHELL_UPDATE_CHECK_EVENT, onManual);

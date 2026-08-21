@@ -6,7 +6,7 @@ import {
 } from "./constants.ts";
 import { HabitatRpcTimeoutError } from "./errors.ts";
 import type { HabitatRpcConnectPayload, HabitatRpcConnectedPayload } from "./lifecycle.ts";
-import { habitatRpcConnectPayloadSchema } from "./lifecycle.ts";
+import { habitatRpcConnectPayloadSchema, habitatRpcConnectedPayloadSchema } from "./lifecycle.ts";
 import type { HabitatRpcEnvelope } from "./protocol.ts";
 import {
   HABITAT_RPC_VERSION,
@@ -144,7 +144,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
       return;
     }
     if (envelope.kind === "connected") {
-      options.onConnected?.(envelope.payload as HabitatRpcConnectedPayload);
+      options.onConnected?.(habitatRpcConnectedPayloadSchema.parse(envelope.payload));
       return;
     }
     if (envelope.kind === "evt") {
@@ -193,7 +193,7 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
             const envelope = parseHabitatRpcEnvelope(ev.data);
             if (envelope.kind === "connected") {
               cleanup();
-              const connected = envelope.payload as HabitatRpcConnectedPayload;
+              const connected = habitatRpcConnectedPayloadSchema.parse(envelope.payload);
               options.onConnected?.(connected);
               resolve(connected);
             }
@@ -225,7 +225,10 @@ export function createRpcClient(options: CreateRpcClientOptions): RpcClient {
       const id = randomPublicId();
       const requestPromise = new Promise<T>((resolve, reject) => {
         const entry: PendingRequest = {
-          resolve: resolve as (value: unknown) => void,
+          resolve: (value) => {
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Promise<T> resolve 边界
+            resolve(value as T);
+          },
           reject,
           timer: null,
         };

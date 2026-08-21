@@ -1,4 +1,6 @@
 /// <reference lib="dom" />
+import { isRecord } from "@freeanima/shared/util";
+
 import { getSubjectKind } from "./subject-scope-store.ts";
 import type { SubjectKind } from "./subject-scope.ts";
 
@@ -20,9 +22,11 @@ function storageKey(subjectKind: SubjectKind): string {
 }
 
 function parseStoredState(raw: string): PomodoroActiveState | null {
-  const parsed = JSON.parse(raw) as PomodoroActiveState;
+  const parsed: unknown = JSON.parse(raw);
+  if (!isRecord(parsed)) return null;
   if (parsed.runState !== "running" && parsed.runState !== "paused") return null;
-  return parsed;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- localStorage JSON → PomodoroActiveState（后续 normalizeRestoredActiveState 再归一）
+  return parsed as PomodoroActiveState;
 }
 
 function isLegacyKeyForSubject(key: string, subjectKind: SubjectKind): boolean {

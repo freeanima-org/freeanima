@@ -57,7 +57,7 @@ import { useChatUnreadStore } from "@freeanima/features/chat/ui/spa/stores/chat-
 import { useViewportConversationRead } from "@freeanima/features/chat/ui/spa/hooks/use-viewport-conversation-read.ts";
 import { runBootstrapConversation } from "@freeanima/features/chat/ui/spa/lib/bootstrap-conversation.ts";
 import { ListDetailLayout, useDrawerNav, useCompactLayout } from "@freeanima/ui-kit/layout";
-import { omitUndefined } from "@freeanima/shared/util";
+import { asRecord, omitUndefined } from "@freeanima/shared/util";
 import {
   reconnectHabitat,
   useActionSheetCapability,
@@ -119,6 +119,19 @@ import {
 import type { SlashCommandItem } from "@freeanima/features/chat/ui/spa/lib/slash-command-menu.ts";
 
 type CommandItem = SlashCommandItem;
+
+function readCommandList(raw: unknown): CommandItem[] {
+  const rec = asRecord(raw);
+  const commands = rec?.commands;
+  if (!Array.isArray(commands)) return [];
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- commands 列表契约边界
+  return commands as CommandItem[];
+}
+
+function readClarifyTimeoutSec(v: unknown): number {
+  return typeof v === "number" ? v : 1800;
+}
+
 type ClarifyPending = {
   items: Array<{ question: string; choices?: string[] }>;
   timeout_sec?: number;
@@ -401,7 +414,7 @@ export function ChatApp() {
       void getChatRpcStreamClient()
         .whenReady()
         .then(() => listConversationCommands())
-        .then((raw) => setCommandList((raw as { commands?: CommandItem[] }).commands ?? []))
+        .then((raw) => setCommandList(readCommandList(raw)))
         .catch((e) => console.error("commands:", e));
     },
     [fetchConversations, newConversationFn, selectConversation],
@@ -886,8 +899,9 @@ export function ChatApp() {
           if (!isViewingOrigin()) return;
           if (Array.isArray(data.items) && data.items.length > 0) {
             setClarifyPending({
+              // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- clarify items 契约边界
               items: data.items as ClarifyPending["items"],
-              timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+              timeout_sec: readClarifyTimeoutSec(data.timeout_sec),
             });
           }
           scrollResume();
@@ -1106,6 +1120,7 @@ export function ChatApp() {
   useEffect(() => {
     chatFlushHandlersRef.current = {
       onStreamEvent: (conversationId: string, ev: unknown) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- stream 事件契约边界
         const streamEv = ev as StreamApiEvent;
         if (useConversationsStore.getState().currentId !== conversationId) return;
         switch (streamEv.event) {
@@ -1232,8 +1247,9 @@ export function ChatApp() {
               if (!isViewingOrigin()) return;
               if (Array.isArray(data.items) && data.items.length > 0) {
                 setClarifyPending({
+                  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- clarify items 契约边界
                   items: data.items as ClarifyPending["items"],
-                  timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+                  timeout_sec: readClarifyTimeoutSec(data.timeout_sec),
                 });
               }
               scrollDown();
@@ -1355,8 +1371,9 @@ export function ChatApp() {
             if (!isViewingOrigin()) return;
             if (Array.isArray(data.items) && data.items.length > 0) {
               setClarifyPending({
+                // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- clarify items 契约边界
                 items: data.items as ClarifyPending["items"],
-                timeout_sec: (data.timeout_sec as number | undefined) ?? 1800,
+                timeout_sec: readClarifyTimeoutSec(data.timeout_sec),
               });
             }
             scrollDown();

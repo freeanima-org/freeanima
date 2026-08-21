@@ -1,3 +1,4 @@
+import { isRecord } from "@freeanima/shared/util";
 import { z } from "zod";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
@@ -186,8 +187,8 @@ function protocolSet(val: {
 
 /** 连接草稿归一：trim title；custom 缺 preset。不给非文本 custom 补文本协议。 */
 export function normalizeConnectionRaw(raw: unknown): unknown {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const src = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return raw;
+  const src = raw;
   const out: Record<string, unknown> = { ...src };
   if (out.audio_protocol == null && typeof out.voice_protocol === "string") {
     out.audio_protocol = out.voice_protocol;

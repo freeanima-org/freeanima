@@ -14,6 +14,7 @@ import {
   shellEntryFileNames,
   shellWebDistDirName,
 } from "../vite-config-imports.ts";
+import { isRecord } from "@freeanima/shared/util";
 import {
   DEFAULT_WEB_DEV_PORT,
   readDevWebTokenPlaintext,
@@ -34,10 +35,10 @@ const PORT = Number(process.env.WEB_DEV_PORT ?? process.env.SHELL_DEV_PORT ?? DE
 
 function readUiVersion(): string {
   try {
-    const rootPkg = JSON.parse(readFileSync(join(REPO_ROOT, "package.json"), "utf-8")) as {
-      version?: string;
-    };
-    return rootPkg.version?.trim() || "0.0.0";
+    const rootPkg: unknown = JSON.parse(readFileSync(join(REPO_ROOT, "package.json"), "utf-8"));
+    if (!isRecord(rootPkg)) return "0.0.0";
+    const version = rootPkg.version;
+    return typeof version === "string" && version.trim() ? version.trim() : "0.0.0";
   } catch {
     return "0.0.0";
   }

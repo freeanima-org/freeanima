@@ -2,6 +2,20 @@ import type { z } from "zod";
 
 import type { HabitatMethodDef } from "./method-def.ts";
 
+/** Habitat / feature router 注入的 deps（组合根保证形状） */
+// oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- 调用方指定注入 deps 类型
+export function asRouteDeps<T>(deps: unknown): T {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- router 注入 deps
+  return deps as T;
+}
+
+/** Habitat / feature router 注入的 ctx（组合根保证形状） */
+// oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- 调用方指定注入 ctx 类型
+export function asRouteCtx<T>(ctx: unknown): T {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- router 注入 ctx
+  return ctx as T;
+}
+
 /** 单条 Habitat route：schema + meta + handler 同位 */
 export type HabitatRouteBundle<
   M extends string = string,
@@ -81,9 +95,12 @@ export function mergeFeatureRoutes<const R extends readonly HabitatRouteBundle[]
     defs[route.method] = route.def;
   }
 
-  return { handlers, defs } as {
-    handlers: RouteBundleHandlers<R>;
-    defs: RouteBundleDefs<R>;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped bundle 构造边界
+  return {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped bundle 构造边界
+    handlers: handlers as RouteBundleHandlers<R>,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped bundle 构造边界
+    defs: defs as RouteBundleDefs<R>,
   };
 }
 
@@ -108,19 +125,27 @@ export function mergeHabitatRouteBundles<const B extends readonly FeatureRouteBu
     }
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped bundle 构造边界
   return { handlers, defs } as MergedRouteBundle<B>;
 }
 
-/** 从已有 HabitatMethodDef（registry/schemas）绑定 handler，用于 Habitat UI 等大批量 method */
-export function defineHabitatRouteFromDef<M extends string>(
+/** 从已有 HabitatMethodDef（registry/schemas）绑定 handler，用于 Habitat UI 等大批量 method。
+ * 入参保持 `z.infer<I>`；返回值放宽为 `Promise<unknown>`（Response / 具体 DTO / Record），
+ * 由运行时 output schema 校验，避免大批量 handler 与 ZodRecord 输出不兼容。 */
+export function defineHabitatRouteFromDef<
+  M extends string,
+  I extends z.ZodTypeAny,
+  O extends z.ZodTypeAny,
+>(
   method: M,
-  def: HabitatMethodDef,
-  handler: HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>,
-): HabitatRouteBundle<M> {
+  def: HabitatMethodDef<I, O>,
+  handler: (deps: unknown, input: z.infer<I>, ctx: unknown) => Promise<unknown>,
+): HabitatRouteBundle<M, I, O> {
   return {
     method,
     def,
-    handler,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 返回值由 runtime output schema 校验
+    handler: handler as HabitatRouteHandler<I, O>,
   };
 }
 
@@ -142,12 +167,15 @@ export function bindHabitatRouteHandlers<const T extends HabitatMethodDefMap>(
   const outDefs: FeatureRouteBundle["defs"] = {};
   for (const method of Object.keys(defs)) {
     const def = defs[method];
-    const handler = handlers[method as keyof T & string];
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Object.keys 擦除 keyof
+    const typedMethod = method as keyof T & string;
+    const handler = handlers[typedMethod];
     if (!def) throw new Error(`missing habitat route def for ${method}`);
     if (!handler) throw new Error(`missing habitat route handler for ${method}`);
     outHandlers[method] = handler;
     outDefs[method] = def;
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped bundle 构造边界
   return { handlers: outHandlers, defs: outDefs } as {
     handlers: HabitatRouteHandlersForDefs<T>;
     defs: T;

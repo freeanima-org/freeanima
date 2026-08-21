@@ -1,4 +1,4 @@
-import { omitUndefined } from "@freeanima/shared/util";
+import { asRecord, omitUndefined } from "@freeanima/shared/util";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
@@ -20,15 +20,23 @@ import { isChatSendClaimed, updateChatSendPayload } from "./offline-send-store.t
 export const CHAT_OFFLINE_MODULE_ID = "chat" as const;
 
 function readPayload(op: OfflineOutboxOp): ChatSendOutboxPayload | null {
-  const payload = op.payload as ChatSendOutboxPayload;
+  const raw = asRecord(op.payload);
+  if (!raw) return null;
   if (
-    typeof payload.conversation_id !== "string" ||
-    typeof payload.message !== "string" ||
-    typeof payload.client_op_id !== "string"
+    typeof raw.conversation_id !== "string" ||
+    typeof raw.message !== "string" ||
+    typeof raw.client_op_id !== "string"
   ) {
     return null;
   }
-  return payload;
+  return {
+    conversation_id: raw.conversation_id,
+    message: raw.message,
+    client_op_id: raw.client_op_id,
+    expected_tail_pos: typeof raw.expected_tail_pos === "number" ? raw.expected_tail_pos : 0,
+    ...(typeof raw.force_tail === "boolean" ? { force_tail: raw.force_tail } : {}),
+    ...(typeof raw.llm_debug === "boolean" ? { llm_debug: raw.llm_debug } : {}),
+  };
 }
 
 export const chatStreamAdapter: StreamModuleAdapter = {

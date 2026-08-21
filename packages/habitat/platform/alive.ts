@@ -1,10 +1,11 @@
 import { PATHS } from "@freeanima/habitat/platform/config";
+import { asRecord } from "@freeanima/shared/util";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 
 export function readStatusFile(): Record<string, unknown> | null {
   if (!existsSync(PATHS.statusFile)) return null;
   try {
-    return JSON.parse(readFileSync(PATHS.statusFile, "utf-8")) as Record<string, unknown>;
+    return asRecord(JSON.parse(readFileSync(PATHS.statusFile, "utf-8")));
   } catch {
     return null;
   }

@@ -12,6 +12,7 @@ import {
   keyValueTextToRecord,
   recordToKeyValueText,
 } from "@freeanima/features/habitat/ui/habitat/lib/mcp-key-value.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const selectClassName =
   "border-input flex h-8 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30";
@@ -23,7 +24,7 @@ function readRecord(
   if (value == null || typeof value !== "object" || Array.isArray(value)) return out;
   for (const [key, raw] of Object.entries(value)) {
     if (raw && typeof raw === "object" && !Array.isArray(raw)) {
-      out[key] = raw as Record<string, unknown>;
+      out[key] = asRecord(raw) ?? {};
     }
   }
   return out;
@@ -264,11 +265,11 @@ export function McpServersConfigEditor({ onSaved }: Props) {
     setLoadError("");
     try {
       const section = await fetchHabitatConfigSection("mcp_servers");
-      const asRecord =
+      const record =
         section && typeof section === "object" && !Array.isArray(section)
-          ? (section as Record<string, unknown>)
+          ? (asRecord(section) ?? {})
           : {};
-      setDraft(asRecord);
+      setDraft(record);
     } catch (e) {
       logCaughtError("McpServersConfigEditor/load", e);
       setLoadError(e instanceof Error ? e.message : String(e));

@@ -10,6 +10,7 @@ import {
   createStreamChannelComposer,
   DISCORD_ANSWER_SPLIT_AT,
 } from "../stream-strategies/index.ts";
+import { bagGetTimeout } from "../stream-strategies/types.ts";
 import type { ToolDisplayMode } from "../tool-display.ts";
 import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 import { runStreamChannel, type RunStreamChannelOptions } from "../stream-state/run-channel.ts";
@@ -44,6 +45,8 @@ export async function streamReplyToChannel(
   if (!("send" in channel) || typeof channel.send !== "function") return;
 
   let answerMsg: Message | null = null;
+  // discord.js TextBasedChannel.send 重载在 bind 后丢失
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discord.js channel.send 边界
   const channelSend = channel.send.bind(channel) as (
     content: string | { content: string; components?: unknown[] },
   ) => Promise<Message>;
@@ -160,7 +163,7 @@ export async function streamReplyToChannel(
 
 function clearThrottleInBag(ctx: { bag: Map<string, unknown> }): void {
   const key = "discord.throttleTimer";
-  const timer = ctx.bag.get(key) as ReturnType<typeof setTimeout> | undefined;
+  const timer = bagGetTimeout(ctx.bag, key);
   if (timer) {
     clearTimeout(timer);
     ctx.bag.delete(key);

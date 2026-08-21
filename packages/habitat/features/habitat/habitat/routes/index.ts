@@ -1,5 +1,4 @@
 import type { z } from "zod";
-
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import {
   createServiceApiTokenWithSecret,
@@ -11,8 +10,11 @@ import {
 } from "@freeanima/habitat/core/db/pg/service-api-token";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { HabitatDispatchContext } from "@freeanima/habitat/platform/habitat/dispatch.ts";
+import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types.ts";
 import { habitatMethodDefs } from "@freeanima/shared/habitat-contract/registry/habitat.ts";
 import {
+  asRouteCtx,
+  asRouteDeps,
   defineHabitatRouteFromDef,
   mergeFeatureRoutes,
   type HabitatRouteHandler,
@@ -23,6 +25,7 @@ import {
   FULL_TOKEN_AUTHORIZATION,
   parseServiceApiTokenAuthorization,
 } from "@freeanima/shared/service-api-auth";
+import { isRecord } from "@freeanima/shared/util";
 
 import { authHasScope, type ServiceAuthContext } from "../habitat-api/auth-context.ts";
 import { listAutoLlmRuns, getAutoLlmRun } from "../habitat-api/handlers/auto-llm-runs.ts";
@@ -113,10 +116,31 @@ import {
 } from "../habitat-api/handlers/tls-ca.ts";
 import { handleTtsSynthesize } from "../tts-handler.ts";
 
-type AnyHabitatRouteHandler = HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
+/** 将返回 Response / unknown 的实现接到具体 HabitatRouteHandler（Zod4 ZodTypeAny≠any） */
+function asLooseRouteHandler<I extends z.ZodTypeAny, O extends z.ZodTypeAny>(
+  _def: { input: I; output: O },
+  handler: (deps: unknown, input: z.infer<I>, ctx: unknown) => Promise<unknown>,
+): HabitatRouteHandler<I, O> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- raw Response / unknownOutput 边界
+  return handler as HabitatRouteHandler<I, O>;
+}
 
-function wrapConsoleLegacyHandler(fn: (payload: unknown) => unknown): AnyHabitatRouteHandler {
-  return (_deps, input, _ctx) => Promise.resolve(fn(input));
+function requireDispatchCtx(ctx: unknown): HabitatDispatchContext {
+  if (!isRecord(ctx)) {
+    throw new Error("invalid habitat dispatch context");
+  }
+  if (typeof ctx.app_id !== "string" || typeof ctx.instance_id !== "string") {
+    throw new Error("invalid habitat dispatch context");
+  }
+  if (typeof ctx.sendEvent !== "function") {
+    throw new Error("invalid habitat dispatch context");
+  }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dispatch ctx 由 router 注入
+  return ctx as HabitatDispatchContext;
+}
+
+function requireRemoteToolsCtx(ctx: unknown): RemoteToolsRequestContext {
+  return requireDispatchCtx(ctx);
 }
 
 function requireHttpRequest(ctx: HabitatDispatchContext): Request {
@@ -136,529 +160,441 @@ function qrRequest(ctx: HabitatDispatchContext, payload: { size?: number }): Req
 }
 
 function requireFullAuth(ctx: unknown): ServiceAuthContext {
-  const auth = (ctx as RemoteToolsRequestContext).auth;
+  const auth = requireRemoteToolsCtx(ctx).auth;
   if (!auth || !authHasScope(auth, "full")) {
     throw new ApiHandlerError(403, "full scope required", { code: "scope_forbidden" });
   }
   return auth;
 }
 
-const entitySearchHandler: AnyHabitatRouteHandler = (_deps, input, ctx) =>
-  Promise.resolve(
-    searchEntities(
-      input as Parameters<typeof searchEntities>[0],
-      (ctx as RemoteToolsRequestContext).auth ?? null,
-    ),
-  );
-
 export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "health.probe",
     habitatMethodDefs["health.probe"],
-    (_deps, _input, ctx) =>
-      Promise.resolve(getHealthProbe((ctx as HabitatDispatchContext).auth ?? null)),
+    (_deps, _input, ctx) => Promise.resolve(getHealthProbe(requireDispatchCtx(ctx).auth ?? null)),
   ),
   defineHabitatRouteFromDef("tls.ca.info", habitatMethodDefs["tls.ca.info"], (_deps, _input, ctx) =>
-    Promise.resolve(getTlsCaInfo(requireHttpRequest(ctx as HabitatDispatchContext))),
+    Promise.resolve(getTlsCaInfo(requireHttpRequest(requireDispatchCtx(ctx)))),
   ),
   defineHabitatRouteFromDef(
     "tls.ca.qr",
     habitatMethodDefs["tls.ca.qr"],
-    async (_deps, input, ctx) => {
+    // raw PNG Response（http-rest-router 识别 Response，非 JSON Record）
+    asLooseRouteHandler(habitatMethodDefs["tls.ca.qr"], async (_deps, input, ctx) => {
       const res = await getTlsCaQrResponse(
-        qrRequest(ctx as HabitatDispatchContext, input as { size?: number }),
+        qrRequest(requireDispatchCtx(ctx), omitUndefined(input)),
       );
       if (!res) {
         throw new ApiHandlerError(404, "TLS CA unavailable", { code: "TLS_CA_UNAVAILABLE" });
       }
       return res;
-    },
+    }),
   ),
-  defineHabitatRouteFromDef("tls.ca", habitatMethodDefs["tls.ca"], async () => {
-    const res = getTlsCaPemResponse();
-    if (!res) {
-      throw new ApiHandlerError(404, "TLS CA unavailable", { code: "TLS_CA_UNAVAILABLE" });
-    }
-    return res;
-  }),
   defineHabitatRouteFromDef(
-    "status.get",
-    habitatMethodDefs["status.get"],
-    wrapConsoleLegacyHandler(() => getStatus()),
+    "tls.ca",
+    habitatMethodDefs["tls.ca"],
+    // raw PEM Response
+    asLooseRouteHandler(habitatMethodDefs["tls.ca"], async () => {
+      const res = getTlsCaPemResponse();
+      if (!res) {
+        throw new ApiHandlerError(404, "TLS CA unavailable", { code: "TLS_CA_UNAVAILABLE" });
+      }
+      return res;
+    }),
+  ),
+  defineHabitatRouteFromDef("status.get", habitatMethodDefs["status.get"], () =>
+    Promise.resolve(getStatus()),
   ),
   defineHabitatRouteFromDef(
     "status.tools",
     habitatMethodDefs["status.tools"],
-    wrapConsoleLegacyHandler((payload) => {
-      const { scope } = payload as { scope?: "default" };
-      return listTools(scope === "default" ? "default" : undefined);
-    }),
+    asLooseRouteHandler(habitatMethodDefs["status.tools"], (_deps, input) =>
+      Promise.resolve(listTools(input.scope === "default" ? "default" : undefined)),
+    ),
   ),
-  defineHabitatRouteFromDef(
-    "status.platforms",
-    habitatMethodDefs["status.platforms"],
-    wrapConsoleLegacyHandler(() => getPlatforms()),
+  defineHabitatRouteFromDef("status.platforms", habitatMethodDefs["status.platforms"], () =>
+    Promise.resolve(getPlatforms()),
   ),
-  defineHabitatRouteFromDef(
-    "status.cronJobs",
-    habitatMethodDefs["status.cronJobs"],
-    wrapConsoleLegacyHandler(() => listCronJobs()),
+  defineHabitatRouteFromDef("status.cronJobs", habitatMethodDefs["status.cronJobs"], () =>
+    Promise.resolve(listCronJobs()),
   ),
   defineHabitatRouteFromDef(
     "status.cronJobPause",
     habitatMethodDefs["status.cronJobPause"],
-    wrapConsoleLegacyHandler((payload) => pauseCronJob((payload as { id: string }).id)),
+    (_deps, input) => Promise.resolve(pauseCronJob(input.id)),
   ),
   defineHabitatRouteFromDef(
     "status.cronJobResume",
     habitatMethodDefs["status.cronJobResume"],
-    wrapConsoleLegacyHandler((payload) => resumeCronJob((payload as { id: string }).id)),
+    (_deps, input) => Promise.resolve(resumeCronJob(input.id)),
   ),
   defineHabitatRouteFromDef(
     "status.cronJobRun",
     habitatMethodDefs["status.cronJobRun"],
-    wrapConsoleLegacyHandler((payload) => runCronJobNow((payload as { id: string }).id)),
+    (_deps, input) => Promise.resolve(runCronJobNow(input.id)),
   ),
   defineHabitatRouteFromDef(
     "status.cronJobCreate",
     habitatMethodDefs["status.cronJobCreate"],
-    wrapConsoleLegacyHandler((payload) =>
-      createCronJob(
-        payload as {
-          name: string;
-          schedule: string;
-          prompt: string;
-          notify_on_success?: boolean;
-        },
-      ),
-    ),
+    (_deps, input) => Promise.resolve(createCronJob(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "status.cronJobDelete",
     habitatMethodDefs["status.cronJobDelete"],
-    wrapConsoleLegacyHandler((payload) => deleteCronJob((payload as { id: string }).id)),
+    (_deps, input) => Promise.resolve(deleteCronJob(input.id)),
   ),
-  defineHabitatRouteFromDef(
-    "status.restart",
-    habitatMethodDefs["status.restart"],
-    wrapConsoleLegacyHandler(() => restartService()),
+  defineHabitatRouteFromDef("status.restart", habitatMethodDefs["status.restart"], () =>
+    Promise.resolve(restartService()),
   ),
   defineHabitatRouteFromDef(
     "status.updateCheck",
     habitatMethodDefs["status.updateCheck"],
-    wrapConsoleLegacyHandler((payload) => checkServiceUpdateStatus(payload as { proxy?: string })),
+    (_deps, input) => Promise.resolve(checkServiceUpdateStatus(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "status.updateApply",
     habitatMethodDefs["status.updateApply"],
-    wrapConsoleLegacyHandler((payload) => applyServiceUpdateStatus(payload as { proxy?: string })),
+    (_deps, input) => Promise.resolve(applyServiceUpdateStatus(omitUndefined(input))),
   ),
-  defineHabitatRouteFromDef(
-    "config.get",
-    habitatMethodDefs["config.get"],
-    wrapConsoleLegacyHandler(() => getHabitatConfig()),
+  defineHabitatRouteFromDef("config.get", habitatMethodDefs["config.get"], () =>
+    Promise.resolve(getHabitatConfig()),
   ),
   defineHabitatRouteFromDef(
     "config.getSection",
     habitatMethodDefs["config.getSection"],
-    wrapConsoleLegacyHandler((payload) =>
-      getHabitatConfigSection((payload as { section: string }).section),
+    asLooseRouteHandler(habitatMethodDefs["config.getSection"], (_deps, input) =>
+      Promise.resolve(getHabitatConfigSection(input.section)),
     ),
   ),
   defineHabitatRouteFromDef(
     "config.patchSection",
     habitatMethodDefs["config.patchSection"],
-    wrapConsoleLegacyHandler((payload) => {
-      const { section, patch } = payload as { section: string; patch: Record<string, unknown> };
-      return patchHabitatConfigSection(section, patch);
-    }),
+    (_deps, input) => Promise.resolve(patchHabitatConfigSection(input.section, input.patch)),
   ),
   defineHabitatRouteFromDef(
     "config.replaceSection",
     habitatMethodDefs["config.replaceSection"],
-    wrapConsoleLegacyHandler((payload) => {
-      const { section, value } = payload as { section: string; value: Record<string, unknown> };
-      return replaceHabitatConfigSection(section, value);
-    }),
+    (_deps, input) => Promise.resolve(replaceHabitatConfigSection(input.section, input.value)),
   ),
   defineHabitatRouteFromDef(
     "config.testConnection",
     habitatMethodDefs["config.testConnection"],
-    wrapConsoleLegacyHandler((payload) =>
-      testConfigConnection(
-        payload as {
-          service: "firecrawl" | "camofox" | "embedding" | "llm_provider";
-          config?: Record<string, unknown>;
-          provider_id?: string;
-        },
-      ),
-    ),
+    (_deps, input) => Promise.resolve(testConfigConnection(input)),
   ),
   defineHabitatRouteFromDef(
     "config.listProviderModels",
     habitatMethodDefs["config.listProviderModels"],
-    wrapConsoleLegacyHandler((payload) =>
-      listProviderModels(
-        payload as {
-          provider_id: string;
-          query?: string;
-          limit?: number;
-          purpose?: "chat" | "image_generate" | "embedding" | "voice_generate";
-        },
-      ),
-    ),
+    (_deps, input) => Promise.resolve(listProviderModels(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "config.listProviderVoices",
     habitatMethodDefs["config.listProviderVoices"],
-    wrapConsoleLegacyHandler((payload) =>
-      listProviderVoices(
-        payload as {
-          provider_id: string;
-          model?: string;
-          query?: string;
-          limit?: number;
-        },
-      ),
+    // voices.models 为 readonly，与 output schema 可变数组不完全对齐
+    asLooseRouteHandler(habitatMethodDefs["config.listProviderVoices"], (_deps, input) =>
+      Promise.resolve(listProviderVoices(omitUndefined(input))),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.passiveRecallDebug",
     habitatMethodDefs["memory.passiveRecallDebug"],
-    wrapConsoleLegacyHandler((payload) =>
-      passiveRecallDebug(payload as { user_text: string; limit?: number }),
+    asLooseRouteHandler(habitatMethodDefs["memory.passiveRecallDebug"], (_deps, input) =>
+      Promise.resolve(passiveRecallDebug(input)),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalList",
     habitatMethodDefs["memory.temporalList"],
-    wrapConsoleLegacyHandler((payload) =>
-      listTemporalSummaries(payload as Record<string, unknown>),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalList"], (_deps, input) =>
+      Promise.resolve(listTemporalSummaries(input)),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalRegenerate",
     habitatMethodDefs["memory.temporalRegenerate"],
-    wrapConsoleLegacyHandler((payload) =>
-      regenerateTemporalSummary(
-        payload as { window: "day" | "month" | "year"; period_start: string },
-      ),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalRegenerate"], (_deps, input) =>
+      Promise.resolve(regenerateTemporalSummary(input)),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalBackfillMissing",
     habitatMethodDefs["memory.temporalBackfillMissing"],
-    wrapConsoleLegacyHandler((payload) =>
-      backfillMissingTemporalSummaries(
-        payload as {
-          window: "day" | "month" | "year";
-          period_start_from: string;
-          period_start_to: string;
-        },
-      ),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalBackfillMissing"], (_deps, input) =>
+      Promise.resolve(backfillMissingTemporalSummaries(input)),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalRebuildRange",
     habitatMethodDefs["memory.temporalRebuildRange"],
-    wrapConsoleLegacyHandler((payload) =>
-      rebuildTemporalSummariesInRange(
-        payload as {
-          window: "day" | "month" | "year";
-          period_start_from: string;
-          period_start_to: string;
-        },
-      ),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalRebuildRange"], (_deps, input) =>
+      Promise.resolve(rebuildTemporalSummariesInRange(input)),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalBatchStatus",
     habitatMethodDefs["memory.temporalBatchStatus"],
-    wrapConsoleLegacyHandler(() => getTemporalBatchJobStatus()),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalBatchStatus"], () =>
+      Promise.resolve(getTemporalBatchJobStatus()),
+    ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalSystemRollList",
     habitatMethodDefs["memory.temporalSystemRollList"],
-    wrapConsoleLegacyHandler(() => listTemporalSystemRolls()),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalSystemRollList"], () =>
+      Promise.resolve(listTemporalSystemRolls()),
+    ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalSystemRollRegenerate",
     habitatMethodDefs["memory.temporalSystemRollRegenerate"],
-    wrapConsoleLegacyHandler((payload) =>
-      regenerateTemporalSystemRoll(payload as { kind: "past_days" | "past_months" | "past_years" }),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalSystemRollRegenerate"], (_deps, input) =>
+      Promise.resolve(regenerateTemporalSystemRoll(input)),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalSystemRollBatchStart",
     habitatMethodDefs["memory.temporalSystemRollBatchStart"],
-    wrapConsoleLegacyHandler((payload) =>
-      startTemporalSystemRollBatch(
-        payload as { kinds?: Array<"past_days" | "past_months" | "past_years"> },
-      ),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalSystemRollBatchStart"], (_deps, input) =>
+      Promise.resolve(startTemporalSystemRollBatch(input)),
     ),
   ),
   defineHabitatRouteFromDef(
     "memory.temporalSystemRollBatchStatus",
     habitatMethodDefs["memory.temporalSystemRollBatchStatus"],
-    wrapConsoleLegacyHandler(() => getTemporalSystemRollBatchStatus()),
+    asLooseRouteHandler(habitatMethodDefs["memory.temporalSystemRollBatchStatus"], () =>
+      Promise.resolve(getTemporalSystemRollBatchStatus()),
+    ),
   ),
-  defineHabitatRouteFromDef(
-    "memory.semanticCount",
-    habitatMethodDefs["memory.semanticCount"],
-    wrapConsoleLegacyHandler(() => countSemanticMemory()),
+  defineHabitatRouteFromDef("memory.semanticCount", habitatMethodDefs["memory.semanticCount"], () =>
+    Promise.resolve(countSemanticMemory()),
   ),
   defineHabitatRouteFromDef(
     "memory.semanticList",
     habitatMethodDefs["memory.semanticList"],
-    wrapConsoleLegacyHandler((payload) => listSemanticMemories(payload as Record<string, unknown>)),
+    asLooseRouteHandler(habitatMethodDefs["memory.semanticList"], (_deps, input) =>
+      Promise.resolve(listSemanticMemories(input)),
+    ),
   ),
   defineHabitatRouteFromDef(
     "memory.semanticClusters",
     habitatMethodDefs["memory.semanticClusters"],
-    wrapConsoleLegacyHandler(() => listSemanticMemoryClusters()),
+    () => Promise.resolve(listSemanticMemoryClusters()),
   ),
   defineHabitatRouteFromDef(
     "memory.semanticPin",
     habitatMethodDefs["memory.semanticPin"],
-    wrapConsoleLegacyHandler((payload) =>
-      updateSemanticMemoryPinned(payload as { id: number; pinned: boolean }),
-    ),
+    (_deps, input) => Promise.resolve(updateSemanticMemoryPinned(input)),
   ),
   defineHabitatRouteFromDef(
     "entity.searchGet",
     habitatMethodDefs["entity.searchGet"],
-    entitySearchHandler,
+    (_deps, input, ctx) =>
+      Promise.resolve(
+        searchEntities(omitUndefined(input), requireRemoteToolsCtx(ctx).auth ?? null),
+      ),
   ),
   defineHabitatRouteFromDef(
     "entity.searchPost",
     habitatMethodDefs["entity.searchPost"],
-    entitySearchHandler,
+    (_deps, input, ctx) =>
+      Promise.resolve(
+        searchEntities(omitUndefined(input), requireRemoteToolsCtx(ctx).auth ?? null),
+      ),
   ),
   defineHabitatRouteFromDef(
     "entity.worldsList",
     habitatMethodDefs["entity.worldsList"],
-    wrapConsoleLegacyHandler((payload) => listWorldEntities(payload as Record<string, unknown>)),
+    (_deps, input) => Promise.resolve(listWorldEntities(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "entity.worldsCreate",
     habitatMethodDefs["entity.worldsCreate"],
-    wrapConsoleLegacyHandler((payload) =>
-      createWorldEntity(payload as Parameters<typeof createWorldEntity>[0]),
-    ),
+    (_deps, input) => Promise.resolve(createWorldEntity(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "entity.worldsGet",
     habitatMethodDefs["entity.worldsGet"],
-    wrapConsoleLegacyHandler((payload) => getWorldEntity(Number((payload as { id: string }).id))),
+    (_deps, input) => Promise.resolve(getWorldEntity(Number(input.id))),
   ),
   defineHabitatRouteFromDef(
     "entity.worldsPatch",
     habitatMethodDefs["entity.worldsPatch"],
-    wrapConsoleLegacyHandler((payload) => {
-      const { id, ...body } = payload as Record<string, unknown> & { id: string };
-      return updateWorldEntity(Number(id), body);
-    }),
+    (_deps, input) => {
+      const { id, ...body } = input;
+      return Promise.resolve(updateWorldEntity(Number(id), omitUndefined(body)));
+    },
   ),
   defineHabitatRouteFromDef(
     "entity.subjectsList",
     habitatMethodDefs["entity.subjectsList"],
-    wrapConsoleLegacyHandler((payload) => listSubjectEntities(payload as Record<string, unknown>)),
+    (_deps, input) => Promise.resolve(listSubjectEntities(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "entity.subjectsCreate",
     habitatMethodDefs["entity.subjectsCreate"],
-    wrapConsoleLegacyHandler((payload) =>
-      createSubjectEntity(payload as Parameters<typeof createSubjectEntity>[0]),
-    ),
+    (_deps, input) => Promise.resolve(createSubjectEntity(input)),
   ),
   defineHabitatRouteFromDef(
     "entity.subjectsGet",
     habitatMethodDefs["entity.subjectsGet"],
-    wrapConsoleLegacyHandler((payload) => getSubjectEntity(Number((payload as { id: string }).id))),
+    (_deps, input) => Promise.resolve(getSubjectEntity(Number(input.id))),
   ),
   defineHabitatRouteFromDef(
     "entity.subjectsPatch",
     habitatMethodDefs["entity.subjectsPatch"],
-    wrapConsoleLegacyHandler((payload) => {
-      const { id, ...body } = payload as Record<string, unknown> & { id: string };
-      return updateSubjectEntity(Number(id), body);
-    }),
+    (_deps, input) => {
+      const { id, ...body } = input;
+      return Promise.resolve(updateSubjectEntity(Number(id), body));
+    },
   ),
   defineHabitatRouteFromDef(
     "self.blocks",
     habitatMethodDefs["self.blocks"],
-    wrapConsoleLegacyHandler(() => listSelfBlocks()),
+    asLooseRouteHandler(habitatMethodDefs["self.blocks"], () => Promise.resolve(listSelfBlocks())),
   ),
   defineHabitatRouteFromDef(
     "prompt.debug",
     habitatMethodDefs["prompt.debug"],
-    wrapConsoleLegacyHandler((payload) =>
-      getPromptDebug((payload as { conversation_id?: string }).conversation_id),
+    asLooseRouteHandler(habitatMethodDefs["prompt.debug"], (_deps, input) =>
+      Promise.resolve(getPromptDebug(input.conversation_id)),
     ),
   ),
-  defineHabitatRouteFromDef(
-    "outposts.status",
-    habitatMethodDefs["outposts.status"],
-    wrapConsoleLegacyHandler(() => getOutpostsStatus()),
+  defineHabitatRouteFromDef("outposts.status", habitatMethodDefs["outposts.status"], () =>
+    Promise.resolve(getOutpostsStatus()),
   ),
   defineHabitatRouteFromDef(
     "fts.status",
     habitatMethodDefs["fts.status"],
-    wrapConsoleLegacyHandler(() => getFtsStatus()),
+    asLooseRouteHandler(habitatMethodDefs["fts.status"], () => Promise.resolve(getFtsStatus())),
   ),
   defineHabitatRouteFromDef(
     "fts.rebuildStatus",
     habitatMethodDefs["fts.rebuildStatus"],
-    wrapConsoleLegacyHandler(() => getRebuildFtsJobStatus()),
+    asLooseRouteHandler(habitatMethodDefs["fts.rebuildStatus"], () =>
+      Promise.resolve(getRebuildFtsJobStatus()),
+    ),
   ),
   defineHabitatRouteFromDef(
     "fts.rebuild",
     habitatMethodDefs["fts.rebuild"],
-    wrapConsoleLegacyHandler((payload) =>
-      startRebuildFtsIndex(
-        omitUndefined({ onlyMissing: (payload as { only_missing?: boolean }).only_missing }),
-      ),
+    asLooseRouteHandler(habitatMethodDefs["fts.rebuild"], (_deps, input) =>
+      Promise.resolve(startRebuildFtsIndex(omitUndefined({ onlyMissing: input.only_missing }))),
     ),
   ),
   defineHabitatRouteFromDef(
     "memoryMaintenance.summary",
     habitatMethodDefs["memoryMaintenance.summary"],
-    wrapConsoleLegacyHandler(() => getMemoryMaintenanceSummary()),
+    asLooseRouteHandler(habitatMethodDefs["memoryMaintenance.summary"], () =>
+      Promise.resolve(getMemoryMaintenanceSummary()),
+    ),
   ),
   defineHabitatRouteFromDef(
     "memoryMaintenance.status",
     habitatMethodDefs["memoryMaintenance.status"],
-    wrapConsoleLegacyHandler(() => getMemoryMaintenanceStatus()),
+    asLooseRouteHandler(habitatMethodDefs["memoryMaintenance.status"], () =>
+      Promise.resolve(getMemoryMaintenanceStatus()),
+    ),
   ),
   defineHabitatRouteFromDef(
     "memoryMaintenance.runStep",
     habitatMethodDefs["memoryMaintenance.runStep"],
-    wrapConsoleLegacyHandler((payload) =>
-      startMemoryMaintenanceStep(
-        omitUndefined(
-          payload as {
-            step_id: string;
-            day?: string;
-            force?: boolean;
-            reflect_mode?: "full" | "incremental";
-          },
-        ),
-      ),
-    ),
+    (_deps, input) => Promise.resolve(startMemoryMaintenanceStep(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "memoryMaintenance.startCycle",
     habitatMethodDefs["memoryMaintenance.startCycle"],
-    wrapConsoleLegacyHandler((payload) =>
-      startMemoryMaintenanceCycle(omitUndefined(payload as Record<string, unknown>)),
-    ),
+    (_deps, input) => Promise.resolve(startMemoryMaintenanceCycle(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef(
     "memoryMaintenance.startCatchUp",
     habitatMethodDefs["memoryMaintenance.startCatchUp"],
-    wrapConsoleLegacyHandler(() => startMemoryMaintenanceCatchUp()),
+    () => Promise.resolve(startMemoryMaintenanceCatchUp()),
   ),
-  defineHabitatRouteFromDef(
-    "redisLocks.list",
-    habitatMethodDefs["redisLocks.list"],
-    wrapConsoleLegacyHandler(() => listHabitatRedisLocks()),
+  defineHabitatRouteFromDef("redisLocks.list", habitatMethodDefs["redisLocks.list"], () =>
+    Promise.resolve(listHabitatRedisLocks()),
   ),
   defineHabitatRouteFromDef(
     "redisLocks.delete",
     habitatMethodDefs["redisLocks.delete"],
-    wrapConsoleLegacyHandler((payload) => deleteHabitatRedisLock(payload as { key: string })),
+    (_deps, input) => Promise.resolve(deleteHabitatRedisLock(input)),
   ),
-  defineHabitatRouteFromDef(
-    "dataIntegrity.run",
-    habitatMethodDefs["dataIntegrity.run"],
-    wrapConsoleLegacyHandler(() => runDataIntegrityCheck()),
+  defineHabitatRouteFromDef("dataIntegrity.run", habitatMethodDefs["dataIntegrity.run"], () =>
+    Promise.resolve(runDataIntegrityCheck()),
   ),
   defineHabitatRouteFromDef(
     "cronLogs.list",
     habitatMethodDefs["cronLogs.list"],
-    wrapConsoleLegacyHandler((payload) =>
-      listCronLogs(omitUndefined(payload as Record<string, unknown>)),
+    asLooseRouteHandler(habitatMethodDefs["cronLogs.list"], (_deps, input) =>
+      Promise.resolve(listCronLogs(omitUndefined(input))),
     ),
   ),
   defineHabitatRouteFromDef(
     "autoLlmRuns.list",
     habitatMethodDefs["autoLlmRuns.list"],
-    wrapConsoleLegacyHandler((payload) =>
-      listAutoLlmRuns(omitUndefined(payload as Record<string, unknown>)),
+    asLooseRouteHandler(habitatMethodDefs["autoLlmRuns.list"], (_deps, input) =>
+      Promise.resolve(listAutoLlmRuns(omitUndefined(input))),
     ),
   ),
   defineHabitatRouteFromDef(
     "autoLlmRuns.get",
     habitatMethodDefs["autoLlmRuns.get"],
-    wrapConsoleLegacyHandler((payload) => getAutoLlmRun(payload as { id: string })),
+    asLooseRouteHandler(habitatMethodDefs["autoLlmRuns.get"], (_deps, input) =>
+      Promise.resolve(getAutoLlmRun(input)),
+    ),
   ),
   defineHabitatRouteFromDef(
     "usage.today",
     habitatMethodDefs["usage.today"],
-    wrapConsoleLegacyHandler(() => getUsageToday()),
+    asLooseRouteHandler(habitatMethodDefs["usage.today"], () => Promise.resolve(getUsageToday())),
   ),
-  defineHabitatRouteFromDef(
-    "worlds.context",
-    habitatMethodDefs["worlds.context"],
-    wrapConsoleLegacyHandler(() => getResolvedWorldContext()),
+  defineHabitatRouteFromDef("worlds.context", habitatMethodDefs["worlds.context"], () =>
+    Promise.resolve(getResolvedWorldContext()),
   ),
   defineHabitatRouteFromDef(
     "conversation.adminGet",
     habitatMethodDefs["conversation.adminGet"],
-    wrapConsoleLegacyHandler((payload) =>
-      getConversationInfo((payload as { conversationId: string }).conversationId),
+    asLooseRouteHandler(habitatMethodDefs["conversation.adminGet"], (_deps, input) =>
+      Promise.resolve(getConversationInfo(input.conversationId)),
     ),
   ),
   defineHabitatRouteFromDef(
     "conversation.adminListAll",
     habitatMethodDefs["conversation.adminListAll"],
-    wrapConsoleLegacyHandler((payload) => {
-      const { offset, limit } = payload as { offset?: number; limit?: number };
-      return listConversations(
-        undefined,
-        omitUndefined({
-          offset: offset ?? 0,
-          limit: limit ?? 10_000,
-        }),
-      );
-    }),
+    (_deps, input) =>
+      Promise.resolve(
+        listConversations(
+          undefined,
+          omitUndefined({
+            offset: input.offset ?? 0,
+            limit: input.limit ?? 10_000,
+          }),
+        ),
+      ),
   ),
   defineHabitatRouteFromDef(
     "conversation.adminCreate",
     habitatMethodDefs["conversation.adminCreate"],
-    wrapConsoleLegacyHandler((payload) => createConversation(payload as { platform: string })),
+    (_deps, input) => Promise.resolve(createConversation(input)),
   ),
   defineHabitatRouteFromDef(
     "tokens.listForSubject",
     habitatMethodDefs["tokens.listForSubject"],
-    async (_deps, payload, ctx) => {
+    async (_deps, input, ctx) => {
       requireFullAuth(ctx);
-      const { id } = payload as { id: number };
-      await getSubjectEntity(id);
-      const items = await listServiceApiTokensBySubject(id);
+      await getSubjectEntity(input.id);
+      const items = await listServiceApiTokensBySubject(input.id);
       return { items };
     },
   ),
   defineHabitatRouteFromDef(
     "tokens.createForSubject",
     habitatMethodDefs["tokens.createForSubject"],
-    async (_deps, payload, ctx) => {
+    async (_deps, input, ctx) => {
       requireFullAuth(ctx);
-      const {
-        id,
-        name,
-        preset,
-        world_ids,
-        authorization: authzInput,
-      } = payload as {
-        id: number;
-        name: string;
-        preset?: "full" | "app" | "extension" | "mcp";
-        world_ids?: number[];
-        authorization?: import("@freeanima/shared/service-api-auth").ServiceApiTokenAuthorization;
-      };
-      await getSubjectEntity(id);
-      const trimmed = name.trim();
+      await getSubjectEntity(input.id);
+      const trimmed = input.name.trim();
+      const preset = input.preset;
+      const world_ids = input.world_ids;
+      const authzInput = input.authorization;
       if (!trimmed) {
         throw new ApiHandlerError(400, "name is required", { code: "token_name_required" });
       }
@@ -671,7 +607,7 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
               world_ids && world_ids.length > 0 ? { worldIds: world_ids } : undefined,
             );
       const result = await createServiceApiTokenWithSecret({
-        subject_id: id,
+        subject_id: input.id,
         name: trimmed,
         authorization,
       });
@@ -681,14 +617,13 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "tokens.revoke",
     habitatMethodDefs["tokens.revoke"],
-    async (_deps, payload, ctx) => {
+    async (_deps, input, ctx) => {
       requireFullAuth(ctx);
-      const { id } = payload as { id: number };
-      const row = await getServiceApiTokenById(id);
+      const row = await getServiceApiTokenById(input.id);
       if (!row) {
         throw new ApiHandlerError(404, "token not found", { code: "token_not_found" });
       }
-      const ok = await revokeServiceApiToken(id);
+      const ok = await revokeServiceApiToken(input.id);
       if (!ok) {
         throw new ApiHandlerError(404, "token not found", { code: "token_not_found" });
       }
@@ -698,15 +633,14 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "tokens.reveal",
     habitatMethodDefs["tokens.reveal"],
-    async (_deps, payload, ctx) => {
+    async (_deps, input, ctx) => {
       requireFullAuth(ctx);
-      const { id } = payload as { id: number };
-      const row = await getServiceApiTokenById(id);
+      const row = await getServiceApiTokenById(input.id);
       if (!row) {
         throw new ApiHandlerError(404, "token not found", { code: "token_not_found" });
       }
       try {
-        const plaintext = await revealServiceApiTokenPlaintext(id);
+        const plaintext = await revealServiceApiTokenPlaintext(input.id);
         return { plaintext };
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -723,15 +657,14 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "tokens.updateName",
     habitatMethodDefs["tokens.updateName"],
-    async (_deps, payload, ctx) => {
+    async (_deps, input, ctx) => {
       requireFullAuth(ctx);
-      const { id, name } = payload as { id: number; name: string };
-      const trimmed = name.trim();
+      const trimmed = input.name.trim();
       if (!trimmed) {
         throw new ApiHandlerError(400, "name is required", { code: "token_name_required" });
       }
       try {
-        const token = await updateServiceApiTokenName(id, trimmed);
+        const token = await updateServiceApiTokenName(input.id, trimmed);
         return { token };
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
@@ -742,24 +675,23 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
       }
     },
   ),
-  defineHabitatRouteFromDef(
-    "skill.list",
-    habitatMethodDefs["skill.list"],
-    wrapConsoleLegacyHandler(() => listHabitatSkills()),
+  defineHabitatRouteFromDef("skill.list", habitatMethodDefs["skill.list"], () =>
+    Promise.resolve(listHabitatSkills()),
   ),
-  defineHabitatRouteFromDef(
-    "skill.get",
-    habitatMethodDefs["skill.get"],
-    wrapConsoleLegacyHandler(async (payload) => {
-      const { name } = payload as { name: string };
-      const skill = await getHabitatSkill(name);
-      if (!skill) throw new ApiHandlerError(404, `Skill '${name}' not found`);
-      return skill;
-    }),
-  ),
+  defineHabitatRouteFromDef("skill.get", habitatMethodDefs["skill.get"], async (_deps, input) => {
+    const skill = await getHabitatSkill(input.name);
+    if (!skill) throw new ApiHandlerError(404, `Skill '${input.name}' not found`);
+    return skill;
+  }),
   defineHabitatRouteFromDef(
     "tts.synthesize",
     habitatMethodDefs["tts.synthesize"],
-    handleTtsSynthesize as AnyHabitatRouteHandler,
+    asLooseRouteHandler(habitatMethodDefs["tts.synthesize"], (deps, input, ctx) =>
+      handleTtsSynthesize(
+        asRouteDeps<RemoteToolsServerDeps>(deps),
+        input,
+        asRouteCtx<RemoteToolsRequestContext>(ctx),
+      ),
+    ),
   ),
 ]);

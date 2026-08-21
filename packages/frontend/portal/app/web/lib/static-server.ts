@@ -2,6 +2,8 @@ import type { Server as BunServer } from "bun";
 import { existsSync, readFileSync, statSync, writeFileSync, unlinkSync } from "node:fs";
 import { extname, join } from "node:path";
 
+import { isRecord } from "@freeanima/shared/util";
+
 const WEB_PREFIX = "/web";
 
 const MIME: Record<string, string> = {
@@ -17,12 +19,7 @@ const MIME: Record<string, string> = {
 };
 
 function isAddrInUse(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error != null &&
-    "code" in error &&
-    (error as { code?: string }).code === "EADDRINUSE"
-  );
+  return isRecord(error) && error.code === "EADDRINUSE";
 }
 
 export type WebStaticRuntimeConfig = {

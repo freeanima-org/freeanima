@@ -1,6 +1,7 @@
 import type { CronLogAppendInput } from "@freeanima/habitat/core/db/pg/cron";
 import { appendCronLog } from "@freeanima/habitat/core/db/pg/cron";
 import { formatCstIso } from "@freeanima/habitat/core/util";
+import { asRecord } from "@freeanima/shared/util";
 
 const ERROR_MAX = 2000;
 const OUTPUT_TEXT_MAX = 10_000;
@@ -10,8 +11,7 @@ function tryParseOutputJson(text: string): Record<string, unknown> | null {
   if (!trimmed.startsWith("{")) return null;
   try {
     const parsed: unknown = JSON.parse(trimmed);
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-    return parsed as Record<string, unknown>;
+    return asRecord(parsed);
   } catch {
     return null;
   }

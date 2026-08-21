@@ -53,6 +53,10 @@ function storage(): Storage | null {
   }
 }
 
+export function isShellModuleId(id: string): id is ShellModuleId {
+  return (SHELL_MODULE_IDS as readonly string[]).includes(id);
+}
+
 /** 旧 localStorage 值 `console` → `habitat`（只读兼容，写出用新 id） */
 function migrateModuleId(id: string): string {
   return id === "console" ? "habitat" : id;
@@ -66,7 +70,7 @@ function parseVisible(raw: string | null): Set<ShellModuleId> {
     const ids = parsed
       .filter((id): id is string => typeof id === "string")
       .map(migrateModuleId)
-      .filter((id): id is ShellModuleId => SHELL_MODULE_IDS.includes(id as ShellModuleId));
+      .filter((id): id is ShellModuleId => isShellModuleId(id));
     for (const locked of SHELL_MODULE_LOCKED) {
       if (!ids.includes(locked)) ids.push(locked);
     }

@@ -60,6 +60,7 @@ import {
 } from "./conversation-store-pg-bridge.ts";
 import type { ConversationSummaryRow } from "@freeanima/habitat/core/db/pg/conversation/types";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { isRecord } from "@freeanima/shared/util";
 
 export type Message = StoredMessage;
 
@@ -72,7 +73,7 @@ export function allocateConversationCwd(sid: string): string {
       mkdirSync(path, { recursive: false, mode: 0o700 });
       return path;
     } catch (e) {
-      if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw e;
+      if (!isRecord(e) || e.code !== "EEXIST") throw e;
     }
   }
   return mkdtempSync(join(tmpdir(), "anima-cwd-"));
@@ -533,15 +534,13 @@ export async function appendUserTurn(
       return existing.content;
     }
   }
-  await appendMessage(
-    omitUndefined({
-      role: "user",
-      content,
-      client_op_id: opts?.client_op_id,
-      attachments: opts?.attachments?.length ? opts.attachments : undefined,
-    }) as StoredMessage,
-    conversationId,
-  );
+  const msg: StoredMessage = {
+    role: "user",
+    content,
+    ...(opts?.client_op_id ? { client_op_id: opts.client_op_id } : {}),
+    ...(opts?.attachments?.length ? { attachments: opts.attachments } : {}),
+  };
+  await appendMessage(msg, conversationId);
   return content;
 }
 

@@ -1,4 +1,5 @@
 import { relToRepo } from "../lib/repo-path.ts";
+import { isRecord } from "../lib/is-record.ts";
 import type { RuleModule } from "../lib/types.ts";
 
 const ALLOW_FILE =
@@ -7,9 +8,8 @@ const ALLOW_FILE =
 const FORBIDDEN = new Set(["readOfflineCache", "writeOfflineCache"]);
 
 function identName(node: unknown): string | null {
-  if (!node || typeof node !== "object") return null;
-  const n = node as { type?: string; name?: string };
-  return n.type === "Identifier" && typeof n.name === "string" ? n.name : null;
+  if (!isRecord(node)) return null;
+  return node.type === "Identifier" && typeof node.name === "string" ? node.name : null;
 }
 
 export const noDirectOfflineCache: RuleModule = {
@@ -35,20 +35,20 @@ export const noDirectOfflineCache: RuleModule = {
 
     return {
       ImportSpecifier(node: unknown) {
-        const n = node as { imported?: unknown; local?: unknown };
-        const imported = identName(n.imported);
+        if (!isRecord(node)) return;
+        const imported = identName(node.imported);
         if (imported && FORBIDDEN.has(imported)) {
           reportName(imported, node);
           return;
         }
-        const local = identName(n.local);
+        const local = identName(node.local);
         if (local && FORBIDDEN.has(local) && local !== imported) {
           reportName(local, node);
         }
       },
       CallExpression(node: unknown) {
-        const n = node as { callee?: unknown };
-        const name = identName(n.callee);
+        if (!isRecord(node)) return;
+        const name = identName(node.callee);
         if (name && FORBIDDEN.has(name)) reportName(name, node);
       },
     };

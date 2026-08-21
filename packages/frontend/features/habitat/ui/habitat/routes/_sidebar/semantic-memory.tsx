@@ -58,6 +58,10 @@ const SEMANTIC_TYPES = [
 const BROWSE_SORT_OPTIONS = ["updated_at", "created_at", "reference_count"] as const;
 type BrowseSortBy = (typeof BROWSE_SORT_OPTIONS)[number];
 
+function isBrowseSortBy(v: string): v is BrowseSortBy {
+  return (BROWSE_SORT_OPTIONS as readonly string[]).includes(v);
+}
+
 type SemanticRow = SemanticMemoryRow & { rank?: number; cluster_id?: number | null };
 
 type ClusterStat = { cluster_id: number | null; count: number; title?: string | null };
@@ -181,6 +185,7 @@ function SemanticMemoryPage() {
       const effectiveSortBy = trimmedQuery ? "rank" : sortBy;
       const effectiveCluster = clusterOverride !== undefined ? clusterOverride : clusterFilter;
       try {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const data = (await listSemanticMemories({
           offset: nextOffset,
           limit: PAGE_SIZE,
@@ -402,7 +407,9 @@ function SemanticMemoryPage() {
                   <Select
                     selectedKey={sortBy}
                     onSelectionChange={(key) => {
-                      if (key != null) setSortBy(String(key) as BrowseSortBy);
+                      if (key == null) return;
+                      const v = String(key);
+                      if (isBrowseSortBy(v)) setSortBy(v);
                     }}
                   >
                     <SelectTrigger size="sm" className="w-full">

@@ -30,7 +30,8 @@ function buildStaticHttpRouteRegistry(): Partial<Record<HabitatMethod, HttpRoute
   const routeKeys = new Set<string>();
   const routes: Partial<Record<HabitatMethod, HttpRouteMeta>> = {};
 
-  for (const method of Object.keys(STATIC_METHOD_REGISTRY) as StaticHabitatMethod[]) {
+  for (const method of Object.keys(STATIC_METHOD_REGISTRY)) {
+    if (!isStaticHabitatMethod(method)) continue;
     const def = STATIC_METHOD_REGISTRY[method];
     const meta = def.meta;
     if (!meta.transports.includes("http")) continue;
@@ -70,6 +71,10 @@ export type HabitatMethodInputs = Record<string, unknown>;
 /** shared habitat-client 运行时返回值；精确类型见 @freeanima/habitat/platform/habitat */
 export type HabitatMethodOutputs = unknown;
 
+function isStaticHabitatMethod(method: string): method is StaticHabitatMethod {
+  return Object.hasOwn(STATIC_METHOD_REGISTRY, method);
+}
+
 export function isHabitatMethod(method: string): method is HabitatMethod {
   if (isHabitatMethodRegistryInstalled()) {
     return isInstalledHabitatMethod(method);
@@ -82,13 +87,13 @@ export function getHabitatMethodDef(method: string): HabitatMethodDef {
     const installed = getInstalledHabitatMethodDef(method);
     if (installed) return installed;
   }
-  const def = STATIC_METHOD_REGISTRY[method as StaticHabitatMethod];
-  if (!def) {
+  if (!isStaticHabitatMethod(method)) {
     throw new Error(
       `unknown habitat method: ${method} (install runtime registry via initHabitatRouter for feature methods)`,
     );
   }
-  const http = STATIC_HTTP_ROUTE_REGISTRY[method as StaticHabitatMethod];
+  const def = STATIC_METHOD_REGISTRY[method];
+  const http = STATIC_HTTP_ROUTE_REGISTRY[method];
   if (!http) return def;
   const { httpOverrides: _ignored, ...metaBase } = def.meta;
   return { ...def, meta: { ...metaBase, http } };
@@ -98,7 +103,8 @@ export function getHabitatMethodHttpRoute(method: HabitatMethod): HttpRouteMeta 
   if (isHabitatMethodRegistryInstalled()) {
     return getInstalledHabitatMethodDef(method)?.meta.http;
   }
-  return STATIC_HTTP_ROUTE_REGISTRY[method as StaticHabitatMethod];
+  if (!isStaticHabitatMethod(method)) return undefined;
+  return STATIC_HTTP_ROUTE_REGISTRY[method];
 }
 
 export function listHabitatMethods(): HabitatMethod[] {

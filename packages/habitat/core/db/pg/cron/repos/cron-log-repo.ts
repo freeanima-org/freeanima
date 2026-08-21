@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { cronLog } from "@freeanima/habitat/core/db/schema";
 import type { CronLogAppendInput, CronLogListOpts, CronLogRow } from "../types.ts";
@@ -14,7 +15,7 @@ export function mapRow(raw: CronLogDbRow): CronLogRow {
     ok: raw.ok,
     finished_at:
       raw.finished_at instanceof Date ? raw.finished_at.toISOString() : String(raw.finished_at),
-    output: raw.output as Record<string, unknown> | null,
+    output: raw.output == null ? null : (asRecord(raw.output) ?? {}),
     output_text: raw.output_text,
     error: raw.error,
   };

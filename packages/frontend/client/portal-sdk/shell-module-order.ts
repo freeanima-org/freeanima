@@ -38,7 +38,7 @@ function parseOrder(raw: string | null): ShellModuleId[] {
     const ids = parsed
       .filter((id): id is string => typeof id === "string")
       .map((id) => (id === "console" ? "habitat" : id))
-      .filter((id): id is ShellModuleId => SHELL_MODULE_IDS.includes(id as ShellModuleId));
+      .filter((id): id is ShellModuleId => (SHELL_MODULE_IDS as readonly string[]).includes(id));
     return normalizeShellModuleOrder(ids);
   } catch {
     return [...SHELL_MODULE_IDS];

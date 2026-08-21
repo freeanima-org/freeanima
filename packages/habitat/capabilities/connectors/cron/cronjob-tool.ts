@@ -87,7 +87,9 @@ async function handleCreate(args: ToolArgs): Promise<string> {
         name,
         schedule,
         prompt,
-        skills: Array.isArray(args.skills) ? (args.skills as string[]) : undefined,
+        skills: Array.isArray(args.skills)
+          ? args.skills.filter((s): s is string => typeof s === "string")
+          : undefined,
         script: args.script != null ? coerceString(args.script) : null,
         no_agent: noAgent,
         repeat: typeof args.repeat === "number" ? args.repeat : null,

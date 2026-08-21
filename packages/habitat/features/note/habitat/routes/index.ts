@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { noteMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -10,7 +10,7 @@ type NoteRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): NoteRemoteToolsServerDeps {
-  return deps as NoteRemoteToolsServerDeps;
+  return asRouteDeps<NoteRemoteToolsServerDeps>(deps);
 }
 
 export const noteHabitatRoutes = bindHabitatRouteHandlers(noteMethodDefs, {

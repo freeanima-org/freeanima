@@ -4,12 +4,12 @@ type WithoutUndefined<T> = {
 
 /** 去掉值为 `undefined` 的键（配合 exactOptionalPropertyTypes） */
 export function omitUndefined<T extends Record<string, unknown>>(value: T): WithoutUndefined<T> {
-  const out = {} as WithoutUndefined<T>;
-  for (const key of Object.keys(value) as (keyof T)[]) {
-    const val = value[key];
+  const out: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(value)) {
     if (val !== undefined) {
-      (out as Record<string, unknown>)[key as string] = val;
+      out[key] = val;
     }
   }
-  return out;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped omit 构造边界
+  return out as WithoutUndefined<T>;
 }

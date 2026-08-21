@@ -1,5 +1,9 @@
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 
 import { shellQuickMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -12,11 +16,11 @@ type ShellQuickRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): ShellQuickRemoteToolsServerDeps {
-  return deps as ShellQuickRemoteToolsServerDeps;
+  return asRouteDeps<ShellQuickRemoteToolsServerDeps>(deps);
 }
 
 function ctxAuth(ctx: unknown) {
-  return (ctx as RemoteToolsRequestContext).auth;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx).auth;
 }
 
 export const shellQuickHabitatRoutes = bindHabitatRouteHandlers(shellQuickMethodDefs, {

@@ -204,7 +204,8 @@ function MarkdownBlockEditor({
           className="prose prose-sm dark:prose-invert max-w-none min-h-24"
           dangerouslySetInnerHTML={{ __html: html }}
           onClick={(e) => {
-            const t = e.target as HTMLElement | null;
+            const t = e.target instanceof HTMLElement ? e.target : null;
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
             const a = t?.closest?.(
               "a[data-anima-uri], a[href^='anima:']",
             ) as HTMLAnchorElement | null;

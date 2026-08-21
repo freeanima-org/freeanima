@@ -1,16 +1,11 @@
 import type { RuleContext } from "./types.ts";
-
-type SourceHolder = {
-  type?: string;
-  source?: { type?: string; value?: unknown } | null;
-};
+import { isRecord } from "./is-record.ts";
 
 /** 从 Import/Export/动态 import 节点取出字符串 specifier。 */
 export function getModuleSpecifier(node: unknown): string | null {
-  if (!node || typeof node !== "object") return null;
-  const n = node as SourceHolder;
-  const src = n.source;
-  if (!src || typeof src !== "object") return null;
+  if (!isRecord(node)) return null;
+  const src = node.source;
+  if (!isRecord(src)) return null;
   if (typeof src.value === "string") return src.value;
   return null;
 }
@@ -27,9 +22,9 @@ export function visitModuleSpecifiers(
     if (spec) check(spec, node);
   };
   const onImportExpr = (node: unknown) => {
-    const n = node as SourceHolder;
-    const src = n.source;
-    if (src && typeof src.value === "string") check(src.value, node);
+    if (!isRecord(node)) return;
+    const src = node.source;
+    if (isRecord(src) && typeof src.value === "string") check(src.value, node);
   };
   return {
     ImportDeclaration: onDecl,

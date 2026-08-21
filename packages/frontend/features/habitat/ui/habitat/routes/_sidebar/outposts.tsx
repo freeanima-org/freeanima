@@ -34,6 +34,7 @@ type OutpostsStatus = {
 };
 
 function OutpostsPage() {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const initial = Route.useLoaderData() as OutpostsStatus | null;
 
   const [status, setStatus] = useState<OutpostsStatus | null>(initial);
@@ -44,6 +45,7 @@ function OutpostsPage() {
     setError("");
     setRefreshing(true);
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       setStatus((await getOutpostsStatus()) as OutpostsStatus);
     } catch (e) {
       logCaughtError("routes/_sidebar/outposts", e);

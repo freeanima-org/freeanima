@@ -18,6 +18,7 @@ export function registerVrmAnimationLoader(loader: GLTFLoader): void {
     if (typeof Ctor !== "function") {
       throw new Error("VRMAnimationLoaderPlugin 不可用");
     }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
     return Reflect.construct(Ctor as new (p: GLTFParser) => GLTFLoaderPlugin, [parser]);
   });
 }
@@ -30,6 +31,7 @@ export function firstVrmAnimation(gltf: { userData: Record<string, unknown> }): 
 
 /** createVRMAnimationClip 在 oxlint 下可能解析为 error；边界窄化为 AnimationClip */
 export function createVrmAnimationClip(vrma: unknown, vrm: VRM): THREE.AnimationClip {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
   const clip: unknown = createVRMAnimationClip(vrma as VRMAnimation, vrm);
   if (clip instanceof THREE.AnimationClip) return clip;
   throw new Error("VRMA 片段无效");

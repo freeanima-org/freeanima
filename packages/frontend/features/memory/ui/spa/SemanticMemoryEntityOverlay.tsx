@@ -4,6 +4,7 @@ import { EntityIdLabel } from "@freeanima/ui-kit/composite";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 
 import type { EntityOverlayProps } from "@freeanima/client/portal-sdk/entity-overlay-registry.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 type SemanticMemoryView = {
   id: number;
@@ -37,13 +38,14 @@ export function SemanticMemoryEntityOverlay({ id }: EntityOverlayProps): JSX.Ele
       .call("entity.get", { id })
       .then((raw: unknown) => {
         if (cancelled) return;
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const item = (raw as { item?: Record<string, unknown> }).item;
         if (!item || item.primary_component !== "semantic_memory") {
           setError("未找到该语义记忆");
           setRow(null);
           return;
         }
-        const body = (item.body ?? {}) as Record<string, unknown>;
+        const body = asRecord(item.body ?? {}) ?? {};
         setRow({
           id: Number(item.id),
           type: memoryKindFromBody(body),

@@ -2,6 +2,7 @@
  * 厂商无关的语音合成参数（对齐 temperature-tier：产品层中性 → 按协议映射）。
  */
 
+import { asRecord, isRecord } from "@freeanima/shared/util";
 import { mapProsodyToEdgeStrings } from "./edge-synthesize.ts";
 
 export type VoiceAudioFormat = "mp3" | "wav" | "pcm";
@@ -39,15 +40,12 @@ function asNonEmptyString(raw: unknown): string | undefined {
 
 /** 从场景 params / 扁平对象读取中性参数 */
 export function readVoiceProsodyParams(raw: unknown): VoiceProsodyParams {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
-  const o = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return {};
+  const o = raw;
   const formatRaw = asNonEmptyString(o.format);
   const format: VoiceAudioFormat | undefined =
     formatRaw === "mp3" || formatRaw === "wav" || formatRaw === "pcm" ? formatRaw : undefined;
-  const extra =
-    o.extra && typeof o.extra === "object" && !Array.isArray(o.extra)
-      ? (o.extra as Record<string, unknown>)
-      : undefined;
+  const extra = asRecord(o.extra) ?? undefined;
   const out: VoiceProsodyParams = {};
   const voice = asNonEmptyString(o.voice);
   if (voice) out.voice = voice;

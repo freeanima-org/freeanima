@@ -18,6 +18,7 @@
 import { existsSync, readFileSync, watch } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { asRecord } from "@freeanima/shared/util";
 
 const root = join(import.meta.dir, "..");
 const habitatEntry = join(root, "packages/habitat/portal/cli/dev-habitat.ts");
@@ -233,8 +234,8 @@ async function probeReadyHttp(port: number): Promise<boolean> {
       signal: AbortSignal.timeout(2000),
     });
     if (!res.ok) return false;
-    const body = (await res.json()) as { status?: string };
-    return body.status === "ok";
+    const body = asRecord(await res.json());
+    return body?.status === "ok";
   } catch {
     return false;
   }
@@ -246,8 +247,8 @@ function probeReadyViaStatusFile(pid: number): boolean {
   if (!existsSync(statusPath)) return false;
   try {
     const raw = readFileSync(statusPath, "utf-8");
-    const body = JSON.parse(raw) as { pid?: unknown; phase?: unknown; port?: unknown };
-    if (body.pid !== pid || body.phase !== "ready") return false;
+    const body = asRecord(JSON.parse(raw));
+    if (!body || body.pid !== pid || body.phase !== "ready") return false;
     if (typeof body.port === "number" && body.port > 0) {
       cachedStatusPort = body.port;
     }

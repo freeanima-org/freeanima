@@ -6,6 +6,7 @@ import {
   STREAM_FIRST_FLUSH_MIN_CHARS,
 } from "./first-flush-gate.ts";
 import type { ChannelAction, StreamStrategy, StrategyContext } from "./types.ts";
+import { bagGetGate, bagGetString, bagGetTimeout } from "./types.ts";
 
 export const DISCORD_STREAM_PLACEHOLDER = "⏳ Thinking…";
 export const DISCORD_ANSWER_EDIT_MS = 3000;
@@ -28,7 +29,7 @@ function displayText(buffer: string, placeholder: string): string {
 }
 
 function clearThrottle(ctx: StrategyContext): void {
-  const existing = ctx.bag.get(BAG_THROTTLE) as ReturnType<typeof setTimeout> | undefined;
+  const existing = bagGetTimeout(ctx.bag, BAG_THROTTLE);
   if (existing) {
     clearTimeout(existing);
     ctx.bag.delete(BAG_THROTTLE);
@@ -36,7 +37,7 @@ function clearThrottle(ctx: StrategyContext): void {
 }
 
 function getGate(ctx: StrategyContext): FirstFlushGate | undefined {
-  return ctx.bag.get(BAG_GATE) as FirstFlushGate | undefined;
+  return bagGetGate(ctx.bag, BAG_GATE);
 }
 
 function disposeGate(ctx: StrategyContext): void {
@@ -65,7 +66,7 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
 
   const flushInterim = async (ctx: StrategyContext): Promise<void> => {
     if (!ctx.bag.get(BAG_ANSWER_OPEN)) return;
-    const buffer = (ctx.bag.get(BAG_BUFFER) as string | undefined) ?? "";
+    const buffer = bagGetString(ctx.bag, BAG_BUFFER) ?? "";
     await io.edit(displayText(buffer, placeholder));
   };
 
@@ -98,7 +99,7 @@ export function createDiscordAnswerStrategy(opts: DiscordAnswerStrategyOptions):
           return [];
         }
         case "answer_delta": {
-          const next = `${(ctx.bag.get(BAG_BUFFER) as string | undefined) ?? ""}${effect.delta}`;
+          const next = `${bagGetString(ctx.bag, BAG_BUFFER) ?? ""}${effect.delta}`;
           ctx.bag.set(BAG_BUFFER, next);
           const gate = getGate(ctx);
           if (gate && !gate.isOpen()) {
@@ -190,7 +191,7 @@ export function createDiscordCleanupStrategy(io: DiscordAnswerIo): StreamStrateg
     name: "discord-cleanup",
     async handle(effect: StreamEffect, ctx: StrategyContext): Promise<ChannelAction[]> {
       if (effect.kind === "turn_end" && effect.reason === "interrupted") {
-        const buffer = (ctx.bag.get(BAG_BUFFER) as string | undefined) ?? "";
+        const buffer = bagGetString(ctx.bag, BAG_BUFFER) ?? "";
         if (ctx.bag.get(BAG_ANSWER_OPEN) && buffer.trim()) {
           await io.edit(buffer.trim());
         }

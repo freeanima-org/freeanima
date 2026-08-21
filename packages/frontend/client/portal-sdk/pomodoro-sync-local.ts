@@ -1,9 +1,12 @@
 /// <reference lib="dom" />
 import type { PomodoroActiveBody } from "@freeanima/shared/entity-shapes";
+import { isRecord } from "@freeanima/shared/util";
+
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
 import { activeStateToHabitatBody, habitatBodyToActiveState } from "./pomodoro-active-store.ts";
 import { readPomodoroActiveState, writePomodoroActiveState } from "./pomodoro-active.ts";
 import { getPomodoroDeviceId } from "./pomodoro-device-id.ts";
+import type { SubjectKind } from "./subject-scope.ts";
 
 export type PomodoroSyncMeta = {
   device_id: string;
@@ -37,17 +40,22 @@ function metaStorageKey(subjectKind: string): string {
   return `${META_PREFIX}:${subjectKind}`;
 }
 
+function isSubjectKind(value: string): value is SubjectKind {
+  return value === "user" || value === "agent";
+}
+
 function readPersistedMeta(subjectKind: string): PomodoroSyncMeta | null {
   try {
     const store = storage();
     if (!store) return null;
     const raw = store.getItem(metaStorageKey(subjectKind));
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as PomodoroSyncMeta;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isRecord(parsed)) return null;
     if (typeof parsed.device_id !== "string" || typeof parsed.updated_at_ms !== "number") {
       return null;
     }
-    return parsed;
+    return { device_id: parsed.device_id, updated_at_ms: parsed.updated_at_ms };
   } catch {
     return null;
   }
@@ -84,7 +92,7 @@ export function getPomodoroSyncMeta(subjectKind: string): PomodoroSyncMeta | nul
 
 export function getPomodoroSyncSnapshot(subjectKind: string): PomodoroSyncSnapshot {
   return {
-    active: readPomodoroActiveState(undefined, subjectKind as "user" | "agent"),
+    active: isSubjectKind(subjectKind) ? readPomodoroActiveState(undefined, subjectKind) : null,
     meta: getPomodoroSyncMeta(subjectKind),
   };
 }

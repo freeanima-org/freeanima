@@ -1,4 +1,5 @@
-import type { RemoteToolDefInput, ToolCallPayload } from "./frames/tool.ts";
+import type { RemoteToolDefInput } from "./frames/tool.ts";
+import { toolCallPayloadSchema } from "./frames/tool.ts";
 import type { RemoteInstanceStore } from "./instance-store.ts";
 import type { RpcStreamClient } from "./router.ts";
 import {
@@ -55,7 +56,7 @@ export function createRemoteToolsHabitatAttach(
   async function registerToolsAndHandlers(client: RpcStreamClient): Promise<void> {
     if (!options.tools?.length) return;
     client.onEvent("tool.call", (payload) => {
-      void handleToolCall(client, payload as ToolCallPayload);
+      void handleToolCall(client, toolCallPayloadSchema.parse(payload));
     });
     await client.request("tool.register", {
       tools: options.tools,
@@ -67,7 +68,10 @@ export function createRemoteToolsHabitatAttach(
     });
   }
 
-  async function handleToolCall(client: RpcStreamClient, payload: ToolCallPayload): Promise<void> {
+  async function handleToolCall(
+    client: RpcStreamClient,
+    payload: ReturnType<typeof toolCallPayloadSchema.parse>,
+  ): Promise<void> {
     if (!options.onToolCall) {
       await client.request("tool.error", {
         call_id: payload.call_id,

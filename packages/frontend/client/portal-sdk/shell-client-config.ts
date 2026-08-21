@@ -1,13 +1,14 @@
+import { isRecord } from "@freeanima/shared/util";
+
 export type ShellClientConfig = {
   habitatUrl: string;
   remoteAuthToken: string;
 };
 
 export function parseShellClientConfig(raw: unknown): ShellClientConfig | null {
-  if (!raw || typeof raw !== "object") return null;
-  const obj = raw as Record<string, unknown>;
-  const habitatUrl = typeof obj.habitatUrl === "string" ? obj.habitatUrl.trim() : "";
-  const remoteAuthToken = typeof obj.remoteAuthToken === "string" ? obj.remoteAuthToken.trim() : "";
+  if (!isRecord(raw)) return null;
+  const habitatUrl = typeof raw.habitatUrl === "string" ? raw.habitatUrl.trim() : "";
+  const remoteAuthToken = typeof raw.remoteAuthToken === "string" ? raw.remoteAuthToken.trim() : "";
   if (!habitatUrl) return null;
   return { habitatUrl, remoteAuthToken };
 }

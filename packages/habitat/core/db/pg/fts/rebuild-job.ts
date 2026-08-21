@@ -77,6 +77,7 @@ export function startFtsRebuildJob(opts?: { onlyMissing?: boolean }): FtsRebuild
         finished_at: new Date().toISOString(),
         error: "fts rebuild already running on another Habitat",
       };
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 并发占用哨兵返回
       return null as unknown as FtsRebuildResult;
     }
 

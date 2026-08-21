@@ -19,6 +19,7 @@ import type {
 } from "./types.ts";
 
 function brickToRow(b: MemoryBrickRow): LimbicMemoryRow {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- body.kind 运行时枚举
   const kind = (b.body.kind as LimbicKind | undefined) ?? "conversation_mood";
   const semantic = b.body.semantic_memory_ids;
   return {

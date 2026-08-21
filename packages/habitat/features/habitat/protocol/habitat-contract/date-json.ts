@@ -36,9 +36,11 @@ export function reviveDates<T>(value: T): T {
     return value;
   }
   if (Array.isArray(value)) {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped revive 数组边界
     return value.map((item) => reviveDates(item)) as T;
   }
   const out: Record<string, unknown> = {};
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- object entries 遍历边界
   for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
     if (typeof raw === "string" && DATE_JSON_KEYS.has(key) && isPlainIsoDateString(raw)) {
       out[key] = new Date(raw);
@@ -48,5 +50,6 @@ export function reviveDates<T>(value: T): T {
       out[key] = raw;
     }
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- mapped revive 对象边界
   return out as T;
 }

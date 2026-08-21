@@ -6,6 +6,7 @@ import {
   isBuiltinCalendarSourceId,
   type BuiltinCalendarSourceId,
 } from "@freeanima/shared/util/builtin-calendar-sources.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export const CALENDAR_UI_PREFS_KEY = "freeanima.calendar.uiPrefs";
 
@@ -117,7 +118,7 @@ function normalizeBuiltinSources(raw: unknown): BuiltinCalendarSourceId[] {
 function normalizeViewDisplay(raw: unknown, mode: CalendarViewMode): CalendarViewDisplayPrefs {
   const fallback = defaultViewDisplay(mode);
   if (raw == null || typeof raw !== "object") return fallback;
-  const obj = raw as Record<string, unknown>;
+  const obj = asRecord(raw) ?? {};
   return {
     kinds: obj.kinds !== undefined ? normalizeKinds(obj.kinds) : fallback.kinds,
     builtinSources:
@@ -197,9 +198,9 @@ function migrateFlatPrefs(obj: Record<string, unknown>): CalendarUiPrefs {
 
 export function parseCalendarUiPrefs(raw: unknown): CalendarUiPrefs | null {
   if (raw == null || typeof raw !== "object") return null;
-  const obj = raw as Record<string, unknown>;
+  const obj = asRecord(raw) ?? {};
   if (obj.byView != null && typeof obj.byView === "object") {
-    const byRaw = obj.byView as Record<string, unknown>;
+    const byRaw = asRecord(obj.byView) ?? {};
     return {
       viewMode: normalizeViewMode(obj.viewMode),
       byView: {

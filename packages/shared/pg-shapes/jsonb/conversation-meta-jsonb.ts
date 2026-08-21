@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { asRecord } from "../../util/is-record.ts";
 import { clarifyItemSchema } from "./clarify-item.ts";
 
 export { clarifyItemSchema };
@@ -77,9 +78,9 @@ const LEGACY_ACP_TASK_UPDATED_AT = "1970-01-01T00:00:00.000Z";
  */
 export function normalizeAcpTasks(raw: unknown): unknown {
   if (raw === null || raw === undefined) return raw;
-  if (typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const obj = asRecord(raw);
+  if (!obj) return raw;
 
-  const obj = raw as Record<string, unknown>;
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value && typeof value === "object" && !Array.isArray(value)) {
@@ -119,8 +120,9 @@ export function normalizeConversationToolNames(raw: unknown): string[] {
       continue;
     }
     if (entry && typeof entry === "object") {
-      const fn = (entry as { function?: { name?: unknown } }).function;
-      const name = fn && typeof fn === "object" ? fn.name : undefined;
+      const entryRec = asRecord(entry);
+      const fn = entryRec ? asRecord(entryRec.function) : null;
+      const name = fn?.name;
       if (typeof name === "string" && name.length > 0) {
         names.push(name);
       }

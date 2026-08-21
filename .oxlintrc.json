@@ -89,7 +89,7 @@
     "typescript/no-explicit-any": "error",
     "typescript/no-non-null-assertion": "error",
     "unicorn/prefer-node-protocol": "error",
-    "typescript/no-unsafe-type-assertion": "warn",
+    "typescript/no-unsafe-type-assertion": "error",
     "typescript/no-base-to-string": "error",
     "typescript/no-unnecessary-type-assertion": "error",
     "typescript/no-unnecessary-type-conversion": "error",
@@ -152,9 +152,21 @@
       }
     },
     {
+      "files": ["scripts/archive/**"],
+      "rules": {
+        "typescript/no-unsafe-type-assertion": "off"
+      }
+    },
+    {
       "files": ["**/routeTree.gen.ts"],
       "rules": {
         "typescript/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": ["scripts/archive/**"],
+      "rules": {
+        "typescript/no-unsafe-type-assertion": "off"
       }
     }
   ]

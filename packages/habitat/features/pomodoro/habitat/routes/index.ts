@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   type PomodoroActiveChangedEvent,
@@ -17,7 +17,7 @@ type PomodoroRemoteToolsServerDeps = RemoteToolsServerDeps & {
 };
 
 function depsOf(deps: unknown): PomodoroRemoteToolsServerDeps {
-  return deps as PomodoroRemoteToolsServerDeps;
+  return asRouteDeps<PomodoroRemoteToolsServerDeps>(deps);
 }
 
 function broadcastActiveChanged(

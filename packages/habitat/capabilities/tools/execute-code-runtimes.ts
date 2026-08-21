@@ -108,8 +108,8 @@ function runNodejs(code: string, timeoutSec: number, env: NodeJS.ProcessEnv): st
     });
     return formatSpawnResult(result);
   } catch (e) {
-    const err = e as Error;
-    if (err.message?.includes("maxBuffer")) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (message.includes("maxBuffer")) {
       return toolError(
         `output exceeded capture limit (${TOOL_OUTPUT_CAPTURE_MAX} chars); write to a file and use file_read`,
       );

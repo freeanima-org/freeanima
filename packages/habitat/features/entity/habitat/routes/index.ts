@@ -1,6 +1,10 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 
 import { entityMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -13,11 +17,11 @@ type EntityRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): EntityRemoteToolsServerDeps {
-  return deps as EntityRemoteToolsServerDeps;
+  return asRouteDeps<EntityRemoteToolsServerDeps>(deps);
 }
 
 function ctxAuth(ctx: unknown) {
-  return (ctx as RemoteToolsRequestContext).auth;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx).auth;
 }
 
 export const entityHabitatRoutes = bindHabitatRouteHandlers(entityMethodDefs, {

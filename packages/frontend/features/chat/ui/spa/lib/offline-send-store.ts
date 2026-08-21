@@ -1,4 +1,4 @@
-import { randomPublicId } from "@freeanima/shared/util";
+import { asRecord, randomPublicId } from "@freeanima/shared/util";
 import { omitUndefined } from "@freeanima/shared/util";
 import {
   enqueueOutboxOp,
@@ -52,14 +52,23 @@ export function resetChatSendClaimsForTests(): void {
 
 function toEntry(op: OfflineOutboxOp, status: OutboxSendStatus): ChatOutboxEntry | null {
   if (op.moduleId !== CHAT_MODULE_ID || op.method !== "message.send") return null;
-  const payload = op.payload as ChatSendOutboxPayload;
+  const raw = asRecord(op.payload);
+  if (!raw) return null;
   if (
-    typeof payload.conversation_id !== "string" ||
-    typeof payload.message !== "string" ||
-    typeof payload.client_op_id !== "string"
+    typeof raw.conversation_id !== "string" ||
+    typeof raw.message !== "string" ||
+    typeof raw.client_op_id !== "string"
   ) {
     return null;
   }
+  const payload: ChatSendOutboxPayload = {
+    conversation_id: raw.conversation_id,
+    message: raw.message,
+    client_op_id: raw.client_op_id,
+    expected_tail_pos: typeof raw.expected_tail_pos === "number" ? raw.expected_tail_pos : 0,
+    ...(typeof raw.force_tail === "boolean" ? { force_tail: raw.force_tail } : {}),
+    ...(typeof raw.llm_debug === "boolean" ? { llm_debug: raw.llm_debug } : {}),
+  };
   return {
     clientOpId: payload.client_op_id,
     conversationId: payload.conversation_id,

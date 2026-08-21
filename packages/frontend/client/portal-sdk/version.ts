@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { isRecord } from "@freeanima/shared/util";
+
 const VERSION_CANDIDATES = [
   "../../../package.json",
   "../../../../package.json",
@@ -32,8 +34,8 @@ export function readMonorepoVersion(moduleUrl?: string): string {
     const path = join(here, rel);
     if (!existsSync(path)) continue;
     try {
-      const pkg = JSON.parse(readFileSync(path, "utf-8")) as { version?: string };
-      const version = pkg.version?.trim();
+      const pkg: unknown = JSON.parse(readFileSync(path, "utf-8"));
+      const version = isRecord(pkg) && typeof pkg.version === "string" ? pkg.version.trim() : "";
       if (version) return version;
     } catch {
       // try next candidate

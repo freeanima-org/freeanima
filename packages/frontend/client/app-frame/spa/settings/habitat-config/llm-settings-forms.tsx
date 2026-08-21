@@ -200,6 +200,10 @@ function TimeoutAdvancedFields({
 }
 
 /** 连接编辑表单（放在 ModalSheetPresent 内）；新建与编辑同一面板，先选预设。 */
+function isConnectionLayerId(value: string): value is ConnectionLayerId {
+  return CONNECTION_LAYERS.some((l) => l.id === value);
+}
+
 export function LlmConnectionEditorForm({
   connectionId,
   entry,
@@ -216,7 +220,8 @@ export function LlmConnectionEditorForm({
   const isGateway = preset === LLM_PRESET_OPENCODE_GO;
   const isAlibabaTokenPlan = preset === LLM_PRESET_ALIBABA_TOKEN_PLAN;
   const defaultUrl = connectionDefaultBaseUrl(preset);
-  const kind = (coerceString(entry.custom_kind) || "text") as ConnectionLayerId;
+  const kindRaw = coerceString(entry.custom_kind) || "text";
+  const kind: ConnectionLayerId = isConnectionLayerId(kindRaw) ? kindRaw : "text";
   const isEdgeVoice = coerceString(entry.audio_protocol ?? "") === AUDIO_PROTOCOL_EDGE_TTS;
 
   const patch = (part: Record<string, unknown>) => {
@@ -249,8 +254,8 @@ export function LlmConnectionEditorForm({
         className={habitatConfigSelectClassName}
         value={kind}
         onChange={(e) => {
-          const layer = e.target.value as ConnectionLayerId;
-          if (!layer) return;
+          const layer = e.target.value;
+          if (!isConnectionLayerId(layer)) return;
           onChange(applyCustomKindToConnectionEntry(entry, layer));
         }}
       >

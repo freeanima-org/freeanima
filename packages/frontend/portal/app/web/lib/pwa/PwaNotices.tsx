@@ -2,6 +2,8 @@ import { COMPACT_LAYOUT_MQ } from "@freeanima/ui-kit/layout";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
 import { useEffect, useRef, useState } from "react";
 
+import { isRecord } from "@freeanima/shared/util";
+
 import {
   isBrowserWebShell,
   isStandalonePwa,
@@ -30,6 +32,10 @@ type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
+
+function isBeforeInstallPromptEvent(event: Event): event is BeforeInstallPromptEvent {
+  return isRecord(event) && typeof event.prompt === "function";
+}
 
 export const PWA_UPDATE_CHECK_EVENT = "freeanima:pwa-update-check";
 
@@ -95,7 +101,8 @@ export function PwaNotices(): null {
 
     const onBeforeInstall = (event: Event) => {
       event.preventDefault();
-      setInstallEvent(event as BeforeInstallPromptEvent);
+      if (!isBeforeInstallPromptEvent(event)) return;
+      setInstallEvent(event);
     };
     const onInstalled = () => {
       setInstallEvent(null);

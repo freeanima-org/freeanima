@@ -1,4 +1,5 @@
 import type { GenerateImageInput, GenerateImageResult } from "./images.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 /** OpenAI 兼容根 → 多模态 generation URL（Token Plan / 百炼） */
 export function alibabaMultimodalGenerationUrl(openaiCompatibleBaseUrl: string): string {
@@ -25,12 +26,14 @@ function extractImageUrl(body: unknown): string | null {
   const choices = (body as { output?: { choices?: unknown } }).output?.choices;
   if (!Array.isArray(choices)) return null;
   for (const choice of choices) {
-    if (!choice || typeof choice !== "object") continue;
-    const content = (choice as { message?: { content?: unknown } }).message?.content;
+    const choiceRec = asRecord(choice);
+    if (!choiceRec) continue;
+    const content = asRecord(choiceRec.message)?.content;
     if (!Array.isArray(content)) continue;
     for (const part of content) {
-      if (!part || typeof part !== "object") continue;
-      const image = (part as { image?: unknown }).image;
+      const partRec = asRecord(part);
+      if (!partRec) continue;
+      const image = partRec.image;
       if (typeof image === "string" && image.trim()) return image.trim();
     }
   }

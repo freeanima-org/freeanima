@@ -30,6 +30,7 @@ function asWorldList(raw: unknown): WorldListItem[] {
   const out: WorldListItem[] = [];
   for (const row of items) {
     if (!row || typeof row !== "object") continue;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     const r = row as Record<string, unknown>;
     const id = typeof r.id === "number" ? r.id : Number(r.id);
     if (!Number.isFinite(id) || id <= 0) continue;
@@ -58,6 +59,7 @@ async function resolveOptionalWorld(opts: {
       return asWorldList(out);
     },
     createWorld: async (input) => {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
       const created = (await client.call("entity.worldsCreate", input as never)) as {
         id?: unknown;
       };

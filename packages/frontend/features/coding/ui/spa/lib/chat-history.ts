@@ -3,6 +3,7 @@ import type { DisplayItem } from "@freeanima/features/chat/ui/spa/lib/types.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 import { emptyCodingThread, type CodingThreadState } from "./chat-thread.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 /** 与 Chat `CHAT_MESSAGES_PAGE_SIZE` 对齐 */
 const CODING_MESSAGES_PAGE_SIZE = 100;
@@ -18,8 +19,10 @@ function normalizeDisplay(raw: unknown): DisplayItem[] {
   const out: DisplayItem[] = [];
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     const row = item as { type?: string };
     if (row.type === "message") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const m = item as {
         role?: string;
         content?: unknown;
@@ -35,6 +38,7 @@ function normalizeDisplay(raw: unknown): DisplayItem[] {
       continue;
     }
     if (row.type === "tool_block") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const block = item as { calls?: unknown };
       if (!Array.isArray(block.calls)) {
         out.push({ type: "tool_block", calls: [] });
@@ -50,7 +54,7 @@ function normalizeDisplay(raw: unknown): DisplayItem[] {
             tool_call_id: typeof c.tool_call_id === "string" ? c.tool_call_id : `hist-${i}`,
             status: typeof c.status === "string" ? c.status : "done",
             ...(c.args && typeof c.args === "object" && !Array.isArray(c.args)
-              ? { args: c.args as Record<string, unknown> }
+              ? { args: asRecord(c.args) ?? {} }
               : {}),
             ...(typeof c.result === "string" ? { result: c.result } : {}),
           })),

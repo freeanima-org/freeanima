@@ -1,5 +1,6 @@
 import { isTransientNetworkError } from "@freeanima/habitat/kernel/loop-mechanism";
 import { logComponent } from "@freeanima/habitat/platform/logging";
+import { asRecord } from "@freeanima/shared/util";
 
 const DEFAULT_ATTEMPTS = 5;
 const MAX_BACKOFF_MS = 30_000;
@@ -11,15 +12,15 @@ function sleep(ms: number): Promise<void> {
 }
 
 function errorStatus(err: unknown): number | null {
-  if (!err || typeof err !== "object") return null;
-  const status = (err as { status?: unknown }).status;
-  return typeof status === "number" ? status : null;
+  const rec = asRecord(err);
+  if (!rec) return null;
+  return typeof rec.status === "number" ? rec.status : null;
 }
 
 /** Extract HTTP status and Discord API code from discord.js / REST errors (e.g. 50005) */
 export function discordErrorDetails(err: unknown): Record<string, unknown> {
-  if (!err || typeof err !== "object") return {};
-  const rec = err as Record<string, unknown>;
+  const rec = asRecord(err);
+  if (!rec) return {};
   const out: Record<string, unknown> = {};
   const status = errorStatus(err);
   if (status != null) out.http_status = status;
@@ -41,10 +42,8 @@ export function isDiscordRetryableError(err: unknown): boolean {
 
 /** Another handler already sent the initial interaction response */
 export function isDiscordInteractionAlreadyAcked(err: unknown): boolean {
-  if (err && typeof err === "object") {
-    const code = (err as { code?: unknown }).code;
-    if (code === 40060) return true;
-  }
+  const rec = asRecord(err);
+  if (rec && rec.code === 40060) return true;
   return false;
 }
 
@@ -53,10 +52,10 @@ export function isDiscordDeliveryDegraded(err: unknown): boolean {
   if (isDiscordRetryableError(err)) return false;
   const status = errorStatus(err);
   if (status === 403) return true;
-  if (err && typeof err === "object") {
-    const code = (err as { code?: unknown }).code;
-    if (code === 10062) return true;
-    if (code === 40060) return true;
+  const rec = asRecord(err);
+  if (rec) {
+    if (rec.code === 10062) return true;
+    if (rec.code === 40060) return true;
   }
   return false;
 }
@@ -77,10 +76,9 @@ function logDiscordDeliveryFailure(
 }
 
 function discordRetryDelayMs(err: unknown, attempt: number): number {
-  if (err && typeof err === "object") {
-    const raw =
-      (err as { retryAfter?: unknown }).retryAfter ??
-      (err as { retry_after?: unknown }).retry_after;
+  const rec = asRecord(err);
+  if (rec) {
+    const raw = rec.retryAfter ?? rec.retry_after;
     const sec = typeof raw === "number" ? raw : Number(raw);
     if (Number.isFinite(sec) && sec > 0) {
       return Math.min(MAX_BACKOFF_MS, Math.ceil(sec * 1000) + 200);

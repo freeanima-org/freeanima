@@ -6,11 +6,7 @@ import {
   revokeServiceApiToken,
   updateServiceApiTokenName,
 } from "@freeanima/habitat/core/db/pg/service-api-token";
-import {
-  expandTokenPreset,
-  FULL_TOKEN_AUTHORIZATION,
-  type TokenAuthorizationPreset,
-} from "@freeanima/shared/service-api-auth";
+import { expandTokenPreset, FULL_TOKEN_AUTHORIZATION } from "@freeanima/shared/service-api-auth";
 import type { Command } from "commander";
 
 import { printCliError } from "../output/errors.ts";
@@ -48,18 +44,16 @@ export function registerTokenCommand(program: Command): void {
     .action(
       async (opts: { subjectId: number; name: string; preset: string; worldId: number[] }) => {
         try {
-          const preset = opts.preset.trim().toLowerCase();
-          if (preset !== "full" && !["app", "extension", "mcp"].includes(preset)) {
-            throw new Error(`unknown preset: ${preset} (use full|app|extension|mcp)`);
-          }
+          const presetRaw = opts.preset.trim().toLowerCase();
           const worldIds = opts.worldId.filter((id) => Number.isFinite(id) && id > 0);
           const authorization =
-            preset === "full"
+            presetRaw === "full"
               ? FULL_TOKEN_AUTHORIZATION
-              : expandTokenPreset(
-                  preset as TokenAuthorizationPreset,
-                  worldIds.length > 0 ? { worldIds } : undefined,
-                );
+              : presetRaw === "app" || presetRaw === "extension" || presetRaw === "mcp"
+                ? expandTokenPreset(presetRaw, worldIds.length > 0 ? { worldIds } : undefined)
+                : (() => {
+                    throw new Error(`unknown preset: ${presetRaw} (use full|app|extension|mcp)`);
+                  })();
           const result = await withPlatformDb(
             async () =>
               createServiceApiTokenWithSecret({

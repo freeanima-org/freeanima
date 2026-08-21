@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { isNull } from "drizzle-orm";
 
 import { entities } from "@freeanima/habitat/core/db/schema/entity/entity.ts";
@@ -16,8 +17,7 @@ export type RunIntegrityChecksOpts = {
 };
 
 function asBody(raw: unknown): Record<string, unknown> | null {
-  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return null;
-  return raw as Record<string, unknown>;
+  return asRecord(raw);
 }
 
 /** 从当前库加载实体并跑通用数据完整性检查 */

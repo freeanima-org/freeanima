@@ -35,6 +35,7 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import { filterToolNamesByPolicy, resolveSleepCapabilityPolicy } from "./capability-policy-bind.ts";
 import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "./auto-llm-run.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 const RETAIN_MAX_LOOP_ITERATIONS = 50;
 /** 合轮后：1 次批量 toolcalls + 最多 1 轮摘要；禁止多轮试探式工具环 */
@@ -49,8 +50,8 @@ const SEMANTIC_MEMORY_WRITE_TOOLS = new Set([
 function extractSemanticMemoryId(toolName: string, content: string): number | null {
   if (!SEMANTIC_MEMORY_WRITE_TOOLS.has(toolName)) return null;
   try {
-    const parsed = JSON.parse(content) as Record<string, unknown>;
-    if (parsed.error) return null;
+    const parsed = asRecord(JSON.parse(content));
+    if (!parsed || parsed.error) return null;
     const raw = parsed.semantic_memory_id ?? parsed.id ?? parsed.fact_id;
     const n = typeof raw === "number" ? raw : Number(coerceString(raw ?? "").trim());
     if (!Number.isInteger(n) || n <= 0) return null;

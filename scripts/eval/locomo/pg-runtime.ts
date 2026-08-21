@@ -28,6 +28,7 @@ import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import { createEngine } from "@freeanima/habitat/engine";
 import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
 import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
+import { asRecord } from "@freeanima/shared/util";
 import { initRedis, resetRedisForTest } from "@freeanima/habitat/core/redis";
 import {
   createEmbeddedMemoryService,
@@ -198,7 +199,8 @@ export async function beginLocomoPgRuntime(opts: {
     if (Array.isArray(parsed)) {
       for (const row of parsed) {
         if (!row || typeof row !== "object") continue;
-        const r = row as Record<string, unknown>;
+        const r = asRecord(row);
+        if (!r) continue;
         const content = asString(r.content).trim();
         if (!content) continue;
         const kind = asString(r.kind, "observation") || "observation";

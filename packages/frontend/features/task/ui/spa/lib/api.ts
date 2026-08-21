@@ -358,6 +358,7 @@ export function subscribeTaskAdvanceReminders(onEvent: (event: TaskAdvanceRemind
     {},
     {
       onData: (payload) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- WS 事件载荷边界
         const record = payload as Partial<TaskAdvanceReminderEvent>;
         if (
           typeof record.task_item_id === "number" &&

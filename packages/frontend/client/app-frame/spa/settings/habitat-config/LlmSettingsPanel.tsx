@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
 import { Button, Card, CardContent } from "@freeanima/ui-kit";
 import { EmptyState, ListRow, ModalSheetPresent, showConfirm } from "@freeanima/ui-kit/composite";
@@ -75,14 +77,11 @@ export function LlmSettingsPanel({
 
   useEffect(() => {
     setProvidersDraft(
-      readProvidersDraft(config.connections as Record<string, unknown> | undefined),
+      readProvidersDraft(isRecord(config.connections) ? config.connections : undefined),
     );
     if (panelFocus !== "connections") {
       const raw = config[panelFocus];
-      const section =
-        raw && typeof raw === "object" && !Array.isArray(raw)
-          ? (raw as Record<string, unknown>)
-          : {};
+      const section = isRecord(raw) ? raw : {};
       setScenesDraft(readCapabilityUiDraft(section, panelFocus));
       if (panelFocus === "embedding") {
         setEmbeddingExtra({

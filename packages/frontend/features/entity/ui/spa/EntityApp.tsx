@@ -29,6 +29,9 @@ const PAGE_SIZE = 20;
 const TYPE_ALL = "__all__";
 const COMPONENT_ALL = "__all__";
 const ENTITY_TYPES: EntityAdminType[] = ["content", "world", "agent", "user"];
+function isEntityAdminType(v: string): v is EntityAdminType {
+  return (ENTITY_TYPES as readonly string[]).includes(v);
+}
 
 type EntityTab = "all" | "trash";
 
@@ -244,7 +247,7 @@ export function EntityApp() {
           onSelectionChange={(key) => {
             if (key == null) return;
             const v = String(key);
-            setTypeFilter(v === TYPE_ALL ? "" : (v as EntityAdminType));
+            setTypeFilter(v === TYPE_ALL ? "" : isEntityAdminType(v) ? v : "");
           }}
         >
           <SelectTrigger size="sm" className="w-[8.5rem]">

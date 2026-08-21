@@ -64,7 +64,7 @@ export type SubagentRunTaskResult = {
   status: "ok" | "error";
   output: string;
   tool_calls: number;
-  steps?: Array<{ name: string; title?: string; status: string }>;
+  steps?: AutoLlmToolStep[];
   error?: string;
   duration_ms: number;
 };
@@ -101,6 +101,7 @@ function publishSubagentProgress(
       });
     }
     const task = tasks[i];
+    const emptySteps: AutoLlmToolStep[] = [];
     return {
       run_id: "",
       slug: task?.slug?.trim() || EPHEMERAL_SLUG,
@@ -108,7 +109,7 @@ function publishSubagentProgress(
       status: "running" as const,
       output: "",
       tool_calls: 0,
-      steps: [] as AutoLlmToolStep[],
+      steps: emptySteps,
       duration_ms: 0,
     };
   });
@@ -130,10 +131,10 @@ function resolveMaxLoopIterations(
   if (override != null && override > 0) return override;
   if (profile.max_loop_iterations != null && profile.max_loop_iterations > 0)
     return profile.max_loop_iterations;
-  const cfg = deps.engine.config.data.auto_llm as
-    | { subagent?: { max_loop_iterations?: number } }
-    | undefined;
-  return cfg?.subagent?.max_loop_iterations ?? DEFAULT_SUBAGENT_MAX_LOOP_ITERATIONS;
+  return (
+    deps.engine.config.data.auto_llm?.subagent?.max_loop_iterations ??
+    DEFAULT_SUBAGENT_MAX_LOOP_ITERATIONS
+  );
 }
 
 /** 调用 > 档案 > auto_llm.subagent.temperature_tier > balanced */
@@ -150,19 +151,18 @@ export function resolveTemperatureTier(
     const parsed = temperatureTierSchema.safeParse(profile.temperature_tier);
     if (parsed.success) return parsed.data;
   }
-  const cfg = deps.engine.config.data.auto_llm as
-    | { subagent?: { temperature_tier?: string } }
-    | undefined;
-  const fromCfg = temperatureTierSchema.safeParse(cfg?.subagent?.temperature_tier);
+  const fromCfg = temperatureTierSchema.safeParse(
+    deps.engine.config.data.auto_llm?.subagent?.temperature_tier,
+  );
   if (fromCfg.success) return fromCfg.data;
   return DEFAULT_SUBAGENT_TEMPERATURE_TIER;
 }
 
 function resolveMaxParallel(deps: FullRuntimeDeps): number {
-  const cfg = deps.engine.config.data.auto_llm as
-    | { subagent?: { max_parallel?: number } }
-    | undefined;
-  return Math.max(1, cfg?.subagent?.max_parallel ?? DEFAULT_SUBAGENT_MAX_PARALLEL);
+  return Math.max(
+    1,
+    deps.engine.config.data.auto_llm?.subagent?.max_parallel ?? DEFAULT_SUBAGENT_MAX_PARALLEL,
+  );
 }
 
 function resolveRunName(profile: ResolvedSubagentProfile, task: SubagentTaskInput): string {
@@ -457,7 +457,7 @@ export async function runSubagentTasks(
             status: final.status,
             output: final.output,
             tool_calls: final.tool_calls,
-            steps: final.steps as AutoLlmToolStep[] | undefined,
+            steps: final.steps,
             error: final.error,
             duration_ms: final.duration_ms,
           });

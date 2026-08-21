@@ -9,6 +9,8 @@ import {
 } from "@freeanima/habitat/capabilities/connectors/vault";
 import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { normalizeTotpSecret } from "@freeanima/shared/vault-crypto";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
 import {
@@ -142,7 +144,7 @@ function parseTags(raw: unknown): string[] | undefined {
 function parseItemType(raw: unknown): VaultItemType | undefined {
   if (raw == null) return undefined;
   const v = coerceString(raw);
-  return ITEM_TYPES.has(v as VaultItemType) ? (v as VaultItemType) : undefined;
+  return (ITEM_TYPES as Set<string>).has(v) ? assertNarrow<VaultItemType>(v) : undefined;
 }
 
 function rejectUserLibraryWrites(args: Record<string, unknown>): string | null {
@@ -158,7 +160,8 @@ function parseSecretsPayload(raw: unknown): VaultSecretsPayload | string {
   if (raw == null || typeof raw !== "object" || Array.isArray(raw)) {
     return toolError("secrets must be an object");
   }
-  const rec = raw as Record<string, unknown>;
+  const rec = asRecord(raw);
+  if (!rec) return toolError("secrets must be an object");
   const out: VaultSecretsPayload = {};
   if (rec.password != null) out.password = coerceString(rec.password).trim();
   if (rec.notes != null) out.notes = coerceString(rec.notes);
@@ -175,7 +178,8 @@ function parseSecretsPayload(raw: unknown): VaultSecretsPayload | string {
       if (entry == null || typeof entry !== "object") {
         return toolError("secrets.custom_fields[] must be objects");
       }
-      const f = entry as Record<string, unknown>;
+      const f = asRecord(entry);
+      if (!f) return toolError("secrets.custom_fields[] must be objects");
       const name = coerceString(f.name ?? "").trim();
       if (!name) return toolError("secrets.custom_fields[].name is required");
       const typeRaw = f.type != null ? coerceString(f.type) : "text";

@@ -14,6 +14,7 @@ import {
   ToolWorldAccessError,
 } from "@freeanima/habitat/core/db/pg/entity";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 import { EntityAttachError, assertAttachAllowed, assertPromoteAllowed } from "./attach-policy.ts";
 
@@ -55,7 +56,7 @@ function parsePositiveId(raw: unknown): number | null {
 function parseBody(raw: unknown): Record<string, unknown> | string {
   if (raw == null) return {};
   if (typeof raw === "object" && !Array.isArray(raw)) {
-    return raw as Record<string, unknown>;
+    return asRecord(raw) ?? {};
   }
   return "body must be an object";
 }

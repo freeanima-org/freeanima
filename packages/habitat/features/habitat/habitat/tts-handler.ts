@@ -3,6 +3,7 @@ import { getResolvedSpeechConfig } from "@freeanima/habitat/core/config/tts-help
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { assertNotShuttingDown } from "@freeanima/habitat/platform/ports";
 import type { FeatureRpcHandler } from "@freeanima/habitat/platform/features";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { ApiHandlerError } from "./habitat-api/handlers/errors.ts";
 
@@ -18,7 +19,7 @@ type TtsSynthesizePayload = {
 
 export const handleTtsSynthesize: FeatureRpcHandler = async (_deps, payload) => {
   assertNotShuttingDown();
-  const parsed = payload as TtsSynthesizePayload;
+  const parsed = assertNarrow<TtsSynthesizePayload>(payload);
 
   let speech;
   try {

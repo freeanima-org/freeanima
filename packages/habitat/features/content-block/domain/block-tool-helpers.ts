@@ -9,6 +9,8 @@ import {
 } from "@freeanima/habitat/core/db/schema/entity";
 
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 import type {
   ContentBlockLimbicInput,
@@ -83,7 +85,7 @@ export function parseSearchOrderBy(raw: unknown): ContentBlockSearchOrderBy | nu
   if (raw == null || raw === "") return null;
   const value = coerceString(raw);
   return (CONTENT_BLOCK_SEARCH_ORDER_BY as readonly string[]).includes(value)
-    ? (value as ContentBlockSearchOrderBy)
+    ? assertNarrow<ContentBlockSearchOrderBy>(value)
     : null;
 }
 
@@ -97,8 +99,8 @@ export function parseOptionalFloat(value: unknown): number | null | undefined {
 export function parseLimbic(raw: unknown): ContentBlockLimbicInput | null | undefined {
   if (raw === undefined) return undefined;
   if (raw === null) return null;
-  if (typeof raw !== "object" || Array.isArray(raw)) return null;
-  const obj = raw as Record<string, unknown>;
+  const obj = asRecord(raw);
+  if (!obj) return null;
   const valence = Number(obj.valence);
   const arousal = Number(obj.arousal);
   const intensity = Number(obj.intensity);
@@ -131,8 +133,8 @@ export function parseLimbic(raw: unknown): ContentBlockLimbicInput | null | unde
 export function parseNarrative(raw: unknown): ContentBlockNarrativeInput | null | undefined {
   if (raw === undefined) return undefined;
   if (raw === null) return null;
-  if (typeof raw !== "object" || Array.isArray(raw)) return null;
-  const obj = raw as Record<string, unknown>;
+  const obj = asRecord(raw);
+  if (!obj) return null;
   const significance = obj.significance;
   if (
     significance != null &&
@@ -179,8 +181,9 @@ export function parseNarrative(raw: unknown): ContentBlockNarrativeInput | null 
 export function parseSemanticRef(raw: unknown): ContentBlockSemanticRefInput | null | undefined {
   if (raw === undefined) return undefined;
   if (raw === null) return null;
-  if (typeof raw !== "object" || Array.isArray(raw)) return null;
-  const id = Number((raw as Record<string, unknown>).entity_id);
+  const obj = asRecord(raw);
+  if (!obj) return null;
+  const id = Number(obj.entity_id);
   if (!Number.isInteger(id) || id <= 0) return null;
   return { entity_id: id };
 }

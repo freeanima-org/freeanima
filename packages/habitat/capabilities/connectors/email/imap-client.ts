@@ -1,5 +1,6 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { ImapFlow } from "imapflow";
+import { asRecord } from "@freeanima/shared/util";
 
 import type { EmailAccountRow } from "@freeanima/features/email/domain";
 
@@ -18,10 +19,12 @@ export function smtpSecure(port: number): boolean {
 
 export function formatAddress(raw: unknown): string {
   if (typeof raw === "string") return raw;
-  if (raw && typeof raw === "object" && "address" in raw) {
-    const addr = raw as { name?: string; address?: string };
-    if (addr.name) return `${addr.name} <${addr.address ?? ""}>`;
-    return addr.address ?? "";
+  const addr = asRecord(raw);
+  if (addr && "address" in addr) {
+    const name = typeof addr.name === "string" ? addr.name : undefined;
+    const address = typeof addr.address === "string" ? addr.address : "";
+    if (name) return `${name} <${address}>`;
+    return address;
   }
   return coerceString(raw ?? "");
 }
@@ -66,11 +69,16 @@ export function parseImapHeaderBuffer(headers: unknown): {
     });
   }
   if (headers instanceof Map) {
-    const map = headers as Map<string, string[]>;
+    const getFirst = (key: string): string | undefined => {
+      const v: unknown = headers.get(key);
+      if (Array.isArray(v) && typeof v[0] === "string") return v[0];
+      if (typeof v === "string") return v;
+      return undefined;
+    };
     return omitUndefined({
-      messageId: map.get("message-id")?.[0],
-      inReplyTo: map.get("in-reply-to")?.[0],
-      references: parseReferencesHeader(map.get("references")?.[0]),
+      messageId: getFirst("message-id"),
+      inReplyTo: getFirst("in-reply-to"),
+      references: parseReferencesHeader(getFirst("references")),
     });
   }
   return { references: [] };

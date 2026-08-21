@@ -1,5 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 
+import { asRecord } from "@freeanima/shared/util";
+
 import { expandConfigEnv } from "./env-expand.ts";
 import { parseYaml } from "./yaml.ts";
 import { PATHS } from "./paths.ts";
@@ -9,10 +11,7 @@ export function loadConfigYamlRecord(): Record<string, unknown> {
   if (!existsSync(PATHS.configYaml)) return {};
   try {
     const raw = expandConfigEnv(readFileSync(PATHS.configYaml, "utf-8"));
-    const data = parseYaml(raw);
-    return typeof data === "object" && data != null && !Array.isArray(data)
-      ? (data as Record<string, unknown>)
-      : {};
+    return asRecord(parseYaml(raw)) ?? {};
   } catch {
     return {};
   }

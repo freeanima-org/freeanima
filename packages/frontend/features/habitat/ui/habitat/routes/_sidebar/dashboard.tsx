@@ -13,6 +13,7 @@ import {
   type UsageTodayResult,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatUsageTriplet } from "@freeanima/shared/llm-usage";
+import { asRecord } from "@freeanima/shared/util";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { translateApiPayload } from "@freeanima/features/habitat/ui/habitat/lib/api-errors.ts";
 import { dependencyStatusLabel } from "@freeanima/features/habitat/ui/habitat/lib/habitat-status.ts";
@@ -323,20 +324,23 @@ function PlatformConnectionsCard({ platforms }: { platforms: Record<string, unkn
           <div className="text-xs text-muted-foreground mt-1">{"无平台接入"}</div>
         ) : (
           <div className="mt-1 space-y-1 max-h-24 overflow-y-auto">
-            {entries.map(([name, ps]) => (
-              <div key={name} className="flex items-center gap-2 text-sm">
-                <Badge
-                  variant={(ps as { status?: string }).status === "connected" ? "success" : "ghost"}
-                  className="size-2 rounded-full p-0"
-                />
-                <span className="truncate">{name}</span>
-                {(ps as { bot_name?: string }).bot_name ? (
-                  <span className="text-xs text-muted-foreground truncate">
-                    ({(ps as { bot_name?: string }).bot_name})
-                  </span>
-                ) : null}
-              </div>
-            ))}
+            {entries.map(([name, ps]) => {
+              const info = asRecord(ps) ?? {};
+              const status = typeof info.status === "string" ? info.status : undefined;
+              const botName = typeof info.bot_name === "string" ? info.bot_name : undefined;
+              return (
+                <div key={name} className="flex items-center gap-2 text-sm">
+                  <Badge
+                    variant={status === "connected" ? "success" : "ghost"}
+                    className="size-2 rounded-full p-0"
+                  />
+                  <span className="truncate">{name}</span>
+                  {botName ? (
+                    <span className="text-xs text-muted-foreground truncate">({botName})</span>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         )}
       </CardContent>

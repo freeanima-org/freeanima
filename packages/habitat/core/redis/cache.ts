@@ -61,7 +61,9 @@ export async function cacheGetJson<T>(key: string): Promise<T | null> {
   const raw = await cacheGet(key);
   if (raw == null) return null;
   try {
-    return JSON.parse(raw) as T;
+    const parsed: unknown = JSON.parse(raw);
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- cache 调用方约定 T
+    return parsed as T;
   } catch {
     return null;
   }

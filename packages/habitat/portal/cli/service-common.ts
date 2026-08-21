@@ -1,5 +1,6 @@
 import { animaBinString } from "@freeanima/habitat/core/config/cli-install";
 import { PATHS } from "@freeanima/habitat/platform/config";
+import { asRecord } from "@freeanima/shared/util";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -48,7 +49,7 @@ export async function apiGet(
   try {
     const resp = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
     if (!resp.ok) return null;
-    return (await resp.json()) as Record<string, unknown>;
+    return asRecord(await resp.json());
   } catch {
     return null;
   }

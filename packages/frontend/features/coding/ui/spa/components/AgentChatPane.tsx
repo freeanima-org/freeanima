@@ -42,6 +42,7 @@ import {
   type CodingThreadState,
 } from "../lib/chat-thread.ts";
 import { getCodingStreamClient, type StreamApiLikeEvent } from "../lib/coding-stream-client.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 type Props = {
   /** 切换 Agent 时重置线程；勿用 conversationId（首条消息绑定时会变） */
@@ -103,7 +104,10 @@ export function AgentChatPane({
     void listConversationCommands({ all: true })
       .then((raw) => {
         if (cancelled) return;
-        setCommandList((raw as { commands?: SlashCommandItem[] }).commands ?? []);
+        const rec = asRecord(raw);
+        const commands = rec?.commands;
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- commands 列表契约边界
+        setCommandList(Array.isArray(commands) ? (commands as SlashCommandItem[]) : []);
       })
       .catch((e) => console.error("coding commands:", e));
     return () => {

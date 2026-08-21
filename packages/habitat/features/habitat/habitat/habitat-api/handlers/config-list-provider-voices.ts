@@ -10,6 +10,7 @@ import {
 
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
+import { asRecord as sharedAsRecord } from "@freeanima/shared/util";
 
 export type ListProviderVoicesInput = {
   provider_id: string;
@@ -26,10 +27,7 @@ export type ListProviderVoicesResult = {
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
-  if (value != null && typeof value === "object" && !Array.isArray(value)) {
-    return value as Record<string, unknown>;
-  }
-  return {};
+  return sharedAsRecord(value) ?? {};
 }
 
 /** 按连接 voice_protocol 返回静态音色目录（与 listProviderModels 分维） */

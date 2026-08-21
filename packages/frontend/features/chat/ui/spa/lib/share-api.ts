@@ -29,10 +29,12 @@ export async function fetchPublicConversationShare(
   if (!res.ok) {
     const errMsg =
       body && typeof body === "object" && body !== null && "error" in body
-        ? (body as { error?: { message?: string } }).error?.message
+        ? // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
+          (body as { error?: { message?: string } }).error?.message
         : undefined;
     throw new Error(errMsg || text || `HTTP ${res.status}`);
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const result = body as ConversationShareSnapshotView | null;
   if (!result?.id || !Array.isArray(result.display)) {
     throw new Error("分享内容无效");

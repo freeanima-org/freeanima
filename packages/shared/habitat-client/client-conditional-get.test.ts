@@ -9,7 +9,7 @@ describe("createHabitatClient conditional GET", () => {
     let calls = 0;
     const client = createHabitatClient({
       httpOrigin: "http://127.0.0.1:2658",
-      fetch: (async (_input, init) => {
+      fetch: async (_input, init) => {
         calls += 1;
         const headers = new Headers(init?.headers);
         if (calls === 1) {
@@ -21,7 +21,7 @@ describe("createHabitatClient conditional GET", () => {
         }
         expect(headers.get("If-None-Match")).toBe(etag);
         return new Response(null, { status: 304, headers: { ETag: etag } });
-      }) as typeof fetch,
+      },
       getRpcClient: async () => {
         throw new Error("ws not used");
       },

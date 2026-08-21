@@ -31,13 +31,13 @@ type ShareRow = {
   id: string;
   conversation_id: string;
   scope: "full" | "selected";
-  title?: string;
+  title?: string | undefined;
   created_at: string;
   expires_at: string;
   message_count: number;
   ttl_remaining_seconds: number | null;
   url_path: string;
-  url?: string;
+  url?: string | undefined;
 };
 
 function formatTtlRemaining(seconds: number | null): string {

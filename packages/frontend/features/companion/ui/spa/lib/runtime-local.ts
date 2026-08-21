@@ -1,6 +1,11 @@
 /** Overlay 本地 runtime：bubble / play_slot；经 listener 同步到 UI store（避免单测依赖 zustand） */
 
 import type { MotionSlotId } from "@freeanima/shared/companion-app/companion-schema.ts";
+import { MOTION_SLOT_IDS } from "@freeanima/shared/companion-app/companion-schema.ts";
+
+function isMotionSlotId(v: string): v is MotionSlotId {
+  return (MOTION_SLOT_IDS as readonly string[]).includes(v);
+}
 
 export type BubbleItem = {
   id: string;
@@ -94,6 +99,7 @@ export function enqueuePlaySlot(slot: string, motionId?: string): PlaySlotComman
     ...(trimmedMotionId ? { motionId: trimmedMotionId } : {}),
   };
   if (!cmd.slot) throw new Error("slot 不能为空");
-  playHandler?.(cmd.slot as MotionSlotId, cmd.motionId);
+  if (!isMotionSlotId(cmd.slot)) throw new Error(`未知动作槽位: ${cmd.slot}`);
+  playHandler?.(cmd.slot, cmd.motionId);
   return cmd;
 }

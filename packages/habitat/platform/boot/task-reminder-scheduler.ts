@@ -1,5 +1,6 @@
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import { withRedisLock } from "@freeanima/habitat/core/redis";
+import { asRecord } from "@freeanima/shared/util";
 
 import { queryEarliestTaskReminderFireMs, runTaskReminderScan } from "./task-reminder-handler.ts";
 
@@ -34,8 +35,8 @@ async function tick(): Promise<void> {
     }
     const output = locked.value;
     try {
-      const parsed = JSON.parse(output) as { ok?: boolean; sent?: number };
-      if (parsed.ok === true && (parsed.sent ?? 0) > 0) {
+      const parsed = asRecord(JSON.parse(output));
+      if (parsed?.ok === true && (typeof parsed.sent === "number" ? parsed.sent : 0) > 0) {
         log.debug("task reminder scan fired", { sent: parsed.sent });
       }
     } catch {

@@ -25,6 +25,8 @@ import {
 
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
+import { asRecord as sharedAsRecord } from "@freeanima/shared/util";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 export type ListProviderModelsPurpose =
   | "chat"
@@ -57,10 +59,7 @@ export type ListProviderModelsResult = {
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
-  if (value != null && typeof value === "object" && !Array.isArray(value)) {
-    return value as Record<string, unknown>;
-  }
-  return {};
+  return sharedAsRecord(value) ?? {};
 }
 
 function serializeModel(info: ModelInfo): ListProviderModelsEntry {
@@ -98,7 +97,9 @@ function entriesToModelInfo(
     contextWindow: entry.contextWindow ?? CATALOG_DEFAULT_CONTEXT_WINDOW,
     maxOutputTokens: entry.maxOutputTokens ?? CATALOG_DEFAULT_MAX_OUTPUT_TOKENS,
     ...(entry.outputModalities
-      ? { outputModalities: [...entry.outputModalities] as ModelOutputModality[] }
+      ? {
+          outputModalities: assertNarrow<ModelOutputModality[]>([...entry.outputModalities]),
+        }
       : {}),
   }));
 }

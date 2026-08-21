@@ -1,6 +1,7 @@
 import { cacheGetJson, cacheSetJson, REDIS_CACHE_KEY_PREFIX } from "@freeanima/habitat/core/redis";
 import type { LlmDebugSnapshotPayload } from "@freeanima/shared/rpc-contract/frames/message";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 /** 滚动覆盖：每次写入重置 TTL */
 export const LLM_DEBUG_CACHE_TTL_SECONDS = 600;
@@ -25,8 +26,10 @@ function asSnapshot(payload: Record<string, unknown>): LlmDebugSnapshotPayload |
     loop_index: Number(payload.loop_index ?? 0),
     model: coerceString(payload.model),
     tool_count: Number(payload.tool_count ?? 0),
-    tools: Array.isArray(payload.tools) ? (payload.tools as LlmDebugSnapshotPayload["tools"]) : [],
-    invoke: invoke as LlmDebugSnapshotPayload["invoke"],
+    tools: Array.isArray(payload.tools)
+      ? assertNarrow<LlmDebugSnapshotPayload["tools"]>(payload.tools)
+      : [],
+    invoke: assertNarrow<LlmDebugSnapshotPayload["invoke"]>(invoke),
   };
   const injections = payload.runtime_injections;
   if (injections && typeof injections === "object") {
@@ -34,7 +37,8 @@ function asSnapshot(payload: Record<string, unknown>): LlmDebugSnapshotPayload |
   }
   const passive = payload.passive_recall;
   if (passive && typeof passive === "object") {
-    snapshot.passive_recall = passive as NonNullable<LlmDebugSnapshotPayload["passive_recall"]>;
+    snapshot.passive_recall =
+      assertNarrow<NonNullable<LlmDebugSnapshotPayload["passive_recall"]>>(passive);
   }
   return snapshot;
 }

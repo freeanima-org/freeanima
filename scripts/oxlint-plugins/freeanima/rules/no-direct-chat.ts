@@ -1,4 +1,5 @@
 import { relToRepo } from "../lib/repo-path.ts";
+import { isRecord } from "../lib/is-record.ts";
 import type { RuleModule } from "../lib/types.ts";
 
 const ALLOW_PATH_SUBSTR = [
@@ -24,9 +25,8 @@ function isChatFromLlm(spec: string): boolean {
 }
 
 function identName(node: unknown): string | null {
-  if (!node || typeof node !== "object") return null;
-  const n = node as { type?: string; name?: string };
-  return n.type === "Identifier" && typeof n.name === "string" ? n.name : null;
+  if (!isRecord(node)) return null;
+  return node.type === "Identifier" && typeof node.name === "string" ? node.name : null;
 }
 
 export const noDirectChat: RuleModule = {
@@ -43,14 +43,13 @@ export const noDirectChat: RuleModule = {
 
     return {
       ImportDeclaration(node: unknown) {
-        const n = node as {
-          source?: { value?: unknown };
-          specifiers?: Array<{ type?: string; imported?: unknown; local?: unknown }>;
-        };
-        const spec = typeof n.source?.value === "string" ? n.source.value : null;
+        if (!isRecord(node)) return;
+        const source = node.source;
+        const spec = isRecord(source) && typeof source.value === "string" ? source.value : null;
         if (!spec || !isChatFromLlm(spec)) return;
-        for (const s of n.specifiers ?? []) {
-          if (s.type !== "ImportSpecifier") continue;
+        const specifiers = Array.isArray(node.specifiers) ? node.specifiers : [];
+        for (const s of specifiers) {
+          if (!isRecord(s) || s.type !== "ImportSpecifier") continue;
           const imported = identName(s.imported);
           const local = identName(s.local);
           if (imported === "chat" || local === "chat") {
@@ -63,10 +62,9 @@ export const noDirectChat: RuleModule = {
         }
       },
       CallExpression(node: unknown) {
-        const n = node as { callee?: unknown; parent?: unknown };
-        const name = identName(n.callee);
+        if (!isRecord(node)) return;
+        const name = identName(node.callee);
         if (name !== "chat") return;
-        // 原脚本要求 await chat(；无 await 的 chat( 也禁止更安全
         context.report({
           message:
             "禁止直接调用 chat()；请用 runAutoLlm / runAutoLlmChat，或 conversation turn path (loopEngine)",

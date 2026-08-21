@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 /**
  * `.anima/project.json`：团队可提交的 stable_key / display_name。
  * 无文件时可由 git remote 推导 stable_key。
@@ -67,7 +68,7 @@ export function parseProjectJson(raw: string): ParsedProjectJson | null {
     return null;
   }
   if (!data || typeof data !== "object") return null;
-  const obj = data as Record<string, unknown>;
+  const obj = asRecord(data) ?? {};
   const stableKey = typeof obj.stable_key === "string" ? obj.stable_key.trim() : "";
   if (!stableKey) return null;
   const version = typeof obj.version === "number" && Number.isFinite(obj.version) ? obj.version : 1;

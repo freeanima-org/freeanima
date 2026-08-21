@@ -47,6 +47,7 @@ async function createTransport(server: ProjectMcpServer): Promise<Transport> {
     const headers = cfg.headers;
     if (transport === "http") {
       const opts = headers ? { requestInit: { headers } } : {};
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 第三方/库类型边界
       return new StreamableHTTPClientTransport(url, opts) as Transport;
     }
     const opts = headers

@@ -142,6 +142,7 @@ export function repairToolLoopMessages(
     const responded = new Map<string, ToolMessage>();
     let j = i + 1;
     while (j < messages.length && messages[j]?.role === "tool") {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- role===tool 已收窄
       const t = messages[j] as ToolMessage;
       if (cleaned.some((tc) => tc.id === t.tool_call_id)) {
         responded.set(t.tool_call_id, t);

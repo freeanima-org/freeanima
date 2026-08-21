@@ -8,7 +8,12 @@ export enum ScheduleType {
 
 const INTERVAL_RE = /^(?:every\s+)?(\d+)\s*(m|min|minute|minutes|h|hr|hour|hours)?$/i;
 
-export function parseSchedule(expr: string): [ScheduleType, number | string] {
+export type ParsedSchedule =
+  | readonly [ScheduleType.INTERVAL, number]
+  | readonly [ScheduleType.CRON, string]
+  | readonly [ScheduleType.ONESHOT, number];
+
+export function parseSchedule(expr: string): ParsedSchedule {
   const trimmed = expr.trim();
 
   const m = INTERVAL_RE.exec(trimmed);

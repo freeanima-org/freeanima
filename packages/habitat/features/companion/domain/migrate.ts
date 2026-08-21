@@ -5,6 +5,7 @@ import { companionBehaviorSchema } from "@freeanima/habitat/core/config/schemas/
 import { loadCompanionConfig, saveCompanionConfig } from "./config.ts";
 import type { CompanionConfig } from "./types.ts";
 import { mergeBehavior } from "./behavior.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 export type MigrateFromLocalResult = {
   imported_models: number;
@@ -26,9 +27,9 @@ export async function migrateFromLocalDir(sourceDir?: string): Promise<MigrateFr
   const legacyConfigPath = join(source, "config.json");
   if (existsSync(legacyConfigPath)) {
     try {
-      const raw = JSON.parse(readFileSync(legacyConfigPath, "utf-8")) as {
-        behavior?: unknown;
-      };
+      const raw = assertNarrow<{ behavior?: unknown }>(
+        JSON.parse(readFileSync(legacyConfigPath, "utf-8")),
+      );
       const behavior = companionBehaviorSchema.safeParse(raw.behavior);
       if (behavior.success) {
         const current = await loadCompanionConfig();

@@ -8,6 +8,7 @@ import { dirname, join } from "node:path";
 import pngToIco from "png-to-ico";
 import sharp from "sharp";
 import { resolveTauriAndroidMain } from "./tauri-android-gen-paths.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const ROOT = join(import.meta.dir, "..");
 const APP_ICON_PNG = join(ROOT, "brand/app-icon.png");
@@ -100,15 +101,17 @@ async function writeIco(pngPaths: string[], dest: string): Promise<void> {
 }
 
 function writeIcns(png1024: Buffer, dest: string): void {
-  const png2icons = require("png2icons") as {
-    createICNS: (input: Buffer, scalingAlgorithm: number, numOfColors: number) => Buffer;
-    BILINEAR: number;
-  };
-  const icns = png2icons.createICNS(png1024, png2icons.BILINEAR, 0);
-  if (!icns || icns.length === 0) {
+  const png2icons = asRecord(require("png2icons"));
+  const createICNS = png2icons?.createICNS;
+  const bilinear = png2icons?.BILINEAR;
+  if (typeof createICNS !== "function" || typeof bilinear !== "number") {
+    throw new Error("png2icons module missing createICNS/BILINEAR");
+  }
+  const icnsUnknown: unknown = Reflect.apply(createICNS, png2icons, [png1024, bilinear, 0]);
+  if (!Buffer.isBuffer(icnsUnknown) || icnsUnknown.length === 0) {
     throw new Error("png2icons createICNS failed");
   }
-  writeFileSync(dest, icns);
+  writeFileSync(dest, icnsUnknown);
 }
 
 async function main(): Promise<void> {

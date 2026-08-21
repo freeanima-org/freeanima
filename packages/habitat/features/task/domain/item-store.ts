@@ -55,6 +55,18 @@ async function assertProjectActiveForTask(projectId: number, worldId: number): P
   }
 }
 
+/** bodyPatch 为 Record；仅读我们写入的 string|null 字段 */
+function readPatchIso(value: unknown): string | null {
+  if (value == null) return null;
+  return typeof value === "string" ? value : null;
+}
+
+function readPatchId(value: unknown): number | null | undefined {
+  if (value === undefined) return undefined;
+  if (value == null) return null;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
 function normalizeTagIds(tagIds: number[] | undefined): number[] {
   if (!tagIds?.length) return [];
   const seen = new Set<number>();
@@ -226,16 +238,18 @@ export async function createTaskItem(
     throw new Error("exactly one of list_id or project_id required");
   }
 
+  let listId: number | null = null;
+  let projectId: number | null = null;
   if (input.list_id != null) {
     await assertListAcceptsTasks(input.list_id, worldId);
+    listId = input.list_id;
   }
   if (input.project_id != null) {
     await assertProjectActiveForTask(input.project_id, worldId);
+    projectId = input.project_id;
   }
   const tagIds = normalizeTagIds(input.tag_ids);
   await assertTagIdsInWorld(worldId, tagIds);
-  const listId = hasProject ? null : (input.list_id as number);
-  const projectId = hasProject ? (input.project_id as number) : null;
 
   // 未显式传 sort_order：min(pending)-STEP（允许负值），只写新行；拖拽有空隙时也只改一项。
   let sortOrder = input.sort_order;
@@ -427,23 +441,25 @@ export async function updateTaskItem(
 
   const mergedStart =
     bodyPatch.start_at !== undefined
-      ? (bodyPatch.start_at as string | null)
+      ? readPatchIso(bodyPatch.start_at)
       : (parsedExisting.start_at ?? null);
   const mergedEnd =
     bodyPatch.end_at !== undefined
-      ? (bodyPatch.end_at as string | null)
+      ? readPatchIso(bodyPatch.end_at)
       : (parsedExisting.end_at ?? null);
   const mergedDue =
     bodyPatch.due_at !== undefined
-      ? (bodyPatch.due_at as string | null)
+      ? readPatchIso(bodyPatch.due_at)
       : (parsedExisting.due_at ?? null);
 
-  if (nonEmptyIso(mergedEnd) != null && nonEmptyIso(mergedStart) == null) {
+  const startIso = nonEmptyIso(mergedStart);
+  const endIso = nonEmptyIso(mergedEnd);
+  if (endIso != null && startIso == null) {
     throw new Error("end_at requires start_at");
   }
-  if (nonEmptyIso(mergedStart) != null && nonEmptyIso(mergedEnd) != null) {
-    const startMs = Date.parse(mergedStart as string);
-    const endMs = Date.parse(mergedEnd as string);
+  if (startIso != null && endIso != null) {
+    const startMs = Date.parse(startIso);
+    const endMs = Date.parse(endIso);
     if (Number.isFinite(startMs) && Number.isFinite(endMs) && startMs > endMs) {
       throw new Error("start_at must be <= end_at");
     }
@@ -497,13 +513,11 @@ export async function updateTaskItem(
       const nextList =
         input.list_id !== undefined
           ? input.list_id
-          : ((bodyPatch.list_id as number | null | undefined) ?? parsedExisting.list_id ?? null);
+          : (readPatchId(bodyPatch.list_id) ?? parsedExisting.list_id ?? null);
       const nextProject =
         input.project_id !== undefined
           ? input.project_id
-          : ((bodyPatch.project_id as number | null | undefined) ??
-            parsedExisting.project_id ??
-            null);
+          : (readPatchId(bodyPatch.project_id) ?? parsedExisting.project_id ?? null);
       await assertValidParentTask(worldId, input.parent_id, {
         listId: nextList,
         projectId: nextProject,

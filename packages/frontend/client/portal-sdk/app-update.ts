@@ -1,5 +1,7 @@
 /** 与 CI / @freeanima/core app-update 产物名与轨语义对齐（portal-sdk 不可依赖 core） */
 
+import { isRecord } from "@freeanima/shared/util";
+
 import type { BuildChannel } from "./build-meta.ts";
 import { isSwitchableChannel } from "./build-meta.ts";
 import {
@@ -125,6 +127,34 @@ type ReleaseJson = {
   assets?: Array<{ name?: string; browser_download_url?: string; size?: number }>;
 };
 
+function parseReleaseJson(raw: unknown): ReleaseJson | null {
+  if (!isRecord(raw)) return null;
+  const assetsRaw = raw.assets;
+  const assets = Array.isArray(assetsRaw)
+    ? assetsRaw.flatMap((item) => {
+        if (!isRecord(item)) return [];
+        return [
+          {
+            ...(typeof item.name === "string" ? { name: item.name } : {}),
+            ...(typeof item.browser_download_url === "string"
+              ? { browser_download_url: item.browser_download_url }
+              : {}),
+            ...(typeof item.size === "number" ? { size: item.size } : {}),
+          },
+        ];
+      })
+    : undefined;
+  return {
+    ...(typeof raw.tag_name === "string" ? { tag_name: raw.tag_name } : {}),
+    ...(typeof raw.prerelease === "boolean" ? { prerelease: raw.prerelease } : {}),
+    ...(typeof raw.draft === "boolean" ? { draft: raw.draft } : {}),
+    ...(typeof raw.html_url === "string" ? { html_url: raw.html_url } : {}),
+    ...(typeof raw.target_commitish === "string" ? { target_commitish: raw.target_commitish } : {}),
+    ...(typeof raw.body === "string" ? { body: raw.body } : {}),
+    ...(assets ? { assets } : {}),
+  };
+}
+
 function githubHeaders(): Record<string, string> {
   return {
     Accept: "application/vnd.github+json",
@@ -191,8 +221,8 @@ async function fetchLatestStableRelease(
     { headers, ...(signal ? { signal } : {}) },
   );
   if (latestRes.ok) {
-    const j = (await latestRes.json()) as ReleaseJson;
-    if (!j.draft && !j.prerelease) return j;
+    const j = parseReleaseJson(await latestRes.json());
+    if (j && !j.draft && !j.prerelease) return j;
   }
   const listRes = await fetchImpl(
     applyGithubReleaseProxy(
@@ -202,8 +232,12 @@ async function fetchLatestStableRelease(
     { headers, ...(signal ? { signal } : {}) },
   );
   if (!listRes.ok) return null;
-  const list = (await listRes.json()) as ReleaseJson[];
-  if (!Array.isArray(list)) return null;
+  const listRaw: unknown = await listRes.json();
+  if (!Array.isArray(listRaw)) return null;
+  const list = listRaw.flatMap((item) => {
+    const parsed = parseReleaseJson(item);
+    return parsed ? [parsed] : [];
+  });
   return list.find((r) => !r.draft && !r.prerelease) ?? null;
 }
 
@@ -222,8 +256,8 @@ async function fetchReleaseByTag(
     { headers: githubHeaders(), ...(signal ? { signal } : {}) },
   );
   if (!res.ok) return null;
-  const j = (await res.json()) as ReleaseJson;
-  if (j.draft) return null;
+  const j = parseReleaseJson(await res.json());
+  if (!j || j.draft) return null;
   return j;
 }
 

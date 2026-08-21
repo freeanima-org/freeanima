@@ -1,5 +1,5 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { diaryMethodDefs } from "../method-defs.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -10,7 +10,7 @@ type DiaryRemoteToolsServerDeps = {
 };
 
 function depsOf(deps: unknown): DiaryRemoteToolsServerDeps {
-  return deps as DiaryRemoteToolsServerDeps;
+  return asRouteDeps<DiaryRemoteToolsServerDeps>(deps);
 }
 
 export const diaryHabitatRoutes = bindHabitatRouteHandlers(diaryMethodDefs, {

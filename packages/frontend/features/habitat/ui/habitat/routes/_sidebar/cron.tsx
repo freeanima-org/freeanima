@@ -77,6 +77,7 @@ function CronPage() {
     setToggling((t) => ({ ...t, [job.id]: action }));
     try {
       const data = enable ? await resumeCronJob(job.id) : await pauseCronJob(job.id);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const typed = data as unknown as { job?: CronJob };
       if (typed.job) updateJob(typed.job);
     } catch (e) {
@@ -98,6 +99,7 @@ function CronPage() {
     setRunning((r) => ({ ...r, [job.id]: true }));
     try {
       const data = await runCronJob(job.id);
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       if ((data as { job?: CronJob }).job) updateJob((data as { job: CronJob }).job);
       setToast((t) => ({
         ...t,

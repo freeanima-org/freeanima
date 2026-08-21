@@ -5,6 +5,7 @@ import {
 } from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 
 import { createFullHabitatClient, habitatHttpFromWsUrl, type HabitatClient } from "./index.ts";
+import type { HabitatHttpFetch } from "./client.ts";
 
 type PortalShell = {
   remoteAuth?: { token?: string };
@@ -22,7 +23,7 @@ export type BundledHabitatClientOptions = {
   habitatUrl?: string;
   authToken?: string;
   profile?: "habitat" | "outpost";
-  fetch?: typeof fetch;
+  fetch?: HabitatHttpFetch;
 };
 
 let sharedHabitatClient: HabitatClient | null = null;

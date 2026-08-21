@@ -3,6 +3,7 @@ import type { OpenAiToolSchema, StoredMessage } from "@freeanima/habitat/core/db
 import { PASSIVE_MEMORY_CONTEXT_ASSISTANT_NAME } from "@freeanima/habitat/core/llm/runtime-system-turn";
 import { storedMessagesToInvokeInput } from "@freeanima/habitat/core/llm/llm-adapt";
 import { omitUndefined } from "@freeanima/shared/util";
+import { asRecord } from "@freeanima/shared/util";
 import type { PassiveRecallDebugTrace } from "@freeanima/shared/rpc-contract/frames/message";
 
 export const LLM_DEBUG_CONTENT_MAX = 8_000;
@@ -94,8 +95,11 @@ function detectRuntimeInjections(messages: StoredMessage[]): LlmDebugRuntimeInje
 }
 
 function asPassiveRecallTrace(value: unknown): PassiveRecallDebugTrace | undefined {
-  if (!value || typeof value !== "object") return undefined;
-  return value as PassiveRecallDebugTrace;
+  const rec = asRecord(value);
+  if (!rec) return undefined;
+  if (typeof rec.query !== "string" || typeof rec.elapsed_ms !== "number") return undefined;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 调试轨迹由 producer 保证形状
+  return rec as PassiveRecallDebugTrace;
 }
 
 /** Build ephemeral LLM invoke preview (post beforeLlmCall hooks). */

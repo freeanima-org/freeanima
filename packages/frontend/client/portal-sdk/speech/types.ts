@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 export const DEFAULT_TTS_RATE = 1;
 export const DEFAULT_TTS_PITCH = 1;
 export const DEFAULT_TTS_VOLUME = 1;
@@ -47,13 +49,16 @@ function clampVolume(value: number | undefined): number {
   return Math.min(1, Math.max(0, value));
 }
 
+export function isTtsProvider(value: unknown): value is TtsProvider {
+  return typeof value === "string" && (TTS_PROVIDERS as readonly string[]).includes(value);
+}
+
 function parseProvider(raw: unknown): TtsProvider {
-  if (raw === "web-speech") return "web-speech";
-  return DEFAULT_TTS_PROVIDER;
+  return isTtsProvider(raw) ? raw : DEFAULT_TTS_PROVIDER;
 }
 
 export function parseSpeechConfigFromHub(tts: unknown): SpeechPlaybackConfig {
-  const raw = (tts ?? {}) as Record<string, unknown>;
+  const raw = isRecord(tts) ? tts : {};
   const lang = typeof raw.lang === "string" ? raw.lang.trim() : "";
   const voiceName = typeof raw.voice_name === "string" ? raw.voice_name.trim() : "";
   const preview =

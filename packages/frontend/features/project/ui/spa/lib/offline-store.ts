@@ -38,6 +38,11 @@ import {
   writeCachedProjects,
 } from "./offline-cache.ts";
 
+const PROJECT_STATUSES = ["active", "cancelled", "completed", "on_hold"] as const;
+function isProjectStatus(v: string): v is (typeof PROJECT_STATUSES)[number] {
+  return (PROJECT_STATUSES as readonly string[]).includes(v);
+}
+
 const MODULE_ID = "project";
 
 function subjectPayload(): { subject_kind: ReturnType<typeof getSubjectKind> } {
@@ -365,7 +370,9 @@ async function applyPendingProjectPatches(
         ? { end_at: patch.end_at }
         : {}),
       ...(typeof patch.content === "string" ? { content: patch.content } : {}),
-      ...(typeof patch.status === "string" ? { status: patch.status as ProjectRow["status"] } : {}),
+      ...(typeof patch.status === "string" && isProjectStatus(patch.status)
+        ? { status: patch.status }
+        : {}),
       ...(typeof patch.sort_order === "number" ? { sort_order: patch.sort_order } : {}),
       ...(patch.folder_id === null || typeof patch.folder_id === "number"
         ? { folder_id: patch.folder_id }
@@ -483,7 +490,8 @@ async function flushProjectOp(
   scope: string,
 ): Promise<import("@freeanima/client/portal-sdk/offline-module-types").FlushOpOutcome> {
   try {
-    const result = (await habitat().call(op.method as "project.create", op.payload as never)) as {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outbox 动态 method 返回值边界
+    const result = (await habitat().callByName(op.method, op.payload)) as {
       item?: ProjectFolderRow | ProjectRow | TaskItemRow;
       ok?: true;
     };
@@ -494,6 +502,7 @@ async function flushProjectOp(
           scope,
           op.tempEntityId,
           result.item.id,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- flush 按 method 分支收窄
           result.item as ProjectFolderRow,
         );
       } else if (op.method === "project.create") {
@@ -501,6 +510,7 @@ async function flushProjectOp(
           scope,
           op.tempEntityId,
           result.item.id,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- flush 按 method 分支收窄
           result.item as ProjectRow,
         );
       } else if (op.method === "project.item.create") {
@@ -508,6 +518,7 @@ async function flushProjectOp(
           scope,
           op.tempEntityId,
           result.item.id,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- flush 按 method 分支收窄
           result.item as TaskItemRow,
         );
       }
@@ -982,9 +993,14 @@ export async function offlineCreateProjectTask(input: {
     const tempId = allocateTempId(scope, MODULE_ID);
     const opId = randomPublicId();
     const now = new Date().toISOString();
-    const sort_order = autoPrepend
-      ? await localNextPrependSortOrder(scope, input.project_id)
-      : (input.sort_order as number);
+    let sort_order: number;
+    if (autoPrepend) {
+      sort_order = await localNextPrependSortOrder(scope, input.project_id);
+    } else {
+      const so = input.sort_order;
+      if (typeof so !== "number") throw new Error("sort_order is required");
+      sort_order = so;
+    }
     const row: TaskItemRow = {
       id: tempId,
       title,

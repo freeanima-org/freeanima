@@ -58,10 +58,12 @@ export function TaskSubtaskSection({ parent, onChanged }: Props) {
         // 项目内子任务：直接 RPC（离线 create 目前只覆盖清单侧）
         const { getTypedHabitatClient } =
           await import("@freeanima/client/portal-sdk/habitat-typed-client.ts");
+        const projectId = parent.project_id;
+        if (typeof projectId !== "number") throw new Error("project_id is required");
         await getTypedHabitatClient().call("project.item.create", {
           subject_kind: "user",
           title,
-          project_id: parent.project_id as number,
+          project_id: projectId,
           parent_id: parent.id,
         });
       }

@@ -1,4 +1,5 @@
 export { omitUndefined } from "./omit-undefined.ts";
+export { asRecord, assertRecord, isRecord } from "./is-record.ts";
 export { randomPublicId } from "./random-public-id.ts";
 /** @deprecated 新随机 id 请用 {@link randomPublicId}；仅在仍需 RFC uuid 形时使用 */
 export { randomUuid } from "./random-uuid.ts";

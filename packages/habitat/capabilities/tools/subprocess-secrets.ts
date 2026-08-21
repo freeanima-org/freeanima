@@ -13,6 +13,7 @@ import {
   WORLD_ID_TOOL_PROPERTY,
 } from "@freeanima/features/vault/domain/tool-world-resolve";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 
 /** Vault item ref without env mapping (browser_type secret). */
 export type BrowserSecretRef = {
@@ -108,7 +109,8 @@ export function parseSecretArg(raw: unknown): BrowserSecretRef | null | string {
   if (typeof raw !== "object" || Array.isArray(raw)) {
     return toolError("secret must be an object");
   }
-  const rec = raw as Record<string, unknown>;
+  const rec = asRecord(raw);
+  if (!rec) return toolError("secret must be an object");
   const id = Number(rec.id);
   if (!Number.isFinite(id) || id <= 0) return toolError("secret.id is required");
   const field = coerceString(rec.field).trim();
@@ -124,7 +126,8 @@ export function parseSecretsArg(raw: unknown): SubprocessSecretRef[] | string {
     if (item == null || typeof item !== "object") {
       return toolError("secrets[] entries must be objects");
     }
-    const rec = item as Record<string, unknown>;
+    const rec = asRecord(item);
+    if (!rec) continue;
     const base = parseVaultSecretFields(rec, "secrets[].id is required");
     if (typeof base === "string") return base;
     const envName = coerceString(rec.env_name).trim();

@@ -5,6 +5,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { asRecord } from "@freeanima/shared/util";
 
 import { homePath } from "@freeanima/habitat/core/config/paths";
 import {
@@ -33,8 +34,10 @@ function readFileStore(path: string): FileStore {
   if (!existsSync(path)) return {};
   try {
     const raw = JSON.parse(readFileSync(path, "utf-8")) as unknown;
-    if (raw == null || typeof raw !== "object") return {};
-    return raw as FileStore;
+    const rec = asRecord(raw);
+    if (!rec) return {};
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- FileStore JSON 边界
+    return rec as FileStore;
   } catch {
     return {};
   }

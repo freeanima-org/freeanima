@@ -4,7 +4,7 @@ import { mapSapStreamMethodToApi, streamEventMethods } from "./frames/message.ts
 import type { ConversationCreateInput, ConversationListInput } from "./frames/conversation.ts";
 import { resolveDefaultRemotePlatform } from "./naming.ts";
 import { HABITAT_RPC_MESSAGE_SEND_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";
-import { omitUndefined } from "@freeanima/shared/util/omit-undefined.ts";
+import { asRecord, omitUndefined } from "@freeanima/shared/util";
 
 export type SubscribeCallbacks<T> = {
   onData?: (data: T) => void;
@@ -56,8 +56,8 @@ function bindStreamEventListeners(
     cleanups.push(
       client.onEvent(method, (payload) => {
         if (closed()) return;
-        const record = payload as Record<string, unknown>;
-        if (record.stream_id !== streamId) return;
+        const record = asRecord(payload);
+        if (!record || record.stream_id !== streamId) return;
         const apiEvent = mapSapStreamMethodToApi(method, record);
         if (!apiEvent || apiEvent.event === "ping") return;
         callbacks.onData?.(apiEvent);
@@ -100,8 +100,8 @@ export function createSapConversationStreamClient(
   const attachSessionUpdated = (client: RpcStreamClient): void => {
     conversationUpdatedOff?.();
     conversationUpdatedOff = client.onEvent("conversation.updated", (payload) => {
-      const record = payload as { conversation_id?: string };
-      if (typeof record.conversation_id === "string") {
+      const record = asRecord(payload);
+      if (typeof record?.conversation_id === "string") {
         notifyConversation(record.conversation_id);
       }
     });

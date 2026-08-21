@@ -18,6 +18,7 @@ import {
   createStreamChannelComposer,
   DISCORD_ANSWER_SPLIT_AT,
 } from "../stream-strategies/index.ts";
+import { bagGetTimeout } from "../stream-strategies/types.ts";
 import type { ToolDisplayMode } from "../tool-display.ts";
 import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 import { runStreamChannel } from "../stream-state/run-channel.ts";
@@ -395,7 +396,7 @@ export async function streamReplyToInteraction(
 
 function clearInteractionThrottle(ctx: { bag: Map<string, unknown> }): void {
   const key = "discord.throttleTimer";
-  const timer = ctx.bag.get(key) as ReturnType<typeof setTimeout> | undefined;
+  const timer = bagGetTimeout(ctx.bag, key);
   if (timer) {
     clearTimeout(timer);
     ctx.bag.delete(key);

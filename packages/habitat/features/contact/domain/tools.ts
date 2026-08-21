@@ -9,6 +9,7 @@ import { ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { asRecord } from "@freeanima/shared/util";
 
 import {
   ContactIdentityConflictError,
@@ -46,7 +47,8 @@ function parseChannelEntries(
   const out: Array<{ value: string; label?: string; identity_key?: boolean }> = [];
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
-    const rec = item as Record<string, unknown>;
+    const rec = asRecord(item);
+    if (!rec) continue;
     const value = coerceString(rec.value)?.trim();
     if (!value) continue;
     out.push(

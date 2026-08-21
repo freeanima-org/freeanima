@@ -3,6 +3,7 @@ import { attachToolReturns, toolError, toolResult } from "@freeanima/habitat/cor
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/habitat/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { ProjectStatus } from "@freeanima/habitat/core/db/schema/entity";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import {
   createProject,
@@ -110,7 +111,9 @@ export function buildProjectToolDefs() {
             omitUndefined({
               folder_id: args.folder_id != null ? Number(args.folder_id) : undefined,
               status:
-                args.status != null ? (coerceString(args.status) as ProjectStatus) : undefined,
+                args.status != null
+                  ? assertNarrow<ProjectStatus>(coerceString(args.status))
+                  : undefined,
             }),
           );
           return toolResult({

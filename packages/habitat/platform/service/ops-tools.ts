@@ -18,6 +18,7 @@ import {
 } from "@freeanima/habitat/platform/config";
 import { getAppRuntime } from "@freeanima/habitat/platform/ports";
 import { triggerServiceRestart } from "@freeanima/habitat/platform/ports/process-restart";
+import { asRecord } from "@freeanima/shared/util";
 
 import { OPS_TOOL_RETURNS } from "./ops-return-schemas.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
@@ -65,10 +66,11 @@ function requireConfirm(args: ToolArgs): string | null {
 }
 
 function asPatchRecord(raw: unknown): Record<string, unknown> | string {
-  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) {
+  const rec = asRecord(raw);
+  if (!rec) {
     return "patch must be an object";
   }
-  return raw as Record<string, unknown>;
+  return rec;
 }
 
 export async function handleOpsHealth(): Promise<string> {
@@ -142,7 +144,7 @@ export async function handleOpsConfigPatch(args: ToolArgs): Promise<string> {
     if (!isPatchableRuntimeConfig(config)) {
       return toolError("current config store is not patchable");
     }
-    const existing = (config.data as Record<string, unknown>)[section];
+    const existing = asRecord(config.data)?.[section];
     const restored = restoreMaskedSecrets(patch, existing);
     await config.patchSection(section, restored);
     const masked = maskConfigSecretsForLlm(config.data);

@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 export type ShellDebugConfig = {
   vConsoleEnabled: boolean;
 };
@@ -7,10 +9,9 @@ export const DEFAULT_SHELL_DEBUG: ShellDebugConfig = {
 };
 
 export function parseShellDebugConfig(raw: unknown): ShellDebugConfig {
-  if (!raw || typeof raw !== "object") return { ...DEFAULT_SHELL_DEBUG };
-  const obj = raw as Record<string, unknown>;
+  if (!isRecord(raw)) return { ...DEFAULT_SHELL_DEBUG };
   return {
-    vConsoleEnabled: obj.vConsoleEnabled === true,
+    vConsoleEnabled: raw.vConsoleEnabled === true,
   };
 }
 

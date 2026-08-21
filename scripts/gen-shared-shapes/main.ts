@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { getTableColumns, type Column, type Table } from "drizzle-orm";
 
 import { TABLE_SPECS, type ColumnOverride, type TableGenSpec } from "./config.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const OUT_DIR = join(REPO_ROOT, "packages/shared/pg-shapes/rows");
@@ -132,10 +133,11 @@ async function loadTable(spec: TableGenSpec): Promise<Table> {
   if (imported == null || typeof imported !== "object") {
     throw new Error(`Invalid module ${spec.tableModule}`);
   }
-  const table: unknown = (imported as Record<string, unknown>)[spec.tableExport];
+  const table: unknown = asRecord(imported)?.[spec.tableExport];
   if (table == null || typeof table !== "object") {
     throw new Error(`Missing export ${spec.tableExport} from ${spec.tableModule}`);
   }
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- drizzle Table 动态 import
   return table as Table;
 }
 

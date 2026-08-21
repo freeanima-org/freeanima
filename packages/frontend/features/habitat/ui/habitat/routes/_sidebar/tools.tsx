@@ -15,6 +15,7 @@ import {
   fetchHabitatConfigSection,
   replaceHabitatConfigSection,
 } from "@freeanima/client/portal-sdk/habitat-config-api";
+import { asRecord } from "@freeanima/shared/util";
 
 type ToolSetVisibility = "hidden" | "searchable" | "catalog";
 type ToolsLoaderData = ToolsStatusResponse;
@@ -32,6 +33,7 @@ const selectClassName =
   "border-input flex h-8 min-w-0 rounded-md border bg-transparent px-2 py-1 text-xs shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30";
 
 function toolSetSortKey(name: string): [number, string] {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
   const idx = STATIC_TOOLSET_ORDER.indexOf(name as (typeof STATIC_TOOLSET_ORDER)[number]);
   if (idx >= 0) return [idx, name];
   return [STATIC_TOOLSET_ORDER.length, name];
@@ -117,7 +119,7 @@ async function copyText(text: string, label: string): Promise<void> {
 function readVisibilityMap(value: unknown): Record<string, ToolSetVisibility> {
   const out: Record<string, ToolSetVisibility> = {};
   if (value == null || typeof value !== "object" || Array.isArray(value)) return out;
-  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+  for (const [key, raw] of Object.entries(asRecord(value) ?? {})) {
     if (raw === "hidden" || raw === "searchable" || raw === "catalog") out[key] = raw;
   }
   return out;
@@ -125,6 +127,7 @@ function readVisibilityMap(value: unknown): Record<string, ToolSetVisibility> {
 
 export const Route = createFileRoute("/_sidebar/tools")({
   loader: () =>
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     getToolsStatus().catch(
       catchWithFallback("tools/getToolsStatus", EMPTY_LOADER_DATA),
     ) as Promise<ToolsLoaderData>,

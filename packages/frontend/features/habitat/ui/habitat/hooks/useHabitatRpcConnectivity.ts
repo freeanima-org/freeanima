@@ -26,6 +26,7 @@ export async function probeHabitatHealth(
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) return false;
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     const body = (await res.json()) as { status?: string; authed?: boolean };
     return isHabitatHealthConnected(body);
   } catch (err) {

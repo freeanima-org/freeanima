@@ -8,6 +8,7 @@ import {
 import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
 import type { Config } from "@freeanima/habitat/core/config";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
 import {
   readAppVersionForCapability as readAppVersion,
   vaultForCapability,
@@ -60,9 +61,9 @@ async function getFirecrawlConfig(): Promise<FirecrawlConfig> {
   if (!webToolsConfig) {
     return { apiUrl: "https://api.firecrawl.dev", apiKey: "" };
   }
-  const cfg = webToolsConfig.data as Record<string, unknown>;
-  const fc = (cfg.firecrawl as Record<string, unknown> | undefined) ?? {};
-  const apiUrl = (fc.api_url as string) || "https://api.firecrawl.dev";
+  const cfg = asRecord(webToolsConfig.data) ?? {};
+  const fc = asRecord(cfg.firecrawl) ?? {};
+  const apiUrl = (typeof fc.api_url === "string" && fc.api_url) || "https://api.firecrawl.dev";
   let apiKey = "";
   const rawKey = fc.api_key;
   if (typeof rawKey === "string" && rawKey.trim()) {
@@ -110,7 +111,7 @@ async function handleWebSearch(query: string, limit = 5): Promise<string> {
       signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
     });
     if (!resp.ok) return toolError(`Search request failed: HTTP ${resp.status}`);
-    data = (await resp.json()) as Record<string, unknown>;
+    data = asRecord(await resp.json()) ?? {};
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (msg.includes("abort") || msg.includes("timeout")) {
@@ -123,8 +124,8 @@ async function handleWebSearch(query: string, limit = 5): Promise<string> {
   const rawData = data.data;
   if (Array.isArray(rawData)) {
     for (const item of rawData) {
-      if (!item || typeof item !== "object") continue;
-      const row = item as Record<string, unknown>;
+      const row = asRecord(item);
+      if (!row) continue;
       results.push({
         title: coerceString(row.title ?? ""),
         url: coerceString(row.url ?? row.link ?? ""),
@@ -132,11 +133,11 @@ async function handleWebSearch(query: string, limit = 5): Promise<string> {
       });
     }
   } else if (rawData && typeof rawData === "object") {
-    const web = (rawData as Record<string, unknown>).web;
+    const web = asRecord(rawData)?.web;
     if (Array.isArray(web)) {
       for (const item of web) {
-        if (!item || typeof item !== "object") continue;
-        const row = item as Record<string, unknown>;
+        const row = asRecord(item);
+        if (!row) continue;
         results.push({
           title: coerceString(row.title ?? ""),
           url: coerceString(row.url ?? row.link ?? ""),
@@ -182,10 +183,10 @@ async function handleWebExtract(urls: string[]): Promise<string> {
         results.push({ url, title: "", content: "", error: `HTTP ${resp.status}` });
         continue;
       }
-      const data = (await resp.json()) as Record<string, unknown>;
+      const data = asRecord(await resp.json()) ?? {};
       const payload = data.data ?? data;
-      if (payload && typeof payload === "object" && !Array.isArray(payload)) {
-        const row = payload as Record<string, unknown>;
+      const row = asRecord(payload);
+      if (row) {
         const title = coerceString(row.title ?? "");
         let content = coerceString(row.markdown ?? row.content ?? row.text ?? "");
         const maxChars = 100_000;

@@ -142,5 +142,7 @@ export type ConversationMetaLoadResult = ConversationMetaMessage | Record<string
 export function isConversationMeta(
   meta: ConversationMetaLoadResult,
 ): meta is ConversationMetaMessage {
-  return typeof (meta as ConversationMetaMessage).model === "string";
+  return (
+    typeof meta === "object" && meta != null && "model" in meta && typeof meta.model === "string"
+  );
 }

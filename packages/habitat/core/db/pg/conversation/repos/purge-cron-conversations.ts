@@ -1,3 +1,4 @@
+import { asRecord } from "@freeanima/shared/util";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   LIMBIC_COMPONENT,
@@ -54,7 +55,7 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
       ),
     );
   for (const row of semanticRows) {
-    const body = (row.body ?? {}) as Record<string, unknown>;
+    const body = asRecord(row.body) ?? {};
     const raw = body.source_conversations;
     const convs = Array.isArray(raw) ? raw.map(String) : [];
     const next = stripIdsFromArray(convs, idSet);
@@ -77,7 +78,7 @@ export async function purgeCronConversations(): Promise<PurgeCronConversationsRe
       ),
     );
   for (const row of narrativeRows) {
-    const body = (row.body ?? {}) as Record<string, unknown>;
+    const body = asRecord(row.body) ?? {};
     const raw = body.source_conversations;
     const convs = Array.isArray(raw) ? raw.map(String) : [];
     const next = stripIdsFromArray(convs, idSet);

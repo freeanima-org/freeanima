@@ -3,6 +3,7 @@ import path from "node:path";
 
 import type { LocomoQa, LocomoSample } from "./types.ts";
 import { asString } from "./coerce.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const DEFAULT_URL =
   "https://raw.githubusercontent.com/snap-research/locomo/main/data/locomo10.json";
@@ -30,7 +31,7 @@ function normalizeQa(raw: unknown): LocomoQa[] {
   }
   if (!Array.isArray(raw)) return [];
   return raw.map((item) => {
-    const q = item as Record<string, unknown>;
+    const q = asRecord(item) ?? {};
     const out: LocomoQa = {
       question: asString(q.question),
       category: Number(q.category ?? 0),
@@ -45,10 +46,10 @@ function normalizeQa(raw: unknown): LocomoQa[] {
 export function parseLocomoData(raw: unknown): LocomoSample[] {
   const arr = Array.isArray(raw) ? raw : [];
   return arr.map((item) => {
-    const s = item as Record<string, unknown>;
+    const s = asRecord(item) ?? {};
     return {
       sample_id: asString(s.sample_id ?? s.sampleId, "unknown"),
-      conversation: (s.conversation ?? {}) as Record<string, unknown>,
+      conversation: asRecord(s.conversation) ?? {},
       qa: normalizeQa(s.qa),
     };
   });

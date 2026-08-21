@@ -18,17 +18,19 @@ import {
   type ProjectAgentContextSnapshot,
 } from "@freeanima/shared/coding/project-agent-context";
 import { getProjectAgentContext } from "@freeanima/shared/coding/project-context-cache.ts";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 function asSnapshot(raw: unknown): ProjectAgentContextSnapshot | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
+  const o = asRecord(raw);
+  if (!o) return null;
   if (!Array.isArray(o.rules) || !Array.isArray(o.skills)) return null;
-  return raw as ProjectAgentContextSnapshot;
+  return assertNarrow<ProjectAgentContextSnapshot>(raw);
 }
 
 function conversationIdFromMeta(meta: unknown): string | null {
-  if (!meta || typeof meta !== "object") return null;
-  const o = meta as Record<string, unknown>;
+  const o = asRecord(meta);
+  if (!o) return null;
   if (typeof o.conversation_id === "string" && o.conversation_id.trim()) {
     return o.conversation_id;
   }
@@ -50,10 +52,8 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
       const sid = conversationIdFromMeta(ctx.meta);
 
       // meta 上也可能直接挂 snapshot（测试）
-      let snapshot =
-        asSnapshot(
-          (ctx.meta as { project_agent_context?: unknown } | undefined)?.project_agent_context,
-        ) ?? null;
+      const metaRec = asRecord(ctx.meta);
+      let snapshot = asSnapshot(metaRec?.project_agent_context) ?? null;
       if (!snapshot && sid) snapshot = getProjectAgentContext(sid) ?? null;
       if (!snapshot) return { status: "ok" };
 

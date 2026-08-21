@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Input, Label } from "@freeanima/ui-kit";
@@ -84,8 +86,8 @@ export function readHabitatConfigRecord(
   const out: Record<string, Record<string, unknown>> = {};
   if (value == null || typeof value !== "object" || Array.isArray(value)) return out;
   for (const [key, raw] of Object.entries(value)) {
-    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
-      out[key] = raw as Record<string, unknown>;
+    if (isRecord(raw)) {
+      out[key] = raw;
     }
   }
   return out;

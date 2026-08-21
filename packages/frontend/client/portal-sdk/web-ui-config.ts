@@ -1,3 +1,5 @@
+import { isRecord } from "@freeanima/shared/util";
+
 import type { ComponentBuildMeta } from "./build-meta.ts";
 import { parseComponentBuildMeta } from "./build-meta.ts";
 
@@ -15,23 +17,24 @@ export type WebUiConfigJson = {
 };
 
 export function parseWebUiConfigJson(raw: unknown): WebUiConfigJson | null {
-  if (raw == null || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  const appId = typeof o.app_id === "string" ? o.app_id : "chat";
-  const habitatUrl = typeof o.habitat_url === "string" ? o.habitat_url : "";
-  const habitatWsUrl = typeof o.habitat_ws_url === "string" ? o.habitat_ws_url : "";
-  const layoutRaw = o.layout_mode;
+  if (!isRecord(raw)) return null;
+  const appId = typeof raw.app_id === "string" ? raw.app_id : "chat";
+  const habitatUrl = typeof raw.habitat_url === "string" ? raw.habitat_url : "";
+  const habitatWsUrl = typeof raw.habitat_ws_url === "string" ? raw.habitat_ws_url : "";
+  const layoutRaw = raw.layout_mode;
   const layout_mode = layoutRaw === "compact" || layoutRaw === "expanded" ? layoutRaw : undefined;
-  const webBuild = parseComponentBuildMeta(o.web_build);
+  const webBuild = parseComponentBuildMeta(raw.web_build);
   const remoteAuth =
-    typeof o.remote_auth_token === "string" ? o.remote_auth_token.trim() : undefined;
+    typeof raw.remote_auth_token === "string" ? raw.remote_auth_token.trim() : undefined;
   return {
     app_id: appId,
     habitat_url: habitatUrl,
     habitat_ws_url: habitatWsUrl,
-    ...(typeof o.ui_version === "string" ? { ui_version: o.ui_version } : {}),
+    ...(typeof raw.ui_version === "string" ? { ui_version: raw.ui_version } : {}),
     ...(webBuild ? { web_build: webBuild } : {}),
-    ...(typeof o.min_shell_version === "string" ? { min_shell_version: o.min_shell_version } : {}),
+    ...(typeof raw.min_shell_version === "string"
+      ? { min_shell_version: raw.min_shell_version }
+      : {}),
     ...(layout_mode ? { layout_mode } : {}),
     ...(remoteAuth ? { remote_auth_token: remoteAuth } : {}),
   };

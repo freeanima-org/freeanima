@@ -30,6 +30,10 @@ import { runServiceStack } from "./stack/supervisor.ts";
 import { probeWebHealth } from "./web/web-runtime.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
+function asOptionalNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
 export type ServiceArgs = {
   action: string;
   foreground: boolean;
@@ -180,10 +184,7 @@ async function cmdServiceStatus(args: ServiceArgs): Promise<void> {
       statusFile,
       host,
       port,
-      tlsPort:
-        (statusFile.tls_port as number | undefined) ??
-        (body?.tls_port as number | undefined) ??
-        null,
+      tlsPort: asOptionalNumber(statusFile.tls_port) ?? asOptionalNumber(body?.tls_port) ?? null,
       healthMs,
       systemd: sd,
       pidOverride: pid,

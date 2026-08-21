@@ -45,6 +45,7 @@ export async function generateOpenAiImage(input: GenerateImageInput): Promise<Ge
   if (sizeHint) payload.size = sizeHint;
   const qualityHint = input.quality?.trim();
   if (qualityHint) payload.quality = qualityHint;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenAI images.generate 参数边界
   const res = await client.images.generate(payload as never);
 
   const item = res.data?.[0];

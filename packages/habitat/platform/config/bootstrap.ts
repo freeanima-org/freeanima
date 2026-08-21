@@ -7,6 +7,8 @@ import {
   type BootstrapConfig,
 } from "@freeanima/habitat/core/config";
 
+import { asRecord } from "@freeanima/shared/util";
+
 import { formatBootstrapConfigError, formatMissingConfigYamlError } from "./bootstrap-error.ts";
 import { expandConfigEnv } from "./env-expand.ts";
 import { PATHS } from "./paths.ts";
@@ -26,11 +28,7 @@ export function readBootstrapConfig(): LoadedBootstrapConfig {
   let yamlRecord: Record<string, unknown>;
   try {
     const raw = expandConfigEnv(readFileSync(PATHS.configYaml, "utf-8"));
-    const data = parseYaml(raw);
-    yamlRecord =
-      typeof data === "object" && data != null && !Array.isArray(data)
-        ? (data as Record<string, unknown>)
-        : {};
+    yamlRecord = asRecord(parseYaml(raw)) ?? {};
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`config.yaml 解析失败（${PATHS.configYaml}）：${msg}`, { cause: err });

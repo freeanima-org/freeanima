@@ -1,17 +1,21 @@
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 
 import { handleCompanionModelUpload, handleCompanionMotionImport } from "../binary.ts";
 import { companionMethodDefs } from "../method-defs.ts";
 import * as service from "../service.ts";
 
 function depsOf(deps: unknown): RemoteToolsServerDeps {
-  return deps as RemoteToolsServerDeps;
+  return asRouteDeps<RemoteToolsServerDeps>(deps);
 }
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
-  return ctx as RemoteToolsRequestContext;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx);
 }
 
 export const companionHabitatRoutes = bindHabitatRouteHandlers(companionMethodDefs, {

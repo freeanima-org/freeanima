@@ -11,7 +11,11 @@ import {
 } from "@freeanima/habitat/core/db/pg/conversation";
 import { getConversationUpdatedAt } from "@freeanima/habitat/core/db/pg/conversation/repos/conversation-repo.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types";
-import { bindHabitatRouteHandlers } from "@freeanima/shared/habitat-contract/route.ts";
+import {
+  bindHabitatRouteHandlers,
+  asRouteDeps,
+  asRouteCtx,
+} from "@freeanima/shared/habitat-contract/route.ts";
 import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "../method-defs.ts";
@@ -45,11 +49,11 @@ sweepExpiredChatAttachmentTemps();
 type ChatHubDeps = RemoteToolsServerDeps;
 
 function depsOf(deps: unknown): ChatHubDeps {
-  return deps as ChatHubDeps;
+  return asRouteDeps<ChatHubDeps>(deps);
 }
 
 function ctxOf(ctx: unknown): RemoteToolsRequestContext {
-  return ctx as RemoteToolsRequestContext;
+  return asRouteCtx<RemoteToolsRequestContext>(ctx);
 }
 
 function readConfiguredPublicOrigin(deps: ChatHubDeps): string | undefined {

@@ -11,6 +11,7 @@ import {
 } from "@freeanima/habitat/core/hooks/prompt";
 import { SELF_BLOCK_HEADINGS } from "../blocks.ts";
 import type { SelfBlockView } from "../compose.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 export const SELF_LAYER_PROPOSAL_SOURCE_REF = "self-layer-proposal";
 export const SELF_LAYER_PROPOSAL_TITLE = "自我层维护建议";
@@ -116,15 +117,17 @@ export function parseSelfLayerRefreshResponse(raw: string): SelfLayerProposalPar
     }
   }
 
-  if (!parsed || typeof parsed !== "object") return { propose: false };
-  const obj = parsed as Record<string, unknown>;
+  const obj = asRecord(parsed);
+  if (!obj) return { propose: false };
   if (obj.propose !== true) return { propose: false };
 
   const blocksRaw = obj.blocks;
   if (!blocksRaw || typeof blocksRaw !== "object") return { propose: false };
 
   const blocks: SelfLayerProposalBlocks = {};
-  for (const [key, value] of Object.entries(blocksRaw as Record<string, unknown>)) {
+  const blocksRec = asRecord(blocksRaw);
+  if (!blocksRec) return { propose: false };
+  for (const [key, value] of Object.entries(blocksRec)) {
     if (!isMaintainableKey(key)) continue;
     if (typeof value !== "string") continue;
     const content = value.trim();

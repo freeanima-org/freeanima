@@ -15,6 +15,7 @@ import {
   resolveFirefoxAddonVersion,
 } from "@freeanima/habitat/core/config/firefox-addon.ts";
 import { resolvePackArtifactMeta } from "@freeanima/habitat/core/config/pack-artifact-names.ts";
+import { asRecord } from "@freeanima/shared/util";
 
 const root = join(import.meta.dir, "..");
 const firefoxDir = join(root, "dist/browser-extension/firefox-mv3");
@@ -32,44 +33,43 @@ if (!existsSync(firefoxDir)) throw new Error(`missing ${firefoxDir}`);
 if (!existsSync(xpiPath)) throw new Error(`missing ${xpiPath}`);
 if (!existsSync(updatesPath)) throw new Error(`missing ${updatesPath}`);
 
-const manifest = JSON.parse(await Bun.file(join(firefoxDir, "manifest.json")).text()) as {
-  manifest_version?: number;
-  version?: string;
-  version_name?: string;
-  browser_specific_settings?: {
-    gecko?: { id?: string; update_url?: string };
-  };
-  background?: { service_worker?: string; scripts?: string[] };
-};
+const manifest = asRecord(JSON.parse(await Bun.file(join(firefoxDir, "manifest.json")).text()));
+if (!manifest) throw new Error("invalid manifest.json");
+const gecko = asRecord(asRecord(manifest.browser_specific_settings)?.gecko);
+const background = asRecord(manifest.background);
 
 if (manifest.manifest_version !== 3) {
-  throw new Error(`expected MV3, got ${manifest.manifest_version}`);
+  throw new Error(`expected MV3, got ${String(manifest.manifest_version)}`);
 }
 if (manifest.version !== expectedVersion) {
-  throw new Error(`version ${manifest.version} != ${expectedVersion}`);
+  throw new Error(`version ${String(manifest.version)} != ${expectedVersion}`);
 }
 if (manifest.version_name) {
   throw new Error("firefox build must not include version_name");
 }
-if (manifest.browser_specific_settings?.gecko?.id !== FIREFOX_ADDON_ID) {
-  throw new Error(`gecko.id mismatch: ${manifest.browser_specific_settings?.gecko?.id}`);
+if (gecko?.id !== FIREFOX_ADDON_ID) {
+  throw new Error(`gecko.id mismatch: ${String(gecko?.id)}`);
 }
-if (manifest.browser_specific_settings?.gecko?.update_url !== FIREFOX_ADDON_UPDATE_URL) {
+if (gecko?.update_url !== FIREFOX_ADDON_UPDATE_URL) {
   throw new Error(`update_url mismatch`);
 }
-if (!manifest.background?.service_worker && !manifest.background?.scripts) {
+if (!background?.service_worker && !Array.isArray(background?.scripts)) {
   throw new Error("missing background entry");
 }
 
-const updates = JSON.parse(await Bun.file(updatesPath).text()) as {
-  addons: Record<string, { updates: Array<{ version: string; update_link: string }> }>;
-};
-const tip = updates.addons[FIREFOX_ADDON_ID]?.updates[0];
-if (!tip || tip.version !== expectedVersion) {
-  throw new Error(`updates.json version mismatch: ${tip?.version}`);
+const updatesRoot = asRecord(JSON.parse(await Bun.file(updatesPath).text()));
+const addons = asRecord(updatesRoot?.addons);
+const tipList = asRecord(addons?.[FIREFOX_ADDON_ID]);
+const tipArr: unknown[] = Array.isArray(tipList?.updates) ? tipList.updates : [];
+const tipRaw: unknown = tipArr[0];
+const tip = asRecord(tipRaw);
+const tipVersion = typeof tip?.version === "string" ? tip.version : undefined;
+const tipLink = typeof tip?.update_link === "string" ? tip.update_link : "";
+if (!tip || tipVersion !== expectedVersion) {
+  throw new Error(`updates.json version mismatch: ${tipVersion}`);
 }
-if (!tip.update_link.includes("/releases/download/canary/")) {
-  throw new Error(`updates.json must point at canary download: ${tip.update_link}`);
+if (!tipLink.includes("/releases/download/canary/")) {
+  throw new Error(`updates.json must point at canary download: ${tipLink}`);
 }
 
 console.log("[smoke-firefox-extension] ok", {

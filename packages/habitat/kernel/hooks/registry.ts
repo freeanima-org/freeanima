@@ -149,9 +149,9 @@ export class HookRegistry {
     opts: HookRunOpts,
   ): Promise<HookRunResult<HookHandlerContext<H>, HookEffectOf<H>>> {
     const llm_kind = opts.llm_kind;
-    const enriched = Object.assign({}, context as object, {
-      llm_kind,
-    }) as HookHandlerContext<H>;
+    // PayloadOf<H> 在 H extends Hook<unknown> 时为 unknown，不可直接 spread
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- PayloadOf 与 llm_kind 组合为 HandlerContext
+    const enriched = { ...(context as object), llm_kind } as HookHandlerContext<H>;
     const list = (this.handlers.get(hook.id) ?? []).filter((h) =>
       matchesLlmKindScope(h.llm_kind, llm_kind),
     );

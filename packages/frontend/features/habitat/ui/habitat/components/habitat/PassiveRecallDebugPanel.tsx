@@ -97,6 +97,7 @@ export function PassiveRecallDebugPanel() {
     setLoading(true);
     setError("");
     try {
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const data = (await passiveRecallDebug({
         user_text: text,
         limit,

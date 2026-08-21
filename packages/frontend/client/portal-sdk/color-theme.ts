@@ -30,7 +30,7 @@ function storage(): Storage | null {
 }
 
 function isColorThemeId(value: unknown): value is ColorThemeId {
-  return typeof value === "string" && COLOR_THEME_IDS.includes(value as ColorThemeId);
+  return typeof value === "string" && (COLOR_THEME_IDS as readonly string[]).includes(value);
 }
 
 export function parseColorTheme(raw: string | null): ColorThemeId {

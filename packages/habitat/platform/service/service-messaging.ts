@@ -30,6 +30,7 @@ import {
 import { collectStreamReply, type StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
 import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { asRecord } from "@freeanima/shared/util";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 import { runSkillReview } from "./skill-review-run.ts";
 import {
@@ -177,8 +178,8 @@ function parseMessageSendOriginExtra(
   const attachments = Array.isArray(origin_extra.attachments)
     ? origin_extra.attachments
         .map((row) => {
-          if (!row || typeof row !== "object") return null;
-          const r = row as Record<string, unknown>;
+          const r = asRecord(row);
+          if (!r) return null;
           if (
             typeof r.filename !== "string" ||
             typeof r.mime_type !== "string" ||

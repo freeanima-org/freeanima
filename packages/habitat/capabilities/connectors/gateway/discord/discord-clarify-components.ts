@@ -91,6 +91,8 @@ export function disabledActionRowsFromMessage(message: Message): ActionRowBuilde
   const rows: ActionRowBuilder<ButtonBuilder>[] = [];
   for (const row of message.components) {
     if (row.type !== ComponentType.ActionRow) continue;
+    // discord.js MessageComponent → ActionRow 运行时边界
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discord.js ActionRow 组件边界
     const actionRow = row as APIActionRowComponent<APIButtonComponent>;
     const builder = new ActionRowBuilder<ButtonBuilder>();
     for (const component of actionRow.components) {

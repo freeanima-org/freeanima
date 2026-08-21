@@ -1,6 +1,8 @@
 /**
  * 历史 UI/API 写回占位；当前 get 不再脱敏，但 patch 仍可能收到旧表单里的 `"***"`。
  */
+import { asRecord } from "@freeanima/shared/util";
+
 export const CONFIG_MASKED_SECRET = "***";
 
 /** Sanitize entire value when key name matches (case-insensitive) */
@@ -24,17 +26,17 @@ function sanitizeRecord(obj: Record<string, unknown>): Record<string, unknown> {
   for (const [key, value] of Object.entries(obj)) {
     if (value === undefined) continue;
 
-    if (value != null && typeof value === "object" && !Array.isArray(value)) {
-      out[key] = sanitizeRecord(value as Record<string, unknown>);
+    const nested = asRecord(value);
+    if (nested) {
+      out[key] = sanitizeRecord(nested);
       continue;
     }
 
     if (Array.isArray(value)) {
-      out[key] = value.map((item) =>
-        item != null && typeof item === "object" && !Array.isArray(item)
-          ? sanitizeRecord(item as Record<string, unknown>)
-          : item,
-      );
+      out[key] = value.map((item) => {
+        const itemRec = asRecord(item);
+        return itemRec ? sanitizeRecord(itemRec) : item;
+      });
       continue;
     }
 
@@ -75,32 +77,26 @@ function maskRecordForLlm(
       continue;
     }
 
-    if (
-      maskEnvAndHeaders &&
-      (key === "env" || key === "headers") &&
-      value != null &&
-      typeof value === "object" &&
-      !Array.isArray(value)
-    ) {
+    const valueRec = asRecord(value);
+    if (maskEnvAndHeaders && (key === "env" || key === "headers") && valueRec) {
       const masked: Record<string, unknown> = {};
-      for (const [innerKey, innerVal] of Object.entries(value as Record<string, unknown>)) {
+      for (const [innerKey, innerVal] of Object.entries(valueRec)) {
         masked[innerKey] = typeof innerVal === "string" ? CONFIG_MASKED_SECRET : innerVal;
       }
       out[key] = masked;
       continue;
     }
 
-    if (value != null && typeof value === "object" && !Array.isArray(value)) {
-      out[key] = maskRecordForLlm(value as Record<string, unknown>, options, extra, key);
+    if (valueRec) {
+      out[key] = maskRecordForLlm(valueRec, options, extra, key);
       continue;
     }
 
     if (Array.isArray(value)) {
-      out[key] = value.map((item) =>
-        item != null && typeof item === "object" && !Array.isArray(item)
-          ? maskRecordForLlm(item as Record<string, unknown>, options, extra, key)
-          : item,
-      );
+      out[key] = value.map((item) => {
+        const itemRec = asRecord(item);
+        return itemRec ? maskRecordForLlm(itemRec, options, extra, key) : item;
+      });
       continue;
     }
 
@@ -131,18 +127,16 @@ export function findForbiddenLlmConfigPatchPath(
     const path = pathPrefix ? `${pathPrefix}.${key}` : key;
     if (isConfigSecretKey(key)) return path;
     if (key === "env" || key === "headers") return path;
-    if (value != null && typeof value === "object" && !Array.isArray(value)) {
-      const nested = findForbiddenLlmConfigPatchPath(value as Record<string, unknown>, path);
+    const valueRec = asRecord(value);
+    if (valueRec) {
+      const nested = findForbiddenLlmConfigPatchPath(valueRec, path);
       if (nested) return nested;
     }
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        const item: unknown = value[i];
-        if (item != null && typeof item === "object" && !Array.isArray(item)) {
-          const nested = findForbiddenLlmConfigPatchPath(
-            item as Record<string, unknown>,
-            `${path}[${i}]`,
-          );
+        const itemRec = asRecord(value[i]);
+        if (itemRec) {
+          const nested = findForbiddenLlmConfigPatchPath(itemRec, `${path}[${i}]`);
           if (nested) return nested;
         }
       }

@@ -82,7 +82,9 @@ function secretsFromAgentView(secrets?: VaultSecretsViewPayload): VaultDetailSec
         (field): field is { name: string; value: string } =>
           !!field &&
           typeof field === "object" &&
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
           typeof (field as { name?: unknown }).name === "string" &&
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
           typeof (field as { value?: unknown }).value === "string",
       )
       .map((field) => ({ name: field.name, value: field.value }));
