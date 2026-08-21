@@ -19,6 +19,7 @@ export const LLM_PRESET_DEEPSEEK = "deepseek";
 export const LLM_PRESET_OPENROUTER = "openrouter";
 export const LLM_PRESET_OPENCODE_GO = "opencode_go";
 export const LLM_PRESET_ALIBABA_TOKEN_PLAN = "alibaba_token_plan";
+export const LLM_PRESET_OLLAMA = "ollama";
 export const LLM_PRESET_CUSTOM = "custom";
 
 export const LLM_PRESET_IDS = [
@@ -26,6 +27,7 @@ export const LLM_PRESET_IDS = [
   LLM_PRESET_OPENROUTER,
   LLM_PRESET_OPENCODE_GO,
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
+  LLM_PRESET_OLLAMA,
   LLM_PRESET_CUSTOM,
 ] as const;
 

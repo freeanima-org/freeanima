@@ -8,6 +8,10 @@ import {
   filterImageGenerateCatalog,
 } from "@freeanima/habitat/core/llm/image-generate-models.ts";
 import {
+  filterChatCatalog,
+  filterEmbeddingCatalog,
+} from "@freeanima/habitat/core/llm/embedding-models.ts";
+import {
   alibabaBuiltinVoiceGenerateEntries,
   filterVoiceGenerateCatalog,
 } from "@freeanima/habitat/core/llm/voice-generate-models.ts";
@@ -142,6 +146,19 @@ function applyPurposeFilter(
       };
     });
   }
+  if (purpose === "embedding") {
+    return filterEmbeddingCatalog(models, {
+      ...(query != null && query !== "" ? { query } : {}),
+      limit,
+    });
+  }
+  if (purpose === "chat") {
+    return filterChatCatalog(models, {
+      ...(query != null && query !== "" ? { query } : {}),
+      limit,
+    });
+  }
+  // 缺省（连接探测等）：全量，不做用途裁剪
   return filterModels(models, query, limit);
 }
 
@@ -178,6 +195,9 @@ export async function listProviderModels(
     return { models: [], source: "provider" };
   }
   if (input.purpose === "voice_generate" && !modalities.voice_protocol) {
+    return { models: [], source: "provider" };
+  }
+  if (input.purpose === "embedding" && !modalities.embeddings_protocol) {
     return { models: [], source: "provider" };
   }
 

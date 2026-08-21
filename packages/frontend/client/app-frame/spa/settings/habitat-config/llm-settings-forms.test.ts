@@ -3,6 +3,7 @@ import {
   callParamsRoundTrip,
   capabilityUiDraftToSection,
   applyCustomKindToConnectionEntry,
+  applyPresetToConnectionEntry,
   connectionListSubtitle,
   emptyConnectionEntry,
   llmEntryTitle,
@@ -33,6 +34,27 @@ describe("providersDraftToPatch", () => {
       base_url: "https://opencode.ai/zen/go/v1",
     });
     expect((patched["opencode-go"] as Record<string, unknown>).format).toBeUndefined();
+  });
+
+  it("云预设剥掉 base_url；ollama 保留", () => {
+    const patched = providersDraftToPatch({
+      cloud: {
+        preset: "deepseek",
+        api_key: "k",
+        base_url: "http://should-strip.example/v1",
+      },
+      local: {
+        preset: "ollama",
+        api_key: "ollama",
+        base_url: "http://192.168.1.10:11434/v1",
+      },
+    });
+    expect((patched.cloud as Record<string, unknown>).base_url).toBeUndefined();
+    expect(patched.local).toMatchObject({
+      preset: "ollama",
+      base_url: "http://192.168.1.10:11434/v1",
+      embeddings_protocol: "openai_embeddings",
+    });
   });
 
   it("readProvidersDraft 与保存规范化一致", () => {
@@ -114,6 +136,36 @@ describe("connectionListSubtitle", () => {
 
   it("预设固定展示默认 API 根", () => {
     expect(connectionListSubtitle({ preset: "deepseek" })).toContain("api.deepseek.com");
+  });
+
+  it("ollama 展示覆盖后的 URL", () => {
+    expect(
+      connectionListSubtitle({
+        preset: "ollama",
+        base_url: "http://192.168.1.10:11434/v1",
+      }),
+    ).toContain("192.168.1.10");
+  });
+});
+
+describe("applyPresetToConnectionEntry", () => {
+  it("切到 ollama 写入默认 base_url 与占位密钥", () => {
+    const next = applyPresetToConnectionEntry({ title: "本机" }, "ollama");
+    expect(next).toMatchObject({
+      preset: "ollama",
+      base_url: "http://127.0.0.1:11434/v1",
+      api_key: "ollama",
+      embeddings_protocol: "openai_embeddings",
+    });
+  });
+
+  it("切到 deepseek 剥掉 base_url", () => {
+    const next = applyPresetToConnectionEntry(
+      { base_url: "http://127.0.0.1:11434/v1", api_key: "k" },
+      "deepseek",
+    );
+    expect(next.base_url).toBeUndefined();
+    expect(next.preset).toBe("deepseek");
   });
 });
 

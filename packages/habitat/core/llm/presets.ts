@@ -6,6 +6,7 @@ import {
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
   LLM_PRESET_IDS,
+  LLM_PRESET_OLLAMA,
   LLM_PRESET_OPENCODE_GO,
   LLM_PRESET_OPENROUTER,
   EMBEDDINGS_PROTOCOL_OPENAI,
@@ -50,6 +51,8 @@ export type SingleFormatPreset = {
   id: Exclude<LlmPresetId, "custom">;
   format: LlmFormatId;
   defaultBaseUrl: string;
+  /** 自建类预设可覆盖连接上的 base_url；云厂商预设忽略用户 URL */
+  allowsBaseUrlOverride?: boolean;
   modalities: PresetModalitySuite;
 };
 
@@ -57,6 +60,7 @@ export type GatewayFormatPreset = {
   kind: "gateway";
   id: typeof LLM_PRESET_OPENCODE_GO;
   defaultBaseUrl: string;
+  allowsBaseUrlOverride?: boolean;
   /** Catalog / fallback format when model is unknown */
   defaultFormat: LlmFormatId;
   resolveFormat: (model: string) => LlmFormatId;
@@ -139,11 +143,38 @@ export const LLM_PRESETS: Record<Exclude<LlmPresetId, "custom">, LlmPresetDef> =
       video: null,
     },
   },
+  [LLM_PRESET_OLLAMA]: {
+    kind: "single",
+    id: LLM_PRESET_OLLAMA,
+    format: LLM_FORMAT_OPENAI_COMPATIBLE,
+    defaultBaseUrl: "http://127.0.0.1:11434/v1",
+    allowsBaseUrlOverride: true,
+    modalities: {
+      text: LLM_FORMAT_OPENAI_COMPATIBLE,
+      image: null,
+      embeddings: EMBEDDINGS_PROTOCOL_OPENAI,
+      audio: null,
+      video: null,
+    },
+  },
 };
 
 export function getLlmPreset(id: LlmPresetId): LlmPresetDef | null {
   if (id === LLM_PRESET_CUSTOM) return null;
   return LLM_PRESETS[id];
+}
+
+/** 自建类预设允许连接上覆盖 base_url */
+export function presetAllowsBaseUrlOverride(id: LlmPresetId): boolean {
+  const def = getLlmPreset(id);
+  return def?.allowsBaseUrlOverride === true;
+}
+
+function resolvePresetBaseUrl(presetDef: LlmPresetDef, cfg: ConnectionConfig): string {
+  const fallback = presetDef.defaultBaseUrl.replace(/\/$/, "");
+  if (!presetDef.allowsBaseUrlOverride) return fallback;
+  const override = cfg.base_url?.trim().replace(/\/$/, "");
+  return override && override.length > 0 ? override : fallback;
 }
 
 export function presetModalityFields(presetId: LlmPresetId): Partial<{
@@ -270,7 +301,7 @@ export function effectiveProviderModalities(cfg: {
 export function connectionEndpointUrl(cfg: ConnectionConfig): string {
   const presetId = cfg.preset ?? LLM_PRESET_CUSTOM;
   if (presetId !== LLM_PRESET_CUSTOM) {
-    return LLM_PRESETS[presetId].defaultBaseUrl.replace(/\/$/, "");
+    return resolvePresetBaseUrl(LLM_PRESETS[presetId], cfg);
   }
   const baseUrl = cfg.base_url?.replace(/\/$/, "");
   if (baseUrl == null || !baseUrl) {
@@ -304,7 +335,7 @@ export function materializeConnection(cfg: ConnectionConfig): MaterializedConnec
   }
 
   const presetDef = LLM_PRESETS[presetId];
-  const baseUrl = presetDef.defaultBaseUrl.replace(/\/$/, "");
+  const baseUrl = resolvePresetBaseUrl(presetDef, cfg);
 
   if (presetDef.kind === "single") {
     return {
