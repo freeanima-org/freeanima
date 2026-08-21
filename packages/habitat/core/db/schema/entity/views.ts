@@ -18,6 +18,7 @@ import {
   SMART_LIST_COMPONENT,
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
+  OBJECTIVE_COMPONENT,
   TAG_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
@@ -47,6 +48,7 @@ import {
   smartListBodySchema,
   projectFolderBodySchema,
   projectBodySchema,
+  objectiveBodySchema,
   tagBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
@@ -76,6 +78,7 @@ import {
   type SmartListBody,
   type ProjectFolderBody,
   type ProjectBody,
+  type ObjectiveBody,
   type TagBody,
   type VaultConfigBody,
   type VaultItemBody,
@@ -377,6 +380,16 @@ export function asProject(
 ): (ProjectBody & { id: number; title: string; content: string }) | null {
   if (row.primary_component !== PROJECT_COMPONENT) return null;
   const parsed = projectBodySchema.safeParse(row.body);
+  return parsed.success
+    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    : null;
+}
+
+export function asObjective(
+  row: EntityRow,
+): (ObjectiveBody & { id: number; title: string; content: string }) | null {
+  if (row.primary_component !== OBJECTIVE_COMPONENT) return null;
+  const parsed = objectiveBodySchema.safeParse(row.body);
   return parsed.success
     ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
     : null;

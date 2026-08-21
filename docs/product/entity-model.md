@@ -228,6 +228,18 @@ SAP 任务/邮件方法接受可选 `subject_kind`（默认：任务 `user`，�
 
 完整规格：[`docs/modules/project.md`](../modules/project.md)。
 
+## 目标模块（v1 规格）
+
+个人多层级目标，位于项目之上。组件 `objective`（**≠** 会话 `goal`）。
+
+| 概念 | 实体           | 组件        |
+| ---- | -------------- | ----------- |
+| 目标 | `type=content` | `objective` |
+
+Body：`parent_id`（可嵌套）、`status`（`not_started` / `in_progress` / `completed` / `cancelled` / `on_hold`）、可选 `start_at`/`end_at`、`completion`（定性 / 手工量化 / 自动统计）、`links`（弱引用执行面）、`sort_order`、`client_op_id`。壳 `/objectives`；RPC `objective.*`。
+
+完整规格：[`docs/modules/objective.md`](../modules/objective.md)。
+
 ## 通讯录模块
 
 Commons 内的联系人（识别用，非 Subject）：

@@ -25,6 +25,8 @@
 | **Module** (product)      | **模块**          | 业务边界：一组实体组件 + 对应功能特性；模块可有交集（如日程聚合清单侧与项目侧任务）。壳 id 见 `ShellModuleId`；≠ 实体 `ComponentId`                                                                  |
 | List module               | 清单模块          | 原「任务模块」；壳 `ShellModuleId`=`tasks`、feature id 仍 `task`、路由 `/tasks`；清单树 / 智能清单 / 收件箱。产品名「清单」，代码 id 暂不改                                                          |
 | Project module            | 项目模块          | 壳 `projects`；`project` / `project_folder`；≠ Project World                                                                                                                                         |
+| Objective module          | 目标模块          | 壳 `objectives`；组件 / feature / RPC `objective`；多层级个人目标与完成标准；**≠** 会话 `goal`（[`goal.md`](../docs/modules/goal.md)）                                                               |
+| objective (entity)        | 目标              | `primary_component=objective`；可嵌套；完成标准 `completion`；弱链接执行面                                                                                                                           |
 | Task (item)               | 任务              | `task_item` 条目；清单模块与项目模块共用；归属 XOR                                                                                                                                                   |
 | Task list (instance)      | 清单              | `task_list` 容器实例（可与「清单模块」同字，类比「项目模块 / 项目」）；≠ 模块、≠ `TaskContainer`                                                                                                     |
 | **TaskContainer**         | **任务容器**      | 查询轴 `list` \| `project` \| `any`（常量 `TaskContainer` / 类型 `TaskContainerKind`）；取代旧 `in_backlog`。LIST=清单侧、PROJECT=项目侧、ANY=跨容器（日程）。≠ 壳模块、≠ 组件 id                    |
