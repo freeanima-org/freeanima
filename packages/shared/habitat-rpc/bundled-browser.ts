@@ -73,7 +73,17 @@ export function subscribeHabitatRpcConnectionState(
 ): () => void {
   ensureHubForegroundReconnectWatch();
   connectionStateListeners.add(listener);
-  listener(cachedConnectionState);
+  let alreadyNotified = false;
+  if (typeof window !== "undefined" && !hasBundledHabitatRpcAuthToken()) {
+    // 未配置 token 时不应一直停在初始「连接中」（设置页也会误显条幅）
+    if (cachedConnectionState === "connecting" && !sharedClient) {
+      broadcastConnectionState("disconnected");
+      alreadyNotified = true;
+    }
+  }
+  if (!alreadyNotified) {
+    listener(cachedConnectionState);
+  }
   if (!sharedClient && typeof window !== "undefined" && hasBundledHabitatRpcAuthToken()) {
     try {
       void getBundledHabitatRpcClient()
@@ -93,9 +103,10 @@ export async function reconnectHabitatRpc(opts?: ReconnectOptions): Promise<RpcC
 }
 
 function resolveAuthToken(explicit?: string): string {
+  // 壳已配置时优先 portalShell：保存新 token 后 reconnect 必须跟最新值，不能吃单例闭包里的旧 token
   const fromShell = readPortalShell()?.remoteAuth?.token?.trim();
-  if (explicit?.trim()) return explicit.trim();
   if (fromShell) return fromShell;
+  if (explicit?.trim()) return explicit.trim();
   throw new Error("Habitat RPC requires auth_token");
 }
 
@@ -107,13 +118,15 @@ function hasBundledHabitatRpcAuthToken(options: BundledHabitatRpcClientOptions =
     return false;
   }
 }
+
 function resolveHubUrl(options: BundledHabitatRpcClientOptions): string {
+  const shell = readPortalShell();
+  // 壳已配置时优先 portalShell：Chat/Habitat client 首次注入的 habitatRpcWsUrl 不能永久锁死地址
+  if (shell?.habitatUrl?.trim()) return shell.habitatUrl.trim().replace(/\/$/, "");
+  if (shell?.habitatWsUrl?.trim()) return habitatHttpFromRpcWsUrl(shell.habitatWsUrl.trim());
   if (options.habitatUrl?.trim()) return options.habitatUrl.trim().replace(/\/$/, "");
   if (options.habitatRpcWsUrl?.trim())
     return habitatHttpFromRpcWsUrl(options.habitatRpcWsUrl.trim());
-  const shell = readPortalShell();
-  if (shell?.habitatUrl?.trim()) return shell.habitatUrl.trim().replace(/\/$/, "");
-  if (shell?.habitatWsUrl?.trim()) return habitatHttpFromRpcWsUrl(shell.habitatWsUrl.trim());
   // Web / just dev：与 resolveHabitatApiOrigin 一致，走页面 origin（Vite 代理 /rpc）；勿默认 2658
   if (typeof window !== "undefined") {
     const native = Boolean(shell?.isNativeShell || shell?.isTauri);

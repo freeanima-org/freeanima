@@ -193,7 +193,7 @@ mkcert -install  # trust that CA on the Habitat host itself
 
 浏览器 Web：`/web/config.json` 默认把栖息地设为**页面 origin**（生产栖息地托管的 `/web` 与 Vite `just dev web`）。源码 `just dev habitat` 写入 `~/.anima/dev-web.token`；Vite 注入为 `remote_auth_token`，首次访问无需粘贴 token。生产栖息地从不把 token 放进 `config.json` —— 用 `anima token create` 与栖息地设置。
 
-流程：打开栖息地设置 → 填写 → **测试连接** → 保存。桌面保存后需**重启桌面壳**。
+流程：打开栖息地设置 → 填写 → **测试连接** → 保存。壳会即时应用 URL/Token 并重连 Habitat RPC（无需重启）。
 
 **浏览器形态入口：** 选项页填写同一组 URL + Token → 测试连接 → 用用户库主密码解锁 Vault。RPC 仅 HTTP REST（background）；见 [`docs/modules/portal.md`](../modules/portal.md)、[`docs/modules/vault.md`](../modules/vault.md)（`just pack browser-extension-chrome` / `browser-extension-firefox`）。
 

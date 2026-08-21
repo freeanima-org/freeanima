@@ -48,11 +48,15 @@ function resolveDefaultHttpOrigin(): string {
 }
 
 function resolveHabitatRpcWsUrl(options: BundledHabitatClientOptions): string {
-  if (options.habitatRpcWsUrl?.trim()) return options.habitatRpcWsUrl.trim();
   const shell = portalShell();
+  // 与 habitat-rpc/bundled-browser 一致：壳配置优先，避免单例闭包旧地址
   if (shell?.habitatWsUrl?.trim()) return shell.habitatWsUrl.trim();
-  const http =
-    options.habitatUrl?.trim() || shell?.habitatUrl?.trim() || resolveDefaultHttpOrigin();
+  if (shell?.habitatUrl?.trim()) {
+    const http = shell.habitatUrl.trim().replace(/\/$/, "");
+    return `${http.replace(/^http/i, "ws")}/rpc/v1`;
+  }
+  if (options.habitatRpcWsUrl?.trim()) return options.habitatRpcWsUrl.trim();
+  const http = options.habitatUrl?.trim() || resolveDefaultHttpOrigin();
   return `${http.replace(/\/$/, "").replace(/^http/i, "ws")}/rpc/v1`;
 }
 
