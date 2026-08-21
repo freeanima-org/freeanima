@@ -5,6 +5,7 @@ import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-type
 import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
 
 import {
+  findLocalNote,
   offlineCreateNote,
   offlineCreateNoteBlock,
   offlineDeleteNote,
@@ -91,16 +92,22 @@ export async function searchNotes(
 export async function getNote(subjectKind: NoteSubjectKind, id: number): Promise<NoteRow> {
   ensureNoteOfflineModule();
   const scope = resolveHabitatCacheScope();
-  return withOfflineCache({
-    scope,
-    namespace: "note",
-    id: noteCacheId(subjectKind, id),
-    fetch: async () => {
-      const data = await habitat().call("note.get", { subject_kind: subjectKind, id });
-      return data.item;
-    },
-    offlineError: "note.get unavailable offline",
-  });
+  try {
+    return await withOfflineCache({
+      scope,
+      namespace: "note",
+      id: noteCacheId(subjectKind, id),
+      fetch: async () => {
+        const data = await habitat().call("note.get", { subject_kind: subjectKind, id });
+        return data.item;
+      },
+      offlineError: "note.get unavailable offline",
+    });
+  } catch (err) {
+    const local = await findLocalNote(scope, subjectKind, id);
+    if (local) return local;
+    throw err;
+  }
 }
 
 export async function createNote(

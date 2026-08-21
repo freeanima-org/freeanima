@@ -45,8 +45,11 @@ function RailNavLink({ item, expanded }: { item: AppNavItem; expanded: boolean }
     <Link
       to={item.to}
       className={cn(
-        "app-rail-nav-item hover:bg-accent hover:text-accent-foreground",
-        active && "bg-secondary font-semibold",
+        "app-rail-nav-item",
+        /* 侧栏底为 muted，secondary/accent 与之同色，改用 background / foreground 透明度 */
+        active
+          ? "bg-background font-semibold text-foreground"
+          : "hover:bg-foreground/5 hover:text-foreground",
         !expanded && hasActive && "app-rail-nav-item--pomodoro-active",
       )}
       aria-label={expanded ? undefined : ariaLabel}
@@ -91,7 +94,7 @@ export function AppModuleRail() {
       <div className="app-rail-footer">
         <button
           type="button"
-          className="app-rail-nav-item app-rail-toggle text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          className="app-rail-nav-item app-rail-toggle text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
           aria-label={expanded ? "收起侧栏" : "展开侧栏"}
           aria-expanded={expanded}
           onClick={toggleExpanded}

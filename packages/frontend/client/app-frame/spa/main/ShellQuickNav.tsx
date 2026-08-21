@@ -95,7 +95,7 @@ export function ShellQuickRailSection({ expanded }: { expanded: boolean }) {
                 <button
                   type="button"
                   className={cn(
-                    "app-rail-nav-item hover:bg-accent hover:text-accent-foreground w-full",
+                    "app-rail-nav-item w-full hover:bg-foreground/5 hover:text-foreground",
                   )}
                   aria-label={label}
                   title={expanded ? undefined : label}
@@ -112,9 +112,7 @@ export function ShellQuickRailSection({ expanded }: { expanded: boolean }) {
             <button
               key={entry.id}
               type="button"
-              className={cn(
-                "app-rail-nav-item hover:bg-accent hover:text-accent-foreground w-full",
-              )}
+              className={cn("app-rail-nav-item w-full hover:bg-foreground/5 hover:text-foreground")}
               aria-label={label}
               title={expanded ? undefined : label}
               onClick={() => onEntryActivate(entry)}

@@ -60,8 +60,10 @@ function AppBottomNavLink({ item, density }: { item: AppNavItem; density: "label
   return (
     <Link
       to={item.to}
-      className={`app-bottom-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-0 text-xs transition-colors ${
-        active ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
+      className={`app-bottom-nav-item flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-0 rounded-md text-xs transition-colors ${
+        active
+          ? "bg-secondary text-primary font-semibold"
+          : "text-muted-foreground hover:text-foreground"
       }`}
       aria-label={ariaLabel}
       aria-current={active ? "page" : undefined}
@@ -95,9 +97,9 @@ function MoreNavMenu({ items }: { items: AppNavItem[] }) {
     <div className="relative flex flex-1 flex-col items-center justify-center min-h-12">
       <button
         type="button"
-        className={`app-bottom-nav-item flex flex-col items-center justify-center gap-0.5 text-xs transition-colors ${
+        className={`app-bottom-nav-item flex flex-col items-center justify-center gap-0.5 rounded-md text-xs transition-colors ${
           moreActive || open
-            ? "text-primary font-semibold"
+            ? "bg-secondary text-primary font-semibold"
             : "text-muted-foreground hover:text-foreground"
         }`}
         aria-expanded={open}

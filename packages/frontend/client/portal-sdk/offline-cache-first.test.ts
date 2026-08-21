@@ -101,4 +101,33 @@ describe("offline-cache-first", () => {
     await withOfflineCache({ scope, namespace: "ns", id: "id", fetch });
     expect(isLocalPreferActive()).toBe(true);
   });
+
+  it("Habitat 可用但 fetch 失败且无缓存时抛出原始错误", async () => {
+    const scope = "test-scope";
+    await expect(
+      withOfflineCache({
+        scope,
+        namespace: "ns",
+        id: "missing",
+        fetch: async () => {
+          throw new Error("NOT_FOUND");
+        },
+        offlineError: "ns.get unavailable offline",
+      }),
+    ).rejects.toThrow("NOT_FOUND");
+  });
+
+  it("Habitat 不可用且无缓存时抛 offlineError", async () => {
+    hubAvailable = false;
+    const scope = "test-scope";
+    await expect(
+      withOfflineCache({
+        scope,
+        namespace: "ns",
+        id: "missing",
+        fetch: async () => ({ ok: true }),
+        offlineError: "ns.get unavailable offline",
+      }),
+    ).rejects.toThrow("ns.get unavailable offline");
+  });
 });
