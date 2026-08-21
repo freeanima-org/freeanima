@@ -3,6 +3,7 @@ import {
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
   LLM_PRESET_DEEPSEEK,
+  LLM_PRESET_OLLAMA,
   LLM_PRESET_OPENCODE_GO,
   LLM_PRESET_OPENROUTER,
   LLM_FORMAT_OPENAI_RESPONSES,
@@ -17,6 +18,7 @@ import {
 } from "@freeanima/habitat/core/config";
 import {
   getLlmPreset,
+  presetAllowsBaseUrlOverride,
   presetModalityFields,
   connectionSupportsLayer,
 } from "@freeanima/habitat/core/llm/presets";
@@ -59,7 +61,12 @@ export function providersDraftToPatch(
       for (const [k, v] of Object.entries(suite)) {
         normalized[k] = v;
       }
-      delete normalized.base_url;
+      if (!presetAllowsBaseUrlOverride(preset)) {
+        delete normalized.base_url;
+      } else if (!coerceString(normalized.base_url)) {
+        const def = getLlmPreset(preset);
+        if (def) normalized.base_url = def.defaultBaseUrl;
+      }
       delete normalized.custom_kind;
     } else {
       stripProtocolsNotForKind(normalized);
@@ -104,6 +111,11 @@ export const LLM_SETTINGS_PRESETS = [
     id: LLM_PRESET_OPENCODE_GO,
     label: "OpenCode Go",
     hint: "多格式对话网关 · 无文生图/向量/语音",
+  },
+  {
+    id: LLM_PRESET_OLLAMA,
+    label: "Ollama",
+    hint: "对话 + 向量 · 默认可改本机/自建 Base URL",
   },
   {
     id: LLM_PRESET_CUSTOM,
@@ -187,6 +199,12 @@ export function connectionListSubtitle(entry: Record<string, unknown>): string {
   const preset = coerceString(entry.preset ?? LLM_PRESET_CUSTOM);
   const label = llmPresetLabel(preset);
   if (preset !== LLM_PRESET_CUSTOM) {
+    if (isLlmPresetId(preset) && presetAllowsBaseUrlOverride(preset)) {
+      const override = typeof entry.base_url === "string" ? entry.base_url.trim() : "";
+      const def = getLlmPreset(preset);
+      const url = override || def?.defaultBaseUrl || "";
+      return url ? `${label} · ${url}` : label;
+    }
     const def = isLlmPresetId(preset) ? getLlmPreset(preset) : null;
     const fixed = def?.defaultBaseUrl;
     return fixed ? `${label} · ${fixed}` : label;
@@ -240,8 +258,17 @@ export function applyPresetToConnectionEntry(
     preset: presetId,
     ...modalities,
   };
-  delete next.base_url;
   delete next.custom_kind;
+  if (presetAllowsBaseUrlOverride(presetId)) {
+    const def = getLlmPreset(presetId);
+    const existing = coerceString(entry.base_url);
+    next.base_url = existing || def?.defaultBaseUrl || "";
+    if (presetId === LLM_PRESET_OLLAMA && !coerceString(entry.api_key)) {
+      next.api_key = "ollama";
+    }
+  } else {
+    delete next.base_url;
+  }
   return next;
 }
 

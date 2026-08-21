@@ -38,18 +38,25 @@ import {
 } from "./llm-settings-draft.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import {
+  ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL,
+  effectiveProviderModalities,
+  presetAllowsBaseUrlOverride,
+} from "@freeanima/habitat/core/llm/presets";
+import {
   DEFAULT_EDGE_TTS_BASE_URL,
   LLM_FORMAT_OPENAI_COMPATIBLE,
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
   LLM_PRESET_CUSTOM,
+  LLM_PRESET_IDS,
   LLM_PRESET_OPENCODE_GO,
   AUDIO_PROTOCOL_EDGE_TTS,
+  type LlmPresetId,
 } from "@freeanima/habitat/core/config";
-import {
-  ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL,
-  effectiveProviderModalities,
-} from "@freeanima/habitat/core/llm/presets";
 import { voiceProtocolSeparatesModelAndVoice } from "@freeanima/habitat/core/tts/voice-catalog";
+
+function isBuiltinPresetId(value: string): value is Exclude<LlmPresetId, "custom"> {
+  return (LLM_PRESET_IDS as readonly string[]).includes(value) && value !== LLM_PRESET_CUSTOM;
+}
 
 function LabelControlRow({
   label,
@@ -219,6 +226,7 @@ export function LlmConnectionEditorForm({
   const isCustom = preset === LLM_PRESET_CUSTOM;
   const isGateway = preset === LLM_PRESET_OPENCODE_GO;
   const isAlibabaTokenPlan = preset === LLM_PRESET_ALIBABA_TOKEN_PLAN;
+  const allowsBaseUrlOverride = isBuiltinPresetId(preset) && presetAllowsBaseUrlOverride(preset);
   const defaultUrl = connectionDefaultBaseUrl(preset);
   const kindRaw = coerceString(entry.custom_kind) || "text";
   const kind: ConnectionLayerId = isConnectionLayerId(kindRaw) ? kindRaw : "text";
@@ -388,7 +396,7 @@ export function LlmConnectionEditorForm({
 
   const endpointFields = (
     <>
-      {isCustom ? (
+      {isCustom || allowsBaseUrlOverride ? (
         hubConfigTextField(
           "Base URL",
           coerceString(entry.base_url ?? ""),
@@ -396,8 +404,10 @@ export function LlmConnectionEditorForm({
           {
             hint: isEdgeVoice
               ? `Edge TTS 服务根或反代；留空则用 ${DEFAULT_EDGE_TTS_BASE_URL}。密钥可空。`
-              : "API 根（含 /v1 等前缀，勿写到具体 operation 端点）",
-            placeholder: isEdgeVoice ? DEFAULT_EDGE_TTS_BASE_URL : "https://…",
+              : allowsBaseUrlOverride
+                ? `自建 API 根（须含 /v1）；留空则用默认 ${defaultUrl ?? ""}`
+                : "API 根（含 /v1 等前缀，勿写到具体 operation 端点）",
+            placeholder: isEdgeVoice ? DEFAULT_EDGE_TTS_BASE_URL : (defaultUrl ?? "https://…"),
           },
         )
       ) : (
@@ -407,7 +417,7 @@ export function LlmConnectionEditorForm({
             {defaultUrl ?? "（预设未声明）"}
           </p>
           <p className="text-xs text-muted-foreground">
-            内置预设固定 API 根，不可改；反代或自建请选「自定义」。
+            云厂商预设固定 API 根，不可改；自建请选 Ollama 或「自定义」。
           </p>
         </div>
       )}
@@ -418,7 +428,9 @@ export function LlmConnectionEditorForm({
         {
           hint: isEdgeVoice
             ? "Edge TTS 通常无需密钥；可留空"
-            : "明文，或 vault(…) / env(…)；推荐从 Vault 选择写入引用",
+            : allowsBaseUrlOverride
+              ? "Ollama 本地通常无鉴权，可填占位如 ollama；或 vault(…) / env(…)"
+              : "明文，或 vault(…) / env(…)；推荐从 Vault 选择写入引用",
         },
       )}
       <TimeoutAdvancedFields entry={entry} patch={patch} />
@@ -507,7 +519,9 @@ function modelPurposeForScene(
   if (purposeId === "voice_generate" || purposeId === "tts" || purposeId === "voice_realtime") {
     return "voice_generate";
   }
-  return undefined;
+  if (purposeId === "video_generate") return undefined;
+  // 文本主场景 / summary / reflect / goal_judge / skill_review
+  return "chat";
 }
 
 function SceneConnectionModelFields({
