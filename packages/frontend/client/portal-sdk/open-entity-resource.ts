@@ -107,3 +107,26 @@ export function bindOpenEntityResourceToWindow(): void {
   (window as Window & { openEntityResource?: typeof openEntityResource }).openEntityResource =
     openEntityResource;
 }
+
+export type EntityOverlayCloseInfo = {
+  id: number;
+  component: string;
+};
+
+type EntityOverlayCloseListener = (info: EntityOverlayCloseInfo) => void;
+
+const overlayCloseListeners = new Set<EntityOverlayCloseListener>();
+
+/** 实体浮层关闭时通知（含「在模块中打开」先关浮层）。供父页面刷新列表。 */
+export function subscribeEntityOverlayClose(listener: EntityOverlayCloseListener): () => void {
+  overlayCloseListeners.add(listener);
+  return () => {
+    overlayCloseListeners.delete(listener);
+  };
+}
+
+export function notifyEntityOverlayClosed(info: EntityOverlayCloseInfo): void {
+  for (const listener of overlayCloseListeners) {
+    listener(info);
+  }
+}
