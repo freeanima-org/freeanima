@@ -38,3 +38,19 @@ describe("openEntityResource", () => {
     if (!result.ok) expect(result.error).toContain("不支持");
   });
 });
+
+describe("subscribeEntityOverlayClose", () => {
+  it("notifies listeners and supports unsubscribe", async () => {
+    const { notifyEntityOverlayClosed, subscribeEntityOverlayClose } =
+      await import("./open-entity-resource.ts");
+    const seen: Array<{ id: number; component: string }> = [];
+    const stop = subscribeEntityOverlayClose((info) => {
+      seen.push(info);
+    });
+    notifyEntityOverlayClosed({ id: 559, component: "task_item" });
+    expect(seen).toEqual([{ id: 559, component: "task_item" }]);
+    stop();
+    notifyEntityOverlayClosed({ id: 560, component: "task_item" });
+    expect(seen).toEqual([{ id: 559, component: "task_item" }]);
+  });
+});

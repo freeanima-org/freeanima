@@ -9,6 +9,7 @@ import {
   partitionAgendaDay,
   planOverdueFiltersForAgenda,
   shouldHideEndedEvents,
+  structureAgendaDay,
 } from "./agenda-items.ts";
 
 function event(
@@ -148,5 +149,104 @@ describe("agenda-items", () => {
     const merged = mergeCalendarItems([planned], [dueOnly, other]);
     expect(merged.map((i) => i.id)).toEqual([1, 2]);
     expect(merged[0]?.start_at).toBe("2026-08-19T09:00:00+08:00");
+  });
+});
+
+describe("structureAgendaDay", () => {
+  const today = "2026-08-19";
+
+  function project(
+    partial: Partial<Extract<CalendarRangeItem, { kind: "project" }>> & { id: number },
+  ): CalendarRangeItem {
+    return {
+      kind: "project",
+      title: "proj",
+      start_at: "2026-08-01T00:00:00+08:00",
+      end_at: "2026-08-31T00:00:00+08:00",
+      status: "active",
+      ...partial,
+    };
+  }
+
+  test("逾期不进项目折叠；项目内 pending/完成嵌套；无项目完成沉底", () => {
+    const items: CalendarRangeItem[] = [
+      project({ id: 1, title: "FA" }),
+      task({
+        id: 10,
+        title: "overdue in project",
+        project_id: 1,
+        due_at: "2026-08-17T09:00:00+08:00",
+      }),
+      task({
+        id: 11,
+        title: "pending in project",
+        project_id: 1,
+        start_at: "2026-08-19T10:00:00+08:00",
+        priority: "high",
+      }),
+      task({
+        id: 12,
+        title: "done in project",
+        project_id: 1,
+        status: "completed",
+        completed_at: "2026-08-19T11:00:00+08:00",
+        priority: "none",
+      }),
+      event({
+        id: 20,
+        title: "meeting",
+        start_at: "2026-08-19T09:00:00+08:00",
+        end_at: "2026-08-19T10:00:00+08:00",
+      }),
+      task({
+        id: 13,
+        title: "solo done",
+        status: "completed",
+        completed_at: "2026-08-19T12:00:00+08:00",
+      }),
+      {
+        kind: "holiday",
+        id: "h-1",
+        source: "cn_holiday",
+        title: "节日",
+        start_at: "2026-08-19T00:00:00+08:00",
+        end_at: null,
+        all_day: true,
+      },
+    ];
+
+    const sections = structureAgendaDay(items, today, today);
+    expect(sections.overdue.map((i) => i.id)).toEqual([10]);
+    expect(sections.schedule.map((i) => i.id)).toEqual([20]);
+    expect(sections.projectGroups).toHaveLength(1);
+    expect(sections.projectGroups[0]?.projectId).toBe(1);
+    expect(sections.projectGroups[0]?.children.map((i) => i.id)).toEqual([11, 12]);
+    expect(sections.holidays.map((i) => i.id)).toEqual(["h-1"]);
+    expect(sections.completed.map((i) => i.id)).toEqual([13]);
+  });
+
+  test("同刻安排：高优先级任务排在事件后仍按时间，同刻高优先在前", () => {
+    const items: CalendarRangeItem[] = [
+      task({
+        id: 1,
+        title: "low",
+        start_at: "2026-08-19T09:00:00+08:00",
+        priority: "low",
+      }),
+      task({
+        id: 2,
+        title: "high",
+        start_at: "2026-08-19T09:00:00+08:00",
+        priority: "high",
+      }),
+      event({
+        id: 3,
+        title: "e",
+        start_at: "2026-08-19T09:00:00+08:00",
+        end_at: "2026-08-19T09:30:00+08:00",
+      }),
+    ];
+    const sections = structureAgendaDay(items, today, today);
+    expect(sections.schedule.map((i) => i.id)).toEqual([2, 1, 3]);
   });
 });
