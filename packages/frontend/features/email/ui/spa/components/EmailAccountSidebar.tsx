@@ -1,4 +1,3 @@
-import { SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button } from "@freeanima/ui-kit";
 import { EmptyState, ListRow } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
@@ -108,9 +107,7 @@ export function EmailAccountSidebar({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2">
-      <div className="mb-2 flex justify-center px-1">
-        <SubjectScopeToggle />
-      </div>
+      <div className="mb-2 flex justify-center px-1"></div>
       <div className="mb-2 flex items-center gap-2 px-1">
         <Button
           type="button"

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ContactRound, Plus, Search, Trash2 } from "lucide-react";
-import { useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
+import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
 import { Button, Input, Spinner, Switch } from "@freeanima/ui-kit";
 import { EmptyState, StatusAlert, PullToRefresh } from "@freeanima/ui-kit/composite";
 
@@ -168,7 +168,7 @@ function ChannelRowsEditor(props: {
 }
 
 export function ContactApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const [items, setItems] = useState<ContactRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -181,7 +181,7 @@ export function ContactApp() {
     setError("");
     try {
       const rows = await fetchContacts(
-        subjectKind,
+        subjectId,
         searchQuery.trim() ? { query: searchQuery.trim(), limit: 200 } : { limit: 2000 },
       );
       setItems(rows);
@@ -194,7 +194,7 @@ export function ContactApp() {
     } finally {
       setLoading(false);
     }
-  }, [subjectKind, searchQuery]);
+  }, [subjectId, searchQuery]);
 
   useEffect(() => {
     setLoading(true);
@@ -241,10 +241,10 @@ export function ContactApp() {
         })),
       };
       if (selectedId != null) {
-        const item = await patchContactRemote(subjectKind, selectedId, payload);
+        const item = await patchContactRemote(subjectId, selectedId, payload);
         setItems((prev) => prev.map((r) => (r.id === item.id ? item : r)));
       } else {
-        const item = await createContactRemote(subjectKind, payload);
+        const item = await createContactRemote(subjectId, payload);
         setItems((prev) => [item, ...prev].toSorted((a, b) => a.title.localeCompare(b.title)));
         setSelectedId(item.id);
       }
@@ -261,7 +261,7 @@ export function ContactApp() {
     setSaving(true);
     setError("");
     try {
-      await deleteContactRemote(subjectKind, selectedId);
+      await deleteContactRemote(subjectId, selectedId);
       setSelectedId(null);
       setDraft(emptyDraft());
       await load();

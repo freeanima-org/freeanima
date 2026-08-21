@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { subscribeConversationUpdates } from "@freeanima/features/chat/ui/spa/lib/api.ts";
+import { resolveDefaultChatAgentSubjectId } from "@freeanima/features/chat/ui/spa/lib/default-chat-agent.ts";
 
 import { AgentChatPane } from "./components/AgentChatPane.tsx";
 import { AgentSessionSidebar } from "./components/AgentSessionSidebar.tsx";
@@ -49,6 +50,7 @@ type SessionMeta = {
   project_world_id: number | null;
   world_created: boolean;
   platform: string;
+  agent_subject_id?: number;
 };
 
 async function pickWorkspacePath(): Promise<string | null> {
@@ -221,7 +223,13 @@ export function CodingApp() {
           setSessionMeta(null);
           return;
         }
-        setSessionMeta(boot);
+        setSessionMeta({
+          conversation_id: boot.conversation_id,
+          project_world_id: boot.project_world_id,
+          world_created: boot.world_created,
+          platform: boot.platform,
+          ...(boot.agent_subject_id != null ? { agent_subject_id: boot.agent_subject_id } : {}),
+        });
         setSessionError(null);
       } catch (e) {
         if (cancelled) return;
@@ -268,20 +276,29 @@ export function CodingApp() {
       if (!attach.instance_id) {
         throw new Error("等待 Outpost instance_id…");
       }
+      const creating = !activeAgent.conversationId;
+      const agentSubjectId = creating ? await resolveDefaultChatAgentSubjectId() : undefined;
       const boot = await ensureCodingConversation({
         workspaceRoot: activeAgent.workspaceRoot,
         instanceId: attach.instance_id,
         existingConversationId: activeAgent.conversationId,
         stableKey: project?.stable_key ?? null,
         displayName: project?.display_name ?? activeAgent.title,
+        ...(agentSubjectId != null ? { agentSubjectId } : {}),
       });
       if (!boot) return null;
+      setSessionMeta({
+        conversation_id: boot.conversation_id,
+        project_world_id: boot.project_world_id,
+        world_created: boot.world_created,
+        platform: boot.platform,
+        ...(boot.agent_subject_id != null ? { agent_subject_id: boot.agent_subject_id } : {}),
+      });
       setAgents((prev) => {
         const cur = getActiveSession(prev);
         if (!cur || cur.id !== activeAgent.id) return prev;
         return upsertSession(prev, patchSessionMeta(cur, { conversationId: boot.conversation_id }));
       });
-      setSessionMeta(boot);
       setSessionError(null);
       return boot.conversation_id;
     },
@@ -419,8 +436,14 @@ export function CodingApp() {
         <AgentChatPane
           sessionKey={activeAgent?.id ?? "none"}
           conversationId={activeAgent?.conversationId ?? null}
+          {...(sessionMeta?.agent_subject_id != null
+            ? { agentSubjectId: sessionMeta.agent_subject_id }
+            : {})}
           disabled={!attach.instance_id && !window.portalShell?.remoteAuth?.token}
           onNeedConversation={bindConversation}
+          onAgentSubjectChange={(agentSubjectId) => {
+            setSessionMeta((prev) => (prev ? { ...prev, agent_subject_id: agentSubjectId } : prev));
+          }}
           onTitleHint={(text) => {
             if (!activeAgent) return;
             const title = text.slice(0, 40).trim();

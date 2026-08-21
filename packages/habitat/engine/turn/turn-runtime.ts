@@ -28,6 +28,7 @@ import {
   updateConversationMeta,
   ensureSystemPromptFresh,
 } from "../conversation/conversation-crud.ts";
+import { assertBindableAgentSubject } from "../conversation/resolve-conversation-agent.ts";
 import type {
   StoredMessage,
   ConversationMetaLoadResult,
@@ -163,6 +164,9 @@ export async function beginTurnPrepare(
 ): Promise<[StoredMessage[], string[]]> {
   await ensureSystemPromptFresh(conversationId);
   const meta = await loadConversationMeta(conversationId);
+  if (isConversationMeta(meta) && meta.agent_subject_id != null) {
+    await assertBindableAgentSubject(meta.agent_subject_id);
+  }
   const { msgs, tools } = await prepareTurnMessages(registry, conversationId, meta);
   await advanceCompressionMeta(registry, conversationId, { meta, msgs });
   return await buildRuntimeMessagesFrom(conversationId, meta, msgs, tools);

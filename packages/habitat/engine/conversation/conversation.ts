@@ -24,6 +24,7 @@ export {
   findConversationByOrigin,
   activateConversationOrigin,
   updateConversationMetaField,
+  setConversationAgent,
   patchConversationOrigin,
   rebuildConversationSystemPrompt,
   rebuildConversationCache,

@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getCachedUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { getIdMapping, resolveIdFields } from "@freeanima/client/portal-sdk/offline-id-map";
 import {
   registerOfflineModule,
@@ -45,8 +45,8 @@ function isProjectStatus(v: string): v is (typeof PROJECT_STATUSES)[number] {
 
 const MODULE_ID = "project";
 
-function subjectPayload(): { subject_kind: ReturnType<typeof getSubjectKind> } {
-  return { subject_kind: getSubjectKind() };
+function subjectPayload(): { subject_id: ReturnType<typeof getCachedUserSubjectId> } {
+  return { subject_id: getCachedUserSubjectId() };
 }
 
 async function readLocalFolders(scope: string): Promise<ProjectFolderRow[]> {

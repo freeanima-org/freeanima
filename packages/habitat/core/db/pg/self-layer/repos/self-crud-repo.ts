@@ -5,7 +5,7 @@ import {
   selfBlockBodySchema,
   selfBlockKeySchema,
 } from "@freeanima/habitat/core/db/schema";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg.ts";
 import { createEntity, updateEntity } from "@freeanima/habitat/core/db/pg/entity";
 import { pgTextArray } from "@freeanima/habitat/core/db/pg/utils/pg-sql.ts";
 import type {
@@ -26,8 +26,11 @@ function normalizeBlockKey(raw: string): SelfBlockKey {
   return parsed.data;
 }
 
-function agentWorldId(): number {
-  return getResolvedWorldContext().agent_world_id;
+async function resolveSelfWorldId(agentSubjectId: number): Promise<number> {
+  if (!Number.isInteger(agentSubjectId) || agentSubjectId <= 0) {
+    throw new Error("agent_subject_id is required for self-layer access");
+  }
+  return resolvePrivateWorldId(agentSubjectId);
 }
 
 const PLACEHOLDER_EPOCH = new Date(0);
@@ -56,7 +59,11 @@ function blockTitle(block_key: SelfBlockKey): string {
 
 type StoredSelfBlock = SelfBlockRow & { id: number };
 
-async function getStoredSelfBlock(key: SelfBlockKey): Promise<StoredSelfBlock | null> {
+async function getStoredSelfBlock(
+  key: SelfBlockKey,
+  agentSubjectId: number,
+): Promise<StoredSelfBlock | null> {
+  const worldId = await resolveSelfWorldId(agentSubjectId);
   const db = getDb();
   const rows = await db
     .select({
@@ -70,7 +77,7 @@ async function getStoredSelfBlock(key: SelfBlockKey): Promise<StoredSelfBlock | 
     .where(
       and(
         eq(entities.primary_component, SELF_BLOCK_COMPONENT),
-        eq(entities.world_id, agentWorldId()),
+        eq(entities.world_id, worldId),
         isNull(entities.deleted_at),
         sql`${entities.body}->>'block_key' = ${key}`,
       ),
@@ -82,14 +89,15 @@ async function getStoredSelfBlock(key: SelfBlockKey): Promise<StoredSelfBlock | 
 }
 
 /** Drop legacy keys (e.g. autobiography_summary) left after five-block migration */
-export async function purgeOrphanSelfBlocks(): Promise<number> {
+export async function purgeOrphanSelfBlocks(agentSubjectId: number): Promise<number> {
+  const worldId = await resolveSelfWorldId(agentSubjectId);
   const db = getDb();
   const deleted = await db
     .delete(entities)
     .where(
       and(
         eq(entities.primary_component, SELF_BLOCK_COMPONENT),
-        eq(entities.world_id, agentWorldId()),
+        eq(entities.world_id, worldId),
         sql`NOT (${entities.body}->>'block_key' = ANY(${pgTextArray([...SELF_BLOCK_KEYS])}))`,
       ),
     )
@@ -97,8 +105,11 @@ export async function purgeOrphanSelfBlocks(): Promise<number> {
   return deleted.length;
 }
 
-export async function getSelfBlock(key: SelfBlockKey): Promise<SelfBlockRow | null> {
-  const stored = await getStoredSelfBlock(key);
+export async function getSelfBlock(
+  key: SelfBlockKey,
+  agentSubjectId: number,
+): Promise<SelfBlockRow | null> {
+  const stored = await getStoredSelfBlock(key, agentSubjectId);
   if (!stored) return null;
   return {
     block_key: stored.block_key,
@@ -111,7 +122,8 @@ export async function getSelfBlock(key: SelfBlockKey): Promise<SelfBlockRow | nu
   };
 }
 
-export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
+export async function listSelfBlocks(agentSubjectId: number): Promise<SelfBlockRow[]> {
+  const worldId = await resolveSelfWorldId(agentSubjectId);
   const db = getDb();
   const rows = await db
     .select({
@@ -124,7 +136,7 @@ export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
     .where(
       and(
         eq(entities.primary_component, SELF_BLOCK_COMPONENT),
-        eq(entities.world_id, agentWorldId()),
+        eq(entities.world_id, worldId),
         isNull(entities.deleted_at),
       ),
     );
@@ -148,10 +160,14 @@ export async function listSelfBlocks(): Promise<SelfBlockRow[]> {
   });
 }
 
-export async function upsertSelfBlock(input: SelfBlockUpsertInput): Promise<void> {
+export async function upsertSelfBlock(
+  input: SelfBlockUpsertInput,
+  agentSubjectId: number,
+): Promise<void> {
+  const worldId = await resolveSelfWorldId(agentSubjectId);
   const block_key = normalizeBlockKey(input.block_key);
   const locked = input.locked ?? block_key === "existence_anchor";
-  const existing = await getStoredSelfBlock(block_key);
+  const existing = await getStoredSelfBlock(block_key, agentSubjectId);
   const version = existing ? existing.version + 1 : 1;
   const body = selfBlockBodySchema.parse({
     block_key,
@@ -173,7 +189,7 @@ export async function upsertSelfBlock(input: SelfBlockUpsertInput): Promise<void
   }
   await createEntity({
     type: "content",
-    world_id: agentWorldId(),
+    world_id: worldId,
     components: [SELF_BLOCK_COMPONENT],
     primary_component: SELF_BLOCK_COMPONENT,
     title,
@@ -185,10 +201,11 @@ export async function upsertSelfBlock(input: SelfBlockUpsertInput): Promise<void
 
 export async function updateSelfBlock(
   input: SelfBlockUpdateInput,
+  agentSubjectId: number,
   opts?: { force?: boolean },
 ): Promise<void> {
   const block_key = normalizeBlockKey(input.block_key);
-  const existing = await getStoredSelfBlock(block_key);
+  const existing = await getStoredSelfBlock(block_key, agentSubjectId);
   if (!existing) {
     throw new Error(`self block not found: ${block_key}`);
   }

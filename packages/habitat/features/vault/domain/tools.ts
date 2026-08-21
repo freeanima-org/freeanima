@@ -27,7 +27,7 @@ import { coerceString } from "@freeanima/shared/coerce-string";
 import {
   metaPayload,
   resolveVaultToolWorld,
-  SUBJECT_KIND_TOOL_PROPERTY,
+  SUBJECT_ID_TOOL_PROPERTY,
   WORLD_ID_TOOL_PROPERTY,
 } from "./tool-world-resolve.ts";
 
@@ -148,7 +148,7 @@ function parseItemType(raw: unknown): VaultItemType | undefined {
 }
 
 function rejectUserLibraryWrites(args: Record<string, unknown>): string | null {
-  if (args.subject_kind === "user") {
+  if (args.subject_id != null) {
     return toolError(
       "vault_create/vault_update only support agent library; use Vault UI for user library",
     );
@@ -264,7 +264,7 @@ async function handleCreate(args: Record<string, unknown>): Promise<string> {
   if (typeof secretsParsed === "string") return secretsParsed;
 
   const worldId = await resolveVaultToolWorld({
-    args: { ...args, subject_kind: "agent" },
+    args: { ...args, subject_id: "agent" },
     access: "write",
   });
   if (typeof worldId === "string") return worldId;
@@ -332,7 +332,7 @@ async function handleUpdate(args: Record<string, unknown>): Promise<string> {
   }
 
   const worldId = await resolveVaultToolWorld({
-    args: { ...args, subject_kind: "agent" },
+    args: { ...args, subject_id: "agent" },
     entityId: id,
     access: "write",
   });
@@ -406,7 +406,7 @@ async function handleDelete(args: Record<string, unknown>): Promise<string> {
 
 const WORLD_AND_SUBJECT = {
   world_id: WORLD_ID_TOOL_PROPERTY,
-  subject_kind: SUBJECT_KIND_TOOL_PROPERTY,
+  subject_id: SUBJECT_ID_TOOL_PROPERTY,
 } as const;
 
 export function registerVaultTools(toolSets: ToolSetRegistry): void {
@@ -415,7 +415,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
     "Vault metadata and Agent-library write tools (no secrets in tool results). " +
       "Use terminal_run/code_execute secrets[] for subprocess credentials, or browser_type secret for form fields " +
       "(field = password/notes/totp or a custom_field_names entry). " +
-      "Pass subject_kind (user|agent); world_id optional. " +
+      "Pass subject_id; world_id optional. " +
       "Vault tools are Habitat-only (not MCP).",
     attachToolReturns(
       [
@@ -434,7 +434,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               tag_ids: { type: "array", items: { type: "integer" } },
               limit: { type: "integer" },
             },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: handleList,
         },
@@ -448,7 +448,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               query: { type: "string" },
               limit: { type: "integer" },
             },
-            required: ["subject_kind", "query"],
+            required: ["subject_id", "query"],
           },
           handler: handleSearch,
         },
@@ -463,7 +463,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...WORLD_AND_SUBJECT,
               id: { type: "integer" },
             },
-            required: ["subject_kind", "id"],
+            required: ["subject_id", "id"],
           },
           handler: handleGetMeta,
         },
@@ -478,7 +478,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...META_WRITE_PROPERTIES,
               secrets: SECRETS_TOOL_PROPERTY,
             },
-            required: ["subject_kind", "title"],
+            required: ["subject_id", "title"],
           },
           handler: handleCreate,
         },
@@ -494,7 +494,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...META_WRITE_PROPERTIES,
               secrets: SECRETS_TOOL_PROPERTY,
             },
-            required: ["subject_kind", "id"],
+            required: ["subject_id", "id"],
           },
           handler: handleUpdate,
         },
@@ -507,7 +507,7 @@ export function registerVaultTools(toolSets: ToolSetRegistry): void {
               ...WORLD_AND_SUBJECT,
               id: { type: "integer" },
             },
-            required: ["subject_kind", "id"],
+            required: ["subject_id", "id"],
           },
           handler: handleDelete,
         },

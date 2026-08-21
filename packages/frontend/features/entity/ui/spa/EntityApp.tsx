@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type MouseEvent } from "react";
-import { SubjectScopeToggle, useSubjectScope } from "@freeanima/client/portal-sdk/react.tsx";
+import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   Input,
@@ -128,7 +128,7 @@ function EntityRowActions({
 }
 
 export function EntityApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const [tab, setTab] = useState<EntityTab>("all");
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -169,7 +169,7 @@ export function EntityApp() {
         setLoading(false);
       }
     },
-    [subjectKind, searchQuery, typeFilter, primaryComponent],
+    [subjectId, searchQuery, typeFilter, primaryComponent],
   );
 
   useEffect(() => {
@@ -221,7 +221,6 @@ export function EntityApp() {
             <p className="text-sm text-muted-foreground">浏览与管理当前 world 下的实体</p>
           </div>
         </div>
-        <SubjectScopeToggle />
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2 md:px-6">

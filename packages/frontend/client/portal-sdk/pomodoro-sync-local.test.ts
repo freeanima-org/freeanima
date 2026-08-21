@@ -95,10 +95,10 @@ describe("mergeRemoteActive", () => {
 
 describe("pomodoro sync meta persistence", () => {
   test("persists meta to localStorage", () => {
-    applyLocalPomodoroActive(localState, "user", {
+    applyLocalPomodoroActive(localState, 1, {
       device_id: "device-local",
       updated_at_ms: 5_000,
     });
-    expect(getPomodoroSyncMeta("user")?.updated_at_ms).toBe(5_000);
+    expect(getPomodoroSyncMeta(1)?.updated_at_ms).toBe(5_000);
   });
 });

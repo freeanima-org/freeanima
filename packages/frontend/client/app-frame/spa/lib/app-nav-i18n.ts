@@ -5,6 +5,7 @@ import {
   Bookmark,
   Boxes,
   CalendarDays,
+  Eye,
   FolderKanban,
   Target,
   LayoutDashboard,
@@ -154,6 +155,13 @@ export function appNavItems(): AppNavItem[] {
       "/notifications",
       shellNavLabel(() => "通知"),
       Bell,
+    ),
+    navItem(
+      "bedroom",
+      "/bedroom/self-layer",
+      "/bedroom",
+      shellNavLabel(() => "卧室"),
+      Eye,
     ),
     navItem(
       "habitat",

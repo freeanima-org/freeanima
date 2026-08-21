@@ -52,6 +52,7 @@ export function buildSemanticConditions(args: {
   status?: "active" | "deprecated" | "all";
   source_conversations?: readonly string[];
   cluster_id?: number | null;
+  world_id?: number;
 }): SQL[] {
   const conditions: SQL[] = [buildSemanticPrimaryCondition()];
   const typeCond = buildSemanticTypeCondition(args.types ?? []);
@@ -62,5 +63,8 @@ export function buildSemanticConditions(args: {
   if (sourceCond) conditions.push(sourceCond);
   const clusterCond = buildSemanticClusterCondition(args.cluster_id);
   if (clusterCond) conditions.push(clusterCond);
+  if (args.world_id != null) {
+    conditions.push(eq(entities.world_id, args.world_id));
+  }
   return conditions;
 }

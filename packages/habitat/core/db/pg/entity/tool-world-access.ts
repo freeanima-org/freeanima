@@ -1,5 +1,4 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import { subjectConfigBodySchema } from "@freeanima/habitat/core/db/schema";
 import {
   assertDataCapability,
@@ -23,15 +22,14 @@ export class ToolWorldAccessError extends Error {
 }
 
 /**
- * Habitat UI SubjectScope：user 可代读 agent 默认私有 world
- *（与 entity/task/vault 的 `subject_type=user && subject_kind=agent` 一致）。
- * 仅挂在 Habitat HTTP/RPC 调用点；勿并入 assertSubjectCanAccessWorld / resolveToolWorld。
+ * 历史 SubjectScope 旁路：user 对任意 world 已满权限（assertSubjectCanAccessWorld），
+ * 此函数恒 false；保留符号以免 HTTP 调用点断裂。
  */
 export function isUserAgentPrivateWorldPassthrough(
-  subjectType: string | undefined,
-  worldId: number,
+  _subjectType: string | undefined,
+  _worldId: number,
 ): boolean {
-  return subjectType === "user" && worldId === resolveSubjectWorldId("agent");
+  return false;
 }
 
 /** subject entity → default_private_world_id */
@@ -131,8 +129,8 @@ export type ResolveToolWorldOpts = {
   explicitWorldId?: number;
   entityId?: number;
   listId?: number;
-  /** Resolve user/agent private world then assert caller grants (same as explicitWorldId) */
-  subjectKind?: SubjectKind;
+  /** Resolve subject private world then assert caller grants (same as explicitWorldId) */
+  subjectId?: number;
   /** 默认 read；创建/更新/删除工具应传 write */
   access?: "read" | "write";
 };
@@ -159,13 +157,13 @@ export async function resolveToolWorld(opts: ResolveToolWorldOpts): Promise<numb
     return opts.explicitWorldId;
   }
 
-  if (opts.subjectKind != null) {
-    const worldId = resolveSubjectWorldId(opts.subjectKind);
+  if (opts.subjectId != null && opts.subjectId > 0) {
+    const worldId = await resolvePrivateWorldId(opts.subjectId);
     await assertSubjectCanAccessWorld(callerSubjectId, worldId, { access });
     return worldId;
   }
 
-  // 调用方自己的 default private world：owner 满权限，无需再 assert
+  // 工具 ALS / token subject 的 default private world：owner 满权限，无需再 assert
   return resolveDefaultPrivateWorldForSubject(callerSubjectId);
 }
 

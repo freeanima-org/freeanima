@@ -1,6 +1,7 @@
 import { ensureVaultConfig, getVaultConfig } from "@freeanima/features/vault/domain/config-store";
 import { getVaultItem, updateVaultItem } from "@freeanima/features/vault/domain/item-store";
 import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config";
 import {
   extractCustomFieldNames,
   openVaultSecrets,
@@ -10,12 +11,18 @@ import {
 
 import { getAgentMachineKey } from "./machine-key.ts";
 
+async function defaultAgentVaultWorldId(): Promise<number> {
+  const ctx = getResolvedWorldContext();
+  return resolveVaultWorldId(ctx.default_chat_agent_subject_id);
+}
+
 export async function ensureAgentVaultConfig(
-  worldId: number = resolveVaultWorldId("agent"),
+  worldId?: number,
 ): Promise<NonNullable<Awaited<ReturnType<typeof getVaultConfig>>>> {
-  const existing = await getVaultConfig(worldId);
+  const resolvedWorldId = worldId ?? (await defaultAgentVaultWorldId());
+  const existing = await getVaultConfig(resolvedWorldId);
   if (existing?.mode === "machine") return existing;
-  return ensureVaultConfig(worldId, {
+  return ensureVaultConfig(resolvedWorldId, {
     mode: "machine",
     key_id: "agent-machine",
   });

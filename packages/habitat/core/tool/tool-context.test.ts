@@ -19,6 +19,8 @@ describe("resolveToolCallerSubjectId", () => {
       agent_subject_id: 2,
       user_world_id: 10,
       agent_world_id: 20,
+      default_chat_agent_subject_id: 2,
+      default_chat_agent_world_id: 20,
       commons_world_id: 30,
     });
   });
@@ -27,15 +29,17 @@ describe("resolveToolCallerSubjectId", () => {
     resetResolvedWorldContextForTest();
   });
 
-  it("uses agent_subject_id when no callerAuth", () => {
+  it("throws when no callerAuth and no ALS subjectId", () => {
     const registry = new ToolSetRegistry();
-    runWithToolContext(
-      "conv-1",
-      () => {
-        expect(resolveToolCallerSubjectId()).toBe(2);
-      },
-      { tools: registry },
-    );
+    expect(() =>
+      runWithToolContext(
+        "conv-1",
+        () => {
+          resolveToolCallerSubjectId();
+        },
+        { tools: registry },
+      ),
+    ).toThrow(/tool caller subject_id missing/);
   });
 
   it("uses token subject_id when callerAuth present", () => {

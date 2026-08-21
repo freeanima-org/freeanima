@@ -1,6 +1,6 @@
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/habitat/core/config";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import {
   applyProviderPreset,
   attachTaskToEmailMessage,
@@ -24,11 +24,11 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function emailWorldId(kind: SubjectKind | undefined): number {
-  if (kind !== "user" && kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+async function emailWorldId(subjectId: number | undefined): Promise<number> {
+  if (subjectId == null || !Number.isInteger(subjectId) || subjectId <= 0) {
+    throw new Error("subject_id is required");
   }
-  return resolveSubjectWorldId(kind);
+  return resolvePrivateWorldId(subjectId);
 }
 
 function toAccountPayload(account: Awaited<ReturnType<typeof listEmailAccountRows>>[number]) {
@@ -78,12 +78,9 @@ function toThreadPayload(thread: Awaited<ReturnType<typeof listEmailThreads>>[nu
   };
 }
 
-export async function serviceEmailAccountList(
-  deps: RuntimeDeps,
-  input?: { subject_kind?: SubjectKind },
-) {
+export async function serviceEmailAccountList(deps: RuntimeDeps, input?: { subject_id?: number }) {
   assertPg(deps);
-  const accounts = await listEmailAccountRows(emailWorldId(input?.subject_kind));
+  const accounts = await listEmailAccountRows(await emailWorldId(input?.subject_id));
   return { accounts: accounts.map(toAccountPayload) };
 }
 
@@ -94,7 +91,7 @@ export async function serviceEmailProviderList(_deps: RuntimeDeps) {
 export async function serviceEmailAccountCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     password: string;
     address: string;
     display_name?: string;
@@ -110,14 +107,14 @@ export async function serviceEmailAccountCreate(
   },
 ) {
   assertPg(deps);
-  const { subject_kind, ...raw } = input;
+  const { subject_id, ...raw } = input;
   const withPreset = applyProviderPreset(raw);
   const hosts = requireCompleteEmailHosts(withPreset);
   const { assertEmailPasswordResolvable } =
     await import("@freeanima/habitat/capabilities/connectors/email");
   await assertEmailPasswordResolvable({ password: withPreset.password });
   const account = await createEmailAccount(
-    emailWorldId(subject_kind),
+    await emailWorldId(subject_id),
     omitUndefined({
       password: withPreset.password,
       address: withPreset.address,
@@ -138,7 +135,7 @@ export async function serviceEmailAccountCreate(
 export async function serviceEmailAccountPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     password?: string;
     address?: string;
@@ -155,7 +152,7 @@ export async function serviceEmailAccountPatch(
   },
 ) {
   assertPg(deps);
-  const { subject_kind, id, ...raw } = input;
+  const { subject_id, id, ...raw } = input;
   const withPreset = applyProviderPreset(raw);
   const touchesHosts =
     withPreset.provider != null ||
@@ -170,7 +167,7 @@ export async function serviceEmailAccountPatch(
     await assertEmailPasswordResolvable({ password: withPreset.password });
   }
   const account = await updateEmailAccount(
-    emailWorldId(subject_kind),
+    await emailWorldId(subject_id),
     omitUndefined({
       id,
       password: withPreset.password,
@@ -192,10 +189,10 @@ export async function serviceEmailAccountPatch(
 
 export async function serviceEmailAccountDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
-  const ok = await deleteEmailAccountRow(emailWorldId(input.subject_kind), input.id);
+  const ok = await deleteEmailAccountRow(await emailWorldId(input.subject_id), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }
@@ -203,7 +200,7 @@ export async function serviceEmailAccountDelete(
 export async function serviceEmailMessageList(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     account_id?: number;
     thread_id?: number;
     mailbox?: string;
@@ -214,9 +211,9 @@ export async function serviceEmailMessageList(
   },
 ) {
   assertPg(deps);
-  const { subject_kind, mailbox, ...listInput } = input;
+  const { subject_id, mailbox, ...listInput } = input;
   const messages = await listEmailMessages(
-    emailWorldId(subject_kind),
+    await emailWorldId(subject_id),
     omitUndefined({
       ...listInput,
       ...(mailbox ? { imap_mailbox: mailbox } : {}),
@@ -227,7 +224,7 @@ export async function serviceEmailMessageList(
 
 export async function serviceEmailMessageRead(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; raw?: boolean | undefined },
+  input: { subject_id?: number; id: number; raw?: boolean | undefined },
 ) {
   assertPg(deps);
   const message = await getEmailMessageRow(input.id);
@@ -244,7 +241,7 @@ export async function serviceEmailMessageRead(
 export async function serviceEmailMessageAttachTask(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     due_at?: string | null;
     remind_at?: string | null;
@@ -254,7 +251,7 @@ export async function serviceEmailMessageAttachTask(
   },
 ) {
   assertPg(deps);
-  const worldId = emailWorldId(input.subject_kind);
+  const worldId = await emailWorldId(input.subject_id);
   const item = await attachTaskToEmailMessage(
     worldId,
     input.id,
@@ -280,10 +277,10 @@ export async function serviceEmailMessageAttachTask(
 
 export async function serviceEmailMessageDetachTask(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
-  const worldId = emailWorldId(input.subject_kind);
+  const worldId = await emailWorldId(input.subject_id);
   const ok = await detachTaskFromEmailMessage(worldId, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
@@ -291,7 +288,7 @@ export async function serviceEmailMessageDetachTask(
 
 export async function serviceEmailMessageMarkRead(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
   const { markAsRead } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -301,7 +298,7 @@ export async function serviceEmailMessageMarkRead(
 
 export async function serviceEmailMessageMarkUnread(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
   const { markAsUnread } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -311,7 +308,7 @@ export async function serviceEmailMessageMarkUnread(
 
 export async function serviceEmailMessageDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
   const { deleteEmail } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -322,7 +319,7 @@ export async function serviceEmailMessageDelete(
 export async function serviceEmailSend(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     account_id?: number;
     to: string;
     subject: string;
@@ -339,7 +336,7 @@ export async function serviceEmailSend(
 
 export async function serviceEmailSync(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; account_id?: number; limit?: number },
+  input: { subject_id?: number; account_id?: number; limit?: number },
 ) {
   assertPg(deps);
   const { syncEmailAccount, syncAllEmailAccounts } =
@@ -351,7 +348,7 @@ export async function serviceEmailSync(
   }
   return {
     results: await syncAllEmailAccounts({
-      worldId: emailWorldId(input.subject_kind),
+      worldId: await emailWorldId(input.subject_id),
       ...(input.limit != null ? { limit: input.limit } : {}),
     }),
   };
@@ -359,18 +356,18 @@ export async function serviceEmailSync(
 
 export async function serviceEmailThreadList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; account_id?: number; has_unread?: boolean; limit?: number },
+  input: { subject_id?: number; account_id?: number; has_unread?: boolean; limit?: number },
 ) {
   assertPg(deps);
-  const { subject_kind, ...listInput } = input;
-  const threads = await listEmailThreads(emailWorldId(subject_kind), listInput);
+  const { subject_id, ...listInput } = input;
+  const threads = await listEmailThreads(await emailWorldId(subject_id), listInput);
   return { threads: threads.map(toThreadPayload) };
 }
 
 export async function serviceEmailMessageSearch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     query?: string;
     account_id?: number;
     mailbox?: string;
@@ -386,9 +383,9 @@ export async function serviceEmailMessageSearch(
   },
 ) {
   assertPg(deps);
-  const { subject_kind, sent_after, sent_before, ...rest } = input;
+  const { subject_id, sent_after, sent_before, ...rest } = input;
   const messages = await searchEmailMessages(
-    emailWorldId(subject_kind),
+    await emailWorldId(subject_id),
     omitUndefined({
       ...rest,
       since: sent_after,
@@ -400,7 +397,7 @@ export async function serviceEmailMessageSearch(
 
 export async function serviceEmailMailboxList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; account_id: number },
+  input: { subject_id?: number; account_id: number },
 ) {
   assertPg(deps);
   const { listMailboxesForAccount } =
@@ -411,7 +408,7 @@ export async function serviceEmailMailboxList(
 
 export async function serviceEmailMailboxCreate(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; account_id: number; path: string },
+  input: { subject_id?: number; account_id: number; path: string },
 ) {
   assertPg(deps);
   const { createMailbox } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -421,7 +418,7 @@ export async function serviceEmailMailboxCreate(
 
 export async function serviceEmailMailboxRename(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; account_id: number; from: string; to: string },
+  input: { subject_id?: number; account_id: number; from: string; to: string },
 ) {
   assertPg(deps);
   const { renameMailbox } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -431,7 +428,7 @@ export async function serviceEmailMailboxRename(
 
 export async function serviceEmailMailboxDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; account_id: number; path: string },
+  input: { subject_id?: number; account_id: number; path: string },
 ) {
   assertPg(deps);
   const { deleteMailbox } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -441,7 +438,7 @@ export async function serviceEmailMailboxDelete(
 
 export async function serviceEmailMessageMove(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; target_mailbox: string },
+  input: { subject_id?: number; id: number; target_mailbox: string },
 ) {
   assertPg(deps);
   const { moveMessage } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -450,7 +447,7 @@ export async function serviceEmailMessageMove(
 
 export async function serviceEmailMessageMarkFlagged(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
   const { markAsFlagged } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -460,7 +457,7 @@ export async function serviceEmailMessageMarkFlagged(
 
 export async function serviceEmailMessageMarkUnflagged(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
   const { markAsUnflagged } = await import("@freeanima/habitat/capabilities/connectors/email");
@@ -471,7 +468,7 @@ export async function serviceEmailMessageMarkUnflagged(
 export async function serviceEmailDraftSave(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     account_id?: number;
     message_id?: number;
     to?: string;
@@ -486,7 +483,7 @@ export async function serviceEmailDraftSave(
 
 export async function serviceEmailDraftSend(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; message_id: number },
+  input: { subject_id?: number; message_id: number },
 ) {
   assertPg(deps);
   const { sendDraft } = await import("@freeanima/habitat/capabilities/connectors/email");

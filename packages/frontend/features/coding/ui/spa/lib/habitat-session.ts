@@ -16,6 +16,7 @@ export type CodingSessionBootstrap = {
   project_world_id: number | null;
   world_created: boolean;
   platform: string;
+  agent_subject_id?: number;
 };
 
 function hasHabitatToken(): boolean {
@@ -80,6 +81,7 @@ export function buildCodingConversationCreateInput(opts: {
   workspaceRoot: string | null;
   instanceId: string;
   projectWorldId: number | null;
+  agentSubjectId?: number;
 }): {
   platform: "coding";
   scenario: "coding_agent";
@@ -87,6 +89,7 @@ export function buildCodingConversationCreateInput(opts: {
   outpost_instance_id: string;
   workspace_root?: string;
   project_world_id?: number;
+  agent_subject_id?: number;
 } {
   const instanceId = opts.instanceId.trim();
   return {
@@ -96,16 +99,33 @@ export function buildCodingConversationCreateInput(opts: {
     outpost_instance_id: instanceId,
     ...(opts.workspaceRoot ? { workspace_root: opts.workspaceRoot } : {}),
     ...(opts.projectWorldId != null ? { project_world_id: opts.projectWorldId } : {}),
+    ...(opts.agentSubjectId != null ? { agent_subject_id: opts.agentSubjectId } : {}),
   };
 }
 
 export function titleFromCodingConversationList(
-  conversations: Array<{ conversation_id: string; title?: string | undefined }>,
+  conversations: Array<{
+    conversation_id: string;
+    title?: string | undefined;
+    agent_subject_id?: number | undefined;
+  }>,
   conversationId: string,
 ): string | null {
   const row = conversations.find((c) => c.conversation_id === conversationId);
   const title = row?.title?.trim();
   return title || null;
+}
+
+function agentFromCodingConversationList(
+  conversations: Array<{
+    conversation_id: string;
+    agent_subject_id?: number | undefined;
+  }>,
+  conversationId: string,
+): number | undefined {
+  const row = conversations.find((c) => c.conversation_id === conversationId);
+  const id = row?.agent_subject_id;
+  return typeof id === "number" && id > 0 ? id : undefined;
 }
 
 /**
@@ -118,6 +138,7 @@ export async function ensureCodingConversation(opts: {
   existingConversationId?: string | null;
   stableKey?: string | null;
   displayName?: string | null;
+  agentSubjectId?: number;
 }): Promise<CodingSessionBootstrap | null> {
   if (!hasHabitatToken()) return null;
   if (!opts.instanceId.trim()) {
@@ -131,11 +152,24 @@ export async function ensureCodingConversation(opts: {
       ...(opts.stableKey != null ? { stableKey: opts.stableKey } : {}),
       ...(opts.displayName != null ? { displayName: opts.displayName } : {}),
     });
+    let agent_subject_id: number | undefined;
+    try {
+      const client = getTypedHabitatClient();
+      const out = await client.call("conversation.list", {
+        platform: "coding",
+        limit: 500,
+      });
+      agent_subject_id = agentFromCodingConversationList(out.conversations, existing);
+    } catch {
+      agent_subject_id = undefined;
+    }
+    if (agent_subject_id == null) agent_subject_id = opts.agentSubjectId;
     return {
       conversation_id: existing,
       project_world_id: world.project_world_id,
       world_created: world.world_created,
       platform,
+      ...(agent_subject_id != null ? { agent_subject_id } : {}),
     };
   }
 
@@ -150,6 +184,7 @@ export async function ensureCodingConversation(opts: {
       workspaceRoot: opts.workspaceRoot,
       instanceId: opts.instanceId,
       projectWorldId: world.project_world_id,
+      ...(opts.agentSubjectId != null ? { agentSubjectId: opts.agentSubjectId } : {}),
     }),
   );
 
@@ -158,6 +193,7 @@ export async function ensureCodingConversation(opts: {
     project_world_id: world.project_world_id,
     world_created: world.world_created,
     platform,
+    ...(opts.agentSubjectId != null ? { agent_subject_id: opts.agentSubjectId } : {}),
   };
 }
 

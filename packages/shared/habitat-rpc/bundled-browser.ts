@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 import type { RpcClient } from "./client.ts";
-import { HABITAT_RPC_LIVENESS_SILENCE_MS } from "./constants.ts";
+import { HABITAT_RPC_DISCONNECT_GRACE_MS, HABITAT_RPC_LIVENESS_SILENCE_MS } from "./constants.ts";
 import { habitatHttpFromRpcWsUrl } from "./urls.ts";
 import { runHabitatRpcTransport, type HabitatRpcTransportHandle } from "./transport.ts";
 
@@ -114,7 +114,18 @@ function resolveHubUrl(options: BundledHabitatRpcClientOptions): string {
   const shell = readPortalShell();
   if (shell?.habitatUrl?.trim()) return shell.habitatUrl.trim().replace(/\/$/, "");
   if (shell?.habitatWsUrl?.trim()) return habitatHttpFromRpcWsUrl(shell.habitatWsUrl.trim());
+  // Web / just dev：与 resolveHabitatApiOrigin 一致，走页面 origin（Vite 代理 /rpc）；勿默认 2658
+  if (typeof window !== "undefined") {
+    const native = Boolean(shell?.isNativeShell || shell?.isTauri);
+    if (!native && window.location?.origin) {
+      return window.location.origin.replace(/\/$/, "");
+    }
+  }
   return "http://127.0.0.1:2658";
+}
+
+function isTransportStoppedError(err: unknown): boolean {
+  return err instanceof Error && err.message === "Habitat RPC transport stopped";
 }
 
 function createBundledHabitatRpcClient(
@@ -122,6 +133,15 @@ function createBundledHabitatRpcClient(
 ): BundledHabitatRpcClient {
   let transport: HabitatRpcTransportHandle | null = null;
   let initPromise: Promise<void> | null = null;
+  /** 每次 stop/reconnect 递增，避免旧 initPromise catch 清掉新 transport */
+  let epoch = 0;
+  let disconnectGraceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const clearDisconnectGrace = (): void => {
+    if (disconnectGraceTimer == null) return;
+    clearTimeout(disconnectGraceTimer);
+    disconnectGraceTimer = null;
+  };
 
   const notify = (state: HabitatRpcConnectionState): void => {
     options.onConnectionStateChange?.(state);
@@ -130,18 +150,33 @@ function createBundledHabitatRpcClient(
 
   const startTransport = (): HabitatRpcTransportHandle => {
     transport?.stop();
+    clearDisconnectGrace();
     const habitatUrl = resolveHubUrl(options);
     const authToken = resolveAuthToken(options.authToken);
     notify("connecting");
+    const startedAtEpoch = epoch;
     transport = runHabitatRpcTransport({
       habitatUrl,
       authToken,
       ...(options.signal !== undefined ? { signal: options.signal } : {}),
       onConnected: async () => {
+        if (startedAtEpoch !== epoch) return;
+        clearDisconnectGrace();
         notify("connected");
       },
       onDisconnected: () => {
-        notify("disconnected");
+        if (startedAtEpoch !== epoch) return;
+        // transport 内会自动退避重连；短中断（如 just dev Habitat 硬重启）保持 connecting，避免条幅狂闪
+        notify("connecting");
+        clearDisconnectGrace();
+        disconnectGraceTimer = setTimeout(() => {
+          disconnectGraceTimer = null;
+          if (startedAtEpoch !== epoch) return;
+          if (transport?.getClient()) return;
+          if (cachedConnectionState === "connecting") {
+            notify("disconnected");
+          }
+        }, HABITAT_RPC_DISCONNECT_GRACE_MS);
       },
     });
     sharedTransport = transport;
@@ -157,31 +192,42 @@ function createBundledHabitatRpcClient(
   };
 
   const ensureTransport = async (): Promise<RpcClient> => {
-    if (transport?.getClient()) {
-      return transport.whenConnected();
-    }
-    if (!initPromise) {
-      initPromise = (async () => {
-        try {
-          startTransport();
-          if (transport === null) {
-            throw new Error("Habitat RPC transport failed to start");
+    for (;;) {
+      if (transport?.getClient()) {
+        return transport.whenConnected();
+      }
+      if (!initPromise) {
+        const myEpoch = epoch;
+        initPromise = (async () => {
+          try {
+            startTransport();
+            if (transport === null) {
+              throw new Error("Habitat RPC transport failed to start");
+            }
+            await transport.whenConnected();
+          } catch (err) {
+            if (myEpoch !== epoch) {
+              // 已被 stop/reconnect 取代：勿清新连接
+              return;
+            }
+            initPromise = null;
+            transport = null;
+            if (sharedTransport) sharedTransport = null;
+            notify("disconnected");
+            throw err;
           }
-          await transport.whenConnected();
-        } catch (err) {
-          initPromise = null;
-          transport = null;
-          if (sharedTransport) sharedTransport = null;
-          notify("disconnected");
-          throw err;
-        }
-      })();
+        })();
+      }
+      const pending = initPromise;
+      await pending;
+      if (transport) {
+        return transport.whenConnected();
+      }
+      // 旧 init 被 supersede 且尚未挂上新 transport：清掉已完成的 pending 后重试
+      if (initPromise === pending) {
+        initPromise = null;
+      }
     }
-    await initPromise;
-    if (transport === null) {
-      throw new Error("Habitat RPC transport not initialized");
-    }
-    return transport.whenConnected();
   };
 
   return {
@@ -190,11 +236,14 @@ function createBundledHabitatRpcClient(
       return transport?.getClient() ?? null;
     },
     stop(): void {
+      epoch += 1;
+      clearDisconnectGrace();
       const active = transport;
       active?.stop();
       transport = null;
       initPromise = null;
       if (sharedTransport === active) sharedTransport = null;
+      notify("disconnected");
     },
     async reconnect(opts?: ReconnectOptions): Promise<RpcClient> {
       // 已有健康连接时优先复用，避免无谓断开重连（churn）。
@@ -204,8 +253,15 @@ function createBundledHabitatRpcClient(
       }
       this.stop();
       notify("connecting");
-      initPromise = null;
-      return ensureTransport();
+      try {
+        return await ensureTransport();
+      } catch (err) {
+        // 并发 stop 时可能仍冒出 stopped；再试一次当前 epoch
+        if (isTransportStoppedError(err)) {
+          return ensureTransport();
+        }
+        throw err;
+      }
     },
   };
 }

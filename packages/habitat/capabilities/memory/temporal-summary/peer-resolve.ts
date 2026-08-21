@@ -24,6 +24,8 @@ export async function resolvePeerTimelineInjects(opts: {
   config: ResolvedTemporalSummaryConfig;
   peerCache: PeerRollCache;
   nowMs?: number;
+  /** 仅同 agent 其它会话；缺省则不过滤（兼容旧调用） */
+  agent_subject_id?: number;
   /** 测试注入：默认 schedulePeerRollWarm */
   scheduleWarm?: typeof schedulePeerRollWarm;
 }): Promise<TimelinePeerInject[]> {
@@ -33,6 +35,7 @@ export async function resolvePeerTimelineInjects(opts: {
   const closed = listClosedBucketsToday(nowMs);
   const rows = await listTemporalDayByCstDate(cst_date, {
     exclude_conversation_id: opts.viewerConversationId,
+    ...(opts.agent_subject_id != null ? { agent_subject_id: opts.agent_subject_id } : {}),
   });
   const injects: TimelinePeerInject[] = [];
   const scheduleWarm = opts.scheduleWarm ?? schedulePeerRollWarm;

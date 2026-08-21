@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
 export const noteTextBlockSchema = z.object({
   id: z.number().int().positive(),
   title: z.string().default(""),
@@ -30,7 +28,7 @@ export const noteRowSchema = z.object({
 export type NoteRowPayload = z.infer<typeof noteRowSchema>;
 
 export const noteListInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
   offset: z.number().int().nonnegative().optional(),
@@ -42,7 +40,7 @@ export const noteListOutputSchema = z.object({
 export type NoteListOutput = z.infer<typeof noteListOutputSchema>;
 
 export const noteCreateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   /** 若有则建首条 text block */
   content: z.string().optional(),
@@ -57,7 +55,7 @@ export type NoteCreateOutput = z.infer<typeof noteCreateOutputSchema>;
 
 /** append = 在容器末尾新建一条 text block */
 export const noteAppendInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   content: z.string().min(1),
   client_op_id: z.string().min(1).optional(),
@@ -67,7 +65,7 @@ export const noteAppendOutputSchema = z.object({ item: noteRowSchema });
 export type NoteAppendOutput = z.infer<typeof noteAppendOutputSchema>;
 
 export const notePatchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   title: z.string().min(1).optional(),
   summary: z.string().optional(),
@@ -80,7 +78,7 @@ export const notePatchOutputSchema = z.object({ item: noteRowSchema });
 export type NotePatchOutput = z.infer<typeof notePatchOutputSchema>;
 
 export const noteDeleteInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -89,7 +87,7 @@ export const noteDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type NoteDeleteOutput = z.infer<typeof noteDeleteOutputSchema>;
 
 export const noteGetInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type NoteGetInput = z.infer<typeof noteGetInputSchema>;
@@ -97,7 +95,7 @@ export const noteGetOutputSchema = z.object({ item: noteRowSchema });
 export type NoteGetOutput = z.infer<typeof noteGetOutputSchema>;
 
 export const noteSearchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().min(1),
   tag_ids: z.array(z.number().int().positive()).optional(),
   limit: z.number().int().positive().optional(),
@@ -109,7 +107,7 @@ export const noteSearchOutputSchema = z.object({
 export type NoteSearchOutput = z.infer<typeof noteSearchOutputSchema>;
 
 export const noteBlockCreateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   parent_id: z.number().int().positive(),
   content: z.string(),
   title: z.string().optional(),
@@ -123,7 +121,7 @@ export const noteBlockCreateOutputSchema = z.object({ item: noteTextBlockSchema 
 export type NoteBlockCreateOutput = z.infer<typeof noteBlockCreateOutputSchema>;
 
 export const noteBlockPatchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   content: z.string().optional(),
   title: z.string().optional(),
@@ -136,7 +134,7 @@ export const noteBlockPatchOutputSchema = z.object({ item: noteTextBlockSchema }
 export type NoteBlockPatchOutput = z.infer<typeof noteBlockPatchOutputSchema>;
 
 export const noteBlockDeleteInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -145,7 +143,7 @@ export const noteBlockDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type NoteBlockDeleteOutput = z.infer<typeof noteBlockDeleteOutputSchema>;
 
 export const noteBlockReorderInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   items: z.array(
     z.object({
       id: z.number().int().positive(),

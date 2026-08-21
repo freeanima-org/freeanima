@@ -1,5 +1,5 @@
 import type { BookmarkRowPayload } from "@freeanima/shared/rpc-contract/frames/bookmark.ts";
-import { vaultCall } from "../../runtime/habitat.ts";
+import { vaultCall, getExtUserSubjectId } from "../../runtime/habitat.ts";
 import { markBookmarkEcho, pruneBookmarkEcho, shouldSuppressBookmarkEcho } from "./echo.ts";
 import {
   clearBookmarkOutbox,
@@ -51,7 +51,7 @@ async function flushOutbox(): Promise<void> {
   for (let i = 0; i < items.length; i += 200) {
     const chunk = items.slice(i, i + 200);
     const res = await vaultCall("bookmark.upsert_batch", {
-      subject_kind: "user",
+      subject_id: "user",
       items: chunk,
     });
     for (const row of res.items) {
@@ -151,7 +151,7 @@ async function applyRemoteRow(row: BookmarkRowPayload, map: IdMap): Promise<void
       map[created.id] = row.id;
       markBookmarkEcho(created.id);
       await vaultCall("bookmark.patch", {
-        subject_kind: "user",
+        subject_id: "user",
         id: row.id,
         browser_id: created.id,
         client_op_id: `chrome-bind:${created.id}`,
@@ -167,7 +167,7 @@ async function pullRemote(): Promise<void> {
   pruneBookmarkEcho();
   const settings = await loadBookmarkSyncSettings();
   const res = await vaultCall("bookmark.sync.pull", {
-    subject_kind: "user",
+    subject_id: "user",
     ...(settings.last_pulled_updated_at ? { updated_after: settings.last_pulled_updated_at } : {}),
     limit: 2000,
   });

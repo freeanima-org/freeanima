@@ -90,9 +90,26 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
     return { created: [], updated: [], skipped: true, summary: "no_texts" };
   }
 
+  const { resolveBoundAgentForConversation } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  let agent_subject_id: number;
+  let agent_world_id: number;
+  try {
+    const bound = await resolveBoundAgentForConversation(input.conversation_id);
+    agent_subject_id = bound.agent_subject_id;
+    agent_world_id = bound.agent_world_id;
+  } catch (err) {
+    logComponent("memory").warn("retain skip: conversation missing bound agent", {
+      conversation_id: input.conversation_id,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    return { created: [], updated: [], skipped: true, summary: "no_bound_agent" };
+  }
+
   const curated = await curateRetainRelatedMemories({
     conversation_id: input.conversation_id,
     text_items: textItems,
+    world_id: agent_world_id,
   });
   const related = curated.rows;
   const relatedIds = new Set(related.map((r) => r.id));
@@ -116,6 +133,7 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
       ...base,
       min_score: RETAIN_PASSIVE_MIN_SCORE,
       min_relative_score: RETAIN_PASSIVE_MIN_RELATIVE_SCORE,
+      world_id: agent_world_id,
     });
     const { text } = renderSemanticMemoryList(
       hits.map((h) => toSemanticMemoryPromptItem(h)),
@@ -141,36 +159,41 @@ export async function runBuiltinRetain(input: BuiltinRetainInput): Promise<Built
     dataParts,
   });
 
-  return withRetainProvenance(input.source, async () => {
-    const llm = await runRetainLlm({
-      systemPrompt,
-      userMessages,
-      toolNames: [...RETAIN_TOOL_NAMES],
-    });
+  return withRetainProvenance(
+    input.source,
+    async () => {
+      const llm = await runRetainLlm({
+        systemPrompt,
+        userMessages,
+        toolNames: [...RETAIN_TOOL_NAMES],
+      });
 
-    for (const id of llm.semantic_memory_ids) {
-      try {
-        await updateSemanticMemory({
-          id,
-          source: input.source,
-          source_conversations: [input.conversation_id],
-        });
-      } catch {
-        /* ignore patch failures */
+      for (const id of llm.semantic_memory_ids) {
+        try {
+          await updateSemanticMemory({
+            id,
+            source: input.source,
+            source_conversations: [input.conversation_id],
+          });
+        } catch {
+          /* ignore patch failures */
+        }
       }
-    }
 
-    logComponent("memory").info("builtin retain completed", {
-      conversation_id: input.conversation_id,
-      tool_calls: llm.tool_calls,
-      semantic_ids: llm.semantic_memory_ids.length,
-    });
+      logComponent("memory").info("builtin retain completed", {
+        conversation_id: input.conversation_id,
+        tool_calls: llm.tool_calls,
+        semantic_ids: llm.semantic_memory_ids.length,
+        agent_subject_id,
+      });
 
-    return {
-      created: llm.semantic_memory_ids,
-      updated: [],
-      skipped: false,
-      summary: llm.summary,
-    };
-  });
+      return {
+        created: llm.semantic_memory_ids,
+        updated: [],
+        skipped: false,
+        summary: llm.summary,
+      };
+    },
+    { agent_subject_id },
+  );
 }

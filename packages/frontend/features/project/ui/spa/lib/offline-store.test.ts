@@ -10,6 +10,7 @@ import {
 } from "@freeanima/client/portal-sdk/offline-outbox";
 import { resetOfflineModuleRegistryForTests } from "@freeanima/client/portal-sdk/offline-module-registry";
 import { resetTempIdAllocatorForTests } from "@freeanima/client/portal-sdk/offline-temp-id";
+import { setPortalSubjectIdOverride } from "@freeanima/client/portal-sdk/portal-subject-override.ts";
 
 import type { ProjectRow, TaskItemRow } from "./api.ts";
 import {
@@ -64,6 +65,7 @@ describe("reconcileServerProjects", () => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
     resetTempIdAllocatorForTests();
+    setPortalSubjectIdOverride(1);
   });
 
   it("保留 outbox 中仍未同步的 temp 项目", async () => {
@@ -77,7 +79,7 @@ describe("reconcileServerProjects", () => {
       id: "op-1",
       moduleId: "project",
       method: "project.create",
-      payload: { subject_kind: "user" },
+      payload: { subject_id: 1 },
       tempEntityId: tempId,
       createdAt: "2026-07-15T00:00:00.000Z",
     });
@@ -99,6 +101,7 @@ describe("offlineCreateProject dependsOn folder", () => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
     resetTempIdAllocatorForTests();
+    setPortalSubjectIdOverride(1);
   });
 
   it("在 temp folder 下创建项目时带 dependsOn", async () => {
@@ -126,6 +129,7 @@ describe("offlineUpdateProjectTask temp id resolve", () => {
     setOfflineOutboxBackendForTests(new Map());
     resetOfflineModuleRegistryForTests();
     resetTempIdAllocatorForTests();
+    setPortalSubjectIdOverride(1);
   });
 
   it("create flush 后可用 temp id 更新", async () => {
@@ -162,7 +166,7 @@ describe("compactProjectOutbox", () => {
         id: "c1",
         moduleId: "project",
         method: "project.create",
-        payload: { title: "a", subject_kind: "user" },
+        payload: { title: "a", subject_id: 1 },
         tempEntityId: -1,
         createdAt: "2026-07-15T00:00:00.000Z",
       },
@@ -170,7 +174,7 @@ describe("compactProjectOutbox", () => {
         id: "p1",
         moduleId: "project",
         method: "project.patch",
-        payload: { id: -1, title: "b", subject_kind: "user" },
+        payload: { id: -1, title: "b", subject_id: 1 },
         createdAt: "2026-07-15T00:01:00.000Z",
       },
     ]);
@@ -185,7 +189,7 @@ describe("compactProjectOutbox", () => {
         id: "c1",
         moduleId: "project",
         method: "projectfolder.create",
-        payload: { name: "f", subject_kind: "user" },
+        payload: { name: "f", subject_id: 1 },
         tempEntityId: -2,
         createdAt: "2026-07-15T00:00:00.000Z",
       },
@@ -193,7 +197,7 @@ describe("compactProjectOutbox", () => {
         id: "d1",
         moduleId: "project",
         method: "projectfolder.delete",
-        payload: { id: -2, subject_kind: "user" },
+        payload: { id: -2, subject_id: 1 },
         createdAt: "2026-07-15T00:01:00.000Z",
       },
     ]);

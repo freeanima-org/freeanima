@@ -2,7 +2,7 @@ import { whenBundledRpcStreamClientReady } from "@freeanima/shared/rpc-contract/
 import type { VaultConfigRowPayload } from "@freeanima/shared/rpc-contract";
 
 export async function getVaultCryptoConfig(
-  subjectKind: "user" | "agent",
+  subjectId: "user" | "agent",
 ): Promise<VaultConfigRowPayload | null> {
   const client = await whenBundledRpcStreamClientReady();
   const data = await client.request(
@@ -10,7 +10,7 @@ export async function getVaultCryptoConfig(
     "vault.crypto.get" as never,
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
     {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
     } as never,
   );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC 响应边界

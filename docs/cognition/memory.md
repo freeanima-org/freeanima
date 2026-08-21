@@ -17,6 +17,10 @@ title: 记忆体系
 | **memory-maintenance**         | 夜间顺序维护（cleanup / Retain 缺口检查 / 周一 **cluster 校准**→reflect·self / temporal）；补跑仅手动 | RPC `memoryMaintenance.*`                       |
 | **limbic / dream / narrative** | **存量只读**；写入已拆除                                                                              | 列表与 search 保留                              |
 
+### 多 Anima 作用域
+
+对话路径（系统提示常驻/时间摘要、旁注被动召回/通知/peer 时间线、`memory_semantic_*`）一律绑定会话 `agent_subject_id` 的私有 World；工具不得传 subject/world。夜间 retain / reflect / temporal / cluster 按 enabled agent 分桶，禁止跨 Anima 混巩固。卧室管理面继续显式传 `agent_subject_id`。
+
 ---
 
 ## 一、Taxonomy（定稿）

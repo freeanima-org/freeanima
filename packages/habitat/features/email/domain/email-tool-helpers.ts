@@ -116,7 +116,7 @@ export const accountPatchSchema = z
 export type EmailToolIo = {
   sendEmail: (input: {
     account_id?: number;
-    subject_kind?: "user" | "agent";
+    subject_id?: number;
     world_id?: number;
     to: string;
     subject: string;

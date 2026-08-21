@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Checkbox, Input, Button } from "@freeanima/ui-kit";
 import type { TaskItemRowPayload } from "@freeanima/shared/rpc-contract/frames/task.ts";
+import { getCachedUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 
 import {
   completeTaskItem,
@@ -61,7 +62,7 @@ export function TaskSubtaskSection({ parent, onChanged }: Props) {
         const projectId = parent.project_id;
         if (typeof projectId !== "number") throw new Error("project_id is required");
         await getTypedHabitatClient().call("project.item.create", {
-          subject_kind: "user",
+          subject_id: getCachedUserSubjectId(),
           title,
           project_id: projectId,
           parent_id: parent.id,

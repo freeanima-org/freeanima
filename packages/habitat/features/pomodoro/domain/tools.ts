@@ -31,10 +31,10 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              subject_kind: { type: "string", enum: ["user", "agent"] },
+              subject_id: { type: "integer", description: "Owning subject entity id" },
               world_id: WORLD_ID_OPTIONAL,
             },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
@@ -49,7 +49,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              subject_kind: { type: "string", enum: ["user", "agent"] },
+              subject_id: { type: "integer", description: "Owning subject entity id" },
               world_id: WORLD_ID_OPTIONAL,
               work_minutes: { type: "number" },
               short_break_minutes: { type: "number" },
@@ -60,7 +60,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               notify_on_phase_end: { type: "boolean" },
               sound_enabled: { type: "boolean" },
             },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
@@ -98,7 +98,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              subject_kind: { type: "string", enum: ["user", "agent"] },
+              subject_id: { type: "integer", description: "Owning subject entity id" },
               world_id: WORLD_ID_OPTIONAL,
               phase: { type: "string", enum: ["work", "short_break", "long_break"] },
               started_at: { type: "string" },
@@ -110,7 +110,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               title: { type: "string" },
             },
             required: [
-              "subject_kind",
+              "subject_id",
               "phase",
               "started_at",
               "finished_at",
@@ -162,11 +162,11 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              subject_kind: { type: "string", enum: ["user", "agent"] },
+              subject_id: { type: "integer", description: "Owning subject entity id" },
               world_id: WORLD_ID_OPTIONAL,
               limit: { type: "number" },
             },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);
@@ -182,11 +182,11 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
           parameters: {
             type: "object",
             properties: {
-              subject_kind: { type: "string", enum: ["user", "agent"] },
+              subject_id: { type: "integer", description: "Owning subject entity id" },
               world_id: WORLD_ID_OPTIONAL,
               period: { type: "string", enum: ["today", "week"] },
             },
-            required: ["subject_kind"],
+            required: ["subject_id"],
           },
           handler: async (args) => {
             const ctx = await storeContext(args);

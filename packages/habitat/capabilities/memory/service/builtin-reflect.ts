@@ -54,6 +54,9 @@ export type BuiltinReflectInput = {
   selfContent?: string;
   /** force → full；否则 incremental（对齐原定时深睡） */
   mode?: DeepSleepMode;
+  /** 按 agent 私有 world 分桶；缺省则全库（仅兼容旧测试） */
+  world_id?: number;
+  agent_subject_id?: number;
 };
 
 function shouldConsolidateBatch(batchRows: SemanticMemoryRow[], mode: DeepSleepMode): boolean {
@@ -63,6 +66,7 @@ function shouldConsolidateBatch(batchRows: SemanticMemoryRow[], mode: DeepSleepM
 async function runConsolidateBatch(opts: {
   batchRows: SemanticMemoryRow[];
   changeLog: DeepSleepChangeLog;
+  agent_subject_id?: number;
 }): Promise<{ roundsExecuted: number; toolCalls: number }> {
   const { batchRows, changeLog } = opts;
   const { text } = formatAllMemoriesMessage(batchRows);
@@ -79,13 +83,16 @@ async function runConsolidateBatch(opts: {
     ],
   });
 
-  const llm = await runReflectLlm({
-    systemPrompt,
-    userMessages,
-    toolNames: [...DEEP_SLEEP_TOOL_NAMES],
-    round: "consolidate",
-    changeLog,
-  });
+  const llm = await runReflectLlm(
+    omitUndefined({
+      systemPrompt,
+      userMessages,
+      toolNames: [...DEEP_SLEEP_TOOL_NAMES],
+      round: "consolidate" as const,
+      changeLog,
+      agent_subject_id: opts.agent_subject_id,
+    }),
+  );
   void snapshotChangeLog(changeLog);
 
   return { roundsExecuted: 1, toolCalls: llm.tool_calls };
@@ -96,6 +103,7 @@ async function runPinTrimBatch(opts: {
   pinnedCount: number;
   pinnedMax: number;
   changeLog: DeepSleepChangeLog;
+  agent_subject_id?: number;
 }): Promise<{ roundsExecuted: number; toolCalls: number }> {
   const { batchRows, pinnedCount, pinnedMax, changeLog } = opts;
   if (batchRows.length === 0) {
@@ -117,13 +125,16 @@ async function runPinTrimBatch(opts: {
     ],
   });
 
-  const llm = await runReflectLlm({
-    systemPrompt,
-    userMessages,
-    toolNames: [...DEEP_SLEEP_PIN_TOOL_NAMES],
-    round: "consolidate_pin",
-    changeLog,
-  });
+  const llm = await runReflectLlm(
+    omitUndefined({
+      systemPrompt,
+      userMessages,
+      toolNames: [...DEEP_SLEEP_PIN_TOOL_NAMES],
+      round: "consolidate_pin" as const,
+      changeLog,
+      agent_subject_id: opts.agent_subject_id,
+    }),
+  );
   void snapshotChangeLog(changeLog);
 
   return { roundsExecuted: 1, toolCalls: llm.tool_calls };
@@ -147,7 +158,9 @@ export async function runBuiltinReflect(
   const mode: DeepSleepMode = input.mode ?? (input.force ? "full" : "incremental");
   void input.selfContent;
 
-  const allRows = await fetchAllActiveMemories();
+  const allRows = await fetchAllActiveMemories(
+    input.world_id != null ? { world_id: input.world_id } : undefined,
+  );
   if (allRows.length === 0) {
     recordDeepSleepRun({ day, roundsCompleted: 0, stats: { total_tool_calls: 0 } });
     return {
@@ -161,7 +174,9 @@ export async function runBuiltinReflect(
   const runtimeData = getActiveRuntimeConfig().data;
   const clustering = resolveMemoryClusteringConfig(runtimeData);
   const { pinned_max: pinnedMax } = resolveMemoryResidentConfig(runtimeData);
-  const clusterRows = await listActiveSemanticMemoryClusterIds();
+  const clusterRows = await listActiveSemanticMemoryClusterIds(
+    input.world_id != null ? { world_id: input.world_id } : undefined,
+  );
   const clusterById = new Map<number, number | null>();
   for (const row of clusterRows) {
     clusterById.set(row.entityId, row.clusterId);
@@ -211,7 +226,9 @@ export async function runBuiltinReflect(
     let working = batch;
     if (batch.clusterId != null) {
       if (!embeddings) {
-        embeddings = await listActiveSemanticMemoryEmbeddings();
+        embeddings = await listActiveSemanticMemoryEmbeddings(
+          input.world_id != null ? { world_id: input.world_id } : undefined,
+        );
       }
       working = expandClusterBatchWithNeighbors(batch, allRows, embeddings, {
         eps: clustering.eps,
@@ -234,6 +251,7 @@ export async function runBuiltinReflect(
     const result = await runConsolidateBatch({
       batchRows,
       changeLog,
+      ...(input.agent_subject_id != null ? { agent_subject_id: input.agent_subject_id } : {}),
     });
     roundsExecuted += result.roundsExecuted;
     totalToolCalls += result.toolCalls;
@@ -262,6 +280,7 @@ export async function runBuiltinReflect(
         pinnedCount,
         pinnedMax,
         changeLog,
+        ...(input.agent_subject_id != null ? { agent_subject_id: input.agent_subject_id } : {}),
       });
       roundsExecuted += result.roundsExecuted;
       totalToolCalls += result.toolCalls;

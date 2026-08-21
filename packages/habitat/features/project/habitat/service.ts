@@ -1,5 +1,4 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config/world-context";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
@@ -26,43 +25,42 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (!subject_kind || subject_kind === auth.subject_type) return;
-  // 单实例 Habitat：user token 可访问 agent 私有 world（Shell User/Agent 切换）
-  if (auth.subject_type === "user" && subject_kind === "agent") return;
+function assertSubjectIdAllowed(auth: RpcRequestAuthContext, subjectId: number): void {
+  if (auth.subject_id === subjectId) return;
+  if (auth.subject_type === "user") return;
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
-  if (subject_kind !== "user" && subject_kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+function requireSubjectId(subject_id: number | undefined): number {
+  if (subject_id == null || !Number.isInteger(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
   }
-  return subject_kind;
+  return subject_id;
 }
 
 async function projectWorldIdForAuth(
   auth: RpcRequestAuthContext,
-  subject_kind?: SubjectKind,
+  subject_id: number | undefined,
 ): Promise<number> {
-  const kind = resolveSubjectKind(subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  return resolveSubjectWorldId(kind);
+  const subjectId = requireSubjectId(subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  return resolvePrivateWorldId(subjectId);
 }
 
 export async function serviceProjectfolderList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind } | undefined,
+  input: { subject_id?: number } | undefined,
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const folders = await listProjectFolders(await projectWorldIdForAuth(auth, input?.subject_kind));
+  const folders = await listProjectFolders(await projectWorldIdForAuth(auth, input?.subject_id));
   return { folders };
 }
 
 export async function serviceProjectfolderCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     name: string;
     parent_id?: number | null;
     sort_order?: number;
@@ -71,9 +69,9 @@ export async function serviceProjectfolderCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...createInput } = input;
+  const { subject_id, ...createInput } = input;
   const item = await createProjectFolder(
-    await projectWorldIdForAuth(auth, subject_kind),
+    await projectWorldIdForAuth(auth, subject_id),
     createInput,
   );
   return { item };
@@ -82,7 +80,7 @@ export async function serviceProjectfolderCreate(
 export async function serviceProjectfolderPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     name?: string;
     parent_id?: number | null;
@@ -91,8 +89,8 @@ export async function serviceProjectfolderPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, ...patch } = input;
-  const item = await updateProjectFolder(await projectWorldIdForAuth(auth, subject_kind), {
+  const { id, subject_id, ...patch } = input;
+  const item = await updateProjectFolder(await projectWorldIdForAuth(auth, subject_id), {
     id,
     ...patch,
   });
@@ -102,12 +100,12 @@ export async function serviceProjectfolderPatch(
 
 export async function serviceProjectfolderDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const ok = await deleteProjectFolder(
-    await projectWorldIdForAuth(auth, input.subject_kind),
+    await projectWorldIdForAuth(auth, input.subject_id),
     input.id,
   );
   if (!ok) throw new Error("NOT_FOUND");
@@ -117,14 +115,14 @@ export async function serviceProjectfolderDelete(
 export async function serviceProjectList(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     folder_id?: number | null;
     status?: ProjectStatus;
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await projectWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await projectWorldIdForAuth(auth, input.subject_id);
   const projects = await listProjects(
     worldId,
     omitUndefined({ folder_id: input.folder_id, status: input.status }),
@@ -135,14 +133,14 @@ export async function serviceProjectList(
 export async function serviceProjectStats(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     folder_id?: number | null;
     status?: ProjectStatus;
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await projectWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await projectWorldIdForAuth(auth, input.subject_id);
   const counts = await listProjectTaskStats(
     worldId,
     omitUndefined({ folder_id: input.folder_id, status: input.status }),
@@ -153,7 +151,7 @@ export async function serviceProjectStats(
 export async function serviceProjectCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     title: string;
     start_at?: string | null;
     end_at?: string | null;
@@ -166,18 +164,18 @@ export async function serviceProjectCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...createInput } = input;
-  const item = await createProject(await projectWorldIdForAuth(auth, subject_kind), createInput);
+  const { subject_id, ...createInput } = input;
+  const item = await createProject(await projectWorldIdForAuth(auth, subject_id), createInput);
   return { item };
 }
 
 export async function serviceProjectGet(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const item = await getProject(await projectWorldIdForAuth(auth, input.subject_kind), input.id);
+  const item = await getProject(await projectWorldIdForAuth(auth, input.subject_id), input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
@@ -185,7 +183,7 @@ export async function serviceProjectGet(
 export async function serviceProjectPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     title?: string;
     start_at?: string | null;
@@ -200,8 +198,8 @@ export async function serviceProjectPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, ...patch } = input;
-  const item = await updateProject(await projectWorldIdForAuth(auth, subject_kind), {
+  const { id, subject_id, ...patch } = input;
+  const item = await updateProject(await projectWorldIdForAuth(auth, subject_id), {
     id,
     ...patch,
   });
@@ -211,11 +209,11 @@ export async function serviceProjectPatch(
 
 export async function serviceProjectDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const ok = await deleteProject(await projectWorldIdForAuth(auth, input.subject_kind), input.id);
+  const ok = await deleteProject(await projectWorldIdForAuth(auth, input.subject_id), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }

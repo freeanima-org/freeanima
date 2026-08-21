@@ -21,9 +21,10 @@ function readAgents(_cwd: string | null | undefined): string {
 }
 
 /** Inner resident-memory body (no XML wrap); fold wraps via xmlTag. */
-export async function renderResidentMemoryBody(): Promise<string> {
+export async function renderResidentMemoryBody(opts?: { world_id?: number }): Promise<string> {
+  if (opts?.world_id == null || opts.world_id <= 0) return "";
   const { top_n } = resolveMemoryResidentConfig(peekActiveRuntimeConfig()?.data);
-  const facts = await listResidentSemanticMemory(top_n);
+  const facts = await listResidentSemanticMemory(top_n, { world_id: opts.world_id });
   if (facts.length === 0) return "";
   return facts
     .map((f) =>
@@ -33,8 +34,8 @@ export async function renderResidentMemoryBody(): Promise<string> {
     .join("\n");
 }
 
-async function renderResidentMemory(): Promise<string> {
-  const body = await renderResidentMemoryBody();
+async function renderResidentMemory(opts?: { world_id?: number }): Promise<string> {
+  const body = await renderResidentMemoryBody(opts);
   if (!body) return "";
   return wrapPromptXmlSection(PROMPT_XML_TAGS.residentMemory, body, {
     frame: RESIDENT_MEMORY_SYSTEM_FRAME,
@@ -52,12 +53,17 @@ export type SystemPromptParts = {
 export async function decomposeSystemPromptParts(
   selfContent: string,
   cwd?: string | null,
-  opts?: { includeResident?: boolean },
+  opts?: { includeResident?: boolean; world_id?: number },
 ): Promise<SystemPromptParts> {
   return {
     self: selfContent.trim(),
     agents: readAgents(cwd),
-    resident: opts?.includeResident === false ? "" : await renderResidentMemory(),
+    resident:
+      opts?.includeResident === false
+        ? ""
+        : await renderResidentMemory(
+            opts?.world_id != null ? { world_id: opts.world_id } : undefined,
+          ),
     toolsets: "",
   };
 }

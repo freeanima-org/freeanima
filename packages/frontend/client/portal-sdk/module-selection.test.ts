@@ -6,7 +6,7 @@ import {
   resetModuleSelectionForTest,
   writeModuleSelection,
 } from "./module-selection.ts";
-import { setSubjectKind } from "./subject-scope-store.ts";
+import { resetResolvedWorldContextCacheForTest } from "./world-context.ts";
 
 function mockLocalStorage(): Storage {
   const store = new Map<string, string>();
@@ -33,15 +33,15 @@ function mockLocalStorage(): Storage {
 }
 
 describe("module-selection", () => {
-  const ctx = { habitatScope: "http://127.0.0.1:2658/sap", subjectKind: "user" as const };
+  const ctx = { habitatScope: "http://127.0.0.1:2658/sap", subjectId: 1 };
 
   beforeEach(() => {
     globalThis.localStorage = mockLocalStorage();
-    setSubjectKind("user");
   });
 
   afterEach(() => {
     resetModuleSelectionForTest();
+    resetResolvedWorldContextCacheForTest();
   });
 
   test("chat 读写 conversationId", () => {
@@ -54,7 +54,7 @@ describe("module-selection", () => {
   test("tasks 读写 listId（兼容旧 number）", () => {
     writeModuleSelection("tasks", { kind: "list", id: 42 }, ctx);
     expect(readModuleSelection("tasks", ctx)).toEqual({ kind: "list", id: 42 });
-    localStorage.setItem("freeanima.module-selection:http://127.0.0.1:2658/sap:user:tasks", "7");
+    localStorage.setItem("freeanima.module-selection:http://127.0.0.1:2658/sap:1:tasks", "7");
     expect(readModuleSelection("tasks", ctx)).toEqual({ kind: "list", id: 7 });
   });
 
@@ -82,16 +82,16 @@ describe("module-selection", () => {
 
   test("habitat 与 subject 键隔离", () => {
     writeModuleSelection("chat", "a", ctx);
-    writeModuleSelection("chat", "b", { ...ctx, subjectKind: "agent" });
+    writeModuleSelection("chat", "b", { ...ctx, subjectId: 2 });
     writeModuleSelection("chat", "c", { ...ctx, habitatScope: "http://other/sap" });
     expect(readModuleSelection("chat", ctx)).toBe("a");
-    expect(readModuleSelection("chat", { ...ctx, subjectKind: "agent" })).toBe("b");
+    expect(readModuleSelection("chat", { ...ctx, subjectId: 2 })).toBe("b");
     expect(readModuleSelection("chat", { ...ctx, habitatScope: "http://other/sap" })).toBe("c");
   });
 
   test("非法 JSON 返回 null", () => {
     localStorage.setItem(
-      "freeanima.module-selection:http://127.0.0.1:2658/sap:user:email",
+      "freeanima.module-selection:http://127.0.0.1:2658/sap:1:email",
       "not-json",
     );
     expect(readModuleSelection("email", ctx)).toBeNull();

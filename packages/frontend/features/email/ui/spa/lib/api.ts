@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getCachedUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
@@ -161,12 +161,12 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
-  return { subject_kind: getSubjectKind(), ...payload };
+function withSubject<T extends Record<string, unknown>>(payload: T) {
+  return { subject_id: getCachedUserSubjectId(), ...payload };
 }
 
 function accountsCacheId(): string {
-  return `accounts:${getSubjectKind()}`;
+  return `accounts:${getCachedUserSubjectId()}`;
 }
 
 async function invalidateAccountsCache(): Promise<void> {
@@ -181,7 +181,7 @@ export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
     namespace: "email",
     id: cacheId,
     fetch: async () => {
-      const data = await habitat().call("emailaccount.list", withSubjectKind({}));
+      const data = await habitat().call("emailaccount.list", withSubject({}));
       return data.accounts;
     },
     offlineError: "emailaccount.list unavailable offline",
@@ -189,32 +189,29 @@ export async function fetchEmailAccounts(): Promise<EmailAccountRow[]> {
 }
 
 export async function fetchEmailProviders(): Promise<EmailProviderPreset[]> {
-  const data = await habitat().call("emailprovider.list", withSubjectKind({}));
+  const data = await habitat().call("emailprovider.list", withSubject({}));
   return data.providers;
 }
 
 export async function createEmailAccount(input: EmailAccountCreateInput): Promise<EmailAccountRow> {
-  const data = await habitat().call("emailaccount.create", withSubjectKind(input));
+  const data = await habitat().call("emailaccount.create", withSubject(input));
   await invalidateAccountsCache();
   return data.account;
 }
 
 export async function patchEmailAccount(input: EmailAccountPatchInput): Promise<EmailAccountRow> {
-  const data = await habitat().call("emailaccount.patch", withSubjectKind(input));
+  const data = await habitat().call("emailaccount.patch", withSubject(input));
   await invalidateAccountsCache();
   return data.account;
 }
 
 export async function deleteEmailAccount(id: number): Promise<void> {
-  await habitat().call("emailaccount.delete", withSubjectKind({ id }));
+  await habitat().call("emailaccount.delete", withSubject({ id }));
   await invalidateAccountsCache();
 }
 
 export async function fetchEmailMailboxes(accountId: number): Promise<EmailMailboxInfo[]> {
-  const data = await habitat().call(
-    "email.mailbox.list",
-    withSubjectKind({ account_id: accountId }),
-  );
+  const data = await habitat().call("email.mailbox.list", withSubject({ account_id: accountId }));
   return data.mailboxes;
 }
 
@@ -224,7 +221,7 @@ export async function createEmailMailbox(
 ): Promise<EmailMailboxInfo[]> {
   const data = await habitat().call(
     "email.mailbox.create",
-    withSubjectKind({ account_id: accountId, path }),
+    withSubject({ account_id: accountId, path }),
   );
   return data.mailboxes;
 }
@@ -236,7 +233,7 @@ export async function renameEmailMailbox(
 ): Promise<EmailMailboxInfo[]> {
   const data = await habitat().call(
     "email.mailbox.rename",
-    withSubjectKind({ account_id: accountId, from, to }),
+    withSubject({ account_id: accountId, from, to }),
   );
   return data.mailboxes;
 }
@@ -247,7 +244,7 @@ export async function deleteEmailMailbox(
 ): Promise<EmailMailboxInfo[]> {
   const data = await habitat().call(
     "email.mailbox.delete",
-    withSubjectKind({ account_id: accountId, path }),
+    withSubject({ account_id: accountId, path }),
   );
   return data.mailboxes;
 }
@@ -261,7 +258,7 @@ export async function fetchEmailMessages(input: {
   direction?: "inbound" | "outbound";
   limit?: number;
 }): Promise<EmailMessageRow[]> {
-  const data = await habitat().call("email.message.list", withSubjectKind(omitUndefined(input)));
+  const data = await habitat().call("email.message.list", withSubject(omitUndefined(input)));
   return data.messages.map(toUiMessage);
 }
 
@@ -271,7 +268,7 @@ export async function readEmailMessage(
 ): Promise<EmailMessageRow> {
   const data = await habitat().call(
     "email.message.read",
-    withSubjectKind({ id, ...(opts.raw === true ? { raw: true } : {}) }),
+    withSubject({ id, ...(opts.raw === true ? { raw: true } : {}) }),
   );
   return toUiMessage(data.message);
 }
@@ -286,30 +283,27 @@ export async function downloadEmailAttachmentBytes(objectFileId: number): Promis
 }
 
 export async function markEmailMessageRead(id: number): Promise<void> {
-  await habitat().call("email.message.markRead", withSubjectKind({ id }));
+  await habitat().call("email.message.markRead", withSubject({ id }));
 }
 
 export async function markEmailMessageUnread(id: number): Promise<void> {
-  await habitat().call("email.message.markUnread", withSubjectKind({ id }));
+  await habitat().call("email.message.markUnread", withSubject({ id }));
 }
 
 export async function markEmailMessageFlagged(id: number): Promise<void> {
-  await habitat().call("email.message.markFlagged", withSubjectKind({ id }));
+  await habitat().call("email.message.markFlagged", withSubject({ id }));
 }
 
 export async function markEmailMessageUnflagged(id: number): Promise<void> {
-  await habitat().call("email.message.markUnflagged", withSubjectKind({ id }));
+  await habitat().call("email.message.markUnflagged", withSubject({ id }));
 }
 
 export async function moveEmailMessage(id: number, targetMailbox: string): Promise<void> {
-  await habitat().call(
-    "email.message.move",
-    withSubjectKind({ id, target_mailbox: targetMailbox }),
-  );
+  await habitat().call("email.message.move", withSubject({ id, target_mailbox: targetMailbox }));
 }
 
 export async function deleteEmailMessage(id: number): Promise<void> {
-  await habitat().call("email.message.delete", withSubjectKind({ id }));
+  await habitat().call("email.message.delete", withSubject({ id }));
 }
 
 export async function attachTaskToEmail(
@@ -318,19 +312,19 @@ export async function attachTaskToEmail(
 ): Promise<{ id: number; title: string; due_at: string | null; remind_at: string | null }> {
   const data = await habitat().call(
     "email.message.attachTask",
-    withSubjectKind(omitUndefined({ id, ...input })),
+    withSubject(omitUndefined({ id, ...input })),
   );
   return data.item;
 }
 
 export async function detachTaskFromEmail(id: number): Promise<void> {
-  await habitat().call("email.message.detachTask", withSubjectKind({ id }));
+  await habitat().call("email.message.detachTask", withSubject({ id }));
 }
 
 /** 探测邮件是否已挂 task_item（同 id） */
 export async function emailHasAttachedTask(id: number): Promise<boolean> {
   try {
-    const data = await habitat().call("task.get", withSubjectKind({ id }));
+    const data = await habitat().call("task.get", withSubject({ id }));
     return data.item != null;
   } catch {
     return false;
@@ -346,7 +340,7 @@ export async function sendEmailMessage(input: {
   bcc?: string;
   attachment_object_file_ids?: number[];
 }): Promise<{ messageId: string; account_id: number; message_entity_id: number }> {
-  const data = await habitat().call("email.send", withSubjectKind(omitUndefined(input)));
+  const data = await habitat().call("email.send", withSubject(omitUndefined(input)));
   return {
     messageId: data.messageId,
     account_id: data.account_id,
@@ -363,7 +357,7 @@ export async function uploadEmailAttachment(file: File): Promise<{
 }> {
   const form = new FormData();
   form.append("file", file, file.name);
-  const res = await habitat().callRaw("email.attachment.upload", withSubjectKind({}), {
+  const res = await habitat().callRaw("email.attachment.upload", withSubject({}), {
     body: form,
   });
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
@@ -389,7 +383,7 @@ export async function listObjectFilesForAttach(opts?: {
 }): Promise<EmailObjectLibraryItem[]> {
   const data = await habitat().call(
     "entity.list",
-    withSubjectKind({
+    withSubject({
       primary_component: "object_file",
       type: "content",
       limit: opts?.limit ?? 50,
@@ -410,7 +404,7 @@ export async function saveEmailDraft(input: {
   subject: string;
   body: string;
 }): Promise<{ message_entity_id: number }> {
-  const data = await habitat().call("email.draft.save", withSubjectKind(omitUndefined(input)));
+  const data = await habitat().call("email.draft.save", withSubject(omitUndefined(input)));
   return { message_entity_id: data.message_entity_id };
 }
 
@@ -429,7 +423,7 @@ export async function syncEmailAccount(
 ): Promise<EmailSyncResult[]> {
   const data = await habitat().call(
     "email.sync",
-    withSubjectKind(omitUndefined({ account_id: accountId, limit })),
+    withSubject(omitUndefined({ account_id: accountId, limit })),
   );
   const results = data.results;
   const failed = results.filter((row) => row.error);
@@ -461,6 +455,6 @@ export type EmailSearchInput = {
 };
 
 export async function searchEmailMessages(input: EmailSearchInput): Promise<EmailMessageRow[]> {
-  const data = await habitat().call("email.message.search", withSubjectKind(omitUndefined(input)));
+  const data = await habitat().call("email.message.search", withSubject(omitUndefined(input)));
   return data.messages.map(toUiMessage);
 }

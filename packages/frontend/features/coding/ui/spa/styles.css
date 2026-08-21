@@ -307,12 +307,20 @@ body,
   flex-shrink: 0;
 }
 
+.coding-chat-toolbar-leading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
 .coding-chat-toolbar-title {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   opacity: 0.7;
+  flex-shrink: 0;
 }
 
 .coding-slash-result {

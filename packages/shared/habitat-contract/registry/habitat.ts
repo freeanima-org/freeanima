@@ -7,6 +7,7 @@ import {
   semanticMemoryListBodySchema,
   semanticMemoryClustersBodySchema,
   semanticMemoryPinBodySchema,
+  selfBlocksBodySchema,
   subjectEntityCreateBodySchema,
   temporalSummaryListBodySchema,
   temporalSummaryRegenerateBodySchema,
@@ -400,7 +401,7 @@ export const habitatMethodDefs = {
     meta: dualTransportMeta(false),
   }),
   "self.blocks": defineHabitatMethod({
-    input: emptyInputSchema,
+    input: selfBlocksBodySchema,
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),
   }),

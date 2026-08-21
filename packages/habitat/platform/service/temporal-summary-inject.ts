@@ -31,9 +31,14 @@ export function createTemporalPeerInjectHandler() {
       return;
     }
 
+    const agentSubjectId =
+      meta != null && isConversationMeta(meta) ? meta.agent_subject_id : undefined;
+    if (agentSubjectId == null || agentSubjectId <= 0) return;
+
     const injects = await resolvePeerTimelineInjects({
       viewerConversationId: conversationId,
       config,
+      agent_subject_id: agentSubjectId,
       peerCache: {
         getJson: cacheGetJson,
         setJson: cacheSetJson,

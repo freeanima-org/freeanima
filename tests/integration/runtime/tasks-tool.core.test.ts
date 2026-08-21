@@ -41,6 +41,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-task-create";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const worldId = testAgentWorldId();
@@ -94,6 +95,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-task-list";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     let listId = 0;
@@ -146,6 +148,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-task-complete";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     let createdId = 0;
@@ -183,6 +186,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-task-remind";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     let output = "";
@@ -210,6 +214,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-tasklist-crud";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     let createdId = 0;
@@ -242,6 +247,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-task-search";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const listA = await getDefaultTaskList(testAgentWorldId());
@@ -299,6 +305,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-task-search-list";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const listA = await getDefaultTaskList(testAgentWorldId());
@@ -355,6 +362,7 @@ describePg("tasks tool (core)", () => {
     const sid = "sess-tasklist-search";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     await runWithToolContext(

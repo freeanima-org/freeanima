@@ -18,7 +18,6 @@ import {
   fetchPomodoroConfig,
   putPomodoroActiveRemote,
   type PomodoroConfigRow,
-  type PomodoroSubjectKind,
 } from "./api.ts";
 import {
   cancelPomodoroPhaseAlert,
@@ -39,7 +38,7 @@ import {
 } from "./timer-engine.ts";
 
 const handledPhaseKeys = new Set<string>();
-const putTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const putTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
 function hubReady(): boolean {
   if (typeof navigator !== "undefined" && !navigator.onLine) return false;
@@ -58,12 +57,12 @@ export function markPhaseHandled(state: PomodoroActiveState): boolean {
 }
 
 async function resolveAlertConfig(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   explicit?: PomodoroConfigRow | null,
 ): Promise<PomodoroConfigRow | null> {
   if (explicit !== undefined) return explicit;
   try {
-    return await fetchPomodoroConfig(subjectKind);
+    return await fetchPomodoroConfig(subjectId);
   } catch {
     return null;
   }
@@ -71,10 +70,10 @@ async function resolveAlertConfig(
 
 export async function applyPomodoroActive(
   next: PomodoroActiveState | null,
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   opts?: { skipRemote?: boolean; alertConfig?: PomodoroConfigRow | null },
 ): Promise<void> {
-  const prev = readPomodoroActiveState(undefined, subjectKind);
+  const prev = readPomodoroActiveState(undefined, subjectId);
   const updatedAtMs = Date.now();
   const meta =
     next == null
@@ -83,94 +82,87 @@ export async function applyPomodoroActive(
           device_id: buildHubActivePayload(next, updatedAtMs).device_id,
           updated_at_ms: updatedAtMs,
         };
-  applyLocalPomodoroActive(next, subjectKind, meta);
+  applyLocalPomodoroActive(next, subjectId, meta);
 
-  const alertConfig = await resolveAlertConfig(subjectKind, opts?.alertConfig);
+  const alertConfig = await resolveAlertConfig(subjectId, opts?.alertConfig);
   await syncPomodoroPhaseLocalAlert(prev, next, alertConfig);
 
   if (opts?.skipRemote) return;
 
   if (next == null) {
-    cancelScheduledPut(subjectKind);
+    cancelScheduledPut(subjectId);
     await preferOnlineWrite(
       async () => {
-        await clearPomodoroActiveRemote(subjectKind);
+        await clearPomodoroActiveRemote(subjectId);
       },
       async () => {
         const { enqueuePomodoroActiveClear } = await import("./pomodoro-offline-store.ts");
-        await enqueuePomodoroActiveClear(subjectKind);
+        await enqueuePomodoroActiveClear(subjectId);
       },
     );
     return;
   }
 
   const immediate = prev == null || prev.sessionLocalId !== next.sessionLocalId;
-  scheduleActivePut(subjectKind, updatedAtMs, immediate);
+  scheduleActivePut(subjectId, updatedAtMs, immediate);
 }
 
-function cancelScheduledPut(subjectKind: PomodoroSubjectKind): void {
-  const prev = putTimers.get(subjectKind);
+function cancelScheduledPut(subjectId: number): void {
+  const prev = putTimers.get(subjectId);
   if (prev) clearTimeout(prev);
-  putTimers.delete(subjectKind);
+  putTimers.delete(subjectId);
 }
 
-function scheduleActivePut(
-  subjectKind: PomodoroSubjectKind,
-  updatedAtMs: number,
-  immediate: boolean,
-): void {
-  cancelScheduledPut(subjectKind);
+function scheduleActivePut(subjectId: number, updatedAtMs: number, immediate: boolean): void {
+  cancelScheduledPut(subjectId);
   if (immediate) {
-    void flushActivePut(subjectKind, updatedAtMs);
+    void flushActivePut(subjectId, updatedAtMs);
     return;
   }
   putTimers.set(
-    subjectKind,
+    subjectId,
     setTimeout(() => {
-      putTimers.delete(subjectKind);
-      void flushActivePut(subjectKind, updatedAtMs);
+      putTimers.delete(subjectId);
+      void flushActivePut(subjectId, updatedAtMs);
     }, 300),
   );
 }
 
-async function flushActivePut(
-  subjectKind: PomodoroSubjectKind,
-  _scheduledAtMs: number,
-): Promise<void> {
-  const state = readPomodoroActiveState(undefined, subjectKind);
+async function flushActivePut(subjectId: number, _scheduledAtMs: number): Promise<void> {
+  const state = readPomodoroActiveState(undefined, subjectId);
   if (!state) return;
   const syncedAtMs = Date.now();
   const active = buildHubActivePayload(state, syncedAtMs);
   await preferOnlineWrite(
     async () => {
-      await putPomodoroActiveRemote(subjectKind, active);
-      applyLocalPomodoroActive(state, subjectKind, {
+      await putPomodoroActiveRemote(subjectId, active);
+      applyLocalPomodoroActive(state, subjectId, {
         device_id: active.device_id,
         updated_at_ms: syncedAtMs,
       });
     },
     async () => {
       const { enqueuePomodoroActivePut } = await import("./pomodoro-offline-store.ts");
-      await enqueuePomodoroActivePut(subjectKind, active);
+      await enqueuePomodoroActivePut(subjectId, active);
     },
   );
 }
 
 export async function pullPomodoroActive(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   opts?: { preferRemote?: boolean },
 ): Promise<void> {
   if (!hubReady()) return;
   try {
-    const remote = await fetchPomodoroActive(subjectKind);
-    const local = readPomodoroActiveState(undefined, subjectKind);
-    const localMeta = getPomodoroSyncMeta(subjectKind);
+    const remote = await fetchPomodoroActive(subjectId);
+    const local = readPomodoroActiveState(undefined, subjectId);
+    const localMeta = getPomodoroSyncMeta(subjectId);
     const merged = mergeRemoteActive(remote, local, localMeta, {
       preferRemote: opts?.preferRemote === true,
     });
     const prev = local;
-    applyLocalPomodoroActive(merged.active, subjectKind, merged.meta);
-    const alertConfig = await resolveAlertConfig(subjectKind);
+    applyLocalPomodoroActive(merged.active, subjectId, merged.meta);
+    const alertConfig = await resolveAlertConfig(subjectId);
     await syncPomodoroPhaseLocalAlert(prev, merged.active, alertConfig);
   } catch {
     /* 保留本地 */
@@ -179,38 +171,38 @@ export async function pullPomodoroActive(
 
 /** Habitat `pomodoro.active.changed` 推送：null 表示对端 clear，直接清空本地。 */
 export function applyPomodoroActiveChangedEvent(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   remote: Parameters<typeof mergeRemoteActive>[0],
 ): void {
-  const prev = readPomodoroActiveState(undefined, subjectKind);
+  const prev = readPomodoroActiveState(undefined, subjectId);
   if (remote == null) {
-    applyLocalPomodoroActive(null, subjectKind, null);
+    applyLocalPomodoroActive(null, subjectId, null);
     void syncPomodoroPhaseLocalAlert(prev, null, null);
     return;
   }
   const local = prev;
-  const localMeta = getPomodoroSyncMeta(subjectKind);
+  const localMeta = getPomodoroSyncMeta(subjectId);
   const merged = mergeRemoteActive(remote, local, localMeta);
-  applyLocalPomodoroActive(merged.active, subjectKind, merged.meta);
-  void resolveAlertConfig(subjectKind).then((config) =>
+  applyLocalPomodoroActive(merged.active, subjectId, merged.meta);
+  void resolveAlertConfig(subjectId).then((config) =>
     syncPomodoroPhaseLocalAlert(prev, merged.active, config),
   );
 }
 
 async function persistPhaseEnd(
   state: PomodoroActiveState,
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   interrupted: boolean,
 ): Promise<void> {
   const payload = buildPhaseEndPayload(state);
   await preferOnlineWrite(
     async () => {
-      if (interrupted) await abortPomodoroSession(subjectKind, payload);
-      else await completePomodoroSession(subjectKind, payload);
+      if (interrupted) await abortPomodoroSession(subjectId, payload);
+      else await completePomodoroSession(subjectId, payload);
     },
     async () => {
-      if (interrupted) await enqueuePomodoroSessionAbort(subjectKind, payload);
-      else await enqueuePomodoroSessionComplete(subjectKind, payload);
+      if (interrupted) await enqueuePomodoroSessionAbort(subjectId, payload);
+      else await enqueuePomodoroSessionComplete(subjectId, payload);
     },
   );
 }
@@ -218,10 +210,10 @@ async function persistPhaseEnd(
 export async function runPhaseComplete(options: {
   state: PomodoroActiveState;
   config: PomodoroConfigRow;
-  subjectKind: PomodoroSubjectKind;
+  subjectId: number;
   deliverAlerts?: boolean;
 }): Promise<"ok" | "duplicate"> {
-  const { state, config, subjectKind, deliverAlerts = true } = options;
+  const { state, config, subjectId, deliverAlerts = true } = options;
   if (!markPhaseHandled(state)) return "duplicate";
 
   const completedTag = pomodoroPhaseAlertTag(state);
@@ -232,7 +224,7 @@ export async function runPhaseComplete(options: {
   const autoStart = shouldAutoStartNext(config, state.phase);
 
   if (!autoStart) {
-    await applyPomodoroActive(null, subjectKind, { alertConfig: config });
+    await applyPomodoroActive(null, subjectId, { alertConfig: config });
   } else {
     await applyPomodoroActive(
       startPhaseState(
@@ -242,12 +234,12 @@ export async function runPhaseComplete(options: {
         transition.cycleIndex,
         transition.completedWorkInCycle,
       ),
-      subjectKind,
+      subjectId,
       { alertConfig: config },
     );
   }
 
-  await persistPhaseEnd(state, subjectKind, false);
+  await persistPhaseEnd(state, subjectId, false);
 
   if (deliverAlerts && (config.notify_on_phase_end || config.sound_enabled)) {
     void deliverLocalReminder({
@@ -265,12 +257,12 @@ export async function runPhaseComplete(options: {
 
 export async function runPhaseAbort(options: {
   state: PomodoroActiveState;
-  subjectKind: PomodoroSubjectKind;
+  subjectId: number;
 }): Promise<void> {
-  const { state, subjectKind } = options;
+  const { state, subjectId } = options;
   await cancelPomodoroPhaseAlert(state);
-  await applyPomodoroActive(null, subjectKind, { alertConfig: null });
-  await persistPhaseEnd(state, subjectKind, true);
+  await applyPomodoroActive(null, subjectId, { alertConfig: null });
+  await persistPhaseEnd(state, subjectId, true);
 }
 
 export function flushPomodoroOutbox(): void {

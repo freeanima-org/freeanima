@@ -1,32 +1,59 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
+import { useEffect, useState } from "react";
 import type { SelfBlockDisplay } from "@freeanima/features/habitat/protocol/habitat-contract/self-block-display.ts";
-import { Badge, Button, Card, CardContent } from "@freeanima/ui-kit";
+import { Badge, Button, Card, CardContent, Spinner } from "@freeanima/ui-kit";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getSelfBlocks } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
-import { catchWithFallback } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
+import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
 import { useMemoryPipeline } from "@freeanima/features/habitat/ui/habitat/lib/use-memory-pipeline.ts";
+import { omitUndefined } from "../../lib/omit-undefined.ts";
 
 export const Route = createFileRoute("/_sidebar/self-layer")({
-  loader: () =>
-    getSelfBlocks().catch(catchWithFallback("self-layer/getSelfBlocks", { blocks: [] })),
-  staleTime: 2 * 60_000,
-  component: SelfLayerPage,
+  component: () => <RedirectToObserver subpath="/self-layer" />,
 });
 
-function SelfLayerPage() {
-  const router = useRouter();
-  const data = Route.useLoaderData() as { blocks?: SelfBlockDisplay[] };
-  const blocks = data.blocks ?? [];
+export function SelfLayerPage() {
+  const agentSubjectId = useObserverAgentSubjectId();
+  const [blocks, setBlocks] = useState<SelfBlockDisplay[]>([]);
+  const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState("");
+  const [reloadToken, setReloadToken] = useState(0);
 
   const { pipelineBusy, pipelineError, runningStepId, startStep } = useMemoryPipeline({
     logScope: "self-layer/refresh",
     onSettled: () => {
-      void router.invalidate();
+      setReloadToken((n) => n + 1);
     },
   });
+
+  useEffect(() => {
+    if (agentSubjectId == null) return () => {};
+    let cancelled = false;
+    setLoading(true);
+    setLocalError("");
+    void getSelfBlocks(omitUndefined({ agent_subject_id: agentSubjectId }))
+      .then((data) => {
+        if (cancelled) return;
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- self.blocks 响应边界
+        const payload = data as { blocks?: SelfBlockDisplay[] };
+        setBlocks(payload.blocks ?? []);
+      })
+      .catch((e: unknown) => {
+        logCaughtError("self-layer/getSelfBlocks", e);
+        if (cancelled) return;
+        setBlocks([]);
+        setLocalError(e instanceof Error ? e.message : "加载失败");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agentSubjectId, reloadToken]);
 
   return (
     <div>
@@ -40,18 +67,20 @@ function SelfLayerPage() {
             <code className="text-xs">update_self_block</code>
           </p>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          isDisabled={pipelineBusy}
-          onClick={() => {
-            setLocalError("");
-            void startStep("self-layer-refresh");
-          }}
-        >
-          {runningStepId === "self-layer-refresh" ? "刷新中…" : "运行自我层刷新"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            isDisabled={pipelineBusy}
+            onClick={() => {
+              setLocalError("");
+              void startStep("self-layer-refresh");
+            }}
+          >
+            {runningStepId === "self-layer-refresh" ? "刷新中…" : "运行自我层刷新"}
+          </Button>
+        </div>
       </div>
 
       {pipelineError || localError ? (
@@ -60,7 +89,12 @@ function SelfLayerPage() {
         </StatusAlert>
       ) : null}
 
-      {blocks.length === 0 ? (
+      {loading || agentSubjectId == null ? (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Spinner className="size-4" />
+          {"加载自我层…"}
+        </div>
+      ) : blocks.length === 0 ? (
         <StatusAlert variant="info">{"暂无自我层数据（PG 不可用或未初始化）。"}</StatusAlert>
       ) : (
         <div className="space-y-4">

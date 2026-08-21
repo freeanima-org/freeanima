@@ -18,7 +18,7 @@ import {
   useContextMenuCapability,
   useHabitatConnection,
   useNetworkOnline,
-  useSubjectScope,
+  useUserSubjectId,
   useShellQuickIdSet,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { readModuleSelection, writeModuleSelection } from "@freeanima/client/portal-sdk";
@@ -91,7 +91,7 @@ function writeUrlEmailAccountId(id: number | null): void {
 }
 
 export function EmailApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const quickIds = useShellQuickIdSet();
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
@@ -149,7 +149,7 @@ export function EmailApp() {
   const [messageHasTask, setMessageHasTask] = useState<Record<number, boolean>>({});
 
   const accountsQuery = usePortalRead({
-    queryKey: ["email", "accounts", subjectKind],
+    queryKey: ["email", "accounts", subjectId],
     queryFn: () => fetchEmailAccounts(),
   });
 
@@ -423,7 +423,7 @@ export function EmailApp() {
 
   useEffect(() => {
     resetForSubjectKind();
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
     if (layoutMode !== "compact") {

@@ -11,7 +11,6 @@ import {
   searchNotes,
   updateNote,
   updateNoteTextBlock,
-  type NoteSubjectKind,
 } from "../domain/index.ts";
 
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
@@ -24,22 +23,22 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-async function storeContext(_deps: RuntimeDeps, subjectKind: NoteSubjectKind) {
-  const worldId = await resolveNoteWorldId(subjectKind);
+async function storeContext(_deps: RuntimeDeps, subjectId: number) {
+  const worldId = await resolveNoteWorldId(subjectId);
   return { worldId };
 }
 
 export async function serviceNoteList(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     tag_ids?: number[];
     limit?: number;
     offset?: number;
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await listNotes(
     ctx,
     omitUndefined({
@@ -54,7 +53,7 @@ export async function serviceNoteList(
 export async function serviceNoteCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     title: string;
     content?: string;
     summary?: string;
@@ -64,7 +63,7 @@ export async function serviceNoteCreate(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await createNote(ctx, input);
   return { item };
 }
@@ -72,14 +71,14 @@ export async function serviceNoteCreate(
 export async function serviceNoteAppend(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     id: number;
     content: string;
     client_op_id?: string;
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await appendNote(ctx, input);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -88,7 +87,7 @@ export async function serviceNoteAppend(
 export async function serviceNotePatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     id: number;
     title?: string;
     summary?: string;
@@ -97,8 +96,8 @@ export async function serviceNotePatch(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { id, subject_kind: _kind, ...patch } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { id, subject_id: _sid, ...patch } = input;
   const item = await updateNote(ctx, { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -106,21 +105,18 @@ export async function serviceNotePatch(
 
 export async function serviceNoteDelete(
   deps: RuntimeDeps,
-  input: { subject_kind: NoteSubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const ok = await deleteNote(ctx, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }
 
-export async function serviceNoteGet(
-  deps: RuntimeDeps,
-  input: { subject_kind: NoteSubjectKind; id: number },
-) {
+export async function serviceNoteGet(deps: RuntimeDeps, input: { subject_id: number; id: number }) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await getNote(ctx, input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -129,14 +125,14 @@ export async function serviceNoteGet(
 export async function serviceNoteSearch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     query: string;
     tag_ids?: number[];
     limit?: number;
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await searchNotes(ctx, input);
   return { items: items.map((item) => ({ ...item, blocks: [] as typeof item.blocks })) };
 }
@@ -144,7 +140,7 @@ export async function serviceNoteSearch(
 export async function serviceNoteBlockCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     parent_id: number;
     content: string;
     title?: string;
@@ -155,7 +151,7 @@ export async function serviceNoteBlockCreate(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await createNoteTextBlock(
     ctx,
     omitUndefined({
@@ -174,7 +170,7 @@ export async function serviceNoteBlockCreate(
 export async function serviceNoteBlockPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     id: number;
     content?: string;
     title?: string;
@@ -183,7 +179,7 @@ export async function serviceNoteBlockPatch(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await updateNoteTextBlock(
     ctx,
     omitUndefined({
@@ -200,10 +196,10 @@ export async function serviceNoteBlockPatch(
 
 export async function serviceNoteBlockDelete(
   deps: RuntimeDeps,
-  input: { subject_kind: NoteSubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const ok = await deleteNoteTextBlock(ctx, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
@@ -212,12 +208,12 @@ export async function serviceNoteBlockDelete(
 export async function serviceNoteBlockReorder(
   deps: RuntimeDeps,
   input: {
-    subject_kind: NoteSubjectKind;
+    subject_id: number;
     items: Array<{ id: number; sort_order: number }>;
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await reorderNoteTextBlocks(ctx, input.items);
   return { items };
 }

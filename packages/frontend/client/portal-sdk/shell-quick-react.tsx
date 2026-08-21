@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 
-import { useSubjectScope } from "./subject-scope-react.tsx";
+import { useUserSubjectId } from "./use-user-subject-id.ts";
 import {
   ensureShellQuickEntries,
   getShellQuickEntriesSnapshot,
@@ -9,7 +9,7 @@ import {
 } from "./shell-quick.ts";
 
 export function useShellQuickEntries(): ShellQuickEntry[] {
-  const { kind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const entries = useSyncExternalStore(
     subscribeShellQuickEntries,
     getShellQuickEntriesSnapshot,
@@ -17,10 +17,11 @@ export function useShellQuickEntries(): ShellQuickEntry[] {
   );
 
   useEffect(() => {
+    if (subjectId == null) return;
     void ensureShellQuickEntries().catch(() => {
       /* 离线 / 未连 Habitat 时保持空列表 */
     });
-  }, [kind]);
+  }, [subjectId]);
 
   return entries;
 }

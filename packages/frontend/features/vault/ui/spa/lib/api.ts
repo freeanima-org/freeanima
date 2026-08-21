@@ -10,11 +10,12 @@ import type {
   VaultPatchPlainInput,
   VaultSecretsViewPayload,
 } from "@freeanima/shared/rpc-contract";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
 import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
+import { omitUndefined } from "@freeanima/shared/util";
 
 type VaultRpcMethod =
   | "vault.list"
@@ -45,15 +46,15 @@ async function vaultRequest<T>(
 }
 
 export async function fetchVaultItems(
-  subjectKind: SubjectKind,
+  subjectId: number,
   opts?: { limit?: number; query?: string; tag_ids?: number[] },
 ): Promise<VaultItemMetaRowPayload[]> {
   const scope = resolveHabitatCacheScope();
   const q = opts?.query?.trim();
   const tagKey = opts?.tag_ids?.length ? opts.tag_ids.join(",") : "";
   const cacheId = q
-    ? `search:${subjectKind}:${q}:tags:${tagKey}`
-    : `list:${subjectKind}:tags:${tagKey}`;
+    ? `search:${subjectId}:${q}:tags:${tagKey}`
+    : `list:${subjectId}:tags:${tagKey}`;
   // 仅 meta 列表；secrets 永不入 IDB（getVaultItem include_secrets 仍在线直连）
   return withOfflineCache({
     scope,
@@ -62,7 +63,7 @@ export async function fetchVaultItems(
     fetch: async () => {
       if (q) {
         const data = await vaultRequest<{ items: VaultItemMetaRowPayload[] }>("vault.search", {
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           query: q,
           limit: opts?.limit ?? 200,
           ...(opts?.tag_ids?.length ? { tag_ids: opts.tag_ids } : {}),
@@ -70,7 +71,7 @@ export async function fetchVaultItems(
         return data.items;
       }
       const data = await vaultRequest<VaultListOutput>("vault.list", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         limit: opts?.limit ?? 200,
         ...(opts?.tag_ids?.length ? { tag_ids: opts.tag_ids } : {}),
       });
@@ -81,12 +82,12 @@ export async function fetchVaultItems(
 }
 
 export async function getVaultItem(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
   includeSecrets = false,
 ): Promise<VaultItemDetailRowPayload> {
   const data = await vaultRequest<VaultGetOutput>("vault.get", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
     include_secrets: includeSecrets,
   });
@@ -94,11 +95,11 @@ export async function getVaultItem(
 }
 
 export async function createVaultItem(
-  subjectKind: SubjectKind,
-  input: Omit<VaultCreateInput, "subject_kind">,
+  subjectId: number,
+  input: Omit<VaultCreateInput, "subject_id">,
 ): Promise<VaultItemMetaRowPayload> {
   const data = await vaultRequest<{ item: VaultItemMetaRowPayload }>("vault.create", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   await invalidatePortalReads(["vault"]);
@@ -106,56 +107,58 @@ export async function createVaultItem(
 }
 
 export async function createVaultItemPlain(
-  input: Omit<VaultCreatePlainInput, "subject_kind">,
+  subjectId: number,
+  input: Omit<VaultCreatePlainInput, "subject_id">,
 ): Promise<VaultItemMetaRowPayload> {
   const data = await vaultRequest<{ item: VaultItemMetaRowPayload }>("vault.createPlain", {
-    subject_kind: "agent",
+    subject_id: subjectId,
     ...input,
   });
   return data.item;
 }
 
 export async function patchVaultItem(
-  subjectKind: SubjectKind,
-  input: Omit<VaultPatchInput, "subject_kind">,
+  subjectId: number,
+  input: Omit<VaultPatchInput, "subject_id">,
 ): Promise<VaultItemMetaRowPayload> {
   const data = await vaultRequest<{ item: VaultItemMetaRowPayload }>("vault.patch", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   return data.item;
 }
 
 export async function patchVaultItemPlain(
-  input: Omit<VaultPatchPlainInput, "subject_kind">,
+  subjectId: number,
+  input: Omit<VaultPatchPlainInput, "subject_id">,
 ): Promise<VaultItemMetaRowPayload> {
   const data = await vaultRequest<{ item: VaultItemMetaRowPayload }>("vault.patchPlain", {
-    subject_kind: "agent",
+    subject_id: subjectId,
     ...input,
   });
   return data.item;
 }
 
-export async function deleteVaultItem(subjectKind: SubjectKind, id: number): Promise<void> {
-  await vaultRequest("vault.delete", { subject_kind: subjectKind, id });
+export async function deleteVaultItem(subjectId: number, id: number): Promise<void> {
+  await vaultRequest("vault.delete", { subject_id: subjectId, id });
   await invalidatePortalReads(["vault"]);
 }
 
 export async function getVaultCryptoConfig(
-  subjectKind: SubjectKind,
+  subjectId: number,
 ): Promise<VaultConfigRowPayload | null> {
   const data = await vaultRequest<{ config: VaultConfigRowPayload | null }>("vault.crypto.get", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
   });
   return data.config;
 }
 
 export async function initVaultCryptoConfig(
-  subjectKind: SubjectKind,
+  subjectId: number,
   input: { salt: string; verifier: string },
 ): Promise<VaultConfigRowPayload> {
   const data = await vaultRequest<{ config: VaultConfigRowPayload }>("vault.crypto.init", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     salt: input.salt,
     verifier: input.verifier,
   });
@@ -168,7 +171,7 @@ export async function changeVaultCryptoConfig(input: {
   rewrapped: Array<{ id: number; dek_wrapped: string; revision_deks?: string[] }>;
 }): Promise<void> {
   await vaultRequest("vault.crypto.change", {
-    subject_kind: "user",
+    subject_id: await getUserSubjectId(),
     salt: input.salt,
     verifier: input.verifier,
     rewrapped: input.rewrapped,
@@ -177,10 +180,10 @@ export async function changeVaultCryptoConfig(input: {
 
 /** User 改密用：列出带 dek_wrapped 的条目（不含解密明文） */
 export async function fetchVaultWrappedDeks(
-  subjectKind: SubjectKind,
+  subjectId: number,
 ): Promise<Array<{ id: number; dek_wrapped: string; revision_deks: string[] }>> {
   const data = await vaultRequest<VaultListOutput>("vault.list", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     limit: 10_000,
     include_secrets: true,
   });
@@ -197,7 +200,7 @@ export async function fetchVaultWrappedDeks(
 }
 
 export async function listVaultItemHistory(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
 ): Promise<
   Array<{
@@ -214,25 +217,30 @@ export async function listVaultItemHistory(
       title: string;
       changed_fields: string[];
     }>;
-  }>("vault.history.list", { subject_kind: subjectKind, id });
+  }>("vault.history.list", { subject_id: subjectId, id });
   return data.revisions;
 }
 
 export async function restoreVaultItemHistory(
-  subjectKind: SubjectKind,
+  subjectId: number,
   id: number,
   revisionIndex: number,
 ): Promise<VaultItemMetaRowPayload> {
   const data = await vaultRequest<{ item: VaultItemMetaRowPayload }>("vault.history.restore", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     id,
     revision_index: revisionIndex,
   });
   return data.item;
 }
 
-export async function ensureAgentVaultConfig(): Promise<VaultConfigRowPayload> {
-  const data = await vaultRequest<{ config: VaultConfigRowPayload }>("vault.ensureAgent", {});
+export async function ensureAgentVaultConfig(
+  agentSubjectId?: number,
+): Promise<VaultConfigRowPayload> {
+  const data = await vaultRequest<{ config: VaultConfigRowPayload }>(
+    "vault.ensureAgent",
+    omitUndefined({ agent_subject_id: agentSubjectId }),
+  );
   return data.config;
 }
 

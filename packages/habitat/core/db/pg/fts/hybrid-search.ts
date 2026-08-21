@@ -55,6 +55,7 @@ export async function hybridSearchSemanticMemory(
     offset?: number;
     source_conversations?: string[];
     cluster_id?: number | null;
+    world_id?: number;
     /**
      * When true, run vector channel on the **full** query sentence and RRF-merge,
      * then drop vector-only hits (boost lexical matches only).
@@ -75,6 +76,7 @@ export async function hybridSearchSemanticMemory(
     status: opts?.status,
     source_conversations: opts?.source_conversations,
     cluster_id: opts?.cluster_id,
+    world_id: opts?.world_id,
   });
 
   const content = await extractContentWords(q);
@@ -162,6 +164,7 @@ export async function hybridCountSemanticMemory(
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
     cluster_id?: number | null;
+    world_id?: number;
   },
 ): Promise<number> {
   const q = query.trim();
@@ -185,6 +188,7 @@ export async function hybridCountSemanticMemory(
       status,
       source_conversations,
       cluster_id: opts?.cluster_id,
+      world_id: opts?.world_id,
     }),
   );
 

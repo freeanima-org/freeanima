@@ -77,6 +77,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-list-project";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const worldId = testAgentWorldId();
@@ -146,6 +147,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-tags";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const worldId = testAgentWorldId();
@@ -181,6 +183,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-tags-ci";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const worldId = testAgentWorldId();
@@ -217,6 +220,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-tags-merge";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     const worldId = testAgentWorldId();
@@ -254,6 +258,7 @@ describePg("tasks tool (enhanced)", () => {
     const sid = "sess-task-create-bad-tag-ids";
     await testConv().initConversation(sid, getProfileHopModel(testCfg(), "chat"), {
       platform: TEST_SAP_CHAT_PLATFORM,
+      agent_subject_id: 2,
     });
 
     let output = "";

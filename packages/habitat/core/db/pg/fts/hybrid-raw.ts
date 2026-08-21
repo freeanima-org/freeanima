@@ -82,6 +82,7 @@ export async function searchSemanticMemoryFtsRaw(
     status?: "active" | "deprecated" | "all";
     source_conversations?: string[];
     cluster_id?: number | null;
+    world_id?: number;
   },
 ): Promise<SemanticFtsHit[]> {
   const q = query.trim();
@@ -109,6 +110,7 @@ export async function searchSemanticMemoryFtsRaw(
         status,
         source_conversations,
         cluster_id: opts?.cluster_id,
+        world_id: opts?.world_id,
       }),
     ),
   ];

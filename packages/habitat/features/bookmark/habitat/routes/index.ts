@@ -61,7 +61,7 @@ export const bookmarkHabitatRoutes = bindHabitatRouteHandlers(bookmarkMethodDefs
     service.serviceBookmarkUpsertBatch(
       depsOf(deps).runtime.runtimeDeps(),
       {
-        subject_kind: input.subject_kind,
+        subject_id: input.subject_id,
         items: input.items.map((item) => omitUndefined(item)),
       },
       ctxAuth(ctx),

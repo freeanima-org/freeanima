@@ -1,6 +1,5 @@
 import { PROFILE_REFLECT } from "@freeanima/habitat/core/provider";
 import { getProfileHopModel } from "@freeanima/habitat/core/config";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { applyDeepSleepToolResult } from "@freeanima/habitat/capabilities/memory";
 import {
   registerAutobiographyEngine,
@@ -73,7 +72,32 @@ type ReflectStreamOptions = {
   maxLoopIterations: number;
   metadata?: Record<string, unknown>;
   onToolResult?: (name: string, content: string) => void;
+  subjectId?: number;
 };
+
+async function resolveEngineSubjectId(opts: {
+  subjectId?: number;
+  metadata?: Record<string, unknown>;
+}): Promise<number> {
+  if (opts.subjectId != null && opts.subjectId > 0) return opts.subjectId;
+  const metaAgent = opts.metadata?.agent_subject_id;
+  if (typeof metaAgent === "number" && metaAgent > 0) return metaAgent;
+  const { getActiveRetainAgentSubjectId } =
+    await import("@freeanima/habitat/capabilities/memory/service/retain-context.ts");
+  const retainAgent = getActiveRetainAgentSubjectId();
+  if (retainAgent != null && retainAgent > 0) return retainAgent;
+  const { getActiveRetainProvenance } =
+    await import("@freeanima/habitat/capabilities/memory/service/retain-context.ts");
+  const provenance = getActiveRetainProvenance();
+  if (provenance?.conversation_id) {
+    const { resolveBoundAgentForConversation } =
+      await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+    return (await resolveBoundAgentForConversation(provenance.conversation_id)).agent_subject_id;
+  }
+  // 无会话绑定的维护路径（如 autobiography）：仍用默认聊天 agent
+  const { getResolvedWorldContext } = await import("@freeanima/habitat/core/config/world-context");
+  return getResolvedWorldContext().agent_subject_id;
+}
 
 async function runReflectStream(
   deps: FullRuntimeDeps,
@@ -94,12 +118,17 @@ async function runReflectStream(
         dataParts: input.userMessages.map((body) => ({ body })),
       });
 
+  const subjectId = await resolveEngineSubjectId({
+    ...(opts.subjectId != null ? { subjectId: opts.subjectId } : {}),
+    ...(opts.metadata ? { metadata: opts.metadata } : {}),
+  });
+
   const result = await runAutoLlm(
     deps,
     omitUndefined({
       runName: opts.runName,
       runKind: opts.runKind,
-      subjectId: getResolvedWorldContext().agent_subject_id,
+      subjectId,
       systemPrompt: prompt.systemPrompt,
       userMessages: prompt.userMessages,
       model,
@@ -135,10 +164,13 @@ async function runTemporalSummaryTurn(
   input: TemporalSummaryEngineInput,
 ): Promise<TemporalSummaryEngineResult> {
   // summarizeTemporalText 已 composeAutoLlmPrompt（含 protocol / task_params）
+  const subjectId = await resolveEngineSubjectId(
+    input.agent_subject_id != null ? { subjectId: input.agent_subject_id } : {},
+  );
   const result = await runAutoLlm(deps, {
     runName: "temporal-summary",
     runKind: "temporal-summary",
-    subjectId: getResolvedWorldContext().agent_subject_id,
+    subjectId,
     systemPrompt: input.systemPrompt,
     userMessages: input.userMessages,
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
@@ -166,14 +198,14 @@ async function runSelfLayerRefreshTurn(
   const result = await runAutoLlm(deps, {
     runName: "self-layer-refresh",
     runKind: "self-layer-refresh",
-    subjectId: getResolvedWorldContext().agent_subject_id,
+    subjectId: input.agent_subject_id,
     systemPrompt,
     userMessages,
     model: getProfileHopModel(deps.engine.config.data, PROFILE_REFLECT),
     toolNames: [],
     maxLoopIterations: 1,
     maxDurationMs: AUTO_LLM_DEFAULT_MAX_DURATION_MS,
-    metadata: { self_layer_refresh: true },
+    metadata: { self_layer_refresh: true, agent_subject_id: input.agent_subject_id },
   });
   if (result.status === "error") {
     throw new Error(result.error ?? "self-layer refresh LLM failed");
@@ -189,7 +221,12 @@ async function runReflectTurn(
     runKind: "memory-reflect",
     runName: `memory-reflect/${input.round}`,
     maxLoopIterations: REFLECT_MAX_TURNS,
-    metadata: { reflect: true, round: input.round },
+    metadata: omitUndefined({
+      reflect: true,
+      round: input.round,
+      agent_subject_id: input.agent_subject_id,
+    }),
+    ...(input.agent_subject_id != null ? { subjectId: input.agent_subject_id } : {}),
     onToolResult: (name, content) => {
       if (input.changeLog) {
         applyDeepSleepToolResult(input.changeLog, name, content);

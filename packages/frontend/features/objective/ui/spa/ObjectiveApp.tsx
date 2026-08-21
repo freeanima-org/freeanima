@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Target, Trash2 } from "lucide-react";
 import {
-  useSubjectScope,
-  SubjectScopeToggle,
+  useUserSubjectId,
   useActionSheetCapability,
   useContextMenuCapability,
 } from "@freeanima/client/portal-sdk/react.tsx";
@@ -188,7 +187,7 @@ function resetDraftForm(setters: {
 }
 
 export function ObjectiveApp() {
-  const { kind: subjectKind } = useSubjectScope();
+  const subjectId = useUserSubjectId();
   const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useActionSheetCapability();
   const [items, setItems] = useState<ObjectiveRow[]>([]);
@@ -233,7 +232,7 @@ export function ObjectiveApp() {
   const load = useCallback(async () => {
     setError("");
     try {
-      const rows = await fetchObjectives(subjectKind, { include_inactive: includeInactive });
+      const rows = await fetchObjectives(subjectId, { include_inactive: includeInactive });
       setItems(rows);
       setSelectedId((prev) => {
         if (prev != null && rows.some((r) => r.id === prev)) return prev;
@@ -244,7 +243,7 @@ export function ObjectiveApp() {
     } finally {
       setLoading(false);
     }
-  }, [subjectKind, includeInactive]);
+  }, [subjectId, includeInactive]);
 
   useEffect(() => {
     setLoading(true);
@@ -296,7 +295,7 @@ export function ObjectiveApp() {
     setSaving(true);
     setError("");
     try {
-      await patchObjectiveRemote(subjectKind, row.id, { status: next });
+      await patchObjectiveRemote(subjectId, row.id, { status: next });
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -356,7 +355,7 @@ export function ObjectiveApp() {
     setSaving(true);
     setError("");
     try {
-      const item = await createObjectiveRemote(subjectKind, {
+      const item = await createObjectiveRemote(subjectId, {
         title: title.trim() || "未命名目标",
         content,
         status,
@@ -386,7 +385,7 @@ export function ObjectiveApp() {
     setSaving(true);
     setError("");
     try {
-      await patchObjectiveRemote(subjectKind, selected.id, {
+      await patchObjectiveRemote(subjectId, selected.id, {
         title: title.trim() || selected.title,
         content,
         status,
@@ -415,7 +414,7 @@ export function ObjectiveApp() {
     setSaving(true);
     setError("");
     try {
-      await deleteObjectiveRemote(subjectKind, selected.id);
+      await deleteObjectiveRemote(subjectId, selected.id);
       setSelectedId(null);
       await load();
     } catch (e) {
@@ -435,7 +434,7 @@ export function ObjectiveApp() {
     setSaving(true);
     setError("");
     try {
-      await linkObjectiveRemote(subjectKind, selected.id, { kind: parsed.data, id });
+      await linkObjectiveRemote(subjectId, selected.id, { kind: parsed.data, id });
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -449,7 +448,7 @@ export function ObjectiveApp() {
     setSaving(true);
     setError("");
     try {
-      await unlinkObjectiveRemote(subjectKind, selected.id, link);
+      await unlinkObjectiveRemote(subjectId, selected.id, link);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -467,7 +466,6 @@ export function ObjectiveApp() {
             管理多层级个人目标；执行可链接到项目、任务、清单与日程。
           </p>
         </div>
-        <SubjectScopeToggle />
       </div>
 
       {error ? <StatusAlert variant="error">{error}</StatusAlert> : null}

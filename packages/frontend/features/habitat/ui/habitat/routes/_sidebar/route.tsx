@@ -23,16 +23,19 @@ function HabitatSidebarNav() {
             {group.label}
           </div>
           <div className="space-y-1">
-            {group.items.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="session-item"
-                activeProps={{ className: "session-item sidebar-nav-active" }}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {group.items.map((item) => {
+              if (!item.to) return null;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="session-item"
+                  activeProps={{ className: "session-item sidebar-nav-active" }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       ))}
@@ -48,8 +51,10 @@ function HabitatLayout() {
   const headerTitle = useMemo(() => {
     const items = habitatNavItems();
     const active = items
-      .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
-      .toSorted((a, b) => b.to.length - a.to.length)[0];
+      .filter(
+        (item) => item.to != null && (pathname === item.to || pathname.startsWith(`${item.to}/`)),
+      )
+      .toSorted((a, b) => (b.to?.length ?? 0) - (a.to?.length ?? 0))[0];
     return active?.label ?? "栖息地";
   }, [pathname]);
 

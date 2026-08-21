@@ -324,8 +324,18 @@ export async function createSubjectEntity(input: {
   title: string;
   summary?: string;
   content?: string;
+  enabled?: boolean;
+  self_foundation?: Partial<Record<string, string>>;
 }) {
+  if (input.type === "user") {
+    const { assertAtMostOneUser } = await import("@freeanima/habitat/core/db/pg/entity");
+    await assertAtMostOneUser();
+  }
   const primary = input.type === "agent" ? AGENT_CONFIG_COMPONENT : USER_CONFIG_COMPONENT;
+  const body: Record<string, unknown> = {};
+  if (input.type === "agent" && input.enabled === false) {
+    body.enabled = false;
+  }
   const created = await createEntity({
     type: input.type,
     world_id: ENTITY_ROOT_WORLD_ID,
@@ -334,16 +344,62 @@ export async function createSubjectEntity(input: {
     title: input.title,
     summary: input.summary ?? "",
     content: input.content ?? "",
-    body: {},
+    body,
   });
 
   const defaultPrivateWorldId = await createDefaultPrivateWorldForSubject(created);
-  const withDefaultWorld = await updateEntity({
-    id: created.id,
-    body: { default_private_world_id: defaultPrivateWorldId },
-  });
+  let withDefaultWorld =
+    (await updateEntity({
+      id: created.id,
+      body: { ...body, default_private_world_id: defaultPrivateWorldId },
+    })) ?? created;
 
-  return withDefaultWorld ?? created;
+  // 即时 crypto（依赖 identity 段已存在）
+  try {
+    const { getActiveRuntimeConfig } = await import("@freeanima/habitat/core/config");
+    const { isPatchableRuntimeConfig } = await import("@freeanima/habitat/platform/config");
+    const { ensureSubjectCryptoMaterial } = await import("@freeanima/habitat/core/identity");
+    const config = getActiveRuntimeConfig();
+    const identity = config.data.identity;
+    if (identity?.habitat_instance_id && isPatchableRuntimeConfig(config)) {
+      const { material, subject } = await ensureSubjectCryptoMaterial(
+        withDefaultWorld,
+        identity.habitat_instance_id,
+      );
+      withDefaultWorld = subject;
+      const keys = { ...identity.subject_keys };
+      keys[material.public_id] = {
+        public_key: material.public_key,
+        private_key: material.private_key,
+      };
+      await config.replaceSection("identity", {
+        ...identity,
+        subject_keys: keys,
+      });
+    }
+  } catch {
+    /* boot 前或无 identity：下次 boot 扫齐 */
+  }
+
+  if (input.type === "agent" && input.self_foundation) {
+    const { upsertSelfBlock } = await import("@freeanima/habitat/core/db/pg/self-layer");
+    const { SELF_BLOCK_KEYS } = await import("@freeanima/habitat/core/db/pg/self-layer/types");
+    for (const key of SELF_BLOCK_KEYS) {
+      const content = input.self_foundation[key]?.trim();
+      if (!content) continue;
+      await upsertSelfBlock(
+        {
+          block_key: key,
+          content,
+          locked: key === "existence_anchor",
+          updated_by: "bootstrap",
+        },
+        withDefaultWorld.id,
+      );
+    }
+  }
+
+  return withDefaultWorld;
 }
 
 export async function updateSubjectEntity(
@@ -353,6 +409,7 @@ export async function updateSubjectEntity(
     summary?: string;
     content?: string;
     default_private_world_id?: number;
+    enabled?: boolean;
   },
 ) {
   const existing = await getEntity(id);
@@ -364,12 +421,18 @@ export async function updateSubjectEntity(
     await applySubjectDefaultPrivateWorld(id, input.default_private_world_id);
   }
 
+  const bodyPatch: Record<string, unknown> = {};
+  if (existing.type === "agent" && input.enabled !== undefined) {
+    bodyPatch.enabled = input.enabled;
+  }
+
   const updated = await updateEntity(
     omitUndefined({
       id,
       title: input.title,
       summary: input.summary,
       content: input.content,
+      ...(Object.keys(bodyPatch).length > 0 ? { body: bodyPatch } : {}),
     }),
   );
   if (!updated) {

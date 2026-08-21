@@ -41,26 +41,26 @@ describe("resolveWorldSubjectIds", () => {
   });
 });
 
+function sampleCtx() {
+  return {
+    user_subject_id: 1,
+    user_world_id: 10,
+    commons_world_id: 30,
+    default_chat_agent_subject_id: 2,
+    default_chat_agent_world_id: 20,
+    agent_subject_id: 2,
+    agent_world_id: 20,
+  };
+}
+
 describe("ResolvedWorldContext", () => {
   afterEach(() => {
     resetResolvedWorldContextForTest();
   });
 
-  it("binds and reads five ids", () => {
-    bindResolvedWorldContext({
-      user_subject_id: 1,
-      agent_subject_id: 2,
-      user_world_id: 10,
-      agent_world_id: 20,
-      commons_world_id: 30,
-    });
-    expect(getResolvedWorldContext()).toEqual({
-      user_subject_id: 1,
-      agent_subject_id: 2,
-      user_world_id: 10,
-      agent_world_id: 20,
-      commons_world_id: 30,
-    });
+  it("binds and reads ids", () => {
+    bindResolvedWorldContext(sampleCtx());
+    expect(getResolvedWorldContext()).toEqual(sampleCtx());
   });
 
   it("throws when unbound", () => {
@@ -69,25 +69,13 @@ describe("ResolvedWorldContext", () => {
 
   it("tryGet returns null when unbound", () => {
     expect(tryGetResolvedWorldContext()).toBeNull();
-    bindResolvedWorldContext({
-      user_subject_id: 1,
-      agent_subject_id: 2,
-      user_world_id: 10,
-      agent_world_id: 20,
-      commons_world_id: 30,
-    });
-    expect(tryGetResolvedWorldContext()?.agent_subject_id).toBe(2);
+    bindResolvedWorldContext(sampleCtx());
+    expect(tryGetResolvedWorldContext()?.default_chat_agent_subject_id).toBe(2);
   });
 
-  it("resolveSubjectWorldId maps user and agent", () => {
-    bindResolvedWorldContext({
-      user_subject_id: 1,
-      agent_subject_id: 2,
-      user_world_id: 10,
-      agent_world_id: 20,
-      commons_world_id: 30,
-    });
+  it("resolveSubjectWorldId maps user only; agent throws", () => {
+    bindResolvedWorldContext(sampleCtx());
     expect(resolveSubjectWorldId("user")).toBe(10);
-    expect(resolveSubjectWorldId("agent")).toBe(20);
+    expect(() => resolveSubjectWorldId("agent")).toThrow(/removed/);
   });
 });

@@ -77,6 +77,16 @@ export function createPassiveMemoryRecallHandler() {
       return;
     }
 
+    let agentWorldId: number;
+    try {
+      const { resolveBoundAgentForConversation } =
+        await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+      agentWorldId = (await resolveBoundAgentForConversation(conversationId)).agent_world_id;
+    } catch {
+      finishDebug(ctx, undefined, { skipped_reason: "no_bound_agent", query: "" });
+      return;
+    }
+
     const query = focusPassiveRecallQuery(stripTimePrefixFromUserContent(lastMsg.content));
     if (!query) {
       finishDebug(ctx, undefined, { skipped_reason: "empty_query", query: "" });
@@ -91,6 +101,7 @@ export function createPassiveMemoryRecallHandler() {
         limit: config.limit,
         min_score: config.min_score,
         min_relative_score: config.min_relative_score,
+        world_id: agentWorldId,
         debug: ctx.llm_debug === true,
       });
       hits = result.hits;
@@ -113,7 +124,7 @@ export function createPassiveMemoryRecallHandler() {
 
     let excludedResidentIds: number[] = [];
     if (config.exclude_resident && hits.length > 0) {
-      const resident = await listResidentSemanticMemory();
+      const resident = await listResidentSemanticMemory(undefined, { world_id: agentWorldId });
       const residentIds = new Set(resident.map((row) => row.id));
       const before = hits;
       hits = hits.filter((hit) => !residentIds.has(hit.semantic_memory_id));

@@ -1,5 +1,6 @@
 import { resolveAgentVaultSecret } from "@freeanima/habitat/capabilities/connectors/vault";
 import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config";
 
 const cache = new Map<string, string | Error>();
 
@@ -15,7 +16,8 @@ export async function resolveVaultField(itemId: number, field: string): Promise<
     return hit;
   }
   try {
-    const worldId = resolveVaultWorldId("agent");
+    const ctx = getResolvedWorldContext();
+    const worldId = await resolveVaultWorldId(ctx.default_chat_agent_subject_id);
     const value = await resolveAgentVaultSecret(worldId, itemId, field);
     cache.set(key, value);
     return value;

@@ -481,8 +481,8 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return fts.getRebuildFtsJobStatus();
   }
 
-  listSelfBlocks(): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
-    return selfLayer.listSelfBlocks(this.runtimeDeps());
+  listSelfBlocks(agentSubjectId?: number): Promise<{ blocks: selfLayer.SelfBlockDisplay[] }> {
+    return selfLayer.listSelfBlocks(this.runtimeDeps(), agentSubjectId);
   }
 
   getPromptDebug(conversationId?: string | null): Promise<promptDebug.PromptDebugResponse> {

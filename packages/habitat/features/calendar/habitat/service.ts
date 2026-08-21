@@ -11,7 +11,6 @@ import {
   updateCalendarUiPrefs,
   type BuiltinCalendarSourceId,
   type CalendarRangeKind,
-  type CalendarSubjectKind,
 } from "../domain/index.ts";
 
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
@@ -25,15 +24,15 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-async function storeContext(_deps: RuntimeDeps, subjectKind: CalendarSubjectKind) {
-  const worldId = await resolveCalendarWorldId(subjectKind);
+async function storeContext(_deps: RuntimeDeps, subjectId: number) {
+  const worldId = await resolveCalendarWorldId(subjectId);
   return { worldId };
 }
 
 export async function serviceCalendarList(
   deps: RuntimeDeps,
   input: {
-    subject_kind: CalendarSubjectKind;
+    subject_id: number;
     range_start?: string;
     range_end?: string;
     limit?: number;
@@ -41,7 +40,7 @@ export async function serviceCalendarList(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await listCalendarEvents(
     ctx,
     omitUndefined({
@@ -57,7 +56,7 @@ export async function serviceCalendarList(
 export async function serviceCalendarCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: CalendarSubjectKind;
+    subject_id: number;
     title: string;
     content?: string;
     start_at: string;
@@ -74,7 +73,7 @@ export async function serviceCalendarCreate(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await createCalendarEvent(ctx, input);
   return { item };
 }
@@ -82,7 +81,7 @@ export async function serviceCalendarCreate(
 export async function serviceCalendarPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind: CalendarSubjectKind;
+    subject_id: number;
     id: number;
     title?: string;
     content?: string;
@@ -99,8 +98,8 @@ export async function serviceCalendarPatch(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
-  const { id, subject_kind: _kind, ...patch } = input;
+  const ctx = await storeContext(deps, input.subject_id);
+  const { id, subject_id: _sid, ...patch } = input;
   const item = await updateCalendarEvent(ctx, { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -108,10 +107,10 @@ export async function serviceCalendarPatch(
 
 export async function serviceCalendarDelete(
   deps: RuntimeDeps,
-  input: { subject_kind: CalendarSubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const ok = await deleteCalendarEvent(ctx, input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
@@ -119,10 +118,10 @@ export async function serviceCalendarDelete(
 
 export async function serviceCalendarGet(
   deps: RuntimeDeps,
-  input: { subject_kind: CalendarSubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await getCalendarEvent(ctx, input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
@@ -130,10 +129,10 @@ export async function serviceCalendarGet(
 
 export async function serviceCalendarConvertToTask(
   deps: RuntimeDeps,
-  input: { subject_kind: CalendarSubjectKind; id: number },
+  input: { subject_id: number; id: number },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const item = await convertCalendarEventToTaskItem(ctx, input.id);
   return { item };
 }
@@ -141,7 +140,7 @@ export async function serviceCalendarConvertToTask(
 export async function serviceCalendarRange(
   deps: RuntimeDeps,
   input: {
-    subject_kind: CalendarSubjectKind;
+    subject_id: number;
     from: string;
     to: string;
     kinds?: CalendarRangeKind[];
@@ -150,7 +149,7 @@ export async function serviceCalendarRange(
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const items = await listCalendarRange(
     ctx,
     omitUndefined({
@@ -164,12 +163,9 @@ export async function serviceCalendarRange(
   return { items };
 }
 
-export async function serviceCalendarPrefsGet(
-  deps: RuntimeDeps,
-  input: { subject_kind: CalendarSubjectKind },
-) {
+export async function serviceCalendarPrefsGet(deps: RuntimeDeps, input: { subject_id: number }) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const prefs = await getCalendarUiPrefs(ctx);
   return { prefs };
 }
@@ -177,13 +173,13 @@ export async function serviceCalendarPrefsGet(
 export async function serviceCalendarPrefsUpdate(
   deps: RuntimeDeps,
   input: {
-    subject_kind: CalendarSubjectKind;
+    subject_id: number;
     viewMode?: CalendarUiPrefsPatch["viewMode"];
     byView?: CalendarUiPrefsPatch["byView"];
   },
 ) {
   assertPg(deps);
-  const ctx = await storeContext(deps, input.subject_kind);
+  const ctx = await storeContext(deps, input.subject_id);
   const prefs = await updateCalendarUiPrefs(
     ctx,
     omitUndefined({

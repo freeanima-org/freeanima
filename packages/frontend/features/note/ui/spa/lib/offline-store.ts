@@ -27,78 +27,65 @@ import {
 } from "@freeanima/client/portal-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-typed-client.ts";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import { randomPublicId } from "@freeanima/shared/util";
 import type {
   NoteRowPayload,
   NoteTextBlockPayload,
 } from "@freeanima/shared/rpc-contract/frames/note.ts";
-import type { SubjectKind } from "@freeanima/client/portal-sdk";
 
 export type NoteRow = NoteRowPayload;
 export type NoteTextBlock = NoteTextBlockPayload;
-export type NoteSubjectKind = SubjectKind;
 
 const MODULE_ID = "note";
 const NAMESPACE = "note";
 
-function listCacheId(subjectKind: NoteSubjectKind): string {
-  return `list:${subjectKind}`;
+function listCacheId(subjectId: number): string {
+  return `list:${subjectId}`;
 }
 
-function noteCacheId(subjectKind: NoteSubjectKind, id: number): string {
-  return `note:${subjectKind}:${id}`;
+function noteCacheId(subjectId: number, id: number): string {
+  return `note:${subjectId}:${id}`;
 }
 
 function sortNotes(items: NoteRow[]): NoteRow[] {
   return items.toSorted((a, b) => b.updated_at.localeCompare(a.updated_at) || b.id - a.id);
 }
 
-async function readLocalList(scope: string, subjectKind: NoteSubjectKind): Promise<NoteRow[]> {
-  const cached = await readOfflineCache<NoteRow[]>(scope, NAMESPACE, listCacheId(subjectKind));
+async function readLocalList(scope: string, subjectId: number): Promise<NoteRow[]> {
+  const cached = await readOfflineCache<NoteRow[]>(scope, NAMESPACE, listCacheId(subjectId));
   return cached ?? [];
 }
 
-async function writeLocalList(
-  scope: string,
-  subjectKind: NoteSubjectKind,
-  items: NoteRow[],
-): Promise<void> {
-  await writeOfflineCache(scope, NAMESPACE, listCacheId(subjectKind), sortNotes(items));
+async function writeLocalList(scope: string, subjectId: number, items: NoteRow[]): Promise<void> {
+  await writeOfflineCache(scope, NAMESPACE, listCacheId(subjectId), sortNotes(items));
 }
 
-async function upsertLocalNote(
-  scope: string,
-  subjectKind: NoteSubjectKind,
-  note: NoteRow,
-): Promise<void> {
-  const list = await readLocalList(scope, subjectKind);
+async function upsertLocalNote(scope: string, subjectId: number, note: NoteRow): Promise<void> {
+  const list = await readLocalList(scope, subjectId);
   const next = list.filter((e) => e.id !== note.id);
   next.unshift(note);
-  await writeLocalList(scope, subjectKind, next);
-  await writeOfflineCache(scope, NAMESPACE, noteCacheId(subjectKind, note.id), note);
+  await writeLocalList(scope, subjectId, next);
+  await writeOfflineCache(scope, NAMESPACE, noteCacheId(subjectId, note.id), note);
 }
 
-async function removeLocalNote(
-  scope: string,
-  subjectKind: NoteSubjectKind,
-  id: number,
-): Promise<void> {
-  const list = await readLocalList(scope, subjectKind);
+async function removeLocalNote(scope: string, subjectId: number, id: number): Promise<void> {
+  const list = await readLocalList(scope, subjectId);
   await writeLocalList(
     scope,
-    subjectKind,
+    subjectId,
     list.filter((e) => e.id !== id),
   );
 }
 
 async function rewriteLocalNoteId(
   scope: string,
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   tempId: number,
   serverId: number,
   serverRow?: NoteRow,
 ): Promise<void> {
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   const existing = list.find((e) => e.id === tempId);
   const rewritten: NoteRow = serverRow
     ? { ...serverRow }
@@ -122,8 +109,8 @@ async function rewriteLocalNoteId(
         };
   const next = list.filter((e) => e.id !== tempId && e.id !== serverId);
   next.unshift(rewritten);
-  await writeLocalList(scope, subjectKind, next);
-  await writeOfflineCache(scope, NAMESPACE, noteCacheId(subjectKind, serverId), rewritten);
+  await writeLocalList(scope, subjectId, next);
+  await writeOfflineCache(scope, NAMESPACE, noteCacheId(subjectId, serverId), rewritten);
 }
 
 async function resolveEntityId(scope: string, id: number): Promise<number> {
@@ -134,21 +121,21 @@ async function resolveEntityId(scope: string, id: number): Promise<number> {
 
 export async function findLocalNote(
   scope: string,
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   id: number,
 ): Promise<NoteRow | undefined> {
   const resolvedId = await resolveEntityId(scope, id);
   const byId = await readOfflineCache<NoteRow>(
     scope,
     NAMESPACE,
-    noteCacheId(subjectKind, resolvedId),
+    noteCacheId(subjectId, resolvedId),
   );
   if (byId) return byId;
   if (resolvedId !== id) {
-    const byTemp = await readOfflineCache<NoteRow>(scope, NAMESPACE, noteCacheId(subjectKind, id));
+    const byTemp = await readOfflineCache<NoteRow>(scope, NAMESPACE, noteCacheId(subjectId, id));
     if (byTemp) return byTemp;
   }
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   return (
     list.find((e) => e.id === resolvedId) ??
     (resolvedId !== id ? list.find((e) => e.id === id) : undefined)
@@ -185,10 +172,10 @@ async function pendingTempNoteIds(scope: string): Promise<Set<number>> {
 
 async function mergeServerList(
   scope: string,
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   serverItems: NoteRow[],
 ): Promise<NoteRow[]> {
-  const local = await readLocalList(scope, subjectKind);
+  const local = await readLocalList(scope, subjectId);
   const localById = new Map(local.map((e) => [e.id, e]));
   // note.list 故意不带 blocks（空数组=未加载）；勿覆盖本地已缓存的块
   const withBlocks = serverItems.map((server) => {
@@ -211,10 +198,10 @@ async function mergeServerList(
 }
 
 export async function reconcileServerNoteList(
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   serverItems: NoteRow[],
 ): Promise<NoteRow[]> {
-  return mergeServerList(resolveOutboxScope(), subjectKind, serverItems);
+  return mergeServerList(resolveOutboxScope(), subjectId, serverItems);
 }
 
 export function compactNoteOutbox(ops: OfflineOutboxOp[]): OfflineOutboxOp[] {
@@ -280,10 +267,9 @@ async function flushNoteOp(
       result.item &&
       "blocks" in result.item
     ) {
-      const subjectKind =
-        op.payload.subject_kind === "agent" ? ("agent" as const) : ("user" as const);
+      const subjectId = typeof op.payload.subject_id === "number" ? op.payload.subject_id : 0;
       await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, result.item.id);
-      await rewriteLocalNoteId(scope, subjectKind, op.tempEntityId, result.item.id, result.item);
+      await rewriteLocalNoteId(scope, subjectId, op.tempEntityId, result.item.id, result.item);
     }
     if (
       op.tempEntityId != null &&
@@ -292,18 +278,17 @@ async function flushNoteOp(
       "parent_id" in result.item &&
       !("blocks" in result.item)
     ) {
-      const subjectKind =
-        op.payload.subject_kind === "agent" ? ("agent" as const) : ("user" as const);
+      const subjectId = typeof op.payload.subject_id === "number" ? op.payload.subject_id : 0;
       await recordFlushIdMapping(scope, MODULE_ID, op.tempEntityId, result.item.id);
       const parentId =
         typeof op.payload.parent_id === "number" ? op.payload.parent_id : result.item.parent_id;
-      const note = await findLocalNote(scope, subjectKind, parentId);
+      const note = await findLocalNote(scope, subjectId, parentId);
       if (note) {
         const blocks = note.blocks
           .filter((b) => b.id !== op.tempEntityId)
           .concat([{ ...result.item }])
           .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-        await upsertLocalNote(scope, subjectKind, { ...note, blocks });
+        await upsertLocalNote(scope, subjectId, { ...note, blocks });
       }
     }
     return { status: "done" };
@@ -321,17 +306,16 @@ export const noteRpcAdapter: RpcModuleAdapter = {
   resolvePayloadIds: (payload, idMap) => resolveIdFields(payload, idMap, ["id", "parent_id"]),
   flushOp: async (op, ctx) => flushNoteOp(op, ctx.scope),
   refreshAll: async (scope) => {
-    for (const subjectKind of ["user", "agent"] as const) {
-      try {
-        const data = await habitat().call("note.list", {
-          subject_kind: subjectKind,
-          limit: 200,
-        });
-        const merged = await mergeServerList(scope, subjectKind, data.items);
-        await writeLocalList(scope, subjectKind, merged);
-      } catch {
-        /* keep local snapshot */
-      }
+    try {
+      const subjectId = await getUserSubjectId();
+      const data = await habitat().call("note.list", {
+        subject_id: subjectId,
+        limit: 200,
+      });
+      const merged = await mergeServerList(scope, subjectId, data.items);
+      await writeLocalList(scope, subjectId, merged);
+    } catch {
+      /* keep local snapshot */
     }
   },
 };
@@ -343,7 +327,7 @@ export function registerNoteOfflineModule(): void {
 }
 
 export async function offlineCreateNote(
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   input: { title: string; content?: string; summary?: string; tag_ids?: number[] },
 ): Promise<NoteRow> {
   const title = input.title.trim();
@@ -361,11 +345,11 @@ export async function offlineCreateNote(
       const scope = resolveOutboxScope();
       const opId = randomPublicId();
       const data = await habitat().call("note.create", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         client_op_id: opId,
         ...payload,
       });
-      await upsertLocalNote(scope, subjectKind, data.item);
+      await upsertLocalNote(scope, subjectId, data.item);
       return data.item;
     },
     async () => {
@@ -399,13 +383,13 @@ export async function offlineCreateNote(
         created_at: now,
         updated_at: now,
       };
-      await upsertLocalNote(scope, subjectKind, row);
+      await upsertLocalNote(scope, subjectId, row);
       await enqueueOutboxOp(scope, {
         id: opId,
         moduleId: MODULE_ID,
         method: "note.create",
         payload: {
-          subject_kind: subjectKind,
+          subject_id: subjectId,
           client_op_id: opId,
           ...payload,
         },
@@ -419,12 +403,12 @@ export async function offlineCreateNote(
 }
 
 export async function offlineUpdateNote(
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   id: number,
   patch: { title?: string; summary?: string; tag_ids?: number[] },
 ): Promise<NoteRow> {
   const scope = resolveOutboxScope();
-  const existing = await findLocalNote(scope, subjectKind, id);
+  const existing = await findLocalNote(scope, subjectId, id);
   if (!existing) throw new Error("note not found locally");
   const resolvedId = existing.id;
 
@@ -435,7 +419,7 @@ export async function offlineUpdateNote(
       ...patch,
       updated_at: now,
     };
-    await upsertLocalNote(scope, subjectKind, updated);
+    await upsertLocalNote(scope, subjectId, updated);
 
     const opId = randomPublicId();
     await enqueueOutboxOp(scope, {
@@ -443,7 +427,7 @@ export async function offlineUpdateNote(
       moduleId: MODULE_ID,
       method: "note.patch",
       payload: {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         id: resolvedId,
         client_op_id: opId,
         ...patch,
@@ -461,24 +445,24 @@ export async function offlineUpdateNote(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     const data = await habitat().call("note.patch", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       client_op_id: opId,
       ...patch,
     });
-    await upsertLocalNote(scope, subjectKind, data.item);
+    await upsertLocalNote(scope, subjectId, data.item);
     return data.item;
   }, doOffline);
 }
 
-export async function offlineDeleteNote(subjectKind: NoteSubjectKind, id: number): Promise<void> {
+export async function offlineDeleteNote(subjectId: number, id: number): Promise<void> {
   const scope = resolveOutboxScope();
-  const existing = await findLocalNote(scope, subjectKind, id);
+  const existing = await findLocalNote(scope, subjectId, id);
   const resolvedId = existing?.id ?? (await resolveEntityId(scope, id));
 
   const doOffline = async (): Promise<void> => {
-    await removeLocalNote(scope, subjectKind, resolvedId);
-    if (resolvedId !== id) await removeLocalNote(scope, subjectKind, id);
+    await removeLocalNote(scope, subjectId, resolvedId);
+    if (resolvedId !== id) await removeLocalNote(scope, subjectId, id);
 
     if (isTempId(resolvedId) || isTempId(id)) {
       const tempIds = new Set([id, resolvedId].filter(isTempId));
@@ -501,7 +485,7 @@ export async function offlineDeleteNote(subjectKind: NoteSubjectKind, id: number
       id: opId,
       moduleId: MODULE_ID,
       method: "note.delete",
-      payload: { subject_kind: subjectKind, id: resolvedId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: resolvedId, client_op_id: opId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
@@ -514,23 +498,23 @@ export async function offlineDeleteNote(subjectKind: NoteSubjectKind, id: number
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("note.delete", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       client_op_id: opId,
     });
-    await removeLocalNote(scope, subjectKind, resolvedId);
-    if (resolvedId !== id) await removeLocalNote(scope, subjectKind, id);
+    await removeLocalNote(scope, subjectId, resolvedId);
+    if (resolvedId !== id) await removeLocalNote(scope, subjectId, id);
   }, doOffline);
 }
 
 export async function offlineCreateNoteBlock(
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   parentId: number,
   content: string,
 ): Promise<NoteTextBlock> {
   const scope = resolveOutboxScope();
   await ensureAllocatorSeeded(scope);
-  const existing = await findLocalNote(scope, subjectKind, parentId);
+  const existing = await findLocalNote(scope, subjectId, parentId);
   if (!existing) throw new Error("note not found locally");
   const resolvedParentId = existing.id;
 
@@ -551,7 +535,7 @@ export async function offlineCreateNoteBlock(
       created_at: now,
       updated_at: now,
     };
-    await upsertLocalNote(scope, subjectKind, {
+    await upsertLocalNote(scope, subjectId, {
       ...existing,
       blocks: [...existing.blocks, block],
       updated_at: now,
@@ -561,7 +545,7 @@ export async function offlineCreateNoteBlock(
       moduleId: MODULE_ID,
       method: "note.blockCreate",
       payload: {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         parent_id: resolvedParentId,
         content: block.content,
         title: block.title,
@@ -585,17 +569,17 @@ export async function offlineCreateNoteBlock(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     const data = await habitat().call("note.blockCreate", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       parent_id: resolvedParentId,
       content,
       client_op_id: opId,
     });
-    const note = await findLocalNote(scope, subjectKind, resolvedParentId);
+    const note = await findLocalNote(scope, subjectId, resolvedParentId);
     if (note) {
       const blocks = note.blocks
         .concat([data.item])
         .toSorted((a, b) => a.sort_order - b.sort_order || a.id - b.id);
-      await upsertLocalNote(scope, subjectKind, {
+      await upsertLocalNote(scope, subjectId, {
         ...note,
         blocks,
         updated_at: new Date().toISOString(),
@@ -606,13 +590,13 @@ export async function offlineCreateNoteBlock(
 }
 
 export async function offlineUpdateNoteBlock(
-  subjectKind: NoteSubjectKind,
+  subjectId: number,
   id: number,
   patch: { content?: string; title?: string },
 ): Promise<NoteTextBlock> {
   const scope = resolveOutboxScope();
   const resolvedId = await resolveEntityId(scope, id);
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   let parent: NoteRow | undefined;
   let block: NoteTextBlock | undefined;
   for (const note of list) {
@@ -624,7 +608,7 @@ export async function offlineUpdateNoteBlock(
     }
   }
   if (!parent) {
-    const cached = await findLocalNote(scope, subjectKind, resolvedId);
+    const cached = await findLocalNote(scope, subjectId, resolvedId);
     if (cached) {
       const found = cached.blocks.find((b) => b.id === resolvedId || b.id === id);
       if (found) {
@@ -646,7 +630,7 @@ export async function offlineUpdateNoteBlock(
       id: localBlockId,
       updated_at: now,
     };
-    await upsertLocalNote(scope, subjectKind, {
+    await upsertLocalNote(scope, subjectId, {
       ...localParent,
       blocks: localParent.blocks.map((b) => (b.id === localBlockId ? updatedBlock : b)),
       updated_at: now,
@@ -658,7 +642,7 @@ export async function offlineUpdateNoteBlock(
       moduleId: MODULE_ID,
       method: "note.blockPatch",
       payload: {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         id: resolvedId,
         client_op_id: opId,
         ...patch,
@@ -676,14 +660,14 @@ export async function offlineUpdateNoteBlock(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     const data = await habitat().call("note.blockPatch", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       client_op_id: opId,
       ...patch,
     });
-    const note = await findLocalNote(scope, subjectKind, localParent.id);
+    const note = await findLocalNote(scope, subjectId, localParent.id);
     if (note) {
-      await upsertLocalNote(scope, subjectKind, {
+      await upsertLocalNote(scope, subjectId, {
         ...note,
         blocks: note.blocks.map((b) => (b.id === localBlockId ? data.item : b)),
         updated_at: new Date().toISOString(),
@@ -693,13 +677,10 @@ export async function offlineUpdateNoteBlock(
   }, doOffline);
 }
 
-export async function offlineDeleteNoteBlock(
-  subjectKind: NoteSubjectKind,
-  blockId: number,
-): Promise<void> {
+export async function offlineDeleteNoteBlock(subjectId: number, blockId: number): Promise<void> {
   const scope = resolveOutboxScope();
   const resolvedId = await resolveEntityId(scope, blockId);
-  const list = await readLocalList(scope, subjectKind);
+  const list = await readLocalList(scope, subjectId);
   let parent: NoteRow | undefined;
   for (const note of list) {
     if (note.blocks.some((b) => b.id === resolvedId || b.id === blockId)) {
@@ -714,7 +695,7 @@ export async function offlineDeleteNoteBlock(
 
   const doOffline = async (): Promise<void> => {
     const now = new Date().toISOString();
-    await upsertLocalNote(scope, subjectKind, {
+    await upsertLocalNote(scope, subjectId, {
       ...existing,
       blocks: existing.blocks.filter((b) => b.id !== blockId && b.id !== resolvedId),
       updated_at: now,
@@ -736,7 +717,7 @@ export async function offlineDeleteNoteBlock(
       id: opId,
       moduleId: MODULE_ID,
       method: "note.blockDelete",
-      payload: { subject_kind: subjectKind, id: resolvedId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: resolvedId, client_op_id: opId },
       createdAt: now,
     });
     scheduleFlush(scope);
@@ -749,13 +730,13 @@ export async function offlineDeleteNoteBlock(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("note.blockDelete", {
-      subject_kind: subjectKind,
+      subject_id: subjectId,
       id: resolvedId,
       client_op_id: opId,
     });
-    const note = await findLocalNote(scope, subjectKind, existing.id);
+    const note = await findLocalNote(scope, subjectId, existing.id);
     if (note) {
-      await upsertLocalNote(scope, subjectKind, {
+      await upsertLocalNote(scope, subjectId, {
         ...note,
         blocks: note.blocks.filter((b) => b.id !== blockId && b.id !== resolvedId),
         updated_at: new Date().toISOString(),

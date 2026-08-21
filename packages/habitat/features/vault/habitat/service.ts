@@ -1,4 +1,3 @@
-import type { SubjectKind } from "@freeanima/habitat/core/config";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
 import { resolveDefaultPrivateWorldForSubject } from "@freeanima/habitat/core/db/pg/entity";
 import type { VaultItemType } from "@freeanima/habitat/core/db/schema/entity";
@@ -31,33 +30,37 @@ async function loadAgentVaultConnector() {
   return import("@freeanima/habitat/capabilities/connectors/vault");
 }
 
+async function isAgentSubject(subjectId: number): Promise<boolean> {
+  const row = await getEntity(subjectId);
+  return row?.type === "agent";
+}
+
 function assertPg(_deps: RuntimeDeps): void {
   if (!isPostgresPrimary()) {
     throw new Error("PostgreSQL unavailable");
   }
 }
 
-function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (!subject_kind || subject_kind === auth.subject_type) return;
-  // 单实例 Habitat：user token 可读写 agent 库（machine key，Shell /vault Agent 页）
-  if (auth.subject_type === "user" && subject_kind === "agent") return;
+function assertSubjectIdAllowed(auth: RpcRequestAuthContext, subjectId: number): void {
+  if (auth.subject_id === subjectId) return;
+  if (auth.subject_type === "user") return;
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
-  if (subject_kind !== "user" && subject_kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+function requireSubjectId(subject_id: number | undefined): number {
+  if (subject_id == null || !Number.isInteger(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
   }
-  return subject_kind;
+  return subject_id;
 }
 
 async function vaultWorldIdForAuth(
   auth: RpcRequestAuthContext,
-  subject_kind?: SubjectKind,
+  subject_id: number | undefined,
 ): Promise<number> {
-  const kind = resolveSubjectKind(subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  return resolveVaultWorldId(kind);
+  const subjectId = requireSubjectId(subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  return await resolveVaultWorldId(subjectId);
 }
 
 function toMetaPayload(row: VaultItemMetaRow | VaultItemRow) {
@@ -92,7 +95,7 @@ function toConfigPayload(config: NonNullable<Awaited<ReturnType<typeof getVaultC
 export async function serviceVaultList(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     tag_ids?: number[];
     limit?: number;
     include_secrets?: boolean;
@@ -100,7 +103,7 @@ export async function serviceVaultList(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await vaultWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await vaultWorldIdForAuth(auth, input.subject_id);
   const items = await listVaultItems(
     worldId,
     omitUndefined({
@@ -127,12 +130,12 @@ export async function serviceVaultList(
 
 export async function serviceVaultGet(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; include_secrets?: boolean },
+  input: { subject_id?: number; id: number; include_secrets?: boolean },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const kind = resolveSubjectKind(input.subject_kind);
-  const worldId = await vaultWorldIdForAuth(auth, kind);
+  const subjectId = requireSubjectId(input.subject_id);
+  const worldId = await vaultWorldIdForAuth(auth, subjectId);
   const item = await getVaultItem(
     worldId,
     input.id,
@@ -148,7 +151,7 @@ export async function serviceVaultGet(
     throw new Error("NOT_FOUND");
   }
 
-  if (kind === "agent") {
+  if (await isAgentSubject(subjectId)) {
     const { openAgentVaultSecrets } = await loadAgentVaultConnector();
     const secrets = await openAgentVaultSecrets(item.secrets_enc, item.dek_wrapped);
     return { item: { ...toMetaPayload(item), secrets } };
@@ -166,7 +169,7 @@ export async function serviceVaultGet(
 export async function serviceVaultCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     title: string;
     content?: string;
     item_type?: VaultItemType;
@@ -182,9 +185,9 @@ export async function serviceVaultCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...createInput } = input;
+  const { subject_id, ...createInput } = input;
   const item = await createVaultItem(
-    await vaultWorldIdForAuth(auth, subject_kind),
+    await vaultWorldIdForAuth(auth, subject_id),
     omitUndefined(createInput),
   );
   return { item: toMetaPayload(item) };
@@ -193,7 +196,7 @@ export async function serviceVaultCreate(
 export async function serviceVaultCreatePlain(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: "agent";
+    subject_id?: number;
     title: string;
     content?: string;
     item_type?: VaultItemType;
@@ -207,9 +210,9 @@ export async function serviceVaultCreatePlain(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const kind = resolveSubjectKind(input.subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  const worldId = resolveVaultWorldId(kind);
+  const subjectId = requireSubjectId(input.subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  const worldId = await resolveVaultWorldId(subjectId);
   const { ensureAgentVaultConfig, sealAgentVaultItem } = await loadAgentVaultConnector();
   await ensureAgentVaultConfig(worldId);
   const sealed = await sealAgentVaultItem(input.secrets);
@@ -235,7 +238,7 @@ export async function serviceVaultCreatePlain(
 export async function serviceVaultPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     title?: string;
     content?: string;
@@ -252,9 +255,9 @@ export async function serviceVaultPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, ...patch } = input;
+  const { id, subject_id, ...patch } = input;
   const item = await updateVaultItem(
-    await vaultWorldIdForAuth(auth, subject_kind),
+    await vaultWorldIdForAuth(auth, subject_id),
     omitUndefined({ id, ...patch }),
   );
   if (!item) throw new Error("NOT_FOUND");
@@ -263,12 +266,12 @@ export async function serviceVaultPatch(
 
 export async function serviceVaultTouch(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const item = await touchVaultItemLastUsed(
-    await vaultWorldIdForAuth(auth, input.subject_kind),
+    await vaultWorldIdForAuth(auth, input.subject_id),
     input.id,
   );
   if (!item) throw new Error("NOT_FOUND");
@@ -278,7 +281,7 @@ export async function serviceVaultTouch(
 export async function serviceVaultPatchPlain(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: "agent";
+    subject_id?: number;
     id: number;
     title?: string;
     content?: string;
@@ -293,14 +296,14 @@ export async function serviceVaultPatchPlain(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const kind = resolveSubjectKind(input.subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  const worldId = resolveVaultWorldId(kind);
+  const subjectId = requireSubjectId(input.subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  const worldId = await resolveVaultWorldId(subjectId);
   const { ensureAgentVaultConfig, openAgentVaultSecrets, sealAgentVaultItem } =
     await loadAgentVaultConnector();
   await ensureAgentVaultConfig(worldId);
 
-  const { id, subject_kind: _kind, secrets, ...metaPatch } = input;
+  const { id, subject_id: _sid, secrets, ...metaPatch } = input;
   const patch: Parameters<typeof updateVaultItem>[1] = omitUndefined({ id, ...metaPatch });
 
   if (secrets) {
@@ -326,11 +329,11 @@ export async function serviceVaultPatchPlain(
 
 export async function serviceVaultDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const ok = await deleteVaultItem(await vaultWorldIdForAuth(auth, input.subject_kind), input.id);
+  const ok = await deleteVaultItem(await vaultWorldIdForAuth(auth, input.subject_id), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }
@@ -338,7 +341,7 @@ export async function serviceVaultDelete(
 export async function serviceVaultSearch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     query: string;
     tag_ids?: number[];
     limit?: number;
@@ -347,7 +350,7 @@ export async function serviceVaultSearch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await vaultWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await vaultWorldIdForAuth(auth, input.subject_id);
   const items = await searchVaultItems(
     worldId,
     input.query,
@@ -362,12 +365,12 @@ export async function serviceVaultSearch(
 
 export async function serviceVaultHistoryList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const revisions = await listVaultItemRevisions(
-    await vaultWorldIdForAuth(auth, input.subject_kind),
+    await vaultWorldIdForAuth(auth, input.subject_id),
     input.id,
   );
   if (!revisions) throw new Error("NOT_FOUND");
@@ -376,12 +379,12 @@ export async function serviceVaultHistoryList(
 
 export async function serviceVaultHistoryRestore(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; revision_index: number },
+  input: { subject_id?: number; id: number; revision_index: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const item = await restoreVaultItemRevision(
-    await vaultWorldIdForAuth(auth, input.subject_kind),
+    await vaultWorldIdForAuth(auth, input.subject_id),
     input.id,
     input.revision_index,
   );
@@ -391,11 +394,11 @@ export async function serviceVaultHistoryRestore(
 
 export async function serviceVaultCryptoGet(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind },
+  input: { subject_id?: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await vaultWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await vaultWorldIdForAuth(auth, input.subject_id);
   const config = await getVaultConfig(worldId);
   return { config: config ? toConfigPayload(config) : null };
 }
@@ -403,7 +406,7 @@ export async function serviceVaultCryptoGet(
 export async function serviceVaultCryptoInit(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     salt: string;
     verifier: string;
     kdf?: { name: string; iterations?: number };
@@ -411,11 +414,11 @@ export async function serviceVaultCryptoInit(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const kind = resolveSubjectKind(input.subject_kind);
-  if (kind === "agent") {
+  const subjectId = requireSubjectId(input.subject_id);
+  if (await isAgentSubject(subjectId)) {
     throw new Error("AGENT_VAULT_USE_MACHINE_KEY");
   }
-  const worldId = await vaultWorldIdForAuth(auth, kind);
+  const worldId = await vaultWorldIdForAuth(auth, subjectId);
   const existing = await getVaultConfig(worldId);
   if (existing) throw new Error("VAULT_CONFIG_EXISTS");
   const config = await ensureVaultConfig(worldId, {
@@ -430,7 +433,7 @@ export async function serviceVaultCryptoInit(
 export async function serviceVaultCryptoChange(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind | undefined;
+    subject_id?: number | undefined;
     salt?: string | undefined;
     verifier: string;
     rewrapped: Array<{
@@ -442,11 +445,11 @@ export async function serviceVaultCryptoChange(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const kind = resolveSubjectKind(input.subject_kind);
-  if (kind === "agent") {
+  const subjectId = requireSubjectId(input.subject_id);
+  if (await isAgentSubject(subjectId)) {
     throw new Error("AGENT_VAULT_USE_MACHINE_KEY");
   }
-  const worldId = await vaultWorldIdForAuth(auth, kind);
+  const worldId = await vaultWorldIdForAuth(auth, subjectId);
   const existing = await getVaultConfig(worldId);
   if (!existing || existing.mode !== "master_password") {
     throw new Error("VAULT_CONFIG_NOT_FOUND");
@@ -483,14 +486,20 @@ export async function serviceVaultCryptoChange(
 
 export async function serviceVaultEnsureAgent(
   deps: RuntimeDeps,
-  _input: Record<string, never>,
+  input: { agent_subject_id?: number | undefined },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   if (auth.subject_type !== "user" && auth.subject_type !== "agent") {
     throw new Error("FORBIDDEN_SUBJECT");
   }
-  const worldId = resolveVaultWorldId("agent");
+  const { getResolvedWorldContext } = await import("@freeanima/habitat/core/config/world-context");
+  const agentSubjectId =
+    input.agent_subject_id ?? getResolvedWorldContext().default_chat_agent_subject_id;
+  if (agentSubjectId == null) {
+    throw new Error("agent_subject_id_required");
+  }
+  const worldId = await resolveVaultWorldId(agentSubjectId);
   const { ensureAgentVaultConfig } = await loadAgentVaultConnector();
   const config = await ensureAgentVaultConfig(worldId);
   return { config: toConfigPayload(config) };
@@ -518,13 +527,19 @@ export async function serviceVaultAgentKeyStatus(
 
 export async function serviceVaultAgentKeyProvision(
   deps: RuntimeDeps,
-  input: { key_b64: string },
+  input: { key_b64: string; agent_subject_id?: number | undefined },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   assertUserOrAgentToken(auth);
   const { provisionAgentMachineKeyB64, ensureAgentVaultConfig } = await loadAgentVaultConnector();
-  await ensureAgentVaultConfig(resolveVaultWorldId("agent"));
+  const { getResolvedWorldContext } = await import("@freeanima/habitat/core/config/world-context");
+  const agentSubjectId =
+    input.agent_subject_id ?? getResolvedWorldContext().default_chat_agent_subject_id;
+  if (agentSubjectId == null) {
+    throw new Error("agent_subject_id_required");
+  }
+  await ensureAgentVaultConfig(await resolveVaultWorldId(agentSubjectId));
   await provisionAgentMachineKeyB64(input.key_b64);
   return { unlocked: true as const };
 }

@@ -10,7 +10,7 @@ import {
   pomodoroRemainingMs,
 } from "./pomodoro-remaining.ts";
 import { getPomodoroSyncSnapshot, subscribePomodoroSync } from "./pomodoro-sync-local.ts";
-import { useSubjectScope } from "./subject-scope-react.tsx";
+import { useUserSubjectId } from "./use-user-subject-id.ts";
 
 const TICK_MS = 500;
 
@@ -23,19 +23,18 @@ export type PomodoroNavCountdown = {
 
 /** 壳导航用：订阅 active + 本地 tick，无会话时返回 null 文案。 */
 export function usePomodoroNavCountdown(): PomodoroNavCountdown {
-  const { kind: subjectKind } = useSubjectScope();
-  const [active, setActive] = useState<PomodoroActiveState | null>(
-    () =>
-      getPomodoroSyncSnapshot(subjectKind).active ??
-      readPomodoroActiveState(undefined, subjectKind),
-  );
+  const subjectId = useUserSubjectId();
+  const [active, setActive] = useState<PomodoroActiveState | null>(null);
   const [, setTick] = useState(0);
 
   useEffect(() => {
+    if (subjectId == null) {
+      setActive(null);
+      return () => {};
+    }
     const refresh = () => {
       setActive(
-        getPomodoroSyncSnapshot(subjectKind).active ??
-          readPomodoroActiveState(undefined, subjectKind),
+        getPomodoroSyncSnapshot(subjectId).active ?? readPomodoroActiveState(undefined, subjectId),
       );
     };
     const unsub = subscribePomodoroSync(() => refresh());
@@ -43,11 +42,11 @@ export function usePomodoroNavCountdown(): PomodoroNavCountdown {
       if (!(event instanceof CustomEvent)) return;
       const detail: unknown = event.detail;
       if (!isRecord(detail)) return;
-      if (detail.subjectKind === subjectKind) refresh();
+      if (detail.subjectId === subjectId || detail.subjectKind === subjectId) refresh();
     };
     const onStorage = (event: StorageEvent) => {
       if (!event.key?.startsWith("freeanima.pomodoro.active:")) return;
-      if (event.key.endsWith(`:${subjectKind}`)) refresh();
+      if (event.key.endsWith(`:${subjectId}`)) refresh();
     };
     window.addEventListener("freeanima:pomodoro-active-changed", onCustom);
     window.addEventListener("storage", onStorage);
@@ -57,7 +56,7 @@ export function usePomodoroNavCountdown(): PomodoroNavCountdown {
       window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
       window.removeEventListener("storage", onStorage);
     };
-  }, [subjectKind]);
+  }, [subjectId]);
 
   useEffect(() => {
     if (!active || (active.runState !== "running" && active.runState !== "paused")) {

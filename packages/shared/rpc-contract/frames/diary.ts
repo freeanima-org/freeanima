@@ -1,7 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
 export const diaryTextBlockSchema = z.object({
   id: z.number().int().positive(),
   title: z.string().default(""),
@@ -31,7 +29,7 @@ export const diaryEntryRowSchema = z.object({
 export type DiaryEntryRowPayload = z.infer<typeof diaryEntryRowSchema>;
 
 export const diaryListInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   entry_after: z.string().optional(),
   entry_before: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
@@ -45,7 +43,7 @@ export const diaryListOutputSchema = z.object({
 export type DiaryListOutput = z.infer<typeof diaryListOutputSchema>;
 
 export const diaryCreateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   title: z.string().min(1),
   /** 若有则建首条 text block */
   content: z.string().optional(),
@@ -61,7 +59,7 @@ export type DiaryCreateOutput = z.infer<typeof diaryCreateOutputSchema>;
 
 /** append = 在容器末尾新建一条 text block */
 export const diaryAppendInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   content: z.string().min(1),
   client_op_id: z.string().min(1).optional(),
@@ -71,7 +69,7 @@ export const diaryAppendOutputSchema = z.object({ item: diaryEntryRowSchema });
 export type DiaryAppendOutput = z.infer<typeof diaryAppendOutputSchema>;
 
 export const diaryPatchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   title: z.string().min(1).optional(),
   summary: z.string().optional(),
@@ -85,7 +83,7 @@ export const diaryPatchOutputSchema = z.object({ item: diaryEntryRowSchema });
 export type DiaryPatchOutput = z.infer<typeof diaryPatchOutputSchema>;
 
 export const diaryDeleteInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -94,7 +92,7 @@ export const diaryDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type DiaryDeleteOutput = z.infer<typeof diaryDeleteOutputSchema>;
 
 export const diaryGetInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type DiaryGetInput = z.infer<typeof diaryGetInputSchema>;
@@ -102,7 +100,7 @@ export const diaryGetOutputSchema = z.object({ item: diaryEntryRowSchema });
 export type DiaryGetOutput = z.infer<typeof diaryGetOutputSchema>;
 
 export const diarySearchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().min(1),
   entry_after: z.string().optional(),
   entry_before: z.string().optional(),
@@ -116,7 +114,7 @@ export const diarySearchOutputSchema = z.object({
 export type DiarySearchOutput = z.infer<typeof diarySearchOutputSchema>;
 
 export const diaryBlockCreateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   parent_id: z.number().int().positive(),
   content: z.string(),
   title: z.string().optional(),
@@ -130,7 +128,7 @@ export const diaryBlockCreateOutputSchema = z.object({ item: diaryTextBlockSchem
 export type DiaryBlockCreateOutput = z.infer<typeof diaryBlockCreateOutputSchema>;
 
 export const diaryBlockPatchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   content: z.string().optional(),
   title: z.string().optional(),
@@ -143,7 +141,7 @@ export const diaryBlockPatchOutputSchema = z.object({ item: diaryTextBlockSchema
 export type DiaryBlockPatchOutput = z.infer<typeof diaryBlockPatchOutputSchema>;
 
 export const diaryBlockDeleteInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   client_op_id: z.string().min(1).optional(),
 });
@@ -152,7 +150,7 @@ export const diaryBlockDeleteOutputSchema = z.object({ ok: z.literal(true) });
 export type DiaryBlockDeleteOutput = z.infer<typeof diaryBlockDeleteOutputSchema>;
 
 export const diaryBlockReorderInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   items: z.array(
     z.object({
       id: z.number().int().positive(),
@@ -188,7 +186,7 @@ export const diaryBlockTemplateRowSchema = z.object({
 export type DiaryBlockTemplateRowPayload = z.infer<typeof diaryBlockTemplateRowSchema>;
 
 export const diaryTemplateListInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type DiaryTemplateListInput = z.infer<typeof diaryTemplateListInputSchema>;
 export const diaryTemplateListOutputSchema = z.object({
@@ -197,7 +195,7 @@ export const diaryTemplateListOutputSchema = z.object({
 export type DiaryTemplateListOutput = z.infer<typeof diaryTemplateListOutputSchema>;
 
 export const diaryTemplateCreateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   name: z.string().min(1),
   preset: diaryBlockTemplatePresetSchema,
   sort_order: z.number().int().optional(),
@@ -208,7 +206,7 @@ export const diaryTemplateCreateOutputSchema = z.object({ item: diaryBlockTempla
 export type DiaryTemplateCreateOutput = z.infer<typeof diaryTemplateCreateOutputSchema>;
 
 export const diaryTemplatePatchInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   name: z.string().min(1).optional(),
   /** 勿对带 default 的 preset schema 做 .partial()，否则缺省字段会被默认值覆盖 */
@@ -227,7 +225,7 @@ export const diaryTemplatePatchOutputSchema = z.object({ item: diaryBlockTemplat
 export type DiaryTemplatePatchOutput = z.infer<typeof diaryTemplatePatchOutputSchema>;
 
 export const diaryTemplateDeleteInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type DiaryTemplateDeleteInput = z.infer<typeof diaryTemplateDeleteInputSchema>;
@@ -236,7 +234,7 @@ export type DiaryTemplateDeleteOutput = z.infer<typeof diaryTemplateDeleteOutput
 
 /** 日记实体级 tags 建议（本 world 频次；默认 top10） */
 export const diarySuggestTagsInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   query: z.string().optional(),
   limit: z.number().int().positive().max(50).optional(),
 });

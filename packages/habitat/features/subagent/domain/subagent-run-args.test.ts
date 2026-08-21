@@ -13,7 +13,7 @@ const taskProps = {
 const runParams = {
   type: "object" as const,
   properties: {
-    subject_kind: { type: "string", enum: ["user", "agent"] },
+    subject_id: { type: "integer", description: "Owning subject entity id" },
     ...taskProps,
     tasks: {
       type: "array",
@@ -24,13 +24,13 @@ const runParams = {
       },
     },
   },
-  required: ["subject_kind"],
+  required: ["subject_id"],
 };
 
 describe("subagent_run args", () => {
   it("rejects unknown keys inside tasks[]", () => {
     const result = validateToolArgs(runParams, {
-      subject_kind: "user",
+      subject_id: 1,
       tasks: [{ goal: "查", prompt: "误当任务定义" }],
     });
     expect(result.ok).toBe(false);
@@ -41,7 +41,7 @@ describe("subagent_run args", () => {
 
   it("rejects mixing tasks with top-level goal", () => {
     const msg = rejectTasksMixedWithSugar({
-      subject_kind: "user",
+      subject_id: 1,
       goal: "查",
       tasks: [{ goal: "查" }],
     });
@@ -52,7 +52,7 @@ describe("subagent_run args", () => {
   it("allows parallel tasks without sugar", () => {
     expect(
       rejectTasksMixedWithSugar({
-        subject_kind: "user",
+        subject_id: 1,
         tasks: [{ goal: "a", slug: "explorer" }],
       }),
     ).toBeNull();

@@ -1,4 +1,4 @@
-import { getSubjectKind } from "@freeanima/client/portal-sdk";
+import { getUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
 import type {
   EntityAdminRowPayload,
   EntityAdminType,
@@ -24,16 +24,16 @@ function habitat() {
   return getTypedHabitatClient();
 }
 
-function withSubjectKind<T extends Record<string, unknown>>(payload: T) {
-  return { subject_kind: getSubjectKind(), ...payload };
+async function withSubjectId<T extends Record<string, unknown>>(payload: T) {
+  return { subject_id: await getUserSubjectId(), ...payload };
 }
 
 export async function fetchEntities(opts?: EntityListQuery): Promise<EntityListOutput> {
-  return habitat().call("entity.list", withSubjectKind(opts ?? {}));
+  return habitat().call("entity.list", await withSubjectId(opts ?? {}));
 }
 
 export async function fetchEntityTrash(opts?: EntityListQuery): Promise<EntityTrashListOutput> {
-  return habitat().call("entity.trash.list", withSubjectKind(opts ?? {}));
+  return habitat().call("entity.trash.list", await withSubjectId(opts ?? {}));
 }
 
 export async function fetchEntityDetail(
@@ -50,19 +50,22 @@ export async function fetchEntityDetail(
 export async function deleteEntity(id: number, force = false): Promise<EntityDeleteOutput> {
   return habitat().call(
     "entity.delete",
-    withSubjectKind({ id, ...(force ? { force: true } : {}) }),
+    await withSubjectId({ id, ...(force ? { force: true } : {}) }),
   );
 }
 
 export async function restoreEntity(id: number): Promise<void> {
-  await habitat().call("entity.restore", withSubjectKind({ id }));
+  await habitat().call("entity.restore", await withSubjectId({ id }));
 }
 
 export async function deleteEntityComponent(
   id: number,
   component: string,
 ): Promise<EntityAdminRow> {
-  const data = await habitat().call("entity.deleteComponent", withSubjectKind({ id, component }));
+  const data = await habitat().call(
+    "entity.deleteComponent",
+    await withSubjectId({ id, component }),
+  );
   return data.item;
 }
 
@@ -73,7 +76,7 @@ export async function addEntityComponent(
 ): Promise<EntityAdminRow> {
   const data = await habitat().call(
     "entity.addComponent",
-    withSubjectKind({
+    await withSubjectId({
       id,
       component,
       ...(opts?.body != null ? { body: opts.body } : {}),
@@ -86,7 +89,7 @@ export async function addEntityComponent(
 export async function setPrimaryComponent(id: number, component: string): Promise<EntityAdminRow> {
   const data = await habitat().call(
     "entity.setPrimaryComponent",
-    withSubjectKind({ id, component }),
+    await withSubjectId({ id, component }),
   );
   return data.item;
 }

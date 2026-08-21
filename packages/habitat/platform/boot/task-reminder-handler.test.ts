@@ -1,6 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 
-import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import {
+  bindResolvedWorldContext,
+  resetResolvedWorldContextForTest,
+} from "@freeanima/habitat/core/config/world-context";
 import * as entityMod from "@freeanima/habitat/core/db/pg/entity";
 import * as notificationMod from "@freeanima/habitat/capabilities/tools/notification";
 import {
@@ -17,6 +20,8 @@ function bindTestWorldContext(): void {
   bindResolvedWorldContext({
     user_world_id: 10,
     agent_world_id: 20,
+    default_chat_agent_subject_id: 2,
+    default_chat_agent_world_id: 20,
     commons_world_id: 30,
     user_subject_id: 1,
     agent_subject_id: 2,
@@ -28,7 +33,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  mock.restore();
+  resetResolvedWorldContextForTest();
 });
 
 describe("triggerMs", () => {
@@ -141,38 +146,41 @@ describe("runTaskReminderScan", () => {
       count: 0,
       results: [],
     });
-    searchSpy.mockClear();
-    spyOn(notificationMod, "getNotificationPort").mockReturnValue({
+    const portSpy = spyOn(notificationMod, "getNotificationPort").mockReturnValue({
       getUserRecipient: () => ({ kind: "user" as const, id: 1 }),
       getAgentRecipient: () => ({ kind: "agent" as const, id: 2 }),
       create: async () => ({ id: "n1" }),
     } as never);
 
-    searchSpy.mockClear();
-    const out = JSON.parse(await runTaskReminderScan()) as { ok: boolean; sent: number };
-    expect(out.ok).toBe(true);
-    expect(out.sent).toBe(0);
+    try {
+      const out = JSON.parse(await runTaskReminderScan()) as { ok: boolean; sent: number };
+      expect(out.ok).toBe(true);
+      expect(out.sent).toBe(0);
 
-    const scoped = searchSpy.mock.calls
-      .map(
-        (call) =>
-          call[0] as {
-            primary_component?: string;
-            component?: string;
-            global?: boolean;
-            accessible_world_ids?: number[];
-          },
-      )
-      .filter(
-        (arg) =>
-          arg.component === "task_item" ||
-          arg.primary_component === "task_item" ||
-          arg.primary_component === "calendar_event",
-      );
-    expect(scoped.length).toBeGreaterThanOrEqual(2);
-    for (const arg of scoped) {
-      expect(arg.global).toBe(true);
-      expect(arg.accessible_world_ids).toEqual([10, 20]);
+      const scoped = searchSpy.mock.calls
+        .map(
+          (call) =>
+            call[0] as {
+              primary_component?: string;
+              component?: string;
+              global?: boolean;
+              accessible_world_ids?: number[];
+            },
+        )
+        .filter(
+          (arg) =>
+            arg.component === "task_item" ||
+            arg.primary_component === "task_item" ||
+            arg.primary_component === "calendar_event",
+        );
+      expect(scoped.length).toBeGreaterThanOrEqual(2);
+      for (const arg of scoped) {
+        expect(arg.global).toBe(true);
+        expect(arg.accessible_world_ids).toEqual([10, 20]);
+      }
+    } finally {
+      searchSpy.mockRestore();
+      portSpy.mockRestore();
     }
   });
 });

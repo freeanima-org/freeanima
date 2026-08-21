@@ -26,33 +26,33 @@ describe("note SAP procedures", () => {
   });
 
   it("validates note procedure inputs", () => {
-    noteListInputSchema.parse({ subject_kind: "user" });
+    noteListInputSchema.parse({ subject_id: 1 });
     noteCreateInputSchema.parse({
-      subject_kind: "agent",
+      subject_id: 2,
       title: "会议纪要",
       content: "首段",
     });
     noteAppendInputSchema.parse({
-      subject_kind: "agent",
+      subject_id: 2,
       id: 1,
       content: "追加块",
     });
     notePatchInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       id: 1,
       tags: ["工作"],
     });
     noteSearchInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       query: "计划",
     });
     noteBlockCreateInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       parent_id: 1,
       content: "新块",
     });
     noteBlockReorderInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       items: [{ id: 2, sort_order: 0 }],
     });
   });

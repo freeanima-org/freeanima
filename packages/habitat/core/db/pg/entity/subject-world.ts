@@ -12,7 +12,6 @@ import {
 } from "@freeanima/habitat/core/db/schema/entity";
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { resolveWorldSubjectIds } from "@freeanima/habitat/core/config/worlds.ts";
 
 import {
   createEntity,
@@ -141,7 +140,7 @@ async function ensureDefaultPrivateWorldOnSubject(subject: EntityRow): Promise<n
   return worldId;
 }
 
-async function assertAtMostOneUser(excludeId?: number): Promise<void> {
+export async function assertAtMostOneUser(excludeId?: number): Promise<void> {
   const users = await listEntities({ type: "user", limit: 5 });
   const others = excludeId == null ? users : users.filter((u) => u.id !== excludeId);
   if (others.length > 0) {
@@ -266,11 +265,36 @@ async function resolveOrCreateSubject(
 
 export type EnsuredWorldSubjects = {
   user_subject_id: number;
-  agent_subject_id: number;
   user_world_id: number;
-  agent_world_id: number;
   commons_world_id: number;
+  default_chat_agent_subject_id: number;
+  default_chat_agent_world_id: number;
+  /** @deprecated alias of default_chat_agent_subject_id */
+  agent_subject_id: number;
+  /** @deprecated alias of default_chat_agent_world_id */
+  agent_world_id: number;
 };
+
+function pickDefaultChatAgent(agents: EntityRow[], configuredId: number | undefined): EntityRow {
+  const enabled = agents.filter((row) => {
+    const parsed = subjectConfigBodySchema.safeParse(row.body ?? {});
+    return !parsed.success || parsed.data.enabled !== false;
+  });
+  const pool = enabled.length > 0 ? enabled : agents;
+  if (pool.length === 0) {
+    throw new EntitySubjectBootstrapError("no agent subject available after ensure");
+  }
+  if (configuredId != null) {
+    const hit = pool.find((row) => row.id === configuredId);
+    if (hit) return hit;
+  }
+  const sorted = [...pool].toSorted((a, b) => a.id - b.id);
+  const first = sorted[0];
+  if (!first) {
+    throw new EntitySubjectBootstrapError("no agent subject available after ensure");
+  }
+  return first;
+}
 
 /** 重复 Commons 降级为普通 public world（保留最小 id） */
 async function demoteDuplicateCommonsWorld(row: EntityRow): Promise<void> {
@@ -297,7 +321,6 @@ export async function ensureCommonsWorld(): Promise<number> {
     for (const dupe of dupes) {
       await demoteDuplicateCommonsWorld(dupe);
     }
-    // 强制保持 public
     const parsed = worldConfigBodySchema.safeParse(keeper.body);
     if (parsed.success && (parsed.data.private || parsed.data.owner_subject_id != null)) {
       await updateEntity({
@@ -343,31 +366,44 @@ function readSubjectWorldId(subject: EntityRow): number {
   return worldId;
 }
 
-/** Habitat 启动：确保 user/agent subject、默认私有 world、以及唯一 Commons world */
+/** Habitat 启动：确保唯一 user、至少一个 agent、默认私有 world、Commons；默认聊天 agent 来自 chat 段 */
 export async function ensureWorldSubjects(config: RuntimeConfig): Promise<EnsuredWorldSubjects> {
   await assertUserCountAtBoot();
-  const { user_subject_id, agent_subject_id } = resolveWorldSubjectIds(config);
 
-  const userSubject = await resolveOrCreateSubject("user", user_subject_id);
-  const agentSubject = await resolveOrCreateSubject("agent", agent_subject_id);
-
+  const userSubject = await resolveOrCreateSubject("user", undefined);
   await ensureDefaultPrivateWorldOnSubject(userSubject);
-  await ensureDefaultPrivateWorldOnSubject(agentSubject);
+
+  let agents = await listEntities({ type: "agent", limit: 200 });
+  if (agents.length === 0) {
+    await createSubjectNextId("agent", defaultSubjectTitle("agent"));
+    agents = await listEntities({ type: "agent", limit: 200 });
+  }
+  for (const agent of agents) {
+    await ensureDefaultPrivateWorldOnSubject(agent);
+  }
+  agents = await listEntities({ type: "agent", limit: 200 });
+
+  const configuredDefault = config.chat?.default_agent_subject_id;
+  const defaultAgent = pickDefaultChatAgent(agents, configuredDefault);
 
   const userRefreshed = await getEntity(userSubject.id);
-  const agentRefreshed = await getEntity(agentSubject.id);
+  const agentRefreshed = await getEntity(defaultAgent.id);
   if (!userRefreshed || !agentRefreshed) {
     throw new EntitySubjectBootstrapError("subject disappeared after default world bootstrap");
   }
 
   const commons_world_id = await ensureCommonsWorld();
+  const default_chat_agent_subject_id = agentRefreshed.id;
+  const default_chat_agent_world_id = readSubjectWorldId(agentRefreshed);
 
   return {
     user_subject_id: userRefreshed.id,
-    agent_subject_id: agentRefreshed.id,
     user_world_id: readSubjectWorldId(userRefreshed),
-    agent_world_id: readSubjectWorldId(agentRefreshed),
     commons_world_id,
+    default_chat_agent_subject_id,
+    default_chat_agent_world_id,
+    agent_subject_id: default_chat_agent_subject_id,
+    agent_world_id: default_chat_agent_world_id,
   };
 }
 

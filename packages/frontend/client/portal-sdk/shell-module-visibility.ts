@@ -15,6 +15,7 @@ export type ShellModuleId =
   | "entity"
   | "vault"
   | "notifications"
+  | "bedroom"
   | "habitat"
   | "settings";
 
@@ -33,6 +34,7 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "entity",
   "vault",
   "notifications",
+  "bedroom",
   "habitat",
   "settings",
 ];
@@ -59,9 +61,11 @@ export function isShellModuleId(id: string): id is ShellModuleId {
   return (SHELL_MODULE_IDS as readonly string[]).includes(id);
 }
 
-/** 旧 localStorage 值 `console` → `habitat`（只读兼容，写出用新 id） */
+/** 旧 localStorage 值 `console` → `habitat`；`observer` → `bedroom`（只读兼容，写出用新 id） */
 function migrateModuleId(id: string): string {
-  return id === "console" ? "habitat" : id;
+  if (id === "console") return "habitat";
+  if (id === "observer") return "bedroom";
+  return id;
 }
 
 function parseVisible(raw: string | null): Set<ShellModuleId> {
@@ -76,6 +80,8 @@ function parseVisible(raw: string | null): Set<ShellModuleId> {
     for (const locked of SHELL_MODULE_LOCKED) {
       if (!ids.includes(locked)) ids.push(locked);
     }
+    // 新顶级模块默认可见（旧 localStorage 未列出时补上）
+    if (!ids.includes("bedroom")) ids.push("bedroom");
     return ids.length > 0 ? new Set(ids) : new Set(DEFAULT_VISIBLE);
   } catch {
     return new Set(DEFAULT_VISIBLE);
@@ -139,6 +145,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/entity")) return "entity";
   if (path.startsWith("/vault")) return "vault";
   if (path.startsWith("/notifications")) return "notifications";
+  if (path.startsWith("/bedroom") || path.startsWith("/observer")) return "bedroom";
   if (path.startsWith("/habitat") || path.startsWith("/console")) return "habitat";
   if (path.startsWith("/settings")) return "settings";
   return null;
@@ -159,6 +166,7 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   entity: "/entity",
   vault: "/vault",
   notifications: "/notifications",
+  bedroom: "/bedroom/self-layer",
   habitat: "/habitat/dashboard",
   settings: "/settings",
 };

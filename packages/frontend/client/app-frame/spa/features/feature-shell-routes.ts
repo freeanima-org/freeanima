@@ -121,4 +121,18 @@ export function loadHabitatShellRoute() {
   );
 }
 
+/** 顶级「卧室」SPA：统一 Anima + 子模块（Anima 私有空间；与栖息地=实例运维成对）。 */
+export function loadBedroomShellRoute() {
+  return shellLazyRoute(
+    () =>
+      import("@freeanima/features/observer/ui/spa").then(async (mod) => {
+        await import("@freeanima/features/habitat/ui/habitat/styles.css");
+        return { default: mod.ObserverShell as import("react").ComponentType<object> };
+      }) as Promise<{ default: import("react").ComponentType<object> }>,
+  );
+}
+
+/** @deprecated 使用 loadBedroomShellRoute */
+export const loadObserverShellRoute = loadBedroomShellRoute;
+
 registerFeaturePluginShellRoutes();

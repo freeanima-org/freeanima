@@ -75,6 +75,7 @@ export async function semanticPassiveRecallSearch(
     limit?: number;
     min_score?: number;
     min_relative_score?: number;
+    world_id?: number;
     /** Collect FTS / trgm / merge / filter stages for LLM debug */
     debug?: boolean;
   },
@@ -90,6 +91,7 @@ export async function semanticPassiveRecallSearchDetailed(
     limit?: number;
     min_score?: number;
     min_relative_score?: number;
+    world_id?: number;
     debug?: boolean;
   },
 ): Promise<SemanticPassiveRecallSearchResult> {
@@ -105,12 +107,14 @@ export async function semanticPassiveRecallSearchDetailed(
   const minScore = opts?.min_score ?? DEFAULT_PASSIVE_RECALL_MIN_SCORE;
   const minRelative = opts?.min_relative_score ?? DEFAULT_PASSIVE_RECALL_MIN_RELATIVE_SCORE;
   const useVector = resolvePassiveRecallConfig(getActiveRuntimeConfig().data).use_vector;
+  const worldFilter = omitUndefined({ world_id: opts?.world_id });
 
   if (!wantDebug) {
     const rows = await hybridSearchSemanticMemory(q, {
       limit: pool,
       status: "active",
       use_vector: useVector,
+      ...worldFilter,
     });
     if (rows.length === 0) return { hits: [] };
     const effectiveMin = effectivePassiveRecallMinScore(rows, opts);
@@ -129,10 +133,14 @@ export async function semanticPassiveRecallSearchDetailed(
   const lexicalQuery = content.query;
   const [tsquery, ftsHits, trgmHits, vectorHits] = await Promise.all([
     buildFtsTsQuery(lexicalQuery).catch(() => ""),
-    searchSemanticMemoryFtsRaw(lexicalQuery, { limit: fetchPool, status: "active" }),
-    searchSemanticMemoryTrgm(lexicalQuery, { limit: fetchPool, status: "active" }),
+    searchSemanticMemoryFtsRaw(lexicalQuery, {
+      limit: fetchPool,
+      status: "active",
+      ...worldFilter,
+    }),
+    searchSemanticMemoryTrgm(lexicalQuery, { limit: fetchPool, status: "active", ...worldFilter }),
     useVector
-      ? searchSemanticMemoryVector(q, { limit: fetchPool, status: "active" })
+      ? searchSemanticMemoryVector(q, { limit: fetchPool, status: "active", ...worldFilter })
       : Promise.resolve([]),
   ]);
 

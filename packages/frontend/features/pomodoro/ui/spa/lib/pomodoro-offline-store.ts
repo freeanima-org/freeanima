@@ -10,7 +10,7 @@ import type { PomodoroActiveStatePayload } from "@freeanima/shared/rpc-contract/
 import { randomPublicId } from "@freeanima/shared/util";
 
 import type { PhaseEndPayload } from "./runtime.ts";
-import type { PomodoroConfigRow, PomodoroSubjectKind } from "./api.ts";
+import type { PomodoroConfigRow } from "./api.ts";
 
 const MODULE_ID = "pomodoro";
 
@@ -48,43 +48,43 @@ async function enqueueOp(
 }
 
 export async function enqueuePomodoroSessionComplete(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   payload: PhaseEndPayload,
 ): Promise<void> {
   await enqueueOp(
     "pomodoro.session.complete",
-    { subject_kind: subjectKind, ...payload },
+    { subject_id: subjectId, ...payload },
     payload.client_op_id,
   );
 }
 
 export async function enqueuePomodoroSessionAbort(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   payload: PhaseEndPayload,
 ): Promise<void> {
   await enqueueOp(
     "pomodoro.session.abort",
-    { subject_kind: subjectKind, ...payload },
+    { subject_id: subjectId, ...payload },
     payload.client_op_id,
   );
 }
 
 export async function enqueuePomodoroConfigUpdate(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   patch: Partial<PomodoroConfigRow>,
 ): Promise<void> {
-  await enqueueOp("pomodoro.config.update", { subject_kind: subjectKind, ...patch });
+  await enqueueOp("pomodoro.config.update", { subject_id: subjectId, ...patch });
 }
 
 export async function enqueuePomodoroActivePut(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   active: PomodoroActiveStatePayload,
 ): Promise<void> {
-  await enqueueOp("pomodoro.active.put", { subject_kind: subjectKind, active });
+  await enqueueOp("pomodoro.active.put", { subject_id: subjectId, active });
 }
 
-export async function enqueuePomodoroActiveClear(subjectKind: PomodoroSubjectKind): Promise<void> {
-  await enqueueOp("pomodoro.active.clear", { subject_kind: subjectKind });
+export async function enqueuePomodoroActiveClear(subjectId: number): Promise<void> {
+  await enqueueOp("pomodoro.active.clear", { subject_id: subjectId });
 }
 
 export async function listPomodoroOutboxOps(): Promise<OfflineOutboxOp[]> {

@@ -27,7 +27,11 @@ export {
   resetSelfLayerRefreshEngineForTests,
   runSelfLayerRefreshEngine,
 } from "./refresh-engine-port.ts";
-export { runSelfLayerRefresh, type SelfLayerRefreshResult } from "./refresh/run.ts";
+export {
+  runSelfLayerRefresh,
+  runSelfLayerRefreshAllAgents,
+  type SelfLayerRefreshResult,
+} from "./refresh/run.ts";
 export {
   SELF_LAYER_PROPOSAL_SOURCE_REF,
   SELF_LAYER_PROPOSAL_TITLE,

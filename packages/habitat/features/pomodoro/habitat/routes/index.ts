@@ -25,7 +25,7 @@ function broadcastActiveChanged(
   event: PomodoroActiveChangedEvent,
 ): void {
   deps.hubSessionRegistry.broadcastToSubject(
-    event.subject_kind,
+    event.subject_id,
     POMODORO_ACTIVE_CHANGED_EVENT,
     event,
   );
@@ -55,7 +55,7 @@ export const pomodoroHabitatRoutes = bindHabitatRouteHandlers(pomodoroMethodDefs
     const d = depsOf(deps);
     const result = await service.servicePomodoroActivePut(d.runtime.runtimeDeps(), input);
     broadcastActiveChanged(d, {
-      subject_kind: input.subject_kind,
+      subject_id: input.subject_id,
       active: result.active,
     });
     return result;
@@ -64,7 +64,7 @@ export const pomodoroHabitatRoutes = bindHabitatRouteHandlers(pomodoroMethodDefs
     const d = depsOf(deps);
     const result = await service.servicePomodoroActiveClear(d.runtime.runtimeDeps(), input);
     broadcastActiveChanged(d, {
-      subject_kind: input.subject_kind,
+      subject_id: input.subject_id,
       active: null,
     });
     return result;

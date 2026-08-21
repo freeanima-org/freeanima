@@ -28,7 +28,7 @@ describePg("schemas/message", () => {
   it("updateConversationMetaField preserves acp_tasks", async () => {
     const c = testConv();
     const sid = "schema_test";
-    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM });
+    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM, agent_subject_id: 2 });
     await c.updateConversationMetaField(sid, {
       acp_tasks: {
         "uuid-1": {
@@ -55,7 +55,7 @@ describePg("schemas/message", () => {
   it("patch without compression key preserves compression boundaries", async () => {
     const c = testConv();
     const sid = "schema_compression_preserve";
-    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM });
+    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM, agent_subject_id: 2 });
     await c.updateConversationMetaField(sid, {
       compression: { l2: 100, l3: 100, summary: "kept summary" },
     });
@@ -82,7 +82,7 @@ describePg("schemas/message", () => {
   it("explicit compression null clears boundaries", async () => {
     const c = testConv();
     const sid = "schema_compression_clear";
-    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM });
+    await c.initConversation(sid, "m", { platform: TEST_SAP_CHAT_PLATFORM, agent_subject_id: 2 });
     await c.updateConversationMetaField(sid, {
       compression: { l2: 50, l3: 50, summary: "gone" },
     });

@@ -1,6 +1,6 @@
 import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
 
-import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/habitat/core/config";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import {
   deriveThreadKey,
   deleteEmailMessageRow,
@@ -26,8 +26,8 @@ import MailComposer from "nodemailer/lib/mail-composer/index.js";
 export type SendEmailInput = {
   account_id?: number;
   /** 缺 account_id 时必填（或提供 world_id） */
-  subject_kind?: SubjectKind;
-  /** 缺 account_id 时可选显式 world；优先于 subject_kind */
+  subject_id?: number;
+  /** 缺 account_id 时可选显式 world；优先于 subject_id */
   world_id?: number;
   to: string;
   subject: string;
@@ -40,8 +40,8 @@ export type SendEmailInput = {
 export type SaveDraftInput = {
   account_id?: number;
   /** 缺 account_id 时必填（或提供 world_id） */
-  subject_kind?: SubjectKind;
-  /** 缺 account_id 时可选显式 world；优先于 subject_kind */
+  subject_id?: number;
+  /** 缺 account_id 时可选显式 world；优先于 subject_id */
   world_id?: number;
   to?: string;
   subject: string;
@@ -51,7 +51,7 @@ export type SaveDraftInput = {
 
 async function resolveWorldForSend(input: {
   account_id?: number;
-  subject_kind?: SubjectKind;
+  subject_id?: number;
   world_id?: number;
 }): Promise<number> {
   if (input.account_id != null) {
@@ -60,10 +60,10 @@ async function resolveWorldForSend(input: {
   if (input.world_id != null && Number.isFinite(input.world_id) && input.world_id > 0) {
     return Math.floor(input.world_id);
   }
-  if (input.subject_kind === "user" || input.subject_kind === "agent") {
-    return resolveSubjectWorldId(input.subject_kind);
+  if (input.subject_id != null && Number.isInteger(input.subject_id) && input.subject_id > 0) {
+    return resolvePrivateWorldId(input.subject_id);
   }
-  throw new Error("subject_kind is required (user|agent) when account_id omitted");
+  throw new Error("subject_id is required when account_id omitted");
 }
 
 function resolveSentMailbox(account: NonNullable<Awaited<ReturnType<typeof getEmailAccountRow>>>) {

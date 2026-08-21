@@ -45,6 +45,7 @@ export {
   createSubjectEntityRecord,
   createDefaultPrivateWorldForSubject,
   buildWorldConfigBody,
+  assertAtMostOneUser,
   EntitySubjectBootstrapError,
   type EnsuredWorldSubjects,
 } from "./subject-world.ts";

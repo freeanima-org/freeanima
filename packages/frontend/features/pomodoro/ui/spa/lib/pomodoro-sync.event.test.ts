@@ -74,22 +74,22 @@ beforeEach(() => {
 
 describe("applyPomodoroActiveChangedEvent", () => {
   test("active=null 清空本地", () => {
-    applyLocalPomodoroActive(localState, "user", {
+    applyLocalPomodoroActive(localState, 1, {
       device_id: "device-local",
       updated_at_ms: 1_000,
     });
-    applyPomodoroActiveChangedEvent("user", null);
-    expect(getPomodoroSyncSnapshot("user").active).toBeNull();
-    expect(getPomodoroSyncMeta("user")).toBeNull();
+    applyPomodoroActiveChangedEvent(1, null);
+    expect(getPomodoroSyncSnapshot(1).active).toBeNull();
+    expect(getPomodoroSyncMeta(1)).toBeNull();
   });
 
   test("active 非空时按 LWW 合并", () => {
-    applyLocalPomodoroActive(localState, "user", {
+    applyLocalPomodoroActive(localState, 1, {
       device_id: "device-local",
       updated_at_ms: 1_000,
     });
-    applyPomodoroActiveChangedEvent("user", remoteBody);
-    expect(getPomodoroSyncSnapshot("user").active?.sessionLocalId).toBe("remote-session");
-    expect(getPomodoroSyncMeta("user")?.updated_at_ms).toBe(9_000);
+    applyPomodoroActiveChangedEvent(1, remoteBody);
+    expect(getPomodoroSyncSnapshot(1).active?.sessionLocalId).toBe("remote-session");
+    expect(getPomodoroSyncMeta(1)?.updated_at_ms).toBe(9_000);
   });
 });

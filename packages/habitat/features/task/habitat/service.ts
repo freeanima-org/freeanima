@@ -30,8 +30,7 @@ import {
 } from "../domain/index.ts";
 import { convertTaskItemToCalendarEvent } from "@freeanima/features/calendar/domain/convert-task-event.ts";
 import type { TaskItemSearchFilters } from "@freeanima/habitat/core/db/schema";
-import type { SubjectKind } from "@freeanima/habitat/core/config";
-import { resolveSubjectWorldId } from "@freeanima/habitat/core/config/world-context";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 import type { VerifiedServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 
@@ -44,35 +43,35 @@ function assertPg(_deps: RuntimeDeps): void {
   }
 }
 
-function assertSubjectKindMatches(auth: RpcRequestAuthContext, subject_kind?: SubjectKind): void {
-  if (!subject_kind || subject_kind === auth.subject_type) return;
-  if (auth.subject_type === "user" && subject_kind === "agent") return;
+function assertSubjectIdAllowed(auth: RpcRequestAuthContext, subjectId: number): void {
+  if (auth.subject_id === subjectId) return;
+  if (auth.subject_type === "user") return;
   throw new Error("FORBIDDEN_SUBJECT");
 }
 
-function resolveSubjectKind(subject_kind: SubjectKind | undefined): SubjectKind {
-  if (subject_kind !== "user" && subject_kind !== "agent") {
-    throw new Error("subject_kind is required (user|agent)");
+function requireSubjectId(subject_id: number | undefined): number {
+  if (subject_id == null || !Number.isInteger(subject_id) || subject_id <= 0) {
+    throw new Error("subject_id is required");
   }
-  return subject_kind;
+  return subject_id;
 }
 
 async function taskWorldIdForAuth(
   auth: RpcRequestAuthContext,
-  subject_kind?: SubjectKind,
+  subject_id: number | undefined,
 ): Promise<number> {
-  const kind = resolveSubjectKind(subject_kind);
-  assertSubjectKindMatches(auth, kind);
-  return resolveSubjectWorldId(kind);
+  const subjectId = requireSubjectId(subject_id);
+  assertSubjectIdAllowed(auth, subjectId);
+  return resolvePrivateWorldId(subjectId);
 }
 
 export async function serviceTasklistList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; include_closed?: boolean } | undefined,
+  input: { subject_id?: number; include_closed?: boolean } | undefined,
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_id);
   await ensureDefaultTaskListForWorld(worldId);
   const lists = await listTaskLists(
     worldId,
@@ -83,11 +82,11 @@ export async function serviceTasklistList(
 
 export async function serviceTasklistStats(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; include_closed?: boolean } | undefined,
+  input: { subject_id?: number; include_closed?: boolean } | undefined,
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_id);
   await ensureDefaultTaskListForWorld(worldId);
   const counts = await listTaskListStats(
     worldId,
@@ -99,7 +98,7 @@ export async function serviceTasklistStats(
 export async function serviceTasklistCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     name: string;
     sort_order?: number;
     color?: string | null;
@@ -110,15 +109,15 @@ export async function serviceTasklistCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...createInput } = input;
-  const item = await createTaskList(await taskWorldIdForAuth(auth, subject_kind), createInput);
+  const { subject_id, ...createInput } = input;
+  const item = await createTaskList(await taskWorldIdForAuth(auth, subject_id), createInput);
   return { item };
 }
 
 export async function serviceTasklistPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     name?: string;
     sort_order?: number;
@@ -130,20 +129,20 @@ export async function serviceTasklistPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, ...patch } = input;
-  const item = await updateTaskList(await taskWorldIdForAuth(auth, subject_kind), { id, ...patch });
+  const { id, subject_id, ...patch } = input;
+  const item = await updateTaskList(await taskWorldIdForAuth(auth, subject_id), { id, ...patch });
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
 
 export async function serviceTasklistDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number; cascade?: boolean },
+  input: { subject_id?: number; id: number; cascade?: boolean },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   try {
-    const ok = await deleteTaskList(await taskWorldIdForAuth(auth, input.subject_kind), input.id, {
+    const ok = await deleteTaskList(await taskWorldIdForAuth(auth, input.subject_id), input.id, {
       cascade: input.cascade ?? true,
     });
     if (!ok) throw new Error("NOT_FOUND");
@@ -159,11 +158,11 @@ export async function serviceTasklistDelete(
 
 export async function serviceSmartlistList(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind } | undefined,
+  input: { subject_id?: number } | undefined,
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_id);
   await ensureDefaultTaskListForWorld(worldId);
   const smart_lists = await listSmartListsMerged(worldId);
   return { smart_lists };
@@ -171,11 +170,11 @@ export async function serviceSmartlistList(
 
 export async function serviceSmartlistStats(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind } | undefined,
+  input: { subject_id?: number } | undefined,
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await taskWorldIdForAuth(auth, input?.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input?.subject_id);
   await ensureDefaultTaskListForWorld(worldId);
   const counts = await listSmartListStats(worldId);
   return { counts };
@@ -184,7 +183,7 @@ export async function serviceSmartlistStats(
 export async function serviceSmartlistCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     title: string;
     filters: TaskItemSearchFilters;
     sort_order?: number;
@@ -192,15 +191,15 @@ export async function serviceSmartlistCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...createInput } = input;
-  const item = await createSmartList(await taskWorldIdForAuth(auth, subject_kind), createInput);
+  const { subject_id, ...createInput } = input;
+  const item = await createSmartList(await taskWorldIdForAuth(auth, subject_id), createInput);
   return { item };
 }
 
 export async function serviceSmartlistPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     title?: string;
     filters?: TaskItemSearchFilters;
@@ -209,8 +208,8 @@ export async function serviceSmartlistPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, ...patch } = input;
-  const item = await updateSmartList(await taskWorldIdForAuth(auth, subject_kind), {
+  const { id, subject_id, ...patch } = input;
+  const item = await updateSmartList(await taskWorldIdForAuth(auth, subject_id), {
     id,
     ...patch,
   });
@@ -220,11 +219,11 @@ export async function serviceSmartlistPatch(
 
 export async function serviceSmartlistDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const ok = await deleteSmartList(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
+  const ok = await deleteSmartList(await taskWorldIdForAuth(auth, input.subject_id), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }
@@ -233,7 +232,7 @@ export async function serviceSmartlistDelete(
 export async function serviceTasklistItemList(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     list_id?: number;
     filters?: TaskItemSearchFilters;
     status?: "pending" | "completed" | "all";
@@ -250,7 +249,7 @@ export async function serviceTasklistItemList(
   if (input.list_id != null && input.filters != null) {
     throw new Error("list_id and filters are mutually exclusive");
   }
-  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input.subject_id);
   await ensureDefaultTaskListForWorld(worldId);
   let filters = input.filters;
   if (
@@ -303,7 +302,7 @@ export async function serviceTasklistItemList(
 export async function serviceProjectItemList(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     project_id: number;
     status?: "pending" | "completed" | "all";
     limit?: number;
@@ -312,7 +311,7 @@ export async function serviceProjectItemList(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input.subject_id);
   const items = await listTaskItems(
     worldId,
     omitUndefined({
@@ -329,7 +328,7 @@ export async function serviceProjectItemList(
 export async function serviceTasklistItemCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     title: string;
     list_id?: number;
     content?: string;
@@ -347,8 +346,8 @@ export async function serviceTasklistItemCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, list_id, ...rest } = input;
-  const worldId = await taskWorldIdForAuth(auth, subject_kind);
+  const { subject_id, list_id, ...rest } = input;
+  const worldId = await taskWorldIdForAuth(auth, subject_id);
   const resolvedListId = list_id ?? (await getDefaultTaskList(worldId)).id;
   const item = await createTaskItem(worldId, omitUndefined({ ...rest, list_id: resolvedListId }));
   return { item };
@@ -358,7 +357,7 @@ export async function serviceTasklistItemCreate(
 export async function serviceProjectItemCreate(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     title: string;
     project_id: number;
     content?: string;
@@ -376,9 +375,9 @@ export async function serviceProjectItemCreate(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { subject_kind, ...createInput } = input;
+  const { subject_id, ...createInput } = input;
   const item = await createTaskItem(
-    await taskWorldIdForAuth(auth, subject_kind),
+    await taskWorldIdForAuth(auth, subject_id),
     omitUndefined(createInput),
   );
   return { item };
@@ -388,13 +387,13 @@ export async function serviceProjectItemCreate(
 export async function serviceTaskGet(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
   },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const item = await getTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
+  const item = await getTaskItem(await taskWorldIdForAuth(auth, input.subject_id), input.id);
   return { item };
 }
 
@@ -402,7 +401,7 @@ export async function serviceTaskGet(
 export async function serviceTaskPatch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     title?: string;
     content?: string;
@@ -421,9 +420,9 @@ export async function serviceTaskPatch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, ...patch } = input;
+  const { id, subject_id, ...patch } = input;
   const item = await updateTaskItem(
-    await taskWorldIdForAuth(auth, subject_kind),
+    await taskWorldIdForAuth(auth, subject_id),
     omitUndefined({ id, ...patch }),
   );
   if (!item) throw new Error("NOT_FOUND");
@@ -433,7 +432,7 @@ export async function serviceTaskPatch(
 export async function serviceTaskMoveToProject(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     project_id: number;
     sort_order?: number;
@@ -441,9 +440,9 @@ export async function serviceTaskMoveToProject(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, project_id, sort_order } = input;
+  const { id, subject_id, project_id, sort_order } = input;
   const item = await updateTaskItem(
-    await taskWorldIdForAuth(auth, subject_kind),
+    await taskWorldIdForAuth(auth, subject_id),
     omitUndefined({ id, project_id, sort_order }),
   );
   if (!item) throw new Error("NOT_FOUND");
@@ -453,7 +452,7 @@ export async function serviceTaskMoveToProject(
 export async function serviceTaskMoveToList(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     id: number;
     list_id: number;
     sort_order?: number;
@@ -461,9 +460,9 @@ export async function serviceTaskMoveToList(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const { id, subject_kind, list_id, sort_order } = input;
+  const { id, subject_id, list_id, sort_order } = input;
   const item = await updateTaskItem(
-    await taskWorldIdForAuth(auth, subject_kind),
+    await taskWorldIdForAuth(auth, subject_id),
     omitUndefined({ id, list_id, sort_order }),
   );
   if (!item) throw new Error("NOT_FOUND");
@@ -472,34 +471,34 @@ export async function serviceTaskMoveToList(
 
 export async function serviceTaskComplete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const item = await completeTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
+  const item = await completeTaskItem(await taskWorldIdForAuth(auth, input.subject_id), input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
 
 export async function serviceTaskSkip(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const item = await skipTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
+  const item = await skipTaskItem(await taskWorldIdForAuth(auth, input.subject_id), input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
 
 export async function serviceTaskCompleteForever(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const item = await completeTaskItemForever(
-    await taskWorldIdForAuth(auth, input.subject_kind),
+    await taskWorldIdForAuth(auth, input.subject_id),
     input.id,
   );
   if (!item) throw new Error("NOT_FOUND");
@@ -509,7 +508,7 @@ export async function serviceTaskCompleteForever(
 export async function serviceTaskListOccurrences(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     series_task_id: number;
     limit?: number;
     offset?: number;
@@ -518,7 +517,7 @@ export async function serviceTaskListOccurrences(
 ) {
   assertPg(deps);
   const items = await listTaskOccurrences(
-    await taskWorldIdForAuth(auth, input.subject_kind),
+    await taskWorldIdForAuth(auth, input.subject_id),
     input.series_task_id,
     omitUndefined({ limit: input.limit, offset: input.offset }),
   );
@@ -527,37 +526,34 @@ export async function serviceTaskListOccurrences(
 
 export async function serviceTaskUncomplete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const item = await uncompleteTaskItem(
-    await taskWorldIdForAuth(auth, input.subject_kind),
-    input.id,
-  );
+  const item = await uncompleteTaskItem(await taskWorldIdForAuth(auth, input.subject_id), input.id);
   if (!item) throw new Error("NOT_FOUND");
   return { item };
 }
 
 export async function serviceTaskDelete(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const ok = await deleteTaskItem(await taskWorldIdForAuth(auth, input.subject_kind), input.id);
+  const ok = await deleteTaskItem(await taskWorldIdForAuth(auth, input.subject_id), input.id);
   if (!ok) throw new Error("NOT_FOUND");
   return { ok: true as const };
 }
 
 export async function serviceTaskConvertToEvent(
   deps: RuntimeDeps,
-  input: { subject_kind?: SubjectKind; id: number },
+  input: { subject_id?: number; id: number },
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
   const item = await convertTaskItemToCalendarEvent(
-    await taskWorldIdForAuth(auth, input.subject_kind),
+    await taskWorldIdForAuth(auth, input.subject_id),
     input.id,
   );
   return { item };
@@ -566,7 +562,7 @@ export async function serviceTaskConvertToEvent(
 export async function serviceTaskSearch(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     query: string;
     list_id?: number;
     status?: "pending" | "completed" | "all";
@@ -575,8 +571,8 @@ export async function serviceTaskSearch(
   auth: VerifiedServiceApiToken,
 ) {
   assertPg(deps);
-  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
-  const { subject_kind: _kind, ...searchInput } = input;
+  const worldId = await taskWorldIdForAuth(auth, input.subject_id);
+  const { subject_id: _sid, ...searchInput } = input;
   const items = await searchTaskItems(worldId, omitUndefined(searchInput));
   return { items };
 }
@@ -584,7 +580,7 @@ export async function serviceTaskSearch(
 export async function serviceTaskImportDidaCsv(
   deps: RuntimeDeps,
   input: {
-    subject_kind?: SubjectKind;
+    subject_id?: number;
     csv_text: string;
     mode?: "upsert" | "create_only";
   },
@@ -592,6 +588,6 @@ export async function serviceTaskImportDidaCsv(
 ) {
   assertPg(deps);
   const { applyDidaCsvImport } = await import("../domain/apply-dida-import.ts");
-  const worldId = await taskWorldIdForAuth(auth, input.subject_kind);
+  const worldId = await taskWorldIdForAuth(auth, input.subject_id);
   return applyDidaCsvImport(worldId, input.csv_text, input.mode ?? "upsert");
 }

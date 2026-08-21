@@ -73,6 +73,7 @@ async function searchForRoleItems(
     limit: number;
     min_score: number;
     min_relative_score: number;
+    world_id?: number;
   },
 ): Promise<SemanticRecallHit[]> {
   const queries = items
@@ -92,6 +93,7 @@ async function searchForRoleItems(
           limit: searchOpts.limit,
           min_score: searchOpts.min_score,
           min_relative_score: searchOpts.min_relative_score,
+          ...(searchOpts.world_id != null ? { world_id: searchOpts.world_id } : {}),
         });
       } catch (err) {
         // 单条正文仍可能踩 FTS 校验；跳过该条，不拖垮整次 retain
@@ -112,6 +114,7 @@ export async function collectRetainPassiveHits(
     limit: number;
     min_score: number;
     min_relative_score: number;
+    world_id?: number;
   },
 ): Promise<SemanticRecallHit[]> {
   if (!config.enabled || items.length === 0) return [];
@@ -125,6 +128,7 @@ export async function collectRetainPassiveHits(
     limit: config.limit,
     min_score: config.min_score,
     min_relative_score: config.min_relative_score,
+    ...(config.world_id != null ? { world_id: config.world_id } : {}),
   };
 
   const [userHits, assistantHits] = await Promise.all([

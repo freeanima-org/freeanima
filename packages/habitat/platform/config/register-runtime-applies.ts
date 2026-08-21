@@ -122,6 +122,10 @@ async function applyWorlds(config: Config): Promise<void> {
   await resolveAndBindWorldContext(config.data);
 }
 
+async function applyChat(config: Config): Promise<void> {
+  await resolveAndBindWorldContext(config.data);
+}
+
 function applyObjectStorage(config: Config): void {
   bindObjectStore(createObjectStore(config.data.object_storage ?? {}));
 }
@@ -148,6 +152,7 @@ export function registerRuntimeConfigApplies(): void {
   registerSection({ key: "weixin", apply: applyGateway, transferred: true, order: 70 });
   registerSection({ key: "gateway", apply: applyGateway, transferred: true, order: 80 });
   registerSection({ key: "worlds", apply: applyWorlds, transferred: true, order: 90 });
+  registerSection({ key: "chat", apply: applyChat, transferred: true, order: 91 });
   registerSection({
     key: "object_storage",
     apply: applyObjectStorage,

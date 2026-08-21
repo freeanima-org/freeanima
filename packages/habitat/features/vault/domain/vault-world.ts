@@ -1,5 +1,5 @@
-import { resolveSubjectWorldId, type SubjectKind } from "@freeanima/habitat/core/config";
+import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg";
 
-export function resolveVaultWorldId(subject_kind: SubjectKind): number {
-  return resolveSubjectWorldId(subject_kind);
+export async function resolveVaultWorldId(subjectId: number): Promise<number> {
+  return resolvePrivateWorldId(subjectId);
 }

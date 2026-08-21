@@ -163,8 +163,8 @@ export async function bootstrapTauriBridge(): Promise<void> {
       void listen<unknown>("pomodoro:active-sync", (ev) => {
         const raw = ev.payload;
         if (!isRecord(raw)) return;
-        const kind = raw.subject_kind;
-        if (kind !== "user" && kind !== "agent") return;
+        const subjectId = Number(raw.subject_id);
+        if (!Number.isInteger(subjectId) || subjectId <= 0) return;
         let meta: { device_id: string; updated_at_ms: number } | null = null;
         const metaRec = raw.meta;
         if (
@@ -175,7 +175,7 @@ export async function bootstrapTauriBridge(): Promise<void> {
           meta = { device_id: metaRec.device_id, updated_at_ms: metaRec.updated_at_ms };
         }
         handler({
-          subject_kind: kind,
+          subject_id: subjectId,
           active: raw.active ?? null,
           meta,
         });

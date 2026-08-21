@@ -30,3 +30,16 @@ export async function vaultCall<K extends HabitatMethod>(
   const client = await getExtHabitatClient();
   return client.call(method, payload, { transport: "http" });
 }
+
+let cachedUserSubjectId: number | null = null;
+
+export async function getExtUserSubjectId(): Promise<number> {
+  if (cachedUserSubjectId != null) return cachedUserSubjectId;
+  const client = await getExtHabitatClient();
+  const raw: unknown = await client.call("worlds.context", {}, { transport: "http" });
+  if (raw == null || typeof raw !== "object") throw new Error("worlds.context invalid");
+  const id = Number((raw as Record<string, unknown>).user_subject_id);
+  if (!Number.isInteger(id) || id <= 0) throw new Error("worlds.context missing user_subject_id");
+  cachedUserSubjectId = id;
+  return id;
+}

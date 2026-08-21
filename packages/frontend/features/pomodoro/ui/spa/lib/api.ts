@@ -5,7 +5,8 @@ import { getTypedHabitatClient } from "@freeanima/client/portal-sdk/habitat-type
 
 import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 
-export type PomodoroSubjectKind = "user" | "agent";
+/** @deprecated 历史别名；现为 subject 实体 id（number） */
+export type PomodoroSubjectKind = number;
 
 export type PomodoroConfigRow = {
   work_minutes: number;
@@ -77,17 +78,15 @@ function ensurePomodoroOfflineModule(): void {
   pomodoroModuleRegistered = true;
 }
 
-export async function fetchPomodoroConfig(
-  subjectKind: PomodoroSubjectKind,
-): Promise<PomodoroConfigRow> {
+export async function fetchPomodoroConfig(subjectId: number): Promise<PomodoroConfigRow> {
   ensurePomodoroOfflineModule();
   const scope = resolveHabitatCacheScope();
   return withOfflineCache({
     scope,
     namespace: "pomodoro",
-    id: `config:${subjectKind}`,
+    id: `config:${subjectId}`,
     fetch: async () => {
-      const data = await habitat().call("pomodoro.config.get", { subject_kind: subjectKind });
+      const data = await habitat().call("pomodoro.config.get", { subject_id: subjectId });
       return data.config;
     },
     offlineError: "pomodoro.config unavailable offline",
@@ -95,18 +94,18 @@ export async function fetchPomodoroConfig(
 }
 
 export async function updatePomodoroConfig(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   patch: Partial<PomodoroConfigRow>,
 ): Promise<PomodoroConfigRow> {
   const data = await habitat().call("pomodoro.config.update", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...patch,
   });
   return data.config;
 }
 
 export async function completePomodoroSession(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   input: {
     phase: PomodoroSessionRow["phase"];
     started_at: string;
@@ -122,14 +121,14 @@ export async function completePomodoroSession(
   },
 ): Promise<PomodoroSessionRow> {
   const data = await habitat().call("pomodoro.session.complete", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   return data.item;
 }
 
 export async function abortPomodoroSession(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   input: {
     phase: PomodoroSessionRow["phase"];
     started_at: string;
@@ -145,14 +144,14 @@ export async function abortPomodoroSession(
   },
 ): Promise<PomodoroSessionRow> {
   const data = await habitat().call("pomodoro.session.abort", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     ...input,
   });
   return data.item;
 }
 
 export async function fetchPomodoroSessions(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   opts?: { limit?: number; offset?: number },
 ): Promise<{ items: PomodoroSessionRow[]; total: number }> {
   ensurePomodoroOfflineModule();
@@ -160,10 +159,10 @@ export async function fetchPomodoroSessions(
   return withOfflineCache({
     scope,
     namespace: "pomodoro",
-    id: `sessions:${subjectKind}`,
+    id: `sessions:${subjectId}`,
     fetch: async () =>
       habitat().call("pomodoro.session.list", {
-        subject_kind: subjectKind,
+        subject_id: subjectId,
         limit: opts?.limit ?? 20,
         offset: opts?.offset ?? 0,
       }),
@@ -172,7 +171,7 @@ export async function fetchPomodoroSessions(
 }
 
 export async function fetchPomodoroStats(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   period: "today" | "week" = "today",
 ): Promise<PomodoroStats> {
   ensurePomodoroOfflineModule();
@@ -180,15 +179,14 @@ export async function fetchPomodoroStats(
   return withOfflineCache({
     scope,
     namespace: "pomodoro",
-    id: `stats:${subjectKind}:${period}`,
-    fetch: async () =>
-      habitat().call("pomodoro.session.stats", { subject_kind: subjectKind, period }),
+    id: `stats:${subjectId}:${period}`,
+    fetch: async () => habitat().call("pomodoro.session.stats", { subject_id: subjectId, period }),
     offlineError: "pomodoro.session.stats unavailable offline",
   });
 }
 
 export async function fetchPomodoroTaskFocus(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   opts?: {
     task_item_id?: number;
     pomodoro_session_id?: number;
@@ -198,7 +196,7 @@ export async function fetchPomodoroTaskFocus(
   },
 ): Promise<{ items: PomodoroTaskFocusRow[]; total: number }> {
   return habitat().call("pomodoro.focus.list", {
-    subject_kind: subjectKind,
+    subject_id: subjectId,
     task_item_id: opts?.task_item_id,
     pomodoro_session_id: opts?.pomodoro_session_id,
     session_local_id: opts?.session_local_id,
@@ -227,21 +225,19 @@ export type PomodoroActiveRemote = {
   updated_at_ms: number;
 };
 
-export async function fetchPomodoroActive(
-  subjectKind: PomodoroSubjectKind,
-): Promise<PomodoroActiveRemote | null> {
-  const data = await habitat().call("pomodoro.active.get", { subject_kind: subjectKind });
+export async function fetchPomodoroActive(subjectId: number): Promise<PomodoroActiveRemote | null> {
+  const data = await habitat().call("pomodoro.active.get", { subject_id: subjectId });
   return data.active;
 }
 
 export async function putPomodoroActiveRemote(
-  subjectKind: PomodoroSubjectKind,
+  subjectId: number,
   active: PomodoroActiveRemote,
 ): Promise<PomodoroActiveRemote | null> {
-  const data = await habitat().call("pomodoro.active.put", { subject_kind: subjectKind, active });
+  const data = await habitat().call("pomodoro.active.put", { subject_id: subjectId, active });
   return data.active;
 }
 
-export async function clearPomodoroActiveRemote(subjectKind: PomodoroSubjectKind): Promise<void> {
-  await habitat().call("pomodoro.active.clear", { subject_kind: subjectKind });
+export async function clearPomodoroActiveRemote(subjectId: number): Promise<void> {
+  await habitat().call("pomodoro.active.clear", { subject_id: subjectId });
 }

@@ -53,13 +53,13 @@ export const WORLD_ID_TOOL_PROPERTY = {
 export const WORLD_ID_OPTIONAL = {
   world_id: {
     ...WORLD_ID_TOOL_PROPERTY,
-    description: "Optional world override; otherwise subject_kind selects the private world",
-  },
-  subject_kind: {
-    type: "string",
-    enum: ["user", "agent"],
     description:
-      "Owning subject: user or agent (required unless world_id or entity id resolves world)",
+      "Optional world override; otherwise subject_id or conversation subject selects the private world",
+  },
+  subject_id: {
+    type: "integer",
+    description:
+      "Owning subject entity id (required unless world_id or conversation tool context resolves world)",
   },
 } as const;
 

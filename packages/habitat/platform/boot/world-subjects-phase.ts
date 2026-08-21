@@ -9,19 +9,6 @@ import { startupLog } from "./status.ts";
 
 export type WorldSubjectsPhaseResult = Record<string, never>;
 
-/** 与 habitat_runtime_config.worlds 段比对（不含 legacy notifications 伪装） */
-function worldsSectionNeedsPersist(
-  worlds:
-    | { user_subject_id?: number | undefined; agent_subject_id?: number | undefined }
-    | undefined,
-  resolved: { user_subject_id: number; agent_subject_id: number },
-): boolean {
-  return (
-    worlds?.user_subject_id !== resolved.user_subject_id ||
-    worlds?.agent_subject_id !== resolved.agent_subject_id
-  );
-}
-
 async function ensureAllSubjectCrypto(config: RuntimeConfigStore): Promise<void> {
   const identityParsed = identityConfigSchema.safeParse(config.data.identity);
   if (!identityParsed.success) {
@@ -61,7 +48,6 @@ async function ensureAllSubjectCrypto(config: RuntimeConfigStore): Promise<void>
     }
   }
 
-  // drop orphan keys for deleted public_ids
   const liveIds = new Set<string>();
   for (const row of subjects) {
     const refreshed = await getEntity(row.id);
@@ -84,32 +70,26 @@ async function ensureAllSubjectCrypto(config: RuntimeConfigStore): Promise<void>
   }
 }
 
-/** Phase 2.5: 确保 user/agent subject 与默认私有 world（迁移后、engine 前）；必要时回写 worlds */
+/** Phase 2.5: 确保 user/agent subject 与默认私有 world；写回 chat.default_agent；不再持久化 worlds */
 export async function bootWorldSubjectsPhase(
   config: RuntimeConfigStore,
 ): Promise<WorldSubjectsPhaseResult> {
   startupLog("Ensuring world subjects…");
   const ctx = await resolveAndBindWorldContext(config.data);
 
-  if (
-    worldsSectionNeedsPersist(config.data.worlds, {
-      user_subject_id: ctx.user_subject_id,
-      agent_subject_id: ctx.agent_subject_id,
-    })
-  ) {
-    await config.patchSection("worlds", {
-      user_subject_id: ctx.user_subject_id,
-      agent_subject_id: ctx.agent_subject_id,
+  const configured = config.data.chat?.default_agent_subject_id;
+  if (configured !== ctx.default_chat_agent_subject_id) {
+    await config.patchSection("chat", {
+      ...config.data.chat,
+      default_agent_subject_id: ctx.default_chat_agent_subject_id,
     });
-    startupLog(
-      `Persisted worlds subject ids (user=${ctx.user_subject_id}, agent=${ctx.agent_subject_id})`,
-    );
+    startupLog(`Persisted chat.default_agent_subject_id=${ctx.default_chat_agent_subject_id}`);
   }
 
   await ensureAllSubjectCrypto(config);
 
   startupLog(
-    `World subjects ready (user=${ctx.user_subject_id}/world=${ctx.user_world_id}, agent=${ctx.agent_subject_id}/world=${ctx.agent_world_id}, commons=${ctx.commons_world_id})`,
+    `World subjects ready (user=${ctx.user_subject_id}/world=${ctx.user_world_id}, defaultChatAgent=${ctx.default_chat_agent_subject_id}/world=${ctx.default_chat_agent_world_id}, commons=${ctx.commons_world_id})`,
   );
   return {};
 }

@@ -473,7 +473,7 @@ export function buildTaskItemToolDefs() {
             },
             recurrence: TASK_RECURRENCE_TOOL_SCHEMA,
           },
-          required: ["subject_kind", "title"],
+          required: ["subject_id", "title"],
         },
         handler: handleCreate,
       },
@@ -526,7 +526,7 @@ export function buildTaskItemToolDefs() {
               description: "When changing plan clock with recurrence: true = this occurrence only",
             },
           },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleUpdate,
       },
@@ -538,7 +538,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: (args) => handleComplete(args, false),
       },
@@ -549,7 +549,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = Number(args.id);
@@ -572,7 +572,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: async (args) => {
           const id = Number(args.id);
@@ -598,7 +598,7 @@ export function buildTaskItemToolDefs() {
             series_task_id: { type: "integer", description: "Live task_item id" },
             limit: { type: "integer" },
           },
-          required: ["subject_kind", "series_task_id"],
+          required: ["subject_id", "series_task_id"],
         },
         handler: async (args) => {
           const seriesTaskId = Number(args.series_task_id);
@@ -623,7 +623,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: (args) => handleComplete(args, true),
       },
@@ -634,7 +634,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleDelete,
       },
@@ -646,7 +646,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleConvertToEvent,
       },
@@ -657,7 +657,7 @@ export function buildTaskItemToolDefs() {
         parameters: {
           type: "object",
           properties: { id: { type: "integer" } },
-          required: ["subject_kind", "id"],
+          required: ["subject_id", "id"],
         },
         handler: handleGet,
       },
@@ -679,7 +679,7 @@ export function buildTaskItemToolDefs() {
             tag_ids: { type: "array", items: { type: "integer" } },
             limit: { type: "integer" },
           },
-          required: ["subject_kind"],
+          required: ["subject_id"],
         },
         handler: handleList,
       },
@@ -704,7 +704,7 @@ export function buildTaskItemToolDefs() {
             status: { type: "string", enum: ["pending", "completed", "all"] },
             limit: { type: "integer", description: "Max results, default 30, cap 50" },
           },
-          required: ["subject_kind", "query"],
+          required: ["subject_id", "query"],
         },
         handler: handleSearch,
       },

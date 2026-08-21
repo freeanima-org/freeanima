@@ -475,11 +475,26 @@ export function createEmbeddedMemoryService(
         const { resolveTemporalSummaryConfig, rebuildMonthSummary, rebuildYearSummary } =
           await import("../temporal-summary/index.ts");
         const { getActiveRuntimeConfig } = await import("@freeanima/habitat/core/config");
+        const { listEnabledBoundAgents } =
+          await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
         const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-        if (input.bucket === "month") {
-          await rebuildMonthSummary({ period_start: input.key, config });
-        } else if (input.bucket === "year") {
-          await rebuildYearSummary({ period_start: input.key, config });
+        const agents = await listEnabledBoundAgents();
+        for (const agent of agents) {
+          if (input.bucket === "month") {
+            await rebuildMonthSummary({
+              period_start: input.key,
+              config,
+              agent_subject_id: agent.agent_subject_id,
+              world_id: agent.agent_world_id,
+            });
+          } else if (input.bucket === "year") {
+            await rebuildYearSummary({
+              period_start: input.key,
+              config,
+              agent_subject_id: agent.agent_subject_id,
+              world_id: agent.agent_world_id,
+            });
+          }
         }
         return (
           (await service.temporal.get({ bucket: input.bucket, key: input.key })) ?? {

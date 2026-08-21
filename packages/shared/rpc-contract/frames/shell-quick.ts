@@ -1,9 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
-
-const shellQuickSubjectKindSchema = notificationRecipientKindSchema;
-
 export const SHELL_QUICK_ALLOWED_PRIMARIES = [
   "project",
   "task_list",
@@ -25,7 +21,7 @@ export const shellQuickEntryRowSchema = z.object({
 export type ShellQuickEntryRowPayload = z.infer<typeof shellQuickEntryRowSchema>;
 
 export const shellQuickListInputSchema = z.object({
-  subject_kind: shellQuickSubjectKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type ShellQuickListInput = z.infer<typeof shellQuickListInputSchema>;
 export const shellQuickListOutputSchema = z.object({
@@ -34,7 +30,7 @@ export const shellQuickListOutputSchema = z.object({
 export type ShellQuickListOutput = z.infer<typeof shellQuickListOutputSchema>;
 
 export const shellQuickAttachInputSchema = z.object({
-  subject_kind: shellQuickSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type ShellQuickAttachInput = z.infer<typeof shellQuickAttachInputSchema>;
@@ -44,7 +40,7 @@ export const shellQuickAttachOutputSchema = z.object({
 export type ShellQuickAttachOutput = z.infer<typeof shellQuickAttachOutputSchema>;
 
 export const shellQuickDetachInputSchema = z.object({
-  subject_kind: shellQuickSubjectKindSchema,
+  subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
 });
 export type ShellQuickDetachInput = z.infer<typeof shellQuickDetachInputSchema>;

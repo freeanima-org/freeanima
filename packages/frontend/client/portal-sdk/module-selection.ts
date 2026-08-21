@@ -1,8 +1,7 @@
 import { isRecord } from "@freeanima/shared/util";
 
 import { resolveHabitatCacheScope } from "./offline-cache.ts";
-import { getSubjectKind } from "./subject-scope-store.ts";
-import type { SubjectKind } from "./subject-scope.ts";
+import { getCachedUserSubjectId } from "./world-context.ts";
 
 const STORAGE_PREFIX = "freeanima.module-selection";
 
@@ -20,7 +19,7 @@ export type TaskModuleSelection =
 
 export type ModuleSelectionContext = {
   habitatScope?: string;
-  subjectKind?: SubjectKind;
+  subjectId?: number;
 };
 
 function storage(): Storage | null {
@@ -33,17 +32,17 @@ function storage(): Storage | null {
 
 function resolveContext(ctx?: ModuleSelectionContext): {
   habitatScope: string;
-  subjectKind: SubjectKind;
+  subjectId: number;
 } {
   return {
     habitatScope: ctx?.habitatScope ?? resolveHabitatCacheScope(),
-    subjectKind: ctx?.subjectKind ?? getSubjectKind(),
+    subjectId: ctx?.subjectId ?? getCachedUserSubjectId(),
   };
 }
 
 function storageKey(module: ModuleSelectionModule, ctx?: ModuleSelectionContext): string {
-  const { habitatScope, subjectKind } = resolveContext(ctx);
-  return `${STORAGE_PREFIX}:${habitatScope}:${subjectKind}:${module}`;
+  const { habitatScope, subjectId } = resolveContext(ctx);
+  return `${STORAGE_PREFIX}:${habitatScope}:${subjectId}:${module}`;
 }
 
 function parseChatValue(raw: string | null): string | null {

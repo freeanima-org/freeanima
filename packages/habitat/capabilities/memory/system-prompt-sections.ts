@@ -19,10 +19,13 @@ export async function buildMemorySystemPromptSections(
   selfContent: string,
   cwd?: string | null,
   mode: PromptMode = "digital_human",
+  opts?: { world_id?: number },
 ): Promise<SystemPromptSection[]> {
   const includeDigitalHuman = mode !== "work";
+  const world_id = opts?.world_id;
   const parts = await decomposeSystemPromptParts(includeDigitalHuman ? selfContent : "", cwd, {
     includeResident: false,
+    ...(world_id != null ? { world_id } : {}),
   });
   const sections: SystemPromptSection[] = [];
   if (includeDigitalHuman && parts.self.trim()) {
@@ -49,8 +52,8 @@ export async function buildMemorySystemPromptSections(
     priority: 1,
     xmlTag: PROMPT_XML_TAGS.memoryRecall,
   });
-  if (includeDigitalHuman) {
-    const residentBody = await renderResidentMemoryBody();
+  if (includeDigitalHuman && world_id != null && world_id > 0) {
+    const residentBody = await renderResidentMemoryBody({ world_id });
     if (residentBody.trim()) {
       sections.push({
         id: "resident",

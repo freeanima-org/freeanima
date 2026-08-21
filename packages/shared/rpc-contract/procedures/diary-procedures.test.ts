@@ -25,30 +25,30 @@ describe("diary SAP procedures", () => {
   });
 
   it("validates diary procedure inputs", () => {
-    diaryListInputSchema.parse({ subject_kind: "user" });
+    diaryListInputSchema.parse({ subject_id: 1 });
     diaryCreateInputSchema.parse({
-      subject_kind: "agent",
+      subject_id: 2,
       title: "今日思考",
       entry_at: "2026-06-29T20:00:00+08:00",
       content: "首段",
     });
     diaryAppendInputSchema.parse({
-      subject_kind: "agent",
+      subject_id: 2,
       id: 1,
       content: "追加块",
     });
     diaryPatchInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       id: 1,
       tags: ["日常"],
     });
     diaryBlockCreateInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       parent_id: 1,
       content: "新块",
     });
     diaryBlockReorderInputSchema.parse({
-      subject_kind: "user",
+      subject_id: 1,
       items: [{ id: 2, sort_order: 0 }],
     });
   });

@@ -468,21 +468,24 @@ export async function lastMessageTimestamp(conversation_id: string): Promise<str
 export async function listConversationIdsWithMessagesBetween(
   fromIso: string,
   toIso: string,
+  opts?: { agent_subject_id?: number },
 ): Promise<string[]> {
   const db = getDb();
   const msgTs = sql`(nullif(btrim(${messages.payload}->>'timestamp'), ''))::timestamptz`;
+  const conditions = [
+    sql`${msgTs} >= ${fromIso}::timestamptz`,
+    sql`${msgTs} < ${toIso}::timestamptz`,
+    eq(conversations.debug, false),
+    sql`COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
+  ];
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
+  }
   const rows = await db
     .selectDistinct({ id: messages.conversation_id })
     .from(messages)
     .innerJoin(conversations, eq(messages.conversation_id, conversations.id))
-    .where(
-      and(
-        sql`${msgTs} >= ${fromIso}::timestamptz`,
-        sql`${msgTs} < ${toIso}::timestamptz`,
-        eq(conversations.debug, false),
-        sql`COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
-      ),
-    );
+    .where(and(...conditions));
   return rows.map((r) => r.id);
 }
 

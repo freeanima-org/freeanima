@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-import { notificationRecipientKindSchema } from "./notification.ts";
 import {
   pomodoroPhaseSchema,
   type PomodoroPhase,
@@ -68,7 +67,7 @@ export const pomodoroTaskFocusRowSchema = z.object({
 export type PomodoroTaskFocusRowPayload = z.infer<typeof pomodoroTaskFocusRowSchema>;
 
 export const pomodoroConfigGetInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type PomodoroConfigGetInput = z.infer<typeof pomodoroConfigGetInputSchema>;
 export const pomodoroConfigGetOutputSchema = z.object({
@@ -77,7 +76,7 @@ export const pomodoroConfigGetOutputSchema = z.object({
 export type PomodoroConfigGetOutput = z.infer<typeof pomodoroConfigGetOutputSchema>;
 
 export const pomodoroConfigUpdateInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   work_minutes: z.number().int().min(1).max(120).optional(),
   short_break_minutes: z.number().int().min(1).max(60).optional(),
   long_break_minutes: z.number().int().min(1).max(60).optional(),
@@ -94,7 +93,7 @@ export const pomodoroConfigUpdateOutputSchema = z.object({
 export type PomodoroConfigUpdateOutput = z.infer<typeof pomodoroConfigUpdateOutputSchema>;
 
 export const pomodoroSessionCompleteInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   phase: pomodoroPhaseSchema,
   started_at: z.string().min(1),
   finished_at: z.string().min(1),
@@ -115,7 +114,7 @@ export const pomodoroSessionCompleteOutputSchema = z.object({
 export type PomodoroSessionCompleteOutput = z.infer<typeof pomodoroSessionCompleteOutputSchema>;
 
 export const pomodoroSessionAbortInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   phase: pomodoroPhaseSchema,
   started_at: z.string().min(1),
   finished_at: z.string().min(1),
@@ -135,7 +134,7 @@ export const pomodoroSessionAbortOutputSchema = z.object({
 export type PomodoroSessionAbortOutput = z.infer<typeof pomodoroSessionAbortOutputSchema>;
 
 export const pomodoroSessionListInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   started_after: z.string().optional(),
   started_before: z.string().optional(),
   phase: pomodoroPhaseSchema.optional(),
@@ -153,7 +152,7 @@ export const pomodoroStatsPeriodSchema = z.enum(["today", "week"]);
 export type PomodoroStatsPeriod = z.infer<typeof pomodoroStatsPeriodSchema>;
 
 export const pomodoroSessionStatsInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   period: pomodoroStatsPeriodSchema.default("today"),
 });
 export type PomodoroSessionStatsInput = z.infer<typeof pomodoroSessionStatsInputSchema>;
@@ -165,7 +164,7 @@ export const pomodoroSessionStatsOutputSchema = z.object({
 export type PomodoroSessionStatsOutput = z.infer<typeof pomodoroSessionStatsOutputSchema>;
 
 export const pomodoroFocusListInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   task_item_id: z.number().int().positive().optional(),
   session_local_id: z.string().min(1).optional(),
   pomodoro_session_id: z.number().int().positive().optional(),
@@ -207,7 +206,7 @@ export const pomodoroActiveStateSchema = z.object({
 export type PomodoroActiveStatePayload = z.infer<typeof pomodoroActiveStateSchema>;
 
 export const pomodoroActiveGetInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type PomodoroActiveGetInput = z.infer<typeof pomodoroActiveGetInputSchema>;
 export const pomodoroActiveGetOutputSchema = z.object({
@@ -216,7 +215,7 @@ export const pomodoroActiveGetOutputSchema = z.object({
 export type PomodoroActiveGetOutput = z.infer<typeof pomodoroActiveGetOutputSchema>;
 
 export const pomodoroActivePutInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   active: pomodoroActiveStateSchema,
 });
 export type PomodoroActivePutInput = z.infer<typeof pomodoroActivePutInputSchema>;
@@ -226,7 +225,7 @@ export const pomodoroActivePutOutputSchema = z.object({
 export type PomodoroActivePutOutput = z.infer<typeof pomodoroActivePutOutputSchema>;
 
 export const pomodoroActiveClearInputSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
 });
 export type PomodoroActiveClearInput = z.infer<typeof pomodoroActiveClearInputSchema>;
 export const pomodoroActiveClearOutputSchema = z.object({
@@ -236,7 +235,7 @@ export type PomodoroActiveClearOutput = z.infer<typeof pomodoroActiveClearOutput
 
 /** Habitat → 已连接客户端：active put/clear 后广播 */
 export const pomodoroActiveChangedEventSchema = z.object({
-  subject_kind: notificationRecipientKindSchema,
+  subject_id: z.number().int().positive(),
   active: pomodoroActiveStateSchema.nullable(),
 });
 export type PomodoroActiveChangedEvent = z.infer<typeof pomodoroActiveChangedEventSchema>;
