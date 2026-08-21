@@ -6,6 +6,7 @@ import {
   Boxes,
   CalendarDays,
   FolderKanban,
+  Target,
   LayoutDashboard,
   ListTodo,
   Lock,
@@ -76,6 +77,13 @@ export function appNavItems(): AppNavItem[] {
       "/projects",
       shellNavLabel(() => "📁 项目"),
       FolderKanban,
+    ),
+    navItem(
+      "objectives",
+      "/objectives",
+      "/objectives",
+      shellNavLabel(() => "目标"),
+      Target,
     ),
     navItem(
       "calendar",

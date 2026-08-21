@@ -30,6 +30,7 @@ import { objectStorageMethodDefs } from "@freeanima/features/object-storage/habi
 import { pomodoroMethodDefs } from "@freeanima/features/pomodoro/habitat/method-defs.ts";
 import { shellQuickMethodDefs } from "@freeanima/features/shell-quick/habitat/method-defs.ts";
 import { projectMethodDefs } from "@freeanima/features/project/habitat/method-defs.ts";
+import { objectiveMethodDefs } from "@freeanima/features/objective/habitat/method-defs.ts";
 import { tagMethodDefs } from "@freeanima/features/tag/habitat/method-defs.ts";
 import { subagentMethodDefs } from "@freeanima/features/subagent/habitat/method-defs.ts";
 import { entityMethodDefs } from "@freeanima/features/entity/habitat/method-defs.ts";
@@ -44,6 +45,7 @@ export const FEATURE_METHOD_DEFS = {
   ...codingMethodDefs,
   ...taskMethodDefs,
   ...projectMethodDefs,
+  ...objectiveMethodDefs,
   ...tagMethodDefs,
   ...subagentMethodDefs,
   ...entityMethodDefs,

@@ -12,6 +12,7 @@ import { pomodoroPlugin } from "@freeanima/features/pomodoro/plugin";
 import { shellQuickPlugin } from "@freeanima/features/shell-quick/plugin";
 import { taskPlugin } from "@freeanima/features/task/plugin";
 import { projectPlugin } from "@freeanima/features/project/plugin";
+import { objectivePlugin } from "@freeanima/features/objective/plugin";
 import { tagPlugin } from "@freeanima/features/tag/plugin";
 import { subagentPlugin } from "@freeanima/features/subagent/plugin";
 import { entityPlugin } from "@freeanima/features/entity/plugin";
@@ -25,6 +26,7 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   habitatPlugin,
   taskPlugin,
   projectPlugin,
+  objectivePlugin,
   tagPlugin,
   subagentPlugin,
   entityPlugin,

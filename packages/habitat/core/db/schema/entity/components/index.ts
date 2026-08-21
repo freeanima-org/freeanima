@@ -40,6 +40,7 @@ import { TASK_LIST_COMPONENT, taskListBodySchema } from "./task-list.ts";
 import { SMART_LIST_COMPONENT, smartListBodySchema } from "./smart-list.ts";
 import { PROJECT_FOLDER_COMPONENT, projectFolderBodySchema } from "./project-folder.ts";
 import { PROJECT_COMPONENT, projectBodySchema } from "./project.ts";
+import { OBJECTIVE_COMPONENT, objectiveBodySchema } from "./objective.ts";
 import { TAG_COMPONENT, tagBodySchema } from "./tag.ts";
 import { TEMPORAL_SUMMARY_COMPONENT, temporalSummaryBodySchema } from "./temporal-summary.ts";
 import { SELF_BLOCK_COMPONENT, selfBlockBodySchema } from "./self-block.ts";
@@ -70,6 +71,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [TASK_OCCURRENCE_COMPONENT]: 31,
   [PROJECT_FOLDER_COMPONENT]: 35,
   [PROJECT_COMPONENT]: 40,
+  [OBJECTIVE_COMPONENT]: 42,
   [TAG_COMPONENT]: 45,
   [DIARY_ENTRY_COMPONENT]: 50,
   [NOTE_COMPONENT]: 51,
@@ -135,6 +137,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [TASK_OCCURRENCE_COMPONENT]: taskOccurrenceBodySchema,
   [PROJECT_FOLDER_COMPONENT]: projectFolderBodySchema,
   [PROJECT_COMPONENT]: projectBodySchema,
+  [OBJECTIVE_COMPONENT]: objectiveBodySchema,
   [TAG_COMPONENT]: tagBodySchema,
   [DIARY_ENTRY_COMPONENT]: diaryEntryBodySchema,
   [NOTE_COMPONENT]: noteBodySchema,
@@ -189,6 +192,7 @@ export * from "./task-item.ts";
 export * from "./task-occurrence.ts";
 export * from "./project-folder.ts";
 export * from "./project.ts";
+export * from "./objective.ts";
 export * from "./tag.ts";
 export * from "./diary-entry.ts";
 export * from "./note.ts";

@@ -14,6 +14,7 @@ import { objectStorageHabitatRoutes } from "@freeanima/features/object-storage/h
 import { pomodoroHabitatRoutes } from "@freeanima/features/pomodoro/habitat/routes/index.ts";
 import { shellQuickHabitatRoutes } from "@freeanima/features/shell-quick/habitat/routes/index.ts";
 import { projectHabitatRoutes } from "@freeanima/features/project/habitat/routes/index.ts";
+import { objectiveHabitatRoutes } from "@freeanima/features/objective/habitat/routes/index.ts";
 import { tagHabitatRoutes } from "@freeanima/features/tag/habitat/routes/index.ts";
 import { subagentHabitatRoutes } from "@freeanima/features/subagent/habitat/routes/index.ts";
 import { entityHabitatRoutes } from "@freeanima/features/entity/habitat/routes/index.ts";
@@ -29,6 +30,7 @@ const featureRouteBundles = [
   chatHabitatRoutes,
   taskHabitatRoutes,
   projectHabitatRoutes,
+  objectiveHabitatRoutes,
   tagHabitatRoutes,
   subagentHabitatRoutes,
   entityHabitatRoutes,
@@ -54,6 +56,7 @@ export const habitatRouter = mergeHabitatRouteBundles(featureRouteBundles);
 export type HabitatMethodInputs = InferHabitatInputs<typeof chatHabitatRoutes> &
   InferHabitatInputs<typeof taskHabitatRoutes> &
   InferHabitatInputs<typeof projectHabitatRoutes> &
+  InferHabitatInputs<typeof objectiveHabitatRoutes> &
   InferHabitatInputs<typeof tagHabitatRoutes> &
   InferHabitatInputs<typeof subagentHabitatRoutes> &
   InferHabitatInputs<typeof entityHabitatRoutes> &
@@ -77,6 +80,7 @@ export type HabitatMethodInputs = InferHabitatInputs<typeof chatHabitatRoutes> &
 export type HabitatMethodOutputs = InferHabitatOutputs<typeof chatHabitatRoutes> &
   InferHabitatOutputs<typeof taskHabitatRoutes> &
   InferHabitatOutputs<typeof projectHabitatRoutes> &
+  InferHabitatOutputs<typeof objectiveHabitatRoutes> &
   InferHabitatOutputs<typeof tagHabitatRoutes> &
   InferHabitatOutputs<typeof subagentHabitatRoutes> &
   InferHabitatOutputs<typeof entityHabitatRoutes> &

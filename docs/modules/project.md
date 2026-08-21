@@ -239,7 +239,7 @@ FreeAnima (product tag or top folder name)
 
 首版实现**明确范围外**：
 
-- OKR 实体与 KR → 项目映射
+- OKR / 个人目标实体已由[目标模块](./objective.md)承担（`objective`；v1 含 KR 式子目标与项目链接）
 - 甘特 / **文件夹级**看板（跨项目聚合）；清单模块看板见 [`task.md`](./task.md)
 - 笔记、剪藏、文件/照片库与项目材料上传
 - 跨实体引用 UI 与已归档引用上下文
