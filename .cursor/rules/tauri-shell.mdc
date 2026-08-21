@@ -26,7 +26,7 @@ alwaysApply: false
 | `just pack tauri-android` | Android APK                                         |
 
 依赖：`just install tauri`（本机）；交叉 Windows：`just install tauri-windows`（非 Windows 宿主）。
-CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（无 fat LTO；详见 [`release.md`](release.mdc)「Tauri 打包加速约定」）。
+CI / 本地 release profile 优先级：**构建速度 > 体积 > 运行速度**（`codegen-units=32`、`opt-level=1`、无 fat LTO；详见 [`release.md`](release.mdc)「Tauri 打包加速约定」）。
 
 **身份与数据目录**（由 `FREEANIMA_BUILD_CHANNEL` 派生；未设 ⇒ `local`；遗留 `dev` 归一为 `local`）：
 
@@ -71,10 +71,12 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 
 ## 番茄迷你窗（桌面）
 
-- 独立置顶无边框窗（label `pomodoro-float`，约 220×88）；SPA 在 `frontendDist` 的 `ui/pomodoro-float/`。
-- 会话驱动显隐：主壳 `PomodoroShellWatcher` → `ShellApi.setPomodoroFloatVisible`；**hide 不 close**（与 Coding 同）。
+- 独立置顶无边框窗（label `pomodoro-float`，展开约 220×120）；SPA 在 `frontendDist` 的 `ui/pomodoro-float/`。
+- **独立显隐**：壳 prefs `pomodoroFloatVisible`（设置页 / 托盘 toggle）；启动按 prefs 恢复；关窗落盘。**不**随番茄会话起停。
+- 贴边折叠：拖到工作区边缘 → 细进度条；悬停展开（开始 / 暂停·继续 / 结束 / 打开主页）；离开再折回。
+- **跨窗同步**：主窗与 `pomodoro-float` localStorage 隔离；经壳事件 `pomodoro:active-sync` 同步；float pull 使用 `preferRemote`。
 - Dev：`POMODORO_FLOAT_WINDOW_URL` → Vite `:4196`（`just dev tauri`）；`capabilities` `remote.urls` 须含该端口。
-- 控件：倒计时 + 暂停/继续 + 打开主窗 `/pomodoro`（`open_pomodoro`）；不做跳过/放弃。
+- Coding 关窗：`CloseRequested` 须走 `set_coding_visible(false)` 落盘（hide 保 attach），勿只改内存。
 - Web / 移动端：无此窗；导航 Rail/底栏倒计时 + Android 小组件 MVP。
 
 ## 移动与小组件

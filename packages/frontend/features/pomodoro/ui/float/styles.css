@@ -31,6 +31,63 @@ body {
   backdrop-filter: blur(8px);
 }
 
+.pomodoro-float--collapsed {
+  padding: 0;
+  border-radius: 0.35rem;
+  cursor: grab;
+  justify-content: stretch;
+}
+
+.pomodoro-float--collapsed.pomodoro-float--vertical {
+  flex-direction: column;
+}
+
+.pomodoro-float-bar-track {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: inherit;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.pomodoro-float--vertical .pomodoro-float-bar-track {
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.pomodoro-float:not(.pomodoro-float--vertical) .pomodoro-float-bar-track {
+  align-items: stretch;
+  flex-direction: row;
+}
+
+.pomodoro-float-bar-fill {
+  background: hsl(142 70% 45%);
+  border-radius: inherit;
+  min-height: 2px;
+  min-width: 2px;
+  transition:
+    width 0.2s linear,
+    height 0.2s linear;
+}
+
+.pomodoro-float:not(.pomodoro-float--vertical) .pomodoro-float-bar-fill {
+  height: 100%;
+}
+
+.pomodoro-float--vertical .pomodoro-float-bar-fill {
+  width: 100%;
+}
+
+.pomodoro-float-bar-fill--idle {
+  background: rgba(255, 255, 255, 0.22);
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0.45;
+}
+
 .pomodoro-float-top {
   display: flex;
   align-items: baseline;
@@ -53,10 +110,30 @@ body {
   line-height: 1;
 }
 
+.pomodoro-float-progress {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.pomodoro-float-progress-fill {
+  height: 100%;
+  background: hsl(142 70% 45%);
+  border-radius: inherit;
+  transition: width 0.2s linear;
+}
+
+.pomodoro-float-progress-fill--idle {
+  width: 0 !important;
+  background: rgba(255, 255, 255, 0.22);
+}
+
 .pomodoro-float-actions {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .pomodoro-float-actions button {
@@ -77,9 +154,4 @@ body {
 .pomodoro-float-actions button:disabled {
   opacity: 0.45;
   cursor: default;
-}
-
-.pomodoro-float-empty {
-  font-size: 0.75rem;
-  opacity: 0.7;
 }

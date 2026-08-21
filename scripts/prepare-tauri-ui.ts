@@ -5,9 +5,24 @@
  * FREEANIMA_TAURI_TARGET=desktop|mobile（默认 desktop）
  * - desktop：dist-desktop + ui/companion + ui/coding + ui/pomodoro-float（frontendDist，非 file:// resources）+ 启动 splash
  * - mobile：dist-mobile，无 companion / coding / pomodoro-float
+ *
+ * 加速：
+ * - 默认并行构建 web +（desktop 时）companion/coding/pomodoro-float
+ * - FREEANIMA_SKIP_UI=1：若 ui 产物齐全则跳过全部前端构建
+ * - FREEANIMA_UI_INCREMENTAL=1（local channel 默认开启；=0 强制关闭）：输入指纹未变则跳过
  */
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { createHash } from "node:crypto";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -26,6 +41,7 @@ import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/bui
 import { buildCodingApp } from "@freeanima/features/coding/lib/exports/build.ts";
 import { buildPomodoroFloatApp } from "@freeanima/features/pomodoro/build-float.ts";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
+import { isRecord } from "@freeanima/shared/util";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target: ShellBuildTarget =
@@ -40,6 +56,7 @@ const companionUi = join(uiRoot, "companion");
 const codingUi = join(uiRoot, "coding");
 const pomodoroFloatUi = join(uiRoot, "pomodoro-float");
 const cargoTargetDir = join(srcTauri, "target");
+const stampPath = join(uiRoot, ".prepare-stamp.json");
 /** 历史 resources 占位；desktop 已迁入 frontendDist，清理以免误用 file:// */
 const legacyCompanionResource = join(srcTauri, "companion-dist");
 
@@ -74,6 +91,142 @@ const splashProductName =
   target === "mobile"
     ? resolveMobileShellIdentity(buildChannel).appName
     : resolveDesktopShellIdentity(buildChannel).productName;
+
+const skipUiForced = process.env.FREEANIMA_SKIP_UI === "1";
+const incrementalEnv = process.env.FREEANIMA_UI_INCREMENTAL?.trim();
+const incrementalEnabled =
+  incrementalEnv === "1" || (incrementalEnv !== "0" && buildChannel === "local" && !skipUiForced);
+
+type PrepareStamp = {
+  target: string;
+  channel: string;
+  fingerprint: string;
+};
+
+function accumulatePath(hash: ReturnType<typeof createHash>, absPath: string): void {
+  if (!existsSync(absPath)) return;
+  const st = statSync(absPath);
+  if (st.isFile()) {
+    hash.update(`${relative(root, absPath)}\0${st.size}\0${Math.trunc(st.mtimeMs)}\n`);
+    return;
+  }
+  if (!st.isDirectory()) return;
+  const stack = [absPath];
+  while (stack.length > 0) {
+    const cur = stack.pop();
+    if (!cur) break;
+    let names: string[];
+    try {
+      names = readdirSync(cur);
+    } catch {
+      continue;
+    }
+    for (const name of names) {
+      if (
+        name === "node_modules" ||
+        name === "dist" ||
+        name === "dist-float" ||
+        name === "dist-desktop" ||
+        name === "dist-mobile" ||
+        name.startsWith(".")
+      ) {
+        continue;
+      }
+      const p = join(cur, name);
+      let child: ReturnType<typeof statSync>;
+      try {
+        child = statSync(p);
+      } catch {
+        continue;
+      }
+      if (child.isDirectory()) {
+        stack.push(p);
+      } else if (child.isFile()) {
+        hash.update(`${relative(root, p)}\0${child.size}\0${Math.trunc(child.mtimeMs)}\n`);
+      }
+    }
+  }
+}
+
+function computeUiFingerprint(): string {
+  const hash = createHash("sha256");
+  hash.update(`target=${target}\nchannel=${buildChannel}\n`);
+  accumulatePath(hash, join(root, "scripts/build-web.ts"));
+  accumulatePath(hash, join(root, "scripts/prepare-tauri-ui.ts"));
+  accumulatePath(hash, join(root, "packages/frontend/client"));
+  accumulatePath(hash, join(root, "packages/frontend/ui-kit"));
+  accumulatePath(hash, join(root, "packages/frontend/portal/app/web"));
+  accumulatePath(hash, join(root, "packages/frontend/features/companion"));
+  accumulatePath(hash, join(root, "packages/frontend/features/coding"));
+  accumulatePath(hash, join(root, "packages/frontend/features/pomodoro"));
+  accumulatePath(hash, join(root, "packages/frontend/features/chat"));
+  accumulatePath(hash, join(root, "packages/frontend/features/task"));
+  return hash.digest("hex");
+}
+
+function uiOutputsReady(): boolean {
+  if (!existsSync(join(uiWeb, "index.html"))) return false;
+  if (target !== "desktop") return true;
+  return (
+    existsSync(join(companionUi, "index.html")) &&
+    existsSync(join(codingUi, "index.html")) &&
+    existsSync(join(pomodoroFloatUi, "index.html"))
+  );
+}
+
+function readStamp(): PrepareStamp | null {
+  if (!existsSync(stampPath)) return null;
+  try {
+    const raw: unknown = JSON.parse(readFileSync(stampPath, "utf-8"));
+    if (!isRecord(raw)) return null;
+    const targetV = raw["target"];
+    const channelV = raw["channel"];
+    const fingerprintV = raw["fingerprint"];
+    if (
+      typeof targetV !== "string" ||
+      typeof channelV !== "string" ||
+      typeof fingerprintV !== "string"
+    ) {
+      return null;
+    }
+    return {
+      target: targetV,
+      channel: channelV,
+      fingerprint: fingerprintV,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeStamp(fp: string): void {
+  mkdirSync(uiRoot, { recursive: true });
+  const body: PrepareStamp = { target, channel: buildChannel, fingerprint: fp };
+  writeFileSync(stampPath, `${JSON.stringify(body, null, 2)}\n`, "utf-8");
+}
+
+function finishWithIdentity(): void {
+  applyTauriShellIdentity({
+    target: target === "mobile" ? "mobile" : "desktop",
+    srcTauri,
+  });
+}
+
+const fingerprint = computeUiFingerprint();
+const stamp = readStamp();
+const stampFresh =
+  stamp != null &&
+  stamp.target === target &&
+  stamp.channel === buildChannel &&
+  stamp.fingerprint === fingerprint;
+
+if ((skipUiForced || (incrementalEnabled && stampFresh)) && uiOutputsReady()) {
+  console.log(
+    `[prepare-tauri] skip UI rebuild (${skipUiForced ? "FREEANIMA_SKIP_UI=1" : "incremental"}) fingerprint=${fingerprint.slice(0, 12)}…`,
+  );
+  finishWithIdentity();
+  process.exit(0);
+}
 
 const BOOT_HEAD = `<style id="fa-boot-style">html,body{margin:0;height:100%;background:#0a0a0b;color:#c8c8cc;font-family:system-ui,sans-serif}#fa-boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;letter-spacing:.04em;user-select:none;pointer-events:none;z-index:2147483646}#fa-boot strong{font-size:1.25rem;font-weight:600;color:#eee}#fa-boot span{font-size:.8rem;opacity:.55}#root{position:relative;z-index:1;min-height:100%}</style>`;
 
@@ -177,18 +330,60 @@ function writeNativeBuildMeta(destDir: string): void {
   console.log(`[prepare-tauri] native-build-meta → ${path} (${meta.version} / ${meta.channel})`);
 }
 
-process.env.FREEANIMA_SHELL_TARGET = target;
-console.log(`[prepare-tauri] target=${target} build-web…`);
-const web = Bun.spawnSync(["bun", "scripts/build-web.ts"], {
-  cwd: root,
-  stdout: "inherit",
-  stderr: "inherit",
-  env: process.env,
-});
-if (web.exitCode !== 0) process.exit(web.exitCode ?? 1);
+async function buildWebDist(): Promise<void> {
+  process.env.FREEANIMA_SHELL_TARGET = target;
+  console.log(`[prepare-tauri] build-web (${target})…`);
+  const proc = Bun.spawn(["bun", "scripts/build-web.ts"], {
+    cwd: root,
+    stdout: "inherit",
+    stderr: "inherit",
+    env: { ...process.env },
+  });
+  const code = await proc.exited;
+  if (code !== 0) {
+    throw new Error(`build-web failed (exit ${code})`);
+  }
+  if (!existsSync(join(webDist, "index.html"))) {
+    throw new Error(`missing ${webDist}/index.html`);
+  }
+}
 
-if (!existsSync(join(webDist, "index.html"))) {
-  console.error(`[prepare-tauri] missing ${webDist}/index.html`);
+async function buildDesktopSatellites(): Promise<{
+  companionDist: string;
+  codingDist: string;
+  pomodoroFloatDist: string;
+}> {
+  process.env.FREEANIMA_SHELL_TARGET = "desktop";
+  console.log("[prepare-tauri] build companion + coding + pomodoro-float (parallel)…");
+  const [companionDist, codingDist, pomodoroFloatDist] = await Promise.all([
+    buildCompanionApp({ minify: true }),
+    buildCodingApp({ minify: true }),
+    buildPomodoroFloatApp({ minify: true }),
+  ]);
+  return { companionDist, codingDist, pomodoroFloatDist };
+}
+
+process.env.FREEANIMA_SHELL_TARGET = target;
+console.log(
+  `[prepare-tauri] target=${target} parallel UI builds… (incremental=${incrementalEnabled})`,
+);
+
+type DesktopDists = {
+  companionDist: string;
+  codingDist: string;
+  pomodoroFloatDist: string;
+};
+
+let desktopDists: DesktopDists | null = null;
+try {
+  if (target === "desktop") {
+    const [, dists] = await Promise.all([buildWebDist(), buildDesktopSatellites()]);
+    desktopDists = dists;
+  } else {
+    await buildWebDist();
+  }
+} catch (e) {
+  console.error(`[prepare-tauri] ${e instanceof Error ? e.message : String(e)}`);
   process.exit(1);
 }
 
@@ -206,18 +401,13 @@ writeFileSync(
 );
 console.log(`[prepare-tauri] app-ui → ${uiWeb} (${target})`);
 
-if (target === "desktop") {
-  console.log("[prepare-tauri] build companion…");
-  process.env.FREEANIMA_SHELL_TARGET = "desktop";
-  const companionDist = await buildCompanionApp({ minify: true });
-  if (existsSync(companionUi)) rmSync(companionUi, { recursive: true });
+if (target === "desktop" && desktopDists) {
   mkdirSync(dirname(companionUi), { recursive: true });
-  cpSync(companionDist, companionUi, { recursive: true });
+  cpSync(desktopDists.companionDist, companionUi, { recursive: true });
   if (!existsSync(join(companionUi, "index.html"))) {
     console.error(`[prepare-tauri] missing ${companionUi}/index.html`);
     process.exit(1);
   }
-  // 清理历史 resources/companion-dist，避免打包再嵌入空/旧资源
   if (existsSync(legacyCompanionResource)) {
     rmSync(legacyCompanionResource, { recursive: true });
     mkdirSync(legacyCompanionResource, { recursive: true });
@@ -225,34 +415,22 @@ if (target === "desktop") {
   }
   console.log(`[prepare-tauri] companion → ${companionUi} (frontendDist)`);
 
-  console.log("[prepare-tauri] build coding…");
-  process.env.FREEANIMA_SHELL_TARGET = "desktop";
-  const codingDist = await buildCodingApp({ minify: true });
-  if (existsSync(codingUi)) rmSync(codingUi, { recursive: true });
   mkdirSync(dirname(codingUi), { recursive: true });
-  cpSync(codingDist, codingUi, { recursive: true });
+  cpSync(desktopDists.codingDist, codingUi, { recursive: true });
   if (!existsSync(join(codingUi, "index.html"))) {
     console.error(`[prepare-tauri] missing ${codingUi}/index.html`);
     process.exit(1);
   }
   console.log(`[prepare-tauri] coding → ${codingUi} (frontendDist)`);
 
-  console.log("[prepare-tauri] build pomodoro-float…");
-  process.env.FREEANIMA_SHELL_TARGET = "desktop";
-  const pomodoroFloatDist = await buildPomodoroFloatApp({ minify: true });
-  if (existsSync(pomodoroFloatUi)) rmSync(pomodoroFloatUi, { recursive: true });
   mkdirSync(dirname(pomodoroFloatUi), { recursive: true });
-  cpSync(pomodoroFloatDist, pomodoroFloatUi, { recursive: true });
+  cpSync(desktopDists.pomodoroFloatDist, pomodoroFloatUi, { recursive: true });
   if (!existsSync(join(pomodoroFloatUi, "index.html"))) {
     console.error(`[prepare-tauri] missing ${pomodoroFloatUi}/index.html`);
     process.exit(1);
   }
   console.log(`[prepare-tauri] pomodoro-float → ${pomodoroFloatUi} (frontendDist)`);
 } else {
-  // mobile 无伴侣窗；若仍残留 companion-dist，保持空占位以免旧配置踩坑
-  if (existsSync(companionUi)) rmSync(companionUi, { recursive: true });
-  if (existsSync(codingUi)) rmSync(codingUi, { recursive: true });
-  if (existsSync(pomodoroFloatUi)) rmSync(pomodoroFloatUi, { recursive: true });
   if (existsSync(legacyCompanionResource)) {
     rmSync(legacyCompanionResource, { recursive: true });
     mkdirSync(legacyCompanionResource, { recursive: true });
@@ -261,7 +439,5 @@ if (target === "desktop") {
   console.log("[prepare-tauri] skip companion/coding/pomodoro-float (mobile)");
 }
 
-applyTauriShellIdentity({
-  target: target === "mobile" ? "mobile" : "desktop",
-  srcTauri,
-});
+writeStamp(fingerprint);
+finishWithIdentity();

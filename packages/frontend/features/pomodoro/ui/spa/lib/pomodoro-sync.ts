@@ -156,13 +156,18 @@ async function flushActivePut(
   );
 }
 
-export async function pullPomodoroActive(subjectKind: PomodoroSubjectKind): Promise<void> {
+export async function pullPomodoroActive(
+  subjectKind: PomodoroSubjectKind,
+  opts?: { preferRemote?: boolean },
+): Promise<void> {
   if (!hubReady()) return;
   try {
     const remote = await fetchPomodoroActive(subjectKind);
     const local = readPomodoroActiveState(undefined, subjectKind);
     const localMeta = getPomodoroSyncMeta(subjectKind);
-    const merged = mergeRemoteActive(remote, local, localMeta);
+    const merged = mergeRemoteActive(remote, local, localMeta, {
+      preferRemote: opts?.preferRemote === true,
+    });
     const prev = local;
     applyLocalPomodoroActive(merged.active, subjectKind, merged.meta);
     const alertConfig = await resolveAlertConfig(subjectKind);
