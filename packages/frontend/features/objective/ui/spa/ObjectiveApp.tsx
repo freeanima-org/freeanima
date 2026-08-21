@@ -1,8 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Target, Trash2 } from "lucide-react";
-import { useSubjectScope, SubjectScopeToggle } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  useSubjectScope,
+  SubjectScopeToggle,
+  useActionSheetCapability,
+  useContextMenuCapability,
+} from "@freeanima/client/portal-sdk/react.tsx";
+import { EntityPicker } from "@freeanima/features/entity/ui/spa/components/EntityPicker.tsx";
 import { Button, Input, Spinner, Textarea } from "@freeanima/ui-kit";
-import { EmptyState, StatusAlert, PullToRefresh } from "@freeanima/ui-kit/composite";
+import {
+  ActionSheet,
+  EmptyState,
+  ListRow,
+  StatusAlert,
+  PullToRefresh,
+  type ActionSheetItem,
+} from "@freeanima/ui-kit/composite";
 import type {
   ObjectiveCompletionPayload,
   ObjectiveLinkPayload,
@@ -26,13 +39,17 @@ import {
   unlinkObjectiveRemote,
   type ObjectiveRow,
 } from "./lib/api.ts";
+import { buildObjectiveMenuItems } from "./lib/objective-menus.ts";
+
+const LINK_PRIMARY_COMPONENTS = objectiveLinkKindSchema.options;
 
 type CompletionMode =
   | "qualitative"
   | "metric_manual"
   | "tasks_completed"
   | "projects_completed"
-  | "pomodoro";
+  | "pomodoro"
+  | "children_completed";
 
 const COMPLETION_MODES: readonly CompletionMode[] = [
   "qualitative",
@@ -40,6 +57,7 @@ const COMPLETION_MODES: readonly CompletionMode[] = [
   "tasks_completed",
   "projects_completed",
   "pomodoro",
+  "children_completed",
 ];
 
 const POMODORO_COUNT_BY = ["sessions", "minutes"] as const;
@@ -87,6 +105,7 @@ function completionModeOf(c: ObjectiveCompletionPayload): CompletionMode {
   if (c.source.type === "tasks_completed") return "tasks_completed";
   if (c.source.type === "projects_completed") return "projects_completed";
   if (c.source.type === "pomodoro") return "pomodoro";
+  if (c.source.type === "children_completed") return "children_completed";
   return "qualitative";
 }
 
@@ -95,51 +114,89 @@ function buildCompletion(
   unit: string,
   target: number,
   current: number,
-  idsText: string,
+  entityIds: number[],
   pomodoroCountBy: "sessions" | "minutes",
 ): ObjectiveCompletionPayload {
   if (mode === "qualitative") return { kind: "qualitative" };
   if (mode === "metric_manual") {
     return { kind: "metric_manual", unit: unit || "单位", target, current };
   }
-  const ids = idsText
-    .split(/[\s,，]+/)
-    .map((s) => Number(s.trim()))
-    .filter((n) => Number.isInteger(n) && n > 0);
   if (mode === "tasks_completed") {
     return {
       kind: "metric_auto",
-      unit: unit || "个",
-      target: target > 0 ? target : ids.length,
-      source: { type: "tasks_completed", task_ids: ids },
+      unit: "个",
+      target: entityIds.length,
+      source: { type: "tasks_completed", task_ids: entityIds },
     };
   }
   if (mode === "projects_completed") {
     return {
       kind: "metric_auto",
-      unit: unit || "个",
-      target: target > 0 ? target : ids.length,
-      source: { type: "projects_completed", project_ids: ids },
+      unit: "个",
+      target: entityIds.length,
+      source: { type: "projects_completed", project_ids: entityIds },
+    };
+  }
+  if (mode === "children_completed") {
+    return {
+      kind: "metric_auto",
+      unit: "个",
+      target: 0,
+      source: { type: "children_completed" },
     };
   }
   return {
     kind: "metric_auto",
-    unit: unit || (pomodoroCountBy === "minutes" ? "分钟" : "次"),
+    unit: pomodoroCountBy === "minutes" ? "分钟" : "次",
     target,
     source: {
       type: "pomodoro",
-      filter: { count_by: pomodoroCountBy, ...(ids.length > 0 ? { task_ids: ids } : {}) },
+      filter: {
+        count_by: pomodoroCountBy,
+        ...(entityIds.length > 0 ? { task_ids: entityIds } : {}),
+      },
     },
   };
 }
 
+function resetDraftForm(setters: {
+  setTitle: (v: string) => void;
+  setContent: (v: string) => void;
+  setStatus: (v: ObjectiveStatusPayload) => void;
+  setStartAt: (v: string) => void;
+  setEndAt: (v: string) => void;
+  setMode: (v: CompletionMode) => void;
+  setUnit: (v: string) => void;
+  setTarget: (v: string) => void;
+  setCurrent: (v: string) => void;
+  setEntityIds: (v: number[]) => void;
+  setPomodoroCountBy: (v: "sessions" | "minutes") => void;
+  setParentId: (v: number | null) => void;
+}) {
+  setters.setTitle("");
+  setters.setContent("");
+  setters.setStatus("not_started");
+  setters.setStartAt("");
+  setters.setEndAt("");
+  setters.setMode("qualitative");
+  setters.setUnit("km");
+  setters.setTarget("100");
+  setters.setCurrent("0");
+  setters.setEntityIds([]);
+  setters.setPomodoroCountBy("sessions");
+  setters.setParentId(null);
+}
+
 export function ObjectiveApp() {
   const { kind: subjectKind } = useSubjectScope();
+  const contextMenuEnabled = useContextMenuCapability();
+  const useActionSheet = useActionSheetCapability();
   const [items, setItems] = useState<ObjectiveRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [includeInactive, setIncludeInactive] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [sheetItems, setSheetItems] = useState<ActionSheetItem[] | null>(null);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -150,12 +207,28 @@ export function ObjectiveApp() {
   const [unit, setUnit] = useState("km");
   const [target, setTarget] = useState("100");
   const [current, setCurrent] = useState("0");
-  const [idsText, setIdsText] = useState("");
+  const [entityIds, setEntityIds] = useState<number[]>([]);
   const [pomodoroCountBy, setPomodoroCountBy] = useState<"sessions" | "minutes">("sessions");
-  const [parentId, setParentId] = useState<number | "">("");
-  const [linkKind, setLinkKind] = useState<ObjectiveLinkPayload["kind"]>("project");
-  const [linkId, setLinkId] = useState("");
+  const [parentId, setParentId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const draftSetters = useMemo(
+    () => ({
+      setTitle,
+      setContent,
+      setStatus,
+      setStartAt,
+      setEndAt,
+      setMode,
+      setUnit,
+      setTarget,
+      setCurrent,
+      setEntityIds,
+      setPomodoroCountBy,
+      setParentId,
+    }),
+    [],
+  );
 
   const load = useCallback(async () => {
     setError("");
@@ -184,76 +257,96 @@ export function ObjectiveApp() {
   );
 
   useEffect(() => {
-    if (!selected) {
-      setTitle("");
-      setContent("");
-      setStatus("not_started");
-      setStartAt("");
-      setEndAt("");
-      setMode("qualitative");
-      setUnit("km");
-      setTarget("100");
-      setCurrent("0");
-      setIdsText("");
-      setParentId("");
-      return;
-    }
+    if (!selected) return;
     setTitle(selected.title);
     setContent(selected.content);
     setStatus(selected.status);
     setStartAt(selected.start_at?.slice(0, 16) ?? "");
     setEndAt(selected.end_at?.slice(0, 16) ?? "");
-    setParentId(selected.parent_id ?? "");
+    setParentId(selected.parent_id);
     const m = completionModeOf(selected.completion);
     setMode(m);
     if (selected.completion.kind === "metric_manual") {
       setUnit(selected.completion.unit);
       setTarget(String(selected.completion.target));
       setCurrent(String(selected.completion.current));
-      setIdsText("");
+      setEntityIds([]);
     } else if (selected.completion.kind === "metric_auto") {
       setUnit(selected.completion.unit);
       setTarget(String(selected.completion.target));
       setCurrent("0");
       const src = selected.completion.source;
-      if (src.type === "tasks_completed") setIdsText(src.task_ids.join(", "));
-      else if (src.type === "projects_completed") setIdsText(src.project_ids.join(", "));
+      if (src.type === "tasks_completed") setEntityIds(src.task_ids);
+      else if (src.type === "projects_completed") setEntityIds(src.project_ids);
       else if (src.type === "pomodoro") {
         setPomodoroCountBy(src.filter.count_by);
-        setIdsText((src.filter.task_ids ?? []).join(", "));
-      } else setIdsText("");
+        setEntityIds(src.filter.task_ids ?? []);
+      } else setEntityIds([]);
     } else {
       setUnit("km");
       setTarget("100");
       setCurrent("0");
-      setIdsText("");
+      setEntityIds([]);
     }
   }, [selected]);
 
   const { roots, childrenOf } = useMemo(() => buildTree(items), [items]);
 
+  async function handleStatusChange(row: ObjectiveRow, next: ObjectiveStatusPayload) {
+    setSaving(true);
+    setError("");
+    try {
+      await patchObjectiveRemote(subjectKind, row.id, { status: next });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleAddChild(parent: ObjectiveRow) {
+    setSelectedId(null);
+    resetDraftForm(draftSetters);
+    setParentId(parent.id);
+  }
+
+  function menuItemsFor(row: ObjectiveRow): ActionSheetItem[] {
+    return buildObjectiveMenuItems(row, {
+      onAddChild: handleAddChild,
+      onStatusChange: (r, s) => void handleStatusChange(r, s),
+    });
+  }
+
   const renderNode = (row: ObjectiveRow, depth: number) => {
     const progress = formatProgress(row);
     const kids = childrenOf.get(row.id) ?? [];
+    const menuItems = menuItemsFor(row);
     return (
       <div key={row.id} className="space-y-1">
-        <button
-          type="button"
-          className={`flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left text-sm ${
-            selectedId === row.id ? "bg-accent" : "hover:bg-muted/60"
-          }`}
-          style={{ paddingLeft: `${0.5 + depth * 0.75}rem` }}
+        <ListRow
+          as="div"
+          selected={selectedId === row.id}
+          selectedClassName="bg-accent"
+          useActionSheet={useActionSheet}
+          contextMenuEnabled={contextMenuEnabled}
+          contextMenuItems={menuItems}
+          longPressEnabled={useActionSheet}
+          onLongPress={() => setSheetItems(menuItems)}
+          onOpenMenu={() => setSheetItems(menuItems)}
+          className="gap-2 pr-1 text-sm"
+          rowStyle={{ paddingLeft: `${0.25 + depth * 0.75}rem` }}
           onClick={() => setSelectedId(row.id)}
+          leading={<Target className="text-muted-foreground size-3.5 shrink-0" />}
         >
-          <Target className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-          <span className="min-w-0 flex-1">
+          <span className="min-w-0 flex-1 py-1.5 text-left">
             <span className="block truncate font-medium">{row.title}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-muted-foreground text-xs">
               {OBJECTIVE_STATUS_LABEL[row.status]}
               {progress ? ` · ${progress}` : ""}
             </span>
           </span>
-        </button>
+        </ListRow>
         {kids.map((kid) => renderNode(kid, depth + 1))}
       </div>
     );
@@ -267,7 +360,7 @@ export function ObjectiveApp() {
         title: title.trim() || "未命名目标",
         content,
         status,
-        parent_id: typeof parentId === "number" ? parentId : null,
+        parent_id: parentId,
         start_at: startAt ? new Date(startAt).toISOString() : null,
         end_at: endAt ? new Date(endAt).toISOString() : null,
         completion: buildCompletion(
@@ -275,7 +368,7 @@ export function ObjectiveApp() {
           unit,
           Number(target) || 0,
           Number(current) || 0,
-          idsText,
+          entityIds,
           pomodoroCountBy,
         ),
       });
@@ -297,7 +390,7 @@ export function ObjectiveApp() {
         title: title.trim() || selected.title,
         content,
         status,
-        parent_id: typeof parentId === "number" ? parentId : null,
+        parent_id: parentId,
         start_at: startAt ? new Date(startAt).toISOString() : null,
         end_at: endAt ? new Date(endAt).toISOString() : null,
         completion: buildCompletion(
@@ -305,7 +398,7 @@ export function ObjectiveApp() {
           unit,
           Number(target) || 0,
           Number(current) || 0,
-          idsText,
+          entityIds,
           pomodoroCountBy,
         ),
       });
@@ -332,18 +425,17 @@ export function ObjectiveApp() {
     }
   }
 
-  async function handleAddLink() {
-    if (!selected) return;
-    const id = Number(linkId);
-    if (!Number.isInteger(id) || id <= 0) {
-      setError("请输入有效的链接实体 id");
+  async function handleAddLinkFromEntity(id: number | null, primaryComponent: string | null) {
+    if (!selected || id == null) return;
+    const parsed = objectiveLinkKindSchema.safeParse(primaryComponent);
+    if (!parsed.success) {
+      setError("所选实体类型不能作为执行链接");
       return;
     }
     setSaving(true);
     setError("");
     try {
-      await linkObjectiveRemote(subjectKind, selected.id, { kind: linkKind, id });
-      setLinkId("");
+      await linkObjectiveRemote(subjectKind, selected.id, { kind: parsed.data, id });
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -394,11 +486,7 @@ export function ObjectiveApp() {
           variant="outline"
           onClick={() => {
             setSelectedId(null);
-            setTitle("");
-            setContent("");
-            setStatus("not_started");
-            setMode("qualitative");
-            setParentId("");
+            resetDraftForm(draftSetters);
           }}
         >
           <Plus className="size-4" />
@@ -422,6 +510,11 @@ export function ObjectiveApp() {
             </div>
 
             <div className="min-h-0 space-y-3 overflow-auto rounded-lg border p-4">
+              {!selected && parentId != null ? (
+                <p className="text-muted-foreground text-sm">
+                  正在创建子目标（父目标 #{parentId}）
+                </p>
+              ) : null}
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="space-y-1 text-sm sm:col-span-2">
                   <span className="text-muted-foreground">标题</span>
@@ -457,17 +550,18 @@ export function ObjectiveApp() {
                     ))}
                   </select>
                 </label>
-                <label className="space-y-1 text-sm">
-                  <span className="text-muted-foreground">父目标 id（可空）</span>
-                  <Input
-                    value={parentId === "" ? "" : String(parentId)}
-                    onChange={(e) => {
-                      const v = e.target.value.trim();
-                      setParentId(v === "" ? "" : Number(v));
-                    }}
-                    placeholder="空=根目标"
+                <div className="space-y-1 text-sm">
+                  <span className="text-muted-foreground">父目标（可空）</span>
+                  <EntityPicker
+                    mode="single"
+                    value={parentId}
+                    onChange={(id) => setParentId(id)}
+                    primaryComponents={["objective"]}
+                    excludeIds={selectedId != null ? [selectedId] : []}
+                    placeholder="选择父目标…"
+                    disabled={saving}
                   />
-                </label>
+                </div>
                 <label className="space-y-1 text-sm">
                   <span className="text-muted-foreground">开始</span>
                   <Input
@@ -493,17 +587,23 @@ export function ObjectiveApp() {
                   value={mode}
                   onChange={(e) => {
                     const next = parseCompletionMode(e.target.value);
-                    if (next) setMode(next);
+                    if (next) {
+                      setMode(next);
+                      setEntityIds([]);
+                    }
                   }}
                 >
                   <option value="qualitative">定性（非量化）</option>
                   <option value="metric_manual">手工量化（如跑量）</option>
                   <option value="tasks_completed">自动：指定任务完成数</option>
                   <option value="projects_completed">自动：指定项目完成数</option>
+                  <option value="children_completed">自动：子目标完成率</option>
                   <option value="pomodoro">自动：番茄钟统计</option>
                 </select>
-                <p className="text-xs text-muted-foreground">习惯来源尚未落地，创建时不可选。</p>
-                {mode !== "qualitative" ? (
+                <p className="text-xs text-muted-foreground">
+                  自动类进度实时统计；任务/项目的目标数=列表长度；子目标完成率按直系子目标现算（已取消不计）。习惯来源尚未落地。
+                </p>
+                {mode === "metric_manual" ? (
                   <div className="grid gap-2 sm:grid-cols-3">
                     <label className="space-y-1 text-sm">
                       <span className="text-muted-foreground">单位</span>
@@ -513,44 +613,72 @@ export function ObjectiveApp() {
                       <span className="text-muted-foreground">目标值</span>
                       <Input value={target} onChange={(e) => setTarget(e.target.value)} />
                     </label>
-                    {mode === "metric_manual" ? (
-                      <label className="space-y-1 text-sm">
-                        <span className="text-muted-foreground">当前值</span>
-                        <Input value={current} onChange={(e) => setCurrent(e.target.value)} />
-                      </label>
-                    ) : null}
-                    {mode === "pomodoro" ? (
-                      <label className="space-y-1 text-sm">
-                        <span className="text-muted-foreground">统计方式</span>
-                        <select
-                          className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
-                          value={pomodoroCountBy}
-                          onChange={(e) => {
-                            const next = parsePomodoroCountBy(e.target.value);
-                            if (next) setPomodoroCountBy(next);
-                          }}
-                        >
-                          {POMODORO_COUNT_BY.map((v) => (
-                            <option key={v} value={v}>
-                              {v === "sessions" ? "次数" : "分钟"}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ) : null}
+                    <label className="space-y-1 text-sm">
+                      <span className="text-muted-foreground">当前值</span>
+                      <Input value={current} onChange={(e) => setCurrent(e.target.value)} />
+                    </label>
                   </div>
+                ) : null}
+                {mode === "pomodoro" ? (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <label className="space-y-1 text-sm">
+                      <span className="text-muted-foreground">统计方式</span>
+                      <select
+                        className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+                        value={pomodoroCountBy}
+                        onChange={(e) => {
+                          const next = parsePomodoroCountBy(e.target.value);
+                          if (next) setPomodoroCountBy(next);
+                        }}
+                      >
+                        {POMODORO_COUNT_BY.map((v) => (
+                          <option key={v} value={v}>
+                            {v === "sessions" ? "次数" : "分钟"}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-1 text-sm">
+                      <span className="text-muted-foreground">
+                        目标{pomodoroCountBy === "minutes" ? "分钟" : "次数"}
+                      </span>
+                      <Input value={target} onChange={(e) => setTarget(e.target.value)} />
+                    </label>
+                  </div>
+                ) : null}
+                {mode === "tasks_completed" || mode === "projects_completed" ? (
+                  <p className="text-xs text-muted-foreground">
+                    目标：完成列表中全部 {entityIds.length} 个
+                    {mode === "tasks_completed" ? "任务" : "项目"}（进度实时统计）
+                  </p>
+                ) : null}
+                {mode === "children_completed" ? (
+                  <p className="text-xs text-muted-foreground">
+                    进度 = 已完成的直系子目标数 / 非取消的直系子目标总数（读侧现算，无需选手目标）。
+                  </p>
                 ) : null}
                 {mode === "tasks_completed" ||
                 mode === "projects_completed" ||
                 mode === "pomodoro" ? (
-                  <label className="block space-y-1 text-sm">
+                  <div className="space-y-1 text-sm">
                     <span className="text-muted-foreground">
                       {mode === "pomodoro"
-                        ? "可选：限定任务 id（逗号分隔）"
-                        : "实体 id 列表（逗号分隔）"}
+                        ? "可选：限定任务"
+                        : mode === "tasks_completed"
+                          ? "选择任务"
+                          : "选择项目"}
                     </span>
-                    <Input value={idsText} onChange={(e) => setIdsText(e.target.value)} />
-                  </label>
+                    <EntityPicker
+                      mode="multi"
+                      value={entityIds}
+                      onChange={(ids) => setEntityIds(ids)}
+                      primaryComponents={
+                        mode === "projects_completed" ? ["project"] : ["task_item"]
+                      }
+                      placeholder={mode === "projects_completed" ? "添加项目…" : "添加任务…"}
+                      disabled={saving}
+                    />
+                  </div>
                 ) : null}
                 {selected?.resolved_progress ? (
                   <p className="text-sm">
@@ -583,36 +711,18 @@ export function ObjectiveApp() {
                       ))
                     )}
                   </ul>
-                  <div className="flex flex-wrap items-end gap-2">
-                    <label className="space-y-1 text-sm">
-                      <span className="text-muted-foreground">类型</span>
-                      <select
-                        className="border-input bg-background h-9 rounded-md border px-2 text-sm"
-                        value={linkKind}
-                        onChange={(e) => {
-                          const parsed = objectiveLinkKindSchema.safeParse(e.target.value);
-                          if (parsed.success) setLinkKind(parsed.data);
-                        }}
-                      >
-                        {objectiveLinkKindSchema.options.map((k) => (
-                          <option key={k} value={k}>
-                            {OBJECTIVE_LINK_KIND_LABEL[k]}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="space-y-1 text-sm">
-                      <span className="text-muted-foreground">实体 id</span>
-                      <Input value={linkId} onChange={(e) => setLinkId(e.target.value)} />
-                    </label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      isDisabled={saving}
-                      onClick={() => void handleAddLink()}
-                    >
-                      添加链接
-                    </Button>
+                  <div className="space-y-1 text-sm">
+                    <span className="text-muted-foreground">添加链接</span>
+                    <EntityPicker
+                      mode="single"
+                      value={null}
+                      onChange={(id, row) => {
+                        void handleAddLinkFromEntity(id, row?.primary_component ?? null);
+                      }}
+                      primaryComponents={[...LINK_PRIMARY_COMPONENTS]}
+                      placeholder="搜索并添加执行实体…"
+                      disabled={saving}
+                    />
                   </div>
                 </div>
               ) : null}
@@ -644,6 +754,7 @@ export function ObjectiveApp() {
           </div>
         )}
       </PullToRefresh>
+      {sheetItems ? <ActionSheet items={sheetItems} onClose={() => setSheetItems(null)} /> : null}
     </div>
   );
 }

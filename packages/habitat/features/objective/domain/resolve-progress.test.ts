@@ -32,6 +32,16 @@ describe("objectiveCompletionSchema", () => {
     expect(parsed.success).toBe(true);
   });
 
+  test("accepts children_completed auto", () => {
+    const parsed = objectiveCompletionSchema.safeParse({
+      kind: "metric_auto",
+      unit: "个",
+      target: 0,
+      source: { type: "children_completed" },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
   test("accepts habit source in schema", () => {
     const parsed = objectiveCompletionSchema.safeParse({
       kind: "metric_auto",

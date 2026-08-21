@@ -3,6 +3,7 @@ import {
   POMODORO_SESSION_COMPONENT,
   PROJECT_COMPONENT,
   TASK_ITEM_COMPONENT,
+  asObjective,
   asPomodoroSession,
   asProject,
   asTaskItem,
@@ -61,6 +62,29 @@ async function countProjectsCompleted(worldId: number, projectIds: number[]): Pr
   return count;
 }
 
+async function countChildrenCompleted(
+  worldId: number,
+  parentId: number,
+): Promise<{ current: number; target: number }> {
+  const rows = await listEntities({
+    world_id: worldId,
+    primary_component: OBJECTIVE_COMPONENT,
+    limit: 1000,
+  });
+  let target = 0;
+  let current = 0;
+  for (const row of rows) {
+    const child = asObjective(row);
+    if (!child) continue;
+    if ((child.parent_id ?? null) !== parentId) continue;
+    // 已取消不计入分母
+    if (child.status === "cancelled") continue;
+    target += 1;
+    if (child.status === "completed") current += 1;
+  }
+  return { current, target };
+}
+
 async function resolvePomodoroCurrent(
   worldId: number,
   filter: { task_ids?: number[]; count_by: "sessions" | "minutes" },
@@ -96,6 +120,7 @@ async function resolvePomodoroCurrent(
 export async function resolveObjectiveProgress(
   worldId: number,
   body: Pick<ObjectiveBody, "completion" | "start_at" | "end_at">,
+  opts?: { objectiveId?: number },
 ): Promise<ObjectiveResolvedProgress | undefined> {
   const completion: ObjectiveCompletion = body.completion;
 
@@ -113,7 +138,7 @@ export async function resolveObjectiveProgress(
     };
   }
 
-  const { unit, target, source } = completion;
+  const { unit, source } = completion;
   if (source.type === "habit") {
     throw new Error("习惯模块未落地");
   }
@@ -122,9 +147,9 @@ export async function resolveObjectiveProgress(
     const current = await countTasksCompleted(worldId, source.task_ids);
     return {
       current,
-      target,
+      target: completion.target,
       unit,
-      ratio: ratioOf(current, target),
+      ratio: ratioOf(current, completion.target),
       source: "tasks_completed",
     };
   }
@@ -133,10 +158,31 @@ export async function resolveObjectiveProgress(
     const current = await countProjectsCompleted(worldId, source.project_ids);
     return {
       current,
-      target,
+      target: completion.target,
       unit,
-      ratio: ratioOf(current, target),
+      ratio: ratioOf(current, completion.target),
       source: "projects_completed",
+    };
+  }
+
+  if (source.type === "children_completed") {
+    const objectiveId = opts?.objectiveId;
+    if (objectiveId == null) {
+      return {
+        current: 0,
+        target: 0,
+        unit: unit || "个",
+        ratio: null,
+        source: "children_completed",
+      };
+    }
+    const { current, target } = await countChildrenCompleted(worldId, objectiveId);
+    return {
+      current,
+      target,
+      unit: unit || "个",
+      ratio: ratioOf(current, target),
+      source: "children_completed",
     };
   }
 
@@ -153,9 +199,9 @@ export async function resolveObjectiveProgress(
   );
   return {
     current,
-    target,
+    target: completion.target,
     unit,
-    ratio: ratioOf(current, target),
+    ratio: ratioOf(current, completion.target),
     source: "pomodoro",
   };
 }

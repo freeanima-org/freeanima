@@ -39,6 +39,7 @@ metric_manual        手工量化（如跑量 100km）：unit / target / current
 metric_auto          可自动统计
   ├── tasks_completed
   ├── projects_completed
+  ├── children_completed（直系子目标；已取消不计分母；读侧现算）
   ├── pomodoro（窗口内 session 次数或分钟；可选 task_ids）
   └── habit（schema 预留；写入时拒绝「习惯模块未落地」）
 ```
@@ -64,6 +65,8 @@ metric_auto          可自动统计
 ## UI
 
 壳模块 `objectives`，路由 `/objectives`（Rail「目标」）。创建时可选手动 / 自动完成类型；习惯入口不提供。
+
+列表项快捷菜单（pointer：右键 ContextMenu；touch：⋯ / 长按 ActionSheet）：调整 `status`、添加子目标（预填 `parent_id`）。
 
 ## Habitat RPC
 

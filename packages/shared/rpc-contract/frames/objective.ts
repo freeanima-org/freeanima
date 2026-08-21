@@ -42,6 +42,10 @@ export const objectiveAutoSourceSchema = z.discriminatedUnion("type", [
     type: z.literal("pomodoro"),
     filter: objectivePomodoroFilterSchema,
   }),
+  /** 直系子目标完成率：读侧按 parent_id 现算，无需 id 列表 */
+  z.object({
+    type: z.literal("children_completed"),
+  }),
   z.object({
     type: z.literal("habit"),
     habit_id: z.number().int().positive(),
@@ -69,7 +73,14 @@ export const objectiveResolvedProgressSchema = z.object({
   target: z.number(),
   unit: z.string(),
   ratio: z.number().nullable(),
-  source: z.enum(["manual", "tasks_completed", "projects_completed", "pomodoro", "none"]),
+  source: z.enum([
+    "manual",
+    "tasks_completed",
+    "projects_completed",
+    "pomodoro",
+    "children_completed",
+    "none",
+  ]),
 });
 
 export const objectiveRowSchema = z.object({

@@ -137,6 +137,9 @@ export const OBJECTIVE_LINK_KIND_LABEL: Record<ObjectiveLink["kind"], string> = 
 export function formatProgress(row: ObjectiveRow): string | null {
   const p = row.resolved_progress;
   if (!p) return null;
+  if (p.source === "children_completed" && p.ratio != null) {
+    return `${p.current} / ${p.target} 个（${Math.round(p.ratio * 100)}%）`;
+  }
   return `${p.current} / ${p.target} ${p.unit}`;
 }
 
