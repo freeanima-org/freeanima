@@ -1,0 +1,14 @@
+---
+description: 表单选实体 id 必须用可搜 EntityPicker
+globs: packages/frontend/features/**/ui/**/*.{ts,tsx},packages/frontend/client/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# 实体选择（EntityPicker）
+
+- 产品表单需要实体 id（单选/多选、跨 component）时：用 `@freeanima/features/entity/ui/spa/components/EntityPicker.tsx` 的 `EntityPicker`。
+- **禁止**裸 `Input` 手填实体 id；禁止自研下拉/对话框重复实现搜索选实体。
+- 搜索走 `entity.list`（支持 id / `anima:{id}` / title / summary·content）；用 `primaryComponents` 限定类型。
+- 弹出层：`ModalSheetPresent`；列表固定 `h-*` 内部滚动。**禁止**把搜索列表塞进 `DropdownMenu`。
+- 领域特化 picker（`TagPicker`、`MoveTo*Picker`、番茄 `TaskPickerDialog`）保留各自场景；**通用「填一个实体 id」** 收敛到 `EntityPicker`。
+- 带 Habitat 调用的选择器放 `features/entity/ui`；**禁止**在 `ui-kit` 内 import RPC 做实体搜索。

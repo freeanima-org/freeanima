@@ -76,6 +76,8 @@ touch ≥44px、无 hover-only；Pad+外接键盘时交互维仍为 touch。入�
 
 从 `@freeanima/ui-kit/composite`：`ConfirmDialog`、`showConfirm`、`ActionSheet`、`ContextMenu`、`EmptyState`、`StatusAlert`、`PullToRefresh`、`ListRow`、`ModalSheetPresent`、MoveTo*Picker。
 
+**实体 id 表单**：通用选实体用 `@freeanima/features/entity/ui/spa/components/EntityPicker.tsx`（可搜 id/title/content、单选/多选）；禁止裸 Input 手填实体 id。细则 → [`entity-picker.mdc`](entity-picker.mdc)。
+
 **禁止**：`window.confirm`；自研 `fixed` 快捷菜单；自研 `createPortal`+遮罩当 Modal；用壳/视口宽选 ContextMenu vs ActionSheet；在 `DropdownMenu` 内放 Input / 非 MenuItem 复杂内容。
 
 ## 其它

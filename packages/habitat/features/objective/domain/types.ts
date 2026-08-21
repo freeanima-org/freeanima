@@ -9,7 +9,13 @@ export type ObjectiveResolvedProgress = {
   target: number;
   unit: string;
   ratio: number | null;
-  source: "manual" | "tasks_completed" | "projects_completed" | "pomodoro" | "none";
+  source:
+    | "manual"
+    | "tasks_completed"
+    | "projects_completed"
+    | "pomodoro"
+    | "children_completed"
+    | "none";
 };
 
 export type ObjectiveRow = {

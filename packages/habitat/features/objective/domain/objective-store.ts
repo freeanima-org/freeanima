@@ -59,7 +59,9 @@ async function withProgress(
   parsed: NonNullable<ReturnType<typeof asObjective>>,
   meta: { created_at: Date; updated_at: Date },
 ): Promise<ObjectiveRow> {
-  const resolved_progress = await resolveObjectiveProgress(worldId, parsed);
+  const resolved_progress = await resolveObjectiveProgress(worldId, parsed, {
+    objectiveId: parsed.id,
+  });
   return toObjectiveRow(parsed, meta, resolved_progress);
 }
 
