@@ -390,6 +390,8 @@ mcp_servers:
 
 ## Conversation vs AutoLlmRun（对话 vs 自动 LLM 运行）
 
+**私聊 / 群聊拓扑（Room.seq ≠ 各 Agent 的 LLM 队列；成员键 `public_id`）：** 见 [`conversation-topology.md`](conversation-topology.md)。
+
 **回合 / 引擎轮 / 工具轮次：** 术语 SSOT 见 [`i18n/glossary.md`](../../i18n/glossary.md)。一次用户**回合**（`beginTurn`→`finishTurn`/`syncTurn`，retain 按此触发）内可有多次**引擎轮**（`max_loop_iterations`）与**工具轮次**（`onToolRoundComplete`）。Goal 的 `max_continues` 是续写**回合**预算，≠ 引擎轮。压缩 `max_message_pairs` 是消息数阈值，≠ 上述任一。
 
 **轴：** 执行过程中是否有**用户回合**（不是谁触发的）。聊天室 LLM 请求**互斥**：要么对话路径，要么 AutoLlmRun——永不两者兼用，也无第三种孤儿 `chat()`。
