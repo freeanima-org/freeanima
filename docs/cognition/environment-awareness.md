@@ -26,6 +26,7 @@ collect markers (banded)
   → no baseline? save & quiet (init)
   → unchanged? quiet
   → changed? notify user+agent (source_ref dedupe) → save baseline
+  → postgres error in changed keys? skip inbox, save baseline only (PG unavailable)
 ```
 
 实现：`packages/habitat/platform/service/env-health/`。
@@ -59,6 +60,7 @@ collect markers (banded)
 - `source_kind: system`
 - `source_ref: env-health:<sortedChangedKeys>:<fingerprint>`
 - 若双方已有该 `source_ref`，跳过创建（去重）但仍刷新基线
+- **PostgreSQL 标记为 `error`**（含本次变更键含 `postgres`）：跳过 Inbox 写库，仅刷新基线；恢复为 `connected` 后再发变更通知（避免 PG 不可用时查 `notifications` 二次失败）
 - **开发栖息地**（`FREEANIMA_DEV_HABITAT=1` / `just dev habitat`）：通知时忽略 `boot_started_at`（仍刷新基线）。其他标记变化仍通知；生产 / 独立版重启仍对 boot 通知。
 
 用户活跃面板**不**发出变化通知。

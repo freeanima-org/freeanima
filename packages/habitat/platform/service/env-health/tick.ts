@@ -57,6 +57,14 @@ export function notifyChangedKeys(
   return changedKeys.filter((k) => k !== "boot_started_at");
 }
 
+/** PostgreSQL 不可用时 Inbox 亦不可用；跳过写库，仅刷新基线。 */
+export function shouldSkipInboxForPostgresError(
+  current: EnvHealthMarkers,
+  notifyKeys: (keyof EnvHealthMarkers)[],
+): boolean {
+  return current.postgres === "error" && notifyKeys.includes("postgres");
+}
+
 /**
  * 采集 → 对比基线 → 有变更则双写 Inbox（source_ref 去重）→ 写回基线。
  * 无基线时仅建档，不通知。
@@ -112,6 +120,17 @@ export async function runEnvHealthTick(deps: EnvHealthTickDeps): Promise<EnvHeal
       changed_keys: notifyKeys,
       source_ref: sourceRef,
       error: "notification port unavailable",
+    };
+  }
+
+  if (shouldSkipInboxForPostgresError(current, notifyKeys)) {
+    await store.save(current);
+    return {
+      ok: true,
+      action: "skipped",
+      changed_keys: notifyKeys,
+      source_ref: sourceRef,
+      error: "postgres unavailable; inbox skipped",
     };
   }
 
