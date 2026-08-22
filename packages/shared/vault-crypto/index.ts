@@ -1,4 +1,8 @@
 import { generateTotpCode } from "./totp.ts";
+import {
+  isVaultWebCryptoAvailable,
+  vaultWebCryptoUnavailableMessage,
+} from "./web-crypto-availability.ts";
 
 export type VaultCustomField = {
   name: string;
@@ -47,14 +51,20 @@ export type VaultSecretsPayload = {
 };
 
 export { generateTotpCode, normalizeTotpSecret, type TotpCodeResult } from "./totp.ts";
+export {
+  isVaultWebCryptoAvailable,
+  suggestHabitatHttpsUnlockUrl,
+  vaultWebCryptoUnavailableMessage,
+} from "./web-crypto-availability.ts";
 
 const PBKDF2_ITERATIONS = 600_000;
 const AES_GCM_IV_BYTES = 12;
 
 function getCrypto(): Crypto {
   const c = globalThis.crypto;
-  if (!c?.subtle) {
-    throw new Error("Web Crypto API unavailable");
+  if (!isVaultWebCryptoAvailable(c)) {
+    const pageHref = typeof location !== "undefined" ? location.href : undefined;
+    throw new Error(vaultWebCryptoUnavailableMessage(pageHref ? { pageHref } : undefined));
   }
   return c;
 }
