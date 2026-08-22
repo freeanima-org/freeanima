@@ -23,6 +23,7 @@ import {
   deleteCronJob,
   ApiHandlerError,
 } from "@freeanima/features/habitat/habitat/habitat-api/handlers";
+import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 
 describePg("server cron API", () => {
   let home: string;
@@ -35,12 +36,14 @@ describePg("server cron API", () => {
     await initCronModule();
     mkdirSync(join(home, "cron", "scripts"), { recursive: true });
     writeFileSync(join(home, "cron", "scripts", "noop.js"), "console.log('ok');\n", "utf-8");
+    const subject_id = getResolvedWorldContext().default_chat_agent_subject_id;
     const j = await createJob({
       name: "api-test",
       schedule: "1h",
       prompt: "",
       no_agent: true,
       script: "noop.js",
+      subject_id,
     });
     jobId = j.id;
   });
@@ -84,8 +87,6 @@ describePg("server cron API", () => {
 
   it("AppRuntime create and delete cron job", async () => {
     const svc = getAppRuntime();
-    const { getResolvedWorldContext } =
-      await import("@freeanima/habitat/core/config/world-context");
     const subject_id = getResolvedWorldContext().default_chat_agent_subject_id;
     const created = await svc.createCronJob({
       name: "created-via-runtime",
@@ -121,8 +122,6 @@ describePg("server cron API", () => {
   });
 
   it("handler create/delete and errors", async () => {
-    const { getResolvedWorldContext } =
-      await import("@freeanima/habitat/core/config/world-context");
     const subject_id = getResolvedWorldContext().default_chat_agent_subject_id;
     const created = await createCronJob({
       name: "handler-create",
