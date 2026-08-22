@@ -1,3 +1,4 @@
+import { formatDbError } from "@freeanima/habitat/core/db/pg/utils/db-error.ts";
 import { getNotificationPort } from "@freeanima/habitat/capabilities/tools/notification";
 import { getAppRuntime, getRuntimeDeps } from "../service/runtime-context.ts";
 import { runEnvHealthTick } from "../service/env-health/tick.ts";
@@ -16,7 +17,7 @@ export async function runEnvHealthScan(): Promise<string> {
     });
     return JSON.stringify(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = formatDbError(err);
     return JSON.stringify({ ok: false, action: "skipped", error: message });
   }
 }

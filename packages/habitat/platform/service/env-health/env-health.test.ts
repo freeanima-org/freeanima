@@ -6,6 +6,7 @@ import { formatChangeNotificationBody, formatEnvHealthPromptSection } from "./fo
 import type { EnvHealthBaselineStore } from "./baseline.ts";
 import {
   runEnvHealthTick,
+  shouldSkipInboxForPostgresError,
   type EnvHealthNotificationCreateInput,
   type EnvHealthNotificationPort,
 } from "./tick.ts";
@@ -124,6 +125,20 @@ describe("env-health format", () => {
   });
 });
 
+describe("env-health tick helpers", () => {
+  it("shouldSkipInboxForPostgresError when postgres changed to error", () => {
+    expect(
+      shouldSkipInboxForPostgresError(sampleMarkers({ postgres: "error" }), ["postgres"]),
+    ).toBe(true);
+    expect(shouldSkipInboxForPostgresError(sampleMarkers({ postgres: "error" }), ["redis"])).toBe(
+      false,
+    );
+    expect(
+      shouldSkipInboxForPostgresError(sampleMarkers({ postgres: "connected" }), ["postgres"]),
+    ).toBe(false);
+  });
+});
+
 describe("env-health tick", () => {
   it("initializes baseline without notifying", async () => {
     const store = memoryStore(null);
@@ -154,7 +169,7 @@ describe("env-health tick", () => {
     expect(port.created).toHaveLength(0);
   });
 
-  it("notifies user and agent on change then saves baseline", async () => {
+  it("skips inbox when postgres becomes error but still saves baseline", async () => {
     const base = sampleMarkers();
     const next = sampleMarkers({ postgres: "error", rss_band: "512-1024MiB" });
     const store = memoryStore(base);
@@ -165,8 +180,45 @@ describe("env-health tick", () => {
       store,
       collect: async () => next,
     });
-    expect(result.action).toBe("notified");
+    expect(result.ok).toBe(true);
+    expect(result.action).toBe("skipped");
     expect(result.changed_keys).toEqual(["postgres", "rss_band"]);
+    expect(result.error).toContain("postgres unavailable");
+    expect(port.created).toHaveLength(0);
+    expect(await store.load()).toEqual(next);
+  });
+
+  it("notifies when postgres recovers from error to connected", async () => {
+    const base = sampleMarkers({ postgres: "error" });
+    const next = sampleMarkers({ postgres: "connected" });
+    const store = memoryStore(base);
+    const port = mockNotificationPort();
+    const result = await runEnvHealthTick({
+      startTimeSec: 1,
+      notification: port,
+      store,
+      collect: async () => next,
+    });
+    expect(result.action).toBe("notified");
+    expect(result.changed_keys).toEqual(["postgres"]);
+    expect(port.created).toHaveLength(2);
+    expect(port.created[0]?.title).toBe("环境/健康变更：PostgreSQL");
+    expect(await store.load()).toEqual(next);
+  });
+
+  it("notifies user and agent on non-postgres change then saves baseline", async () => {
+    const base = sampleMarkers();
+    const next = sampleMarkers({ rss_band: "512-1024MiB" });
+    const store = memoryStore(base);
+    const port = mockNotificationPort();
+    const result = await runEnvHealthTick({
+      startTimeSec: 1,
+      notification: port,
+      store,
+      collect: async () => next,
+    });
+    expect(result.action).toBe("notified");
+    expect(result.changed_keys).toEqual(["rss_band"]);
     expect(port.created).toHaveLength(2);
     expect(port.created.map((c) => c.recipient_kind).toSorted()).toEqual(["agent", "user"]);
     expect(port.created[0]?.source_kind).toBe("system");
@@ -216,7 +268,7 @@ describe("env-health tick", () => {
     expect(await store.load()).toEqual(next);
   });
 
-  it("dev: boot change with other markers still notifies others only", async () => {
+  it("dev: boot change with postgres error skips inbox", async () => {
     const base = sampleMarkers();
     const next = sampleMarkers({
       boot_started_at: "2026-07-30T17:00:00+08:00",
@@ -231,11 +283,10 @@ describe("env-health tick", () => {
       collect: async () => next,
       suppressBootStartedNotify: true,
     });
-    expect(result.action).toBe("notified");
+    expect(result.ok).toBe(true);
+    expect(result.action).toBe("skipped");
     expect(result.changed_keys).toEqual(["postgres"]);
-    expect(port.created).toHaveLength(2);
-    expect(port.created[0]?.title).toBe("环境/健康变更：PostgreSQL");
-    expect(port.created[0]?.body).not.toContain("Boot started at");
+    expect(port.created).toHaveLength(0);
     expect(await store.load()).toEqual(next);
   });
 
