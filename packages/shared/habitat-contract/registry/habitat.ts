@@ -78,6 +78,10 @@ const sleepCycleBodySchema = z.object({
   day: z.string().optional(),
   reflect_mode: z.enum(["full", "incremental"]).optional(),
 });
+const sleepCatchUpBodySchema = z.object({
+  /** 卧室手动补跑：限定单个 Anima；省略则实例内全部 enabled agent */
+  agent_subject_id: z.number().int().positive().optional(),
+});
 const configSectionParamSchema = z.object({ section: z.string().min(1) });
 const configTestConnectionInputSchema = z.object({
   service: z.enum([
@@ -149,6 +153,8 @@ const sleepRunStepBodySchema = z.object({
   day: z.string().optional(),
   force: z.boolean().optional(),
   reflect_mode: z.enum(["full", "incremental"]).optional(),
+  /** 卧室手动单步：限定单个 Anima；省略则实例内全部 enabled agent */
+  agent_subject_id: z.number().int().positive().optional(),
 });
 const tlsCaQrInputSchema = z.object({
   size: z.coerce.number().int().min(128).max(512).optional(),
@@ -453,7 +459,7 @@ export const habitatMethodDefs = {
     meta: longOpMeta(false),
   }),
   "memoryMaintenance.startCatchUp": defineHabitatMethod({
-    input: emptyInputSchema,
+    input: sleepCatchUpBodySchema,
     output: unknownOutputSchema,
     meta: longOpMeta(false),
   }),

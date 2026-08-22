@@ -162,10 +162,11 @@ export type AppRuntimeSleepPort = {
     day?: string;
     force?: boolean;
     reflect_mode?: "full" | "incremental";
+    agent_subject_id?: number;
   }): Promise<{ ok: true; result: unknown } | { ok: false; error: string }>;
-  startMemoryMaintenanceCatchUp(): Promise<
-    { ok: true; started: true; plan: unknown } | { ok: false; error: string }
-  >;
+  startMemoryMaintenanceCatchUp(opts?: {
+    agent_subject_id?: number;
+  }): Promise<{ ok: true; started: true; plan: unknown } | { ok: false; error: string }>;
   listAutoLlmRuns(opts?: {
     run_kind?: string;
     status?: "running" | "ok" | "error";

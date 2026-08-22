@@ -30,7 +30,6 @@ import {
 import { FormField, FormFieldLabel, FormFieldset } from "@freeanima/ui-kit/form/FormFieldset.tsx";
 import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { MemoryListPagination } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryListPagination.tsx";
-import { MemoryConsolidationDialog } from "@freeanima/features/habitat/ui/habitat/components/habitat/MemoryConsolidationDialog.tsx";
 import { PassiveRecallDebugPanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/PassiveRecallDebugPanel.tsx";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import {
@@ -40,13 +39,10 @@ import {
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
 import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
-import { useMemoryPipeline } from "@freeanima/features/habitat/ui/habitat/lib/use-memory-pipeline.ts";
 
 const PAGE_SIZE = 20;
 const ALL_VALUE = "__all__";
 const UNGROUPED_VALUE = "__ungrouped__";
-const CLUSTER_CALIBRATE_STEP = "semantic-cluster-calibrate";
-
 const SEMANTIC_TYPES = [
   "world",
   "experience",
@@ -114,8 +110,6 @@ export function SemanticMemoryPage() {
       : undefined;
   const agentSubjectId = useObserverAgentSubjectId();
   const [passiveOpen, setPassiveOpen] = useState(passive === "1");
-  const [consolidationOpen, setConsolidationOpen] = useState(false);
-
   useEffect(() => {
     setPassiveOpen(passive === "1");
   }, [passive]);
@@ -143,17 +137,7 @@ export function SemanticMemoryPage() {
   >(async () => {});
   const refreshClusterStatsRef = useRef<() => Promise<void>>(async () => {});
 
-  const { pipelineError, pipelineBusy, runningStepId, startStep, setPipelineError } =
-    useMemoryPipeline({
-      logScope: "semantic-memory/cluster-calibrate",
-      onSettled: () => {
-        void refreshClusterStatsRef.current();
-        if (loadedRef.current) void fetchListRef.current(offsetRef.current);
-      },
-    });
-
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
-  const calibrating = runningStepId === CLUSTER_CALIBRATE_STEP;
   const ungroupedCount = clusterStats.find((s) => s.cluster_id == null)?.count;
   const clusterTitleById = useMemo(() => {
     const map = new Map<number, string>();
@@ -277,12 +261,7 @@ export function SemanticMemoryPage() {
     }
   };
 
-  const onCalibrateClusters = () => {
-    setPipelineError("");
-    void startStep(CLUSTER_CALIBRATE_STEP);
-  };
-
-  const displayError = error || pipelineError;
+  const displayError = error;
 
   return (
     <div>
@@ -290,31 +269,10 @@ export function SemanticMemoryPage() {
         <div>
           <h2 className="text-lg font-bold mb-1">{"📝 语义记忆"}</h2>
           <p className="text-sm text-muted-foreground">
-            {"浏览 PG semantic_memory 表，支持 FTS 搜索、聚类族过滤与全量聚类校准。"}
+            {"浏览当前 Anima 的语义记忆；巩固与聚类请到「维护」。"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            title={
-              "对语义记忆 embedding 做 DBSCAN 全量校准（可能耗时；超 max_calibrate_n 会 skip）"
-            }
-            isDisabled={pipelineBusy}
-            onClick={onCalibrateClusters}
-          >
-            {calibrating ? <Spinner /> : null}
-            {calibrating ? "聚类中…" : "全量聚类"}
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            onClick={() => setConsolidationOpen(true)}
-          >
-            {"记忆巩固"}
-          </Button>
           <Button
             type="button"
             size="sm"
@@ -325,8 +283,6 @@ export function SemanticMemoryPage() {
           </Button>
         </div>
       </div>
-
-      <MemoryConsolidationDialog open={consolidationOpen} onOpenChange={setConsolidationOpen} />
 
       <form
         className="mb-4"

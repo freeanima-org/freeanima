@@ -190,6 +190,7 @@ export type SemanticClusterStat = {
 /** Distinct cluster_id counts for active semantic memories (left join; null = 未分组). */
 export async function listSemanticMemoryClusterStats(opts?: {
   status?: "active" | "deprecated" | "all";
+  world_id?: number;
 }): Promise<SemanticClusterStat[]> {
   const status = opts?.status ?? "active";
   const statusCond = buildSemanticStatusCondition(status);
@@ -198,6 +199,7 @@ export async function listSemanticMemoryClusterStats(opts?: {
     sql`${entities.deleted_at} IS NULL`,
   ];
   if (statusCond) conditions.push(statusCond);
+  if (opts?.world_id != null) conditions.push(eq(entities.world_id, opts.world_id));
 
   const rows = await getDb()
     .select({
@@ -235,7 +237,7 @@ export type SemanticClusterTitleSample = {
  */
 export async function listSemanticClusterTitleSamples(
   clusterId: number,
-  opts?: { limit?: number },
+  opts?: { limit?: number; world_id?: number },
 ): Promise<SemanticClusterTitleSample[]> {
   const limit = Math.max(1, Math.min(opts?.limit ?? 3, 10));
   const statusCond = buildSemanticStatusCondition("active");
@@ -247,6 +249,7 @@ export async function listSemanticClusterTitleSamples(
     isNotNull(searchDocuments.cluster_id),
   ];
   if (statusCond) conditions.push(statusCond);
+  if (opts?.world_id != null) conditions.push(eq(entities.world_id, opts.world_id));
 
   const rows = await getDb()
     .select({

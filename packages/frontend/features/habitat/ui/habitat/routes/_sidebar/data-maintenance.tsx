@@ -40,7 +40,7 @@ function DataMaintenancePage() {
       <h1 className="text-lg font-semibold">{"🧰 数据维护"}</h1>
       <p className="text-muted-foreground text-sm">
         {
-          "导入、索引、记忆维护、残留锁清理与数据完整性检测。密码库导入需先在「密码库」解锁用户主密码。"
+          "实例级：导入、索引、会话清理、残留锁与数据完整性。Anima 记忆巩固 / 聚类请到卧室「维护」。密码库导入需先在「密码库」解锁用户主密码。"
         }
       </p>
 

@@ -20,6 +20,7 @@ export function observerNavGroups(): ObserverNavGroup[] {
         { to: "/semantic-memory", label: "语义记忆" },
         { to: "/temporal-summary", label: "时间摘要" },
         { to: "/system-prompt", label: "系统提示词" },
+        { to: "/maintenance", label: "维护" },
       ],
     },
     {

@@ -77,6 +77,7 @@ const routeTree = rootRoute.addChildren([
     child("/semantic-memory", () => import("./pages/semantic-memory.tsx")),
     child("/temporal-summary", () => import("./pages/temporal-summary.tsx")),
     child("/system-prompt", () => import("./pages/system-prompt.tsx")),
+    child("/maintenance", () => import("./pages/maintenance.tsx")),
     child("/diary", () => import("./pages/diary.tsx")),
     child("/note", () => import("./pages/note.tsx")),
     child("/email", () => import("./pages/email.tsx")),

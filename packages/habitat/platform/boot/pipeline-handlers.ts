@@ -10,7 +10,11 @@ import { cstDayRange } from "@freeanima/habitat/capabilities/memory";
 import { createEmbeddedMemoryService } from "@freeanima/habitat/capabilities/memory/service";
 import { runRetainCatchUp } from "@freeanima/habitat/capabilities/memory/service/retain-catch-up";
 import { planSleepCatchUp } from "@freeanima/habitat/capabilities/memory/sleep-catch-up";
-import { runSelfLayerRefreshAllAgents } from "@freeanima/habitat/capabilities/self/refresh/run";
+import {
+  runSelfLayerRefresh,
+  runSelfLayerRefreshAllAgents,
+} from "@freeanima/habitat/capabilities/self/refresh/run";
+import type { BoundConversationAgent } from "@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts";
 import { getActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { purgeStaleAutoLlmRuns } from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
@@ -65,7 +69,21 @@ type StepCtx = {
   force?: boolean;
   trigger: MaintenanceTrigger;
   reflect_mode?: "full" | "incremental";
+  /** 卧室手动维护：限定单个 Anima；省略则全部 enabled agent */
+  agent_subject_id?: number;
 };
+
+/** 解析本步要跑的 agent 列表；显式 id 时只跑该 Anima（禁止回退默认聊天 agent）。 */
+async function resolveMaintenanceAgents(
+  agentSubjectId?: number,
+): Promise<BoundConversationAgent[]> {
+  const { assertBindableAgentSubject, listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  if (agentSubjectId != null && agentSubjectId > 0) {
+    return [await assertBindableAgentSubject(agentSubjectId)];
+  }
+  return listEnabledBoundAgents();
+}
 
 function newRunId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -145,7 +163,9 @@ async function runConversationCleanup(engine: ServiceEnginePort): Promise<Mainte
 }
 
 async function runRetainCatchUpStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
-  const result = await runRetainCatchUp(omitUndefined({ day: ctx.day }));
+  const result = await runRetainCatchUp(
+    omitUndefined({ day: ctx.day, agent_subject_id: ctx.agent_subject_id }),
+  );
   if (result.skipped_reason) {
     return {
       ok: true,
@@ -170,9 +190,7 @@ async function runReflectStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
     day: ctx.day,
     ...omitUndefined({ reflect_mode: ctx.reflect_mode }),
   });
-  const { listEnabledBoundAgents } =
-    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
-  const agents = await listEnabledBoundAgents();
+  const agents = await resolveMaintenanceAgents(ctx.agent_subject_id);
   if (agents.length === 0) {
     return {
       ok: true,
@@ -208,13 +226,11 @@ async function runReflectStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   };
 }
 
-async function runSemanticClusterCalibrateStep(): Promise<MaintenanceStepResult> {
+async function runSemanticClusterCalibrateStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   const { calibrateSemanticMemoryClusters } =
     await import("@freeanima/habitat/capabilities/memory/clustering/calibrate.ts");
-  const { listEnabledBoundAgents } =
-    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
   try {
-    const agents = await listEnabledBoundAgents();
+    const agents = await resolveMaintenanceAgents(ctx.agent_subject_id);
     if (agents.length === 0) {
       return {
         ok: true,
@@ -255,32 +271,51 @@ async function runSemanticClusterCalibrateStep(): Promise<MaintenanceStepResult>
 }
 
 /** 簇短标题预热：fail-open，不拖垮整周期 */
-async function runSemanticClusterTitleStep(): Promise<MaintenanceStepResult> {
+async function runSemanticClusterTitleStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   try {
     const { listSemanticMemoryClusterStats } =
       await import("@freeanima/habitat/core/db/pg/search/clustering-repo.ts");
     const { warmSemanticClusterTitles } =
       await import("@freeanima/habitat/capabilities/memory/clustering/cluster-title.ts");
-    const stats = await listSemanticMemoryClusterStats({ status: "active" });
-    const clusterIds = stats
-      .map((s) => s.cluster_id)
-      .filter((id): id is number => id != null && Number.isInteger(id) && id >= 0)
-      .toSorted((a, b) => a - b);
-    if (clusterIds.length === 0) {
+    const agents = await resolveMaintenanceAgents(ctx.agent_subject_id);
+    if (agents.length === 0) {
       return {
         ok: true,
         step_id: MAINTENANCE_STEP_IDS.semanticClusterTitle,
         status: "skipped",
-        skipped_reason: "empty",
+        skipped_reason: "no_agents",
         output: { attempted: 0, ok: 0 },
       };
     }
-    const warm = await warmSemanticClusterTitles(clusterIds);
+    const warmed = [];
+    for (const agent of agents) {
+      const stats = await listSemanticMemoryClusterStats({
+        status: "active",
+        world_id: agent.agent_world_id,
+      });
+      const clusterIds = stats
+        .map((s) => s.cluster_id)
+        .filter((id): id is number => id != null && Number.isInteger(id) && id >= 0)
+        .toSorted((a, b) => a - b);
+      if (clusterIds.length === 0) {
+        warmed.push({
+          agent_subject_id: agent.agent_subject_id,
+          attempted: 0,
+          ok: 0,
+          skipped_reason: "empty",
+        });
+        continue;
+      }
+      const warm = await warmSemanticClusterTitles(clusterIds, {
+        world_id: agent.agent_world_id,
+      });
+      warmed.push({ agent_subject_id: agent.agent_subject_id, ...warm });
+    }
     return {
       ok: true,
       step_id: MAINTENANCE_STEP_IDS.semanticClusterTitle,
       status: "completed",
-      output: warm,
+      output: { agents: warmed },
     };
   } catch (err) {
     logComponent("memory.clustering").warn("cluster title warm step failed", {
@@ -296,8 +331,11 @@ async function runSemanticClusterTitleStep(): Promise<MaintenanceStepResult> {
   }
 }
 
-async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
-  const result = await runSelfLayerRefreshAllAgents();
+async function runSelfLayerRefreshStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
+  const result =
+    ctx.agent_subject_id != null && ctx.agent_subject_id > 0
+      ? await runSelfLayerRefresh({ agent_subject_id: ctx.agent_subject_id })
+      : await runSelfLayerRefreshAllAgents();
   if (result.skipped) {
     return {
       ok: true,
@@ -318,9 +356,7 @@ async function runSelfLayerRefreshStep(): Promise<MaintenanceStepResult> {
 
 async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const { listEnabledBoundAgents } =
-    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
-  const agents = await listEnabledBoundAgents();
+  const agents = await resolveMaintenanceAgents(ctx.agent_subject_id);
   if (agents.length === 0) {
     return {
       ok: true,
@@ -376,9 +412,7 @@ async function runTemporalDayStep(ctx: StepCtx): Promise<MaintenanceStepResult> 
 
 async function runTemporalCascadeStep(ctx: StepCtx): Promise<MaintenanceStepResult> {
   const config = resolveTemporalSummaryConfig(getActiveRuntimeConfig().data);
-  const { listEnabledBoundAgents } =
-    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
-  const agents = await listEnabledBoundAgents();
+  const agents = await resolveMaintenanceAgents(ctx.agent_subject_id);
   if (agents.length === 0) {
     return {
       ok: true,
@@ -455,6 +489,7 @@ export async function runMemoryMaintenanceStep(
     force?: boolean;
     trigger?: MaintenanceTrigger;
     reflect_mode?: "full" | "incremental";
+    agent_subject_id?: number;
     engine?: ServiceEnginePort;
   },
 ): Promise<MaintenanceStepResult> {
@@ -466,6 +501,7 @@ export async function runMemoryMaintenanceStep(
     ...omitUndefined({
       force: opts?.force,
       reflect_mode: opts?.reflect_mode,
+      agent_subject_id: opts?.agent_subject_id,
     }),
   };
 
@@ -487,16 +523,16 @@ export async function runMemoryMaintenanceStep(
       result = await runRetainCatchUpStep(ctx);
       break;
     case MAINTENANCE_STEP_IDS.semanticClusterCalibrate:
-      result = await runSemanticClusterCalibrateStep();
+      result = await runSemanticClusterCalibrateStep(ctx);
       break;
     case MAINTENANCE_STEP_IDS.reflect:
       result = await runReflectStep(ctx);
       break;
     case MAINTENANCE_STEP_IDS.selfLayerRefresh:
-      result = await runSelfLayerRefreshStep();
+      result = await runSelfLayerRefreshStep(ctx);
       break;
     case MAINTENANCE_STEP_IDS.semanticClusterTitle:
-      result = await runSemanticClusterTitleStep();
+      result = await runSemanticClusterTitleStep(ctx);
       break;
     case MAINTENANCE_STEP_IDS.temporalSummaryDay:
       result = await runTemporalDayStep(ctx);
@@ -513,7 +549,10 @@ export async function runMemoryMaintenanceStep(
       };
   }
 
-  await recordStepWatermark(mapped, day, ctx.trigger, result);
+  // 单 Anima 手动维护不写实例级 watermark，避免污染全实例补跑计划
+  if (ctx.agent_subject_id == null) {
+    await recordStepWatermark(mapped, day, ctx.trigger, result);
+  }
   return result;
 }
 

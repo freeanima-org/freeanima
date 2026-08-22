@@ -509,7 +509,7 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "memoryMaintenance.startCatchUp",
     habitatMethodDefs["memoryMaintenance.startCatchUp"],
-    () => Promise.resolve(startMemoryMaintenanceCatchUp()),
+    (_deps, input) => Promise.resolve(startMemoryMaintenanceCatchUp(omitUndefined(input))),
   ),
   defineHabitatRouteFromDef("redisLocks.list", habitatMethodDefs["redisLocks.list"], () =>
     Promise.resolve(listHabitatRedisLocks()),

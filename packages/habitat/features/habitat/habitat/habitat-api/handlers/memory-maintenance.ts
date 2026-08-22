@@ -40,6 +40,7 @@ export async function startMemoryMaintenanceStep(body: {
   day?: string;
   force?: boolean;
   reflect_mode?: "full" | "incremental";
+  agent_subject_id?: number;
 }) {
   const result = await habitatCtx().startMemoryMaintenanceStep(
     omitUndefined({
@@ -47,6 +48,7 @@ export async function startMemoryMaintenanceStep(body: {
       day: body.day,
       force: body.force,
       reflect_mode: body.reflect_mode,
+      agent_subject_id: body.agent_subject_id,
     }),
   );
   if (!result.ok) {
@@ -55,8 +57,10 @@ export async function startMemoryMaintenanceStep(body: {
   return result;
 }
 
-export async function startMemoryMaintenanceCatchUp() {
-  const result = await habitatCtx().startMemoryMaintenanceCatchUp();
+export async function startMemoryMaintenanceCatchUp(body?: { agent_subject_id?: number }) {
+  const result = await habitatCtx().startMemoryMaintenanceCatchUp(
+    omitUndefined({ agent_subject_id: body?.agent_subject_id }),
+  );
   if (!result.ok) {
     throw new ApiHandlerError(400, result.error, { code: "memory_maintenance_catch_up_failed" });
   }
