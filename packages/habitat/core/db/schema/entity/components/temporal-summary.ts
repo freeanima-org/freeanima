@@ -7,7 +7,7 @@ export const temporalSummaryWindowSchema = z.enum(["day", "month", "year"]);
 
 export type TemporalSummaryWindow = z.infer<typeof temporalSummaryWindowSchema>;
 
-/** Global objective time digest; conversation-scoped digests live on conversations.temporal_day */
+/** Per-world objective time digest; conversation-scoped digests live on conversations.temporal_day */
 export const temporalSummaryBodySchema = z.object({
   window: temporalSummaryWindowSchema,
   /** CST calendar date YYYY-MM-DD: day=that day, month=1st, year=Jan 1 */

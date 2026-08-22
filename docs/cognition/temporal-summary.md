@@ -14,21 +14,21 @@ title: 时间摘要
 
 ## 与日记对比
 
-| 维度     | 日记                   | 时间摘要                                                 |
-| -------- | ---------------------- | -------------------------------------------------------- |
-| 立场     | 主观                   | 客观                                                     |
-| 选取     | 编辑式筛选             | 对活跃会话无差别覆盖                                     |
-| 存储     | `diary_entry` + blocks | 全局 → entity；当日按会话 → `conversations.temporal_day` |
-| 主要读者 | `/diary` UI            | 系统提示（三段逆向合摘要）/ 时间线注入（当日同伴）       |
+| 维度     | 日记                   | 时间摘要                                                     |
+| -------- | ---------------------- | ------------------------------------------------------------ |
+| 立场     | 主观                   | 客观                                                         |
+| 选取     | 编辑式筛选             | 对活跃会话无差别覆盖                                         |
+| 存储     | `diary_entry` + blocks | 按 world → entity；当日按会话 → `conversations.temporal_day` |
+| 主要读者 | `/diary` UI            | 系统提示（三段逆向合摘要）/ 时间线注入（当日同伴）           |
 
 仍会走 LLM 压缩（字数上限）。**不是记忆主存**（语义 / 感性 / 叙事另见 [`memory.md`](memory.md)）。时间摘要是**时间意识摘要**：高度压缩的标题式概括，不是细节回放。同样字数预算摊到更大窗口 ≈ 类人衰减（年仍约 100 字）。**客观 ≠ 穷尽日志回放**：覆盖主题、不做编辑筛选，省略 ID、逐步工具动作、逐条通知时间戳。
 
 ## 存储分层
 
-| 层                 | 位置                                            | 可引用（`[[anima:id]]`） |
-| ------------------ | ----------------------------------------------- | ------------------------ |
-| 全局日 / 月 / 年   | `entities` `primary_component=temporal_summary` | 是                       |
-| 会话日分片（当日） | `conversations.temporal_day` JSONB              | **否**（运维用）         |
+| 层                    | 位置                                                                | 可引用（`[[anima:id]]`） |
+| --------------------- | ------------------------------------------------------------------- | ------------------------ |
+| 按 world 日 / 月 / 年 | `entities` `primary_component=temporal_summary`（agent 私有 world） | 是                       |
+| 会话日分片（当日）    | `conversations.temporal_day` JSONB                                  | **否**（运维用）         |
 
 ### 会话 JSONB
 
@@ -47,7 +47,7 @@ title: 时间摘要
 
 同一 CST 日内，分片**只追加**。Tick 仅在 watermark 之后仍有 **CST 当日**消息时推送新分片（门槛为 `max(watermark_at, CST 日界)`）。
 
-### 全局实体 body
+### 实体 body（per world）
 
 ```ts
 {
@@ -58,7 +58,7 @@ title: 时间摘要
 }
 ```
 
-全局行在 `(window, period_start)` 上唯一（表达式唯一索引）。
+每 world 行在 `(world_id, window, period_start)` 上唯一（表达式唯一索引；多 Anima 各写各的私有 world）。
 
 **跳过仍写行**：无可用素材时（`no_sessions`、空对话、空 LLM 输出、无子日/月），栖息地 upsert `content=""`，并带 `empty_reason` 与 `source_count`（常为 `0`）。成功再生成会清除 `empty_reason`。功能关闭（`disabled`）、级联 `no_trigger`、以及 LLM 硬失败**不**写占位行。
 
@@ -66,19 +66,19 @@ title: 时间摘要
 
 ## 生成（期结束后汇总）
 
-| 步骤       | 触发                                                        | 输出                                             |
-| ---------- | ----------------------------------------------------------- | ------------------------------------------------ |
-| 会话分片   | 进程内 `Bun.cron` `builtin-temporal-summary-tick` `*/30`    | 若 watermark 后有 **CST 当日消息活动**则追加分片 |
-| 同伴合摘要 | 同一 tick / 装配 miss 时后台预热对**已关闭**桶              | 按观众源集合合并一条同伴摘要 → Redis 缓存        |
-| 全局日     | 维护步骤 `temporal-summary-day`（retain 补跑之后）          | 覆盖该日的全局 `day` 实体                        |
-| 月         | 记忆维护步骤 `temporal-summary-cascade`，在**月初**（1 日） | 由该月的日实体生成上月                           |
-| 年         | 同一 cascade，在 **1 月 1 日**                              | 由该年的月实体生成上年                           |
+| 步骤        | 触发                                                        | 输出                                             |
+| ----------- | ----------------------------------------------------------- | ------------------------------------------------ |
+| 会话分片    | 进程内 `Bun.cron` `builtin-temporal-summary-tick` `*/30`    | 若 watermark 后有 **CST 当日消息活动**则追加分片 |
+| 同伴合摘要  | 同一 tick / 装配 miss 时后台预热对**已关闭**桶              | 按观众源集合合并一条同伴摘要 → Redis 缓存        |
+| 按 world 日 | 维护步骤 `temporal-summary-day`（retain 补跑之后）          | 覆盖该日该 agent world 的 `day` 实体             |
+| 月          | 记忆维护步骤 `temporal-summary-cascade`，在**月初**（1 日） | 由该月的日实体生成上月                           |
+| 年          | 同一 cascade，在 **1 月 1 日**                              | 由该年的月实体生成上年                           |
 
 例：在 **2026-01-01**，cascade 写入 2025 年 12 月（若日实体存在）以及 **2025** 年（若月实体存在）。栖息地 **记忆维护补跑（Catch up）** 会在范围内的月初日期调度 cascade。
 
 Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至少有一条消息的 `payload.timestamp` 落在当前 CST 日历日的会话。写入 `temporal_day` **不得** bump `updated_at`。
 
-**全局日选源与 tick 一致**：按该 CST 日是否有消息 timestamp 选会话，**不是** `conversations.updated_at`。
+**日选源与 tick 一致**：按该 CST 日是否有消息 timestamp 选会话（并按 agent subject / world 隔离），**不是** `conversations.updated_at`。
 
 ### 计入范围
 
@@ -123,7 +123,7 @@ Tick **不用** `conversations.updated_at` 作为候选门槛。候选是：至�
   - `past_days` → **1 天**
   - `past_months` → **约 1 月**（31 天）
   - `past_years` → **1 年**（366 天）
-- **写入时机**：记忆维护写完全局日实体后后台 regenerate `past_days`；cascade 写完月/年实体后分别 regenerate `past_months` / `past_years`。Habitat UI 手动 `memory.temporalSystemRollRegenerate` / batch 仍可用。
+- **写入时机**：记忆维护写完各 world 日实体后后台 regenerate `past_days`；cascade 写完月/年实体后分别 regenerate `past_months` / `past_years`。Habitat UI 手动 `memory.temporalSystemRollRegenerate` / batch 仍可用。
 - **系统提示注入**：只读上述 Redis；cache miss 则跳过该块，**不在** `buildSystemPrompt` / 新建对话路径懒打 LLM。
 - 栖息地页签 **系统合摘要**：`memory.temporalSystemRollList` / `memory.temporalSystemRollRegenerate`
 
@@ -171,6 +171,6 @@ LLM 提示仍要求约 `maxChars` 字。后处理在 `ceil(maxChars * 1.5)` 硬�
 
 ## 与记忆维护的关系
 
-全局日覆盖是记忆维护周期的**副产品**，不是 retain 语义抽取的替代。
+日覆盖是记忆维护周期的**副产品**，不是 retain 语义抽取的替代。
 
-栖息地 **补跑** 会在补缺失 retain 的同时回填缺失的全局 `day` 实体（以及范围内月初的月/年级联）；见 [`sleep.md`](sleep.md)。
+栖息地 **补跑** 会在补缺失 retain 的同时回填缺失的各 world `day` 实体（以及范围内月初的月/年级联）；见 [`sleep.md`](sleep.md)。
