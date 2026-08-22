@@ -28,7 +28,7 @@ title: 远程访问
 
 ### PWA（浏览器 Web）
 
-- **安全上下文**：Service Worker 需要 HTTPS 或 `localhost`。局域网可用栖息地本机 HTTPS（`:2659`）或自建 TLS 终止。浏览器 **Web Speech** 朗读同样需安全上下文；默认 **Edge TTS**（栖息地 `POST /rpc/v1/tts/synthesize`）在 HTTP 局域网下也可用，但栖息地需能访问外网 Microsoft 语音服务。
+- **安全上下文**：Service Worker、浏览器 **Web Speech**、以及 **User 保险库解锁**（依赖 `crypto.subtle`）均需要 HTTPS 或 `localhost`。局域网 HTTP（如 `http://<IP>:2658/web`）下解锁会失败；请改用栖息地本机 HTTPS（`:2659`）或自建 TLS 终止。默认 **Edge TTS**（栖息地 `POST /rpc/v1/tts/synthesize`）在 HTTP 局域网下仍可用，但栖息地需能访问外网 Microsoft 语音服务。
 - **Service Worker vs 安装**：SW 在普通浏览器标签页访问 `/web/*` 时即注册（生产构建）；**不要求**「添加到主屏幕」。安装仅改变启动方式（独立窗口），离线能力与标签页相同。
 - **安装（可选）**：手机浏览器访问 `/web/chat`，Chrome / Safari 支持「添加到主屏幕」；生产构建会显示安装引导条（compact 布局、非已安装态）。
 - **更新**：栖息地部署新 Web 静态产物后，已安装 PWA 会提示「新版本可用」；点击重新加载后生效（不会自动刷新）。壳层 JS 由 Workbox precache，生产环境会定期/`visibilitychange` 时 `registration.update()`。`/web/config.json` 始终 `no-store`（栖息地 URL 动态）。Desktop/Mobile 不走 SW；升级见 Releases 安装包检测（设置 → 关于「检查更新」）。
@@ -100,7 +100,7 @@ http:
 
 CLI `--host` 覆盖单次运行 / systemd unit 写入的配置。变更 `http.host` 后执行 `anima service restart`。
 
-局域网：`http.host: 0.0.0.0`（或 `anima service start --host 0.0.0.0`）时用 `http://<PC-IP>:2658/web/chat`；客户端栖息地 URL 设为 `http://<PC-IP>:2658`（不要加 `/web` 后缀）。
+局域网：`http.host: 0.0.0.0`（或 `anima service start --host 0.0.0.0`）时用 `http://<PC-IP>:2658/web/chat`；客户端栖息地 URL 设为 `http://<PC-IP>:2658`（不要加 `/web` 后缀）。**User 保险库解锁 / PWA / Web Speech** 需安全上下文时改用 `https://<PC-IP>:2659`（见下节）。
 
 浏览器 UI 应与栖息地 API **同源**（栖息地 `/web`，或 Vite 代理到本机栖息地）。跨源浏览器 UI 不再支持可配置 CORS；桌面壳本机 loopback / Tauri origin 仍内置放行。
 
@@ -108,10 +108,10 @@ CLI `--host` 覆盖单次运行 / systemd unit 写入的配置。变更 `http.ho
 
 栖息地可在**独立端口**提供原生 TLS（`Bun.serve`），与默认 HTTP 并行：
 
-| 端口     | 协议  | 用途                                                                                    |
-| -------- | ----- | --------------------------------------------------------------------------------------- |
-| **2658** | HTTP  | 默认；CLI 探活、日常客户端、局域网访问                                                  |
-| **2659** | HTTPS | 本地/局域网安全上下文（Web Speech / PWA 等）；客户端栖息地 URL 填 `https://<host>:2659` |
+| 端口     | 协议  | 用途                                                                                                      |
+| -------- | ----- | --------------------------------------------------------------------------------------------------------- |
+| **2658** | HTTP  | 默认；CLI 探活、日常客户端、局域网访问                                                                    |
+| **2659** | HTTPS | 本地/局域网安全上下文（User 保险库解锁 / Web Speech / PWA 等）；客户端栖息地 URL 填 `https://<host>:2659` |
 
 启用（`~/.anima/config.yaml` bootstrap 段）：
 

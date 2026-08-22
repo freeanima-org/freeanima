@@ -35,6 +35,9 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 ## 壳 UI
 
 - 路由：`/vault`
+- **浏览器安全上下文**：User 库解锁在客户端用 Web Crypto（`crypto.subtle`）。`http://127.0.0.1` /
+  `localhost` 可用；局域网明文 HTTP（如 `:2658`）不可用——改用栖息地 HTTPS（默认 `:2659`），见
+  [`remote-access.md`](../ops/remote-access.md)
 - 解锁 / 改密 / CRUD；用户库导入 **Bitwarden 未加密 JSON**（按 `import_refs.bitwarden` 幂等
   upsert；可选「仅新建」）— 入口在栖息地 **数据维护**（不再放在 `/vault` 工具栏）
 - User 库会话：默认 **1 小时滑动超时**（浏览 / 搜索 / 选中条目等 UI 活动会续期）；扩展仍为最多 **8

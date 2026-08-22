@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { getUserVaultSession } from "@freeanima/client/portal-sdk/react.tsx";
 import {
+  isVaultWebCryptoAvailable,
+  vaultWebCryptoUnavailableMessage,
+} from "@freeanima/shared/vault-crypto";
+import {
   Button,
   Dialog,
   DialogFooter,
@@ -10,6 +14,7 @@ import {
   Spinner,
   cn,
 } from "@freeanima/ui-kit";
+import { StatusAlert } from "@freeanima/ui-kit/composite";
 
 import { ensureAgentRootKeySsot } from "@freeanima/features/vault/ui/spa/lib/agent-root-key-custody.ts";
 import { getVaultCryptoConfig } from "@freeanima/features/chat/ui/spa/lib/vault-unlock-api.ts";
@@ -31,6 +36,12 @@ export function VaultUnlockButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const cryptoOk = isVaultWebCryptoAvailable();
+  const cryptoHint = cryptoOk
+    ? ""
+    : vaultWebCryptoUnavailableMessage(
+        typeof location !== "undefined" ? { pageHref: location.href } : undefined,
+      );
 
   const refreshUnlocked = useCallback(() => {
     if (!conversationId) {
@@ -55,7 +66,7 @@ export function VaultUnlockButton({
 
   const handleUnlock = async () => {
     const mp = password.trim();
-    if (!mp) return;
+    if (!mp || !cryptoOk) return;
     setLoading(true);
     setError("");
     try {
@@ -120,11 +131,13 @@ export function VaultUnlockButton({
           <DialogTitle>解锁用户保险库</DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">主密码仅在本机验证，不会作为聊天消息发送。</p>
+        {cryptoHint ? <StatusAlert variant="warning">{cryptoHint}</StatusAlert> : null}
         <Input
           type="password"
           autoComplete="current-password"
           placeholder="主密码"
           value={password}
+          disabled={!cryptoOk}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") void handleUnlock();
@@ -138,7 +151,7 @@ export function VaultUnlockButton({
           <Button
             type="button"
             size="sm"
-            isDisabled={loading || !password.trim()}
+            isDisabled={!cryptoOk || loading || !password.trim()}
             onClick={() => void handleUnlock()}
           >
             {loading ? <Spinner className="size-4" /> : "解锁"}
