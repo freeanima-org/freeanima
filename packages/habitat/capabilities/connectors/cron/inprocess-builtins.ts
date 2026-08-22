@@ -169,7 +169,10 @@ async function fire(id: string): Promise<void> {
         log.debug(`${id} ok`, { output: output.slice(0, 240) });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      let message = err instanceof Error ? err.message : String(err);
+      if (err instanceof Error && err.cause instanceof Error && err.cause.message) {
+        message = `${message}\ncause: ${err.cause.message}`;
+      }
       await reportFailure(state, message.slice(0, 4000));
     }
   });
