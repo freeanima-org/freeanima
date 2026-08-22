@@ -551,8 +551,10 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memoryMaintenance.startMemoryMaintenanceStep(this.runtimeDeps(), opts);
   }
 
-  startMemoryMaintenanceCatchUp() {
-    return memoryMaintenance.startMemoryMaintenanceCatchUp(this.runtimeDeps());
+  startMemoryMaintenanceCatchUp(
+    opts?: Parameters<typeof memoryMaintenance.startMemoryMaintenanceCatchUp>[1],
+  ) {
+    return memoryMaintenance.startMemoryMaintenanceCatchUp(this.runtimeDeps(), opts);
   }
 
   listAutoLlmRuns(opts?: Parameters<typeof autoLlmRuns.listAutoLlmRuns>[1]) {

@@ -344,12 +344,13 @@ export async function startMemoryMaintenanceStep(body: {
   day?: string;
   force?: boolean;
   reflect_mode?: "full" | "incremental";
+  agent_subject_id?: number;
 }) {
   return hubCall(habitat().call("memoryMaintenance.runStep", body));
 }
 
-export async function startMemoryMaintenanceCatchUp() {
-  return hubCall(habitat().call("memoryMaintenance.startCatchUp", {}));
+export async function startMemoryMaintenanceCatchUp(body?: { agent_subject_id?: number }) {
+  return hubCall(habitat().call("memoryMaintenance.startCatchUp", body ?? {}));
 }
 
 export async function listCronLogs(opts?: {

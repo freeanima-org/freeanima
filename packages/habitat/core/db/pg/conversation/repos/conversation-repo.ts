@@ -672,24 +672,35 @@ export async function listConversationIdsMatchingPlatformProbe(
 export async function listConversationIdsUpdatedBetween(
   fromIso: string,
   toIso: string,
+  opts?: { agent_subject_id?: number },
 ): Promise<string[]> {
   const db = getDb();
+  const conditions = [
+    sql`${conversations.updated_at} >= ${fromIso}::timestamptz`,
+    sql`${conversations.updated_at} < ${toIso}::timestamptz`,
+    eq(conversations.debug, false),
+    sql`COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
+  ];
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
+  }
   const rows = await db
     .select({ id: conversations.id })
     .from(conversations)
-    .where(
-      sql`${conversations.updated_at} >= ${fromIso}::timestamptz
-        AND ${conversations.updated_at} < ${toIso}::timestamptz
-        AND ${conversations.debug} = false
-        AND COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
-    )
+    .where(and(...conditions))
     .orderBy(desc(conversations.updated_at));
   return rows.map((r) => r.id);
 }
 
 /** Earliest non-debug conversation CST calendar day YYYY-MM-DD */
-export async function getEarliestConversationDay(): Promise<string | null> {
+export async function getEarliestConversationDay(opts?: {
+  agent_subject_id?: number;
+}): Promise<string | null> {
   const db = getDb();
+  const conditions = [eq(conversations.debug, false)];
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
+  }
   const rows = await db
     .select({
       day: sql<string | null>`to_char(
@@ -698,7 +709,7 @@ export async function getEarliestConversationDay(): Promise<string | null> {
       )`,
     })
     .from(conversations)
-    .where(eq(conversations.debug, false));
+    .where(and(...conditions));
   const day = rows[0]?.day?.trim();
   return day || null;
 }
@@ -710,6 +721,7 @@ export async function getEarliestConversationDay(): Promise<string | null> {
 export async function listConversationActivityDays(
   fromDay: string,
   toDay: string,
+  opts?: { agent_subject_id?: number },
 ): Promise<string[]> {
   const fromIso = `${fromDay}T00:00:00+08:00`;
   // toDay inclusive: upper bound = start of day after toDay
@@ -719,15 +731,19 @@ export async function listConversationActivityDays(
     'YYYY-MM-DD'
   )`;
   const db = getDb();
+  const conditions = [
+    sql`${conversations.updated_at} >= ${fromIso}::timestamptz`,
+    sql`${conversations.updated_at} < (${toEndExclusive}::timestamptz + interval '1 day')`,
+    eq(conversations.debug, false),
+    sql`COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
+  ];
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
+  }
   const rows = await db
     .select({ day: dayExpr })
     .from(conversations)
-    .where(
-      sql`${conversations.updated_at} >= ${fromIso}::timestamptz
-        AND ${conversations.updated_at} < (${toEndExclusive}::timestamptz + interval '1 day')
-        AND ${conversations.debug} = false
-        AND COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
-    )
+    .where(and(...conditions))
     .groupBy(dayExpr)
     .orderBy(dayExpr);
   return rows.map((r) => r.day).filter((d) => d.length > 0 && d >= fromDay && d <= toDay);

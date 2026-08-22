@@ -145,13 +145,17 @@ export async function peekSemanticClusterTitle(clusterId: number): Promise<strin
  */
 export async function ensureSemanticClusterTitle(
   clusterId: number,
-  opts?: { runtime?: LlmRuntime; model?: string },
+  opts?: { runtime?: LlmRuntime; model?: string; world_id?: number },
 ): Promise<string | null> {
   if (!Number.isInteger(clusterId) || clusterId < 0) return null;
 
-  const samples = await listSemanticClusterTitleSamples(clusterId, {
-    limit: SEMANTIC_CLUSTER_TITLE_SAMPLE_LIMIT,
-  });
+  const samples = await listSemanticClusterTitleSamples(
+    clusterId,
+    omitUndefined({
+      limit: SEMANTIC_CLUSTER_TITLE_SAMPLE_LIMIT,
+      world_id: opts?.world_id,
+    }),
+  );
   if (samples.length === 0) return null;
 
   const ids = samples.map((s) => s.entityId);
@@ -178,12 +182,16 @@ export async function ensureSemanticClusterTitle(
 /** 校准后预热：串行 ensure，失败不抛 */
 export async function warmSemanticClusterTitles(
   clusterIds: readonly number[],
+  opts?: { world_id?: number },
 ): Promise<{ attempted: number; ok: number }> {
   let ok = 0;
   for (const clusterId of clusterIds) {
     if (!Number.isInteger(clusterId) || clusterId < 0) continue;
     try {
-      const title = await ensureSemanticClusterTitle(clusterId);
+      const title = await ensureSemanticClusterTitle(
+        clusterId,
+        omitUndefined({ world_id: opts?.world_id }),
+      );
       if (title) ok += 1;
     } catch (e) {
       log.warn("cluster title warm failed", { clusterId, error: String(e) });

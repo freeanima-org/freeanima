@@ -156,6 +156,7 @@ export async function startMemoryMaintenanceStep(
     day?: string;
     force?: boolean;
     reflect_mode?: "full" | "incremental";
+    agent_subject_id?: number;
   },
 ): Promise<{ ok: true; result: MaintenanceStepResult } | { ok: false; error: string }> {
   if (maintenanceBusy()) {
@@ -178,6 +179,7 @@ export async function startMemoryMaintenanceStep(
         day: opts.day,
         force: opts.force,
         reflect_mode: opts.reflect_mode,
+        agent_subject_id: opts.agent_subject_id,
       }),
       trigger: "manual_step",
       engine: deps.engine,
@@ -194,7 +196,7 @@ export async function startMemoryMaintenanceStep(
 
 export async function startMemoryMaintenanceCatchUp(
   deps: RuntimeDeps,
-  opts?: { plan?: SleepCatchUpPlan },
+  opts?: { plan?: SleepCatchUpPlan; agent_subject_id?: number },
 ): Promise<{ ok: true; started: true; plan: SleepCatchUpPlan } | { ok: false; error: string }> {
   if (maintenanceBusy()) {
     return { ok: false, error: "memory maintenance already running" };
@@ -210,7 +212,7 @@ export async function startMemoryMaintenanceCatchUp(
     const { planSleepCatchUp } =
       await import("@freeanima/habitat/capabilities/memory/sleep-catch-up.ts");
     const planned: { ok: true; plan: SleepCatchUpPlan } | { ok: false; reason: string } =
-      await planSleepCatchUp();
+      await planSleepCatchUp(omitUndefined({ agent_subject_id: opts?.agent_subject_id }));
     if (!planned.ok) {
       return { ok: false, error: planned.reason };
     }
@@ -222,6 +224,7 @@ export async function startMemoryMaintenanceCatchUp(
     return { ok: false, error: "memory maintenance already running" };
   }
 
+  const agentSubjectId = opts?.agent_subject_id;
   catchUpRunning = true;
   catchUpStatus = {
     running: true,
@@ -251,6 +254,7 @@ export async function startMemoryMaintenanceCatchUp(
             force: true,
             trigger: "catch_up",
             engine: deps.engine,
+            ...omitUndefined({ agent_subject_id: agentSubjectId }),
           });
           if (!result.ok) {
             throw new Error(result.error ?? `retain-catch-up failed for ${day}`);
@@ -271,6 +275,7 @@ export async function startMemoryMaintenanceCatchUp(
             force: true,
             trigger: "catch_up",
             engine: deps.engine,
+            ...omitUndefined({ agent_subject_id: agentSubjectId }),
           });
           if (!result.ok) {
             throw new Error(result.error ?? `temporal-summary-day failed for ${day}`);
@@ -293,6 +298,7 @@ export async function startMemoryMaintenanceCatchUp(
           force: true,
           trigger: "catch_up",
           engine: deps.engine,
+          ...omitUndefined({ agent_subject_id: agentSubjectId }),
         });
         if (!result.ok) {
           throw new Error(result.error ?? `temporal-summary-cascade failed for ${day}`);

@@ -42,9 +42,15 @@ export type RunMaintenanceStepOpts = {
 };
 
 /** 记忆维护状态轮询 + 单步 / 整周期 / 补跑触发（memoryMaintenance.*） */
-export function useMemoryPipeline(opts?: { logScope?: string; onSettled?: () => void }) {
+export function useMemoryPipeline(opts?: {
+  logScope?: string;
+  onSettled?: () => void;
+  /** 卧室维护：必须传当前所选 Anima；栖息地实例运维省略 */
+  agentSubjectId?: number | null;
+}) {
   const logScope = opts?.logScope ?? "memory-maintenance";
   const onSettled = opts?.onSettled;
+  const agentSubjectId = opts?.agentSubjectId;
 
   const [pipelineStatus, setPipelineStatus] = useState<MaintenanceStatus | null>(null);
   const [pipelineError, setPipelineError] = useState("");
@@ -142,10 +148,19 @@ export function useMemoryPipeline(opts?: { logScope?: string; onSettled?: () => 
   );
 
   const startCatchUp = useCallback(async () => {
+    if (opts?.agentSubjectId !== undefined && !(agentSubjectId != null && agentSubjectId > 0)) {
+      setPipelineError("请先选择卧室 Anima");
+      return;
+    }
     setCatchUpStarting(true);
     setPipelineError("");
     try {
-      await startMemoryMaintenanceCatchUp();
+      await startMemoryMaintenanceCatchUp(
+        omitUndefined({
+          agent_subject_id:
+            agentSubjectId != null && agentSubjectId > 0 ? agentSubjectId : undefined,
+        }),
+      );
       await refreshPipelineStatus();
     } catch (e) {
       logCaughtError(`${logScope}/startCatchUp`, e);
@@ -153,10 +168,14 @@ export function useMemoryPipeline(opts?: { logScope?: string; onSettled?: () => 
     } finally {
       setCatchUpStarting(false);
     }
-  }, [logScope, refreshPipelineStatus]);
+  }, [agentSubjectId, logScope, opts?.agentSubjectId, refreshPipelineStatus]);
 
   const startStep = useCallback(
     async (stepId: string, params?: RunMaintenanceStepOpts) => {
+      if (opts?.agentSubjectId !== undefined && !(agentSubjectId != null && agentSubjectId > 0)) {
+        setPipelineError("请先选择卧室 Anima");
+        return;
+      }
       setRunningStepId(stepId);
       setPipelineError("");
       try {
@@ -167,6 +186,8 @@ export function useMemoryPipeline(opts?: { logScope?: string; onSettled?: () => 
             force: params?.force,
             reflect_mode:
               stepId === "deep-sleep" || stepId === "reflect" ? params?.reflect_mode : undefined,
+            agent_subject_id:
+              agentSubjectId != null && agentSubjectId > 0 ? agentSubjectId : undefined,
           }),
         );
         await refreshPipelineStatus();
@@ -178,7 +199,7 @@ export function useMemoryPipeline(opts?: { logScope?: string; onSettled?: () => 
         setRunningStepId(null);
       }
     },
-    [logScope, onSettled, refreshPipelineStatus],
+    [agentSubjectId, logScope, onSettled, opts?.agentSubjectId, refreshPipelineStatus],
   );
 
   const catchUp = pipelineStatus?.catch_up;

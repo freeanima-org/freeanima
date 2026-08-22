@@ -25,9 +25,15 @@ export type RetainCatchUpResult = {
   first_error?: string;
 };
 
-export async function runRetainCatchUp(opts: { day?: string } = {}): Promise<RetainCatchUpResult> {
+export async function runRetainCatchUp(
+  opts: { day?: string; agent_subject_id?: number } = {},
+): Promise<RetainCatchUpResult> {
   const range = cstDayRange(opts.day);
-  const conversationIds = await listConversationIdsUpdatedBetween(range.fromIso, range.toIso);
+  const conversationIds = await listConversationIdsUpdatedBetween(
+    range.fromIso,
+    range.toIso,
+    omitUndefined({ agent_subject_id: opts.agent_subject_id }),
+  );
   if (conversationIds.length === 0) {
     return {
       ok: true,
