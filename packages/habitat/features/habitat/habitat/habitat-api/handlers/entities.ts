@@ -376,6 +376,23 @@ export async function createSubjectEntity(input: {
         ...identity,
         subject_keys: keys,
       });
+
+      try {
+        const { getResolvedWorldContext } =
+          await import("@freeanima/habitat/core/config/resolved-world-context.ts");
+        const { ensureContactForLocalSubject } =
+          await import("@freeanima/features/contact/domain/index.ts");
+        const commonsId = getResolvedWorldContext().commons_world_id;
+        await ensureContactForLocalSubject({
+          worldId: commonsId,
+          subjectId: withDefaultWorld.id,
+          publicId: material.public_id,
+          publicKey: material.public_key,
+          title: withDefaultWorld.title,
+        });
+      } catch {
+        /* Commons / contact 未就绪时跳过；boot 可再扫 */
+      }
     }
   } catch {
     /* boot 前或无 identity：下次 boot 扫齐 */

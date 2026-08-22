@@ -47,6 +47,12 @@ export const PROMPT_XML_TAGS = {
   subagentGoal: "subagent_goal",
   /** Reflect 巩固：本批语义记忆清单 */
   semanticMemories: "semantic_memories",
+  /** 群聊内心：协议说明（系统段） */
+  roomContext: "room_context",
+  /** 群聊成员花名册（系统段；与 room_utterance.public_id 联查） */
+  roomMembers: "room_members",
+  /** 群聊公开时间线发言投影（user content） */
+  roomUtterance: "room_utterance",
 } as const;
 
 export type PromptXmlTag = (typeof PROMPT_XML_TAGS)[keyof typeof PROMPT_XML_TAGS];

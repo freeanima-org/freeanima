@@ -38,6 +38,7 @@ import { taskMethodDefs } from "@freeanima/features/task/habitat/method-defs.ts"
 import { vaultMethodDefs } from "@freeanima/features/vault/habitat/method-defs.ts";
 import { bookmarkMethodDefs } from "@freeanima/features/bookmark/habitat/method-defs.ts";
 import { contactMethodDefs } from "@freeanima/features/contact/habitat/method-defs.ts";
+import { roomMethodDefs } from "@freeanima/features/room/habitat/method-defs.ts";
 
 /** 聚合各 feature method-defs（浏览器 client registry；无 handler） */
 export const FEATURE_METHOD_DEFS = {
@@ -52,6 +53,7 @@ export const FEATURE_METHOD_DEFS = {
   ...vaultMethodDefs,
   ...bookmarkMethodDefs,
   ...contactMethodDefs,
+  ...roomMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,
   ...noteMethodDefs,

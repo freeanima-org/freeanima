@@ -564,10 +564,11 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     (_deps, input) =>
       Promise.resolve(
         listConversations(
-          undefined,
+          input.platform?.trim() || undefined,
           omitUndefined({
             offset: input.offset ?? 0,
             limit: input.limit ?? 10_000,
+            scenario: input.scenario,
           }),
         ),
       ),

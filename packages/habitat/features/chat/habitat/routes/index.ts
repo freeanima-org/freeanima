@@ -1,6 +1,7 @@
 import { randomPublicId } from "@freeanima/shared/util";
 
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { parsePublicOrigin, resolveNotificationRecipients } from "@freeanima/habitat/core/config";
 import {
   countUnreadConversations,
@@ -131,6 +132,7 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
         offset: input.offset,
         limit: input.limit,
         user_subject_id,
+        scenario: input.scenario,
       }),
     );
     return {
@@ -144,6 +146,8 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
           pinned_at: s.pinned_at?.toISOString() ?? null,
           unread: s.unread === true ? true : s.unread === false ? false : undefined,
           agent_subject_id: s.agent_subject_id,
+          scenario: s.scenario,
+          room_id: s.room_id,
         }),
       ),
     };
@@ -375,6 +379,13 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   },
   "message.send": async (deps, input, ctx) => {
     const sapCtx = ctxOf(ctx);
+
+    const meta = await depsOf(deps)
+      .runtime.runtimeDeps()
+      .conversation.loadConversationMeta(input.conversation_id);
+    if (isConversationMeta(meta) && meta.scenario === "room_inner") {
+      throw new Error("群聊内心席为只读，请到「群聊」模块发言");
+    }
 
     // 弱网重复投递：已有进行中 stream 则复用 stream_id，不新开 pump
     if (input.client_op_id) {

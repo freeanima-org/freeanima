@@ -23,7 +23,11 @@ export async function resolveConversationPlatform(conversationId: string): Promi
 
 export async function listConversations(
   platform?: string,
-  opts?: { offset?: number; limit?: number },
+  opts?: {
+    offset?: number;
+    limit?: number;
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
+  },
 ) {
   const result = await habitatCtx().listConversations(platform, opts);
   return {
@@ -35,6 +39,8 @@ export async function listConversations(
       updated_at: s.updated_at,
       archived_at: s.archived_at ?? null,
       pinned_at: s.pinned_at ?? null,
+      scenario: s.scenario,
+      room_id: s.room_id,
     })),
   };
 }

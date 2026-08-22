@@ -46,16 +46,18 @@ title: 对话拓扑与消息模型
 
 ### C — 群聊（单实例 MVP）
 
-| 项               | 结论                                                                        |
-| ---------------- | --------------------------------------------------------------------------- |
-| 公开时间线       | **Room**：元数据、成员 `public_id[]`、公开消息 + 单调 `seq`                 |
-| LLM 队列         | **每本机 agent 成员一条 Conversation**，绑定同一 `room_id`                  |
-| 例：用户 + A + B | 1 Room + Conversation_A + Conversation_B                                    |
-| UI               | 读 Room；不认识的 `public_id` 弱展示即可                                    |
-| 投影             | 持令牌推理时：把 Room 公开历史投影进**该** Agent 的 Conversation，再调 LLM  |
-| 回写             | 仅最终公开回复（+可选工具摘要）进 Room；完整 tool 细节只留在该 Conversation |
-| 人类             | 进 Room、可发言；**不**强制衍生 Conversation                                |
-| API              | Room 用独立 `room.*`（实现期定）；勿用 `message.send` 假装群聊              |
+| 项               | 结论                                                                                                                                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 公开时间线       | **Room**：元数据、成员 `public_id[]`、公开消息 + 单调 `seq`                                                                                                                                                                    |
+| LLM 队列         | **每本机 agent 成员一条 Conversation**，绑定同一 `room_id`                                                                                                                                                                     |
+| 例：用户 + A + B | 1 Room + Conversation_A + Conversation_B                                                                                                                                                                                       |
+| UI               | 读 Room；公开气泡用 `speaker_display_name`；未知 `public_id` 弱展示；完整群聊交互见 #15347                                                                                                                                     |
+| 内心情景         | 本机 agent 席 `scenario=room_inner`（与 `digital_human` / `coding_agent` 并列；`platform` 仍为 `chat`）                                                                                                                        |
+| 投影             | 持令牌时把 Room 公开史**增量物化**进该 Agent Conversation；他人句为 `role=user` + `<room_utterance speaker public_id>` 正文（系统提示含 `<room_members>` 花名册 + 协议说明；用 `public_id` 联查；不以 `user.name` 为唯一身份） |
+| 回写             | 仅最终公开回复（+可选工具摘要）进 Room；完整 tool 细节只留在该 Conversation                                                                                                                                                    |
+| 人类             | 进 Room、可发言；**不**强制衍生 Conversation；本 Habitat 实例仅有一位人类用户（花名册 `kind=user`）                                                                                                                            |
+| API              | 独立 `room.*`；勿用 `message.send` 假装群聊                                                                                                                                                                                    |
+| 成员             | `rooms.members` 对象数组；内心席 = 本机 agent 的 Conversation（`UNIQUE(room_id, agent_public_id)`）                                                                                                                            |
 
 ```text
 Room R（公开 seq；speaker = public_id）
@@ -75,13 +77,13 @@ Room R（公开 seq；speaker = public_id）
 
 ## 单实例 MVP 清单
 
-| 能力 | 最小集                                                   |
-| ---- | -------------------------------------------------------- |
-| Room | 元数据、成员 `public_id[]`、公开消息 + `seq`             |
-| 衍生 | 每个本机 agent 成员 → 一条绑定 `room_id` 的 Conversation |
-| 投影 | 持令牌时 Room 公开史 → 该 Conversation → LLM             |
-| 回写 | 仅公开气泡进 Room                                        |
-| UI   | 未知 `public_id` 弱展示                                  |
+| 能力 | 最小集                                                                                                                     |
+| ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| Room | 元数据、成员 `public_id[]`、公开消息 + `seq`                                                                               |
+| 衍生 | 每个本机 agent 成员 → 一条绑定 `room_id` 的 Conversation                                                                   |
+| 投影 | 持令牌时 Room 公开史 → `<room_utterance>` 投影进该 Conversation；系统提示 `<room_members>` 花名册按 `public_id` 联查 → LLM |
+| 回写 | 仅公开气泡进 Room                                                                                                          |
+| UI   | 未知 `public_id` 弱展示                                                                                                    |
 
 实现落点：#15347（单机 Room + 席位衍生）。私聊选 agent 等延伸见推进切片。
 

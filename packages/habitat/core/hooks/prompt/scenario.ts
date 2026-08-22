@@ -26,6 +26,7 @@ export function canonicalizeConversationScenario(raw?: string | null): Conversat
 
 export function resolveScenarioProfile(scenario?: string | null): ScenarioProfile {
   const canonical = canonicalizeConversationScenario(scenario);
+  // room_inner 与 digital_human 同用数字人类提示栈；协议段由专用钩子按 scenario 注入
   return {
     prompt: canonical === "coding_agent" ? "work" : "digital_human",
   };

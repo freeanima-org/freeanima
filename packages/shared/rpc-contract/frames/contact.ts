@@ -26,6 +26,28 @@ export const contactAddressEntrySchema = z
 
 export type ContactAddressEntryPayload = z.infer<typeof contactAddressEntrySchema>;
 
+export const contactAnimaLocalSchema = z.object({
+  kind: z.literal("local"),
+  public_id: z.string().min(1),
+  public_key: z.string().min(1).optional(),
+  subject_id: z.number().int().positive(),
+});
+
+export const contactAnimaExternalSchema = z.object({
+  kind: z.literal("external"),
+  public_id: z.string().min(1),
+  public_key: z.string().min(1).optional(),
+  habitat_instance_id: z.string().min(1),
+  habitat_public_key: z.string().min(1).optional(),
+});
+
+export const contactAnimaEntrySchema = z.discriminatedUnion("kind", [
+  contactAnimaLocalSchema,
+  contactAnimaExternalSchema,
+]);
+
+export type ContactAnimaEntryPayload = z.infer<typeof contactAnimaEntrySchema>;
+
 export const contactRowSchema = z.object({
   id: z.number().int().positive(),
   title: z.string(),
@@ -34,6 +56,7 @@ export const contactRowSchema = z.object({
   phones: z.array(contactChannelEntrySchema),
   addresses: z.array(contactAddressEntrySchema),
   wechats: z.array(contactChannelEntrySchema),
+  animas: z.array(contactAnimaEntrySchema).default([]),
   subject_id: z.number().int().positive().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -124,6 +147,16 @@ export const contactResolveByAddressOutputSchema = z.object({
   items: z.array(contactRowSchema),
 });
 export type ContactResolveByAddressOutput = z.infer<typeof contactResolveByAddressOutputSchema>;
+
+export const contactResolveByPublicIdInputSchema = z.object({
+  subject_id: z.number().int().positive(),
+  public_id: z.string().min(1),
+});
+export type ContactResolveByPublicIdInput = z.infer<typeof contactResolveByPublicIdInputSchema>;
+export const contactResolveByPublicIdOutputSchema = z.object({
+  item: contactRowSchema.nullable(),
+});
+export type ContactResolveByPublicIdOutput = z.infer<typeof contactResolveByPublicIdOutputSchema>;
 
 export const contactAttachAddressInputSchema = z.object({
   subject_id: z.number().int().positive(),

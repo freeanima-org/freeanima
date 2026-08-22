@@ -19,6 +19,10 @@ export type ConversationSummaryRow = {
   unread?: boolean;
   /** 绑定的 Anima subject id */
   agent_subject_id?: number;
+  /** 情景行为档；缺省视为 digital_human */
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
+  /** 群聊内心席绑定的 room_id */
+  room_id?: string;
 };
 
 export type ConversationListOpts = {

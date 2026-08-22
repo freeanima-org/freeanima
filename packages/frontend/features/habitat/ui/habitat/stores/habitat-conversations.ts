@@ -17,6 +17,8 @@ type HabitatConversationsState = {
   conversationsTotal: number;
   conversationsPage: number;
   conversationsFetchedAt: number;
+  conversationsPlatformFilter: string | undefined;
+  conversationsScenarioFilter: "digital_human" | "coding_agent" | "room_inner" | undefined;
   selectedId: string | null;
   headlineById: Record<string, ConversationSummary>;
   display: DisplayItem[];
@@ -32,7 +34,12 @@ type HabitatConversationsState = {
   pageCount: () => number;
   currentPage: () => number;
   findConversation: (id: string) => ConversationSummary | undefined;
-  fetchConversations: (opts?: { force?: boolean; page?: number }) => Promise<void>;
+  fetchConversations: (opts?: {
+    force?: boolean;
+    page?: number;
+    platform?: string;
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
+  }) => Promise<void>;
   ensureConversationHeadline: (id: string) => Promise<void>;
   selectConversation: (id: string, page?: number) => Promise<void>;
   goToPage: (page: number) => Promise<void>;
@@ -43,6 +50,8 @@ export const useHabitatConversationsStore = create<HabitatConversationsState>((s
   conversationsTotal: 0,
   conversationsPage: 1,
   conversationsFetchedAt: 0,
+  conversationsPlatformFilter: undefined,
+  conversationsScenarioFilter: undefined,
   selectedId: null,
   headlineById: {},
   display: [],
@@ -65,7 +74,13 @@ export const useHabitatConversationsStore = create<HabitatConversationsState>((s
   async goToConversationsPage(page) {
     const safe = Math.min(Math.max(1, page), get().conversationsPageCount());
     if (safe === get().conversationsPage) return;
-    await get().fetchConversations({ page: safe, force: true });
+    const state = get();
+    await get().fetchConversations({
+      page: safe,
+      force: true,
+      ...(state.conversationsPlatformFilter ? { platform: state.conversationsPlatformFilter } : {}),
+      ...(state.conversationsScenarioFilter ? { scenario: state.conversationsScenarioFilter } : {}),
+    });
   },
 
   pageCount() {
@@ -86,10 +101,14 @@ export const useHabitatConversationsStore = create<HabitatConversationsState>((s
     const state = get();
     const page = opts?.page ?? state.conversationsPage;
     const force = opts?.force ?? false;
+    const platform = opts?.platform ?? state.conversationsPlatformFilter;
+    const scenario = opts?.scenario ?? state.conversationsScenarioFilter;
     if (
       !force &&
       state.conversations.length > 0 &&
       page === state.conversationsPage &&
+      platform === state.conversationsPlatformFilter &&
+      scenario === state.conversationsScenarioFilter &&
       Date.now() - state.conversationsFetchedAt < CONVERSATIONS_CACHE_TTL_MS
     ) {
       return;
@@ -97,7 +116,12 @@ export const useHabitatConversationsStore = create<HabitatConversationsState>((s
     set({ loadingConversations: true, error: "" });
     const offset = (page - 1) * CONVERSATIONS_PAGE_SIZE;
     try {
-      const resp = await listConversations({ offset, limit: CONVERSATIONS_PAGE_SIZE });
+      const resp = await listConversations({
+        offset,
+        limit: CONVERSATIONS_PAGE_SIZE,
+        ...(platform ? { platform } : {}),
+        ...(scenario ? { scenario } : {}),
+      });
       const conversations = (resp as { conversations?: ConversationSummary[] }).conversations ?? [];
       const total = (resp as { total?: number }).total ?? conversations.length;
       set({
@@ -105,6 +129,8 @@ export const useHabitatConversationsStore = create<HabitatConversationsState>((s
         conversationsTotal: total,
         conversationsPage: page,
         conversationsFetchedAt: Date.now(),
+        conversationsPlatformFilter: platform,
+        conversationsScenarioFilter: scenario,
       });
     } catch (e) {
       logCaughtError("stores/habitat-conversations", e);

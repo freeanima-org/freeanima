@@ -6,6 +6,7 @@ import { registerSkillsCatalogSystemPromptHook } from "@freeanima/habitat/capabi
 import { ANIMA_URI_PROTOCOL_BODY } from "@freeanima/habitat/capabilities/tools/anima-uri-prompt";
 import { registerSubagentCatalogSystemPromptHook } from "@freeanima/features/subagent/domain";
 import { registerCodingProjectContextPromptHook } from "@freeanima/features/coding/domain/project-context-prompt-hooks.ts";
+import { registerRoomProtocolSystemPromptHook } from "@freeanima/features/room/domain/room-protocol-prompt-hooks.ts";
 import { buildMemorySystemPromptSections } from "@freeanima/habitat/capabilities/memory/system-prompt-sections";
 import { loadSelfLayerInner } from "@freeanima/habitat/capabilities/self";
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
@@ -244,6 +245,7 @@ export function registerSystemPromptHooks(opts: {
 }): void {
   registerMemorySystemPromptHooks(opts.hookRegistry);
   registerCodingProjectContextPromptHook(opts.hookRegistry);
+  registerRoomProtocolSystemPromptHook(opts.hookRegistry);
   registerWorldContextSystemPromptHook(opts.hookRegistry);
   registerToolsetSystemPromptHooks(opts.hookRegistry, opts.getToolRegistry);
   registerSubagentCatalogSystemPromptHook(opts.hookRegistry);

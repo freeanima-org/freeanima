@@ -279,9 +279,8 @@ export function ChatApp() {
   const [error, setError] = useState<string | null>(null);
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
-  const canSendOnline = networkOnline && habitatConnection === "connected";
   const shellWritesDisabled = !networkOnline || habitatConnection !== "connected";
-  const writesDisabled = shellWritesDisabled;
+  const canSendOnline = networkOnline && habitatConnection === "connected";
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [menuConversationId, setMenuConversationId] = useState<string | null>(null);
   const [convSheetOpen, setConvSheetOpen] = useState(false);
@@ -446,6 +445,8 @@ export function ChatApp() {
     () => conversations.find((s) => s.id === currentId),
     [conversations, currentId],
   );
+  const roomInnerReadonly = currentConversation?.scenario === "room_inner";
+  const writesDisabled = shellWritesDisabled || roomInnerReadonly;
 
   const activeConversations = useMemo(
     () => conversations.filter((s) => !s.archivedAt),
@@ -2157,6 +2158,17 @@ export function ChatApp() {
                 </div>
               ) : (
                 <>
+                  {roomInnerReadonly ? (
+                    <Alert variant="info" className="mb-2 shadow-sm">
+                      <AlertDescription>
+                        这是群聊内心席，仅供查看。请到{" "}
+                        <a href="/rooms" className="text-primary underline underline-offset-2">
+                          群聊
+                        </a>{" "}
+                        模块发言。
+                      </AlertDescription>
+                    </Alert>
+                  ) : null}
                   {showContinueButton ? (
                     <div className="mb-2 flex justify-center">
                       <Button
@@ -2199,7 +2211,7 @@ export function ChatApp() {
                     commandList={commandList}
                     menuInFlow={mobileLayout}
                     streamVisible={streamVisible}
-                    canSendOnline={canSendOnline}
+                    canSendOnline={canSendOnline && !roomInnerReadonly}
                     onSend={sendMessage}
                     onStopStreaming={() => void stopStreaming()}
                   />

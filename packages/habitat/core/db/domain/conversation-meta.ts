@@ -113,8 +113,8 @@ export const conversationMetaSchema = z
     functions: z.array(z.string()).default([]),
     timestamp: z.string().default(""),
     platform: z.string().optional(),
-    /** 情景行为档：digital_human | coding_agent；缺省=digital_human */
-    scenario: z.enum(["digital_human", "coding_agent"]).optional(),
+    /** 情景行为档：digital_human | coding_agent | room_inner；缺省=digital_human */
+    scenario: z.enum(["digital_human", "coding_agent", "room_inner"]).optional(),
     system_prompt: z.string().optional(),
     /** ISO timestamptz；上次全量构建 system_prompt（日界刷新用） */
     system_prompt_built_at: z.string().optional(),
@@ -131,6 +131,10 @@ export const conversationMetaSchema = z
     goal: z.unknown().optional(),
     /** 会话绑定的 agent subject（entities.id）；写入时缺省取 ResolvedWorldContext */
     agent_subject_id: z.number().int().positive().optional(),
+    /** 本机 agent 公开键；Room 内心席绑定 */
+    agent_public_id: z.string().min(1).optional(),
+    /** 绑定的群聊 Room；空=私聊 */
+    room_id: z.string().min(1).optional(),
   })
   .passthrough();
 

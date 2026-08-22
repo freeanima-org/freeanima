@@ -34,6 +34,7 @@ import {
   upsertConversationMeta,
   lastMessageTimestamp,
 } from "@freeanima/habitat/core/db/pg/conversation";
+import type { ConversationSummaryRow } from "@freeanima/habitat/core/db/pg/conversation/types";
 import { parseCompressionState, isCompressed } from "@freeanima/habitat/core/compress";
 import type { StoredMessage, ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
 
@@ -189,19 +190,11 @@ export async function pgCountConversationsByPlatform(): Promise<Record<string, n
 
 export async function pgListConversationSummaries(
   platform?: string | null,
-  opts?: { includeArchived?: boolean },
-): Promise<
-  Array<{
-    id: string;
-    title: string;
-    created_at: Date;
-    updated_at: Date;
-    platform: string;
-    archived_at?: Date | null;
-    pinned_at?: Date | null;
-    agent_subject_id?: number;
-  }>
-> {
+  opts?: {
+    includeArchived?: boolean;
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
+  },
+): Promise<ConversationSummaryRow[]> {
   return listConversationSummaries(platform, opts);
 }
 
@@ -211,18 +204,9 @@ export async function pgListConversationSummariesPage(opts?: {
   limit?: number;
   includeArchived?: boolean;
   user_subject_id?: number;
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
 }): Promise<{
-  items: Array<{
-    id: string;
-    title: string;
-    created_at: Date;
-    updated_at: Date;
-    platform: string;
-    archived_at?: Date | null;
-    pinned_at?: Date | null;
-    unread?: boolean;
-    agent_subject_id?: number;
-  }>;
+  items: ConversationSummaryRow[];
   total: number;
 }> {
   return listConversationSummariesPage(opts);

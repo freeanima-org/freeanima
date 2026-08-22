@@ -3,8 +3,8 @@ import { z } from "zod";
 export const conversationCreateInputSchema = z.object({
   title: z.string().optional(),
   platform: z.string().optional(),
-  /** 情景行为档：digital_human | coding_agent；缺省由服务端推断 */
-  scenario: z.enum(["digital_human", "coding_agent"]).optional(),
+  /** 情景行为档：digital_human | coding_agent | room_inner；缺省由服务端推断 */
+  scenario: z.enum(["digital_human", "coding_agent", "room_inner"]).optional(),
   workspace_root: z.string().optional(),
   workspace_gitignore: z.boolean().optional(),
   workspace_show_hidden: z.boolean().optional(),
@@ -29,6 +29,8 @@ export const conversationListInputSchema = z.object({
   include_archived: z.boolean().optional(),
   offset: z.number().int().min(0).optional(),
   limit: z.number().int().min(1).max(500).optional(),
+  /** 按情景筛选；缺省不过滤 */
+  scenario: z.enum(["digital_human", "coding_agent", "room_inner"]).optional(),
 });
 
 export type ConversationListInput = z.infer<typeof conversationListInputSchema>;
@@ -47,6 +49,10 @@ export const conversationSummarySchema = z.object({
   agent_subject_id: z.number().int().positive().optional(),
   /** 展示用；列表可附带 */
   agent_title: z.string().optional(),
+  /** 情景行为档；缺省视为 digital_human */
+  scenario: z.enum(["digital_human", "coding_agent", "room_inner"]).optional(),
+  /** 群聊内心席绑定的 room_id */
+  room_id: z.string().min(1).optional(),
 });
 
 export type ConversationSummary = z.infer<typeof conversationSummarySchema>;

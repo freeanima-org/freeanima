@@ -94,7 +94,11 @@ export type AppRuntimeOpsPort = {
 export type AppRuntimeConversationPort = {
   listConversations(
     platform?: string | null,
-    opts?: { offset?: number; limit?: number },
+    opts?: {
+      offset?: number;
+      limit?: number;
+      scenario?: "digital_human" | "coding_agent" | "room_inner";
+    },
   ): Promise<{ conversations: ConversationSummary[]; total: number }>;
   createConversation(platform: string): Promise<{ conversation_id: string }>;
   getConversationInfo(conversationId: string, platform?: string): Promise<unknown>;

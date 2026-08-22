@@ -91,7 +91,7 @@ export function createConversationService(tools: ToolSetRegistry) {
       platform: string,
       model?: string,
       platformExtra?: Record<string, unknown>,
-      scenario?: "digital_human" | "coding_agent",
+      scenario?: "digital_human" | "coding_agent" | "room_inner",
       agentSubjectId?: number,
     ) => newConversation(tools, platform, model, platformExtra, scenario, agentSubjectId),
     findConversationByOrigin,

@@ -89,6 +89,8 @@ export async function getConversationMetaLite(
       platform_info: conversations.platform_info,
       scenario: conversations.scenario,
       agent_subject_id: conversations.agent_subject_id,
+      agent_public_id: conversations.agent_public_id,
+      room_id: conversations.room_id,
       compression: conversations.compression,
       temporal_day: conversations.temporal_day,
       todos: conversations.todos,
@@ -371,11 +373,23 @@ function sessionPlatformWhere(platform?: string | null) {
   return sql`${conversations.platform_info}->>'platform' = ${platform}`;
 }
 
-function buildConversationListWhere(platform?: string | null, includeArchived?: boolean) {
+function buildConversationListWhere(
+  platform?: string | null,
+  includeArchived?: boolean,
+  scenario?: "digital_human" | "coding_agent" | "room_inner" | null,
+) {
   const conds = [];
   const platformCond = sessionPlatformWhere(platform);
   if (platformCond) conds.push(platformCond);
   if (!includeArchived) conds.push(isNull(conversations.archived_at));
+  if (scenario === "digital_human") {
+    // NULL 兼容旧行 = digital_human
+    conds.push(
+      sql`(${conversations.scenario} IS NULL OR ${conversations.scenario} = 'digital_human')`,
+    );
+  } else if (scenario === "coding_agent" || scenario === "room_inner") {
+    conds.push(eq(conversations.scenario, scenario));
+  }
   if (conds.length === 0) return undefined;
   if (conds.length === 1) return conds[0];
   return and(...conds);
@@ -390,6 +404,13 @@ function conversationListOrderBy() {
   ] as const;
 }
 
+function parseScenario(
+  raw: string | null | undefined,
+): "digital_human" | "coding_agent" | "room_inner" | undefined {
+  if (raw === "digital_human" || raw === "coding_agent" || raw === "room_inner") return raw;
+  return undefined;
+}
+
 function mapConversationSummaryRow(row: {
   id: string;
   title: string | null;
@@ -400,8 +421,12 @@ function mapConversationSummaryRow(row: {
   pinned_at?: Date | null;
   unread?: boolean | null;
   agent_subject_id?: number | null;
+  scenario?: string | null;
+  room_id?: string | null;
 }): ConversationSummaryRow {
   const raw = row.platform_info?.platform;
+  const scenario = parseScenario(row.scenario);
+  const roomId = row.room_id?.trim();
   return {
     id: row.id,
     title: row.title ?? "",
@@ -414,6 +439,8 @@ function mapConversationSummaryRow(row: {
     ...(row.agent_subject_id != null && row.agent_subject_id > 0
       ? { agent_subject_id: row.agent_subject_id }
       : {}),
+    ...(scenario ? { scenario } : {}),
+    ...(roomId ? { room_id: roomId } : {}),
   };
 }
 
@@ -437,10 +464,14 @@ export async function getConversationUpdatedAt(conversation_id: string): Promise
 
 export async function listConversationSummaries(
   platform?: string | null,
-  opts?: { includeArchived?: boolean; user_subject_id?: number },
+  opts?: {
+    includeArchived?: boolean;
+    user_subject_id?: number;
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
+  },
 ): Promise<ConversationSummaryRow[]> {
   const db = getDb();
-  const where = buildConversationListWhere(platform, opts?.includeArchived);
+  const where = buildConversationListWhere(platform, opts?.includeArchived, opts?.scenario);
   const userSubjectId = opts?.user_subject_id;
   const unreadExpr =
     userSubjectId != null && userSubjectId > 0
@@ -456,6 +487,8 @@ export async function listConversationSummaries(
       archived_at: conversations.archived_at,
       pinned_at: conversations.pinned_at,
       agent_subject_id: conversations.agent_subject_id,
+      scenario: conversations.scenario,
+      room_id: conversations.room_id,
       ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)
@@ -471,12 +504,13 @@ export async function listConversationSummariesPage(opts?: {
   includeArchived?: boolean;
   /** 若提供，则为用户视角计算 unread */
   user_subject_id?: number;
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
 }): Promise<{ items: ConversationSummaryRow[]; total: number }> {
   const offset = Math.max(0, opts?.offset ?? 0);
   const limit = Math.min(500, Math.max(1, opts?.limit ?? 20));
   const platform = opts?.platform;
   const db = getDb();
-  const where = buildConversationListWhere(platform, opts?.includeArchived);
+  const where = buildConversationListWhere(platform, opts?.includeArchived, opts?.scenario);
   const userSubjectId = opts?.user_subject_id;
   const unreadExpr =
     userSubjectId != null && userSubjectId > 0
@@ -499,6 +533,8 @@ export async function listConversationSummariesPage(opts?: {
       archived_at: conversations.archived_at,
       pinned_at: conversations.pinned_at,
       agent_subject_id: conversations.agent_subject_id,
+      scenario: conversations.scenario,
+      room_id: conversations.room_id,
       ...(unreadExpr ? { unread: unreadExpr } : {}),
     })
     .from(conversations)

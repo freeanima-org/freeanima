@@ -12,6 +12,7 @@ import {
   getContact,
   listContacts,
   resolveContactsByAddress,
+  resolveContactByPublicId,
   searchContacts,
   updateContact,
   type ContactAddressEntry,
@@ -190,6 +191,17 @@ export async function serviceContactResolveByAddress(
     omitUndefined({ limit: input.limit }),
   );
   return { items };
+}
+
+export async function serviceContactResolveByPublicId(
+  deps: RuntimeDeps,
+  input: { subject_id: number; public_id: string },
+  auth: VerifiedServiceApiToken,
+) {
+  assertPg(deps);
+  const worldId = await contactWorldIdForAuth(auth, input.subject_id, "read");
+  const item = await resolveContactByPublicId(worldId, input.public_id);
+  return { item };
 }
 
 export async function serviceContactAttachAddress(
