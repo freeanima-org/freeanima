@@ -66,6 +66,7 @@ describePg("cron", () => {
       name: "test",
       schedule: "1h",
       prompt: "say hi",
+      subject_id: getResolvedWorldContext().default_chat_agent_subject_id,
     });
     expect(j.id).toBeTruthy();
     expect((await listJobs()).length).toBeGreaterThanOrEqual(1);
@@ -171,6 +172,7 @@ describePg("cron", () => {
       no_agent: true,
       script: "slow.sh",
       timeout_sec: 60,
+      subject_id: getResolvedWorldContext().default_chat_agent_subject_id,
     });
     const before = readOutputRef((await getJob(j.id))?.last_output_ref);
     void enqueueRunJob((await getJob(j.id))!);
@@ -198,6 +200,7 @@ describePg("cron", () => {
       no_agent: true,
       script: "noop.sh",
       timeout_sec: 1800,
+      subject_id: getResolvedWorldContext().default_chat_agent_subject_id,
     });
     expect((await getJob(j.id))?.timeout_sec).toBe(1800);
   });
