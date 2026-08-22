@@ -151,7 +151,10 @@ export async function countConversationsByPlatform(): Promise<Record<string, num
 
 export async function listConversationSummaries(
   platform?: string | null,
-  opts?: { includeArchived?: boolean },
+  opts?: {
+    includeArchived?: boolean;
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
+  },
 ): Promise<ConversationSummaryRow[]> {
   return pgListConversationSummaries(platform, opts);
 }
@@ -162,6 +165,7 @@ export async function listConversationSummariesPage(opts?: {
   limit?: number;
   includeArchived?: boolean;
   user_subject_id?: number;
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
 }): Promise<{
   items: ConversationSummaryRow[];
   total: number;
@@ -272,7 +276,7 @@ export async function initConversation(
     platform: string;
     functions?: string[];
     platform_extra?: Record<string, unknown>;
-    scenario?: "digital_human" | "coding_agent";
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
     agent_subject_id: number;
   },
 ): Promise<void> {
@@ -302,7 +306,7 @@ export async function newConversation(
   platform: string,
   model?: string,
   platformExtra?: Record<string, unknown>,
-  scenario?: "digital_human" | "coding_agent",
+  scenario?: "digital_human" | "coding_agent" | "room_inner",
   agentSubjectId?: number,
 ): Promise<string> {
   const cfg = getActiveRuntimeConfig().data;

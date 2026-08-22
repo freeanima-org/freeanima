@@ -1,6 +1,7 @@
 import type { Kernel } from "@freeanima/habitat/kernel";
 import { conversationUpdated } from "@freeanima/habitat/capabilities/memory";
 import { fallbackConversationTitle, generateConversationTitle } from "@freeanima/habitat/core/llm";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type SessionTitleNotify = {
@@ -53,6 +54,12 @@ export async function shouldGenerateConversationTitle(
   conversationId: string,
 ): Promise<boolean> {
   if ((await deps.conversation.getConversationTitle(conversationId)).trim()) return false;
+  try {
+    const meta = await deps.conversation.loadConversationMeta(conversationId);
+    if (isConversationMeta(meta) && meta.scenario === "room_inner") return false;
+  } catch {
+    /* meta 不可用时按普通会话处理 */
+  }
   return (await deps.conversation.countUserMessages(conversationId)) === 1;
 }
 

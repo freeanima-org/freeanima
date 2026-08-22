@@ -45,6 +45,10 @@ export type ConversationListItem = {
   agentSubjectId?: number;
   /** Anima 展示名（列表/头；缺省用 subjects 缓存或 #id） */
   agentTitle?: string;
+  /** 情景行为档；room_inner = 群聊内心席（只读） */
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
+  /** 群聊内心席绑定的 room_id */
+  roomId?: string;
 };
 
 export type LlmDebugSnapshotPayload = {

@@ -78,10 +78,11 @@ retain / 自传路径**不再**提取新的自传体叙事，也不再维护自�
 
 会话两维：`platform`（通道身份）与 **`scenario`（情景行为档）**。系统提示 / 旁注 / 压缩等策略由 `scenario` → profile 派生，**不**由 `platform` 推导：
 
-| `scenario`              | 提示装配（profile.prompt）      | 自我 / 常驻 / env-health / 时间摘要 / 活动 / 通知注入 |
-| ----------------------- | ------------------------------- | ----------------------------------------------------- |
-| `digital_human` 或 NULL | **数字人类**（`digital_human`） | 包含                                                  |
-| `coding_agent`          | **工作**（`work`）              | 省略                                                  |
+| `scenario`              | 提示装配（profile.prompt）                                                           | 自我 / 常驻 / env-health / 时间摘要 / 活动 / 通知注入                       |
+| ----------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `digital_human` 或 NULL | **数字人类**（`digital_human`）                                                      | 包含                                                                        |
+| `room_inner`            | **数字人类**（同上）+ 群聊协议段（`<room_context>`）+ 成员花名册（`<room_members>`） | 包含；另说明 `<room_utterance>` 为公开时间线投影，用 `public_id` 对照花名册 |
+| `coding_agent`          | **工作**（`work`）                                                                   | 省略                                                                        |
 
 装配顺序（**digital_human**）：
 
@@ -90,6 +91,7 @@ retain / 自传路径**不再**提取新的自传体叙事，也不再维护自�
 3. 环境 + 健康基线（静态会话副本；见 [`environment-awareness.md`](environment-awareness.md)）
 4. 常驻记忆（置顶事实）
 5. 项目上下文（仅 `coding_agent` 情景：前哨同步的 AGENTS.md / `.agents` rules / 厂商兼容 —— 不是任意会话 cwd）
+6. 群聊协议与花名册（仅 `room_inner`：`<room_members>` + `<room_context>`；本实例唯一人类用户记为 `kind=user`）
 
 **工作模式**保留记忆引用/回忆、渠道（带标签）、world/toolsets/skills/subagents，以及已同步的 Coding 项目上下文 —— 不含自我层身份框架。
 

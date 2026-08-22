@@ -15,6 +15,7 @@ export type ContactCreateInput = {
   phones?: ContactChannelEntry[];
   addresses?: ContactAddressEntry[];
   wechats?: ContactChannelEntry[];
+  animas?: import("@freeanima/habitat/core/db/schema/entity").ContactAnimaEntry[];
   subject_id?: number | null;
   client_op_id?: string;
 };
@@ -27,6 +28,7 @@ export type ContactUpdateInput = {
   phones?: ContactChannelEntry[];
   addresses?: ContactAddressEntry[];
   wechats?: ContactChannelEntry[];
+  animas?: import("@freeanima/habitat/core/db/schema/entity").ContactAnimaEntry[];
   subject_id?: number | null;
   client_op_id?: string;
 };

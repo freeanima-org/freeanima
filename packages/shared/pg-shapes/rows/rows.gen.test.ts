@@ -57,6 +57,9 @@ describe("pg-shapes generated rows", () => {
     expect(conversationSelectSchema.safeParse({ ...row, scenario: "digital_human" }).success).toBe(
       true,
     );
+    expect(conversationSelectSchema.safeParse({ ...row, scenario: "room_inner" }).success).toBe(
+      true,
+    );
     expect(conversationSelectSchema.safeParse({ ...row, scenario: "nope" }).success).toBe(false);
   });
 

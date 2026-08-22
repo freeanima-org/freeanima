@@ -18,6 +18,8 @@ export {
   updateContact,
   deleteContact,
   resolveContactsByAddress,
+  resolveContactByPublicId,
+  ensureContactForLocalSubject,
   attachAddressToContact,
   extractEmailAddress,
   extractMailboxDisplayName,

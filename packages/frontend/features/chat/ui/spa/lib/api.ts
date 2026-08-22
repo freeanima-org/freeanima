@@ -27,6 +27,8 @@ function mapConversationList(raw: {
     unread?: boolean | undefined;
     agent_subject_id?: number | undefined;
     agent_title?: string | undefined;
+    scenario?: "digital_human" | "coding_agent" | "room_inner" | undefined;
+    room_id?: string | undefined;
   }>;
 }): { conversations: ConversationListItem[] } {
   return {
@@ -40,6 +42,8 @@ function mapConversationList(raw: {
       ...(s.unread === true ? { unread: true } : {}),
       ...(s.agent_subject_id != null ? { agentSubjectId: s.agent_subject_id } : {}),
       ...(s.agent_title?.trim() ? { agentTitle: s.agent_title.trim() } : {}),
+      ...(s.scenario ? { scenario: s.scenario } : {}),
+      ...(s.room_id?.trim() ? { roomId: s.room_id.trim() } : {}),
     })),
   };
 }

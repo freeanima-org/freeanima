@@ -265,7 +265,12 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   listConversations(
     platform?: string | null,
-    opts?: { offset?: number; limit?: number; includeArchived?: boolean },
+    opts?: {
+      offset?: number;
+      limit?: number;
+      includeArchived?: boolean;
+      scenario?: "digital_human" | "coding_agent" | "room_inner";
+    },
   ): Promise<{ conversations: ConversationSummary[]; total: number }> {
     return conversations.listConversations(this.runtimeDeps(), platform, opts);
   }

@@ -16,6 +16,8 @@ import {
   contactPatchOutputSchema,
   contactResolveByAddressInputSchema,
   contactResolveByAddressOutputSchema,
+  contactResolveByPublicIdInputSchema,
+  contactResolveByPublicIdOutputSchema,
   contactSearchInputSchema,
   contactSearchOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/contact";
@@ -54,6 +56,11 @@ export const contactMethodDefs = {
   "contact.resolveByAddress": defineHabitatMethod({
     input: contactResolveByAddressInputSchema,
     output: contactResolveByAddressOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "contact.resolveByPublicId": defineHabitatMethod({
+    input: contactResolveByPublicIdInputSchema,
+    output: contactResolveByPublicIdOutputSchema,
     meta: dualTransportMeta(true),
   }),
   "contact.attachAddress": defineHabitatMethod({

@@ -128,6 +128,10 @@ export type ConversationSummary = {
   /** 用户未读（assistant 回复尚未被用户读到） */
   unread?: boolean;
   agent_subject_id?: number;
+  /** 情景行为档；缺省视为 digital_human */
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
+  /** 群聊内心席绑定的 room_id */
+  room_id?: string;
 };
 
 export type SafeConfigSnapshot = {

@@ -1,7 +1,9 @@
 import {
   CONTACT_COMPONENT,
   asContact,
+  contactPrimaryLocalSubjectId,
   type ContactAddressEntry,
+  type ContactAnimaEntry,
   type ContactBody,
   type ContactChannelEntry,
   type ContactChannelKind,
@@ -37,6 +39,15 @@ export class ContactIdentityConflictError extends Error {
 }
 
 function toContactRow(row: NonNullable<ReturnType<typeof asContact>>): ContactRow {
+  const animas = row.animas ?? [];
+  const subject_id = contactPrimaryLocalSubjectId({
+    emails: row.emails ?? [],
+    phones: row.phones ?? [],
+    addresses: row.addresses ?? [],
+    wechats: row.wechats ?? [],
+    animas,
+    subject_id: row.subject_id ?? null,
+  });
   return {
     id: row.id,
     title: row.title,
@@ -45,7 +56,8 @@ function toContactRow(row: NonNullable<ReturnType<typeof asContact>>): ContactRo
     phones: row.phones ?? [],
     addresses: row.addresses ?? [],
     wechats: row.wechats ?? [],
-    subject_id: row.subject_id ?? null,
+    animas,
+    subject_id,
     created_at: row.created_at.toISOString(),
     updated_at: row.updated_at.toISOString(),
   };
@@ -92,15 +104,23 @@ function buildBody(input: {
   phones?: ContactChannelEntry[];
   addresses?: ContactAddressEntry[];
   wechats?: ContactChannelEntry[];
+  animas?: ContactAnimaEntry[];
   subject_id?: number | null;
   client_op_id?: string | null;
 }): ContactBody {
+  const animas = input.animas ?? [];
+  const localSubject =
+    animas.find((a): a is Extract<ContactAnimaEntry, { kind: "local" }> => a.kind === "local")
+      ?.subject_id ??
+    input.subject_id ??
+    null;
   return {
     emails: normalizeEntries("email", input.emails),
     phones: normalizeEntries("phone", input.phones),
     addresses: normalizeAddresses(input.addresses),
     wechats: normalizeEntries("wechat", input.wechats),
-    subject_id: input.subject_id ?? null,
+    animas,
+    subject_id: localSubject,
     client_op_id: input.client_op_id ?? null,
   };
 }
@@ -162,6 +182,7 @@ async function assertNoIdentityConflict(
     phones: body.phones,
     addresses: body.addresses,
     wechats: body.wechats,
+    animas: body.animas ?? [],
     subject_id: body.subject_id ?? null,
     created_at: "",
     updated_at: "",
@@ -287,6 +308,7 @@ export async function createContact(
     ...(input.phones != null ? { phones: input.phones } : {}),
     ...(input.addresses != null ? { addresses: input.addresses } : {}),
     ...(input.wechats != null ? { wechats: input.wechats } : {}),
+    ...(input.animas != null ? { animas: input.animas } : {}),
     ...(input.subject_id !== undefined ? { subject_id: input.subject_id } : {}),
     ...(input.client_op_id != null ? { client_op_id: input.client_op_id } : {}),
   });
@@ -322,6 +344,7 @@ export async function updateContact(
     phones: input.phones ?? current.phones,
     addresses: input.addresses ?? current.addresses,
     wechats: input.wechats ?? current.wechats,
+    animas: input.animas ?? current.animas ?? [],
     subject_id: input.subject_id !== undefined ? input.subject_id : (current.subject_id ?? null),
     client_op_id: input.client_op_id ?? current.client_op_id ?? null,
   });
@@ -392,5 +415,91 @@ function findByClientOpId(worldId: number, clientOpId: string): Promise<ContactR
       if (parsed.client_op_id === clientOpId) return toContactRow(parsed);
     }
     return null;
+  });
+}
+
+/** 按 anima public_id 解析联系人（无则 null）。 */
+export async function resolveContactByPublicId(
+  worldId: number,
+  publicId: string,
+): Promise<ContactRow | null> {
+  const id = publicId.trim();
+  if (!id) return null;
+  const all = await listAllContacts(worldId);
+  for (const row of all) {
+    if ((row.animas ?? []).some((a) => a.public_id === id)) return row;
+  }
+  return null;
+}
+
+/**
+ * 本机 subject 创建后 ensure 对应 Contact（Commons）。
+ * 已存在同 public_id / subject_id 则补齐 local anima，不重复建。
+ */
+export async function ensureContactForLocalSubject(input: {
+  worldId: number;
+  subjectId: number;
+  publicId: string;
+  publicKey?: string;
+  title: string;
+}): Promise<ContactRow> {
+  const existingByPublic = await resolveContactByPublicId(input.worldId, input.publicId);
+  if (existingByPublic) {
+    const hasLocal = (existingByPublic.animas ?? []).some(
+      (a) => a.kind === "local" && a.public_id === input.publicId,
+    );
+    if (hasLocal) return existingByPublic;
+    const animas: ContactAnimaEntry[] = [
+      ...(existingByPublic.animas ?? []),
+      {
+        kind: "local",
+        public_id: input.publicId,
+        subject_id: input.subjectId,
+        ...(input.publicKey ? { public_key: input.publicKey } : {}),
+      },
+    ];
+    const updated = await updateContact(input.worldId, {
+      id: existingByPublic.id,
+      animas,
+      subject_id: input.subjectId,
+    });
+    if (!updated) throw new Error("ensureContactForLocalSubject patch failed");
+    return updated;
+  }
+
+  const all = await listAllContacts(input.worldId);
+  const bySubject = all.find((r) => r.subject_id === input.subjectId);
+  if (bySubject) {
+    const animas: ContactAnimaEntry[] = [
+      ...(bySubject.animas ?? []).filter(
+        (a) => !(a.kind === "local" && a.subject_id === input.subjectId),
+      ),
+      {
+        kind: "local",
+        public_id: input.publicId,
+        subject_id: input.subjectId,
+        ...(input.publicKey ? { public_key: input.publicKey } : {}),
+      },
+    ];
+    const updated = await updateContact(input.worldId, {
+      id: bySubject.id,
+      animas,
+      subject_id: input.subjectId,
+    });
+    if (!updated) throw new Error("ensureContactForLocalSubject subject patch failed");
+    return updated;
+  }
+
+  return createContact(input.worldId, {
+    title: input.title.trim() || input.publicId,
+    subject_id: input.subjectId,
+    animas: [
+      {
+        kind: "local",
+        public_id: input.publicId,
+        subject_id: input.subjectId,
+        ...(input.publicKey ? { public_key: input.publicKey } : {}),
+      },
+    ],
   });
 }

@@ -48,5 +48,5 @@ export const selfBlockKeySchema = z.enum([
 export type SelfBlockKey = z.infer<typeof selfBlockKeySchema>;
 
 /** 会话情景行为档（与 platform 通道身份正交） */
-export const conversationScenarioSchema = z.enum(["digital_human", "coding_agent"]);
+export const conversationScenarioSchema = z.enum(["digital_human", "coding_agent", "room_inner"]);
 export type ConversationScenario = z.infer<typeof conversationScenarioSchema>;

@@ -59,6 +59,12 @@ export const contactHabitatRoutes = bindHabitatRouteHandlers(contactMethodDefs, 
       omitUndefined(input),
       ctxAuth(ctx),
     ),
+  "contact.resolveByPublicId": async (deps, input, ctx) =>
+    service.serviceContactResolveByPublicId(
+      depsOf(deps).runtime.runtimeDeps(),
+      input,
+      ctxAuth(ctx),
+    ),
   "contact.attachAddress": async (deps, input, ctx) =>
     service.serviceContactAttachAddress(
       depsOf(deps).runtime.runtimeDeps(),

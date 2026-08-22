@@ -42,8 +42,17 @@ function readAdminConversationRow(value: unknown): {
   platform?: string;
   updated_at?: string;
   archived_at?: string | null;
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
+  room_id?: string;
 } | null {
   if (!isRecord(value) || typeof value.conversation_id !== "string") return null;
+  const scenarioRaw = value.scenario;
+  const scenario =
+    scenarioRaw === "digital_human" ||
+    scenarioRaw === "coding_agent" ||
+    scenarioRaw === "room_inner"
+      ? scenarioRaw
+      : undefined;
   return {
     conversation_id: value.conversation_id,
     ...(typeof value.title === "string" ? { title: value.title } : {}),
@@ -52,10 +61,19 @@ function readAdminConversationRow(value: unknown): {
     ...(value.archived_at === null || typeof value.archived_at === "string"
       ? { archived_at: value.archived_at }
       : {}),
+    ...(scenario ? { scenario } : {}),
+    ...(typeof value.room_id === "string" && value.room_id.trim()
+      ? { room_id: value.room_id.trim() }
+      : {}),
   };
 }
 
-export async function listConversations(opts?: { offset?: number; limit?: number }) {
+export async function listConversations(opts?: {
+  offset?: number;
+  limit?: number;
+  platform?: string;
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
+}) {
   // 运维面必须走 adminListAll：conversation.list 会按 SAP 上下文默认 platform，
   // Habitat HTTP REST 的 app_id/instance_id 为空时会落到 "remote::" 过滤，列表恒为空。
   const raw = await habitat().call(
@@ -63,6 +81,8 @@ export async function listConversations(opts?: { offset?: number; limit?: number
     omitUndefined({
       offset: opts?.offset,
       limit: opts?.limit,
+      platform: opts?.platform,
+      scenario: opts?.scenario,
     }),
   );
   if (!isRecord(raw) || !Array.isArray(raw.conversations)) {
@@ -82,6 +102,8 @@ export async function listConversations(opts?: { offset?: number; limit?: number
       ...(s.archived_at !== undefined && s.archived_at !== null
         ? { archived_at: new Date(s.archived_at) }
         : {}),
+      ...(s.scenario ? { scenario: s.scenario } : {}),
+      ...(s.room_id ? { room_id: s.room_id } : {}),
     })),
     ...(total !== undefined ? { total } : {}),
   });

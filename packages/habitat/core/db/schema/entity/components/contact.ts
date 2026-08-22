@@ -32,12 +32,41 @@ export const contactAddressEntrySchema = z
 
 export type ContactAddressEntry = z.infer<typeof contactAddressEntrySchema>;
 
+/** Anima 身份通道：与微信/邮箱同级；内部分本机 / 外部实例。 */
+export const contactAnimaLocalSchema = z.object({
+  kind: z.literal("local"),
+  public_id: z.string().min(1),
+  public_key: z.string().min(1).optional(),
+  subject_id: z.number().int().positive(),
+});
+
+export const contactAnimaExternalSchema = z.object({
+  kind: z.literal("external"),
+  public_id: z.string().min(1),
+  public_key: z.string().min(1).optional(),
+  habitat_instance_id: z.string().min(1),
+  habitat_public_key: z.string().min(1).optional(),
+});
+
+export const contactAnimaEntrySchema = z.discriminatedUnion("kind", [
+  contactAnimaLocalSchema,
+  contactAnimaExternalSchema,
+]);
+
+export type ContactAnimaEntry = z.infer<typeof contactAnimaEntrySchema>;
+export type ContactAnimaLocal = z.infer<typeof contactAnimaLocalSchema>;
+export type ContactAnimaExternal = z.infer<typeof contactAnimaExternalSchema>;
+
 export const contactBodySchema = z.object({
   emails: z.array(contactChannelEntrySchema).default([]),
   phones: z.array(contactChannelEntrySchema).default([]),
   addresses: z.array(contactAddressEntrySchema).default([]),
   wechats: z.array(contactChannelEntrySchema).default([]),
-  /** 可选挂本机 user/agent subject */
+  /** Anima 身份通道（可多条） */
+  animas: z.array(contactAnimaEntrySchema).default([]),
+  /**
+   * @deprecated 收敛到 animas[].kind=local；读路径仍兼容，写路径应同步 animas。
+   */
   subject_id: z.number().int().positive().nullable().optional(),
   client_op_id: z.string().min(1).nullable().optional(),
 });
@@ -45,6 +74,24 @@ export const contactBodySchema = z.object({
 export type ContactBody = z.infer<typeof contactBodySchema>;
 
 export type ContactChannelKind = "email" | "phone" | "wechat" | "address";
+
+/** 从 body 取主本地 subject_id（优先 animas local，回退遗留字段）。 */
+export function contactPrimaryLocalSubjectId(body: ContactBody): number | null {
+  for (const a of body.animas ?? []) {
+    if (a.kind === "local") return a.subject_id;
+  }
+  return body.subject_id ?? null;
+}
+
+/** 按 public_id 查找 anima 条目。 */
+export function findContactAnimaByPublicId(
+  body: ContactBody,
+  publicId: string,
+): ContactAnimaEntry | undefined {
+  const id = publicId.trim();
+  if (!id) return undefined;
+  return (body.animas ?? []).find((a) => a.public_id === id);
+}
 
 export function normalizeContactChannelValue(kind: ContactChannelKind, value: string): string {
   const trimmed = value.trim();

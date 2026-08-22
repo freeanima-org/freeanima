@@ -6,6 +6,7 @@ describe("canonicalizeConversationScenario", () => {
   it("保留合法值", () => {
     expect(canonicalizeConversationScenario("digital_human")).toBe("digital_human");
     expect(canonicalizeConversationScenario("coding_agent")).toBe("coding_agent");
+    expect(canonicalizeConversationScenario("room_inner")).toBe("room_inner");
   });
 
   it("空 / 非法 → digital_human", () => {
@@ -23,8 +24,9 @@ describe("resolveScenarioProfile", () => {
     expect(resolveScenarioProfile("coding_agent")).toEqual({ prompt: "work" });
   });
 
-  it("digital_human / 缺省 / 非法 → prompt digital_human", () => {
+  it("digital_human / room_inner / 缺省 / 非法 → prompt digital_human", () => {
     expect(resolveScenarioProfile("digital_human")).toEqual({ prompt: "digital_human" });
+    expect(resolveScenarioProfile("room_inner")).toEqual({ prompt: "digital_human" });
     expect(resolveScenarioProfile(null)).toEqual({ prompt: "digital_human" });
     expect(resolveScenarioProfile(undefined)).toEqual({ prompt: "digital_human" });
     expect(resolveScenarioProfile("")).toEqual({ prompt: "digital_human" });

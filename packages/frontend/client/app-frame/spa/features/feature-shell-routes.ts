@@ -102,6 +102,16 @@ export function registerFeaturePluginShellRoutes(): void {
       load: lazyNamedComponent(() => import("@freeanima/features/contact/ui/spa"), "ContactApp"),
     },
     {
+      featureId: "room",
+      path: "/rooms",
+      navLabel: "群聊",
+      load: () =>
+        import("@freeanima/features/room/ui/spa").then(async (mod) => {
+          await import("@freeanima/features/chat/ui/spa/styles.css");
+          return { default: mod.RoomApp };
+        }),
+    },
+    {
       featureId: "email",
       path: "/email",
       navLabel: "Email",

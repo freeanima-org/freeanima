@@ -47,6 +47,7 @@ export async function listConversations(
     limit?: number;
     includeArchived?: boolean;
     user_subject_id?: number;
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
   },
 ): Promise<{ conversations: ConversationSummary[]; total: number }> {
   const p = platform === "" ? null : platform;
@@ -58,6 +59,7 @@ export async function listConversations(
       limit: opts?.limit ?? DEFAULT_CONVERSATION_LIST_LIMIT,
       includeArchived: opts?.includeArchived,
       user_subject_id: opts?.user_subject_id,
+      scenario: opts?.scenario,
     }),
   );
   return { conversations: page.items, total: page.total };

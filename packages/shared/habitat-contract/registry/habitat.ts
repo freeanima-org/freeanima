@@ -512,6 +512,8 @@ export const habitatMethodDefs = {
     input: z.object({
       offset: z.coerce.number().int().min(0).optional(),
       limit: z.coerce.number().int().min(1).optional(),
+      platform: z.string().optional(),
+      scenario: z.enum(["digital_human", "coding_agent", "room_inner"]).optional(),
     }),
     output: unknownOutputSchema,
     meta: dualTransportMeta(true),

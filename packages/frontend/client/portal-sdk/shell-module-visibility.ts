@@ -2,6 +2,7 @@ const STORAGE_KEY = "freeanima.shell-modules.visible";
 
 export type ShellModuleId =
   | "chat"
+  | "rooms"
   | "tasks"
   | "projects"
   | "objectives"
@@ -21,6 +22,7 @@ export type ShellModuleId =
 
 export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "chat",
+  "rooms",
   "tasks",
   "projects",
   "objectives",
@@ -82,6 +84,7 @@ function parseVisible(raw: string | null): Set<ShellModuleId> {
     }
     // 新顶级模块默认可见（旧 localStorage 未列出时补上）
     if (!ids.includes("bedroom")) ids.push("bedroom");
+    if (!ids.includes("rooms")) ids.push("rooms");
     return ids.length > 0 ? new Set(ids) : new Set(DEFAULT_VISIBLE);
   } catch {
     return new Set(DEFAULT_VISIBLE);
@@ -131,6 +134,7 @@ export function subscribeShellModuleVisibility(listener: VisibilityListener): ()
 
 export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | null {
   const path = pathname.split("?")[0]?.split("#")[0] ?? "";
+  if (path.startsWith("/rooms") || path.startsWith("/chat/rooms")) return "rooms";
   if (path.startsWith("/chat")) return "chat";
   if (path.startsWith("/tasks")) return "tasks";
   if (path.startsWith("/projects")) return "projects";
@@ -153,6 +157,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
 
 const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   chat: "/chat",
+  rooms: "/rooms",
   tasks: "/tasks",
   projects: "/projects",
   objectives: "/objectives",

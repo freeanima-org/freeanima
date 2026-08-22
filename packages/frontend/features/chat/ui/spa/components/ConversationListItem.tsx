@@ -71,9 +71,16 @@ export function ConversationListItem({
         <div className={cn("truncate", unread && !active ? "font-semibold text-foreground" : "")}>
           {label}
         </div>
-        {agentLabel ? (
-          <div className="truncate text-xs font-normal text-muted-foreground">{agentLabel}</div>
-        ) : null}
+        <div className="flex min-w-0 items-center gap-1.5">
+          {conversation.scenario === "room_inner" ? (
+            <span className="bg-muted text-muted-foreground shrink-0 rounded px-1 py-px text-[10px]">
+              群聊内心
+            </span>
+          ) : null}
+          {agentLabel ? (
+            <div className="truncate text-xs font-normal text-muted-foreground">{agentLabel}</div>
+          ) : null}
+        </div>
       </div>
       {unread && !active ? (
         <span className="bg-primary size-2 shrink-0 rounded-full" aria-label="未读" title="未读" />

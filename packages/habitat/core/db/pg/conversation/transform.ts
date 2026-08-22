@@ -54,12 +54,14 @@ const META_KNOWN_KEYS = new Set([
   "timestamp",
   "gateway_tool_display",
   "agent_subject_id",
+  "agent_public_id",
+  "room_id",
 ]);
 
 function parseConversationScenario(
   raw: string | null | undefined,
-): "digital_human" | "coding_agent" | undefined {
-  if (raw === "digital_human" || raw === "coding_agent") return raw;
+): "digital_human" | "coding_agent" | "room_inner" | undefined {
+  if (raw === "digital_human" || raw === "coding_agent" || raw === "room_inner") return raw;
   return undefined;
 }
 
@@ -127,6 +129,10 @@ export function conversationMetaToInsert(
       }
       return meta.agent_subject_id;
     })(),
+    // Room 席位键：私聊可空；建会话后由 room domain 再写
+    agent_public_id: null,
+    room_id: null,
+    last_projected_room_seq: 0,
     compression: compressionParsed,
     temporal_day: null,
     todos,
@@ -169,6 +175,8 @@ export function rowToConversationMeta(row: unknown): ConversationMetaMessage {
     platform,
     ...(scenario ? { scenario } : {}),
     agent_subject_id: parsed.agent_subject_id,
+    ...(parsed.agent_public_id?.trim() ? { agent_public_id: parsed.agent_public_id.trim() } : {}),
+    ...(parsed.room_id?.trim() ? { room_id: parsed.room_id.trim() } : {}),
     title: parsed.title ?? undefined,
     cwd: parsed.cwd ?? undefined,
     system_prompt: parsed.system_prompt ?? undefined,

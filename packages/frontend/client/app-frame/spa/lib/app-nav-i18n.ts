@@ -17,6 +17,7 @@ import {
   StickyNote,
   Timer,
   ContactRound,
+  Users,
 } from "lucide-react";
 
 import type { ShellModuleId } from "@freeanima/client/portal-sdk/shell-module-visibility";
@@ -64,6 +65,13 @@ export function appNavItems(): AppNavItem[] {
       "/chat",
       shellNavLabel(() => "聊天室"),
       MessageSquare,
+    ),
+    navItem(
+      "rooms",
+      "/rooms",
+      "/rooms",
+      shellNavLabel(() => "群聊"),
+      Users,
     ),
     navItem(
       "tasks",

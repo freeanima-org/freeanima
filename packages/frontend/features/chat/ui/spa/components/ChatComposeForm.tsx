@@ -15,6 +15,13 @@ import {
 } from "../lib/anima-mention-menu.ts";
 import { searchAnimaMentionEntities } from "../lib/anima-mention-search.ts";
 import {
+  applyAtMentionInsert,
+  buildAtMentionMenuEntries,
+  parseAtMentionTrigger,
+  type AtMentionCandidate,
+  type AtMentionMenuEntry,
+} from "../lib/at-mention-menu.ts";
+import {
   buildSlashMenuEntries,
   type SlashCommandItem,
   type SlashMenuEntry,
@@ -46,6 +53,11 @@ export type ChatComposeFormProps = {
   canSendOnline: boolean;
   onSend: (payload: ChatComposeSendPayload) => void | Promise<void>;
   onStopStreaming: () => void;
+  /**
+   * `@` 成员补全候选（群聊等）。有值时优先于 `[[` 实体引用菜单。
+   * 私聊可省略，继续只用 `[[`。
+   */
+  atMentionCandidates?: AtMentionCandidate[];
 };
 
 /**
@@ -59,6 +71,7 @@ export function ChatComposeForm({
   canSendOnline,
   onSend,
   onStopStreaming,
+  atMentionCandidates,
 }: ChatComposeFormProps) {
   const enterToSend = useEnterToSendCapability();
   const msgInputRef = useRef<HTMLTextAreaElement>(null);
@@ -156,17 +169,41 @@ export function ChatComposeForm({
     [inputText, commandList],
   );
   const showCmdMenu = slashMenuEntries.length > 0;
+
+  const atTrigger = useMemo(() => {
+    if (showCmdMenu || !atMentionCandidates?.length) return null;
+    return parseAtMentionTrigger(inputText, caret);
+  }, [inputText, caret, showCmdMenu, atMentionCandidates]);
+
+  const atMenuEntries = useMemo((): AtMentionMenuEntry[] => {
+    if (!atTrigger || !atMentionCandidates?.length) return [];
+    return buildAtMentionMenuEntries(atTrigger.query, atMentionCandidates);
+  }, [atTrigger, atMentionCandidates]);
+  const showAtMenu = atTrigger != null;
+
   const animaTrigger = useMemo(() => {
-    if (showCmdMenu) return null;
+    if (showCmdMenu || showAtMenu) return null;
     return parseAnimaMentionTrigger(inputText, caret);
-  }, [inputText, caret, showCmdMenu]);
+  }, [inputText, caret, showCmdMenu, showAtMenu]);
   const showAnimaMenu = animaTrigger != null;
 
   useEffect(() => {
-    setSelectedIdx((i) =>
-      slashMenuEntries.length === 0 ? 0 : Math.min(i, slashMenuEntries.length - 1),
-    );
-  }, [slashMenuEntries]);
+    const len = showCmdMenu
+      ? slashMenuEntries.length
+      : showAtMenu
+        ? atMenuEntries.length
+        : showAnimaMenu
+          ? animaEntries.length
+          : 0;
+    setSelectedIdx((i) => (len === 0 ? 0 : Math.min(i, len - 1)));
+  }, [
+    showCmdMenu,
+    slashMenuEntries.length,
+    showAtMenu,
+    atMenuEntries.length,
+    showAnimaMenu,
+    animaEntries.length,
+  ]);
 
   useEffect(() => {
     if (!animaTrigger) {
@@ -228,18 +265,49 @@ export function ChatComposeForm({
     });
   };
 
+  const applyAtEntry = (entry: AtMentionMenuEntry) => {
+    if (!atTrigger) return;
+    const pos = msgInputRef.current?.selectionStart ?? caretRef.current;
+    const { next, caret: nextCaret } = applyAtMentionInsert(
+      inputTextRef.current,
+      atTrigger.start,
+      pos,
+      entry.insertText,
+    );
+    inputTextRef.current = next;
+    setInputText(next);
+    caretRef.current = nextCaret;
+    setCaret(nextCaret);
+    setSelectedIdx(0);
+    inputDraftScheduler.schedule();
+    requestAnimationFrame(() => {
+      resizeInput();
+      const el = msgInputRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(nextCaret, nextCaret);
+    });
+  };
+
   const syncCaretFromEl = (el: HTMLTextAreaElement) => {
     const next = el.selectionStart ?? 0;
     caretRef.current = next;
-    // 仅在可能触发 [[ 选择器时写入 state，避免普通打字双倍 setState
-    if (inputTextRef.current.includes("[[") || next !== caret) {
+    // 仅在可能触发补全时写入 state，避免普通打字双倍 setState
+    const t = inputTextRef.current;
+    if (t.includes("[[") || t.includes("@") || next !== caret) {
       setCaret(next);
     }
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    const menuLen = showCmdMenu ? slashMenuEntries.length : showAnimaMenu ? animaEntries.length : 0;
-    if (showCmdMenu || showAnimaMenu) {
+    const menuLen = showCmdMenu
+      ? slashMenuEntries.length
+      : showAtMenu
+        ? atMenuEntries.length
+        : showAnimaMenu
+          ? animaEntries.length
+          : 0;
+    if (showCmdMenu || showAtMenu || showAnimaMenu) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setSelectedIdx((i) => Math.min(i + 1, Math.max(menuLen - 1, 0)));
@@ -257,6 +325,14 @@ export function ChatComposeForm({
           if (entry) applySlashEntry(entry);
           return;
         }
+        if (showAtMenu) {
+          const entry = atMenuEntries[selectedIdx];
+          if (entry) {
+            e.preventDefault();
+            applyAtEntry(entry);
+          }
+          return;
+        }
         if (showAnimaMenu) {
           const entry = animaEntries[selectedIdx];
           if (entry) {
@@ -271,6 +347,23 @@ export function ChatComposeForm({
         if (showCmdMenu) {
           clearInputAndDraft(conversationId);
           setSelectedIdx(0);
+          return;
+        }
+        if (showAtMenu && atTrigger) {
+          const pos = msgInputRef.current?.selectionStart ?? caretRef.current;
+          const next = `${inputTextRef.current.slice(0, atTrigger.start)}${inputTextRef.current.slice(pos)}`;
+          inputTextRef.current = next;
+          setInputText(next);
+          caretRef.current = atTrigger.start;
+          setCaret(atTrigger.start);
+          inputDraftScheduler.schedule();
+          requestAnimationFrame(() => {
+            resizeInput();
+            const el = msgInputRef.current;
+            if (!el) return;
+            el.focus();
+            el.setSelectionRange(atTrigger.start, atTrigger.start);
+          });
           return;
         }
         if (showAnimaMenu && animaTrigger) {
@@ -346,6 +439,29 @@ export function ChatComposeForm({
                 }}
               >
                 <span className="font-mono font-medium shrink-0">{entry.label}</span>
+                <span className="text-xs text-muted-foreground truncate">{entry.description}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {showAtMenu ? (
+          <ul className={menuClass} aria-label="@ 成员">
+            {atMenuEntries.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-muted-foreground">无匹配成员</li>
+            ) : null}
+            {atMenuEntries.map((entry, i) => (
+              <li
+                key={entry.key}
+                className={[
+                  "px-3 py-2 text-sm cursor-pointer flex items-baseline gap-2 hover:bg-muted",
+                  i === selectedIdx ? "bg-primary/15" : "",
+                ].join(" ")}
+                onPointerDown={(ev) => {
+                  ev.preventDefault();
+                  applyAtEntry(entry);
+                }}
+              >
+                <span className="font-medium shrink-0">{entry.label}</span>
                 <span className="text-xs text-muted-foreground truncate">{entry.description}</span>
               </li>
             ))}
