@@ -12,6 +12,7 @@ export type ShellModuleId =
   | "diary"
   | "notes"
   | "bookmarks"
+  | "health"
   | "contacts"
   | "entity"
   | "vault"
@@ -32,6 +33,7 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "diary",
   "notes",
   "bookmarks",
+  "health",
   "contacts",
   "entity",
   "vault",
@@ -85,6 +87,7 @@ function parseVisible(raw: string | null): Set<ShellModuleId> {
     // 新顶级模块默认可见（旧 localStorage 未列出时补上）
     if (!ids.includes("bedroom")) ids.push("bedroom");
     if (!ids.includes("rooms")) ids.push("rooms");
+    if (!ids.includes("health")) ids.push("health");
     return ids.length > 0 ? new Set(ids) : new Set(DEFAULT_VISIBLE);
   } catch {
     return new Set(DEFAULT_VISIBLE);
@@ -145,6 +148,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/diary")) return "diary";
   if (path.startsWith("/note")) return "notes";
   if (path.startsWith("/bookmarks")) return "bookmarks";
+  if (path.startsWith("/health")) return "health";
   if (path.startsWith("/contacts")) return "contacts";
   if (path.startsWith("/entity")) return "entity";
   if (path.startsWith("/vault")) return "vault";
@@ -167,6 +171,7 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   diary: "/diary",
   notes: "/note",
   bookmarks: "/bookmarks",
+  health: "/health",
   contacts: "/contacts",
   entity: "/entity",
   vault: "/vault",
