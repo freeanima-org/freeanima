@@ -43,6 +43,7 @@ export const OBJECT_FOLDER_COMPONENT = "object_folder" as const;
 export const SKILL_COMPONENT = "skill" as const;
 export const SKILL_RESOURCE_COMPONENT = "skill_resource" as const;
 export const SUBAGENT_COMPONENT = "subagent" as const;
+export const WORKFLOW_COMPONENT = "workflow" as const;
 /** 壳层快捷入口附属组件（attach 到实体；非主路由面） */
 export const SHELL_QUICK_ENTRY_COMPONENT = "shell_quick_entry" as const;
 
@@ -90,6 +91,7 @@ export const COMPONENT_IDS = [
   SKILL_COMPONENT,
   SKILL_RESOURCE_COMPONENT,
   SUBAGENT_COMPONENT,
+  WORKFLOW_COMPONENT,
   SHELL_QUICK_ENTRY_COMPONENT,
 ] as const;
 

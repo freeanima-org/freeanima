@@ -4,6 +4,7 @@ import { registerPomodoroTools } from "@freeanima/features/pomodoro/domain";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { registerTaskTools } from "@freeanima/features/task/domain";
 import { registerSubagentTools } from "@freeanima/features/subagent/domain";
+import { registerWorkflowTools } from "@freeanima/features/workflow/domain";
 import { registerVaultTools } from "@freeanima/features/vault/domain";
 import { registerContactTools } from "@freeanima/features/contact/domain";
 import {
@@ -61,6 +62,7 @@ export function registerServiceTools(opts: {
   registerTaskTools(opts.toolSets);
   registerEntityAndTagTools(opts.toolSets);
   registerSubagentTools(opts.toolSets);
+  registerWorkflowTools(opts.toolSets);
   registerContentBlockTools(opts.toolSets);
   registerPomodoroTools(opts.toolSets);
   registerVaultTools(opts.toolSets);

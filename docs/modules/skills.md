@@ -16,6 +16,8 @@ title: 技能
 
 **不要**把每个技能正文都塞进系统提示。
 
+**边界：** 确定性多步图不是技能 — 见 [`workflow.md`](workflow.md)。
+
 ## 存储
 
 - **一个技能 = 一个实体**（`primary_component = skill`）

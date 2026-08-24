@@ -51,12 +51,12 @@ Never delete builtin skills.
 
 ## Not a skill
 
-| Content                          | Put elsewhere     |
-| -------------------------------- | ----------------- |
-| Ephemeral facts / preferences    | Memory            |
-| Easily re-looked-up reference    | Docs / web        |
-| Deterministic multi-step graphs  | Workflow (future) |
-| Session-only paths / debug dumps | Discard (noop)    |
+| Content                          | Put elsewhere                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------ |
+| Ephemeral facts / preferences    | Memory                                                                               |
+| Easily re-looked-up reference    | Docs / web                                                                           |
+| Deterministic multi-step graphs  | Workflow — see [`docs/modules/workflow.md`](../../../../../docs/modules/workflow.md) |
+| Session-only paths / debug dumps | Discard (noop)                                                                       |
 
 ## Quality bar
 
