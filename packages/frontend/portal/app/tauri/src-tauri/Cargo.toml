@@ -28,6 +28,9 @@ reqwest = { version = "0.12", default-features = false, features = [
   # OS/用户信任库（mkcert -install 等）；勿用仅 webpki-roots 的 rustls-tls
   "rustls-tls-native-roots",
   "blocking",
+  # Windows 安装包下载须读系统/Clash 代理；probe_habitat_health 仍 .no_proxy()
+  "system-proxy",
+  "socks",
 ] }
 tokio = { version = "1", features = ["net", "rt", "process", "time", "io-util"] }
 

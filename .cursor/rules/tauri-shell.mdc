@@ -92,7 +92,7 @@ NSIS 安装目录 = `productName`（无独立 installDir）。`just pack tauri-w
 
 - **`--quit-for-install` 必须经 `tauri-plugin-single-instance` 转发给已运行主进程**（主进程设 `IS_QUITTING` 后退出）。**禁止**在 `main.rs` 入口看到该 flag 就 `exit(0)`——第二实例会秒退且从不通知主实例，覆盖写入易卡死。
 - 冷启动（无已运行实例）才在 `setup` 里直接 `exit`，避免弹出旧 UI。
-- 下载用 blocking `reqwest`，须设 `connect_timeout` / `timeout`，失败回传 UI；启动安装器后**不要**立刻 `app.exit`（会打断脱离失败时的 NSIS 子进程）。
+- 下载用 blocking `reqwest`（Cargo `system-proxy` + `socks`），须设 `connect_timeout` / `timeout`，失败回传 UI；须尊重系统/Clash 代理（**禁止** `.no_proxy()`）。`probe_habitat_health` 仍 `.no_proxy()` 以免本机 Habitat 被拐走。启动安装器后**不要**立刻 `app.exit`（会打断脱离失败时的 NSIS 子进程）。
 - **启动安装器**：直接 spawn `setup.exe /S`，`DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP`，stdio null。**禁止** `cmd.exe /c start`（GUI 父进程下必弹控制台）。不要叠 `CREATE_NO_WINDOW`（与 `DETACHED_PROCESS` 互斥）。
 
 ## 禁止
