@@ -7,11 +7,13 @@ import { recordHabitatTransportFailure, resetLocalPreferForTests } from "./local
 describe("habitat-fetch-gate", () => {
   beforeEach(() => {
     resetLocalPreferForTests();
+    (globalThis as { window?: Window }).window = {} as Window;
   });
 
   afterEach(() => {
     resetLocalPreferForTests();
     mock.restore();
+    delete (globalThis as { window?: Window }).window;
   });
 
   it("isNetworkOnline treats missing onLine as online", () => {
