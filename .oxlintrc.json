@@ -118,7 +118,7 @@
         "react/react-in-jsx-scope": "off",
         "react/no-unstable-nested-components": "off",
         "react/rules-of-hooks": "error",
-        "react/exhaustive-deps": "warn"
+        "react/exhaustive-deps": "error"
       }
     },
     {
@@ -131,7 +131,7 @@
         "react/react-in-jsx-scope": "off",
         "react/no-unstable-nested-components": "off",
         "react/rules-of-hooks": "error",
-        "react/exhaustive-deps": "warn"
+        "react/exhaustive-deps": "error"
       }
     },
     {
@@ -161,12 +161,6 @@
       "files": ["**/routeTree.gen.ts"],
       "rules": {
         "typescript/no-explicit-any": "off"
-      }
-    },
-    {
-      "files": ["scripts/archive/**"],
-      "rules": {
-        "typescript/no-unsafe-type-assertion": "off"
       }
     }
   ]

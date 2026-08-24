@@ -23,12 +23,12 @@ export const conversationSelectSchema = z.object({
   /** CST 02:00 日界刷新用：上次全量构建 system_prompt 的时刻 */
   system_prompt_built_at: z.coerce.date().nullable().optional(),
   platform_info: platformInfoSchema.nullable(),
-  /** 情景行为档（与 platform_info 通道身份正交）。digital_human | coding_agent | room_inner；NULL = digital_human（兼容旧行）。 */
+  /** 情景行为档（与 platform_info 通道身份正交）。digital_human | coding_agent；NULL = digital_human（兼容旧行）。 */
   scenario: conversationScenarioSchema.nullable().optional(),
   agent_subject_id: z.number(),
-  agent_public_id: z.string().nullable().optional(),
-  room_id: z.string().nullable().optional(),
-  last_projected_room_seq: z.number().optional().default(0),
+  agent_public_id: z.string().nullable(),
+  room_id: z.string().nullable(),
+  last_projected_room_seq: z.number(),
   compression: compressionJsonSchema.nullable(),
   /** 当天对话级时间摘要 chunks（操作态，不可引用） */
   temporal_day: temporalDayJsonSchema.nullable(),
@@ -55,7 +55,7 @@ export const conversationInsertSchema = z.object({
   /** CST 02:00 日界刷新用：上次全量构建 system_prompt 的时刻 */
   system_prompt_built_at: z.coerce.date().nullable().optional(),
   platform_info: platformInfoSchema.nullable(),
-  /** 情景行为档（与 platform_info 通道身份正交）。digital_human | coding_agent | room_inner；NULL = digital_human（兼容旧行）。 */
+  /** 情景行为档（与 platform_info 通道身份正交）。digital_human | coding_agent；NULL = digital_human（兼容旧行）。 */
   scenario: conversationScenarioSchema.nullable().optional(),
   agent_subject_id: z.number(),
   agent_public_id: z.string().nullable().optional(),
