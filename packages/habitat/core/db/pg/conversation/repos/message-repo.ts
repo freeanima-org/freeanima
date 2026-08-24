@@ -11,6 +11,7 @@ import { isCronSession, touchConversationUpdatedAt } from "./conversation-repo.t
 import { getDb } from "../../client.ts";
 import { messageToInsert, rowToMessage } from "../message-transform.ts";
 import { coerceLlmUsageTotals, llmUsageSumSelect } from "../../utils/llm-usage-sql.ts";
+import { messagePayloadTimestampSql } from "./message-payload-timestamp.ts";
 import type { LlmUsageTotals } from "@freeanima/shared/llm-usage";
 
 function extractIndexableContent(payload: { role: string; content?: string | null }): string {
@@ -451,9 +452,10 @@ export async function listMessageRowsFromPos(
 /** Latest message timestamp (avoids full listMessages load) */
 export async function lastMessageTimestamp(conversation_id: string): Promise<string | null> {
   const db = getDb();
+  const msgTs = messagePayloadTimestampSql();
   const rows = await db
     .select({
-      ts: sql<string | null>`max((${messages.payload}->>'timestamp')::timestamptz)::text`,
+      ts: sql<string | null>`max(${msgTs})::text`,
     })
     .from(messages)
     .where(eq(messages.conversation_id, conversation_id));
@@ -471,7 +473,7 @@ export async function listConversationIdsWithMessagesBetween(
   opts?: { agent_subject_id?: number },
 ): Promise<string[]> {
   const db = getDb();
-  const msgTs = sql`(nullif(btrim(${messages.payload}->>'timestamp'), ''))::timestamptz`;
+  const msgTs = messagePayloadTimestampSql();
   const conditions = [
     sql`${msgTs} >= ${fromIso}::timestamptz`,
     sql`${msgTs} < ${toIso}::timestamptz`,
@@ -543,10 +545,11 @@ export async function shiftMessagePositions(
 
 export async function getEarliestMessageDay(): Promise<string | null> {
   const db = getDb();
+  const msgTs = messagePayloadTimestampSql();
   const rows = await db
     .select({
       day: sql<string | null>`to_char(
-        (MIN((${messages.payload}->>'timestamp')::timestamptz) AT TIME ZONE 'Asia/Shanghai')::date,
+        (MIN(${msgTs}) AT TIME ZONE 'Asia/Shanghai')::date,
         'YYYY-MM-DD'
       )`,
     })
@@ -556,7 +559,7 @@ export async function getEarliestMessageDay(): Promise<string | null> {
       sql`${conversations.debug} = false
         AND COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'
         AND (${messages.payload}->>'role') IN ('user', 'assistant')
-        AND nullif(btrim(${messages.payload}->>'timestamp'), '') IS NOT NULL`,
+        AND ${msgTs} IS NOT NULL`,
     );
   const day = rows[0]?.day?.trim();
   return day || null;
@@ -581,7 +584,7 @@ export async function sumConversationUsageBetween(
   toIso: string,
 ): Promise<LlmUsageTotals> {
   const db = getDb();
-  const msgTs = sql`(nullif(btrim(${messages.payload}->>'timestamp'), ''))::timestamptz`;
+  const msgTs = messagePayloadTimestampSql();
   const rows = await db
     .select(llmUsageSumSelect(messages.payload))
     .from(messages)

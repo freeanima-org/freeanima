@@ -1,24 +1,10 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
-import { conversationReadState, conversations } from "@freeanima/habitat/core/db/schema";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { conversationReadState, conversations, messages } from "@freeanima/habitat/core/db/schema";
 
 import { getDb } from "../../client.ts";
 import { getMaxMessagePos } from "./message-repo.ts";
 
 const pgNow = (): Date => new Date();
-
-/** 用户视角：是否存在尚未读到的 assistant 消息 */
-export function conversationUnreadExistsSql(userSubjectId: number) {
-  return sql<boolean>`exists (
-    select 1
-    from messages m
-    left join conversation_read_state rs
-      on rs.conversation_id = m.conversation_id
-     and rs.subject_id = ${userSubjectId}
-    where m.conversation_id = "conversations"."id"
-      and (m.payload->>'role') = 'assistant'
-      and m.pos > coalesce(rs.last_read_pos, 0)
-  )`;
-}
 
 /**
  * 将用户已读水位升到 last_read_pos（省略则取当前 max(pos)）。
@@ -72,6 +58,38 @@ export async function markConversationRead(opts: {
   return { last_read_pos: rows[0]?.last_read_pos ?? targetPos };
 }
 
+/**
+ * 对本页会话 id 批量判定未读（用户视角：存在尚未读到的 assistant 消息）。
+ * 一次查询替代列表 SELECT 上的相关 EXISTS。
+ */
+export async function listUnreadConversationIds(
+  userSubjectId: number,
+  conversationIds: string[],
+): Promise<Set<string>> {
+  if (!Number.isFinite(userSubjectId) || userSubjectId <= 0 || conversationIds.length === 0) {
+    return new Set();
+  }
+  const db = getDb();
+  const rows = await db
+    .selectDistinct({ conversation_id: messages.conversation_id })
+    .from(messages)
+    .leftJoin(
+      conversationReadState,
+      and(
+        eq(conversationReadState.conversation_id, messages.conversation_id),
+        eq(conversationReadState.subject_id, userSubjectId),
+      ),
+    )
+    .where(
+      and(
+        inArray(messages.conversation_id, conversationIds),
+        sql`(${messages.payload}->>'role') = 'assistant'`,
+        sql`${messages.pos} > coalesce(${conversationReadState.last_read_pos}, 0)`,
+      ),
+    );
+  return new Set(rows.map((r) => r.conversation_id));
+}
+
 /** 用户未归档且未读的会话个数（Shell 角标；可选按 platform 与列表对齐） */
 export async function countUnreadConversations(
   userSubjectId: number,
@@ -79,15 +97,26 @@ export async function countUnreadConversations(
 ): Promise<number> {
   if (!Number.isFinite(userSubjectId) || userSubjectId <= 0) return 0;
   const db = getDb();
-  const unread = conversationUnreadExistsSql(userSubjectId);
   const platform = opts?.platform?.trim();
-  const conds = [isNull(conversations.archived_at), sql`${unread}`];
+  const conds = [
+    isNull(conversations.archived_at),
+    sql`(${messages.payload}->>'role') = 'assistant'`,
+    sql`${messages.pos} > coalesce(${conversationReadState.last_read_pos}, 0)`,
+  ];
   if (platform) {
     conds.push(sql`${conversations.platform_info}->>'platform' = ${platform}`);
   }
   const rows = await db
-    .select({ count: sql<number>`count(*)::int` })
+    .select({ count: sql<number>`count(distinct ${conversations.id})::int` })
     .from(conversations)
+    .innerJoin(messages, eq(messages.conversation_id, conversations.id))
+    .leftJoin(
+      conversationReadState,
+      and(
+        eq(conversationReadState.conversation_id, messages.conversation_id),
+        eq(conversationReadState.subject_id, userSubjectId),
+      ),
+    )
     .where(and(...conds));
   return rows[0]?.count ?? 0;
 }

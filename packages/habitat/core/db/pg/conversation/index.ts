@@ -32,7 +32,7 @@ export {
   markConversationRead,
   countUnreadConversations,
   getConversationLastReadPos,
-  conversationUnreadExistsSql,
+  listUnreadConversationIds,
 } from "./repos/conversation-read-state-repo.ts";
 export {
   aggregateUserActivityStats,

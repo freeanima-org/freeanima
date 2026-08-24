@@ -1,6 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { conversations, messages } from "@freeanima/habitat/core/db/schema";
 import { getDb } from "../../client.ts";
+import { messagePayloadTimestampSql } from "./message-payload-timestamp.ts";
 
 export type ActivityWindowId =
   | "today"
@@ -58,7 +59,7 @@ function updatedFilter(b: ActivityWindowBound) {
 }
 
 function msgTsFilter(b: ActivityWindowBound) {
-  const msgTs = sql`(nullif(btrim(${messages.payload}->>'timestamp'), ''))::timestamptz`;
+  const msgTs = messagePayloadTimestampSql();
   return sql`${msgTs} IS NOT NULL
     AND ${msgTs} >= ${b.from_iso}::timestamptz
     AND ${msgTs} < ${b.to_iso}::timestamptz`;
