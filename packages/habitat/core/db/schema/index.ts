@@ -18,6 +18,7 @@ export * from "./cron-log.ts";
 export * from "./pipeline-step-run.ts";
 export * from "./auto-llm-runs.ts";
 export * from "./auto-llm-messages.ts";
+export * from "./workflow-runs.ts";
 export * from "./outpost-instances.ts";
 export * from "./federation.ts";
 export * from "./service-api-tokens.ts";

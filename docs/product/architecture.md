@@ -390,16 +390,21 @@ mcp_servers:
 - 父方调用 `subagent_run` → `runAutoLlm(runKind: "subagent")`，带**物化**的 `tools` / 冻结的 `executableTools`（无 `toolset_load` 升级）
 - 见 [`docs/modules/subagent.md`](../modules/subagent.md)
 
+### Workflow（确定性图）
+
+- 具名定义为实体（`primary_component=workflow`）；ToolSet `workflow`（默认对话 ToolSet 含之）
+- `workflow_run` 顺序执行 tool / transform / 嵌套 workflow；**llm 步**走 `runAutoLlm(runKind: "workflow_llm")`
+- 数据绑定用 ValueRef（非自由表达式）；保存时可做步间 schema 静态校验
+- 顶层运行落 `workflow_runs`（仅 input/output）；见 [`docs/modules/workflow.md`](../modules/workflow.md)
+
 ### 对比
 
-| 维度   | Local  | MCP           | Subagent             |
-| ------ | ------ | ------------- | -------------------- |
-| 运行于 | 进程内 | 外部服务器    | 进程内（AutoLlmRun） |
-| 粒度   | 函数   | 函数          | 完整子任务           |
-| 延迟   | 毫秒级 | 毫秒–秒       | 秒–数十秒            |
-| 配置   | 内置   | `mcp_servers` | 实体 + 栖息地 UI     |
-
-三层可混用；LLM 决定调用顺序；逸灵风负责注册与路由。
+| 维度   | Local  | MCP           | Subagent             | Workflow              |
+| ------ | ------ | ------------- | -------------------- | --------------------- |
+| 运行于 | 进程内 | 外部服务器    | 进程内（AutoLlmRun） | 进程内（顺序 Runner） |
+| 粒度   | 函数   | 函数          | 完整子任务           | 确定性步骤图          |
+| 延迟   | 毫秒级 | 毫秒–秒       | 秒–数十秒            | 视步而定              |
+| 配置   | 内置   | `mcp_servers` | 实体 + 栖息地 UI     | 实体（UI 后置）       |
 
 ## Conversation vs AutoLlmRun（对话 vs 自动 LLM 运行）
 

@@ -31,6 +31,7 @@ import {
   OBJECT_FILE_COMPONENT,
   OBJECT_FOLDER_COMPONENT,
   SUBAGENT_COMPONENT,
+  WORKFLOW_COMPONENT,
   BOOKMARK_COMPONENT,
   HEALTH_RECORD_COMPONENT,
   CONTACT_COMPONENT,
@@ -62,6 +63,7 @@ import {
   objectFileBodySchema,
   objectFolderBodySchema,
   subagentBodySchema,
+  workflowBodySchema,
   bookmarkBodySchema,
   healthRecordBodySchema,
   contactBodySchema,
@@ -93,6 +95,7 @@ import {
   type ObjectFileBody,
   type ObjectFolderBody,
   type SubagentBody,
+  type WorkflowBody,
   type BookmarkBody,
   type HealthRecordBody,
   type ContactBody,
@@ -514,6 +517,29 @@ export function asSubagent(row: EntityRow):
   | null {
   if (row.primary_component !== SUBAGENT_COMPONENT) return null;
   const parsed = subagentBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
+        content: row.content,
+        world_id: row.world_id,
+        ...parsed.data,
+      }
+    : null;
+}
+
+export function asWorkflow(row: EntityRow):
+  | (WorkflowBody & {
+      id: number;
+      title: string;
+      summary: string;
+      content: string;
+      world_id: number;
+    })
+  | null {
+  if (row.primary_component !== WORKFLOW_COMPONENT) return null;
+  const parsed = workflowBodySchema.safeParse(row.body);
   return parsed.success
     ? {
         id: row.id,

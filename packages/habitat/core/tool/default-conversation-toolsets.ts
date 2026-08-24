@@ -11,6 +11,7 @@ export const DEFAULT_CONVERSATION_TOOLSETS = [
   "notification",
   "skill",
   "subagent",
+  "workflow",
 ] as const;
 
 export type DefaultConversationToolSetName = (typeof DEFAULT_CONVERSATION_TOOLSETS)[number];

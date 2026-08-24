@@ -31,6 +31,7 @@ import { OBJECT_FOLDER_COMPONENT, objectFolderBodySchema } from "./object-folder
 import { SKILL_COMPONENT, skillBodySchema } from "./skill.ts";
 import { SKILL_RESOURCE_COMPONENT, skillResourceBodySchema } from "./skill-resource.ts";
 import { SUBAGENT_COMPONENT, subagentBodySchema } from "./subagent.ts";
+import { WORKFLOW_COMPONENT, workflowBodySchema } from "./workflow.ts";
 import { SHELL_QUICK_ENTRY_COMPONENT, shellQuickEntryBodySchema } from "./shell-quick-entry.ts";
 import { SEMANTIC_MEMORY_COMPONENT, semanticMemoryBodySchema } from "./semantic-memory.ts";
 import { SEMANTIC_REF_COMPONENT, semanticRefBodySchema } from "./semantic-ref.ts";
@@ -106,6 +107,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [SKILL_COMPONENT]: 140,
   [SKILL_RESOURCE_COMPONENT]: 141,
   [SUBAGENT_COMPONENT]: 145,
+  [WORKFLOW_COMPONENT]: 146,
   /** 附属快捷：几乎不升主 */
   [SHELL_QUICK_ENTRY_COMPONENT]: 900,
 };
@@ -173,6 +175,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [SKILL_COMPONENT]: skillBodySchema,
   [SKILL_RESOURCE_COMPONENT]: skillResourceBodySchema,
   [SUBAGENT_COMPONENT]: subagentBodySchema,
+  [WORKFLOW_COMPONENT]: workflowBodySchema,
   [SHELL_QUICK_ENTRY_COMPONENT]: shellQuickEntryBodySchema,
 };
 
@@ -229,4 +232,5 @@ export * from "./object-folder.ts";
 export * from "./skill.ts";
 export * from "./skill-resource.ts";
 export * from "./subagent.ts";
+export * from "./workflow.ts";
 export * from "./shell-quick-entry.ts";
