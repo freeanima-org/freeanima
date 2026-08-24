@@ -1,4 +1,4 @@
-import { expect, it } from "bun:test";
+import { afterAll, afterEach, beforeEach, expect, it } from "bun:test";
 import {
   createTrustedSatellite,
   getTrustedSatellite,
@@ -6,8 +6,27 @@ import {
   revokeTrustedSatellite,
 } from "@freeanima/habitat/core/db/pg/federation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 describePg("habitat_trusted_satellites", () => {
+  const prev = process.env.FREEANIMA_HOME;
+
+  beforeEach(async () => {
+    await beginIntegrationCase("freeanima-trusted-satellite-");
+  });
+
+  afterEach(async () => {
+    await restoreIntegrationHome(prev);
+  });
+
+  afterAll(async () => {
+    await endIntegrationCase();
+  });
+
   it("creates, lists, and revokes trusted satellite", async () => {
     const id = "fa_inst_test_satellite_01";
     const created = await createTrustedSatellite({
