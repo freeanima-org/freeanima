@@ -377,7 +377,9 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
   defineHabitatRouteFromDef(
     "memory.semanticClusters",
     habitatMethodDefs["memory.semanticClusters"],
-    () => Promise.resolve(listSemanticMemoryClusters()),
+    asLooseRouteHandler(habitatMethodDefs["memory.semanticClusters"], (_deps, input) =>
+      Promise.resolve(listSemanticMemoryClusters(input)),
+    ),
   ),
   defineHabitatRouteFromDef(
     "memory.semanticPin",

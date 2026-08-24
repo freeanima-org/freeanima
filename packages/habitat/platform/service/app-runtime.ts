@@ -466,8 +466,8 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
     return memory.listSemanticMemories(this.runtimeDeps(), args);
   }
 
-  listSemanticMemoryClusters() {
-    return memory.listSemanticMemoryClusters(this.runtimeDeps());
+  listSemanticMemoryClusters(args?: Parameters<typeof memory.listSemanticMemoryClusters>[1]) {
+    return memory.listSemanticMemoryClusters(this.runtimeDeps(), args);
   }
 
   updateSemanticMemoryPinned(id: number | string, pinned: boolean) {

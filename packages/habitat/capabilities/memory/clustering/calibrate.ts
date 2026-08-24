@@ -5,6 +5,8 @@ import {
 } from "@freeanima/habitat/core/config";
 import { isEmbeddingEnabled } from "@freeanima/habitat/core/config";
 import { logCapability as logComponent } from "@freeanima/habitat/core/config/capability-injection";
+import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
+import { omitUndefined } from "@freeanima/habitat/core/util";
 import {
   listActiveSemanticMemoryEmbeddings,
   findNearestClusteredNeighbor,
@@ -106,12 +108,21 @@ export async function calibrateSemanticMemoryClusters(opts?: {
 export async function assignIncrementalCluster(
   entityId: number,
   embedding: number[],
-  opts?: { config?: ResolvedMemoryClusteringConfig },
+  opts?: { config?: ResolvedMemoryClusteringConfig; world_id?: number },
 ): Promise<number | null> {
   const cfg = opts?.config ?? resolveMemoryClusteringConfig(getActiveRuntimeConfig().data);
   if (!cfg.enabled) return null;
 
-  const nearest = await findNearestClusteredNeighbor(embedding, { excludeEntityId: entityId });
+  let world_id = opts?.world_id;
+  if (world_id == null) {
+    const row = await getEntity(entityId);
+    world_id = row?.world_id ?? undefined;
+  }
+
+  const nearest = await findNearestClusteredNeighbor(
+    embedding,
+    omitUndefined({ excludeEntityId: entityId, world_id }),
+  );
   const clusterId = nearest && nearest.distance < cfg.eps ? nearest.clusterId : null;
 
   await setSearchDocumentClusterId("entity", entityId, clusterId);

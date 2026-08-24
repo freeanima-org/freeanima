@@ -228,6 +228,18 @@ describePg("server memory API", () => {
     const clusters = await getAppRuntime().listSemanticMemoryClusters();
     const seven = clusters.items.find((row) => row.cluster_id === 7);
     expect(seven?.count).toBeGreaterThanOrEqual(2);
+
+    const { getResolvedWorldContext } =
+      await import("@freeanima/habitat/core/config/world-context");
+    const agentId = getResolvedWorldContext().default_chat_agent_subject_id;
+    const scopedClusters = await getAppRuntime().listSemanticMemoryClusters({
+      agent_subject_id: agentId,
+    });
+    const scopedSeven = scopedClusters.items.find((row) => row.cluster_id === 7);
+    expect(scopedSeven?.count).toBeGreaterThanOrEqual(2);
+    expect(scopedClusters.items.find((row) => row.cluster_id === 9)?.count).toBeGreaterThanOrEqual(
+      1,
+    );
   });
 
   it("listSelfBlocks returns five blocks in order", async () => {

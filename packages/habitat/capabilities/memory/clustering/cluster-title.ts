@@ -124,12 +124,19 @@ export async function generateSemanticClusterTitle(
  * 只读：样本 + Redis 命中则返回 title（不刷 TTL、不调 LLM）。
  * 列表接口用此路径，避免串行 LLM 拖垮 RPC 超时。
  */
-export async function peekSemanticClusterTitle(clusterId: number): Promise<string | null> {
+export async function peekSemanticClusterTitle(
+  clusterId: number,
+  world_id?: number,
+): Promise<string | null> {
   if (!Number.isInteger(clusterId) || clusterId < 0) return null;
 
-  const samples = await listSemanticClusterTitleSamples(clusterId, {
-    limit: SEMANTIC_CLUSTER_TITLE_SAMPLE_LIMIT,
-  });
+  const samples = await listSemanticClusterTitleSamples(
+    clusterId,
+    omitUndefined({
+      limit: SEMANTIC_CLUSTER_TITLE_SAMPLE_LIMIT,
+      world_id,
+    }),
+  );
   if (samples.length === 0) return null;
 
   const key = semanticClusterTitleCacheKey(samples.map((s) => s.entityId));

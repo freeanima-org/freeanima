@@ -129,9 +129,11 @@ export async function listSemanticMemories(body: SemanticMemoryListBody) {
   });
 }
 
-export async function listSemanticMemoryClusters(_body: SemanticMemoryClustersBody = {}) {
-  semanticMemoryClustersBodySchema.parse(_body ?? {});
-  return habitatCtx().listSemanticMemoryClusters();
+export async function listSemanticMemoryClusters(body: SemanticMemoryClustersBody = {}) {
+  const parsed = semanticMemoryClustersBodySchema.parse(body ?? {});
+  return habitatCtx().listSemanticMemoryClusters(
+    omitUndefined({ agent_subject_id: parsed.agent_subject_id }),
+  );
 }
 
 export async function updateSemanticMemoryPinned(body: SemanticMemoryPinBody) {

@@ -164,20 +164,23 @@ export function SemanticMemoryPage() {
 
   const refreshClusterStats = useCallback(async () => {
     try {
-      const data = await listSemanticMemoryClusters();
+      const data = await listSemanticMemoryClusters(
+        omitUndefined({ agent_subject_id: agentSubjectId ?? undefined }),
+      );
       setClusterStats(data.items ?? []);
     } catch (e) {
       logCaughtError("routes/_sidebar/semantic-memory/clusters", e);
     }
-  }, []);
+  }, [agentSubjectId]);
 
   useEffect(() => {
     refreshClusterStatsRef.current = refreshClusterStats;
   }, [refreshClusterStats]);
 
   useEffect(() => {
+    if (agentSubjectId == null) return;
     void refreshClusterStats();
-  }, [refreshClusterStats]);
+  }, [agentSubjectId, refreshClusterStats]);
 
   const fetchList = useCallback(
     async (nextOffset: number, clusterOverride?: number | null) => {

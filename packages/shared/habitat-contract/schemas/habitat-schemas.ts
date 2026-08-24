@@ -29,7 +29,10 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   agent_subject_id: z.number().int().positive().optional(),
 });
 
-export const semanticMemoryClustersBodySchema = z.object({}).strict();
+export const semanticMemoryClustersBodySchema = z.object({
+  /** 观测：按 Anima subject 的私有 world 统计聚类族；省略则不按 world 筛 */
+  agent_subject_id: z.number().int().positive().optional(),
+});
 
 export const semanticMemoryPinBodySchema = z.object({
   id: z.number().int().positive(),
