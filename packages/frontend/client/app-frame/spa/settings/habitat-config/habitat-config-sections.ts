@@ -41,6 +41,7 @@ const HABITAT_CONFIG_DESCRIPTION =
 const OPS_SECTION_TITLES: Record<(typeof SIDEBAR_OPS_SECTIONS)[number], string> = {
   i18n: ADVANCED_SECTION_TITLES.i18n ?? "时区",
   public: ADVANCED_SECTION_TITLES.public ?? "公网访问",
+  federation: ADVANCED_SECTION_TITLES.federation ?? "跨实例联邦",
   gateway: ADVANCED_SECTION_TITLES.gateway ?? "网关",
   discord: ADVANCED_SECTION_TITLES.discord ?? "Discord",
   weixin: ADVANCED_SECTION_TITLES.weixin ?? "微信",

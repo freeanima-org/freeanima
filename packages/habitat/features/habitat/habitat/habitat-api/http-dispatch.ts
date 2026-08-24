@@ -4,6 +4,7 @@ import {
 } from "@freeanima/shared/habitat-rpc/urls.ts";
 import { corsPreflightResponse } from "./cors.ts";
 import { isMcpPath } from "@freeanima/habitat/capabilities/mcp-server";
+import { FEDERATION_WS_PATH } from "@freeanima/habitat/capabilities/federation";
 import type { ServiceAuthContext } from "./auth-context.ts";
 import { isSapWebSocketUpgrade } from "./remote-auth.ts";
 import type { ServiceAuthVerifier } from "./service-auth.ts";
@@ -79,7 +80,12 @@ export function trySapWebSocketUpgrade(
   bunServer: Bun.Server<unknown>,
   sapHandlers: SapBunHandlers | null,
 ): Response | Promise<Response> | undefined | null {
-  if (!sapHandlers || !isSapWebSocketUpgrade(req)) return null;
+  if (!sapHandlers) return null;
+  const url = new URL(req.url);
+  const upgrade = (req.headers.get("Upgrade") ?? "").toLowerCase() === "websocket";
+  const isRpcWs = isSapWebSocketUpgrade(req);
+  const isFederationWs = upgrade && url.pathname === FEDERATION_WS_PATH;
+  if (!isRpcWs && !isFederationWs) return null;
   const sapRes = sapHandlers.fetch(req, bunServer);
   if (sapRes !== undefined) return sapRes;
   return undefined;

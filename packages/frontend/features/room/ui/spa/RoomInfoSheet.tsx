@@ -1,6 +1,7 @@
 import { UserPlus, Users } from "lucide-react";
 import { Button, Sheet, SheetHeader, SheetTitle } from "@freeanima/ui-kit";
 import type { RoomSummaryPayload } from "@freeanima/shared/rpc-contract/frames/room.ts";
+import type { RoomSyncStatusPayload } from "@freeanima/shared/rpc-contract/frames/room-federation.ts";
 
 function weakLabel(publicId: string, display?: string): string {
   if (display?.trim()) return display.trim();
@@ -14,10 +15,19 @@ function initialGlyph(label: string): string {
   return t.slice(0, 1);
 }
 
+function formatSync(sync: RoomSyncStatusPayload | null): string | null {
+  if (!sync || sync.federation_mode === "local") return "本机群聊";
+  if (sync.status === "synced") return "联邦 · 已同步";
+  if (sync.status === "behind") return `联邦 · 落后 ${sync.behind_count ?? "?"} 条`;
+  if (sync.status === "hub_unavailable") return "联邦 · Hub 不可用（只读）";
+  return "联邦";
+}
+
 export type RoomInfoSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   room: RoomSummaryPayload;
+  syncStatus: RoomSyncStatusPayload | null;
   userPublicId: string | null;
   busy: boolean;
   streamBusy: boolean;
@@ -33,6 +43,7 @@ export function RoomInfoSheet({
   open,
   onOpenChange,
   room,
+  syncStatus,
   userPublicId,
   busy,
   streamBusy,
@@ -43,6 +54,7 @@ export function RoomInfoSheet({
   onDisband,
 }: RoomInfoSheetProps) {
   const isOwner = userPublicId != null && userPublicId === room.owner_public_id;
+  const syncLabel = formatSync(syncStatus);
 
   return (
     <Sheet
@@ -54,6 +66,7 @@ export function RoomInfoSheet({
       <SheetHeader className="border-b shrink-0 px-4 py-3 pr-12">
         <SheetTitle>群聊信息</SheetTitle>
         <p className="text-muted-foreground truncate text-xs">{room.title}</p>
+        {syncLabel ? <p className="text-muted-foreground text-[11px]">{syncLabel}</p> : null}
       </SheetHeader>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">

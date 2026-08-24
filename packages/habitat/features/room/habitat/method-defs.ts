@@ -31,6 +31,10 @@ import {
   roomSpeakerTurnCompleteInputSchema,
   roomSpeakerTurnCompleteOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/room";
+import {
+  roomSyncStatusInputSchema,
+  roomSyncStatusOutputSchema,
+} from "@freeanima/shared/rpc-contract/frames/room-federation.ts";
 
 export const roomMethodDefs = {
   "room.create": defineHabitatMethod({
@@ -106,6 +110,11 @@ export const roomMethodDefs = {
   "room.agent.conversation": defineHabitatMethod({
     input: roomAgentConversationInputSchema,
     output: roomAgentConversationOutputSchema,
+    meta: dualTransportMeta(true),
+  }),
+  "room.syncStatus": defineHabitatMethod({
+    input: roomSyncStatusInputSchema,
+    output: roomSyncStatusOutputSchema,
     meta: dualTransportMeta(true),
   }),
 } as const;

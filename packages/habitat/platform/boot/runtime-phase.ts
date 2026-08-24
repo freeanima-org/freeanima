@@ -20,6 +20,11 @@ import { registerBootCronHandlers } from "./cron-handlers.ts";
 import { startupLog } from "./status.ts";
 import type { EnginePhaseResult } from "./engine-phase.ts";
 import { bindRemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/runtime-context.ts";
+import {
+  bindFederationHubWsDeps,
+  createFederationManager,
+  resolveFederationRole,
+} from "@freeanima/habitat/capabilities/federation";
 import { HabitatSessionRegistry } from "@freeanima/habitat/capabilities/outpost/transport/habitat-session-registry.ts";
 import { RemoteInstanceRegistry } from "@freeanima/habitat/capabilities/outpost/transport/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
@@ -40,8 +45,6 @@ export async function bootRuntimePhase(
   acpSessionUpdatedRef?: { handler: ((sid: string) => void) | null },
 ): Promise<RuntimePhaseResult> {
   const { kernel, engine, conversation, catalog, mcp, outpost } = phase;
-
-  startupLog("Initializing AppRuntime…");
   const runtime = createAppRuntime({
     kernel,
     engine,
@@ -117,6 +120,24 @@ export async function bootRuntimePhase(
     instanceRegistry: await createRemoteInstanceRegistry(),
     hubSessionRegistry: new HabitatSessionRegistry(),
     animaVersion: ANIMA_VERSION,
+  });
+
+  const federationManager = createFederationManager(engine.config);
+  bindFederationHubWsDeps({
+    getHubIdentity: () => {
+      const identity = engine.config.data.identity;
+      if (!identity) return null;
+      return {
+        habitat_instance_id: identity.habitat_instance_id,
+        public_key: identity.public_key,
+        private_key: identity.private_key,
+      };
+    },
+    hubRegistry: federationManager.hubRegistry,
+    isHubEnabled: () => {
+      const fed = engine.config.data.federation;
+      return fed?.enabled === true && resolveFederationRole(fed) === "hub";
+    },
   });
 
   return { runtime };

@@ -12,6 +12,7 @@ import {
 import { bindObjectStore, createObjectStore } from "@freeanima/features/object-storage/domain";
 import { registerSection } from "@freeanima/habitat/kernel/config-mechanism";
 import { logComponent } from "@freeanima/habitat/platform/logging";
+import { updateFederationManagerConfig } from "@freeanima/habitat/capabilities/federation";
 import type { MessagingPort } from "@freeanima/habitat/platform/ports/messaging-port";
 import type { McpManagerPort } from "@freeanima/habitat/platform/ports/mcp-manager";
 import type { ServiceEnginePort } from "@freeanima/habitat/platform/ports/service-engine";
@@ -130,6 +131,10 @@ function applyObjectStorage(config: Config): void {
   bindObjectStore(createObjectStore(config.data.object_storage ?? {}));
 }
 
+function applyFederation(config: Config): void {
+  updateFederationManagerConfig(config);
+}
+
 /**
  * 将产品段 apply 挂入 kernel 注册表（幂等合并）。
  * schema 由 core `registerRuntimeConfigSchemas` 提供。
@@ -159,6 +164,7 @@ export function registerRuntimeConfigApplies(): void {
     transferred: true,
     order: 100,
   });
+  registerSection({ key: "federation", apply: applyFederation, transferred: true, order: 110 });
   // 有 apply、非 transferred（历史 switch 曾含 case；单 key 可调度）
   registerSection({ key: "fts", apply: applyFts, transferred: false });
 }

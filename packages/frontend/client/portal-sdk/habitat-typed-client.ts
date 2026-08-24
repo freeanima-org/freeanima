@@ -40,6 +40,7 @@ import { bookmarkMethodDefs } from "@freeanima/features/bookmark/habitat/method-
 import { healthMethodDefs } from "@freeanima/features/health/habitat/method-defs.ts";
 import { contactMethodDefs } from "@freeanima/features/contact/habitat/method-defs.ts";
 import { roomMethodDefs } from "@freeanima/features/room/habitat/method-defs.ts";
+import { federationMethodDefs } from "@freeanima/features/federation/habitat/method-defs.ts";
 
 /** 聚合各 feature method-defs（浏览器 client registry；无 handler） */
 export const FEATURE_METHOD_DEFS = {
@@ -56,6 +57,7 @@ export const FEATURE_METHOD_DEFS = {
   ...healthMethodDefs,
   ...contactMethodDefs,
   ...roomMethodDefs,
+  ...federationMethodDefs,
   ...emailMethodDefs,
   ...diaryMethodDefs,
   ...noteMethodDefs,
