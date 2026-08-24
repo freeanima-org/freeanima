@@ -13,6 +13,7 @@ import {
   entities,
   CONTENT_BLOCK_COMPONENT,
   DIARY_ENTRY_COMPONENT,
+  HEALTH_RECORD_COMPONENT,
   TASK_ITEM_COMPONENT,
 } from "@freeanima/habitat/core/db/schema";
 import { and, asc, count, desc, sql } from "drizzle-orm";
@@ -39,6 +40,9 @@ function candidateLimit(requested: number, ftsCount: number): number {
 function defaultOrderBy(primary_component?: string, opts?: { hasQuery?: boolean }) {
   if (primary_component === DIARY_ENTRY_COMPONENT && !opts?.hasQuery) {
     return [desc(sql`(${entities.body}->>'entry_at')::timestamptz`), desc(entities.id)] as const;
+  }
+  if (primary_component === HEALTH_RECORD_COMPONENT && !opts?.hasQuery) {
+    return [desc(sql`(${entities.body}->>'recorded_at')::timestamptz`), desc(entities.id)] as const;
   }
   if (
     (primary_component === TASK_ITEM_COMPONENT || primary_component === CONTENT_BLOCK_COMPONENT) &&

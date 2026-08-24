@@ -37,6 +37,7 @@ import { entityMethodDefs } from "@freeanima/features/entity/habitat/method-defs
 import { taskMethodDefs } from "@freeanima/features/task/habitat/method-defs.ts";
 import { vaultMethodDefs } from "@freeanima/features/vault/habitat/method-defs.ts";
 import { bookmarkMethodDefs } from "@freeanima/features/bookmark/habitat/method-defs.ts";
+import { healthMethodDefs } from "@freeanima/features/health/habitat/method-defs.ts";
 import { contactMethodDefs } from "@freeanima/features/contact/habitat/method-defs.ts";
 import { roomMethodDefs } from "@freeanima/features/room/habitat/method-defs.ts";
 
@@ -52,6 +53,7 @@ export const FEATURE_METHOD_DEFS = {
   ...entityMethodDefs,
   ...vaultMethodDefs,
   ...bookmarkMethodDefs,
+  ...healthMethodDefs,
   ...contactMethodDefs,
   ...roomMethodDefs,
   ...emailMethodDefs,

@@ -19,6 +19,7 @@ import { entityPlugin } from "@freeanima/features/entity/plugin";
 import { vaultPlugin } from "@freeanima/features/vault/plugin";
 import { bookmarkPlugin } from "@freeanima/features/bookmark/plugin";
 import { contactPlugin } from "@freeanima/features/contact/plugin";
+import { healthPlugin } from "@freeanima/features/health/plugin";
 import { roomPlugin } from "@freeanima/features/room/plugin";
 
 /** Habitat feature plugins registered at boot. */
@@ -33,6 +34,7 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   entityPlugin,
   vaultPlugin,
   bookmarkPlugin,
+  healthPlugin,
   contactPlugin,
   roomPlugin,
   notificationPlugin,

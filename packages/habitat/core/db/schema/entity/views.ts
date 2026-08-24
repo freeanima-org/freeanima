@@ -32,6 +32,7 @@ import {
   OBJECT_FOLDER_COMPONENT,
   SUBAGENT_COMPONENT,
   BOOKMARK_COMPONENT,
+  HEALTH_RECORD_COMPONENT,
   CONTACT_COMPONENT,
   calendarEventBodySchema,
   calendarUiPrefsBodySchema,
@@ -62,6 +63,7 @@ import {
   objectFolderBodySchema,
   subagentBodySchema,
   bookmarkBodySchema,
+  healthRecordBodySchema,
   contactBodySchema,
   type CalendarEventBody,
   type CalendarUiPrefsBody,
@@ -92,6 +94,7 @@ import {
   type ObjectFolderBody,
   type SubagentBody,
   type BookmarkBody,
+  type HealthRecordBody,
   type ContactBody,
 } from "./components/index.ts";
 import { parseEntityRevisions, type EntityRevision } from "./revisions.ts";
@@ -437,6 +440,33 @@ export function asBookmark(row: EntityRow):
     ? {
         id: row.id,
         title: row.title,
+        content: row.content,
+        deleted_at: row.deleted_at,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        ...parsed.data,
+      }
+    : null;
+}
+
+export function asHealthRecord(row: EntityRow):
+  | (HealthRecordBody & {
+      id: number;
+      title: string;
+      summary: string;
+      content: string;
+      deleted_at: Date | null;
+      created_at: Date;
+      updated_at: Date;
+    })
+  | null {
+  if (row.primary_component !== HEALTH_RECORD_COMPONENT) return null;
+  const parsed = healthRecordBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        summary: row.summary,
         content: row.content,
         deleted_at: row.deleted_at,
         created_at: row.created_at,

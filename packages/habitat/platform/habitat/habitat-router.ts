@@ -21,6 +21,7 @@ import { entityHabitatRoutes } from "@freeanima/features/entity/habitat/routes/i
 import { taskHabitatRoutes } from "@freeanima/features/task/habitat/routes/index.ts";
 import { vaultHabitatRoutes } from "@freeanima/features/vault/habitat/routes/index.ts";
 import { bookmarkHabitatRoutes } from "@freeanima/features/bookmark/habitat/routes/index.ts";
+import { healthHabitatRoutes } from "@freeanima/features/health/habitat/routes/index.ts";
 import { contactHabitatRoutes } from "@freeanima/features/contact/habitat/routes/index.ts";
 import { roomHabitatRoutes } from "@freeanima/features/room/habitat/routes/index.ts";
 
@@ -37,6 +38,7 @@ const featureRouteBundles = [
   entityHabitatRoutes,
   vaultHabitatRoutes,
   bookmarkHabitatRoutes,
+  healthHabitatRoutes,
   contactHabitatRoutes,
   roomHabitatRoutes,
   emailHabitatRoutes,
@@ -64,6 +66,7 @@ export type HabitatMethodInputs = InferHabitatInputs<typeof chatHabitatRoutes> &
   InferHabitatInputs<typeof entityHabitatRoutes> &
   InferHabitatInputs<typeof vaultHabitatRoutes> &
   InferHabitatInputs<typeof bookmarkHabitatRoutes> &
+  InferHabitatInputs<typeof healthHabitatRoutes> &
   InferHabitatInputs<typeof contactHabitatRoutes> &
   InferHabitatInputs<typeof roomHabitatRoutes> &
   InferHabitatInputs<typeof emailHabitatRoutes> &
@@ -89,6 +92,7 @@ export type HabitatMethodOutputs = InferHabitatOutputs<typeof chatHabitatRoutes>
   InferHabitatOutputs<typeof entityHabitatRoutes> &
   InferHabitatOutputs<typeof vaultHabitatRoutes> &
   InferHabitatOutputs<typeof bookmarkHabitatRoutes> &
+  InferHabitatOutputs<typeof healthHabitatRoutes> &
   InferHabitatOutputs<typeof contactHabitatRoutes> &
   InferHabitatOutputs<typeof roomHabitatRoutes> &
   InferHabitatOutputs<typeof emailHabitatRoutes> &

@@ -20,10 +20,12 @@ import {
   TASK_OCCURRENCE_COMPONENT,
   VAULT_ITEM_COMPONENT,
   BOOKMARK_COMPONENT,
+  HEALTH_RECORD_COMPONENT,
   vaultItemTypeSchema,
 } from "./components/index.ts";
 import { contentBlockSearchFiltersSchema } from "./content-block-search-filters.ts";
 import { bookmarkSearchFiltersSchema } from "./bookmark-search-filters.ts";
+import { healthSearchFiltersSchema } from "./health-search-filters.ts";
 import { tagSearchFiltersSchema } from "./tag-search-filters.ts";
 import { taskItemSearchFiltersSchema } from "./task-item-search-filters.ts";
 import { taskOccurrenceSearchFiltersSchema } from "./task-occurrence-search-filters.ts";
@@ -58,6 +60,12 @@ export {
   parseBookmarkSearchFilters,
   type BookmarkSearchFilters,
 } from "./bookmark-search-filters.ts";
+
+export {
+  healthSearchFiltersSchema,
+  parseHealthSearchFilters,
+  type HealthSearchFilters,
+} from "./health-search-filters.ts";
 
 export const emailAccountSearchFiltersSchema = z
   .object({
@@ -339,6 +347,7 @@ export const ENTITY_SEARCH_FILTER_COMPONENTS = {
   [EMAIL_MESSAGE_COMPONENT]: emailMessageSearchFiltersSchema,
   [VAULT_ITEM_COMPONENT]: vaultItemSearchFiltersSchema,
   [BOOKMARK_COMPONENT]: bookmarkSearchFiltersSchema,
+  [HEALTH_RECORD_COMPONENT]: healthSearchFiltersSchema,
   [POMODORO_SESSION_COMPONENT]: pomodoroSessionSearchFiltersSchema,
   [POMODORO_TASK_FOCUS_COMPONENT]: pomodoroTaskFocusSearchFiltersSchema,
 } as const;

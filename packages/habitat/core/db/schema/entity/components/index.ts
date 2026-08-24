@@ -48,6 +48,7 @@ import { USER_CONFIG_COMPONENT, userConfigBodySchema } from "./user-config.ts";
 import { WORLD_CONFIG_COMPONENT, worldConfigBodySchema } from "./world-config.ts";
 import { CODING_NOTE_COMPONENT, codingNoteBodySchema } from "./coding-note.ts";
 import { BOOKMARK_COMPONENT, bookmarkBodySchema } from "./bookmark.ts";
+import { HEALTH_RECORD_COMPONENT, healthRecordBodySchema } from "./health-record.ts";
 import { CONTACT_COMPONENT, contactBodySchema } from "./contact.ts";
 import {
   COMPONENT_IDS,
@@ -80,6 +81,7 @@ export const COMPONENT_PRIMARY_PRIORITY: Record<ComponentId, number> = {
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: 55,
   [CODING_NOTE_COMPONENT]: 58,
   [BOOKMARK_COMPONENT]: 59,
+  [HEALTH_RECORD_COMPONENT]: 58,
   [CONTACT_COMPONENT]: 57,
   [CONTENT_BLOCK_COMPONENT]: 60,
   [LIMBIC_COMPONENT]: 70,
@@ -146,6 +148,7 @@ const COMPONENT_BODY_SCHEMAS: Record<ComponentId, z.ZodTypeAny> = {
   [DIARY_BLOCK_TEMPLATE_COMPONENT]: diaryBlockTemplateBodySchema,
   [CODING_NOTE_COMPONENT]: codingNoteBodySchema,
   [BOOKMARK_COMPONENT]: bookmarkBodySchema,
+  [HEALTH_RECORD_COMPONENT]: healthRecordBodySchema,
   [CONTACT_COMPONENT]: contactBodySchema,
   [CONTENT_BLOCK_COMPONENT]: contentBlockBodySchema,
   [LIMBIC_COMPONENT]: limbicBodySchema,
@@ -201,6 +204,7 @@ export * from "./calendar-ui-prefs.ts";
 export * from "./diary-block-template.ts";
 export * from "./coding-note.ts";
 export * from "./bookmark.ts";
+export * from "./health-record.ts";
 export * from "./contact.ts";
 export * from "./dream.ts";
 export * from "./content-block.ts";

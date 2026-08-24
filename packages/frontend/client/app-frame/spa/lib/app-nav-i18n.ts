@@ -7,6 +7,7 @@ import {
   CalendarDays,
   Eye,
   FolderKanban,
+  HeartPulse,
   Target,
   LayoutDashboard,
   ListTodo,
@@ -135,6 +136,13 @@ export function appNavItems(): AppNavItem[] {
       "/bookmarks",
       shellNavLabel(() => "书签"),
       Bookmark,
+    ),
+    navItem(
+      "health",
+      "/health",
+      "/health",
+      shellNavLabel(() => "健康"),
+      HeartPulse,
     ),
     navItem(
       "contacts",

@@ -33,6 +33,8 @@ import {
   TASK_LIST_COMPONENT,
   BOOKMARK_COMPONENT,
   parseBookmarkSearchFilters,
+  HEALTH_RECORD_COMPONENT,
+  parseHealthSearchFilters,
 } from "@freeanima/habitat/core/db/schema";
 import { TaskContainer, resolveTaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import { pgBigintArray } from "../../utils/pg-sql.ts";
@@ -574,6 +576,20 @@ function buildEmailMessageBodyConditions(
   return conditions;
 }
 
+function buildHealthBodyConditions(filters: ReturnType<typeof parseHealthSearchFilters>): SQL[] {
+  const conditions: SQL[] = [];
+  if (filters.record_kind != null) {
+    conditions.push(sql`${entities.body}->>'record_kind' = ${filters.record_kind}`);
+  }
+  if (filters.profile_key != null) {
+    conditions.push(sql`${entities.body}->>'profile_key' = ${filters.profile_key}`);
+  }
+  if (filters.client_op_id) {
+    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+  }
+  return conditions;
+}
+
 function buildBookmarkBodyConditions(
   filters: ReturnType<typeof parseBookmarkSearchFilters>,
 ): SQL[] {
@@ -649,6 +665,9 @@ export function buildComponentFilterConditions(opts: EntitySearchOpts): SQL[] {
   }
   if (component === BOOKMARK_COMPONENT) {
     return buildBookmarkBodyConditions(parseBookmarkSearchFilters(filters));
+  }
+  if (component === HEALTH_RECORD_COMPONENT) {
+    return buildHealthBodyConditions(parseHealthSearchFilters(filters));
   }
 
   if (component) {
