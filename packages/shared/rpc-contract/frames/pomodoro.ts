@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  pomodoroLinkIdsXorRefine,
   pomodoroPhaseSchema,
   type PomodoroPhase,
 } from "@freeanima/shared/pg-shapes/entity/pomodoro-active.ts";
@@ -21,48 +22,65 @@ export const pomodoroConfigRowSchema = z.object({
 
 export type PomodoroConfigRowPayload = z.infer<typeof pomodoroConfigRowSchema>;
 
-export const pomodoroSessionRowSchema = z.object({
-  id: z.number().int().positive(),
-  title: z.string(),
-  phase: pomodoroPhaseSchema,
-  started_at: z.string(),
-  finished_at: z.string().nullable(),
-  planned_duration_ms: z.number().int().positive(),
-  actual_duration_ms: z.number().int().nonnegative().nullable(),
-  task_item_id: z.number().int().positive().nullable(),
-  cycle_index: z.number().int().nonnegative(),
-  interrupted: z.boolean(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
+export const pomodoroSessionRowSchema = z
+  .object({
+    id: z.number().int().positive(),
+    title: z.string(),
+    phase: pomodoroPhaseSchema,
+    started_at: z.string(),
+    finished_at: z.string().nullable(),
+    planned_duration_ms: z.number().int().positive(),
+    actual_duration_ms: z.number().int().nonnegative().nullable(),
+    task_item_id: z.number().int().positive().nullable(),
+    calendar_event_id: z.number().int().positive().nullable().default(null),
+    cycle_index: z.number().int().nonnegative(),
+    interrupted: z.boolean(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  })
+  .superRefine(pomodoroLinkIdsXorRefine);
 
 export type PomodoroSessionRowPayload = z.infer<typeof pomodoroSessionRowSchema>;
 
-export const pomodoroTaskFocusSegmentInputSchema = z.object({
-  session_local_id: z.string().min(1),
-  phase: pomodoroPhaseSchema,
-  phase_started_at: z.string().min(1),
-  task_item_id: z.number().int().positive().nullable().optional(),
-  started_at: z.string().min(1),
-  ended_at: z.string().min(1),
-  duration_ms: z.number().int().nonnegative(),
-  cycle_index: z.number().int().nonnegative().optional(),
-});
+export const pomodoroTaskFocusSegmentInputSchema = z
+  .object({
+    session_local_id: z.string().min(1),
+    phase: pomodoroPhaseSchema,
+    phase_started_at: z.string().min(1),
+    task_item_id: z.number().int().positive().nullable().optional(),
+    calendar_event_id: z.number().int().positive().nullable().optional(),
+    started_at: z.string().min(1),
+    ended_at: z.string().min(1),
+    duration_ms: z.number().int().nonnegative(),
+    cycle_index: z.number().int().nonnegative().optional(),
+  })
+  .superRefine((value, ctx) => {
+    pomodoroLinkIdsXorRefine(
+      {
+        task_item_id: value.task_item_id ?? null,
+        calendar_event_id: value.calendar_event_id ?? null,
+      },
+      ctx,
+    );
+  });
 
-export const pomodoroTaskFocusRowSchema = z.object({
-  id: z.number().int().positive(),
-  session_local_id: z.string(),
-  pomodoro_session_id: z.number().int().positive().nullable(),
-  phase: pomodoroPhaseSchema,
-  phase_started_at: z.string(),
-  task_item_id: z.number().int().positive().nullable(),
-  started_at: z.string(),
-  ended_at: z.string(),
-  duration_ms: z.number().int().nonnegative(),
-  cycle_index: z.number().int().nonnegative(),
-  created_at: z.string(),
-  updated_at: z.string(),
-});
+export const pomodoroTaskFocusRowSchema = z
+  .object({
+    id: z.number().int().positive(),
+    session_local_id: z.string(),
+    pomodoro_session_id: z.number().int().positive().nullable(),
+    phase: pomodoroPhaseSchema,
+    phase_started_at: z.string(),
+    task_item_id: z.number().int().positive().nullable(),
+    calendar_event_id: z.number().int().positive().nullable().default(null),
+    started_at: z.string(),
+    ended_at: z.string(),
+    duration_ms: z.number().int().nonnegative(),
+    cycle_index: z.number().int().nonnegative(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  })
+  .superRefine(pomodoroLinkIdsXorRefine);
 
 export type PomodoroTaskFocusRowPayload = z.infer<typeof pomodoroTaskFocusRowSchema>;
 
@@ -92,41 +110,63 @@ export const pomodoroConfigUpdateOutputSchema = z.object({
 });
 export type PomodoroConfigUpdateOutput = z.infer<typeof pomodoroConfigUpdateOutputSchema>;
 
-export const pomodoroSessionCompleteInputSchema = z.object({
-  subject_id: z.number().int().positive(),
-  phase: pomodoroPhaseSchema,
-  started_at: z.string().min(1),
-  finished_at: z.string().min(1),
-  planned_duration_ms: z.number().int().positive(),
-  actual_duration_ms: z.number().int().nonnegative(),
-  task_item_id: z.number().int().positive().nullable().optional(),
-  cycle_index: z.number().int().nonnegative().optional(),
-  interrupted: z.boolean().optional(),
-  title: z.string().optional(),
-  session_local_id: z.string().min(1).optional(),
-  client_op_id: z.string().min(1).optional(),
-  task_focus_segments: z.array(pomodoroTaskFocusSegmentInputSchema).optional(),
-});
+export const pomodoroSessionCompleteInputSchema = z
+  .object({
+    subject_id: z.number().int().positive(),
+    phase: pomodoroPhaseSchema,
+    started_at: z.string().min(1),
+    finished_at: z.string().min(1),
+    planned_duration_ms: z.number().int().positive(),
+    actual_duration_ms: z.number().int().nonnegative(),
+    task_item_id: z.number().int().positive().nullable().optional(),
+    calendar_event_id: z.number().int().positive().nullable().optional(),
+    cycle_index: z.number().int().nonnegative().optional(),
+    interrupted: z.boolean().optional(),
+    title: z.string().optional(),
+    session_local_id: z.string().min(1).optional(),
+    client_op_id: z.string().min(1).optional(),
+    task_focus_segments: z.array(pomodoroTaskFocusSegmentInputSchema).optional(),
+  })
+  .superRefine((value, ctx) => {
+    pomodoroLinkIdsXorRefine(
+      {
+        task_item_id: value.task_item_id ?? null,
+        calendar_event_id: value.calendar_event_id ?? null,
+      },
+      ctx,
+    );
+  });
 export type PomodoroSessionCompleteInput = z.infer<typeof pomodoroSessionCompleteInputSchema>;
 export const pomodoroSessionCompleteOutputSchema = z.object({
   item: pomodoroSessionRowSchema,
 });
 export type PomodoroSessionCompleteOutput = z.infer<typeof pomodoroSessionCompleteOutputSchema>;
 
-export const pomodoroSessionAbortInputSchema = z.object({
-  subject_id: z.number().int().positive(),
-  phase: pomodoroPhaseSchema,
-  started_at: z.string().min(1),
-  finished_at: z.string().min(1),
-  planned_duration_ms: z.number().int().positive(),
-  actual_duration_ms: z.number().int().nonnegative(),
-  task_item_id: z.number().int().positive().nullable().optional(),
-  cycle_index: z.number().int().nonnegative().optional(),
-  title: z.string().optional(),
-  session_local_id: z.string().min(1).optional(),
-  client_op_id: z.string().min(1).optional(),
-  task_focus_segments: z.array(pomodoroTaskFocusSegmentInputSchema).optional(),
-});
+export const pomodoroSessionAbortInputSchema = z
+  .object({
+    subject_id: z.number().int().positive(),
+    phase: pomodoroPhaseSchema,
+    started_at: z.string().min(1),
+    finished_at: z.string().min(1),
+    planned_duration_ms: z.number().int().positive(),
+    actual_duration_ms: z.number().int().nonnegative(),
+    task_item_id: z.number().int().positive().nullable().optional(),
+    calendar_event_id: z.number().int().positive().nullable().optional(),
+    cycle_index: z.number().int().nonnegative().optional(),
+    title: z.string().optional(),
+    session_local_id: z.string().min(1).optional(),
+    client_op_id: z.string().min(1).optional(),
+    task_focus_segments: z.array(pomodoroTaskFocusSegmentInputSchema).optional(),
+  })
+  .superRefine((value, ctx) => {
+    pomodoroLinkIdsXorRefine(
+      {
+        task_item_id: value.task_item_id ?? null,
+        calendar_event_id: value.calendar_event_id ?? null,
+      },
+      ctx,
+    );
+  });
 export type PomodoroSessionAbortInput = z.infer<typeof pomodoroSessionAbortInputSchema>;
 export const pomodoroSessionAbortOutputSchema = z.object({
   item: pomodoroSessionRowSchema,
@@ -166,6 +206,7 @@ export type PomodoroSessionStatsOutput = z.infer<typeof pomodoroSessionStatsOutp
 export const pomodoroFocusListInputSchema = z.object({
   subject_id: z.number().int().positive(),
   task_item_id: z.number().int().positive().optional(),
+  calendar_event_id: z.number().int().positive().optional(),
   session_local_id: z.string().min(1).optional(),
   pomodoro_session_id: z.number().int().positive().optional(),
   phase_started_at: z.string().optional(),
@@ -181,27 +222,33 @@ export const pomodoroFocusListOutputSchema = z.object({
 });
 export type PomodoroFocusListOutput = z.infer<typeof pomodoroFocusListOutputSchema>;
 
-export const pomodoroFocusSegmentDraftSchema = z.object({
-  task_item_id: z.number().int().positive().nullable(),
-  started_at: z.string().min(1),
-  ended_at: z.string().nullable(),
-});
+export const pomodoroFocusSegmentDraftSchema = z
+  .object({
+    task_item_id: z.number().int().positive().nullable(),
+    calendar_event_id: z.number().int().positive().nullable().default(null),
+    started_at: z.string().min(1),
+    ended_at: z.string().nullable(),
+  })
+  .superRefine(pomodoroLinkIdsXorRefine);
 
-export const pomodoroActiveStateSchema = z.object({
-  phase: pomodoroPhaseSchema,
-  run_state: z.enum(["running", "paused"]),
-  phase_planned_ms: z.number().int().positive(),
-  phase_ends_at: z.number().int().nullable(),
-  paused_remaining_ms: z.number().int().nonnegative().nullable(),
-  cycle_index: z.number().int().nonnegative(),
-  completed_work_in_cycle: z.number().int().nonnegative(),
-  task_item_id: z.number().int().positive().nullable(),
-  session_local_id: z.string().min(1),
-  phase_started_at: z.string().min(1),
-  focus_segments: z.array(pomodoroFocusSegmentDraftSchema),
-  device_id: z.string().min(1),
-  updated_at_ms: z.number().int().nonnegative(),
-});
+export const pomodoroActiveStateSchema = z
+  .object({
+    phase: pomodoroPhaseSchema,
+    run_state: z.enum(["running", "paused"]),
+    phase_planned_ms: z.number().int().positive(),
+    phase_ends_at: z.number().int().nullable(),
+    paused_remaining_ms: z.number().int().nonnegative().nullable(),
+    cycle_index: z.number().int().nonnegative(),
+    completed_work_in_cycle: z.number().int().nonnegative(),
+    task_item_id: z.number().int().positive().nullable(),
+    calendar_event_id: z.number().int().positive().nullable().default(null),
+    session_local_id: z.string().min(1),
+    phase_started_at: z.string().min(1),
+    focus_segments: z.array(pomodoroFocusSegmentDraftSchema),
+    device_id: z.string().min(1),
+    updated_at_ms: z.number().int().nonnegative(),
+  })
+  .superRefine(pomodoroLinkIdsXorRefine);
 
 export type PomodoroActiveStatePayload = z.infer<typeof pomodoroActiveStateSchema>;
 

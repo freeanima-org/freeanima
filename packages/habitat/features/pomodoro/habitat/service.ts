@@ -67,6 +67,7 @@ export async function servicePomodoroSessionComplete(
     planned_duration_ms: number;
     actual_duration_ms: number;
     task_item_id?: number | null;
+    calendar_event_id?: number | null;
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
@@ -76,6 +77,7 @@ export async function servicePomodoroSessionComplete(
       phase: "work" | "short_break" | "long_break";
       phase_started_at: string;
       task_item_id?: number | null;
+      calendar_event_id?: number | null;
       started_at: string;
       ended_at: string;
       duration_ms: number;
@@ -100,6 +102,7 @@ export async function servicePomodoroSessionAbort(
     planned_duration_ms: number;
     actual_duration_ms: number;
     task_item_id?: number | null;
+    calendar_event_id?: number | null;
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
@@ -109,6 +112,7 @@ export async function servicePomodoroSessionAbort(
       phase: "work" | "short_break" | "long_break";
       phase_started_at: string;
       task_item_id?: number | null;
+      calendar_event_id?: number | null;
       started_at: string;
       ended_at: string;
       duration_ms: number;
@@ -155,6 +159,7 @@ export async function servicePomodoroFocusList(
   input: {
     subject_id: number;
     task_item_id?: number;
+    calendar_event_id?: number;
     session_local_id?: string;
     pomodoro_session_id?: number;
     phase_started_at?: string;

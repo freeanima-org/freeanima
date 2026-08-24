@@ -65,12 +65,18 @@ export function shouldAutoStartNext(
 
 export function createInitialActiveState(
   config: PomodoroConfigRow,
-  opts?: { taskItemId?: number | null; sessionLocalId?: string },
+  opts?: {
+    taskItemId?: number | null;
+    calendarEventId?: number | null;
+    sessionLocalId?: string;
+  },
   nowMs: number = Date.now(),
 ): PomodoroActiveState {
   const sessionLocalId = opts?.sessionLocalId ?? randomPublicId();
   const planned = phaseDurationMs(config, "work");
   const phaseStartedAt = new Date(nowMs).toISOString();
+  const taskItemId = opts?.taskItemId ?? null;
+  const calendarEventId = taskItemId != null ? null : (opts?.calendarEventId ?? null);
   const base: PomodoroActiveState = {
     phase: "work",
     runState: "running",
@@ -79,12 +85,13 @@ export function createInitialActiveState(
     pausedRemainingMs: null,
     cycleIndex: 0,
     completedWorkInCycle: 0,
-    taskItemId: opts?.taskItemId ?? null,
+    taskItemId,
+    calendarEventId,
     sessionLocalId,
     phaseStartedAt,
     focusSegments: [],
   };
-  return openWorkFocusSegment(base, opts?.taskItemId ?? null, nowMs);
+  return openWorkFocusSegment(base, { taskItemId, calendarEventId }, nowMs);
 }
 
 export function startPhaseState(
@@ -109,7 +116,11 @@ export function startPhaseState(
     focusSegments: [],
   };
   if (phase === "work") {
-    return openWorkFocusSegment(next, prev.taskItemId, nowMs);
+    return openWorkFocusSegment(
+      next,
+      { taskItemId: prev.taskItemId, calendarEventId: prev.calendarEventId },
+      nowMs,
+    );
   }
   return next;
 }

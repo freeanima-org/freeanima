@@ -28,6 +28,7 @@ export type PomodoroSessionRow = {
   planned_duration_ms: number;
   actual_duration_ms: number | null;
   task_item_id: number | null;
+  calendar_event_id: number | null;
   cycle_index: number;
   interrupted: boolean;
   created_at: string;
@@ -47,6 +48,7 @@ export type PomodoroTaskFocusRow = {
   phase: PomodoroSessionRow["phase"];
   phase_started_at: string;
   task_item_id: number | null;
+  calendar_event_id: number | null;
   started_at: string;
   ended_at: string;
   duration_ms: number;
@@ -60,6 +62,7 @@ export type PomodoroTaskFocusSegmentInput = {
   phase: PomodoroSessionRow["phase"];
   phase_started_at: string;
   task_item_id?: number | null;
+  calendar_event_id?: number | null;
   started_at: string;
   ended_at: string;
   duration_ms: number;
@@ -113,6 +116,7 @@ export async function completePomodoroSession(
     planned_duration_ms: number;
     actual_duration_ms: number;
     task_item_id?: number | null;
+    calendar_event_id?: number | null;
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
@@ -136,6 +140,7 @@ export async function abortPomodoroSession(
     planned_duration_ms: number;
     actual_duration_ms: number;
     task_item_id?: number | null;
+    calendar_event_id?: number | null;
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
@@ -214,10 +219,12 @@ export type PomodoroActiveRemote = {
   cycle_index: number;
   completed_work_in_cycle: number;
   task_item_id: number | null;
+  calendar_event_id: number | null;
   session_local_id: string;
   phase_started_at: string;
   focus_segments: Array<{
     task_item_id: number | null;
+    calendar_event_id: number | null;
     started_at: string;
     ended_at: string | null;
   }>;

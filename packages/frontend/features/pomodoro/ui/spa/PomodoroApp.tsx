@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { requestAlertPermission } from "@freeanima/client/portal-sdk/alert";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
-import { switchWorkFocusTask } from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
+import { switchWorkFocusLink } from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
 import {
   clearPomodoroLaunchParamsFromUrl,
   readPomodoroLaunchParamsFromLocation,
@@ -47,7 +47,7 @@ import {
   type PomodoroStats,
   type PomodoroTaskFocusRow,
 } from "./lib/api.ts";
-import { resolveTaskTitleForPicker } from "./lib/task-picker-api.ts";
+import { formatPomodoroLinkLabel, resolvePomodoroLinkLabel } from "./lib/task-picker-api.ts";
 import { enqueuePomodoroConfigUpdate } from "./lib/pomodoro-offline-store.ts";
 import {
   applyPomodoroActive,
@@ -90,6 +90,14 @@ function openTaskItemOverlay(taskItemId: number): void {
   });
 }
 
+function openCalendarEventOverlay(eventId: number): void {
+  void openEntityResource({
+    id: eventId,
+    component: "calendar_event",
+    present: "overlay",
+  });
+}
+
 function SessionHistory({
   items,
   focusBySessionId,
@@ -115,6 +123,7 @@ function SessionHistory({
               <ul className="text-muted-foreground mt-1 space-y-0.5 text-xs">
                 {segments.map((segment) => {
                   const taskId = segment.task_item_id;
+                  const eventId = segment.calendar_event_id;
                   return (
                     <li key={segment.id} className="flex flex-wrap items-center gap-1">
                       {taskId != null ? (
@@ -125,8 +134,16 @@ function SessionHistory({
                         >
                           任务 #{taskId}
                         </button>
+                      ) : eventId != null ? (
+                        <button
+                          type="button"
+                          className="text-primary hover:underline"
+                          onClick={() => openCalendarEventOverlay(eventId)}
+                        >
+                          事件 #{eventId}
+                        </button>
                       ) : (
-                        <span>任务 #—</span>
+                        <span>未关联</span>
                       )}
                       <span>· {formatDurationMs(segment.duration_ms)}</span>
                     </li>
@@ -189,7 +206,8 @@ export function PomodoroApp() {
     () => new Map<number, PomodoroTaskFocusRow[]>(),
   );
   const [taskItemId, setTaskItemId] = useState<number | null>(parseTaskIdFromLocation());
-  const [linkedTaskTitle, setLinkedTaskTitle] = useState<string | null>(null);
+  const [calendarEventId, setCalendarEventId] = useState<number | null>(null);
+  const [linkedLabel, setLinkedLabel] = useState<string | null>(null);
   const [taskPickerOpen, setTaskPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -241,6 +259,10 @@ export function PomodoroApp() {
       setActive(snapshot.active);
       if (snapshot.active?.taskItemId != null) {
         setTaskItemId(snapshot.active.taskItemId);
+        setCalendarEventId(null);
+      } else if (snapshot.active?.calendarEventId != null) {
+        setCalendarEventId(snapshot.active.calendarEventId);
+        setTaskItemId(null);
       }
     });
   }, [subjectId]);
@@ -266,7 +288,13 @@ export function PomodoroApp() {
         if (cancelled) return;
         setActive(getPomodoroSyncSnapshot(subjectId).active);
         const restored = getPomodoroSyncSnapshot(subjectId).active;
-        if (restored?.taskItemId != null) setTaskItemId(restored.taskItemId);
+        if (restored?.taskItemId != null) {
+          setTaskItemId(restored.taskItemId);
+          setCalendarEventId(null);
+        } else if (restored?.calendarEventId != null) {
+          setCalendarEventId(restored.calendarEventId);
+          setTaskItemId(null);
+        }
         await reloadMeta();
         void requestAlertPermission();
       } catch (e) {
@@ -302,12 +330,16 @@ export function PomodoroApp() {
 
     if (launch.taskId != null) {
       setTaskItemId(launch.taskId);
-      void resolveTaskTitleForPicker(launch.taskId).then(setLinkedTaskTitle);
+      setCalendarEventId(null);
+      void resolvePomodoroLinkLabel({ taskItemId: launch.taskId }).then(setLinkedLabel);
     }
 
     if (active) {
       if (launch.taskId != null && active.taskItemId !== launch.taskId) {
-        void applyPomodoroActive(switchWorkFocusTask(active, launch.taskId), subjectId);
+        void applyPomodoroActive(
+          switchWorkFocusLink(active, { taskItemId: launch.taskId, calendarEventId: null }),
+          subjectId,
+        );
       }
       clearPomodoroLaunchParamsFromUrl();
       return;
@@ -319,6 +351,7 @@ export function PomodoroApp() {
       void applyPomodoroActive(
         createInitialActiveState(config, {
           taskItemId: launch.taskId,
+          calendarEventId: null,
           sessionLocalId: randomPublicId(),
         }),
         subjectId,
@@ -328,18 +361,18 @@ export function PomodoroApp() {
   }, [loading, config, active, subjectId, navTick]);
 
   useEffect(() => {
-    if (taskItemId == null) {
-      setLinkedTaskTitle(null);
+    if (taskItemId == null && calendarEventId == null) {
+      setLinkedLabel(null);
       return () => {};
     }
     let cancelled = false;
-    void resolveTaskTitleForPicker(taskItemId).then((title) => {
-      if (!cancelled) setLinkedTaskTitle(title);
+    void resolvePomodoroLinkLabel({ taskItemId, calendarEventId }).then((title) => {
+      if (!cancelled) setLinkedLabel(title);
     });
     return () => {
       cancelled = true;
     };
-  }, [taskItemId]);
+  }, [taskItemId, calendarEventId]);
 
   useEffect(() => {
     if (!active || active.runState !== "running") return () => {};
@@ -365,6 +398,7 @@ export function PomodoroApp() {
     void applyPomodoroActive(
       createInitialActiveState(config, {
         taskItemId,
+        calendarEventId,
         sessionLocalId: randomPublicId(),
       }),
       subjectId,
@@ -558,27 +592,41 @@ export function PomodoroApp() {
               </div>
 
               <div className="w-full space-y-2">
-                <span className="text-muted-foreground block text-xs">关联任务（可选）</span>
+                <span className="text-muted-foreground block text-xs">关联（可选）</span>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     className="min-w-0 flex-1 justify-start"
-                    isDisabled={Boolean(active) && !canPickTaskWhileActive && taskItemId == null}
+                    isDisabled={
+                      Boolean(active) &&
+                      !canPickTaskWhileActive &&
+                      taskItemId == null &&
+                      calendarEventId == null
+                    }
                     onClick={() => {
                       if (taskItemId != null) {
                         openTaskItemOverlay(taskItemId);
+                        return;
+                      }
+                      if (calendarEventId != null) {
+                        openCalendarEventOverlay(calendarEventId);
                         return;
                       }
                       if (!active || canPickTaskWhileActive) setTaskPickerOpen(true);
                     }}
                   >
                     <span className="truncate">
-                      {linkedTaskTitle ??
-                        (taskItemId != null ? `任务 #${taskItemId}` : "点击选择任务")}
+                      {linkedLabel ??
+                        (taskItemId != null
+                          ? `任务 #${taskItemId}`
+                          : calendarEventId != null
+                            ? `事件 #${calendarEventId}`
+                            : "点击选择任务或事件")}
                     </span>
                   </Button>
-                  {taskItemId != null && (!active || canPickTaskWhileActive) ? (
+                  {(taskItemId != null || calendarEventId != null) &&
+                  (!active || canPickTaskWhileActive) ? (
                     <Button
                       type="button"
                       variant="ghost"
@@ -588,16 +636,24 @@ export function PomodoroApp() {
                       更换
                     </Button>
                   ) : null}
-                  {taskItemId != null && (!active || canPickTaskWhileActive) ? (
+                  {(taskItemId != null || calendarEventId != null) &&
+                  (!active || canPickTaskWhileActive) ? (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => {
                         setTaskItemId(null);
-                        setLinkedTaskTitle(null);
+                        setCalendarEventId(null);
+                        setLinkedLabel(null);
                         if (active && canPickTaskWhileActive) {
-                          void applyPomodoroActive(switchWorkFocusTask(active, null), subjectId);
+                          void applyPomodoroActive(
+                            switchWorkFocusLink(active, {
+                              taskItemId: null,
+                              calendarEventId: null,
+                            }),
+                            subjectId,
+                          );
                         }
                       }}
                     >
@@ -666,14 +722,23 @@ export function PomodoroApp() {
 
       <TaskPickerDialog
         open={taskPickerOpen}
-        selectedId={taskItemId}
+        selectedTaskId={taskItemId}
+        selectedEventId={calendarEventId}
         onClose={() => setTaskPickerOpen(false)}
-        onSelect={(task) => {
-          const nextId = task?.id ?? null;
-          setTaskItemId(nextId);
-          setLinkedTaskTitle(task?.title ?? null);
+        onSelect={(link) => {
+          const nextTaskId = link?.kind === "task" ? link.id : null;
+          const nextEventId = link?.kind === "event" ? link.id : null;
+          setTaskItemId(nextTaskId);
+          setCalendarEventId(nextEventId);
+          setLinkedLabel(link ? formatPomodoroLinkLabel(link) : null);
           if (active && canPickTaskWhileActive) {
-            void applyPomodoroActive(switchWorkFocusTask(active, nextId), subjectId);
+            void applyPomodoroActive(
+              switchWorkFocusLink(active, {
+                taskItemId: nextTaskId,
+                calendarEventId: nextEventId,
+              }),
+              subjectId,
+            );
           }
         }}
       />

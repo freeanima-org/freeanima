@@ -139,7 +139,7 @@ FreeAnima (product tag or top folder name)
 - `list_id` 不得指向文件夹（`task_list.is_folder`）
 - 清单 `item_count` 只计该 `list_id` 下的 backlog 任务（`project_id` null）
 
-番茄专注（`pomodoro_task_focus.body.task_item_id`）不变——按任务 id 专注，与项目归属无关。
+番茄专注（`pomodoro_task_focus.body.task_item_id` / `calendar_event_id`）按关联目标 id 记录，与项目归属无关。
 
 ---
 

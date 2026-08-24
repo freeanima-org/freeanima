@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
-import { buildTaskFocusSegmentPayloads, switchWorkFocusTask } from "./pomodoro-focus-segments.ts";
+import {
+  buildTaskFocusSegmentPayloads,
+  switchWorkFocusLink,
+  switchWorkFocusTask,
+} from "./pomodoro-focus-segments.ts";
 
 function workState(taskItemId: number | null = 1): PomodoroActiveState {
   return {
@@ -13,10 +17,16 @@ function workState(taskItemId: number | null = 1): PomodoroActiveState {
     cycleIndex: 0,
     completedWorkInCycle: 0,
     taskItemId,
+    calendarEventId: null,
     sessionLocalId: "session-1",
     phaseStartedAt: new Date(1_000_000).toISOString(),
     focusSegments: [
-      { task_item_id: taskItemId, started_at: new Date(1_000_000).toISOString(), ended_at: null },
+      {
+        task_item_id: taskItemId,
+        calendar_event_id: null,
+        started_at: new Date(1_000_000).toISOString(),
+        ended_at: null,
+      },
     ],
   };
 }
@@ -29,6 +39,26 @@ describe("pomodoro-focus-segments", () => {
     expect(switched.focusSegments[0]?.ended_at).not.toBeNull();
     expect(switched.focusSegments[1]?.task_item_id).toBe(2);
     expect(switched.focusSegments[1]?.ended_at).toBeNull();
+  });
+
+  test("switchWorkFocusLink 任务与事件互斥", () => {
+    const withEvent = switchWorkFocusLink(
+      workState(1),
+      { taskItemId: null, calendarEventId: 9 },
+      1_500_000,
+    );
+    expect(withEvent.taskItemId).toBeNull();
+    expect(withEvent.calendarEventId).toBe(9);
+    expect(withEvent.focusSegments.at(-1)?.calendar_event_id).toBe(9);
+    expect(withEvent.focusSegments.at(-1)?.task_item_id).toBeNull();
+
+    const bothClearedToTask = switchWorkFocusLink(
+      withEvent,
+      { taskItemId: 3, calendarEventId: 9 },
+      1_600_000,
+    );
+    expect(bothClearedToTask.taskItemId).toBe(3);
+    expect(bothClearedToTask.calendarEventId).toBeNull();
   });
 
   test("buildTaskFocusSegmentPayloads emits closed segments for persistence", () => {
