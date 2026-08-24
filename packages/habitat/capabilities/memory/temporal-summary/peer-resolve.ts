@@ -62,13 +62,16 @@ export async function resolvePeerTimelineInjects(opts: {
     });
     let summary = (await opts.peerCache.getJson<{ summary: string }>(key))?.summary?.trim() ?? "";
     if (!summary) {
-      scheduleWarm({
-        cst_date,
-        bucket,
-        sources,
-        config: opts.config,
-        peerCache: opts.peerCache,
-      });
+      if (opts.agent_subject_id != null && opts.agent_subject_id > 0) {
+        scheduleWarm({
+          cst_date,
+          bucket,
+          sources,
+          config: opts.config,
+          peerCache: opts.peerCache,
+          agent_subject_id: opts.agent_subject_id,
+        });
+      }
       summary = concatPeerRollSources(sources, opts.config.peer_roll_max_chars);
     }
     if (!summary.trim()) continue;

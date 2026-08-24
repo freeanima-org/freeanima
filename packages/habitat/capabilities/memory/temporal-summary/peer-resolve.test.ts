@@ -68,6 +68,7 @@ describe("resolvePeerTimelineInjects（热路径不打 LLM）", () => {
       config: baseConfig,
       peerCache,
       nowMs,
+      agent_subject_id: 2,
       scheduleWarm,
     });
 
@@ -133,6 +134,7 @@ describe("resolvePeerTimelineInjects（热路径不打 LLM）", () => {
       config: baseConfig,
       peerCache,
       nowMs,
+      agent_subject_id: 2,
       scheduleWarm,
     });
 

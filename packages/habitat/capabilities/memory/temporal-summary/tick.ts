@@ -127,6 +127,9 @@ export async function runTemporalSummaryTick(opts: {
     const lastIncremental = incremental.at(-1);
     let summary: string;
     try {
+      const { resolveBoundAgentForConversation } =
+        await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+      const { agent_subject_id } = await resolveBoundAgentForConversation(conversationId);
       summary = await summarizeTemporalText({
         instruction: TEMPORAL_SUMMARY_INSTRUCTIONS.chunk,
         material:
@@ -134,6 +137,7 @@ export async function runTemporalSummaryTick(opts: {
             ? `【已有摘要】\n${day.chunks.map((c) => c.summary).join("\n---\n")}\n\n【新增消息】\n${material}`
             : material,
         maxChars: opts.config.chunk_max_chars,
+        agent_subject_id,
       });
     } catch (e) {
       const error = e instanceof Error ? e.message : String(e);
@@ -184,22 +188,35 @@ async function warmClosedPeerRolls(opts: {
 }): Promise<void> {
   const closed = listClosedBucketsToday(opts.nowMs);
   const rows = await listTemporalDayByCstDate(opts.cst_date);
+  const agentByConversation = new Map<string, number>();
+  for (const row of rows) {
+    if (row.agent_subject_id != null && row.agent_subject_id > 0) {
+      agentByConversation.set(row.conversation_id, row.agent_subject_id);
+    }
+  }
   for (const bucket of closed) {
-    const sources: PeerRollSource[] = [];
+    const sources: Array<PeerRollSource & { agent_subject_id: number }> = [];
     for (const row of rows) {
+      const agent_subject_id = row.agent_subject_id;
+      if (agent_subject_id == null || agent_subject_id <= 0) continue;
       for (const ch of row.temporal_day.chunks) {
         if (ch.bucket !== bucket) continue;
         sources.push({
           conversation_id: row.conversation_id,
           at: ch.at,
           summary: ch.summary,
+          agent_subject_id,
         });
       }
     }
     if (sources.length === 0) continue;
     const viewerIds = [...new Set(sources.map((s) => s.conversation_id))];
     for (const viewer of viewerIds) {
-      const peerSources = sources.filter((s) => s.conversation_id !== viewer);
+      const agent_subject_id = agentByConversation.get(viewer);
+      if (agent_subject_id == null || agent_subject_id <= 0) continue;
+      const peerSources = sources.filter(
+        (s) => s.conversation_id !== viewer && s.agent_subject_id === agent_subject_id,
+      );
       if (peerSources.length === 0) continue;
       try {
         await warmPeerRoll({
@@ -208,6 +225,7 @@ async function warmClosedPeerRolls(opts: {
           sources: peerSources,
           config: opts.config,
           peerCache: opts.peerCache,
+          agent_subject_id,
         });
       } catch (e) {
         const error = e instanceof Error ? e.message : String(e);
@@ -215,7 +233,7 @@ async function warmClosedPeerRolls(opts: {
           bucket,
           error,
         });
-        opts.onSoftFail?.(error, { phase: "peer_roll", bucket });
+        opts.onSoftFail?.(error, { phase: "peer_roll", bucket, conversation_id: viewer });
       }
     }
   }

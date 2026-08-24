@@ -112,6 +112,11 @@
 .chat-bubble-user {
   @apply bg-primary text-primary-foreground ml-auto;
 }
+.chat-bubble-user .md-content {
+  /* 用户短句按内容撑开；anywhere 会在窄盒子里把「你好呀」拆成多行 */
+  overflow-wrap: break-word;
+  word-break: normal;
+}
 .chat-bubble-user .anima-uri-chip {
   @apply border-primary-foreground/35 bg-primary-foreground/15 text-primary-foreground;
 }
