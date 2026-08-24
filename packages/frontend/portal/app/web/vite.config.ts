@@ -82,7 +82,7 @@ function webDevPlugin(): Plugin {
           );
           return;
         }
-        if (path === "/web/health") {
+        if (path === "/web/healthz") {
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.end(JSON.stringify({ ok: true, app: "web", mode: "web-dev" }));
           return;

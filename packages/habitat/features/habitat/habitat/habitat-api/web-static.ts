@@ -131,7 +131,8 @@ export function serveWebStatic(req: Request, options: WebStaticOptions): Respons
     return webConfigJsonResponse(req, options);
   }
 
-  if (pathname === `${WEB_URL_PREFIX}/health`) {
+  // 探活用 /web/healthz；/web/health 留给健康记录 SPA（硬刷新须回 index.html）
+  if (pathname === `${WEB_URL_PREFIX}/healthz`) {
     return new Response(JSON.stringify({ ok: true, app: "web", mode: "habitat-static" }), {
       headers: { "Content-Type": "application/json; charset=utf-8" },
     });

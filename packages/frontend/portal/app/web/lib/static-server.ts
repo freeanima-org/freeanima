@@ -97,7 +97,8 @@ function createShellStaticFetch(
       );
     }
 
-    if (pathname === `${WEB_PREFIX}/health`) {
+    // 探活用 /web/healthz；/web/health 留给健康记录 SPA
+    if (pathname === `${WEB_PREFIX}/healthz`) {
       return new Response(JSON.stringify({ ok: true, app: "web", mode: "static" }), {
         headers: { "Content-Type": "application/json; charset=utf-8" },
       });

@@ -19,7 +19,7 @@ export function HabitatConnectionBanner({ state, onRetry }: Props) {
   return (
     <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2 bg-warning/15 border-b border-yellow-500/50/30 text-sm">
       <span className="text-yellow-700 dark:text-yellow-300/90">
-        {state === "connecting" ? "连接中" : "连接已断开"}
+        {state === "connecting" ? "实时通道连接中" : "连接已断开"}
       </span>
       <div className="flex items-center gap-1">
         {showHabitatSettings ? (

@@ -1,5 +1,6 @@
 import { createRpcClient, type RpcClient } from "./client.ts";
 import {
+  HABITAT_RPC_CONNECT_TIMEOUT_MS,
   HABITAT_RPC_HEARTBEAT_SEND_CAP_MS,
   HABITAT_RPC_LIVENESS_CHECK_INTERVAL_MS,
   HABITAT_RPC_LIVENESS_SILENCE_MS,
@@ -60,13 +61,39 @@ function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
-function waitWebSocketOpen(ws: WebSocket): Promise<void> {
+function waitWebSocketOpen(
+  ws: WebSocket,
+  timeoutMs: number = HABITAT_RPC_CONNECT_TIMEOUT_MS,
+): Promise<void> {
   if (ws.readyState === WebSocket.OPEN) return Promise.resolve();
   return new Promise((resolve, reject) => {
-    ws.addEventListener("open", () => resolve(), { once: true });
-    ws.addEventListener("error", () => reject(new Error("WebSocket open failed")), {
-      once: true,
-    });
+    let settled = false;
+    const finish = (fn: () => void): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      fn();
+    };
+    const timer = setTimeout(() => {
+      finish(() => {
+        forceCloseWs(ws);
+        reject(new Error(`WebSocket open timed out after ${timeoutMs}ms`));
+      });
+    }, timeoutMs);
+    ws.addEventListener(
+      "open",
+      () => {
+        finish(() => resolve());
+      },
+      { once: true },
+    );
+    ws.addEventListener(
+      "error",
+      () => {
+        finish(() => reject(new Error("WebSocket open failed")));
+      },
+      { once: true },
+    );
   });
 }
 
