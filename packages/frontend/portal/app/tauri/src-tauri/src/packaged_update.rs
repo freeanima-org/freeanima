@@ -66,6 +66,8 @@ fn download_installer_to_file<R: Runtime>(
   dest: &Path,
   expected_size: Option<u64>,
 ) -> Result<(), String> {
+  // 依赖 reqwest system-proxy/socks：GUI 进程读 Windows 系统代理与 HTTP(S)_PROXY。
+  // 与 probe_habitat_health 的 .no_proxy() 区分——本机 Habitat 探活仍 bypass 代理。
   let client = reqwest::blocking::Client::builder()
     .user_agent("freeanima-desktop-updater")
     .redirect(reqwest::redirect::Policy::limited(10))
