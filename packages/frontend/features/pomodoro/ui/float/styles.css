@@ -1,3 +1,9 @@
+@import "tailwindcss";
+@import "@freeanima/ui-kit/styles/globals.css";
+@source "./**/*.{tsx,ts}";
+@source "../../spa/**/*.{tsx,ts}";
+@source "../../../../ui-kit/**/*.{tsx,ts}";
+
 html,
 body {
   margin: 0;
@@ -129,6 +135,23 @@ body {
   background: rgba(255, 255, 255, 0.22);
 }
 
+.pomodoro-float-link {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.pomodoro-float-link-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  opacity: 0.85;
+}
+
 .pomodoro-float-actions {
   display: flex;
   align-items: center;
@@ -136,7 +159,8 @@ body {
   flex-wrap: wrap;
 }
 
-.pomodoro-float-actions button {
+.pomodoro-float-actions button,
+.pomodoro-float-link button {
   appearance: none;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.06);
@@ -147,11 +171,13 @@ body {
   cursor: pointer;
 }
 
-.pomodoro-float-actions button:hover {
+.pomodoro-float-actions button:hover,
+.pomodoro-float-link button:hover {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.pomodoro-float-actions button:disabled {
+.pomodoro-float-actions button:disabled,
+.pomodoro-float-link button:disabled {
   opacity: 0.45;
   cursor: default;
 }

@@ -37,6 +37,7 @@ export type PomodoroSessionWriteInput = {
   planned_duration_ms: number;
   actual_duration_ms: number;
   task_item_id?: number | null;
+  calendar_event_id?: number | null;
   cycle_index?: number;
   interrupted?: boolean;
   title?: string;
@@ -50,6 +51,7 @@ export type PomodoroTaskFocusWriteInput = {
   phase: PomodoroPhase;
   phase_started_at: string;
   task_item_id?: number | null;
+  calendar_event_id?: number | null;
   started_at: string;
   ended_at: string;
   duration_ms: number;
@@ -63,6 +65,7 @@ export type PomodoroTaskFocusRow = {
   phase: PomodoroPhase;
   phase_started_at: string;
   task_item_id: number | null;
+  calendar_event_id: number | null;
   started_at: string;
   ended_at: string;
   duration_ms: number;

@@ -38,6 +38,15 @@ import {
   pauseActiveState,
   resumeActiveState,
 } from "../spa/lib/timer-engine.ts";
+import { TaskPickerDialog } from "../spa/components/TaskPickerDialog.tsx";
+import { formatPomodoroLinkLabel, resolvePomodoroLinkLabel } from "../spa/lib/task-picker-api.ts";
+import { switchWorkFocusLink } from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
+import {
+  POMODORO_FLOAT_PICKER_HEIGHT,
+  POMODORO_FLOAT_PICKER_WIDTH,
+  POMODORO_FLOAT_WINDOW_HEIGHT,
+  POMODORO_FLOAT_WINDOW_WIDTH,
+} from "../../shared/float-constants.ts";
 import {
   detectDockEdge,
   framesClose,
@@ -155,6 +164,10 @@ export function PomodoroFloatApp() {
   const [busy, setBusy] = useState(false);
   const [dockedEdge, setDockedEdge] = useState<DockEdge | null>(() => loadDock().edge);
   const [hoverExpanded, setHoverExpanded] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [linkedLabel, setLinkedLabel] = useState<string | null>(null);
+  const [pendingTaskId, setPendingTaskId] = useState<number | null>(null);
+  const [pendingEventId, setPendingEventId] = useState<number | null>(null);
   const leaveTimerRef = useRef<number | null>(null);
   const moveTimerRef = useRef<number | null>(null);
   const draggingRef = useRef(false);
@@ -165,7 +178,37 @@ export function PomodoroFloatApp() {
   const dockedEdgeRef = useRef(dockedEdge);
   dockedEdgeRef.current = dockedEdge;
 
-  const showChrome = dockedEdge == null || hoverExpanded;
+  const showChrome = dockedEdge == null || hoverExpanded || pickerOpen;
+
+  useEffect(() => {
+    const taskId = active?.taskItemId ?? pendingTaskId;
+    const eventId = active?.calendarEventId ?? pendingEventId;
+    if (taskId == null && eventId == null) {
+      if (active == null && pendingTaskId == null && pendingEventId == null) {
+        setLinkedLabel(null);
+      }
+      return () => {};
+    }
+    let cancelled = false;
+    void resolvePomodoroLinkLabel({ taskItemId: taskId, calendarEventId: eventId }).then(
+      (label) => {
+        if (!cancelled) setLinkedLabel(label);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [active?.taskItemId, active?.calendarEventId, pendingTaskId, pendingEventId, active]);
+
+  const onMouseLeave = useCallback(() => {
+    if (dockedEdgeRef.current == null) return;
+    if (pickerOpen) return;
+    if (leaveTimerRef.current != null) window.clearTimeout(leaveTimerRef.current);
+    leaveTimerRef.current = window.setTimeout(() => {
+      setHoverExpanded(false);
+      leaveTimerRef.current = null;
+    }, HOVER_COLLAPSE_MS);
+  }, [pickerOpen]);
 
   useEffect(() => {
     void reconnectHabitat().catch(() => undefined);
@@ -260,17 +303,30 @@ export function PomodoroFloatApp() {
   }, []);
 
   const syncGeometry = useCallback(
-    async (edge: DockEdge | null, expanded: boolean) => {
+    async (edge: DockEdge | null, expanded: boolean, picker: boolean) => {
       const work = await readWorkArea();
       const win = await readWindowRect();
       if (!work || !win) return;
+      if (picker) {
+        await applyFrameGuarded({
+          x: win.x,
+          y: win.y,
+          width: POMODORO_FLOAT_PICKER_WIDTH,
+          height: POMODORO_FLOAT_PICKER_HEIGHT,
+        });
+        return;
+      }
       if (edge == null) {
-        if (win.width < 100 || win.height < 60) {
+        if (
+          win.width < POMODORO_FLOAT_WINDOW_WIDTH - 20 ||
+          win.height < POMODORO_FLOAT_WINDOW_HEIGHT - 20 ||
+          win.width > POMODORO_FLOAT_PICKER_WIDTH - 10
+        ) {
           await applyFrameGuarded({
             x: win.x,
             y: win.y,
-            width: 220,
-            height: 120,
+            width: POMODORO_FLOAT_WINDOW_WIDTH,
+            height: POMODORO_FLOAT_WINDOW_HEIGHT,
           });
         }
         return;
@@ -286,8 +342,8 @@ export function PomodoroFloatApp() {
   );
 
   useEffect(() => {
-    void syncGeometry(dockedEdge, hoverExpanded);
-  }, [dockedEdge, hoverExpanded, syncGeometry]);
+    void syncGeometry(dockedEdge, hoverExpanded, pickerOpen);
+  }, [dockedEdge, hoverExpanded, pickerOpen, syncGeometry]);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
@@ -366,15 +422,6 @@ export function PomodoroFloatApp() {
     if (dockedEdgeRef.current != null) setHoverExpanded(true);
   }, []);
 
-  const onMouseLeave = useCallback(() => {
-    if (dockedEdgeRef.current == null) return;
-    if (leaveTimerRef.current != null) window.clearTimeout(leaveTimerRef.current);
-    leaveTimerRef.current = window.setTimeout(() => {
-      setHoverExpanded(false);
-      leaveTimerRef.current = null;
-    }, HOVER_COLLAPSE_MS);
-  }, []);
-
   const togglePause = useCallback(() => {
     if (!active || busy) return;
     setBusy(true);
@@ -392,16 +439,22 @@ export function PomodoroFloatApp() {
       try {
         const config = await fetchPomodoroConfig(subjectId);
         await applyPomodoroActive(
-          createInitialActiveState(config, { sessionLocalId: randomPublicId() }),
+          createInitialActiveState(config, {
+            sessionLocalId: randomPublicId(),
+            taskItemId: pendingTaskId,
+            calendarEventId: pendingEventId,
+          }),
           subjectId,
           { alertConfig: config },
         );
+        setPendingTaskId(null);
+        setPendingEventId(null);
         setActive(readActive(subjectId));
       } finally {
         setBusy(false);
       }
     })();
-  }, [busy, subjectId]);
+  }, [busy, subjectId, pendingTaskId, pendingEventId]);
 
   const handleEnd = useCallback(() => {
     if (!active || busy) return;
@@ -414,6 +467,14 @@ export function PomodoroFloatApp() {
   const openFull = useCallback(() => {
     void window.portalShell?.openPomodoro?.();
   }, []);
+
+  const canPickWhileActive = !active || active.phase === "work";
+
+  const openPicker = useCallback(() => {
+    if (!canPickWhileActive) return;
+    setHoverExpanded(true);
+    setPickerOpen(true);
+  }, [canPickWhileActive]);
 
   const rem = active ? pomodoroRemainingMs(active) : 0;
   const planned = active?.phasePlannedMs ?? 0;
@@ -444,9 +505,16 @@ export function PomodoroFloatApp() {
       : pomodoroPhaseLabel(active.phase)
     : "就绪";
   const pauseLabel = active?.runState === "paused" ? "继续" : "暂停";
+  const linkText =
+    linkedLabel ??
+    (active?.taskItemId != null || pendingTaskId != null
+      ? `任务 #${active?.taskItemId ?? pendingTaskId}`
+      : active?.calendarEventId != null || pendingEventId != null
+        ? `事件 #${active?.calendarEventId ?? pendingEventId}`
+        : "未关联");
 
   return (
-    <div className="pomodoro-float" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+    <div className="pomodoro-float dark" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <div className="pomodoro-float-top" onMouseDown={onDragStart}>
         <span className="pomodoro-float-phase">{phaseText}</span>
         <span className="pomodoro-float-clock">{active ? formatPomodoroClock(rem) : "--:--"}</span>
@@ -456,6 +524,14 @@ export function PomodoroFloatApp() {
           className={`pomodoro-float-progress-fill${active ? "" : " pomodoro-float-progress-fill--idle"}`}
           style={{ width: `${ratio * 100}%` }}
         />
+      </div>
+      <div className="pomodoro-float-link">
+        <span className="pomodoro-float-link-label" title={linkText}>
+          {linkText}
+        </span>
+        <button type="button" disabled={!canPickWhileActive || busy} onClick={openPicker}>
+          更换
+        </button>
       </div>
       <div className="pomodoro-float-actions">
         {!active ? (
@@ -476,6 +552,33 @@ export function PomodoroFloatApp() {
           打开
         </button>
       </div>
+      <TaskPickerDialog
+        open={pickerOpen}
+        selectedTaskId={active?.taskItemId ?? pendingTaskId}
+        selectedEventId={active?.calendarEventId ?? pendingEventId}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(link) => {
+          const nextTaskId = link?.kind === "task" ? link.id : null;
+          const nextEventId = link?.kind === "event" ? link.id : null;
+          setLinkedLabel(link ? formatPomodoroLinkLabel(link) : null);
+          if (!active) {
+            setPendingTaskId(nextTaskId);
+            setPendingEventId(nextEventId);
+            return;
+          }
+          if (active.phase !== "work") return;
+          setBusy(true);
+          void applyPomodoroActive(
+            switchWorkFocusLink(active, {
+              taskItemId: nextTaskId,
+              calendarEventId: nextEventId,
+            }),
+            subjectId,
+          )
+            .then(() => setActive(readActive(subjectId)))
+            .finally(() => setBusy(false));
+        }}
+      />
     </div>
   );
 }

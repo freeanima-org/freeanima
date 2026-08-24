@@ -106,6 +106,7 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
               planned_duration_ms: { type: "number" },
               actual_duration_ms: { type: "number" },
               task_item_id: { type: "number" },
+              calendar_event_id: { type: "number" },
               cycle_index: { type: "number" },
               title: { type: "string" },
             },
@@ -148,6 +149,10 @@ export function registerPomodoroTools(toolSets: ToolSetRegistry): void {
                 task_item_id:
                   args.task_item_id != null && args.task_item_id !== ""
                     ? Number(args.task_item_id)
+                    : null,
+                calendar_event_id:
+                  args.calendar_event_id != null && args.calendar_event_id !== ""
+                    ? Number(args.calendar_event_id)
                     : null,
                 cycle_index: args.cycle_index != null ? Number(args.cycle_index) : 0,
                 title: args.title != null ? coerceString(args.title) : undefined,

@@ -15,7 +15,7 @@ export const EDGE_DOCK_THRESHOLD_PX = 24;
 export const COLLAPSED_THICKNESS_PX = 8;
 export const COLLAPSED_LENGTH_PX = 120;
 export const EXPANDED_WIDTH_PX = 220;
-export const EXPANDED_HEIGHT_PX = 120;
+export const EXPANDED_HEIGHT_PX = 156;
 
 export function expandedSize(): SizePx {
   return { width: EXPANDED_WIDTH_PX, height: EXPANDED_HEIGHT_PX };

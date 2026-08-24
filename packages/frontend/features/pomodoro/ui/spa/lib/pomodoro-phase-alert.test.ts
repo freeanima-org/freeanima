@@ -33,6 +33,7 @@ function runningState(overrides?: Partial<PomodoroActiveState>): PomodoroActiveS
     cycleIndex: 0,
     completedWorkInCycle: 0,
     taskItemId: null,
+    calendarEventId: null,
     sessionLocalId: "sess-1",
     phaseStartedAt: new Date().toISOString(),
     focusSegments: [],

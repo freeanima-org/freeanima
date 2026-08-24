@@ -123,6 +123,11 @@ function buildPomodoroSessionBodyConditions(
   if (filters.task_item_id != null) {
     conditions.push(sql`${entities.body}->>'task_item_id' = ${String(filters.task_item_id)}`);
   }
+  if (filters.calendar_event_id != null) {
+    conditions.push(
+      sql`${entities.body}->>'calendar_event_id' = ${String(filters.calendar_event_id)}`,
+    );
+  }
   if (filters.client_op_id) {
     conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
   }
@@ -135,6 +140,11 @@ function buildPomodoroTaskFocusBodyConditions(
   const conditions: SQL[] = [];
   if (filters.task_item_id != null) {
     conditions.push(sql`${entities.body}->>'task_item_id' = ${String(filters.task_item_id)}`);
+  }
+  if (filters.calendar_event_id != null) {
+    conditions.push(
+      sql`${entities.body}->>'calendar_event_id' = ${String(filters.calendar_event_id)}`,
+    );
   }
   if (filters.session_local_id) {
     conditions.push(sql`${entities.body}->>'session_local_id' = ${filters.session_local_id}`);

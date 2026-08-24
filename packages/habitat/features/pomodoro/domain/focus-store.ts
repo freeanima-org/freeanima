@@ -22,6 +22,7 @@ function toFocusRow(
     phase: row.phase,
     phase_started_at: row.phase_started_at,
     task_item_id: row.task_item_id,
+    calendar_event_id: row.calendar_event_id ?? null,
     started_at: row.started_at,
     ended_at: row.ended_at,
     duration_ms: row.duration_ms,
@@ -38,14 +39,20 @@ function sortByStartedDesc(a: PomodoroTaskFocusRow, b: PomodoroTaskFocusRow): nu
   return b.id - a.id;
 }
 
-function focusTitle(taskItemId: number | null, phase: PomodoroPhase): string {
+function focusTitle(
+  taskItemId: number | null,
+  calendarEventId: number | null,
+  phase: PomodoroPhase,
+): string {
   if (taskItemId != null) return `专注 · 任务 #${taskItemId}`;
+  if (calendarEventId != null) return `专注 · 事件 #${calendarEventId}`;
   if (phase === "work") return "专注";
   return phase;
 }
 
 export type PomodoroTaskFocusListOpts = {
   task_item_id?: number;
+  calendar_event_id?: number;
   session_local_id?: string;
   pomodoro_session_id?: number;
   phase_started_at?: string;
@@ -61,6 +68,7 @@ export async function listPomodoroTaskFocus(
 ): Promise<{ items: PomodoroTaskFocusRow[]; total: number }> {
   const filters: Record<string, unknown> = {};
   if (opts.task_item_id != null) filters.task_item_id = opts.task_item_id;
+  if (opts.calendar_event_id != null) filters.calendar_event_id = opts.calendar_event_id;
   if (opts.session_local_id) filters.session_local_id = opts.session_local_id;
   if (opts.pomodoro_session_id != null) filters.pomodoro_session_id = opts.pomodoro_session_id;
   if (opts.phase_started_at) filters.phase_started_at = opts.phase_started_at;
@@ -97,18 +105,21 @@ export async function createPomodoroTaskFocusSegments(
   const created: PomodoroTaskFocusRow[] = [];
   for (const segment of segments) {
     if (segment.duration_ms <= 0) continue;
+    const taskItemId = segment.task_item_id ?? null;
+    const calendarEventId = taskItemId != null ? null : (segment.calendar_event_id ?? null);
     const row = await createEntity({
       type: "content",
       world_id: ctx.worldId,
       primary_component: POMODORO_TASK_FOCUS_COMPONENT,
       components: [POMODORO_TASK_FOCUS_COMPONENT],
-      title: focusTitle(segment.task_item_id ?? null, segment.phase),
+      title: focusTitle(taskItemId, calendarEventId, segment.phase),
       body: {
         session_local_id: segment.session_local_id,
         pomodoro_session_id: pomodoroSessionId,
         phase: segment.phase,
         phase_started_at: segment.phase_started_at,
-        task_item_id: segment.task_item_id ?? null,
+        task_item_id: taskItemId,
+        calendar_event_id: calendarEventId,
         started_at: segment.started_at,
         ended_at: segment.ended_at,
         duration_ms: segment.duration_ms,

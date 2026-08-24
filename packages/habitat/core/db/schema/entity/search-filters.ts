@@ -230,6 +230,7 @@ export const pomodoroSessionSearchFiltersSchema = z
     phase: pomodoroPhaseSchema.optional(),
     interrupted: z.boolean().optional(),
     task_item_id: z.number().int().positive().optional(),
+    calendar_event_id: z.number().int().positive().optional(),
     client_op_id: z.string().min(1).optional(),
   })
   .strict();
@@ -250,6 +251,7 @@ export function parsePomodoroSessionSearchFilters(
 export const pomodoroTaskFocusSearchFiltersSchema = z
   .object({
     task_item_id: z.number().int().positive().optional(),
+    calendar_event_id: z.number().int().positive().optional(),
     session_local_id: z.string().min(1).optional(),
     pomodoro_session_id: z.number().int().positive().optional(),
     phase_started_at: z.string().optional(),
