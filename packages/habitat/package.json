@@ -40,6 +40,6 @@
     "@types/qrcode": "^1.5.6",
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^1.0.0-rc.5-ab785fc",
-    "vite": "^8.2.1"
+    "vite": "^8.2.2"
   }
 }
