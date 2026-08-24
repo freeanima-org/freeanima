@@ -19,6 +19,7 @@ export type WarmPeerRollOpts = {
   sources: readonly PeerRollSource[];
   config: ResolvedTemporalSummaryConfig;
   peerCache: PeerRollCache;
+  agent_subject_id: number;
   /** 测试注入 */
   summarize?: typeof summarizeTemporalText;
 };
@@ -56,6 +57,7 @@ export async function warmPeerRoll(opts: WarmPeerRollOpts): Promise<boolean> {
       .map((s) => `[${s.conversation_id}]\n${s.summary}`)
       .join("\n\n"),
     maxChars: opts.config.peer_roll_max_chars,
+    agent_subject_id: opts.agent_subject_id,
   });
   await opts.peerCache.setJson(
     key,

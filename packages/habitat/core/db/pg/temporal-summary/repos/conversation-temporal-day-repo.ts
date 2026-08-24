@@ -36,6 +36,7 @@ export async function setConversationTemporalDay(
 
 export type ConversationTemporalDayRow = {
   conversation_id: string;
+  agent_subject_id: number | null;
   temporal_day: TemporalDayJson;
 };
 
@@ -59,6 +60,7 @@ export async function listTemporalDayByCstDate(
   const rows = await db
     .select({
       conversation_id: conversations.id,
+      agent_subject_id: conversations.agent_subject_id,
       temporal_day: conversations.temporal_day,
     })
     .from(conversations)
@@ -67,7 +69,11 @@ export async function listTemporalDayByCstDate(
   for (const row of rows) {
     const parsed = temporalDayJsonSchema.safeParse(row.temporal_day);
     if (!parsed.success) continue;
-    out.push({ conversation_id: row.conversation_id, temporal_day: parsed.data });
+    out.push({
+      conversation_id: row.conversation_id,
+      agent_subject_id: row.agent_subject_id,
+      temporal_day: parsed.data,
+    });
   }
   return out;
 }

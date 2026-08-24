@@ -49,6 +49,7 @@ describe("warmPeerRoll", () => {
       sources: [{ conversation_id: "p1", at: "t", summary: "主题" }],
       config: baseConfig,
       peerCache,
+      agent_subject_id: 2,
       summarize,
     });
     expect(wrote).toBe(true);
@@ -74,6 +75,7 @@ describe("warmPeerRoll", () => {
       sources: [{ conversation_id: "p1", at: "t", summary: "主题" }],
       config: baseConfig,
       peerCache,
+      agent_subject_id: 2,
       summarize,
     });
     expect(wrote).toBe(false);
@@ -94,6 +96,7 @@ describe("schedulePeerRollWarm", () => {
       sources: [{ conversation_id: "p1", at: "t", summary: "主题" }],
       config: baseConfig,
       peerCache,
+      agent_subject_id: 2,
       summarize,
     });
     await new Promise<void>((r) => {
@@ -115,6 +118,7 @@ describe("schedulePeerRollWarm", () => {
         getJson: async () => null,
         setJson: async () => {},
       },
+      agent_subject_id: 2,
       summarize,
     });
     await new Promise<void>((r) => {
