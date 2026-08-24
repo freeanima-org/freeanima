@@ -1,4 +1,4 @@
-import { getCachedUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
+import { getCachedSubjectIdPayload } from "@freeanima/client/portal-sdk/world-context.ts";
 import { resolveHabitatCacheScope } from "@freeanima/client/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/client/portal-sdk/offline-cache-first";
 import { invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
@@ -162,11 +162,11 @@ function habitat() {
 }
 
 function withSubject<T extends Record<string, unknown>>(payload: T) {
-  return { subject_id: getCachedUserSubjectId(), ...payload };
+  return { ...getCachedSubjectIdPayload(), ...payload };
 }
 
 function accountsCacheId(): string {
-  return `accounts:${getCachedUserSubjectId()}`;
+  return `accounts:${getCachedSubjectIdPayload().subject_id}`;
 }
 
 async function invalidateAccountsCache(): Promise<void> {

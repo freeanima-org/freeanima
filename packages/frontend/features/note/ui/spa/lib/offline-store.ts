@@ -23,6 +23,7 @@ import {
 import {
   allocateTempId,
   isTempId,
+  prefersOfflineWritePath,
   seedTempIdAllocatorFromIdMap,
 } from "@freeanima/client/portal-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
@@ -438,7 +439,7 @@ export async function offlineUpdateNote(
     return updated;
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -491,7 +492,7 @@ export async function offlineDeleteNote(subjectId: number, id: number): Promise<
     scheduleFlush(scope);
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -562,7 +563,9 @@ export async function offlineCreateNoteBlock(
     return block;
   };
 
-  if (await unresolvedTempId(scope, resolvedParentId)) {
+  if (
+    await prefersOfflineWritePath(parentId, resolvedParentId, (rid) => unresolvedTempId(scope, rid))
+  ) {
     return doOffline();
   }
 
@@ -653,7 +656,7 @@ export async function offlineUpdateNoteBlock(
     return updatedBlock;
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -723,7 +726,7 @@ export async function offlineDeleteNoteBlock(subjectId: number, blockId: number)
     scheduleFlush(scope);
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(blockId, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 

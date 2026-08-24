@@ -21,17 +21,25 @@ function Checkbox({ className, children, ...props }: Props) {
     >
       {composeRenderProps(
         children,
-        ariaRenderProps((node, { isSelected: selected, isIndeterminate: indeterminate }) => (
-          <>
-            <span
-              data-slot="checkbox-indicator"
-              className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
-            >
-              {(selected || indeterminate) && <CheckIcon />}
-            </span>
-            {node}
-          </>
-        )),
+        ariaRenderProps(
+          (
+            node,
+            {
+              isSelected: selected,
+              isIndeterminate: indeterminate,
+            }: { isSelected?: boolean; isIndeterminate?: boolean },
+          ) => (
+            <>
+              <span
+                data-slot="checkbox-indicator"
+                className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
+              >
+                {(selected || indeterminate) && <CheckIcon />}
+              </span>
+              {node}
+            </>
+          ),
+        ),
       )}
     </CheckboxPrimitive>
   );

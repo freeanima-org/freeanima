@@ -23,6 +23,7 @@ import {
 import {
   allocateTempId,
   isTempId,
+  prefersOfflineWritePath,
   seedTempIdAllocatorFromIdMap,
 } from "@freeanima/client/portal-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
@@ -453,7 +454,7 @@ export async function offlineUpdateDiaryEntry(
     return updated;
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -520,7 +521,7 @@ export async function offlineAppendDiaryEntry(
     return updated;
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -607,7 +608,9 @@ export async function offlineCreateDiaryBlock(
     return block;
   };
 
-  if (await unresolvedTempId(scope, resolvedParentId)) {
+  if (
+    await prefersOfflineWritePath(parentId, resolvedParentId, (rid) => unresolvedTempId(scope, rid))
+  ) {
     return doOffline();
   }
 
@@ -692,7 +695,7 @@ export async function offlineUpdateDiaryBlock(
     return updatedBlock;
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -757,7 +760,7 @@ export async function offlineDeleteDiaryBlock(
     scheduleFlush(scope);
   };
 
-  if (await unresolvedTempId(scope, blockId)) {
+  if (await prefersOfflineWritePath(blockId, blockId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -865,7 +868,7 @@ export async function offlineDeleteDiaryEntry(subjectId: number, id: number): Pr
     scheduleFlush(scope);
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 

@@ -1,4 +1,4 @@
-import { getCachedUserSubjectId } from "@freeanima/client/portal-sdk/world-context.ts";
+import { getCachedSubjectIdPayload } from "@freeanima/client/portal-sdk/world-context.ts";
 import { getIdMapping, resolveIdFields } from "@freeanima/client/portal-sdk/offline-id-map";
 import {
   registerOfflineModule,
@@ -19,6 +19,7 @@ import {
 import {
   allocateTempId,
   isTempId,
+  prefersOfflineWritePath,
   seedTempIdAllocatorFromIdMap,
 } from "@freeanima/client/portal-sdk/offline-temp-id";
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
@@ -44,10 +45,6 @@ function isProjectStatus(v: string): v is (typeof PROJECT_STATUSES)[number] {
 }
 
 const MODULE_ID = "project";
-
-function subjectPayload(): { subject_id: ReturnType<typeof getCachedUserSubjectId> } {
-  return { subject_id: getCachedUserSubjectId() };
-}
 
 async function readLocalFolders(scope: string): Promise<ProjectFolderRow[]> {
   return (await readCachedProjectFolders(scope)) ?? [];
@@ -543,7 +540,9 @@ export const projectRpcAdapter: RpcModuleAdapter = {
     const cachedProjectIds = localProjects.map((row) => row.id);
 
     try {
-      const folderData = await habitat().call("projectfolder.list", { ...subjectPayload() });
+      const folderData = await habitat().call("projectfolder.list", {
+        ...getCachedSubjectIdPayload(),
+      });
       const mergedFolders = await mergeServerFolders(scope, folderData.folders);
       await writeLocalFolders(scope, mergedFolders);
     } catch {
@@ -551,7 +550,7 @@ export const projectRpcAdapter: RpcModuleAdapter = {
     }
 
     try {
-      const projectData = await habitat().call("project.list", { ...subjectPayload() });
+      const projectData = await habitat().call("project.list", { ...getCachedSubjectIdPayload() });
       const mergedProjects = await mergeServerProjects(scope, projectData.projects);
       await writeLocalProjects(scope, mergedProjects);
       for (const project of mergedProjects) {
@@ -565,7 +564,7 @@ export const projectRpcAdapter: RpcModuleAdapter = {
       if (isTempId(projectId)) continue;
       try {
         const itemData = await habitat().call("project.item.list", {
-          ...subjectPayload(),
+          ...getCachedSubjectIdPayload(),
           project_id: projectId,
         });
         const merged = await mergeServerItems(scope, projectId, itemData.items);
@@ -612,7 +611,7 @@ export async function offlineCreateProjectFolder(input: {
       moduleId: MODULE_ID,
       method: "projectfolder.create",
       payload: omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         client_op_id: opId,
         name: row.name,
         parent_id: row.parent_id,
@@ -644,7 +643,7 @@ export async function offlineCreateProjectFolder(input: {
     const data = await habitat().call(
       "projectfolder.create",
       omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         client_op_id: opId,
         name,
         parent_id: input.parent_id ?? null,
@@ -679,7 +678,7 @@ export async function offlineUpdateProjectFolder(
       moduleId: MODULE_ID,
       method: "projectfolder.patch",
       payload: omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: existing.id,
         client_op_id: opId,
         ...patch,
@@ -702,7 +701,7 @@ export async function offlineUpdateProjectFolder(
     const data = await habitat().call(
       "projectfolder.patch",
       omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: existing.id,
         client_op_id: opId,
         ...patch,
@@ -741,20 +740,20 @@ export async function offlineDeleteProjectFolder(id: number): Promise<void> {
       id: opId,
       moduleId: MODULE_ID,
       method: "projectfolder.delete",
-      payload: { ...subjectPayload(), id: resolvedId, client_op_id: opId },
+      payload: { ...getCachedSubjectIdPayload(), id: resolvedId, client_op_id: opId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("projectfolder.delete", {
-      ...subjectPayload(),
+      ...getCachedSubjectIdPayload(),
       id: resolvedId,
       client_op_id: opId,
     });
@@ -802,7 +801,7 @@ export async function offlineCreateProject(input: {
       moduleId: MODULE_ID,
       method: "project.create",
       payload: omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         client_op_id: opId,
         title: row.title,
         start_at: row.start_at,
@@ -837,7 +836,7 @@ export async function offlineCreateProject(input: {
     const data = await habitat().call(
       "project.create",
       omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         client_op_id: opId,
         title,
         start_at: input.start_at ?? null,
@@ -887,7 +886,7 @@ export async function offlineUpdateProject(
       moduleId: MODULE_ID,
       method: "project.patch",
       payload: omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: existing.id,
         client_op_id: opId,
         ...patch,
@@ -910,7 +909,7 @@ export async function offlineUpdateProject(
     const data = await habitat().call(
       "project.patch",
       omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: existing.id,
         client_op_id: opId,
         ...patch,
@@ -950,20 +949,20 @@ export async function offlineDeleteProject(id: number): Promise<void> {
       id: opId,
       moduleId: MODULE_ID,
       method: "project.delete",
-      payload: { ...subjectPayload(), id: resolvedId, client_op_id: opId },
+      payload: { ...getCachedSubjectIdPayload(), id: resolvedId, client_op_id: opId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("project.delete", {
-      ...subjectPayload(),
+      ...getCachedSubjectIdPayload(),
       id: resolvedId,
       client_op_id: opId,
     });
@@ -1026,7 +1025,7 @@ export async function offlineCreateProjectTask(input: {
       moduleId: MODULE_ID,
       method: "project.item.create",
       payload: {
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         client_op_id: opId,
         ...createPayload,
       },
@@ -1046,7 +1045,11 @@ export async function offlineCreateProjectTask(input: {
     return row;
   };
 
-  if (await unresolvedTempId(resolveOutboxScope(), input.project_id)) {
+  if (
+    await prefersOfflineWritePath(input.project_id, input.project_id, (rid) =>
+      unresolvedTempId(resolveOutboxScope(), rid),
+    )
+  ) {
     return doOffline();
   }
 
@@ -1054,7 +1057,7 @@ export async function offlineCreateProjectTask(input: {
     const scope = resolveOutboxScope();
     const opId = randomPublicId();
     const data = await habitat().call("project.item.create", {
-      ...subjectPayload(),
+      ...getCachedSubjectIdPayload(),
       client_op_id: opId,
       ...createPayload,
     });
@@ -1144,7 +1147,7 @@ export async function offlineUpdateProjectTask(
         id: opId,
         moduleId: MODULE_ID,
         method,
-        payload: { ...subjectPayload(), id: existing.id, client_op_id: opId },
+        payload: { ...getCachedSubjectIdPayload(), id: existing.id, client_op_id: opId },
         createdAt: now,
       });
     } else {
@@ -1154,7 +1157,7 @@ export async function offlineUpdateProjectTask(
         moduleId: MODULE_ID,
         method: "task.patch",
         payload: omitUndefined({
-          ...subjectPayload(),
+          ...getCachedSubjectIdPayload(),
           id: existing.id,
           client_op_id: opId,
           ...contentPatch,
@@ -1166,7 +1169,7 @@ export async function offlineUpdateProjectTask(
     return updated;
   };
 
-  if (await unresolvedTempId(scope, existing.id)) {
+  if (await prefersOfflineWritePath(id, existing.id, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
@@ -1181,7 +1184,7 @@ export async function offlineUpdateProjectTask(
 
     if (method === "task.complete" || method === "task.uncomplete") {
       const data = await habitat().call(method, {
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: existing.id,
         client_op_id: opId,
       });
@@ -1193,7 +1196,7 @@ export async function offlineUpdateProjectTask(
     const data = await habitat().call(
       "task.patch",
       omitUndefined({
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: existing.id,
         client_op_id: opId,
         ...contentPatch,
@@ -1239,20 +1242,20 @@ export async function offlineDeleteProjectTask(id: number): Promise<void> {
       id: opId,
       moduleId: MODULE_ID,
       method: "task.delete",
-      payload: { ...subjectPayload(), id: resolvedId, client_op_id: opId },
+      payload: { ...getCachedSubjectIdPayload(), id: resolvedId, client_op_id: opId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
   };
 
-  if (await unresolvedTempId(scope, resolvedId)) {
+  if (await prefersOfflineWritePath(id, resolvedId, (rid) => unresolvedTempId(scope, rid))) {
     return doOffline();
   }
 
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("task.delete", {
-      ...subjectPayload(),
+      ...getCachedSubjectIdPayload(),
       id: resolvedId,
       client_op_id: opId,
     });
@@ -1284,7 +1287,7 @@ export async function offlineMoveProjectTaskToList(taskId: number, listId: numbe
       moduleId: MODULE_ID,
       method: "task.moveToList",
       payload: {
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: resolvedId,
         list_id: listId,
         client_op_id: opId,
@@ -1301,7 +1304,7 @@ export async function offlineMoveProjectTaskToList(taskId: number, listId: numbe
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     await habitat().call("task.moveToList", {
-      ...subjectPayload(),
+      ...getCachedSubjectIdPayload(),
       id: resolvedId,
       list_id: listId,
       client_op_id: opId,
@@ -1367,7 +1370,7 @@ export async function offlineMoveTaskToProject(
       moduleId: MODULE_ID,
       method: "task.moveToProject",
       payload: {
-        ...subjectPayload(),
+        ...getCachedSubjectIdPayload(),
         id: row.id,
         project_id: projectId,
         client_op_id: opId,
@@ -1398,7 +1401,7 @@ export async function offlineMoveTaskToProject(
   return preferOnlineWrite(async () => {
     const opId = randomPublicId();
     const data = await habitat().call("task.moveToProject", {
-      ...subjectPayload(),
+      ...getCachedSubjectIdPayload(),
       id: resolvedTaskId,
       project_id: projectId,
       client_op_id: opId,

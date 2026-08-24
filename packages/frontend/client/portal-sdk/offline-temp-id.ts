@@ -49,3 +49,15 @@ export function isTempId(id: unknown): id is number;
 export function isTempId(id: unknown): boolean {
   return typeof id === "number" && Number.isInteger(id) && id < 0;
 }
+
+/**
+ * preferOnlineWrite 前：调用方仍握有 temp id（含已映射）或未解析 temp 时走 outbox。
+ */
+export async function prefersOfflineWritePath(
+  requestedId: number,
+  resolvedId: number,
+  unresolved: (id: number) => Promise<boolean>,
+): Promise<boolean> {
+  if (isTempId(requestedId)) return true;
+  return unresolved(resolvedId);
+}

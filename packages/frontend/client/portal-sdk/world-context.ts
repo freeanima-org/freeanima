@@ -86,6 +86,11 @@ export function getCachedUserSubjectId(): number {
   return cached.user_subject_id;
 }
 
+/** 同步读缓存 user subject_id，包装为 RPC payload 字段。 */
+export function getCachedSubjectIdPayload(): { subject_id: number } {
+  return { subject_id: getCachedUserSubjectId() };
+}
+
 /** 同步读 boot user；忽略覆盖。未加载则抛错。 */
 export function getCachedBootUserSubjectId(): number {
   if (!cached) {

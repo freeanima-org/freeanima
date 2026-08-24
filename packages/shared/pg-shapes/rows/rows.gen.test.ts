@@ -40,6 +40,9 @@ describe("pg-shapes generated rows", () => {
       system_prompt: null,
       platform_info: null,
       agent_subject_id: 1,
+      agent_public_id: null,
+      room_id: null,
+      last_projected_room_seq: 0,
       compression: null,
       temporal_day: null,
       todos: { items: [], next_id: 1 },
@@ -57,7 +60,7 @@ describe("pg-shapes generated rows", () => {
     expect(conversationSelectSchema.safeParse({ ...row, scenario: "digital_human" }).success).toBe(
       true,
     );
-    expect(conversationSelectSchema.safeParse({ ...row, scenario: "room_inner" }).success).toBe(
+    expect(conversationSelectSchema.safeParse({ ...row, scenario: "coding_agent" }).success).toBe(
       true,
     );
     expect(conversationSelectSchema.safeParse({ ...row, scenario: "nope" }).success).toBe(false);
