@@ -103,7 +103,7 @@ export async function listActiveSemanticMemoryClusterIds(opts?: {
  */
 export async function findNearestClusteredNeighbor(
   embedding: number[],
-  opts?: { excludeEntityId?: number },
+  opts?: { excludeEntityId?: number; world_id?: number },
 ): Promise<{ entityId: number; clusterId: number; distance: number } | null> {
   const vecLiteral = formatPgVector(embedding);
   const distanceExpr = sql<number>`(${searchDocuments.embedding} <=> ${vecLiteral}::vector)`;
@@ -113,6 +113,9 @@ export async function findNearestClusteredNeighbor(
     isNotNull(searchDocuments.embedding),
     isNotNull(searchDocuments.cluster_id),
   ];
+  if (opts?.world_id != null) {
+    conditions.push(eq(searchDocuments.world_id, opts.world_id));
+  }
   if (opts?.excludeEntityId != null) {
     conditions.push(sql`${searchDocuments.source_id} <> ${String(opts.excludeEntityId)}`);
   }

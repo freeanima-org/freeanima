@@ -6,6 +6,7 @@ import type { LlmUsageTotals } from "@freeanima/shared/llm-usage";
 import type { ServiceApiTokenAuthorization } from "@freeanima/shared/service-api-auth";
 import { resetBundledHabitatClientForTests } from "@freeanima/shared/habitat-client/bundled-browser.ts";
 import {
+  semanticMemoryClustersBodySchema,
   semanticMemoryListBodySchema,
   subjectEntityCreateBodySchema,
   worldEntityCreateBodySchema,
@@ -487,8 +488,14 @@ export async function listSemanticMemories(input: {
   });
 }
 
-export async function listSemanticMemoryClusters() {
-  const raw = await hubCall(habitat().call("memory.semanticClusters", {}));
+export async function listSemanticMemoryClusters(input?: { agent_subject_id?: number }) {
+  const payload = semanticMemoryClustersBodySchema.parse(input ?? {});
+  const raw = await hubCall(
+    habitat().call(
+      "memory.semanticClusters",
+      omitUndefined({ agent_subject_id: payload.agent_subject_id }),
+    ),
+  );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- memory.semanticClusters 契约为 unknownOutputSchema，收窄到聚类列表形
   return raw as {
     items: Array<{ cluster_id: number | null; count: number; title: string | null }>;

@@ -437,18 +437,30 @@ export async function listSemanticMemories(
 
 export async function listSemanticMemoryClusters(
   _deps: RuntimeDeps,
+  args: { agent_subject_id?: number } = {},
 ): Promise<{ items: Array<{ cluster_id: number | null; count: number; title: string | null }> }> {
   const { listSemanticMemoryClusterStats } =
     await import("@freeanima/habitat/core/db/pg/search/clustering-repo.ts");
   const { peekSemanticClusterTitle } =
     await import("@freeanima/habitat/capabilities/memory/clustering/cluster-title.ts");
-  const stats = await listSemanticMemoryClusterStats({ status: "active" });
+  let world_id: number | undefined;
+  if (args.agent_subject_id != null) {
+    const { resolvePrivateWorldId } =
+      await import("@freeanima/habitat/core/config/world-context-pg.ts");
+    world_id = await resolvePrivateWorldId(args.agent_subject_id);
+  }
+  const stats = await listSemanticMemoryClusterStats(
+    omitUndefined({ status: "active" as const, world_id }),
+  );
   const items: Array<{ cluster_id: number | null; count: number; title: string | null }> = [];
   for (const row of stats) {
     let title: string | null = null;
     if (row.cluster_id != null) {
       try {
-        title = await peekSemanticClusterTitle(row.cluster_id);
+        title =
+          world_id != null
+            ? await peekSemanticClusterTitle(row.cluster_id, world_id)
+            : await peekSemanticClusterTitle(row.cluster_id);
       } catch {
         title = null;
       }
