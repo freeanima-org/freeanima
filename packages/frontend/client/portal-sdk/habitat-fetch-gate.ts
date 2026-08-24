@@ -26,6 +26,8 @@ export function isHabitatRpcReachableForFetch(): boolean {
  * 断网、Habitat 已判定断开、或弱网本地优先时不应发起 Habitat RPC 读/flush，只读本地缓存。
  */
 export function isHabitatFetchAvailable(): boolean {
+  // bundled-browser RPC 依赖 window（portalShell / WS）；Bun 单测无 DOM 时不应走 online 写穿。
+  if (typeof window === "undefined") return false;
   return isNetworkOnline() && isHabitatRpcReachableForFetch() && !isLocalPreferActive();
 }
 
