@@ -89,7 +89,7 @@ export function mergeRetainRelatedCurated(opts: {
 
 export type CurateRetainRelatedResult = {
   rows: SemanticMemoryRow[];
-  /** 本会话库内 active 总数（观测用） */
+  /** 本会话库内 active 总数（调试/统计用） */
   session_total: number;
 };
 

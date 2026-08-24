@@ -135,14 +135,11 @@ export function loadHabitatShellRoute() {
 export function loadBedroomShellRoute() {
   return shellLazyRoute(
     () =>
-      import("@freeanima/features/observer/ui/spa").then(async (mod) => {
+      import("@freeanima/features/bedroom/ui/spa").then(async (mod) => {
         await import("@freeanima/features/habitat/ui/habitat/styles.css");
-        return { default: mod.ObserverShell as import("react").ComponentType<object> };
+        return { default: mod.BedroomShell as import("react").ComponentType<object> };
       }) as Promise<{ default: import("react").ComponentType<object> }>,
   );
 }
-
-/** @deprecated 使用 loadBedroomShellRoute */
-export const loadObserverShellRoute = loadBedroomShellRoute;
 
 registerFeaturePluginShellRoutes();

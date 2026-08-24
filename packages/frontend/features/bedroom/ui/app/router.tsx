@@ -10,7 +10,7 @@ import {
 import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 import { Spinner } from "@freeanima/ui-kit";
 
-import { ObserverLayout } from "./ObserverLayout.tsx";
+import { BedroomLayout } from "./BedroomLayout.tsx";
 
 function asRouteComponent(component: ComponentType<object>): ComponentType<object> {
   return component;
@@ -48,8 +48,8 @@ const rootRoute = createRootRoute({
 
 const layoutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: "observer-layout",
-  component: ObserverLayout,
+  id: "bedroom-layout",
+  component: BedroomLayout,
 });
 
 const indexRoute = createRoute({
@@ -94,7 +94,7 @@ const routeTree = rootRoute.addChildren([
 const DEFAULT_STALE_MS = 60_000;
 const DEFAULT_GC_MS = 5 * 60_000;
 
-export function getObserverRouter(opts?: { basepath?: string; history?: RouterHistory }) {
+export function getBedroomRouter(opts?: { basepath?: string; history?: RouterHistory }) {
   return createRouter({
     routeTree,
     basepath: opts?.basepath ?? "/bedroom",

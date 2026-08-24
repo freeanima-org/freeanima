@@ -91,7 +91,8 @@ const habitatDashboardRoute = createLazyShellRoute("/habitat/dashboard", loadHab
 
 const habitatCatchAllRoute = createLazyShellRoute("/habitat/$", loadHabitatShellRoute());
 
-const observerIndexRoute = createRoute({
+/** 旧书签：`/observer/*` 重定向到 `/bedroom/*` */
+const legacyObserverIndexRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/observer",
   beforeLoad: () => {
@@ -99,7 +100,7 @@ const observerIndexRoute = createRoute({
   },
 });
 
-const observerCatchAllRoute = createRoute({
+const legacyObserverCatchAllRoute = createRoute({
   getParentRoute: () => mainLayoutRoute,
   path: "/observer/$",
   beforeLoad: ({ location }) => {
@@ -148,8 +149,8 @@ const routeTree = rootRoute.addChildren([
     habitatIndexRoute,
     habitatDashboardRoute,
     habitatCatchAllRoute,
-    observerIndexRoute,
-    observerCatchAllRoute,
+    legacyObserverIndexRoute,
+    legacyObserverCatchAllRoute,
     bedroomIndexRoute,
     bedroomSelfLayerRoute,
     bedroomCatchAllRoute,

@@ -65,7 +65,7 @@ export type SemanticMemorySearchOpts = {
   sort_by?: SemanticMemorySortBy;
   /** 省略=不筛；null=仅未分组；非负整数=该聚类族 */
   cluster_id?: number | null;
-  /** 观测：按 Anima 私有 world 过滤 */
+  /** 卧室：按 Anima 私有 world 过滤 */
   world_id?: number;
 };
 

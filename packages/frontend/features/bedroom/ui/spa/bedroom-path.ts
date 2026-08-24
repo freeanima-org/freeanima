@@ -1,5 +1,5 @@
 /** Shell pathname → embedded bedroom inner route. */
-export function resolveObserverSubpath(shellPathname: string): string {
+export function resolveBedroomSubpath(shellPathname: string): string {
   for (const marker of ["/bedroom", "/observer"] as const) {
     const idx = shellPathname.indexOf(marker);
     if (idx === -1) continue;
@@ -11,8 +11,8 @@ export function resolveObserverSubpath(shellPathname: string): string {
 }
 
 /** Embedded bedroom inner route → shell path under `/bedroom`. */
-export function observerSubpathToShellPath(observerSubpath: string): string {
-  const path = observerSubpath.startsWith("/") ? observerSubpath : `/${observerSubpath}`;
+export function bedroomSubpathToShellPath(bedroomSubpath: string): string {
+  const path = bedroomSubpath.startsWith("/") ? bedroomSubpath : `/${bedroomSubpath}`;
   if (path === "/" || path === "") return "/bedroom/self-layer";
   return `/bedroom${path}`;
 }
@@ -23,7 +23,7 @@ function shellBasepathFromViteBase(baseUrl: string): string | undefined {
   return raw;
 }
 
-export function resolveEmbeddedObserverBasepath(): string {
+export function resolveEmbeddedBedroomBasepath(): string {
   const shellBase = shellBasepathFromViteBase(import.meta.env?.BASE_URL ?? "/");
   return shellBase ? `${shellBase}/bedroom` : "/bedroom";
 }

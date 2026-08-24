@@ -1,16 +1,16 @@
 /** 卧室子模块：统一 Anima 上下文下的私有空间页面。 */
-export type ObserverNavItem = {
+export type BedroomNavItem = {
   to: string;
   label: string;
 };
 
-export type ObserverNavGroup = {
+export type BedroomNavGroup = {
   id: string;
   label: string;
-  items: ObserverNavItem[];
+  items: BedroomNavItem[];
 };
 
-export function observerNavGroups(): ObserverNavGroup[] {
+export function bedroomNavGroups(): BedroomNavGroup[] {
   return [
     {
       id: "cognition",
@@ -48,6 +48,6 @@ export function observerNavGroups(): ObserverNavGroup[] {
   ];
 }
 
-export function observerNavItems(): ObserverNavItem[] {
-  return observerNavGroups().flatMap((g) => g.items);
+export function bedroomNavItems(): BedroomNavItem[] {
+  return bedroomNavGroups().flatMap((g) => g.items);
 }

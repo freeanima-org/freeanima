@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
+import { RedirectToBedroom } from "@freeanima/features/habitat/ui/habitat/components/RedirectToBedroom.tsx";
 import type { Key } from "react-aria-components";
 import type { ConversationSummary } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 import type { PromptDebugResponse } from "@freeanima/features/habitat/protocol/habitat-contract/api/response-types.ts";
@@ -72,7 +72,7 @@ export const Route = createFileRoute("/_sidebar/system-prompt")({
           ? search.conversation
           : undefined,
     }),
-  component: () => <RedirectToObserver subpath="/system-prompt" />,
+  component: () => <RedirectToBedroom subpath="/system-prompt" />,
 });
 
 function ToolSchemaCard({ tool }: { tool: PromptDebugResponse["tools"]["items"][number] }) {

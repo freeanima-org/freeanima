@@ -25,12 +25,12 @@ export const semanticMemoryListBodySchema = memoryListPaginationSchema.extend({
   sort_by: semanticMemorySortBySchema.optional(),
   /** 省略=不筛；null=仅未分组；非负整数=该聚类族 */
   cluster_id: z.number().int().nonnegative().nullable().optional(),
-  /** 观测：按 Anima subject 的私有 world 过滤；省略则不按 world 筛 */
+  /** 卧室：按 Anima subject 的私有 world 过滤；省略则不按 world 筛 */
   agent_subject_id: z.number().int().positive().optional(),
 });
 
 export const semanticMemoryClustersBodySchema = z.object({
-  /** 观测：按 Anima subject 的私有 world 统计聚类族；省略则不按 world 筛 */
+  /** 卧室：按 Anima subject 的私有 world 统计聚类族；省略则不按 world 筛 */
   agent_subject_id: z.number().int().positive().optional(),
 });
 

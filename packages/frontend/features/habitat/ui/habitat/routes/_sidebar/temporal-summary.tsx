@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute } from "@tanstack/react-router";
-import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
+import { RedirectToBedroom } from "@freeanima/features/habitat/ui/habitat/components/RedirectToBedroom.tsx";
 import type { Key } from "react-aria-components";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -33,7 +33,7 @@ import {
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
-import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
+import { useBedroomAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/bedroom-agent.tsx";
 import { useHabitatOffsetPagination } from "@freeanima/features/habitat/ui/habitat/lib/use-habitat-offset-pagination.ts";
 
 const PAGE_SIZE = 20;
@@ -98,7 +98,7 @@ type TemporalSystemRollBatchJobStatus = {
 };
 
 export const Route = createFileRoute("/_sidebar/temporal-summary")({
-  component: () => <RedirectToObserver subpath="/temporal-summary" />,
+  component: () => <RedirectToBedroom subpath="/temporal-summary" />,
 });
 
 function formatRatio(current: number, total: number): string {
@@ -217,7 +217,7 @@ function RollBatchProgress({ job }: { job: TemporalSystemRollBatchJobStatus }) {
 }
 
 export function TemporalSummaryPage() {
-  const agentSubjectId = useObserverAgentSubjectId();
+  const agentSubjectId = useBedroomAgentSubjectId();
   const [tab, setTab] = useState<PageTab>("day");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");

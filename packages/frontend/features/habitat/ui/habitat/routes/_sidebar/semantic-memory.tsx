@@ -1,6 +1,6 @@
 import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
-import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
+import { RedirectToBedroom } from "@freeanima/features/habitat/ui/habitat/components/RedirectToBedroom.tsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SemanticMemoryRow } from "@freeanima/shared/db-shapes";
 import {
@@ -38,7 +38,7 @@ import {
   updateSemanticMemoryPinned,
 } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
-import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
+import { useBedroomAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/bedroom-agent.tsx";
 
 const PAGE_SIZE = 20;
 const ALL_VALUE = "__all__";
@@ -92,7 +92,7 @@ export const Route = createFileRoute("/_sidebar/semantic-memory")({
           ? ("1" as const)
           : undefined,
     }),
-  component: () => <RedirectToObserver subpath="/semantic-memory" />,
+  component: () => <RedirectToBedroom subpath="/semantic-memory" />,
 });
 
 export function SemanticMemoryPage() {
@@ -108,7 +108,7 @@ export function SemanticMemoryPage() {
     search.passive === "1" || search.passive === 1 || search.passive === true
       ? ("1" as const)
       : undefined;
-  const agentSubjectId = useObserverAgentSubjectId();
+  const agentSubjectId = useBedroomAgentSubjectId();
   const [passiveOpen, setPassiveOpen] = useState(passive === "1");
   useEffect(() => {
     setPassiveOpen(passive === "1");

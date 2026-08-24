@@ -17,22 +17,24 @@ import {
 } from "@freeanima/ui-kit";
 import { listSubjectEntities } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 
-const OBSERVER_AGENT_STORAGE_KEY = "freeanima.observer.agentSubjectId";
-const LEGACY_STORAGE_KEY = "freeanima.habitat.observerAgentSubjectId";
+const BEDROOM_AGENT_STORAGE_KEY = "freeanima.bedroom.agentSubjectId";
+/** 旧卧室 Anima 选择键（只读兼容） */
+const LEGACY_OBSERVER_STORAGE_KEY = "freeanima.observer.agentSubjectId";
+const LEGACY_HABITAT_STORAGE_KEY = "freeanima.habitat.observerAgentSubjectId";
 
-export type ObserverAgentOption = {
+export type BedroomAgentOption = {
   id: number;
   title: string;
 };
 
-type ObserverAgentContextValue = {
+type BedroomAgentContextValue = {
   agentSubjectId: number | null;
   setAgentSubjectId: (id: number) => void;
-  agents: ObserverAgentOption[];
+  agents: BedroomAgentOption[];
   ready: boolean;
 };
 
-const ObserverAgentContext = createContext<ObserverAgentContextValue | null>(null);
+const BedroomAgentContext = createContext<BedroomAgentContextValue | null>(null);
 
 function positiveInt(v: unknown): number | undefined {
   const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
@@ -42,9 +44,15 @@ function positiveInt(v: unknown): number | undefined {
 
 function readStoredAgentSubjectId(): number | undefined {
   try {
-    const next = positiveInt(localStorage.getItem(OBSERVER_AGENT_STORAGE_KEY));
-    if (next != null) return next;
-    return positiveInt(localStorage.getItem(LEGACY_STORAGE_KEY));
+    for (const key of [
+      BEDROOM_AGENT_STORAGE_KEY,
+      LEGACY_OBSERVER_STORAGE_KEY,
+      LEGACY_HABITAT_STORAGE_KEY,
+    ]) {
+      const next = positiveInt(localStorage.getItem(key));
+      if (next != null) return next;
+    }
+    return undefined;
   } catch {
     return undefined;
   }
@@ -52,7 +60,7 @@ function readStoredAgentSubjectId(): number | undefined {
 
 function writeStoredAgentSubjectId(id: number): void {
   try {
-    localStorage.setItem(OBSERVER_AGENT_STORAGE_KEY, String(id));
+    localStorage.setItem(BEDROOM_AGENT_STORAGE_KEY, String(id));
   } catch {
     /* ignore quota / private mode */
   }
@@ -60,8 +68,8 @@ function writeStoredAgentSubjectId(id: number): void {
 
 function parseAgentSubjects(raw: {
   items: Array<{ id: number; type?: string; title?: string }>;
-}): ObserverAgentOption[] {
-  const out: ObserverAgentOption[] = [];
+}): BedroomAgentOption[] {
+  const out: BedroomAgentOption[] = [];
   for (const row of raw.items) {
     if (row.type !== "agent") continue;
     const id = positiveInt(row.id);
@@ -73,15 +81,15 @@ function parseAgentSubjects(raw: {
 
 /** 初选 Anima：localStorage → 列表首项（禁止用默认聊天 agent 静默回退）。 */
 function pickInitialAgentId(
-  agents: ObserverAgentOption[],
+  agents: BedroomAgentOption[],
   stored: number | undefined,
 ): number | null {
   if (stored != null && agents.some((a) => a.id === stored)) return stored;
   return agents[0]?.id ?? null;
 }
 
-export function ObserverAgentProvider({ children }: { children: ReactNode }) {
-  const [agents, setAgents] = useState<ObserverAgentOption[]>([]);
+export function BedroomAgentProvider({ children }: { children: ReactNode }) {
+  const [agents, setAgents] = useState<BedroomAgentOption[]>([]);
   const [agentSubjectId, setAgentSubjectIdState] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -116,7 +124,7 @@ export function ObserverAgentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    (): ObserverAgentContextValue => ({
+    (): BedroomAgentContextValue => ({
       agentSubjectId,
       setAgentSubjectId,
       agents,
@@ -125,20 +133,20 @@ export function ObserverAgentProvider({ children }: { children: ReactNode }) {
     [agentSubjectId, setAgentSubjectId, agents, ready],
   );
 
-  return <ObserverAgentContext.Provider value={value}>{children}</ObserverAgentContext.Provider>;
+  return <BedroomAgentContext.Provider value={value}>{children}</BedroomAgentContext.Provider>;
 }
 
-export function useObserverAgent(): ObserverAgentContextValue {
-  const ctx = useContext(ObserverAgentContext);
+export function useBedroomAgent(): BedroomAgentContextValue {
+  const ctx = useContext(BedroomAgentContext);
   if (!ctx) {
-    throw new Error("useObserverAgent must be used within ObserverAgentProvider");
+    throw new Error("useBedroomAgent must be used within BedroomAgentProvider");
   }
   return ctx;
 }
 
 /** 当前卧室所选 Anima 的 subject id；未就绪时为 null。 */
-export function useObserverAgentSubjectId(): number | null {
-  return useObserverAgent().agentSubjectId;
+export function useBedroomAgentSubjectId(): number | null {
+  return useBedroomAgent().agentSubjectId;
 }
 
 function formatAgentLabel(id: number, title: string): string {
@@ -147,8 +155,8 @@ function formatAgentLabel(id: number, title: string): string {
 }
 
 /** 卧室顶栏：选择这间卧室对应的 Anima。 */
-export function ObserverAgentSelect({ className }: { className?: string }) {
-  const { agentSubjectId, setAgentSubjectId, agents, ready } = useObserverAgent();
+export function BedroomAgentSelect({ className }: { className?: string }) {
+  const { agentSubjectId, setAgentSubjectId, agents, ready } = useBedroomAgent();
   const selectedKey = agentSubjectId != null ? String(agentSubjectId) : null;
   const options =
     agentSubjectId != null && !agents.some((a) => a.id === agentSubjectId)
