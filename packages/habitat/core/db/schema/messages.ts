@@ -24,5 +24,7 @@ export const messages = pgTable(
   (t) => [
     uniqueIndex("messages_conversation_id_pos_uidx").on(t.conversation_id, t.pos),
     index("idx_messages_subject_id").on(t.subject_id),
+    // payload->>'role' = 'assistant' 的 (conversation_id, pos) partial：见 migration 追加 SQL
+    // message_payload_timestamp(payload) btree：见 migration 追加 SQL
   ],
 );

@@ -30,7 +30,7 @@ import {
   conversationMetaToInsert,
 } from "../transform.ts";
 import { formatDbError } from "../../utils/db-error.ts";
-import { conversationUnreadExistsSql } from "./conversation-read-state-repo.ts";
+import { listUnreadConversationIds } from "./conversation-read-state-repo.ts";
 import { pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
 import type { ConversationInsert } from "@freeanima/habitat/core/db/schema";
 
@@ -91,6 +91,7 @@ export async function getConversationMetaLite(
       agent_subject_id: conversations.agent_subject_id,
       agent_public_id: conversations.agent_public_id,
       room_id: conversations.room_id,
+      last_projected_room_seq: conversations.last_projected_room_seq,
       compression: conversations.compression,
       temporal_day: conversations.temporal_day,
       todos: conversations.todos,
@@ -102,6 +103,7 @@ export async function getConversationMetaLite(
       functions: conversations.functions,
       debug: conversations.debug,
       archived_at: conversations.archived_at,
+      pinned_at: conversations.pinned_at,
       created_at: conversations.created_at,
       updated_at: conversations.updated_at,
     })
@@ -462,6 +464,34 @@ export async function getConversationUpdatedAt(conversation_id: string): Promise
   return rows[0]?.updated_at ?? null;
 }
 
+async function attachUnreadFlags(
+  items: ConversationSummaryRow[],
+  userSubjectId: number | undefined,
+): Promise<ConversationSummaryRow[]> {
+  if (userSubjectId == null || userSubjectId <= 0 || items.length === 0) return items;
+  const unreadIds = await listUnreadConversationIds(
+    userSubjectId,
+    items.map((item) => item.id),
+  );
+  return items.map((item) => ({
+    ...item,
+    unread: unreadIds.has(item.id),
+  }));
+}
+
+const conversationSummarySelect = {
+  id: conversations.id,
+  title: conversations.title,
+  platform_info: conversations.platform_info,
+  created_at: conversations.created_at,
+  updated_at: conversations.updated_at,
+  archived_at: conversations.archived_at,
+  pinned_at: conversations.pinned_at,
+  agent_subject_id: conversations.agent_subject_id,
+  scenario: conversations.scenario,
+  room_id: conversations.room_id,
+} as const;
+
 export async function listConversationSummaries(
   platform?: string | null,
   opts?: {
@@ -472,29 +502,12 @@ export async function listConversationSummaries(
 ): Promise<ConversationSummaryRow[]> {
   const db = getDb();
   const where = buildConversationListWhere(platform, opts?.includeArchived, opts?.scenario);
-  const userSubjectId = opts?.user_subject_id;
-  const unreadExpr =
-    userSubjectId != null && userSubjectId > 0
-      ? conversationUnreadExistsSql(userSubjectId)
-      : undefined;
   const rows = await db
-    .select({
-      id: conversations.id,
-      title: conversations.title,
-      platform_info: conversations.platform_info,
-      created_at: conversations.created_at,
-      updated_at: conversations.updated_at,
-      archived_at: conversations.archived_at,
-      pinned_at: conversations.pinned_at,
-      agent_subject_id: conversations.agent_subject_id,
-      scenario: conversations.scenario,
-      room_id: conversations.room_id,
-      ...(unreadExpr ? { unread: unreadExpr } : {}),
-    })
+    .select(conversationSummarySelect)
     .from(conversations)
     .where(where)
     .orderBy(...conversationListOrderBy());
-  return rows.map(mapConversationSummaryRow);
+  return attachUnreadFlags(rows.map(mapConversationSummaryRow), opts?.user_subject_id);
 }
 
 export async function listConversationSummariesPage(opts?: {
@@ -511,11 +524,6 @@ export async function listConversationSummariesPage(opts?: {
   const platform = opts?.platform;
   const db = getDb();
   const where = buildConversationListWhere(platform, opts?.includeArchived, opts?.scenario);
-  const userSubjectId = opts?.user_subject_id;
-  const unreadExpr =
-    userSubjectId != null && userSubjectId > 0
-      ? conversationUnreadExistsSql(userSubjectId)
-      : undefined;
 
   const countRows = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -524,19 +532,7 @@ export async function listConversationSummariesPage(opts?: {
   const total = countRows[0]?.count ?? 0;
 
   const rows = await db
-    .select({
-      id: conversations.id,
-      title: conversations.title,
-      platform_info: conversations.platform_info,
-      created_at: conversations.created_at,
-      updated_at: conversations.updated_at,
-      archived_at: conversations.archived_at,
-      pinned_at: conversations.pinned_at,
-      agent_subject_id: conversations.agent_subject_id,
-      scenario: conversations.scenario,
-      room_id: conversations.room_id,
-      ...(unreadExpr ? { unread: unreadExpr } : {}),
-    })
+    .select(conversationSummarySelect)
     .from(conversations)
     .where(where)
     .orderBy(...conversationListOrderBy())
@@ -544,7 +540,7 @@ export async function listConversationSummariesPage(opts?: {
     .offset(offset);
 
   return {
-    items: rows.map(mapConversationSummaryRow),
+    items: await attachUnreadFlags(rows.map(mapConversationSummaryRow), opts?.user_subject_id),
     total,
   };
 }
