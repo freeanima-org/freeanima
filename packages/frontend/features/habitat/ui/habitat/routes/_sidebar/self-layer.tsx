@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { RedirectToObserver } from "@freeanima/features/habitat/ui/habitat/components/RedirectToObserver.tsx";
+import { RedirectToBedroom } from "@freeanima/features/habitat/ui/habitat/components/RedirectToBedroom.tsx";
 import { useEffect, useState } from "react";
 import type { SelfBlockDisplay } from "@freeanima/features/habitat/protocol/habitat-contract/self-block-display.ts";
 import { Badge, Button, Card, CardContent, Spinner } from "@freeanima/ui-kit";
@@ -7,15 +7,15 @@ import { StatusAlert } from "@freeanima/ui-kit/composite";
 import { getSelfBlocks } from "@freeanima/features/habitat/ui/habitat/lib/api.ts";
 import { formatDisplayDateTime } from "@freeanima/features/habitat/ui/habitat/lib/format-datetime.ts";
 import { logCaughtError } from "@freeanima/features/habitat/ui/habitat/lib/log-caught-error.ts";
-import { useObserverAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/observer-agent.tsx";
+import { useBedroomAgentSubjectId } from "@freeanima/features/habitat/ui/habitat/lib/bedroom-agent.tsx";
 import { useMemoryPipeline } from "@freeanima/features/habitat/ui/habitat/lib/use-memory-pipeline.ts";
 
 export const Route = createFileRoute("/_sidebar/self-layer")({
-  component: () => <RedirectToObserver subpath="/self-layer" />,
+  component: () => <RedirectToBedroom subpath="/self-layer" />,
 });
 
 export function SelfLayerPage() {
-  const agentSubjectId = useObserverAgentSubjectId();
+  const agentSubjectId = useBedroomAgentSubjectId();
   const [blocks, setBlocks] = useState<SelfBlockDisplay[]>([]);
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState("");

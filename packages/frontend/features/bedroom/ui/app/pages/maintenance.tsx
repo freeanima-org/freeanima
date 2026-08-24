@@ -1,7 +1,7 @@
 import { AnimaMaintenancePanel } from "@freeanima/features/habitat/ui/habitat/components/habitat/AnimaMaintenancePanel.tsx";
-import { useObserverAgentSubjectId } from "@freeanima/features/observer/ui/lib/observer-agent.tsx";
+import { useBedroomAgentSubjectId } from "@freeanima/features/bedroom/ui/lib/bedroom-agent.tsx";
 
 export default function BedroomMaintenancePage() {
-  const agentSubjectId = useObserverAgentSubjectId();
+  const agentSubjectId = useBedroomAgentSubjectId();
   return <AnimaMaintenancePanel agentSubjectId={agentSubjectId} />;
 }

@@ -67,7 +67,7 @@ title: 架构
 | **Transferred（需转移）** | `connections`、`text_generate`、`i18n`、`embedding`、`mcp_servers`、`discord` / `weixin` / `gateway` platforms、`object_storage`、`chat`                                                                   | 快照更新**外加**段应用（重初始化注册表 / 重连 / 重绑 ObjectStore）；`chat` 主要为 Live 读，写入后热生效 |
 | **Bootstrap（引导）**     | `database`、`http`、`redis`                                                                                                                                                                                | 改 YAML；需**进程重启**                                                                                 |
 
-> **已废除**：`runtime.worlds` 配置段。boot 后仅在内存钉唯一 `user_*` + `commons_*`；默认聊天 Anima 为 `chat.default_agent_subject_id`（**仅** Chat/Coding 新建会话预选；配置 `vault()` 解析宿主与前端 user/agent 切换中的 agent 侧身份可读同一配置值，但 **禁止** 用作 LLM / 工具 / 记忆 / temporal / cron / 观测 UI 的静默回退）。
+> **已废除**：`runtime.worlds` 配置段。boot 后仅在内存钉唯一 `user_*` + `commons_*`；默认聊天 Anima 为 `chat.default_agent_subject_id`（**仅** Chat/Coding 新建会话预选；配置 `vault()` 解析宿主与前端 user/agent 切换中的 agent 侧身份可读同一配置值，但 **禁止** 用作 LLM / 工具 / 记忆 / temporal / cron / 卧室 UI 的静默回退）。
 
 ### 运行时配置：UI 覆盖缺口
 
