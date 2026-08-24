@@ -18,7 +18,6 @@ import { conversations } from "@freeanima/habitat/core/db/schema";
 import type { RoomMembersJson } from "@freeanima/habitat/core/db/schema";
 import { listEntities } from "@freeanima/habitat/core/db/pg/entity";
 import { agentConfigBodySchema } from "@freeanima/habitat/core/db/schema/entity";
-import { resolveContactByPublicId } from "@freeanima/features/contact/domain/index.ts";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context.ts";
 import { appendMessage } from "@freeanima/habitat/engine/conversation/conversation-crud.ts";
 import { PROMPT_XML_TAGS, wrapPromptXml } from "@freeanima/habitat/core/hooks/prompt";
@@ -30,6 +29,11 @@ import type {
 
 import { formatRoomInnerConversationTitle } from "./room-title.ts";
 import { maybeGenerateRoomTitleFromFirstMessage } from "./room-title-generate.ts";
+import {
+  resolveDisambiguatedSpeakerLabels,
+  resolveSpeakerLabelBundle,
+  resolveSpeakerLabelParts,
+} from "./room-speaker-label.ts";
 
 /** 发言席硬超时（毫秒）；流式回合在 acquire 时用更长租约 */
 export const ROOM_SPEAKER_LEASE_MS = 120_000;
@@ -75,35 +79,21 @@ export async function resolveLocalUserPublicId(): Promise<string | null> {
 }
 
 async function displayNameForPublicId(publicId: string): Promise<string | undefined> {
-  try {
-    const commonsId = getResolvedWorldContext().commons_world_id;
-    const contact = await resolveContactByPublicId(commonsId, publicId);
-    if (contact?.title?.trim()) return contact.title.trim();
-  } catch {
-    /* ignore */
-  }
-  const agents = await listEntities({ type: "agent", limit: 200 });
-  for (const row of agents) {
-    if (subjectPublicId(row.body) === publicId) {
-      const t = row.title.trim();
-      if (t) return t;
-    }
-  }
-  const users = await listEntities({ type: "user", limit: 5 });
-  for (const row of users) {
-    if (subjectPublicId(row.body) === publicId) {
-      const t = row.title.trim();
-      if (t) return t;
-    }
-  }
-  return undefined;
+  const parts = await resolveSpeakerLabelParts(publicId);
+  const base = parts.base_name.trim();
+  if (!parts.remote) return base || undefined;
+  const labels = await resolveDisambiguatedSpeakerLabels([publicId]);
+  const label = labels.get(publicId.trim()) ?? base;
+  return label || undefined;
 }
 
 async function enrichMembers(members: RoomMembersJson): Promise<RoomMemberPayload[]> {
+  const publicIds = (members ?? []).map((m) => m.public_id);
+  const labels = await resolveDisambiguatedSpeakerLabels(publicIds);
   const out: RoomMemberPayload[] = [];
   for (const m of members) {
     const agentId = await resolveLocalAgentSubjectId(m.public_id);
-    const display_name = await displayNameForPublicId(m.public_id);
+    const display_name = labels.get(m.public_id.trim());
     out.push({
       public_id: m.public_id,
       ...(m.muted != null ? { muted: m.muted } : {}),
@@ -125,6 +115,7 @@ async function toRoomSummary(row: RoomRow): Promise<RoomSummaryPayload> {
     speaker_lease_until: row.speaker_lease_until?.toISOString() ?? null,
     created_at: row.created_at.toISOString(),
     updated_at: row.updated_at.toISOString(),
+    federation_mode: row.federation_mode ?? "local",
   };
 }
 
@@ -136,7 +127,11 @@ async function toRoomMessage(row: {
   payload: { text: string; tool_summary?: string; mention_public_ids?: string[] };
   created_at: Date;
 }): Promise<RoomMessagePayload> {
-  const speaker_display_name = await displayNameForPublicId(row.speaker_public_id);
+  const room = await getRoom(row.room_id);
+  const memberIds = (room?.members ?? []).map((m) => m.public_id);
+  const ids = [...new Set([...memberIds, row.speaker_public_id])];
+  const labels = await resolveDisambiguatedSpeakerLabels(ids);
+  const speaker_display_name = labels.get(row.speaker_public_id.trim());
   return {
     id: row.id,
     room_id: row.room_id,
@@ -177,6 +172,8 @@ export type RoomMemberPromptRow = {
   kind: "agent" | "user";
   display_name: string;
   subject_id?: number;
+  contact_id?: number;
+  habitat_instance_id?: string;
   self: boolean;
 };
 
@@ -192,6 +189,8 @@ export function formatRoomMembersPromptBody(rows: RoomMemberPromptRow[]): string
       self: row.self ? "true" : "false",
     };
     if (row.subject_id != null) attrs.subject_id = String(row.subject_id);
+    if (row.contact_id != null) attrs.contact_id = String(row.contact_id);
+    if (row.habitat_instance_id) attrs.habitat_instance_id = row.habitat_instance_id;
     const label = row.display_name.trim() || publicId;
     const line = wrapPromptXml("member", label, { inline: true, attrs });
     if (line) lines.push(line);
@@ -202,6 +201,7 @@ export function formatRoomMembersPromptBody(rows: RoomMemberPromptRow[]): string
 /**
  * 解析成员身份后渲染花名册内层。
  * kind=user 为本实例唯一人类用户；kind=agent 为 Anima；subject_id 仅本机可解析时写入。
+ * display_name 优先 Contact.title，同名或跨实例时带实例消歧。
  */
 export async function buildRoomMembersPromptBody(input: RoomMembersPromptInput): Promise<string> {
   const localUserPublicId = await resolveLocalUserPublicId();
@@ -212,6 +212,8 @@ export async function buildRoomMembersPromptBody(input: RoomMembersPromptInput):
     localUserSubjectId = undefined;
   }
   const selfId = input.self_public_id?.trim() || null;
+  const publicIds = input.members.map((m) => m.public_id);
+  const { labels, partsById } = await resolveSpeakerLabelBundle(publicIds);
   const rows: RoomMemberPromptRow[] = [];
   for (const m of input.members) {
     const publicId = m.public_id.trim();
@@ -225,11 +227,14 @@ export async function buildRoomMembersPromptBody(input: RoomMembersPromptInput):
         : isUser && localUserSubjectId != null
           ? localUserSubjectId
           : undefined;
+    const parts = partsById.get(publicId);
     rows.push({
       public_id: publicId,
       kind,
-      display_name: m.display_name?.trim() || publicId,
+      display_name: labels.get(publicId) || m.display_name?.trim() || publicId,
       ...(subjectId != null ? { subject_id: subjectId } : {}),
+      ...(parts?.contact_id != null ? { contact_id: parts.contact_id } : {}),
+      ...(parts?.habitat_instance_id ? { habitat_instance_id: parts.habitat_instance_id } : {}),
       self: selfId != null && publicId === selfId,
     });
   }
@@ -356,6 +361,10 @@ export async function projectRoomIntoConversation(
   if (!meta) return;
   const after = meta.last ?? 0;
   const pending = await listRoomMessagesAfterSeq(roomId, after);
+  const room = await getRoom(roomId);
+  const memberIds = (room?.members ?? []).map((m) => m.public_id);
+  const speakerIds = pending.map((m) => m.speaker_public_id);
+  const labels = await resolveDisambiguatedSpeakerLabels([...memberIds, ...speakerIds]);
   let maxSeq = after;
   for (const msg of pending) {
     maxSeq = Math.max(maxSeq, msg.seq);
@@ -363,7 +372,7 @@ export async function projectRoomIntoConversation(
       // 本席公开回复应已在回写时写入 assistant；跳过避免重复
       continue;
     }
-    const name = (await displayNameForPublicId(msg.speaker_public_id)) ?? msg.speaker_public_id;
+    const name = labels.get(msg.speaker_public_id.trim()) ?? msg.speaker_public_id;
     await appendMessage(
       {
         role: "user",
@@ -389,8 +398,48 @@ function leaseExpired(row: RoomRow, at: Date): boolean {
 
 export async function createRoom(
   deps: RoomDomainDeps,
-  input: { title: string; owner_public_id: string; member_public_ids: string[] },
+  input: {
+    title: string;
+    owner_public_id: string;
+    member_public_ids: string[];
+    federated?: boolean;
+  },
 ): Promise<RoomSummaryPayload> {
+  if (input.federated) {
+    const { federationRoleNow, isHubReachableForSatellite } = await import("./room-federation.ts");
+    const role = federationRoleNow();
+    if (role === "hub") {
+      return createFederatedRoomOnHub(deps, input);
+    }
+    if (role === "satellite") {
+      if (!isHubReachableForSatellite()) {
+        throw new Error("HUB_UNAVAILABLE");
+      }
+      const { requestFederationRpc } =
+        await import("@freeanima/habitat/capabilities/federation/satellite-rpc.ts");
+      const created = await requestFederationRpc<{
+        room: RoomSummaryPayload & { federation_mode: "federated" };
+      }>("room.federation.create", {
+        title: input.title,
+        owner_public_id: input.owner_public_id,
+        member_public_ids: input.member_public_ids,
+      });
+      const { applyFederatedRoomReplica, membersFromSummary } =
+        await import("./room-federation.ts");
+      await applyFederatedRoomReplica({
+        room_id: created.room.room_id,
+        title: created.room.title,
+        owner_public_id: created.room.owner_public_id,
+        members: membersFromSummary(created.room),
+      });
+      for (const m of created.room.members) {
+        await ensureAgentSeat(deps, created.room.room_id, m.public_id);
+      }
+      return created.room;
+    }
+    throw new Error("FEDERATION_DISABLED");
+  }
+
   const ids = [...new Set(input.member_public_ids.map((x) => x.trim()).filter(Boolean))];
   if (!ids.includes(input.owner_public_id)) ids.unshift(input.owner_public_id);
   const members: RoomMembersJson = ids.map((public_id) => ({ public_id }));
@@ -405,6 +454,37 @@ export async function createRoom(
     await ensureAgentSeat(deps, roomId, m.public_id);
   }
   return toRoomSummary(row);
+}
+
+/** Hub 本地创建联邦 Room 并广播 */
+export async function createFederatedRoomOnHub(
+  deps: RoomDomainDeps,
+  input: { title: string; owner_public_id: string; member_public_ids: string[] },
+): Promise<RoomSummaryPayload> {
+  const { formatFederatedRoomId, hubInstanceIdNow, broadcastFederationFrame } =
+    await import("./room-federation.ts");
+  const hubId = hubInstanceIdNow();
+  if (!hubId) throw new Error("hub identity missing");
+
+  const ids = [...new Set(input.member_public_ids.map((x) => x.trim()).filter(Boolean))];
+  if (!ids.includes(input.owner_public_id)) ids.unshift(input.owner_public_id);
+  const members: RoomMembersJson = ids.map((public_id) => ({ public_id }));
+  const roomId = formatFederatedRoomId(hubId);
+  const row = await insertRoom({
+    id: roomId,
+    title: input.title.trim(),
+    owner_public_id: input.owner_public_id,
+    members,
+    federation_mode: "federated",
+  });
+  for (const m of members) {
+    await ensureAgentSeat(deps, roomId, m.public_id);
+  }
+  const summary = await toRoomSummary(row);
+  broadcastFederationFrame("room.federation.created", {
+    room: { ...summary, federation_mode: "federated" },
+  });
+  return summary;
 }
 
 export async function getRoomSummary(roomId: string): Promise<RoomSummaryPayload | null> {
@@ -531,6 +611,47 @@ export async function sendHumanMessage(
   const memberIds = new Set((row.members ?? []).map((m) => m.public_id));
   if (!memberIds.has(input.speaker_public_id)) throw new Error("NOT_A_MEMBER");
 
+  if (row.federation_mode === "federated") {
+    const { federationRoleNow, isHubReachableForSatellite } = await import("./room-federation.ts");
+    const role = federationRoleNow();
+    if (role === "satellite") {
+      if (!isHubReachableForSatellite()) throw new Error("HUB_UNAVAILABLE");
+      const { requestFederationRpc } =
+        await import("@freeanima/habitat/capabilities/federation/satellite-rpc.ts");
+      const result = await requestFederationRpc<{ message: RoomMessagePayload }>(
+        "room.federation.append",
+        {
+          room_id: input.room_id,
+          speaker_public_id: input.speaker_public_id,
+          text: input.text,
+          ...(input.mention_public_ids?.length
+            ? { mention_public_ids: input.mention_public_ids }
+            : {}),
+        },
+      );
+      const { applyFederatedMessageReplica } = await import("./room-federation.ts");
+      await applyFederatedMessageReplica({ message: result.message });
+      const mention_local_agent_ids: string[] = [];
+      for (const agentPublicId of input.mention_public_ids ?? []) {
+        if (await resolveLocalAgentSubjectId(agentPublicId)) {
+          mention_local_agent_ids.push(agentPublicId);
+        }
+      }
+      return { message: result.message, mention_local_agent_ids };
+    }
+    if (role === "hub") {
+      const message = await sendFederatedMessageOnHub(input);
+      const mention_local_agent_ids: string[] = [];
+      for (const agentPublicId of input.mention_public_ids ?? []) {
+        if (await resolveLocalAgentSubjectId(agentPublicId)) {
+          mention_local_agent_ids.push(agentPublicId);
+        }
+      }
+      return { message, mention_local_agent_ids };
+    }
+    throw new Error("FEDERATION_DISABLED");
+  }
+
   const msgRow = await appendRoomMessage({
     id: randomPublicId(),
     room_id: input.room_id,
@@ -550,6 +671,35 @@ export async function sendHumanMessage(
     }
   }
   return { message, mention_local_agent_ids };
+}
+
+/** Hub：写入联邦消息并广播 */
+export async function sendFederatedMessageOnHub(input: {
+  room_id: string;
+  speaker_public_id: string;
+  text: string;
+  mention_public_ids?: string[];
+}): Promise<RoomMessagePayload> {
+  const row = await getRoom(input.room_id);
+  if (!row) throw new Error("ROOM_NOT_FOUND");
+  if (row.federation_mode !== "federated") throw new Error("ROOM_NOT_FEDERATED");
+  const memberIds = new Set((row.members ?? []).map((m) => m.public_id));
+  if (!memberIds.has(input.speaker_public_id)) throw new Error("NOT_A_MEMBER");
+
+  const msgRow = await appendRoomMessage({
+    id: randomPublicId(),
+    room_id: input.room_id,
+    speaker_public_id: input.speaker_public_id,
+    payload: {
+      text: input.text,
+      ...(input.mention_public_ids?.length ? { mention_public_ids: input.mention_public_ids } : {}),
+    },
+  });
+  maybeGenerateRoomTitleFromFirstMessage(input.room_id, input.text, msgRow.seq);
+  const message = await toRoomMessage(msgRow);
+  const { broadcastFederationFrame } = await import("./room-federation.ts");
+  broadcastFederationFrame("room.federation.broadcast", { message });
+  return message;
 }
 
 export async function acquireSpeaker(
@@ -699,22 +849,59 @@ export async function writebackAgentPublicReply(input: {
     return null;
   }
 
-  const msgRow = await appendRoomMessage({
-    id: randomPublicId(),
-    room_id: input.room_id,
-    speaker_public_id: input.agent_public_id,
-    payload: { text },
-  });
-  maybeGenerateRoomTitleFromFirstMessage(input.room_id, text, msgRow.seq);
+  const roomRow = await getRoom(input.room_id);
+  let message: RoomMessagePayload;
+
+  if (roomRow?.federation_mode === "federated") {
+    const { federationRoleNow, isHubReachableForSatellite, applyFederatedMessageReplica } =
+      await import("./room-federation.ts");
+    const role = federationRoleNow();
+    if (role === "satellite") {
+      if (!isHubReachableForSatellite()) {
+        await turnCompleteSpeaker(input.room_id, input.agent_public_id);
+        throw new Error("HUB_UNAVAILABLE");
+      }
+      const { requestFederationRpc } =
+        await import("@freeanima/habitat/capabilities/federation/satellite-rpc.ts");
+      const result = await requestFederationRpc<{ message: RoomMessagePayload }>(
+        "room.federation.append",
+        {
+          room_id: input.room_id,
+          speaker_public_id: input.agent_public_id,
+          text,
+        },
+      );
+      await applyFederatedMessageReplica({ message: result.message });
+      message = result.message;
+    } else if (role === "hub") {
+      message = await sendFederatedMessageOnHub({
+        room_id: input.room_id,
+        speaker_public_id: input.agent_public_id,
+        text,
+      });
+    } else {
+      await turnCompleteSpeaker(input.room_id, input.agent_public_id);
+      throw new Error("FEDERATION_DISABLED");
+    }
+  } else {
+    const msgRow = await appendRoomMessage({
+      id: randomPublicId(),
+      room_id: input.room_id,
+      speaker_public_id: input.agent_public_id,
+      payload: { text },
+    });
+    maybeGenerateRoomTitleFromFirstMessage(input.room_id, text, msgRow.seq);
+    message = await toRoomMessage(msgRow);
+  }
 
   const db = getDb();
   await db
     .update(conversations)
-    .set({ last_projected_room_seq: msgRow.seq })
+    .set({ last_projected_room_seq: message.seq })
     .where(eq(conversations.id, input.conversation_id));
 
   await turnCompleteSpeaker(input.room_id, input.agent_public_id);
-  return toRoomMessage(msgRow);
+  return message;
 }
 
 /** @deprecated 同步占位路径已移除；请用 prepareAgentTurn + 流式泵 */

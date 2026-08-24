@@ -21,13 +21,14 @@ describe("formatRoomUtteranceContent", () => {
 });
 
 describe("formatRoomMembersPromptBody", () => {
-  it("渲染 member 行含 public_id / kind / self / subject_id", () => {
+  it("渲染 member 行含 public_id / kind / self / subject_id / contact_id", () => {
     const body = formatRoomMembersPromptBody([
       {
         public_id: "pid-user",
         kind: "user",
         display_name: "小草",
         subject_id: 2,
+        contact_id: 10,
         self: false,
       },
       {
@@ -40,20 +41,26 @@ describe("formatRoomMembersPromptBody", () => {
       {
         public_id: "pid-xiaorou",
         kind: "agent",
-        display_name: "小柔",
+        display_name: "小柔 · 家里 NAS",
         subject_id: 8,
+        contact_id: 22,
+        habitat_instance_id: "fa_inst_nas01",
         self: false,
       },
     ]);
     expect(body).toContain('public_id="pid-user"');
     expect(body).toContain('kind="user"');
     expect(body).toContain('subject_id="2"');
+    expect(body).toContain('contact_id="10"');
     expect(body).toContain("小草");
     expect(body).toContain('public_id="pid-zhuohua"');
     expect(body).toContain('kind="agent"');
     expect(body).toContain('self="true"');
     expect(body).toContain("灼华");
     expect(body).toContain('self="false"');
+    expect(body).toContain("小柔 · 家里 NAS");
+    expect(body).toContain('contact_id="22"');
+    expect(body).toContain('habitat_instance_id="fa_inst_nas01"');
     expect(body).toContain("<member");
   });
 });

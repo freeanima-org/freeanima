@@ -10,7 +10,10 @@ export type RoomMemberJson = {
 
 export type RoomMembersJson = RoomMemberJson[];
 
-/** 单机群聊公开时间线载体（非 entity）。 */
+/** Room 联邦模式：local=本机 seq；federated=Hub 主序 */
+export type RoomFederationMode = "local" | "federated";
+
+/** 群聊公开时间线载体（非 entity）。 */
 export const rooms = pgTable(
   "rooms",
   {
@@ -23,14 +26,26 @@ export const rooms = pgTable(
     speaker_public_id: text("speaker_public_id"),
     speaker_heartbeat_at: pgTimestamptz("speaker_heartbeat_at"),
     speaker_lease_until: pgTimestamptz("speaker_lease_until"),
+    /** local=单机；federated=跨实例，seq 权威在 Hub */
+    federation_mode: text("federation_mode").$type<RoomFederationMode>().notNull().default("local"),
     created_at: pgTimestamptz("created_at").notNull(),
     updated_at: pgTimestamptz("updated_at").notNull(),
   },
   (t) => [
     index("idx_rooms_updated_at").on(t.updated_at.desc()),
     index("idx_rooms_owner_public_id").on(t.owner_public_id),
+    index("idx_rooms_federation_mode").on(t.federation_mode),
   ],
 );
+
+/** Satellite 侧联邦 Room 追赶状态（Hub 可不写） */
+export const roomFederationState = pgTable("room_federation_state", {
+  room_id: text("room_id")
+    .primaryKey()
+    .references(() => rooms.id, { onDelete: "cascade" }),
+  last_synced_seq: bigint("last_synced_seq", { mode: "number" }).notNull().default(0),
+  updated_at: pgTimestamptz("updated_at").notNull(),
+});
 
 export type RoomPublicPayload = {
   text: string;

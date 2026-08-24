@@ -19,6 +19,7 @@ export * from "./pipeline-step-run.ts";
 export * from "./auto-llm-runs.ts";
 export * from "./auto-llm-messages.ts";
 export * from "./outpost-instances.ts";
+export * from "./federation.ts";
 export * from "./service-api-tokens.ts";
 export * from "./habitat-runtime-config.ts";
 export * from "./entity/index.ts";

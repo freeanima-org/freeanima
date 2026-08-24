@@ -21,6 +21,7 @@ export const roomSummarySchema = z.object({
   updated_at: z.string(),
   created_at: z.string(),
   last_message_preview: z.string().optional(),
+  federation_mode: z.enum(["local", "federated"]).optional(),
 });
 
 export type RoomSummaryPayload = z.infer<typeof roomSummarySchema>;
@@ -44,6 +45,8 @@ export const roomCreateInputSchema = z.object({
   /** 成员 public_id（须含创建者；本机 agent 会建内心席） */
   member_public_ids: z.array(z.string().min(1)).min(1),
   owner_public_id: z.string().min(1),
+  /** Hub 上创建联邦 Room；Satellite 上创建时经联邦通道提交 Hub */
+  federated: z.boolean().optional(),
 });
 export type RoomCreateInput = z.infer<typeof roomCreateInputSchema>;
 export const roomCreateOutputSchema = z.object({ room: roomSummarySchema });

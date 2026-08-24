@@ -52,4 +52,11 @@ RPC：`contact.attachAddress` / `contact.createFromAddress` / `contact.resolveBy
 
 - email-handler Skill 自动分类 / 后台批量回填
 - 图谱关系表 / 项目·地点节点
-- 跨机外部实体注册目录（#15348 未做部分）
+- 跨机外部实体注册目录的**自动发现**（#15348）；联邦授信目录见 [`docs/product/federation.md`](../product/federation.md)，授信可选关联 Contact，**不等于**自动授信
+
+## 与跨实例联邦
+
+- Hub `habitat_trusted_satellites` 为安全授信 SSOT；Contact 仅作展示/可选关联
+- Satellite 连接触发 `pending`；Hub `federation.satellite.approve` 可传 `create_contact: true` 建 `animas.kind=external`
+- 手动 `federation.satellite.create` 仍可预授信（非主路径）
+- `contact.resolveByPublicId` 仍只查本机 Commons，不读授信表

@@ -56,7 +56,15 @@ function domainDeps(deps: unknown): room.RoomDomainDeps {
 
 export const roomHabitatRoutes = bindHabitatRouteHandlers(roomMethodDefs, {
   "room.create": async (deps, input) => {
-    const roomSummary = await room.createRoom(domainDeps(deps), input);
+    const roomSummary = await room.createRoom(
+      domainDeps(deps),
+      omitUndefined({
+        title: input.title,
+        owner_public_id: input.owner_public_id,
+        member_public_ids: input.member_public_ids,
+        federated: input.federated,
+      }),
+    );
     return { room: roomSummary };
   },
   "room.get": async (_deps, input) => {
@@ -133,4 +141,10 @@ export const roomHabitatRoutes = bindHabitatRouteHandlers(roomMethodDefs, {
     startRoomAgentTurnStream(depsOf(deps), ctxOf(ctx), input, domainDeps(deps)),
   "room.agent.conversation": async (deps, input) =>
     room.ensureRoomAgentConversation(domainDeps(deps), input.room_id, input.agent_public_id),
+  "room.syncStatus": async (_deps, input) => {
+    const { getRoomSyncStatus } = await import("../../domain/room-federation.ts");
+    const sync = await getRoomSyncStatus(input.room_id);
+    if (!sync) throw new Error("ROOM_NOT_FOUND");
+    return { sync };
+  },
 });

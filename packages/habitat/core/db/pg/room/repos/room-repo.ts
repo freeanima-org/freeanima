@@ -4,6 +4,8 @@ import { getDb } from "../../client.ts";
 import {
   roomMessages,
   rooms,
+  roomFederationState,
+  type RoomFederationMode,
   type RoomMemberJson,
   type RoomMembersJson,
   type RoomPublicPayload,
@@ -19,6 +21,7 @@ export async function insertRoom(input: {
   title: string;
   owner_public_id: string;
   members: RoomMembersJson;
+  federation_mode?: RoomFederationMode;
 }): Promise<RoomRow> {
   const db = getDb();
   const ts = now();
@@ -32,6 +35,7 @@ export async function insertRoom(input: {
       speaker_public_id: null,
       speaker_heartbeat_at: null,
       speaker_lease_until: null,
+      federation_mode: input.federation_mode ?? "local",
       created_at: ts,
       updated_at: ts,
     })
@@ -186,6 +190,109 @@ export async function listRoomMessagesAfterSeq(
     .from(roomMessages)
     .where(and(eq(roomMessages.room_id, roomId), sql`${roomMessages.seq} > ${afterSeq}`))
     .orderBy(asc(roomMessages.seq));
+}
+
+/** 幂等写入：同 (room_id, seq) 已存在则跳过 */
+export async function upsertRoomMessageBySeq(input: {
+  id: string;
+  room_id: string;
+  seq: number;
+  speaker_public_id: string;
+  payload: RoomPublicPayload;
+  created_at?: Date;
+}): Promise<{ row: RoomMessageRow; inserted: boolean }> {
+  const db = getDb();
+  const ts = input.created_at ?? now();
+  const existing = await db
+    .select()
+    .from(roomMessages)
+    .where(and(eq(roomMessages.room_id, input.room_id), eq(roomMessages.seq, input.seq)))
+    .limit(1);
+  const found = existing[0];
+  if (found) return { row: found, inserted: false };
+
+  const inserted = await db
+    .insert(roomMessages)
+    .values({
+      id: input.id,
+      room_id: input.room_id,
+      seq: input.seq,
+      speaker_public_id: input.speaker_public_id,
+      payload: input.payload,
+      created_at: ts,
+    })
+    .onConflictDoNothing()
+    .returning();
+  const row = inserted[0];
+  if (row) {
+    await db.update(rooms).set({ updated_at: now() }).where(eq(rooms.id, input.room_id));
+    return { row, inserted: true };
+  }
+  const again = await db
+    .select()
+    .from(roomMessages)
+    .where(and(eq(roomMessages.room_id, input.room_id), eq(roomMessages.seq, input.seq)))
+    .limit(1);
+  const retry = again[0];
+  if (!retry) throw new Error("upsertRoomMessageBySeq failed");
+  return { row: retry, inserted: false };
+}
+
+export async function upsertRoomReplica(input: {
+  id: string;
+  title: string;
+  owner_public_id: string;
+  members: RoomMembersJson;
+}): Promise<RoomRow> {
+  const existing = await getRoom(input.id);
+  if (existing) {
+    const updated = await updateRoomMembers(input.id, input.members);
+    if (updated && updated.title !== input.title) {
+      return (await updateRoomTitle(input.id, input.title)) ?? updated;
+    }
+    return updated ?? existing;
+  }
+  return insertRoom({
+    ...input,
+    federation_mode: "federated",
+  });
+}
+
+export async function getRoomFederationState(
+  roomId: string,
+): Promise<typeof roomFederationState.$inferSelect | null> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(roomFederationState)
+    .where(eq(roomFederationState.room_id, roomId))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function setRoomFederationState(roomId: string, lastSyncedSeq: number): Promise<void> {
+  const db = getDb();
+  const ts = now();
+  await db
+    .insert(roomFederationState)
+    .values({
+      room_id: roomId,
+      last_synced_seq: lastSyncedSeq,
+      updated_at: ts,
+    })
+    .onConflictDoUpdate({
+      target: roomFederationState.room_id,
+      set: { last_synced_seq: lastSyncedSeq, updated_at: ts },
+    });
+}
+
+export async function maxRoomSeq(roomId: string): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .select({ m: max(roomMessages.seq) })
+    .from(roomMessages)
+    .where(eq(roomMessages.room_id, roomId));
+  return rows[0]?.m ?? 0;
 }
 
 export function memberPublicIds(members: RoomMembersJson): string[] {

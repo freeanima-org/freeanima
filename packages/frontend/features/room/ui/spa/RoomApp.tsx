@@ -8,6 +8,7 @@ import type {
   RoomMessagePayload,
   RoomSummaryPayload,
 } from "@freeanima/shared/rpc-contract/frames/room.ts";
+import type { RoomSyncStatusPayload } from "@freeanima/shared/rpc-contract/frames/room-federation.ts";
 import { loadResolvedWorldContext } from "@freeanima/client/portal-sdk/world-context.ts";
 import {
   ChatComposeForm,
@@ -39,6 +40,14 @@ function weakLabel(publicId: string, display?: string): string {
   return `${publicId.slice(0, 6)}…`;
 }
 
+function syncStatusLabel(sync: RoomSyncStatusPayload | null): string | null {
+  if (!sync || sync.federation_mode === "local") return null;
+  if (sync.status === "synced") return "联邦 · 已同步";
+  if (sync.status === "behind") return `联邦 · 落后 ${sync.behind_count ?? "?"} 条`;
+  if (sync.status === "hub_unavailable") return "联邦 · Hub 不可用";
+  return "联邦";
+}
+
 function readCommandList(raw: unknown): SlashCommandItem[] {
   const rec = asRecord(raw);
   const commands = rec?.commands;
@@ -67,6 +76,9 @@ export function RoomApp() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createTitle, setCreateTitle] = useState("新群聊");
   const [createMemberIds, setCreateMemberIds] = useState<number[]>([]);
+  const [createFederated, setCreateFederated] = useState(false);
+  const [federationCreateEnabled, setFederationCreateEnabled] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<RoomSyncStatusPayload | null>(null);
 
   const [addOpen, setAddOpen] = useState(false);
   const [addMemberIds, setAddMemberIds] = useState<number[]>([]);
@@ -83,9 +95,14 @@ export function RoomApp() {
   }, []);
 
   const loadRoom = useCallback(async (roomId: string) => {
-    const [r, msgs] = await Promise.all([api.roomGet(roomId), api.roomMessagesList(roomId)]);
+    const [r, msgs, sync] = await Promise.all([
+      api.roomGet(roomId),
+      api.roomMessagesList(roomId),
+      api.roomSyncStatus(roomId).catch(() => null),
+    ]);
     setRoom(r);
     setMessages(msgs);
+    setSyncStatus(sync);
     setActiveId(roomId);
     setListOpen(false);
   }, []);
@@ -122,6 +139,15 @@ export function RoomApp() {
         const pid = await publicIdFromEntityId(ctx.user_subject_id);
         setUserPublicId(pid);
         await refreshList();
+        try {
+          const fed = await api.federationStatus();
+          setFederationCreateEnabled(
+            fed.role === "hub" ||
+              (fed.role === "satellite" && fed.connection_state === "connected"),
+          );
+        } catch {
+          setFederationCreateEnabled(false);
+        }
       } catch (e) {
         setError(String(e));
       }
@@ -182,10 +208,12 @@ export function RoomApp() {
         title: createTitle.trim() || "新群聊",
         owner_public_id: userPublicId,
         member_public_ids,
+        ...(createFederated ? { federated: true } : {}),
       });
       setCreateOpen(false);
       setCreateTitle("新群聊");
       setCreateMemberIds([]);
+      setCreateFederated(false);
       await refreshList();
       await loadRoom(created.room_id);
     } catch (e) {
@@ -385,6 +413,7 @@ export function RoomApp() {
   }
 
   const headerTitle = room?.title ?? "群聊";
+  const headerSync = syncStatusLabel(syncStatus);
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
@@ -408,6 +437,7 @@ export function RoomApp() {
               {room.speaker_public_id
                 ? ` · 发言中 ${weakLabel(room.speaker_public_id)}`
                 : " · 发言席空闲"}
+              {headerSync ? ` · ${headerSync}` : ""}
             </p>
           ) : null}
         </div>
@@ -542,11 +572,16 @@ export function RoomApp() {
                   commandList={commandList}
                   menuInFlow={compact}
                   streamVisible={!!streamDraft}
-                  canSendOnline={!busy}
+                  canSendOnline={!busy && syncStatus?.status !== "hub_unavailable"}
                   atMentionCandidates={atMentionCandidates}
                   onSend={handleSend}
                   onStopStreaming={() => void handleInterrupt()}
                 />
+                {syncStatus?.status === "hub_unavailable" ? (
+                  <p className="text-destructive mt-1 px-1 text-[11px]">
+                    Hub 不可用，联邦群聊暂为只读
+                  </p>
+                ) : null}
                 <p className="text-muted-foreground mt-1 px-1 text-[11px]">
                   输入 <code className="text-[10px]">/</code> 命令，或{" "}
                   <code className="text-[10px]">@</code> 提及成员
@@ -562,6 +597,7 @@ export function RoomApp() {
           open={infoOpen}
           onOpenChange={setInfoOpen}
           room={room}
+          syncStatus={syncStatus}
           userPublicId={userPublicId}
           busy={busy}
           streamBusy={!!streamDraft}
@@ -609,6 +645,17 @@ export function RoomApp() {
             />
             <p className="text-muted-foreground text-xs">你本人会自动加入；请至少再选一人。</p>
           </div>
+          {federationCreateEnabled ? (
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={createFederated}
+                onChange={(e) => setCreateFederated(e.target.checked)}
+                disabled={busy}
+              />
+              创建为联邦群聊（主序在 Hub）
+            </label>
+          ) : null}
           <div className="flex justify-end gap-2">
             <Button
               type="button"

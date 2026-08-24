@@ -19,9 +19,19 @@ export async function roomCreate(input: {
   title: string;
   owner_public_id: string;
   member_public_ids: string[];
+  federated?: boolean;
 }) {
   const data = await habitat().call("room.create", input);
   return data.room;
+}
+
+export async function roomSyncStatus(room_id: string) {
+  const data = await habitat().call("room.syncStatus", { room_id });
+  return data.sync;
+}
+
+export async function federationStatus() {
+  return habitat().call("federation.status", {});
 }
 
 export async function roomMessagesList(room_id: string) {

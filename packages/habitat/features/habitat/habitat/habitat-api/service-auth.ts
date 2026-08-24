@@ -3,6 +3,7 @@ import { verifyServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api
 import type { ServiceAuthContext } from "./auth-context.ts";
 import { isHabitatApiCorsPreflight, isSapWebSocketUpgrade } from "./remote-auth.ts";
 import { isOptionalAuthHabitatHttpRequest } from "@freeanima/habitat/platform/habitat/http-rest-auth.ts";
+import { FEDERATION_WS_PATH } from "@freeanima/habitat/capabilities/federation";
 
 export const SERVICE_AUTH_UNAUTHORIZED = "Unauthorized";
 
@@ -27,6 +28,9 @@ export function parseBearerToken(req: Request): string | null {
 function shouldSkipServiceAuth(req: Request): boolean {
   if (isHabitatApiCorsPreflight(req)) return true;
   if (isSapWebSocketUpgrade(req)) return true;
+  const url = new URL(req.url);
+  const upgrade = (req.headers.get("Upgrade") ?? "").toLowerCase() === "websocket";
+  if (upgrade && url.pathname === FEDERATION_WS_PATH) return true;
   return false;
 }
 

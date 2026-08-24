@@ -24,7 +24,7 @@ export class TokenAuthorizationError extends Error {
   }
 }
 
-const FULL_REQUIRED_MODULES = new Set(["tokens"]);
+const FULL_REQUIRED_MODULES = new Set(["tokens", "federation"]);
 
 export type AssertTokenRpcAccessOpts = {
   method: string;

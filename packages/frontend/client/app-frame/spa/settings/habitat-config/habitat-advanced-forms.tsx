@@ -6,12 +6,14 @@ import {
   hubConfigTextField,
 } from "./habitat-config-field-helpers.tsx";
 import { hubConfigVaultField } from "./habitat-config-vault-field.tsx";
+import { HubTrustedSatellitesPanel } from "./HubTrustedSatellitesPanel.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { isRecord } from "@freeanima/shared/util";
 
 export const ADVANCED_SECTIONS = [
   "i18n",
   "public",
+  "federation",
   "gateway",
   "discord",
   "weixin",
@@ -31,6 +33,7 @@ export type AdvancedSectionId = (typeof ADVANCED_SECTIONS)[number];
 export const SIDEBAR_OPS_SECTIONS = [
   "i18n",
   "public",
+  "federation",
   "gateway",
   "discord",
   "weixin",
@@ -45,6 +48,7 @@ export const SIDEBAR_OPS_SECTIONS = [
 export const ADVANCED_SECTION_TITLES: Partial<Record<AdvancedSectionId, string>> = {
   i18n: "时区",
   public: "公网访问",
+  federation: "跨实例联邦",
   gateway: "网关",
   discord: "Discord",
   weixin: "微信",
@@ -137,6 +141,79 @@ function PublicForm({
           hint: "须为绝对 origin（含协议），勿带 path；例如 https://anima.example.com",
         },
       )}
+    </div>
+  );
+}
+
+function FederationForm({
+  value,
+  onChange,
+}: {
+  value: Record<string, unknown>;
+  onChange: (v: Record<string, unknown>) => void;
+}) {
+  const role = coerceString(value.role ?? "disabled");
+  const hub = isRecord(value.hub) ? value.hub : {};
+  const setHub = (patch: Record<string, unknown>) =>
+    onChange({ ...value, hub: { ...hub, ...patch } });
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        星型联邦：1 个 Hub（公网入口，复用「公网访问」的 origin）+ 若干仅出站的 Satellite。 授信须在
+        Hub 设置页手动录入；Agent / MCP 不可自动添加。
+      </p>
+      {habitatConfigBoolField("enabled", Boolean(value.enabled), (enabled) =>
+        onChange({ ...value, enabled }),
+      )}
+      <div className="space-y-2">
+        <Label>角色</Label>
+        <select
+          className={habitatConfigSelectClassName}
+          value={role}
+          onChange={(e) => onChange({ ...value, role: e.target.value })}
+        >
+          <option value="disabled">未启用</option>
+          <option value="hub">Hub（联邦中心）</option>
+          <option value="satellite">Satellite（连接 Hub）</option>
+        </select>
+      </div>
+      {role === "satellite" ? (
+        <div className="space-y-3 rounded-md border border-border p-3">
+          <p className="text-xs text-muted-foreground">
+            填写 Hub 的公网 origin 与身份（从 Hub「资源 →
+            主体」「公网访问」复制）。保存后本机会主动连接； Hub
+            设置页「待授信」列表中批准后方可同步联邦 Room。
+          </p>
+          {hubConfigTextField(
+            "origin",
+            coerceString(hub.origin ?? ""),
+            (origin) => setHub({ origin }),
+            { placeholder: "https://anima.example.com" },
+          )}
+          {hubConfigTextField(
+            "habitat_instance_id",
+            coerceString(hub.habitat_instance_id ?? ""),
+            (habitat_instance_id) => setHub({ habitat_instance_id }),
+            { placeholder: "fa_inst_…" },
+          )}
+          {hubConfigTextField(
+            "public_key",
+            coerceString(hub.public_key ?? ""),
+            (public_key) => setHub({ public_key }),
+            { placeholder: "Hub Ed25519 公钥" },
+          )}
+        </div>
+      ) : null}
+      {role === "hub" ? (
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">
+            Hub 入站地址为「公网访问」中的 origin；下方授信列表走 federation.satellite.*（仅 user +
+            full token）。
+          </p>
+          <HubTrustedSatellitesPanel />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -575,6 +652,8 @@ export function AdvancedSectionForm({
       return <I18nForm value={value} onChange={onChange} />;
     case "public":
       return <PublicForm value={value} onChange={onChange} />;
+    case "federation":
+      return <FederationForm value={value} onChange={onChange} />;
     case "gateway":
       return <GatewayForm value={value} onChange={onChange} />;
     case "discord":
