@@ -215,3 +215,17 @@ export async function convertCalendarEventToTask(
   });
   return { id: data.item.id, title: data.item.title };
 }
+
+/** 议程日期行新建任务：计划开始锚定该日 09:00（与拖拽改 due 日锚点一致） */
+export async function createAgendaTask(
+  subjectId: number,
+  input: { title: string; day: string },
+): Promise<{ id: number; title: string }> {
+  const start_at = `${input.day}T09:00:00+08:00`;
+  const data = await habitat().call("tasklist.item.create", {
+    subject_id: subjectId,
+    title: input.title.trim(),
+    start_at,
+  });
+  return { id: data.item.id, title: data.item.title };
+}

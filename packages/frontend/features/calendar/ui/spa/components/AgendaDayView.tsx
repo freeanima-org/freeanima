@@ -61,29 +61,14 @@ function ProjectGroupRow({
 
   return (
     <Collapsible isExpanded={expanded} onExpandedChange={setExpanded}>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-1">
-          {childCount > 0 ? (
-            <CollapsibleTrigger
-              className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/60"
-              aria-label={expanded ? "折叠项目任务" : "展开项目任务"}
-            >
-              <ChevronRight
-                className={cn("size-4 transition-transform", expanded && "rotate-90")}
-                aria-hidden
-              />
-            </CollapsibleTrigger>
-          ) : (
-            <span className="size-8 shrink-0" aria-hidden />
-          )}
+      <div className="overflow-hidden rounded-lg border border-border/60">
+        <div className="flex items-center">
           <Button
             type="button"
-            variant="outline"
-            className="h-auto min-w-0 flex-1 justify-start gap-3 px-3 py-2 text-left"
+            variant="ghost"
+            className="h-auto min-w-0 flex-1 justify-start gap-3 rounded-none px-3 py-2 text-left"
             onPress={() => handlers.onOpenProject(group.projectId)}
           >
-            <span className="size-2 shrink-0" aria-hidden />
-            <span className="w-12 shrink-0 text-xs text-muted-foreground">项目</span>
             <span className="rounded bg-sky-500/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-sky-700 dark:text-sky-300">
               项目
             </span>
@@ -92,10 +77,22 @@ function ProjectGroupRow({
               <span className="shrink-0 text-xs text-muted-foreground">{childCount}</span>
             ) : null}
           </Button>
+          {childCount > 0 ? (
+            <CollapsibleTrigger
+              className="mr-1 inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted/60"
+              aria-label={expanded ? "折叠项目任务" : "展开项目任务"}
+            >
+              <ChevronRight
+                className={cn("size-4 transition-transform", expanded && "rotate-90")}
+                aria-hidden
+              />
+            </CollapsibleTrigger>
+          ) : null}
         </div>
         {childCount > 0 ? (
           <CollapsibleContent>
-            <div className="ml-6 border-l border-border/60 pl-2">
+            {/* 底色/顶部分隔表达归属；左右仅保留与卡片内边距一致的空隙，无层级缩进 */}
+            <div className="border-t border-border/60 bg-muted/20 p-2">
               <AgendaList day={day} items={group.children} {...handlers} />
             </div>
           </CollapsibleContent>

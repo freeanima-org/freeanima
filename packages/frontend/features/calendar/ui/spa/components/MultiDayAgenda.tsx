@@ -1,5 +1,5 @@
 import type { CalendarRangeItem } from "../lib/api.ts";
-import { dayHeadingLabel } from "../lib/format-calendar.ts";
+import { AgendaDayHeader } from "./AgendaDayHeader.tsx";
 import { AgendaDayView } from "./AgendaDayView.tsx";
 
 type MultiDayAgendaProps = {
@@ -11,6 +11,8 @@ type MultiDayAgendaProps = {
   onOpenProject: (id: number) => void;
   onEditEvent: (id: number) => void;
   onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
+  onCreateEvent: (day: string) => void;
+  onCreateTask: (day: string) => void;
 };
 
 export function MultiDayAgenda({
@@ -22,6 +24,8 @@ export function MultiDayAgenda({
   onOpenProject,
   onEditEvent,
   onOpenHoliday,
+  onCreateEvent,
+  onCreateTask,
 }: MultiDayAgendaProps) {
   const handlers = { onOpenEvent, onOpenTask, onOpenProject, onEditEvent, onOpenHoliday };
 
@@ -29,9 +33,12 @@ export function MultiDayAgenda({
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-auto">
       {days.map((day) => (
         <section key={day} className="flex flex-col gap-2">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            {dayHeadingLabel(day, today)}
-          </h2>
+          <AgendaDayHeader
+            day={day}
+            today={today}
+            onCreateEvent={onCreateEvent}
+            onCreateTask={onCreateTask}
+          />
           <AgendaDayView day={day} today={today} items={items} {...handlers} />
         </section>
       ))}

@@ -15,16 +15,10 @@ import {
 } from "@freeanima/ui-kit";
 import { toast } from "@freeanima/ui-kit/composite";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
-import {
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  PlusIcon,
-} from "lucide-react";
+import { Check, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { AgendaDayHeader } from "./components/AgendaDayHeader.tsx";
 import { AgendaDayView } from "./components/AgendaDayView.tsx";
 import {
   CalendarDisplayPopover,
@@ -33,6 +27,7 @@ import {
 import { EventEditorDialog, type EventEditorTarget } from "./components/EventEditorDialog.tsx";
 import { MonthGrid } from "./components/MonthGrid.tsx";
 import { MultiDayAgenda } from "./components/MultiDayAgenda.tsx";
+import { TaskCreateDialog } from "./components/TaskCreateDialog.tsx";
 import { WeekGrid, weekStartMonday } from "./components/WeekGrid.tsx";
 import {
   dueFiltersForAgenda,
@@ -45,6 +40,7 @@ import {
   type CalendarRangeItem,
   type CalendarRangeKind,
   convertCalendarEventToTask,
+  createAgendaTask,
   createCalendarEvent,
   deleteCalendarEvent,
   fetchCalendarEventById,
@@ -115,6 +111,7 @@ export function CalendarApp() {
   const showEndedEvents = viewDisplay.showEndedEvents;
   const agendaMode = isAgendaViewMode(viewMode);
   const [editor, setEditor] = useState<EventEditorTarget | null>(null);
+  const [taskCreateDay, setTaskCreateDay] = useState<string | null>(null);
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
   const [refreshing, setRefreshing] = useState(false);
   const [displaySheetOpen, setDisplaySheetOpen] = useState(false);
@@ -434,15 +431,6 @@ export function CalendarApp() {
                     </DropdownMenuItem>
                   </DropdownMenu>
                 </DropdownMenuTrigger>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="min-h-11"
-                  onPress={() => setEditor({ mode: "create", day: selectedDay })}
-                >
-                  <PlusIcon className="size-4" />
-                  {"新建"}
-                </Button>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -703,14 +691,6 @@ export function CalendarApp() {
               >
                 {refreshing ? <Spinner className="size-3.5" /> : "刷新"}
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                onPress={() => setEditor({ mode: "create", day: selectedDay })}
-              >
-                <PlusIcon className="size-4" />
-                {"新建事件"}
-              </Button>
             </div>
           </>
         )}
@@ -731,6 +711,8 @@ export function CalendarApp() {
             onOpenTask={openTask}
             onOpenProject={openProject}
             onOpenHoliday={openHoliday}
+            onCreateEvent={(day) => setEditor({ mode: "create", day })}
+            onCreateTask={(day) => setTaskCreateDay(day)}
           />
         </section>
       ) : (
@@ -778,7 +760,13 @@ export function CalendarApp() {
             )}
           </section>
           <section className="flex min-h-0 flex-col rounded-lg border border-border/60 p-3">
-            <h2 className="mb-2 text-sm font-medium text-muted-foreground">{selectedDay}</h2>
+            <AgendaDayHeader
+              className="mb-2 flex items-center gap-2"
+              day={selectedDay}
+              today={today}
+              onCreateEvent={(day) => setEditor({ mode: "create", day })}
+              onCreateTask={(day) => setTaskCreateDay(day)}
+            />
             <div className="min-h-0 flex-1 overflow-auto">
               <AgendaDayView
                 day={selectedDay}
@@ -826,6 +814,16 @@ export function CalendarApp() {
               },
             }
           : {})}
+      />
+      <TaskCreateDialog
+        open={taskCreateDay != null}
+        day={taskCreateDay}
+        today={today}
+        onClose={() => setTaskCreateDay(null)}
+        onSave={async ({ title, day }) => {
+          await createAgendaTask(subjectId, { title, day });
+          await refresh();
+        }}
       />
     </div>
   );
