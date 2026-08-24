@@ -19,11 +19,8 @@ import { entityPlugin } from "@freeanima/features/entity/plugin";
 import { vaultPlugin } from "@freeanima/features/vault/plugin";
 import { bookmarkPlugin } from "@freeanima/features/bookmark/plugin";
 import { contactPlugin } from "@freeanima/features/contact/plugin";
-<<<<<<< HEAD
 import { healthPlugin } from "@freeanima/features/health/plugin";
-=======
 import { federationPlugin } from "@freeanima/features/federation/plugin";
->>>>>>> 2949d8612 (feat(federation): 跨实例星型联邦与 Room 主序同步)
 import { roomPlugin } from "@freeanima/features/room/plugin";
 
 /** Habitat feature plugins registered at boot. */
