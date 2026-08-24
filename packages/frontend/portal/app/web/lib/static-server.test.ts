@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { startWebStaticServer } from "./static-server.ts";
 
 describe("startWebStaticServer", () => {
-  test("serves index, health, and config.json under /web", async () => {
+  test("serves index, healthz, and config.json under /web", async () => {
     const dist = mkdtempSync(join(tmpdir(), "web-dist-"));
     writeFileSync(join(dist, "index.html"), "<html>ok</html>");
 
@@ -18,8 +18,13 @@ describe("startWebStaticServer", () => {
     });
 
     const port = handle.port;
-    const health = await fetch(`http://127.0.0.1:${port}/web/health`);
-    expect(health.ok).toBe(true);
+    const healthz = await fetch(`http://127.0.0.1:${port}/web/healthz`);
+    expect(healthz.ok).toBe(true);
+    expect(await healthz.json()).toEqual({ ok: true, app: "web", mode: "static" });
+
+    const healthSpa = await fetch(`http://127.0.0.1:${port}/web/health`);
+    expect(healthSpa.ok).toBe(true);
+    expect(await healthSpa.text()).toContain("ok");
 
     const cfg = (await fetch(`http://127.0.0.1:${port}/web/config.json`).then((r) => r.json())) as {
       habitat_url?: string;

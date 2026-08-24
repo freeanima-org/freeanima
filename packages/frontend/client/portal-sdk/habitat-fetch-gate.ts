@@ -13,10 +13,20 @@ export function isHabitatConnected(): boolean {
 }
 
 /**
- * 断网、Habitat 未连接、或弱网本地优先时不应发起 Habitat RPC 读/flush，只读本地缓存。
+ * 是否值得尝试 Habitat 读/写（HTTP 或等 WS）。
+ * `connecting` 仍算可达：只读默认走 HTTP REST，与实时 WS 条幅状态独立；
+ * 仅 `disconnected`（或离线 / localPrefer）才纯吃缓存。
+ */
+export function isHabitatRpcReachableForFetch(): boolean {
+  const state = getHabitatRpcConnectionState();
+  return state === "connected" || state === "connecting";
+}
+
+/**
+ * 断网、Habitat 已判定断开、或弱网本地优先时不应发起 Habitat RPC 读/flush，只读本地缓存。
  */
 export function isHabitatFetchAvailable(): boolean {
-  return isNetworkOnline() && isHabitatConnected() && !isLocalPreferActive();
+  return isNetworkOnline() && isHabitatRpcReachableForFetch() && !isLocalPreferActive();
 }
 
 export function shellWritesDisabledFromState(input: {

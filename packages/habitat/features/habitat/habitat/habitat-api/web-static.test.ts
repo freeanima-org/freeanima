@@ -100,8 +100,13 @@ describe("web-static", () => {
     );
     expect(bridge?.headers.get("Cache-Control")).toContain("immutable");
 
-    const health = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/health`), opts);
+    const health = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/healthz`), opts);
     expect(health?.ok).toBe(true);
+    expect(await health!.json()).toEqual({ ok: true, app: "web", mode: "habitat-static" });
+
+    const healthSpa = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/health`), opts);
+    expect(healthSpa?.headers.get("Content-Type")).toContain("text/html");
+    expect(await healthSpa!.text()).toContain("ok");
 
     const page = serveWebStatic(new Request(`${base}${WEB_URL_PREFIX}/chat`), opts);
     expect(page?.headers.get("Cache-Control")).toBe("no-cache");

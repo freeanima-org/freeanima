@@ -15,13 +15,23 @@ import {
   HEALTH_METRIC_CATALOG,
   HEALTH_RECORD_KIND_LABELS,
   HEALTH_RECORD_KINDS,
+  healthMetricUnits,
   healthMetricsForKind,
 } from "@freeanima/shared/health/metric-catalog.ts";
 import {
   healthRecordKindSchema,
   healthVisitTypeSchema,
 } from "@freeanima/shared/rpc-contract/frames/health.ts";
-import { Button, Input, Select, SelectItem, Spinner } from "@freeanima/ui-kit";
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+} from "@freeanima/ui-kit";
 import { EmptyState, StatusAlert, PullToRefresh } from "@freeanima/ui-kit/composite";
 import { EntityPicker } from "@freeanima/features/entity/ui/spa/components/EntityPicker.tsx";
 
@@ -115,7 +125,8 @@ function fromLocalDatetimeValue(value: string): string {
 }
 
 function emptyReading(): ReadingDraft {
-  return { metric_key: "heart_rate", value: "", unit: "" };
+  const metric_key = "heart_rate";
+  return { metric_key, value: "", unit: healthMetricUnits(metric_key)[0] ?? "bpm" };
 }
 
 function emptyExamItem(): ExamItemDraft {
@@ -420,12 +431,18 @@ export function HealthApp() {
                   if (typeof key === "string") setSeriesMetric(key);
                 }}
                 className="min-w-[10rem]"
+                aria-label="指标"
               >
-                {HEALTH_METRIC_CATALOG.map((m) => (
-                  <SelectItem key={m.key} id={m.key}>
-                    {m.label} ({m.unit})
-                  </SelectItem>
-                ))}
+                <SelectTrigger className="w-full min-w-[10rem]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {HEALTH_METRIC_CATALOG.map((m) => (
+                    <SelectItem key={m.key} id={m.key}>
+                      {m.label} ({m.unit})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </label>
             <Button
@@ -516,6 +533,7 @@ export function HealthApp() {
             <span>类型</span>
             <Select
               selectedKey={draft.record_kind}
+              aria-label="记录类型"
               onSelectionChange={(key) => {
                 const parsed = healthRecordKindSchema.safeParse(key);
                 if (parsed.success) {
@@ -523,11 +541,16 @@ export function HealthApp() {
                 }
               }}
             >
-              {HEALTH_RECORD_KINDS.map((kind) => (
-                <SelectItem key={kind} id={kind}>
-                  {HEALTH_RECORD_KIND_LABELS[kind]}
-                </SelectItem>
-              ))}
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {HEALTH_RECORD_KINDS.map((kind) => (
+                  <SelectItem key={kind} id={kind}>
+                    {HEALTH_RECORD_KIND_LABELS[kind]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </label>
 
@@ -561,9 +584,10 @@ export function HealthApp() {
             <div className="flex flex-col gap-2 text-sm">
               <span className="font-medium">体征读数</span>
               {draft.readings.map((row, index) => (
-                <div key={index} className="grid grid-cols-[1fr_6rem_5rem_auto] gap-2">
+                <div key={index} className="grid grid-cols-[1fr_6rem_7rem_auto] gap-2">
                   <Select
                     selectedKey={row.metric_key}
+                    aria-label={`体征指标 ${index + 1}`}
                     onSelectionChange={(key) => {
                       if (typeof key !== "string") return;
                       const def = healthMetricsForKind("vital_sign").find((m) => m.key === key);
@@ -575,11 +599,16 @@ export function HealthApp() {
                       }));
                     }}
                   >
-                    {healthMetricsForKind("vital_sign").map((m) => (
-                      <SelectItem key={m.key} id={m.key}>
-                        {m.label}
-                      </SelectItem>
-                    ))}
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {healthMetricsForKind("vital_sign").map((m) => (
+                        <SelectItem key={m.key} id={m.key}>
+                          {m.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                   <Input
                     type="number"
@@ -595,18 +624,28 @@ export function HealthApp() {
                       }))
                     }
                   />
-                  <Input
-                    placeholder="单位"
-                    value={row.unit}
-                    onChange={(e) =>
+                  <Select
+                    selectedKey={row.unit || healthMetricUnits(row.metric_key)[0] || ""}
+                    aria-label={`单位 ${index + 1}`}
+                    onSelectionChange={(key) => {
+                      if (typeof key !== "string") return;
                       setDraft((d) => ({
                         ...d,
-                        readings: d.readings.map((r, i) =>
-                          i === index ? { ...r, unit: e.target.value } : r,
-                        ),
-                      }))
-                    }
-                  />
+                        readings: d.readings.map((r, i) => (i === index ? { ...r, unit: key } : r)),
+                      }));
+                    }}
+                  >
+                    <SelectTrigger className="w-full min-w-[5rem]">
+                      <SelectValue placeholder="单位" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {healthMetricUnits(row.metric_key, row.unit).map((u) => (
+                        <SelectItem key={u} id={u}>
+                          {u}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     type="button"
                     size="sm"
@@ -738,6 +777,7 @@ export function HealthApp() {
                 <span>来源</span>
                 <Select
                   selectedKey={draft.medication_source || "none"}
+                  aria-label="用药来源"
                   onSelectionChange={(key) => {
                     if (key === "none") {
                       setDraft((d) => ({ ...d, medication_source: "" }));
@@ -746,9 +786,14 @@ export function HealthApp() {
                     }
                   }}
                 >
-                  <SelectItem id="none">未指定</SelectItem>
-                  <SelectItem id="prescription">处方</SelectItem>
-                  <SelectItem id="self_purchase">自购</SelectItem>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem id="none">未指定</SelectItem>
+                    <SelectItem id="prescription">处方</SelectItem>
+                    <SelectItem id="self_purchase">自购</SelectItem>
+                  </SelectContent>
                 </Select>
               </label>
               <label className="flex flex-col gap-1 text-sm">
@@ -805,6 +850,7 @@ export function HealthApp() {
                 <span>就诊类型</span>
                 <Select
                   selectedKey={draft.visit_type || "other"}
+                  aria-label="就诊类型"
                   onSelectionChange={(key) => {
                     const parsed = healthVisitTypeSchema.safeParse(key);
                     if (parsed.success) {
@@ -812,11 +858,16 @@ export function HealthApp() {
                     }
                   }}
                 >
-                  <SelectItem id="blood">血液</SelectItem>
-                  <SelectItem id="chest_xray">胸片</SelectItem>
-                  <SelectItem id="ct">CT</SelectItem>
-                  <SelectItem id="diagnosis">诊断</SelectItem>
-                  <SelectItem id="other">其他</SelectItem>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem id="blood">血液</SelectItem>
+                    <SelectItem id="chest_xray">胸片</SelectItem>
+                    <SelectItem id="ct">CT</SelectItem>
+                    <SelectItem id="diagnosis">诊断</SelectItem>
+                    <SelectItem id="other">其他</SelectItem>
+                  </SelectContent>
                 </Select>
               </label>
               <label className="flex flex-col gap-1 text-sm">
