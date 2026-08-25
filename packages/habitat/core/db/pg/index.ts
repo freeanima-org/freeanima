@@ -1,11 +1,14 @@
 export {
   closeDb,
+  getActivePoolOptions,
   getDatabaseConfig,
   getDb,
+  getSqlClient,
   initDatabase,
   isPostgresPrimary,
   resetDatabaseForTest,
   setDbForTest,
+  startDatabasePoolHealer,
   type DatabaseConfig,
   type DatabaseUrlResolver,
   type Db,
@@ -13,6 +16,22 @@ export {
   type DbTransaction,
   type SqlClient,
 } from "./client.ts";
+export {
+  DEFAULT_PG_POOL_HEAL_INTERVAL_MS,
+  DEFAULT_PG_POOL_MAX_LIFETIME_SEC,
+  PG_HEAL_APP_NAME,
+  PG_POOL_APP_NAME,
+  resolvePoolOptions,
+  type PgPoolOptions,
+} from "./pool-options.ts";
+export {
+  drainPoolWithRollback,
+  runPoolHealTick,
+  startPgPoolHealer,
+  stopPgPoolHealer,
+  type PoolHealDeps,
+  type PoolHealTickResult,
+} from "./pool-heal.ts";
 export { withAdvisoryXactLock } from "./advisory-lock.ts";
 export { pingDatabase, type DatabasePingStatus } from "./health.ts";
 export { EntitySearchScopeError, resolvePublicAccessibleWorldIds } from "./entity/index.ts";

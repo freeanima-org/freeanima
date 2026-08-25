@@ -24,13 +24,17 @@ database:
 [`security.md`](security.md#credential-responsibilities)。
 
 可选连接池覆盖（见
-[`packages/habitat/core/db/pg/client.ts`](../../packages/habitat/core/db/pg/client.ts)）：
+[`packages/habitat/core/db/pg/client.ts`](../../packages/habitat/core/db/pg/client.ts) /
+[`pool-options.ts`](../../packages/habitat/core/db/pg/pool-options.ts)）：
 
-| Env                              | Default | 说明                                                                      |
-| -------------------------------- | ------- | ------------------------------------------------------------------------- |
-| `FREEANIMA_PG_POOL_MAX`          | `10`    | 连接池上限，对齐部署 `max_connections`                                    |
-| `FREEANIMA_PG_POOL_IDLE_TIMEOUT` | `0`     | 秒；`0` = 关闭。Bun ≤1.3.14 勿设 `30`（会误杀长查询，见 troubleshooting） |
-| `FREEANIMA_PG_POOL_MAX_LIFETIME` | `0`     | 秒；`0` = 不限制连接寿命                                                  |
+| Env                                  | Default | 说明                                                                                                     |
+| ------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------- |
+| `FREEANIMA_PG_POOL_MAX`              | `10`    | 连接池上限，对齐部署 `max_connections`                                                                   |
+| `FREEANIMA_PG_POOL_IDLE_TIMEOUT`     | `0`     | 秒；`0` = 关闭。Bun ≤1.3.14 勿设 `30`（会误杀长查询，见 troubleshooting）                                |
+| `FREEANIMA_PG_POOL_MAX_LIFETIME`     | `600`   | 秒；周期性换连接，缩小 Bun SQL 预处理语句缓存串台窗口。显式 `0` = 不限制寿命                             |
+| `FREEANIMA_PG_POOL_HEAL_INTERVAL_MS` | `10000` | 毒连接扫描间隔（毫秒）。独立监控连接查 `idle in transaction (aborted)` 后对业务池 `ROLLBACK`。`0` = 关闭 |
+
+业务池 `application_name=freeanima-habitat`；监控连接 `freeanima-habitat-heal`（不经业务池）。
 
 ## 本地安装（Docker，跨平台）
 
@@ -143,12 +147,13 @@ pre-commit / pre-push **不**跑 integration；PR CI 全量；功能/修 bug 主
 
 ## 故障排查
 
-| 现象                                           | 检查                                                                                                                                                                    |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 服务连库失败                                   | `database.url`；PostgreSQL 是否在跑；若用了 `env()` 引用是否可解析；启动错误信息会列出下一步（缺库、鉴权、连接、扩展）                                                  |
-| 启动/迁移出现 `Idle timeout reached after 30s` | Bun ≤1.3.14 会误杀进行中查询（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）。确保 `FREEANIMA_PG_POOL_IDLE_TIMEOUT=0`（默认）或临时导出该变量后重启 |
-| 栖息地「未就绪」超时而进程仍在跑               | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HABITAT_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                    |
-| 迁移失败                                       | 扩展已安装；DB 用户有 DDL 权限；HNSW / 大批量 backfill 可能很慢，勿与上述 idle timeout 混淆                                                                             |
-| FTS / 关键词召回为空                           | 已执行 `ensure-pg-extensions.sql`（`pg_trgm`）；必要时 jieba/FTS rebuild                                                                                                |
+| 现象                                                                                                          | 检查                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 服务连库失败                                                                                                  | `database.url`；PostgreSQL 是否在跑；若用了 `env()` 引用是否可解析；启动错误信息会列出下一步（缺库、鉴权、连接、扩展）                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 启动/迁移出现 `Idle timeout reached after 30s`                                                                | Bun ≤1.3.14 会误杀进行中查询（[oven-sh/bun#30646](https://github.com/oven-sh/bun/issues/30646)）。确保 `FREEANIMA_PG_POOL_IDLE_TIMEOUT=0`（默认）或临时导出该变量后重启                                                                                                                                                                                                                                                                                                                                                                                       |
+| 栖息地「未就绪」超时而进程仍在跑                                                                              | 迁移在 HTTP listen **之前**；默认等 15min（`FREEANIMA_HABITAT_READY_TIMEOUT_MS`）。看 `journalctl --user -u anima -f`，勿中途 `stop`                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 迁移失败                                                                                                      | 扩展已安装；DB 用户有 DDL 权限；HNSW / 大批量 backfill 可能很慢，勿与上述 idle timeout 混淆                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| FTS / 关键词召回为空                                                                                          | 已执行 `ensure-pg-extensions.sql`（`pg_trgm`）；必要时 jieba/FTS rebuild                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Inbox：`Builtin failed` 且 cause 含 `bind message supplies N parameters, but prepared statement … requires M` | **Bun SQL 预处理语句缓存串台**（[oven-sh/bun#30494](https://github.com/oven-sh/bun/issues/30494)），不是业务 SQL 写错。Failed query 的 params 个数与 cause 里 statement 对不上；statement 名常是别的查询的 40 字符截断（如 `Pselect "id", "type"…`）。**立刻：** 重启 Habitat 清毒连接。**缓解：** 默认 `FREEANIMA_PG_POOL_MAX_LIFETIME=600` + 毒连接回收（扫 `idle in transaction (aborted)` 后池内 `ROLLBACK`）；勿设 `prepare: false`（jsonb 会绑成 `[object Object]`）。**根治：** 升到含 statement-cache 按 name 字节建键的 Bun 版本后可再观察是否仍复现 |
 
 更多部署安全事项：[`security.md`](security.md)。

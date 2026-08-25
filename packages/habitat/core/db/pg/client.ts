@@ -2,6 +2,9 @@ import { relations, type DbRelations } from "@freeanima/habitat/core/db/schema";
 import { drizzle, type BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
 
+import { startPgPoolHealer, stopPgPoolHealer } from "./pool-heal.ts";
+import { PG_POOL_APP_NAME, resolvePoolOptions, type PgPoolOptions } from "./pool-options.ts";
+
 export interface DatabaseConfig {
   url: string;
 }
@@ -21,6 +24,7 @@ export type SqlClient = SQL;
 let databaseUrlResolver: DatabaseUrlResolver | null = null;
 let sqlClient: SqlClient | null = null;
 let dbInstance: Db | null = null;
+let activePoolOptions: PgPoolOptions | null = null;
 
 /** database.url resolver injected by service layer (called once at startup) */
 export function initDatabase(opts: { getDatabaseUrl: DatabaseUrlResolver }): void {
@@ -46,33 +50,23 @@ export function isPostgresPrimary(): boolean {
  * / 大批量 backfill 超过 30s 时直接把 Service startup 打挂。
  * Bun 修好后可用 FREEANIMA_PG_POOL_IDLE_TIMEOUT=30 再打开。
  *
+ * maxLifetime 默认 600：周期性换连接，减轻 Bun SQL 预处理语句缓存串台
+ * （oven-sh/bun#30494）。显式 `FREEANIMA_PG_POOL_MAX_LIFETIME=0` 关闭。
+ *
  * prepare 必须保持默认 true（Bun SQL）。`prepare: false` 时 jsonb / 复杂参数
  * 会被绑成 `[object Object]`，插入 entities.body 等列直接失败。
  * 并发下偶发 ERR_POSTGRES_UNSUPPORTED_INTEGER_SIZE（oven-sh/bun#16774）是另一类
  * 驱动竞态，不能用关 prepare 换；勿设 FREEANIMA_PG_PREPARE=0。
  */
-function resolvePoolOptions(): {
-  max: number;
-  idleTimeout: number;
-  maxLifetime: number;
-} {
-  const maxRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_MAX ?? "", 10);
-  const idleRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_IDLE_TIMEOUT ?? "", 10);
-  const lifetimeRaw = Number.parseInt(process.env.FREEANIMA_PG_POOL_MAX_LIFETIME ?? "", 10);
-  return {
-    max: Number.isFinite(maxRaw) && maxRaw > 0 ? maxRaw : 10,
-    idleTimeout: Number.isFinite(idleRaw) && idleRaw >= 0 ? idleRaw : 0,
-    maxLifetime: Number.isFinite(lifetimeRaw) && lifetimeRaw >= 0 ? lifetimeRaw : 0,
-  };
-}
-
 function createDb(url: string): Db {
   const pool = resolvePoolOptions();
+  activePoolOptions = pool;
   const client = new SQL({
     url,
     max: pool.max,
     idleTimeout: pool.idleTimeout,
     maxLifetime: pool.maxLifetime,
+    connection: { application_name: PG_POOL_APP_NAME },
   });
   sqlClient = client;
   return drizzle({ client, relations });
@@ -88,11 +82,43 @@ export function getDb(): Db {
   return dbInstance;
 }
 
+/** 底层 Bun SQL 池（毒连接回收 / 运维探测）；未 init 时为 null */
+export function getSqlClient(): SqlClient | null {
+  return sqlClient;
+}
+
+/** 当前池选项（含 healInterval）；池未创建时现算 env */
+export function getActivePoolOptions(): PgPoolOptions {
+  return activePoolOptions ?? resolvePoolOptions();
+}
+
+/** 启动毒连接回收（业务池已创建后调用） */
+export function startDatabasePoolHealer(): void {
+  const dbCfg = getDatabaseConfig();
+  if (!dbCfg?.url || !sqlClient) return;
+  startPgPoolHealer({
+    getPool: () => sqlClient,
+    databaseUrl: dbCfg.url,
+    poolOptions: getActivePoolOptions(),
+  });
+}
+
 export async function closeDb(): Promise<void> {
-  if (!sqlClient) return;
-  void sqlClient.close();
+  await stopPgPoolHealer();
+  if (!sqlClient) {
+    dbInstance = null;
+    activePoolOptions = null;
+    return;
+  }
+  const client = sqlClient;
   sqlClient = null;
   dbInstance = null;
+  activePoolOptions = null;
+  try {
+    await client.close({ timeout: 5 });
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Inject connection for tests / migration scripts */
@@ -106,4 +132,6 @@ export function resetDatabaseForTest(): void {
   databaseUrlResolver = null;
   sqlClient = null;
   dbInstance = null;
+  activePoolOptions = null;
+  void stopPgPoolHealer();
 }

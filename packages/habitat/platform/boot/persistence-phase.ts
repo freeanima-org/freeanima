@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 
-import { closeDb, getDb, initDatabase } from "@freeanima/habitat/core/db/pg";
+import {
+  closeDb,
+  getDb,
+  initDatabase,
+  startDatabasePoolHealer,
+} from "@freeanima/habitat/core/db/pg";
 import { abortOrphanAutoLlmRuns } from "@freeanima/habitat/core/db/pg/auto-llm-run";
 import { formatPgStartupError } from "@freeanima/habitat/core/db/pg/startup-error.ts";
 import { initRedis, withRedisLock } from "@freeanima/habitat/core/redis";
@@ -63,6 +68,9 @@ export async function bootPersistencePhase(): Promise<PersistencePhaseResult> {
     throw formatPgStartupError(err, { databaseUrl: dbUrl });
   }
   startupLog("Database migrations complete");
+
+  startDatabasePoolHealer();
+  startupLog("PostgreSQL pool healer started");
 
   try {
     const { aborted } = await abortOrphanAutoLlmRuns();
