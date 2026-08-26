@@ -57,28 +57,34 @@ function createMockRedis() {
       }
       return remaining;
     }
-    if (command !== "EVAL") return null;
-    const script = args[0] ?? "";
-    const key = args[2] ?? "";
-    const token = args[3] ?? "";
-    const e = store.get(key);
-    if (!e || Date.now() >= e.expiresAtMs) return 0;
-    if (script.includes("DEL")) {
-      if (e.value === token) {
-        store.delete(key);
-        return 1;
-      }
-      return 0;
-    }
-    if (script.includes("PEXPIRE")) {
-      if (e.value === token) {
-        store.set(key, { value: e.value, expiresAtMs: Date.now() + Number(args[4]) });
-        return 1;
-      }
-      return 0;
-    }
-    return 0;
+    return null;
   });
+  const evalScript = mock(
+    async (script: string, _numkeys: number, ...keysAndArgs: (string | number)[]) => {
+      const key = String(keysAndArgs[0] ?? "");
+      const token = String(keysAndArgs[1] ?? "");
+      const e = store.get(key);
+      if (!e || Date.now() >= e.expiresAtMs) return 0;
+      if (script.includes("DEL")) {
+        if (e.value === token) {
+          store.delete(key);
+          return 1;
+        }
+        return 0;
+      }
+      if (script.includes("PEXPIRE")) {
+        if (e.value === token) {
+          store.set(key, {
+            value: e.value,
+            expiresAtMs: Date.now() + Number(keysAndArgs[2]),
+          });
+          return 1;
+        }
+        return 0;
+      }
+      return 0;
+    },
+  );
   const del = mock(async (key: string) => {
     if (!store.has(key)) return 0;
     store.delete(key);
@@ -97,10 +103,11 @@ function createMockRedis() {
 
   return {
     store,
-    client: { set, get, send, del, scan } as unknown as RedisClient,
+    client: { set, get, send, eval: evalScript, del, scan } as unknown as RedisClient,
     set,
     get,
     send,
+    eval: evalScript,
     del,
     scan,
   };
@@ -145,7 +152,7 @@ describe("withRedisLock", () => {
     });
     expect(result).toEqual({ status: "ok", value: "done" });
     expect(mockRedis.store.has(`${REDIS_LOCK_KEY_PREFIX}job-a`)).toBe(false);
-    expect(mockRedis.send).toHaveBeenCalled();
+    expect(mockRedis.eval).toHaveBeenCalled();
   });
 
   it("try mode returns busy when lock held", async () => {
@@ -256,7 +263,7 @@ describe("withRedisLock", () => {
       return true;
     });
     expect(result).toEqual({ status: "ok", value: true });
-    expect(mockRedis.send.mock.calls.length).toBeGreaterThanOrEqual(1);
+    expect(mockRedis.eval.mock.calls.length).toBeGreaterThanOrEqual(1);
   });
 });
 

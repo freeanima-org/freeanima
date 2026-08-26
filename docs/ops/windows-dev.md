@@ -35,7 +35,7 @@ winget install Docker.DockerDesktop
 安装后 **新开终端**，确保 `bun`、`just`、`bash` 在 `PATH` 上。确认：
 
 ```powershell
-bun --version    # >= 1.3.14
+bun --version    # >= 1.4.0
 just --version
 bash --version   # 必须是 Git Bash（MINGW），不要是 WSL
 Get-Command bash | Select-Object -ExpandProperty Source
@@ -73,7 +73,7 @@ scoop install bun just git
 # Docker Desktop: install separately from docker.com if not using scoop
 ```
 
-确认 `bun --version` ≥ **1.3.14**（与根 `package.json` 的 `packageManager` 一致）。旧
+确认 `bun --version` ≥ **1.4.0**（与根 `package.json` 的 `packageManager` 一致）。旧
 scoop bun 会导致 `Bun.YAML` / `vi.useFakeTimers` 缺失、单测大面积失败；过旧时执行 `scoop update
 bun`。
 

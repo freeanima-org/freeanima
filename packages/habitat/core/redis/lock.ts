@@ -139,8 +139,7 @@ async function tryAcquire(key: string, token: string, ttlMs: number): Promise<Ac
 
 async function releaseLock(key: string, token: string): Promise<boolean> {
   try {
-    // Bun 1.3.14 typings 尚无 eval；经 send 调 EVAL
-    const result: unknown = await getRedis().send("EVAL", [UNLOCK_LUA, "1", key, token]);
+    const result: unknown = await getRedis().eval(UNLOCK_LUA, 1, key, token);
     return result === 1 || result === "1";
   } catch {
     return false;
@@ -149,13 +148,7 @@ async function releaseLock(key: string, token: string): Promise<boolean> {
 
 async function extendLock(key: string, token: string, ttlMs: number): Promise<boolean> {
   try {
-    const result: unknown = await getRedis().send("EVAL", [
-      EXTEND_LUA,
-      "1",
-      key,
-      token,
-      String(ttlMs),
-    ]);
+    const result: unknown = await getRedis().eval(EXTEND_LUA, 1, key, token, String(ttlMs));
     return result === 1 || result === "1";
   } catch {
     return false;

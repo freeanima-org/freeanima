@@ -2,7 +2,7 @@
   "name": "@freeanima/site",
   "type": "module",
   "private": true,
-  "packageManager": "bun@1.3.14",
+  "packageManager": "bun@1.4.0",
   "scripts": {
     "sync-install": "cp ../scripts/install.sh public/install",
     "sync-firefox-updates": "bun ../scripts/sync-firefox-extension-updates.ts",

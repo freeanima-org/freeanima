@@ -1,3 +1,4 @@
+import { parseBunCronUtc } from "./bun-cron-utc.ts";
 import { cstCronToUtc } from "./timezone.ts";
 
 export enum ScheduleType {
@@ -30,7 +31,7 @@ export function parseSchedule(expr: string): ParsedSchedule {
   const parts = trimmed.split(/\s+/);
   if (parts.length === 5) {
     const utc = cstCronToUtc(trimmed);
-    if (!Bun.cron.parse(utc)) {
+    if (!parseBunCronUtc(utc)) {
       throw new Error(`Invalid cron expression '${trimmed}'`);
     }
     return [ScheduleType.CRON, trimmed];

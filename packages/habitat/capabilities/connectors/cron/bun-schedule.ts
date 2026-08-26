@@ -1,3 +1,4 @@
+import { parseBunCronUtc } from "./bun-cron-utc.ts";
 import { ScheduleType, parseSchedule } from "./schedule.ts";
 import { cstCronToUtc } from "./timezone.ts";
 
@@ -40,7 +41,7 @@ export function computeNextRunAt(schedule: string, paused = false): number | nul
     return ts > nowSec ? ts : null;
   }
 
-  const next = Bun.cron.parse(resolved.expr);
+  const next = parseBunCronUtc(resolved.expr);
   if (!next) return null;
   return Math.floor(next.getTime() / 1000);
 }

@@ -32,8 +32,8 @@ function parsePositiveInt(raw: string | undefined, fallback: number): number {
 /**
  * 与部署 PG max_connections 对齐的默认池；可通过环境变量覆盖。
  *
- * - idleTimeout 默认 0（关闭）：Bun ≤1.3.14 会在查询执行中误触
- *   ERR_POSTGRES_IDLE_TIMEOUT（oven-sh/bun#30646）
+ * - idleTimeout 默认 0（关闭）：Bun ≤1.4.0 会在查询执行中误触
+ *   ERR_POSTGRES_IDLE_TIMEOUT（oven-sh/bun#30646，1.4 仍复现）
  * - maxLifetime 默认 600：周期性换连接，减轻预处理语句缓存串台窗口
  *   （oven-sh/bun#30494）；显式 `FREEANIMA_PG_POOL_MAX_LIFETIME=0` 关闭
  * - healIntervalMs 默认 10s：独立连接扫 `idle in transaction (aborted)` 并 ROLLBACK；

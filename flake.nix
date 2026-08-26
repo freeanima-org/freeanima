@@ -45,7 +45,7 @@
             targets = [ "x86_64-pc-windows-msvc" ];
           };
 
-          # bun 不纳入：nixpkgs bun 常落后于 engines（>=1.3.14）。
+          # bun 不纳入：nixpkgs bun 常落后于 engines（>=1.4.0）。
           # rustToolchain 须排在 rustup 之前，避免 rustup 的 cargo 代理抢 PATH。
           cliTools = with pkgs; [
             just
@@ -95,7 +95,7 @@
             export PATH="$PATH:$CARGO_HOME/bin"
             echo "[freeanima flake] just=$(command -v just)  rustc=$(command -v rustc)  cargo=$(command -v cargo)  rustup=$(command -v rustup)  makensis=$(command -v makensis || echo missing)  cargo-xwin=$(command -v cargo-xwin || echo missing)${extra}"
             if ! command -v bun >/dev/null 2>&1; then
-              echo "[freeanima flake] 未检测到 bun：请安装 >=1.3.14（https://bun.sh）后再 just dev"
+              echo "[freeanima flake] 未检测到 bun：请安装 >=1.4.0（https://bun.sh）后再 just dev"
             fi
             if ! rustc --print sysroot >/dev/null 2>&1; then
               echo "[freeanima flake] rustc 不可用"

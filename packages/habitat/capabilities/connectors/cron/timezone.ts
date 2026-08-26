@@ -9,7 +9,7 @@ function hasSimpleHourField(expr: string): boolean {
 }
 
 /**
- * CST semantic cron → UTC cron (Bun.cron uses UTC).
+ * CST semantic cron → UTC cron（再经 `scheduleBunCronUtc` / `parseBunCronUtc` 固定 tz=UTC）。
  * Converts only when hour is a simple integer; minute-level steps unchanged.
  */
 export function cstCronToUtc(expr: string): string {
