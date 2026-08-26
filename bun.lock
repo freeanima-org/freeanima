@@ -93,6 +93,8 @@
       "version": "0.0.0",
       "bin": {
         "anima": "./portal/cli/cli.ts",
+        "anima-client": "./portal/client/cli.ts",
+        "anima-probe": "./portal/probe/cli.ts",
       },
       "dependencies": {
         "@anthropic-ai/sdk": "^0.117.1",

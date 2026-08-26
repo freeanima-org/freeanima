@@ -32,7 +32,9 @@
     "wxt": "^0.21.4"
   },
   "bin": {
-    "anima": "./packages/habitat/portal/cli/cli.ts"
+    "anima": "./packages/habitat/portal/cli/cli.ts",
+    "anima-client": "./packages/habitat/portal/client/cli.ts",
+    "anima-probe": "./packages/habitat/portal/probe/cli.ts"
   },
   "description": "逸灵风 Free Anima (TypeScript)",
   "license": "MIT",

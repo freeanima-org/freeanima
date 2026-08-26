@@ -35,6 +35,11 @@ web: _deps
 cli: _deps
   {{ bun }} scripts/build-cli-executable.ts
 
+# anima-client + anima-probe（SSH scp / PATH；装到 ~/.anima/bin）
+[no-cd]
+client-probe: _deps
+  {{ bun }} scripts/build-outpost-clis.ts
+
 # 当前宿主平台桌面壳（Win→NSIS / Linux→AppImage；与 just dev tauri 同工具链）
 # 环境：FREEANIMA_BUILD_CHANNEL（缺省 local）
 [no-cd]

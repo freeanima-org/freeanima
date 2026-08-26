@@ -19,7 +19,7 @@ import type { SubagentCreateInput, SubagentRow, SubagentUpdateInput } from "./ty
 
 function toRow(
   parsed: NonNullable<ReturnType<typeof asSubagent>>,
-  meta: { created_at: Date; updated_at: Date },
+  meta: { created_at: Date; updated_at: Date; tag_ids: number[] },
 ): SubagentRow {
   return {
     id: parsed.id,
@@ -34,6 +34,7 @@ function toRow(
     allowed_tools: parsed.allowed_tools,
     denied_tools: parsed.denied_tools,
     prompt_includes: parsed.prompt_includes ?? [],
+    tag_ids: meta.tag_ids,
     created_at: meta.created_at.toISOString(),
     updated_at: meta.updated_at.toISOString(),
   };
@@ -68,7 +69,14 @@ export async function listSubagents(worldId: number): Promise<SubagentRow[]> {
   const out: SubagentRow[] = [];
   for (const row of rows) {
     const parsed = asSubagent(row);
-    if (parsed) out.push(toRow(parsed, { created_at: row.created_at, updated_at: row.updated_at }));
+    if (parsed)
+      out.push(
+        toRow(parsed, {
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          tag_ids: row.tag_ids ?? [],
+        }),
+      );
   }
   return out.toSorted((a, b) => a.slug.localeCompare(b.slug));
 }
@@ -77,7 +85,13 @@ export async function getSubagent(id: number): Promise<SubagentRow | null> {
   const row = await getEntity(id);
   if (!row) return null;
   const parsed = asSubagent(row);
-  return parsed ? toRow(parsed, { created_at: row.created_at, updated_at: row.updated_at }) : null;
+  return parsed
+    ? toRow(parsed, {
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        tag_ids: row.tag_ids ?? [],
+      })
+    : null;
 }
 
 export async function getSubagentBySlug(
@@ -132,7 +146,11 @@ export async function createSubagent(
   });
   const parsed = asSubagent(created);
   if (!parsed) throw new Error("failed to create subagent");
-  return toRow(parsed, { created_at: created.created_at, updated_at: created.updated_at });
+  return toRow(parsed, {
+    created_at: created.created_at,
+    updated_at: created.updated_at,
+    tag_ids: created.tag_ids ?? [],
+  });
 }
 
 export async function updateSubagent(
@@ -178,7 +196,11 @@ export async function updateSubagent(
   if (!updated) throw new Error(`subagent not found: ${input.id}`);
   const parsed = asSubagent(updated);
   if (!parsed) throw new Error("failed to update subagent");
-  return toRow(parsed, { created_at: updated.created_at, updated_at: updated.updated_at });
+  return toRow(parsed, {
+    created_at: updated.created_at,
+    updated_at: updated.updated_at,
+    tag_ids: updated.tag_ids ?? [],
+  });
 }
 
 export async function deleteSubagent(worldId: number, id: number): Promise<void> {

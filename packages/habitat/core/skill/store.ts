@@ -34,6 +34,7 @@ function recordToDef(rec: SkillRecord): SkillDef {
       description: rec.description,
       entityId: rec.id,
       worldId: rec.world_id,
+      tag_ids: rec.tag_ids,
       content: rec.content,
       source: rec.body.origin,
     },

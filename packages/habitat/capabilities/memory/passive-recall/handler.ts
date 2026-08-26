@@ -4,7 +4,9 @@ import {
   getRuntimeLogger,
   resolvePassiveRecallConfig,
 } from "@freeanima/habitat/core/config";
-import { isCronSession } from "@freeanima/habitat/core/db/pg/conversation";
+import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
+import { isCronSession, getConversationMeta } from "@freeanima/habitat/core/db/pg/conversation";
+import { isCodingConversationMeta } from "@freeanima/habitat/core/tool";
 import { listResidentSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
 import { isFtsQueryError } from "@freeanima/habitat/core/util";
 
@@ -74,6 +76,12 @@ export function createPassiveMemoryRecallHandler() {
 
     if (await isCronSession(conversationId)) {
       finishDebug(ctx, undefined, { skipped_reason: "cron_session", query: "" });
+      return;
+    }
+
+    const convMeta = await getConversationMeta(conversationId);
+    if (convMeta != null && isConversationMeta(convMeta) && isCodingConversationMeta(convMeta)) {
+      finishDebug(ctx, undefined, { skipped_reason: "coding_session", query: "" });
       return;
     }
 

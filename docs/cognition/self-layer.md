@@ -90,10 +90,10 @@ retain / 自传路径**不再**提取新的自传体叙事，也不再维护自�
 2. World / 渠道 / toolsets（运行时钩子）
 3. 环境 + 健康基线（静态会话副本；见 [`environment-awareness.md`](environment-awareness.md)）
 4. 常驻记忆（置顶事实）
-5. 项目上下文（仅 `coding_agent` 情景：前哨同步的 AGENTS.md / `.agents` rules / 厂商兼容 —— 不是任意会话 cwd）
+5. 项目上下文（仅 `coding_agent` 情景：前哨同步的 AGENTS.md / always rules + scoped rules 目录 —— 不是任意会话 cwd）
 6. 群聊协议与花名册（仅 `room_inner`：`<room_members>` + `<room_context>`；本实例唯一人类用户记为 `kind=user`）
 
-**工作模式**保留记忆引用/回忆、渠道（带标签）、world/toolsets/skills/subagents，以及已同步的 Coding 项目上下文 —— 不含自我层身份框架。
+**工作模式（`coding_agent`）**为纯编码栈：渠道（一行）、收紧的 toolsets、经 entity 标签 **`coding`** 过滤的 subagents/skills 目录，以及 Outpost 同步的 **always rules + scoped rules 目录**（`project_context` / `project_rules_scoped`）。**不**注入自我层、常驻记忆、world_context、anima_uri、memory citation/recall，**不**在每轮注入 passive memory；项目 skills/agents/mcp **catalog 段**也不进 system prompt（按需 `skill_load` / `project_mcp_status`）。
 
 自我层使用第二人称指令骨架 + **外层** `<self_layer>`，五块为**嵌套 XML**（`<existence_anchor>` / `<self_model>` / …），不再用 Markdown `##` 标题做结构。
 

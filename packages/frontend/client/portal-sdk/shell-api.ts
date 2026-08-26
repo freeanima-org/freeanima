@@ -157,6 +157,19 @@ export type ShellApi = {
    * 工作目录应由调用方限制在 workspace_root 内。
    */
   runCommand?: (opts: ShellRunCommandOpts) => Promise<ShellRunCommandResult>;
+  /**
+   * SSH Remote 编排：本机 OpenSSH 进程面（需 Rust `ssh_remote_*` IPC）。
+   * 与 Agent 工具中继无关；仅 bootstrap / 隧道。
+   */
+  sshProcess?: {
+    run: (
+      command: string,
+      args: readonly string[],
+      opts?: { timeoutMs?: number },
+    ) => Promise<{ stdout: string; stderr: string; exitCode: number }>;
+    spawnDetached: (command: string, args: readonly string[]) => Promise<{ handleId: string }>;
+    stopDetached: (handleId: string) => Promise<void>;
+  };
   /** 原生文件夹选择器；取消返回 null */
   pickDirectory?: () => Promise<string | null>;
   /**

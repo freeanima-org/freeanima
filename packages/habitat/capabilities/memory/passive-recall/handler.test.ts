@@ -31,6 +31,11 @@ const isCronSession = mock(async () => false);
 const listResidentSemanticMemory = mock(async () => []);
 
 const searchOriginal = await import("./search.ts");
+const conversationOriginal = await import("@freeanima/habitat/core/db/pg/conversation");
+
+const getConversationMeta = mock(
+  async (): Promise<Awaited<ReturnType<typeof conversationOriginal.getConversationMeta>>> => null,
+);
 
 mock.module("./search.ts", () => ({
   ...searchOriginal,
@@ -38,7 +43,9 @@ mock.module("./search.ts", () => ({
 }));
 
 mock.module("@freeanima/habitat/core/db/pg/conversation", () => ({
+  ...conversationOriginal,
   isCronSession,
+  getConversationMeta,
 }));
 
 const resolveBoundAgentForConversation = mock(async () => ({
@@ -57,6 +64,7 @@ mock.module("@freeanima/habitat/core/db/pg/semantic-memory", () => ({
 
 afterAll(() => {
   mock.module("./search.ts", () => searchOriginal);
+  mock.module("@freeanima/habitat/core/db/pg/conversation", () => conversationOriginal);
 });
 
 const { createPassiveMemoryRecallHandler } = await import("./handler.ts");
@@ -89,6 +97,7 @@ describe("createPassiveMemoryRecallHandler", () => {
     resetActiveConfigForTest();
     semanticPassiveRecallSearchDetailed.mockClear();
     isCronSession.mockClear();
+    getConversationMeta.mockClear();
     listResidentSemanticMemory.mockClear();
   });
 
@@ -153,6 +162,30 @@ describe("createPassiveMemoryRecallHandler", () => {
     const messages: StoredMessage[] = [{ role: "user", content: "hello" }];
     await createPassiveMemoryRecallHandler()({ conversationId: "cron-session", messages });
     expect(semanticPassiveRecallSearchDetailed).not.toHaveBeenCalled();
+  });
+
+  it("skips coding_agent sessions", async () => {
+    bindTestConfig(true);
+    getConversationMeta.mockResolvedValueOnce({
+      model: "m",
+      scenario: "coding_agent",
+      platform: "coding",
+      cached_toolsets: [],
+      functions: [],
+      timestamp: new Date().toISOString(),
+    });
+    const messages: StoredMessage[] = [{ role: "user", content: "hello" }];
+    const llmDebugExtras: Record<string, unknown> = {};
+    await createPassiveMemoryRecallHandler()({
+      conversationId: "coding-1",
+      messages,
+      llm_debug: true,
+      llmDebugExtras,
+    });
+    expect(semanticPassiveRecallSearchDetailed).not.toHaveBeenCalled();
+    expect(messages).toHaveLength(1);
+    const trace = llmDebugExtras.passive_recall as { skipped_reason?: string };
+    expect(trace.skipped_reason).toBe("coding_session");
   });
 
   it("excludes hits sourced from the current conversation", async () => {

@@ -54,3 +54,8 @@ export {
   formatCstDateTimeMinute,
   stripUserTimePrefix,
 } from "./time-prefix.ts";
+export {
+  CODING_CATALOG_TAG_TITLE,
+  entityMatchesScenarioCatalog,
+  resolveCodingCatalogTagId,
+} from "./catalog-tags.ts";

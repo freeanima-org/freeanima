@@ -15,17 +15,31 @@ import {
   visibleSessions,
 } from "./agent-sessions.ts";
 
-describe("agent-sessions v2", () => {
+describe("agent-sessions v3", () => {
   test("一会话一根 / 可无工作区", () => {
     const none = createAgentSession({ workspaceRoot: null });
     expect(none.workspaceRoot).toBeNull();
+    expect(none.workspaceKind).toBe("none");
     expect(none.conversationId).toBeNull();
     expect(none.archivedAt).toBeNull();
     expect(none.title).toBe("无工作区");
 
     const withRoot = createAgentSession({ workspaceRoot: "C:/a/foo" });
     expect(withRoot.workspaceRoot).toBe("C:/a/foo");
+    expect(withRoot.workspaceKind).toBe("local");
     expect(defaultTitle(withRoot.workspaceRoot)).toBe("foo");
+  });
+
+  test("ssh 会话字段", () => {
+    const s = createAgentSession({
+      workspaceKind: "ssh",
+      workspaceRoot: "/home/u/repo",
+      remote: { user: "u", host: "h", remoteWorkspace: "/home/u/repo" },
+      outpostInstanceId: "inst1",
+    });
+    expect(s.workspaceKind).toBe("ssh");
+    expect(s.remote?.host).toBe("h");
+    expect(repoGroupKey(s)).toContain("ssh:");
   });
 
   test("patchSessionMeta 不改 workspaceRoot", () => {
@@ -39,9 +53,8 @@ describe("agent-sessions v2", () => {
   test("按仓库分组", () => {
     const a = createAgentSession({ workspaceRoot: "C:/proj/freeanima", title: "t1" });
     const b = createAgentSession({ workspaceRoot: "D:/wt/freeanima", title: "t2" });
-    // 同 basename 同组
-    expect(repoGroupKey(a.workspaceRoot)).toBe("freeanima");
-    expect(repoGroupKey(b.workspaceRoot)).toBe("freeanima");
+    expect(repoGroupKey(a)).toBe("freeanima");
+    expect(repoGroupKey(b)).toBe("freeanima");
     const groups = groupSessionsByRepo([a, b, createAgentSession({ workspaceRoot: null })]);
     expect(groups.some((g) => g.key === "freeanima" && g.sessions.length === 2)).toBe(true);
     expect(groups.some((g) => g.key === "无工作区")).toBe(true);
@@ -50,7 +63,12 @@ describe("agent-sessions v2", () => {
   test("archiveSession 软隐藏并切换 active", () => {
     const a = createAgentSession({ title: "A", workspaceRoot: null });
     const b = createAgentSession({ title: "B", workspaceRoot: null });
-    const state = { sessions: [a, b], activeSessionId: a.id, knownWorkspaces: [] as string[] };
+    const state = {
+      sessions: [a, b],
+      activeSessionId: a.id,
+      knownWorkspaces: [] as string[],
+      knownSshTargets: [],
+    };
     const next = archiveSession(state, a.id);
     expect(next.sessions.find((s) => s.id === a.id)?.archivedAt).toBeTruthy();
     expect(visibleSessions(next.sessions).map((s) => s.id)).toEqual([b.id]);
@@ -60,7 +78,7 @@ describe("agent-sessions v2", () => {
   test("归档最后一个可见会话会补一条空会话", () => {
     const only = createAgentSession({ title: "only", workspaceRoot: null });
     const next = archiveSession(
-      { sessions: [only], activeSessionId: only.id, knownWorkspaces: [] },
+      { sessions: [only], activeSessionId: only.id, knownWorkspaces: [], knownSshTargets: [] },
       only.id,
     );
     expect(visibleSessions(next.sessions)).toHaveLength(1);
@@ -72,7 +90,7 @@ describe("agent-sessions v2", () => {
     const a = createAgentSession({ title: "A", workspaceRoot: null });
     const b = createAgentSession({ title: "B", workspaceRoot: null });
     const next = removeSession(
-      { sessions: [a, b], activeSessionId: a.id, knownWorkspaces: [] },
+      { sessions: [a, b], activeSessionId: a.id, knownWorkspaces: [], knownSshTargets: [] },
       a.id,
     );
     expect(next.sessions.map((s) => s.id)).toEqual([b.id]);
@@ -80,9 +98,9 @@ describe("agent-sessions v2", () => {
   });
 
   test("load 空态", () => {
-    // node 测试无 localStorage 时 empty
     const state = loadAgentSessions();
     expect(state.sessions.length).toBeGreaterThanOrEqual(1);
+    expect(state.knownSshTargets).toEqual([]);
   });
 
   test("rememberWorkspace 去重并持久化到 knownWorkspaces", () => {
@@ -101,6 +119,7 @@ describe("agent-sessions v2", () => {
       sessions: [a, b, createAgentSession({ workspaceRoot: null })],
       activeSessionId: a.id,
       knownWorkspaces: ["C:/proj/freeanima", "E:/old/removed"],
+      knownSshTargets: [],
     };
     expect(listKnownWorkspaceRoots(state)).toEqual([
       "C:/proj/freeanima",

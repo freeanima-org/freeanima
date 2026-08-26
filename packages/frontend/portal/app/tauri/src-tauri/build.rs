@@ -60,6 +60,9 @@ fn main() {
         "workspace_fs_walk_files",
         "workspace_fs_search",
         "run_command",
+        "ssh_remote_run",
+        "ssh_remote_spawn_detached",
+        "ssh_remote_stop_detached",
       ]))
       .plugin(
         "apk-installer",

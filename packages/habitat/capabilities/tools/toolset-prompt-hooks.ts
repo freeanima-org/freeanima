@@ -20,7 +20,9 @@ export function registerToolsetSystemPromptHooks(
       const allowed = meta ? applyConversationToolPolicyFilter(allNames, meta) : allNames;
       const content = renderToolsetsBody(toolRegistry, {
         allowedToolNames: allowed,
-        ...(meta && isCodingConversationMeta(meta) ? { extraIntro: CODING_HANDS_INTRO } : {}),
+        ...(meta && isCodingConversationMeta(meta)
+          ? { extraIntro: CODING_HANDS_INTRO, omitGenericIntro: true }
+          : {}),
       });
       if (!content.trim()) return { status: "ok" };
       return {

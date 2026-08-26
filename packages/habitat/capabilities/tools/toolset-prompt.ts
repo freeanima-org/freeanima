@@ -12,6 +12,8 @@ const CODING_HANDS_INTRO =
 export type RenderToolsetsBodyOpts = {
   allowedToolNames?: readonly string[] | null;
   extraIntro?: string;
+  /** coding 会话：不拼通用 TOOLSETS_INTRO */
+  omitGenericIntro?: boolean;
 };
 
 /** Compact tool name list for catalog density (collapse shared prefixes). */
@@ -60,10 +62,14 @@ export function renderToolsetsBody(
     return [tools ? `- ${ts.name} — ${desc} · ${tools}` : `- ${ts.name} — ${desc}`];
   });
   if (lines.length === 0) return "";
-  const intro = opts?.extraIntro?.trim()
-    ? `${TOOLSETS_INTRO}\n${opts.extraIntro.trim()}`
-    : TOOLSETS_INTRO;
-  return `${intro}\n\n${lines.join("\n")}`;
+  const extra = opts?.extraIntro?.trim() ?? "";
+  const intro = opts?.omitGenericIntro
+    ? extra
+    : extra
+      ? `${TOOLSETS_INTRO}\n${extra}`
+      : TOOLSETS_INTRO;
+  const header = intro.trim();
+  return header ? `${header}\n\n${lines.join("\n")}` : lines.join("\n");
 }
 
 export { CODING_HANDS_INTRO };

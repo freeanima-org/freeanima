@@ -14,6 +14,7 @@ export type SkillDef = {
   description: string;
   entityId: number;
   worldId: number;
+  tag_ids: readonly number[];
   origin: SkillOrigin;
   status: SkillStatus;
   allowed_tools: readonly string[];
@@ -88,6 +89,7 @@ export function skillDefFromBody(
     description: string;
     entityId: number;
     worldId: number;
+    tag_ids?: readonly number[];
     content: string;
     source?: string;
   },
@@ -98,6 +100,7 @@ export function skillDefFromBody(
     description: input.description,
     entityId: input.entityId,
     worldId: input.worldId,
+    tag_ids: input.tag_ids ?? [],
     origin: body.origin,
     status: body.status,
     allowed_tools: body.allowed_tools,

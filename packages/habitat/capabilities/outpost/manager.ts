@@ -292,6 +292,33 @@ export class RemoteToolsManager {
     this.toolSetNames.delete(setName);
   }
 
+  /**
+   * UI / RPC 同步调用：向指定 instance 发 `tool.call`，不依赖 conversation ALS。
+   * Agent 回合仍走 register 时绑定的 handler（`dispatchBoundTool`）。
+   */
+  async invokeLocalTool(opts: {
+    appId: string;
+    instanceId: string;
+    localName: string;
+    args: Record<string, unknown>;
+    workspaceRoot?: string;
+    conversationId?: string;
+  }): Promise<string> {
+    const key = this.connectionKey(opts.appId, opts.instanceId);
+    const conn = this.connections.get(key);
+    if (!conn) {
+      return toolError(`outpost instance offline: ${key}`);
+    }
+    const fullName = formatRemoteToolName(opts.appId, opts.instanceId, opts.localName);
+    return this.sendToolCall(conn, {
+      fullName,
+      localName: opts.localName,
+      args: opts.args,
+      conversationId: opts.conversationId ?? "",
+      ...(opts.workspaceRoot != null ? { workspaceRoot: opts.workspaceRoot } : {}),
+    });
+  }
+
   /** 注册时绑定的通道；调用只查 live connection，不做工具名/会话二次路由 */
   private async dispatchBoundTool(
     connectionKey: string,
@@ -313,13 +340,32 @@ export class RemoteToolsManager {
     const workspaceRoot =
       typeof meta?.workspace_root === "string" ? meta.workspace_root : undefined;
 
+    return this.sendToolCall(conn, {
+      fullName,
+      localName,
+      args,
+      conversationId,
+      ...(workspaceRoot != null ? { workspaceRoot } : {}),
+    });
+  }
+
+  private sendToolCall(
+    conn: OutpostConnection,
+    opts: {
+      fullName: string;
+      localName: string;
+      args: Record<string, unknown>;
+      conversationId: string;
+      workspaceRoot?: string;
+    },
+  ): Promise<string> {
     const payload: ToolCallPayload = omitUndefined({
       call_id: randomPublicId(),
-      tool_name: fullName,
-      local_name: localName,
-      args,
-      conversation_id: conversationId,
-      workspace_root: workspaceRoot,
+      tool_name: opts.fullName,
+      local_name: opts.localName,
+      args: opts.args,
+      conversation_id: opts.conversationId,
+      workspace_root: opts.workspaceRoot,
     });
 
     return new Promise<string>((resolve, reject) => {

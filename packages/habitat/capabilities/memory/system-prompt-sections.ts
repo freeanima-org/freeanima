@@ -20,6 +20,7 @@ export async function buildMemorySystemPromptSections(
   cwd?: string | null,
   mode: PromptMode = "digital_human",
   opts?: { world_id?: number },
+  flags?: { skipMemoryRules?: boolean },
 ): Promise<SystemPromptSection[]> {
   const includeDigitalHuman = mode !== "work";
   const world_id = opts?.world_id;
@@ -38,20 +39,22 @@ export async function buildMemorySystemPromptSections(
       xmlFrame: SELF_LAYER_SYSTEM_FRAME,
     });
   }
-  sections.push({
-    id: "memory-citation",
-    content: MEMORY_REFERENCE_CITATION_RULE,
-    order: 25,
-    priority: 1,
-    xmlTag: PROMPT_XML_TAGS.memoryCitation,
-  });
-  sections.push({
-    id: "memory-recall",
-    content: MEMORY_RECALL_STRATEGY_RULE,
-    order: 26,
-    priority: 1,
-    xmlTag: PROMPT_XML_TAGS.memoryRecall,
-  });
+  if (!flags?.skipMemoryRules) {
+    sections.push({
+      id: "memory-citation",
+      content: MEMORY_REFERENCE_CITATION_RULE,
+      order: 25,
+      priority: 1,
+      xmlTag: PROMPT_XML_TAGS.memoryCitation,
+    });
+    sections.push({
+      id: "memory-recall",
+      content: MEMORY_RECALL_STRATEGY_RULE,
+      order: 26,
+      priority: 1,
+      xmlTag: PROMPT_XML_TAGS.memoryRecall,
+    });
+  }
   if (includeDigitalHuman && world_id != null && world_id > 0) {
     const residentBody = await renderResidentMemoryBody({ world_id });
     if (residentBody.trim()) {

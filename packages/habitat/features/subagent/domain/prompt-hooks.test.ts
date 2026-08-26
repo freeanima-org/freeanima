@@ -17,6 +17,7 @@ function row(partial: Partial<SubagentRow> & Pick<SubagentRow, "slug">): Subagen
     allowed_tools: [],
     denied_tools: [],
     prompt_includes: [],
+    tag_ids: partial.tag_ids ?? [],
     created_at: "2026-01-01T00:00:00.000Z",
     updated_at: "2026-01-01T00:00:00.000Z",
   };
