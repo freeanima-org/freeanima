@@ -87,8 +87,8 @@ describePg("slash commands (core)", () => {
         platform: TEST_SAP_CHAT_PLATFORM,
       },
       [
-        { role: "user", content: "hello", pos: 1, timestamp: "t1" },
-        { role: "assistant", content: "old reply", pos: 2, timestamp: "t2" },
+        { role: "user", content: "hello", pos: 1, timestamp: "2026-05-26T16:00:01.000Z" },
+        { role: "assistant", content: "old reply", pos: 2, timestamp: "2026-05-26T16:00:02.000Z" },
       ],
     );
 
@@ -161,8 +161,8 @@ describePg("slash commands (core)", () => {
           platform: "discord",
         },
         [
-          { role: "user", content: "hello", pos: 1, timestamp: "t1" },
-          { role: "assistant", content: "hi there", pos: 2, timestamp: "t2" },
+          { role: "user", content: "hello", pos: 1, timestamp: "2026-06-09T12:00:01.000Z" },
+          { role: "assistant", content: "hi there", pos: 2, timestamp: "2026-06-09T12:00:02.000Z" },
         ],
       );
 
