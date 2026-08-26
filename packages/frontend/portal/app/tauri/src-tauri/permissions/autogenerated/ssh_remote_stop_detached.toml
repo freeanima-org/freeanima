@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-ssh-remote-stop-detached"
+description = "Enables the ssh_remote_stop_detached command without any pre-configured scope."
+commands.allow = ["ssh_remote_stop_detached"]
+
+[[permission]]
+identifier = "deny-ssh-remote-stop-detached"
+description = "Denies the ssh_remote_stop_detached command without any pre-configured scope."
+commands.deny = ["ssh_remote_stop_detached"]

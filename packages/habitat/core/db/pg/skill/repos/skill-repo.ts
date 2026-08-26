@@ -25,6 +25,7 @@ export type SkillRecord = {
   name: string;
   description: string;
   content: string;
+  tag_ids: number[];
   body: SkillBody;
 };
 
@@ -38,6 +39,7 @@ function rowToSkill(row: EntityRow): SkillRecord | null {
     name: row.title,
     description: row.summary,
     content: row.content,
+    tag_ids: row.tag_ids ?? [],
     body: parsed.data,
   };
 }

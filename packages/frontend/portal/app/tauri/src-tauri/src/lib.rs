@@ -8,6 +8,8 @@ mod windows_aumid;
 mod shell_icons;
 #[cfg(desktop)]
 mod coding_fs;
+#[cfg(desktop)]
+mod ssh_remote;
 #[cfg(mobile)]
 mod apk_installer_plugin;
 #[cfg(mobile)]
@@ -1173,6 +1175,9 @@ pub fn run() {
         coding_fs::workspace_fs_walk_files,
         coding_fs::workspace_fs_search,
         coding_fs::run_command,
+        ssh_remote::ssh_remote_run,
+        ssh_remote::ssh_remote_spawn_detached,
+        ssh_remote::ssh_remote_stop_detached,
       ])
       .setup(|app| {
         // 冷启动带 --quit-for-install（无已运行实例可转发）：直接退出，不建托盘/窗。

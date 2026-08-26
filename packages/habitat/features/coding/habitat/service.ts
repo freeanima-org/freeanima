@@ -1,9 +1,12 @@
 import { isPostgresPrimary } from "@freeanima/habitat/core/db/pg";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import type { RemoteToolsManager } from "@freeanima/habitat/capabilities/outpost";
+import { CODING_APP_ID } from "@freeanima/shared/coding/constants.ts";
 import type {
   CodingNoteCreateInput,
   CodingNoteListInput,
   CodingNoteRowPayload,
+  CodingOutpostExecInput,
   CodingProjectContextSyncInput,
 } from "@freeanima/shared/rpc-contract/frames/coding.ts";
 import type { ProjectAgentContextSnapshot } from "@freeanima/shared/coding/project-agent-context";
@@ -74,4 +77,19 @@ export async function serviceProjectContextSync(
     // PG 未就绪时仅内存缓存
   }
   return { ok: true as const, conversation_id: input.conversation_id };
+}
+
+export async function serviceCodingOutpostExec(
+  manager: RemoteToolsManager,
+  input: CodingOutpostExecInput,
+) {
+  const content = await manager.invokeLocalTool({
+    appId: CODING_APP_ID,
+    instanceId: input.instance_id,
+    localName: input.tool,
+    args: input.args ?? {},
+    ...(input.workspace_root ? { workspaceRoot: input.workspace_root } : {}),
+    ...(input.conversation_id ? { conversationId: input.conversation_id } : {}),
+  });
+  return { ok: true as const, content };
 }

@@ -12,6 +12,7 @@ export type SubagentRow = SubagentBody & {
   summary: string;
   content: string;
   world_id: number;
+  tag_ids: number[];
   created_at: string;
   updated_at: string;
 };

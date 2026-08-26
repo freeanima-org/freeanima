@@ -10,27 +10,27 @@ title: 架构
 
 面向用户的产品术语（中文见 [`i18n/glossary.md`](../../i18n/glossary.md)）：
 
-| 角色                           | 英文             | 中文               | 含义                                                                                             |
-| ------------------------------ | ---------------- | ------------------ | ------------------------------------------------------------------------------------------------ |
-| 长驻进程 / 连接目标            | **Habitat**      | **栖息地**         | 一个进程承载**多个数字生命**（`agent` subject）与**人类资产**（`user`）；连接 / token / 重启目标 |
-| 外部连接器（类）               | **Portal**       | **入口**           | 进入栖息地的方式类；四种**形态**：application / browser / mcp / cli                              |
-| 入口形态                       | —                | **入口形态**       | 入口的实现种类                                                                                   |
-| 应用形态入口                   | **Shell**        | **壳** / 应用形态  | 形态 `application` — 整窗 SPA（desktop / mobile / web）。**不是**应用布局                        |
-| 浏览器形态入口                 | —                | **浏览器形态入口** | 形态 `browser` — 浏览器扩展（MV3）；`packages/frontend/portal/extension`；**不是** Web 壳        |
-| MCP 形态入口                   | **MCP**          | **MCP 形态入口**   | 形态 `mcp` — 栖息地 `/mcp`（`mcp-server`）。入站 `mcp-client` **不是**入口                       |
-| CLI 形态入口                   | **CLI**          | **CLI 形态入口**   | 形态 `cli` — `anima` CLI；`packages/habitat/portal/cli`                                          |
-| 远程工具注册方                 | **Outpost**      | **前哨**           | 不可达本地应用，经 `remote_tools.attach`（入口内嵌伴侣或独立工具）；**不是**入口                 |
-| 壳                             | **Shell**        | **壳**             | 应用形态入口（desktop / mobile / web）。**不是**栖息地；**不是**应用布局；**不是**浏览器形态入口 |
-| 应用布局                       | **app frame**    | **应用布局**       | `packages/frontend/client/app-frame`（`AppFrame`）中的 SPA chrome；随视口；与壳正交              |
-| 管理 / 检视 UI（遗留 Habitat） | **Habitat** (UI) | **栖息地**         | `/habitat/*` 区域；「打开栖息地」vs「连接栖息地」——**实例**运维 / 检视                           |
-| 管理首页                       | **Dashboard**    | **仪表盘**         | 仅 `/habitat/dashboard`；其他栖息地路由保留各自标签                                              |
-| Anima 私有空间 UI              | **Bedroom**      | **卧室**           | `/bedroom/*`；与栖息地成对——选一个 Anima，看其自我层 / 记忆 / 生活资产（群租房隐喻）             |
-| 消息桥                         | **Gateway**      | Gateway            | Discord / 微信 — **不是**入口                                                                    |
-| 协议 / 代码标识                | —                | **协议/代码标识**  | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                |
+| 角色                           | 英文             | 中文               | 含义                                                                                                |
+| ------------------------------ | ---------------- | ------------------ | --------------------------------------------------------------------------------------------------- |
+| 长驻进程 / 连接目标            | **Habitat**      | **栖息地**         | 一个进程承载**多个数字生命**（`agent` subject）与**人类资产**（`user`）；连接 / token / 重启目标    |
+| 外部连接器（类）               | **Portal**       | **入口**           | 进入栖息地的方式类；四种**形态**：application / browser / mcp / cli                                 |
+| 入口形态                       | —                | **入口形态**       | 入口的实现种类                                                                                      |
+| 应用形态入口                   | **Shell**        | **壳** / 应用形态  | 形态 `application` — 整窗 SPA（desktop / mobile / web）。**不是**应用布局                           |
+| 浏览器形态入口                 | —                | **浏览器形态入口** | 形态 `browser` — 浏览器扩展（MV3）；`packages/frontend/portal/extension`；**不是** Web 壳           |
+| MCP 形态入口                   | **MCP**          | **MCP 形态入口**   | 形态 `mcp` — 栖息地 `/mcp`（`mcp-server`）。入站 `mcp-client` **不是**入口                          |
+| CLI 形态入口                   | **CLI**          | **CLI 形态入口**   | 形态 `cli` — `anima` / `anima-client` / `anima-probe`；`packages/habitat/portal/{cli,client,probe}` |
+| 远程工具注册方                 | **Outpost**      | **前哨**           | 不可达本地应用，经 `remote_tools.attach`（入口内嵌伴侣或独立工具）；**不是**入口                    |
+| 壳                             | **Shell**        | **壳**             | 应用形态入口（desktop / mobile / web）。**不是**栖息地；**不是**应用布局；**不是**浏览器形态入口    |
+| 应用布局                       | **app frame**    | **应用布局**       | `packages/frontend/client/app-frame`（`AppFrame`）中的 SPA chrome；随视口；与壳正交                 |
+| 管理 / 检视 UI（遗留 Habitat） | **Habitat** (UI) | **栖息地**         | `/habitat/*` 区域；「打开栖息地」vs「连接栖息地」——**实例**运维 / 检视                              |
+| 管理首页                       | **Dashboard**    | **仪表盘**         | 仅 `/habitat/dashboard`；其他栖息地路由保留各自标签                                                 |
+| Anima 私有空间 UI              | **Bedroom**      | **卧室**           | `/bedroom/*`；与栖息地成对——选一个 Anima，看其自我层 / 记忆 / 生活资产（群租房隐喻）                |
+| 消息桥                         | **Gateway**      | Gateway            | Discord / 微信 — **不是**入口                                                                       |
+| 协议 / 代码标识                | —                | **协议/代码标识**  | `/rpc/v1`、`HabitatRPC/1.0`、`habitat_*`、`habitat_runtime_config`、`dev:habitat`                   |
 
 动词：**连接栖息地**（URL + token）；**打开栖息地**（管理 UI）；**经入口到达**（壳 / 浏览器扩展 / MCP / CLI）。
 
-代码布局：`packages/frontend/portal/{app,extension}` + `packages/habitat/portal/cli`；MCP 形态实现仍在 `packages/habitat/capabilities/mcp-server`。见 [`docs/modules/portal.md`](../modules/portal.md)。
+代码布局：`packages/frontend/portal/{app,extension}` + `packages/habitat/portal/{cli,client,probe}`；MCP 形态实现仍在 `packages/habitat/capabilities/mcp-server`。见 [`docs/modules/portal.md`](../modules/portal.md)。
 
 资源层 **躯体（Body）**（四层模型下的 VM / OS / 网络）是 subject 认知上的「我跑在什么上」— **不是**栖息地进程名。
 

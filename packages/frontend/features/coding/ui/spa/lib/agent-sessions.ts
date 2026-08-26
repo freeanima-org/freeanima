@@ -1,14 +1,23 @@
 import { asRecord } from "@freeanima/shared/util";
+import type { SshRemoteTarget } from "@freeanima/shared/coding/ssh-remote";
+
 /**
  * Coding Agent Window：多 Agent 会话。
  * 硬约束：一对话一根工作区（可 null）；创建后不可变（为 worktree 留口）。
  */
 
+export type CodingWorkspaceKind = "local" | "ssh" | "none";
+
 export type CodingAgentSession = {
   id: string;
   title: string;
-  /** 创建时锁定；null = 无工作区；之后不可改 */
+  /** 创建时锁定；null = 无工作区；之后不可改。SSH 时为远端绝对路径 */
   workspaceRoot: string | null;
+  workspaceKind: CodingWorkspaceKind;
+  /** kind===ssh 时必填 */
+  remote?: SshRemoteTarget;
+  /** SSH / 显式绑定时的 outpost instance */
+  outpostInstanceId?: string | null;
   /** Habitat conversation；PR2 写入后复用 */
   conversationId: string | null;
   /** 软归档时间戳；null = 仍在主列表 */
@@ -20,12 +29,15 @@ export type CodingAgentSession = {
 export type AgentSessionsState = {
   sessions: CodingAgentSession[];
   activeSessionId: string | null;
-  /** 已知工作区（曾选过的工作区路径，去重；会话被删也保留，供新建下拉选择） */
+  /** 已知工作区（曾选过的本地路径，去重） */
   knownWorkspaces: string[];
+  /** 已知 SSH 目标（去重） */
+  knownSshTargets: SshRemoteTarget[];
 };
 
-const STORAGE_KEY = "freeanima:coding:agent-sessions:v2";
-const LEGACY_STORAGE_KEY = "freeanima:coding:agent-sessions:v1";
+const STORAGE_KEY = "freeanima:coding:agent-sessions:v3";
+const LEGACY_V2_KEY = "freeanima:coding:agent-sessions:v2";
+const LEGACY_V1_KEY = "freeanima:coding:agent-sessions:v1";
 
 export function newSessionId(): string {
   return `agent-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -41,28 +53,47 @@ export function basename(path: string): string {
   return parts[parts.length - 1] || posix || "workspace";
 }
 
-export function defaultTitle(workspaceRoot: string | null): string {
+export function defaultTitle(workspaceRoot: string | null, kind?: CodingWorkspaceKind): string {
+  if (kind === "ssh" && workspaceRoot) return `ssh:${basename(workspaceRoot)}`;
   if (!workspaceRoot) return "无工作区";
   return basename(workspaceRoot);
 }
 
-/** 仓库分组键：无工作区用固定标签；有根用 basename（同仓多会话同组） */
-export function repoGroupKey(workspaceRoot: string | null): string {
-  return workspaceRoot ? basename(workspaceRoot) : "无工作区";
+/** 仓库分组键 */
+export function repoGroupKey(
+  session: Pick<CodingAgentSession, "workspaceRoot" | "workspaceKind" | "remote">,
+): string {
+  if (session.workspaceKind === "ssh" && session.remote) {
+    return `ssh:${session.remote.user}@${session.remote.host}:${basename(session.remote.remoteWorkspace)}`;
+  }
+  return session.workspaceRoot ? basename(session.workspaceRoot) : "无工作区";
 }
 
 export function createAgentSession(partial?: {
   title?: string;
   workspaceRoot?: string | null;
+  workspaceKind?: CodingWorkspaceKind;
+  remote?: SshRemoteTarget;
+  outpostInstanceId?: string | null;
   conversationId?: string | null;
 }): CodingAgentSession {
   const now = Date.now();
-  const rootRaw = partial?.workspaceRoot;
-  const workspaceRoot = rootRaw == null || rootRaw === "" ? null : normalizeRoot(rootRaw) || null;
+  const kind =
+    partial?.workspaceKind ?? (partial?.remote ? "ssh" : partial?.workspaceRoot ? "local" : "none");
+  const rootRaw = partial?.workspaceRoot ?? partial?.remote?.remoteWorkspace ?? null;
+  const workspaceRoot =
+    rootRaw == null || rootRaw === ""
+      ? null
+      : kind === "ssh"
+        ? rootRaw.trim()
+        : normalizeRoot(rootRaw) || null;
   return {
     id: newSessionId(),
-    title: partial?.title?.trim() || defaultTitle(workspaceRoot),
+    title: partial?.title?.trim() || defaultTitle(workspaceRoot, kind),
     workspaceRoot,
+    workspaceKind: kind,
+    ...(partial?.remote ? { remote: partial.remote } : {}),
+    outpostInstanceId: partial?.outpostInstanceId?.trim() || null,
     conversationId: partial?.conversationId?.trim() || null,
     archivedAt: null,
     createdAt: now,
@@ -71,8 +102,17 @@ export function createAgentSession(partial?: {
 }
 
 export function emptySessionsState(): AgentSessionsState {
-  const first = createAgentSession({ title: "无工作区", workspaceRoot: null });
-  return { sessions: [first], activeSessionId: first.id, knownWorkspaces: [] };
+  const first = createAgentSession({
+    title: "无工作区",
+    workspaceRoot: null,
+    workspaceKind: "none",
+  });
+  return {
+    sessions: [first],
+    activeSessionId: first.id,
+    knownWorkspaces: [],
+    knownSshTargets: [],
+  };
 }
 
 export function loadAgentSessions(): AgentSessionsState {
@@ -81,15 +121,25 @@ export function loadAgentSessions(): AgentSessionsState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse 边界
-      const parsed = JSON.parse(raw) as AgentSessionsState;
-      return normalizeState(parsed);
+      return normalizeState(JSON.parse(raw) as AgentSessionsState);
     }
-    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    const v2 = localStorage.getItem(LEGACY_V2_KEY);
+    if (v2) {
+      const migrated = migrateV2(JSON.parse(v2));
+      saveAgentSessions(migrated);
+      try {
+        localStorage.removeItem(LEGACY_V2_KEY);
+      } catch {
+        /* ignore */
+      }
+      return migrated;
+    }
+    const legacy = localStorage.getItem(LEGACY_V1_KEY);
     if (legacy) {
       const migrated = migrateV1(JSON.parse(legacy));
       saveAgentSessions(migrated);
       try {
-        localStorage.removeItem(LEGACY_STORAGE_KEY);
+        localStorage.removeItem(LEGACY_V1_KEY);
       } catch {
         /* ignore */
       }
@@ -110,7 +160,23 @@ export function saveAgentSessions(state: AgentSessionsState): void {
   }
 }
 
-/** v1：workspaceRoots[] + activeRoot → 单根 */
+function migrateV2(raw: unknown): AgentSessionsState {
+  if (!raw || typeof raw !== "object") return emptySessionsState();
+  const r = asRecord(raw) ?? {};
+  const sessionsRaw = Array.isArray(r.sessions) ? r.sessions : [];
+  if (sessionsRaw.length === 0) return emptySessionsState();
+  const sessions = sessionsRaw.map((row) => sanitizeSession(asRecord(row) ?? {}));
+  const knownWorkspaces = sanitizeKnownWorkspaces(r.knownWorkspaces, sessions);
+  const activeSessionId =
+    sessions.find((s) => s.id === r.activeSessionId)?.id ?? sessions.at(0)?.id ?? null;
+  return {
+    sessions,
+    activeSessionId,
+    knownWorkspaces,
+    knownSshTargets: sanitizeKnownSshTargets(r.knownSshTargets),
+  };
+}
+
 function migrateV1(raw: unknown): AgentSessionsState {
   if (!raw || typeof raw !== "object") return emptySessionsState();
   const r = raw as {
@@ -123,7 +189,12 @@ function migrateV1(raw: unknown): AgentSessionsState {
     sessions.find((s) => s.id === r.activeSessionId)?.id ??
     sessions.at(0)?.id ??
     emptySessionsState().activeSessionId;
-  return { sessions, activeSessionId, knownWorkspaces: collectWorkspaceRoots(sessions) };
+  return {
+    sessions,
+    activeSessionId,
+    knownWorkspaces: collectWorkspaceRoots(sessions),
+    knownSshTargets: [],
+  };
 }
 
 function migrateSessionRow(row: unknown): Partial<CodingAgentSession> & Record<string, unknown> {
@@ -147,27 +218,72 @@ function normalizeState(parsed: AgentSessionsState): AgentSessionsState {
   if (!Array.isArray(parsed.sessions) || parsed.sessions.length === 0) {
     return emptySessionsState();
   }
-  const sessions = parsed.sessions.map(sanitizeSession);
+  const sessions = parsed.sessions.map((s) => sanitizeSession(s));
   const visible = visibleSessions(sessions);
   const knownWorkspaces = sanitizeKnownWorkspaces(parsed.knownWorkspaces, sessions);
+  const knownSshTargets = sanitizeKnownSshTargets(parsed.knownSshTargets);
   if (visible.length === 0) {
-    const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
-    return { sessions: [...sessions, fresh], activeSessionId: fresh.id, knownWorkspaces };
+    const fresh = createAgentSession({
+      title: "无工作区",
+      workspaceRoot: null,
+      workspaceKind: "none",
+    });
+    return {
+      sessions: [...sessions, fresh],
+      activeSessionId: fresh.id,
+      knownWorkspaces,
+      knownSshTargets,
+    };
   }
   const activeSessionId =
     visible.find((s) => s.id === parsed.activeSessionId)?.id ?? visible.at(0)?.id ?? null;
   if (!activeSessionId) return emptySessionsState();
-  return { sessions, activeSessionId, knownWorkspaces };
+  return { sessions, activeSessionId, knownWorkspaces, knownSshTargets };
+}
+
+function sanitizeRemote(raw: unknown): SshRemoteTarget | undefined {
+  const o = asRecord(raw);
+  if (!o) return undefined;
+  const user = typeof o.user === "string" ? o.user.trim() : "";
+  const host = typeof o.host === "string" ? o.host.trim() : "";
+  const remoteWorkspace = typeof o.remoteWorkspace === "string" ? o.remoteWorkspace.trim() : "";
+  if (!user || !host || !remoteWorkspace) return undefined;
+  const port = typeof o.port === "number" && o.port > 0 ? o.port : undefined;
+  const identityFile =
+    typeof o.identityFile === "string" && o.identityFile.trim() ? o.identityFile.trim() : undefined;
+  return {
+    user,
+    host,
+    remoteWorkspace,
+    ...(port != null ? { port } : {}),
+    ...(identityFile ? { identityFile } : {}),
+  };
 }
 
 function sanitizeSession(
   s: Partial<CodingAgentSession> & Record<string, unknown>,
 ): CodingAgentSession {
+  const remote = sanitizeRemote(s.remote);
+  let workspaceKind: CodingWorkspaceKind =
+    s.workspaceKind === "ssh" || s.workspaceKind === "local" || s.workspaceKind === "none"
+      ? s.workspaceKind
+      : remote
+        ? "ssh"
+        : typeof s.workspaceRoot === "string" && s.workspaceRoot.trim()
+          ? "local"
+          : "none";
   let workspaceRoot: string | null = null;
   if (typeof s.workspaceRoot === "string" && s.workspaceRoot.trim()) {
-    workspaceRoot = normalizeRoot(s.workspaceRoot);
+    workspaceRoot =
+      workspaceKind === "ssh" ? s.workspaceRoot.trim() : normalizeRoot(s.workspaceRoot);
+  } else if (remote) {
+    workspaceRoot = remote.remoteWorkspace;
+    workspaceKind = "ssh";
   } else if (s.workspaceRoot === null) {
     workspaceRoot = null;
+  }
+  if (workspaceKind === "ssh" && !remote) {
+    workspaceKind = workspaceRoot ? "local" : "none";
   }
   const archivedAt =
     typeof s.archivedAt === "number" && Number.isFinite(s.archivedAt) && s.archivedAt > 0
@@ -175,8 +291,14 @@ function sanitizeSession(
       : null;
   return {
     id: s.id || newSessionId(),
-    title: s.title || defaultTitle(workspaceRoot),
+    title: s.title || defaultTitle(workspaceRoot, workspaceKind),
     workspaceRoot,
+    workspaceKind,
+    ...(remote && workspaceKind === "ssh" ? { remote } : {}),
+    outpostInstanceId:
+      typeof s.outpostInstanceId === "string" && s.outpostInstanceId.trim()
+        ? s.outpostInstanceId.trim()
+        : null,
     conversationId:
       typeof s.conversationId === "string" && s.conversationId.trim()
         ? s.conversationId.trim()
@@ -211,20 +333,28 @@ export function removeSession(state: AgentSessionsState, id: string): AgentSessi
   const sessions = state.sessions.filter((s) => s.id !== id);
   const visible = visibleSessions(sessions);
   if (visible.length === 0) {
-    // 可见会话清空后仍保留已记录的工作区，供新建下拉继续选择
-    const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
+    const fresh = createAgentSession({
+      title: "无工作区",
+      workspaceRoot: null,
+      workspaceKind: "none",
+    });
     return {
       sessions: [...sessions, fresh],
       activeSessionId: fresh.id,
       knownWorkspaces: state.knownWorkspaces,
+      knownSshTargets: state.knownSshTargets,
     };
   }
   const activeSessionId =
     state.activeSessionId === id ? (visible.at(0)?.id ?? null) : state.activeSessionId;
-  return { sessions, activeSessionId, knownWorkspaces: state.knownWorkspaces };
+  return {
+    sessions,
+    activeSessionId,
+    knownWorkspaces: state.knownWorkspaces,
+    knownSshTargets: state.knownSshTargets,
+  };
 }
 
-/** 软归档：离开主列表，数据仍留在 localStorage。 */
 export function archiveSession(state: AgentSessionsState, id: string): AgentSessionsState {
   const now = Date.now();
   const sessions = state.sessions.map((s) =>
@@ -232,27 +362,43 @@ export function archiveSession(state: AgentSessionsState, id: string): AgentSess
   );
   const visible = visibleSessions(sessions);
   if (visible.length === 0) {
-    const fresh = createAgentSession({ title: "无工作区", workspaceRoot: null });
+    const fresh = createAgentSession({
+      title: "无工作区",
+      workspaceRoot: null,
+      workspaceKind: "none",
+    });
     return {
       sessions: [...sessions, fresh],
       activeSessionId: fresh.id,
       knownWorkspaces: state.knownWorkspaces,
+      knownSshTargets: state.knownSshTargets,
     };
   }
   const activeSessionId =
     state.activeSessionId === id ? (visible.at(0)?.id ?? null) : state.activeSessionId;
-  return { sessions, activeSessionId, knownWorkspaces: state.knownWorkspaces };
+  return {
+    sessions,
+    activeSessionId,
+    knownWorkspaces: state.knownWorkspaces,
+    knownSshTargets: state.knownSshTargets,
+  };
 }
 
-/** 仅允许写 conversationId / title / updatedAt；workspaceRoot 创建后不可变 */
 export function patchSessionMeta(
   session: CodingAgentSession,
-  patch: { conversationId?: string | null; title?: string },
+  patch: {
+    conversationId?: string | null;
+    title?: string;
+    outpostInstanceId?: string | null;
+  },
 ): CodingAgentSession {
   return {
     ...session,
     ...(patch.conversationId !== undefined ? { conversationId: patch.conversationId } : {}),
     ...(patch.title !== undefined ? { title: patch.title.trim() || session.title } : {}),
+    ...(patch.outpostInstanceId !== undefined
+      ? { outpostInstanceId: patch.outpostInstanceId }
+      : {}),
     updatedAt: Date.now(),
   };
 }
@@ -266,7 +412,7 @@ export type RepoGroup = {
 export function groupSessionsByRepo(sessions: CodingAgentSession[]): RepoGroup[] {
   const map = new Map<string, RepoGroup>();
   for (const s of sessions) {
-    const key = repoGroupKey(s.workspaceRoot);
+    const key = repoGroupKey(s);
     let g = map.get(key);
     if (!g) {
       g = { key, workspaceRoot: s.workspaceRoot, sessions: [] };
@@ -281,16 +427,14 @@ export function groupSessionsByRepo(sessions: CodingAgentSession[]): RepoGroup[]
   });
 }
 
-/** 从会话列表收集非空工作区根（规范化、去重、排序）。 */
 function collectWorkspaceRoots(sessions: CodingAgentSession[]): string[] {
   const set = new Set<string>();
   for (const s of sessions) {
-    if (s.workspaceRoot) set.add(normalizeRoot(s.workspaceRoot));
+    if (s.workspaceKind === "local" && s.workspaceRoot) set.add(normalizeRoot(s.workspaceRoot));
   }
   return [...set].toSorted((a, b) => a.localeCompare(b));
 }
 
-/** 兼容旧数据：knownWorkspaces 缺失时从会话派生，并与显式列表合并。 */
 function sanitizeKnownWorkspaces(raw: unknown, sessions: CodingAgentSession[]): string[] {
   const set = new Set<string>();
   if (Array.isArray(raw)) {
@@ -300,17 +444,36 @@ function sanitizeKnownWorkspaces(raw: unknown, sessions: CodingAgentSession[]): 
     }
   }
   for (const s of sessions) {
-    if (s.workspaceRoot) set.add(normalizeRoot(s.workspaceRoot));
+    if (s.workspaceKind === "local" && s.workspaceRoot) set.add(normalizeRoot(s.workspaceRoot));
   }
   return [...set].toSorted((a, b) => a.localeCompare(b));
 }
 
-/** 新建下拉可选的已知工作区列表（含已无会话的历史工作区）。 */
+function sshTargetKey(t: SshRemoteTarget): string {
+  return `${t.user}@${t.host}:${t.port ?? 22}:${t.remoteWorkspace}`;
+}
+
+function sanitizeKnownSshTargets(raw: unknown): SshRemoteTarget[] {
+  if (!Array.isArray(raw)) return [];
+  const map = new Map<string, SshRemoteTarget>();
+  for (const item of raw) {
+    const t = sanitizeRemote(item);
+    if (t) map.set(sshTargetKey(t), t);
+  }
+  return [...map.values()].toSorted((a, b) => sshTargetKey(a).localeCompare(sshTargetKey(b)));
+}
+
 export function listKnownWorkspaceRoots(state: AgentSessionsState): string[] {
   return sanitizeKnownWorkspaces(state.knownWorkspaces, state.sessions);
 }
 
-/** 把工作区记入本地已知列表（去重）；创建带工作区的会话时调用。 */
+export function listKnownSshTargets(state: AgentSessionsState): SshRemoteTarget[] {
+  return sanitizeKnownSshTargets([
+    ...state.knownSshTargets,
+    ...state.sessions.map((s) => s.remote).filter(Boolean),
+  ]);
+}
+
 export function rememberWorkspace(
   state: AgentSessionsState,
   workspaceRoot: string,
@@ -322,5 +485,17 @@ export function rememberWorkspace(
   return {
     ...state,
     knownWorkspaces: [...state.knownWorkspaces, root].toSorted((a, b) => a.localeCompare(b)),
+  };
+}
+
+export function rememberSshTarget(
+  state: AgentSessionsState,
+  target: SshRemoteTarget,
+): AgentSessionsState {
+  const key = sshTargetKey(target);
+  if (state.knownSshTargets.some((t) => sshTargetKey(t) === key)) return state;
+  return {
+    ...state,
+    knownSshTargets: sanitizeKnownSshTargets([...state.knownSshTargets, target]),
   };
 }

@@ -10,18 +10,57 @@ title: 编码工作台
 
 - 个人玩具 → 逐步成为 **Agent 编码**的日常主力（不是先做 Tab 补全）。
 - 聊天室已能 vibe；瓶颈是**工作台 UX**（explore / patch / 多仓会话）。
-- 第一阶段重心：**读仓（explore）**；写与 diff 其次。LSP / Debugger / SSH Remote 为**后续**。
+- 第一阶段重心：**读仓（explore）**；写与 diff 其次。LSP / Debugger 为**后续**。SSH Remote（编排远端 `anima-probe`）已落地首版。
 
 ## 运行拓扑
 
 - 栖息地在**稳定弱机**（脑 + 记忆 + 编排）。
-- 手在**开发机前哨**：FS / 搜索 / 终端 /（后续）patch。
+- 手在**开发机前哨**：FS / 搜索 / 终端 / patch（GUI 窗或 `anima-probe`）。
 - **跨机前哨是硬性要求**，不是可选项。
+
+三角色：栖息地（脑）←RPC→ 客户端/操作台；栖息地 ←`remote_tools.attach`→ 执行端 Outpost。CLI 分发：`anima` / `anima-client` / `anima-probe`（见 [portal.md](./portal.md)、[glossary](../../i18n/glossary.md)）。
 
 ```text
 Coding outpost window ── RPC + attach ──► weak-machine Habitat
-Main Chat / tasks      ── RPC only ─────► same Habitat
+anima-probe           ── attach 直连 ──► same Habitat
+anima-client          ── RPC + subscribe ─► same Habitat（TUI；不中转 tool.call）
+Main Chat / tasks     ── RPC only ─────► same Habitat
 ```
+
+- **`instance_id`**：Habitat 在 probe/窗 attach 时分配；会话 `outpost_instance_id` 绑 **执行端**，不是 client。
+- **对话列表**：`conversation.list({ platform: "coding" })` 在 Habitat；client 与 GUI 同 token 可读全部 coding 会话。
+- **实时进度**：client 订 Habitat 会话流；`tool.call` 直达 probe，结果经 Habitat 扇出到 TUI。
+- **SSH Remote（现行）**：桌面 New Agent →「SSH 远程」或 `anima-client coding --ssh user@host --workspace /abs/path`。本机经 OpenSSH（密钥 / ssh-agent / `~/.ssh/config`，BatchMode）在远端 ensure/start `anima-probe`；**probe↔Habitat 直连** attach。若 Habitat URL 为 loopback，自动 `ssh -R` 反向隧道。UI 文件树/预览经 `coding.outpostExec`（白名单只读工具）同步调用远端，**不做** client 工具中继。首版远端 OS：Linux x64。
+
+## SSH Remote 用法
+
+```bash
+# 本机先有可 scp 的 probe（装到 ~/.anima/bin）
+just pack client-probe
+
+# CLI
+anima-client config --habitat-url http://127.0.0.1:2658 --token <token>
+anima-client coding --ssh user@host --workspace /home/user/repo [--port 22] [--identity ~/.ssh/id_ed25519]
+```
+
+桌面：Coding 窗 → 新建 Agent → SSH 远程 → 填 user/host/远端绝对路径 → 连接。
+
+手测清单：公网可达 Habitat + 远端 Linux；本机 loopback Habitat（触发反向隧道）；桌面树/预览/对话工具；CLI 同路径；退出/切会话后隧道回收。自动化门闩：`just pack client-probe && bun scripts/smoke-ssh-remote.ts`。
+
+`just pack cli` 仍只打栖息地运维二进制 `anima`；SSH 用的 client/probe 走 **`just pack client-probe`**。
+
+## CLI：`anima-client` / `anima-probe`（风巢 #18887）
+
+产品执行层路线：**自研 Coding（A）并对标 OpenCode**，不把 OpenCode 当执行脑。
+
+| 命令           | 首版范围                                                                                                 |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| `anima-client` | ① 配置 Habitat URL + Service API Token ② coding TUI（含 `--ssh` Remote）                                 |
+| `anima-probe`  | `app_id=coding` attach；执行**全部** coding Outpost toolset（与下表及 GUI 窗对齐）；持久化 `instance_id` |
+
+共享执行面：`packages/shared/coding/outpost/`。GUI Coding 前哨窗仍可同进程焊操作台+手；CLI **打包图必须可拆**。
+
+依赖禁令：`anima-probe` 不得 import `habitat/core|platform`；`anima-client` 不得 import probe 执行实现 / `habitat/core`。
 
 ## 产品形态
 
@@ -91,8 +130,14 @@ Main Chat / tasks      ── RPC only ─────► same Habitat
 栖息地**普通聊天室不**从会话 `cwd` 读 `AGENTS.md`。项目上下文**只在** `module=coding` 且有 `workspace_root` 时装配：
 
 1. Coding 前哨在工作区扫盘发现资产
-2. 经 `coding.projectContextSync` 写入栖息地会话缓存
-3. system prompt / `skill_load` / `subagent_run` 叠加项目层
+2. 经 `coding.projectContextSync` 写入栖息地会话缓存（GUI 与 `anima-client` 建会话后均会 sync；SSH 会话经 `coding.outpostExec`/`project_context` 发现）
+3. system prompt 注入 **always rules**（`project_context`）与 **scoped rules 目录**（`project_rules_scoped`）；`skill_load` / `subagent_run` / 前哨工具按需叠加项目层
+
+**UI 只读远端盘：** `coding.outpostExec`（`file_list` / `file_read` / `file_search` / `project_context`）供 SSH 会话文件树与预览；改写仍只走 Agent 回合。
+
+**system prompt 不进 catalog 段：** 项目 skills / agents / mcp 列表不注入编码 system prompt（避免与按需加载重复）。
+
+**栖息地 subagent / skill 目录：** 用 entity 顶层 `tag_ids` 指向同 World 标签 **`coding`** 控制是否出现在 coding system prompt；例如内置 `coding-explorer` 仅 coding 会话可见，chat 向 `general` / `explorer` 不受影响。
 
 ### 目录约定
 
@@ -134,7 +179,7 @@ CLAUDE.md                        # Claude Code 兼容
 - 栖息地 `conversation.create` 的 `workspace_root` 与本地字段一致且同样视为不可变；本地 `conversationId` 持久化后复用。
 - 左栏按 `workspaceRoot` 的 basename 分组（`null` →「无工作区」）；同仓多会话 = 同组多条（为后续同仓不同 worktree 路径留口：每条仍是独立 `workspaceRoot` 字符串）。
 - **组 = 仓名，行 = 话题标题**：本地默认 title 仅占位；`conversation.create` 不预填 title，首回合由栖息地 LLM 生成后经 `conversation.subscribe` 写回侧栏。
-- 本地存储 key `freeanima:coding:agent-sessions:v2`；从 v1 多根迁移时只保留 `activeRoot ?? workspaceRoots[0] ?? null`。
+- 本地存储 key `freeanima:coding:agent-sessions:v3`（含 `workspaceKind` / SSH 字段；从 v2/v1 迁移）；从 v1 多根迁移时只保留 `activeRoot ?? workspaceRoots[0] ?? null`。
 
 ### 栏位
 
@@ -180,10 +225,10 @@ CLAUDE.md                        # Claude Code 兼容
 **后续**
 
 - LSP / refactor / Debugger
-- SSH Remote（同一工具契约，不同后端）
 - 更重索引 / symbols
 - 交互式 PTY
 - Cloud / Worktree 检出与真 Git Commit&Push
+- SSH：密码 / 2FA UI；远端 macOS / Windows 自动安装
 
 ## 一句话
 

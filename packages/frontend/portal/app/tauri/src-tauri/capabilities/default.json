@@ -79,6 +79,9 @@
     "allow-workspace-fs-is-dir",
     "allow-workspace-fs-walk-files",
     "allow-workspace-fs-search",
-    "allow-run-command"
+    "allow-run-command",
+    "allow-ssh-remote-run",
+    "allow-ssh-remote-spawn-detached",
+    "allow-ssh-remote-stop-detached"
   ]
 }

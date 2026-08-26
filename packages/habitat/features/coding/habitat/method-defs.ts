@@ -1,9 +1,15 @@
-import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
+import {
+  defineHabitatMethod,
+  dualTransportMeta,
+  longOpMeta,
+} from "@freeanima/shared/habitat-contract";
 import {
   codingNoteCreateInputSchema,
   codingNoteCreateOutputSchema,
   codingNoteListInputSchema,
   codingNoteListOutputSchema,
+  codingOutpostExecInputSchema,
+  codingOutpostExecOutputSchema,
   codingProjectContextSyncInputSchema,
   codingProjectContextSyncOutputSchema,
 } from "@freeanima/shared/rpc-contract/frames/coding.ts";
@@ -23,5 +29,10 @@ export const codingMethodDefs = {
     input: codingProjectContextSyncInputSchema,
     output: codingProjectContextSyncOutputSchema,
     meta: dualTransportMeta(false),
+  }),
+  "coding.outpostExec": defineHabitatMethod({
+    input: codingOutpostExecInputSchema,
+    output: codingOutpostExecOutputSchema,
+    meta: longOpMeta(false),
   }),
 } as const;

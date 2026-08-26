@@ -1,5 +1,6 @@
 import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
 import { PROMPT_XML_TAGS, systemPromptBuild } from "@freeanima/habitat/core/hooks/prompt";
+import { isCodingConversationMeta } from "@freeanima/habitat/core/tool";
 import { registerToolsetSystemPromptHooks } from "@freeanima/habitat/capabilities/tools/toolset-prompt-hooks";
 import { registerWorldContextSystemPromptHook } from "@freeanima/habitat/capabilities/tools/world-prompt-hooks";
 import { registerSkillsCatalogSystemPromptHook } from "@freeanima/habitat/capabilities/tools/skills-prompt-hooks";
@@ -44,6 +45,7 @@ export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
         ctx.cwd,
         ctx.mode,
         worldId != null ? { world_id: worldId } : undefined,
+        { skipMemoryRules: isCodingConversationMeta(ctx.meta) },
       );
       if (sections.length === 0) return { status: "ok" };
       return { status: "ok", data: { sections } };
@@ -55,21 +57,24 @@ export function registerMemorySystemPromptHooks(registry: HookRegistry): void {
 export function registerAnimaUriProtocolSystemPromptHook(registry: HookRegistry): void {
   registry.on(
     systemPromptBuild,
-    () => ({
-      status: "ok",
-      data: {
-        sections: [
-          {
-            id: "anima-uri-protocol",
-            content: ANIMA_URI_PROTOCOL_BODY,
-            order: 24,
-            priority: 1,
-            budgetChars: 500,
-            xmlTag: PROMPT_XML_TAGS.animaUri,
-          },
-        ],
-      },
-    }),
+    (ctx) => {
+      if (isCodingConversationMeta(ctx.meta)) return { status: "ok" };
+      return {
+        status: "ok",
+        data: {
+          sections: [
+            {
+              id: "anima-uri-protocol",
+              content: ANIMA_URI_PROTOCOL_BODY,
+              order: 24,
+              priority: 1,
+              budgetChars: 500,
+              xmlTag: PROMPT_XML_TAGS.animaUri,
+            },
+          ],
+        },
+      };
+    },
     { llm_kind: "conversation" },
   );
 }
@@ -81,13 +86,16 @@ export function registerChannelSystemPromptHook(registry: HookRegistry): void {
       const platform = ctx.meta?.platform;
       const desc = describePlatform(platform);
       const modeLabel = ctx.mode === "work" ? "工作模式" : "数字人类模式";
+      const channelBody = isCodingConversationMeta(ctx.meta)
+        ? "编码工作台（coding）"
+        : `对话通道（${modeLabel}）\n当前通道：${desc}`;
       return {
         status: "ok",
         data: {
           sections: [
             {
               id: "channel",
-              content: `对话通道（${modeLabel}）\n当前通道：${desc}`,
+              content: channelBody,
               order: 5,
               priority: 2,
               xmlTag: PROMPT_XML_TAGS.channel,

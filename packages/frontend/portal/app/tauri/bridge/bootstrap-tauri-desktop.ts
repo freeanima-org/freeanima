@@ -128,6 +128,30 @@ export async function bootstrapTauriBridge(): Promise<void> {
     createFileInstanceStore,
     workspaceFs: createCodingWorkspaceFsBridge(),
     runCommand: codingRunCommandBridge,
+    sshProcess: {
+      run: async (command, args, opts) => {
+        const out = await invoke<{
+          stdout: string;
+          stderr: string;
+          exitCode: number;
+        }>("ssh_remote_run", {
+          command,
+          args: [...args],
+          timeoutMs: opts?.timeoutMs ?? null,
+        });
+        return out;
+      },
+      spawnDetached: async (command, args) => {
+        const handleId = await invoke<string>("ssh_remote_spawn_detached", {
+          command,
+          args: [...args],
+        });
+        return { handleId };
+      },
+      stopDetached: async (handleId) => {
+        await invoke("ssh_remote_stop_detached", { handleId });
+      },
+    },
     pickDirectory: codingPickDirectoryBridge,
     saveBlob: desktopSaveBlobBridge,
     openHabitatSettings: () => void invoke("open_settings"),

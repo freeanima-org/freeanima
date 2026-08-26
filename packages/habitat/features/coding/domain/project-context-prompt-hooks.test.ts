@@ -62,7 +62,7 @@ describe("registerCodingProjectContextPromptHook", () => {
     );
     const codingText = foldSystemPromptSections(codingRun.chain);
     expect(codingText).toContain("Use bun test");
-    expect(codingText).toContain("demo");
+    expect(codingText).not.toContain("demo skill");
 
     const chatRun = await registry.run(
       systemPromptBuild,

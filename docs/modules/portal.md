@@ -10,18 +10,28 @@ SSOT：[`i18n/glossary.md`](../../i18n/glossary.md)、[`docs/product/architectur
 
 ## 四种形态
 
-| 形态       | form id       | 用户侧实现                                  | 代码                                                               |
-| ---------- | ------------- | ------------------------------------------- | ------------------------------------------------------------------ |
-| **应用**   | `application` | Shell（壳）：桌面 / 移动 / **Web 整窗 SPA** | `packages/frontend/portal/app/{tauri,web}`                         |
-| **浏览器** | `browser`     | 浏览器扩展（MV3）                           | `packages/frontend/portal/extension`                               |
-| **MCP**    | `mcp`         | Habitat 对外 `/mcp`                         | `packages/habitat/capabilities/mcp-server`（**不**迁入 `portal/`） |
-| **CLI**    | `cli`         | `anima` CLI（service / token / 运维）       | `packages/habitat/portal/cli`                                      |
+| 形态       | form id       | 用户侧实现                                         | 代码                                                               |
+| ---------- | ------------- | -------------------------------------------------- | ------------------------------------------------------------------ |
+| **应用**   | `application` | Shell（壳）：桌面 / 移动 / **Web 整窗 SPA**        | `packages/frontend/portal/app/{tauri,web}`                         |
+| **浏览器** | `browser`     | 浏览器扩展（MV3）                                  | `packages/frontend/portal/extension`                               |
+| **MCP**    | `mcp`         | Habitat 对外 `/mcp`                                | `packages/habitat/capabilities/mcp-server`（**不**迁入 `portal/`） |
+| **CLI**    | `cli`         | 多二进制：`anima` / `anima-client` / `anima-probe` | `packages/habitat/portal/{cli,client,probe}`                       |
 
 - **Web 壳 = 应用形态**（标签页里的整窗 SPA），**不是**浏览器形态。
 - **浏览器形态** = 扩展运行时（popup / content script / background）。
 - **MCP 形态**产品上算入口；进程上挂在 Habitat 组合根。整包迁入 `portal/` 会迫使 host →
   portal，违反层边界。`mcp-client` 是出站工具接入，**不是**入口。
-- **Outpost / Gateway** 不是 Portal（见 glossary）。
+- **Outpost / Gateway** 不是 Portal（见 glossary）。探针 CLI（`anima-probe`）产品上是 **Outpost**，形态上可经 CLI 分发。
+
+### CLI 三条二进制（依赖互不渗透）
+
+| 命令           | 角色                                        | 代码            | 禁止                                 |
+| -------------- | ------------------------------------------- | --------------- | ------------------------------------ |
+| `anima`        | 栖息地运维（service / token / upgrade）     | `portal/cli`    | 工作区手、`remote_tools.attach` 宿主 |
+| `anima-client` | 客户端/操作台（URL+token；首版 coding TUI） | `portal/client` | `habitat/core`、probe 执行实现       |
+| `anima-probe`  | 执行端 Outpost（首版全 coding toolset）     | `portal/probe`  | Habitat 运行时、LLM、PG、client TUI  |
+
+`anima-*` 是品牌族前缀，**不是**把栖息地栈打进 probe。SSH 场景：client 负责安装/启动 probe；**probe↔Habitat 直连** attach（隧道仅网络兜底）。详见 [`coding.md`](./coding.md)。
 
 ## 目录约定
 
@@ -33,7 +43,9 @@ packages/frontend/portal/
     runtime/     # settings、Habitat HTTP client、消息信封
     features/    # 按能力：vault / bookmarks；规划 clipper
 packages/habitat/portal/
-  cli/           # CLI 形态
+  cli/           # anima（栖息地运维）
+  client/        # anima-client（操作台）
+  probe/         # anima-probe（执行端 Outpost）
 ```
 
 壳内 SPA chrome（Rail / 设置）在 `packages/frontend/client/`，**不是** `portal/` 根。

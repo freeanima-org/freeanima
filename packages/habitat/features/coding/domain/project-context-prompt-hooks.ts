@@ -11,9 +11,6 @@ import {
 } from "@freeanima/habitat/core/hooks/prompt";
 import {
   formatAlwaysRulesSection,
-  formatProjectAgentsCatalog,
-  formatProjectMcpCatalog,
-  formatProjectSkillsCatalog,
   formatRequestableRulesCatalog,
   type ProjectAgentContextSnapshot,
 } from "@freeanima/shared/coding/project-agent-context";
@@ -58,9 +55,6 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
       if (!snapshot) return { status: "ok" };
 
       const rules = snapshot.rules;
-      const skills = snapshot.skills;
-      const agents = snapshot.agents;
-      const mcp = snapshot.mcpServers;
 
       const sections: SystemPromptSection[] = [];
 
@@ -84,39 +78,6 @@ export function registerCodingProjectContextPromptHook(registry: HookRegistry): 
           priority: 8,
           budgetChars: 1_200,
           xmlTag: PROMPT_XML_TAGS.projectRulesScoped,
-        });
-      }
-      const skillCat = formatProjectSkillsCatalog(skills);
-      if (skillCat.trim()) {
-        sections.push({
-          id: "project-skills-catalog",
-          content: skillCat,
-          order: 10,
-          priority: 5,
-          budgetChars: 2_000,
-          xmlTag: PROMPT_XML_TAGS.projectSkills,
-        });
-      }
-      const agentCat = formatProjectAgentsCatalog(agents);
-      if (agentCat.trim()) {
-        sections.push({
-          id: "project-agents-catalog",
-          content: agentCat,
-          order: 11,
-          priority: 5,
-          budgetChars: 1_500,
-          xmlTag: PROMPT_XML_TAGS.projectAgents,
-        });
-      }
-      const mcpCat = formatProjectMcpCatalog(mcp);
-      if (mcpCat.trim()) {
-        sections.push({
-          id: "project-mcp-catalog",
-          content: mcpCat,
-          order: 42,
-          priority: 9,
-          budgetChars: 1_000,
-          xmlTag: PROMPT_XML_TAGS.projectMcp,
         });
       }
 

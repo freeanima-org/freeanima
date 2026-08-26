@@ -1,5 +1,6 @@
 import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
 import { PROMPT_XML_TAGS, systemPromptBuild } from "@freeanima/habitat/core/hooks/prompt";
+import { isCodingConversationMeta } from "@freeanima/habitat/core/tool";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
 import { resolvePrivateWorldId } from "@freeanima/habitat/core/config/world-context-pg.ts";
@@ -8,6 +9,7 @@ export function registerWorldContextSystemPromptHook(registry: HookRegistry): vo
   registry.on(
     systemPromptBuild,
     async (ctx) => {
+      if (isCodingConversationMeta(ctx.meta)) return { status: "ok" };
       let userLine: string;
       let commonsLine: string;
       try {

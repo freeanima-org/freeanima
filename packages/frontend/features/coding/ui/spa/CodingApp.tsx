@@ -16,9 +16,11 @@ import {
   createAgentSession,
   defaultTitle,
   getActiveSession,
+  listKnownSshTargets,
   listKnownWorkspaceRoots,
   loadAgentSessions,
   patchSessionMeta,
+  rememberSshTarget,
   rememberWorkspace,
   removeSession,
   saveAgentSessions,
@@ -41,7 +43,17 @@ import {
   type CodingRemoteToolsStatus,
 } from "./lib/remote-tools-host.ts";
 import { setCodingWorkspace, subscribeTerminalLogs } from "./lib/tools-executor.ts";
-import { createPortalShellWorkspaceBackend, WorkspaceSandbox } from "./lib/workspace-fs.ts";
+import { WorkspaceSandbox } from "./lib/workspace-fs.ts";
+import { resolveSessionWorkspaceBackend } from "./lib/session-workspace-backend.ts";
+import { connectDesktopSshRemote, ensureDesktopSshOutpost } from "./lib/ssh-connect.ts";
+import {
+  bindSessionSshTunnel,
+  releaseAllSshTunnels,
+  releaseSessionSshTunnel,
+} from "./lib/ssh-tunnel-registry.ts";
+import type { SshRemoteTarget } from "@freeanima/shared/coding/ssh-remote";
+import { projectVfsFromSandbox } from "./lib/workspace-vfs.ts";
+import { discoverProjectAgentContext } from "@freeanima/shared/coding/project-agent-context";
 
 type AttachStatus = CodingRemoteToolsStatus;
 
@@ -75,6 +87,8 @@ export function CodingApp() {
   const activeAgent = useMemo(() => getActiveSession(agents), [agents]);
   const workspaceRoot = activeAgent?.workspaceRoot ?? null;
   const knownWorkspaceRoots = useMemo(() => listKnownWorkspaceRoots(agents), [agents]);
+  const knownSshTargets = useMemo(() => listKnownSshTargets(agents), [agents]);
+  const isSshSession = activeAgent?.workspaceKind === "ssh";
 
   const [attach, setAttach] = useState<AttachStatus>({
     instance_id: "",
@@ -92,12 +106,16 @@ export function CodingApp() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [newAgentOpen, setNewAgentOpen] = useState(false);
   const [knownFiles, setKnownFiles] = useState<string[]>([]);
+  const [sshBusy, setSshBusy] = useState(false);
+  const [sshError, setSshError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!searchOpen || !workspaceRoot) return () => {};
+    if (!searchOpen || !workspaceRoot || !activeAgent) return () => {};
     let cancelled = false;
     void (async () => {
-      const backend = createPortalShellWorkspaceBackend();
+      const backend = resolveSessionWorkspaceBackend(activeAgent, {
+        conversationId: sessionMeta?.conversation_id ?? null,
+      });
       if (!backend) return;
       const sandbox = new WorkspaceSandbox(workspaceRoot, backend);
       const out = await sandbox.fileList({ path: ".", maxDepth: 2, maxEntries: 200 });
@@ -114,7 +132,7 @@ export function CodingApp() {
     return () => {
       cancelled = true;
     };
-  }, [searchOpen, workspaceRoot]);
+  }, [searchOpen, workspaceRoot, activeAgent, sessionMeta?.conversation_id]);
   const [noteTitle, setNoteTitle] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [noteStatus, setNoteStatus] = useState<string | null>(null);
@@ -123,7 +141,63 @@ export function CodingApp() {
     saveAgentSessions(agents);
   }, [agents]);
 
+  /** 本地会话：本机 attach；SSH 会话：探活 / 再编排远端 instance */
   useEffect(() => {
+    if (isSshSession) {
+      getCodingRemoteToolsHost()?.stop();
+      const session = activeAgent;
+      const remote = session?.remote;
+      if (!session || !remote) {
+        setAttach({ instance_id: "", remote_tools_connected: false });
+        return () => {};
+      }
+      let cancelled = false;
+      setAttach({
+        instance_id: session.outpostInstanceId?.trim() ?? "",
+        remote_tools_connected: false,
+      });
+      void (async () => {
+        try {
+          const ensured = await ensureDesktopSshOutpost(remote, session.outpostInstanceId);
+          if (cancelled) {
+            if (ensured.tunnel?.handleId) {
+              await window.portalShell?.sshProcess?.stopDetached(ensured.tunnel.handleId);
+            }
+            return;
+          }
+          // 探活命中时无新隧道：保留 createSshSession / 上次编排已绑定的 handle
+          if (ensured.tunnel?.handleId) {
+            await bindSessionSshTunnel(session.id, ensured.tunnel.handleId);
+          }
+          if (ensured.instanceId !== session.outpostInstanceId) {
+            setAgents((prev) => {
+              const cur = prev.sessions.find((s) => s.id === session.id);
+              if (!cur) return prev;
+              return upsertSession(
+                prev,
+                patchSessionMeta(cur, { outpostInstanceId: ensured.instanceId }),
+              );
+            });
+          }
+          setAttach({
+            instance_id: ensured.instanceId,
+            remote_tools_connected: true,
+          });
+        } catch (e) {
+          if (cancelled) return;
+          setAttach({
+            instance_id: session.outpostInstanceId?.trim() ?? "",
+            remote_tools_connected: false,
+          });
+          setError(e instanceof Error ? e.message : String(e));
+        }
+      })();
+      return () => {
+        cancelled = true;
+        // 切走本 SSH 会话：回收其反向隧道（与 CLI finally 对齐）
+        void releaseSessionSshTunnel(session.id);
+      };
+    }
     const handle = startCodingRemoteToolsHost({
       onStatus: setAttach,
     });
@@ -134,6 +208,12 @@ export function CodingApp() {
     return () => {
       unsub?.();
       handle?.stop();
+    };
+  }, [isSshSession, activeAgent?.id, activeAgent?.remote]);
+
+  useEffect(() => {
+    return () => {
+      void releaseAllSshTunnels();
     };
   }, []);
 
@@ -154,46 +234,69 @@ export function CodingApp() {
   }, [activeAgent?.id]);
 
   useEffect(() => {
-    if (!workspaceRoot) {
+    if (!workspaceRoot || !activeAgent) {
       setCodingWorkspace(null);
       setProject(null);
       return () => {};
     }
     let cancelled = false;
-    const backend = createPortalShellWorkspaceBackend();
-    setCodingWorkspace(backend ? { workspaceRoot, backend } : { workspaceRoot });
+    const backend = resolveSessionWorkspaceBackend(activeAgent, {
+      conversationId: sessionMeta?.conversation_id ?? null,
+    });
+    // SSH 会话工具执行在远端 probe；本机 setCodingWorkspace 仅本地 outpost 需要
+    if (!isSshSession) {
+      setCodingWorkspace(backend ? { workspaceRoot, backend } : { workspaceRoot });
+    } else {
+      setCodingWorkspace(null);
+    }
     setProject(null);
     void (async () => {
       setError(null);
       if (!backend) {
         if (!cancelled) {
-          setError("缺少 portalShell.workspaceFs；工具执行需 Rust IPC");
+          setError(
+            isSshSession
+              ? "SSH 前哨尚未就绪（缺 outpostInstanceId）"
+              : "缺少 portalShell.workspaceFs；工具执行需 Rust IPC",
+          );
           setProject(null);
         }
         return;
       }
-      const pj = await loadProjectJsonFromWorkspace({
-        workspaceRoot,
-        readText: (p) => backend.readText(p),
-      });
-      if (cancelled) return;
-      setProject(pj);
+      try {
+        const pj = await loadProjectJsonFromWorkspace({
+          workspaceRoot,
+          readText: (p) => backend.readText(p),
+        });
+        if (cancelled) return;
+        setProject(pj);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [workspaceRoot, activeAgent?.id]);
+  }, [workspaceRoot, activeAgent, isSshSession, sessionMeta?.conversation_id]);
 
   const listTreeChildren = useCallback(
     async (relDir: string) => {
-      const backend = createPortalShellWorkspaceBackend();
-      if (!backend || !workspaceRoot) {
-        return { ok: false as const, error: "缺少 portalShell.workspaceFs 或工作区" };
+      if (!activeAgent || !workspaceRoot) {
+        return { ok: false as const, error: "缺少工作区" };
+      }
+      const backend = resolveSessionWorkspaceBackend(activeAgent, {
+        conversationId: sessionMeta?.conversation_id ?? null,
+      });
+      if (!backend) {
+        return {
+          ok: false as const,
+          error: isSshSession ? "SSH 前哨未就绪" : "缺少 portalShell.workspaceFs 或工作区",
+        };
       }
       const sandbox = new WorkspaceSandbox(workspaceRoot, backend);
       return sandbox.fileList({ path: relDir, maxDepth: 0, maxEntries: 500 });
     },
-    [workspaceRoot],
+    [workspaceRoot, activeAgent, isSshSession, sessionMeta?.conversation_id],
   );
 
   /** 复用已绑定 conversationId；仅在缺失且有 instance 时预热（可无工作区）。 */
@@ -245,21 +348,29 @@ export function CodingApp() {
   /** 有 conversation + workspace 时发现项目上下文并 sync 到 Habitat */
   useEffect(() => {
     const conversationId = sessionMeta?.conversation_id ?? activeAgent?.conversationId;
-    if (!conversationId || !workspaceRoot) return () => {};
-    const backend = createPortalShellWorkspaceBackend();
+    if (!conversationId || !workspaceRoot || !activeAgent) return () => {};
+    const backend = resolveSessionWorkspaceBackend(activeAgent, { conversationId });
     if (!backend) return () => {};
     let cancelled = false;
     void (async () => {
       try {
         const sandbox = new WorkspaceSandbox(workspaceRoot, backend);
-        const snapshot = await discoverWorkspaceProjectContext(sandbox);
+        const snapshot = isSshSession
+          ? {
+              ...(await discoverProjectAgentContext(projectVfsFromSandbox(sandbox))),
+              discovered_at: new Date().toISOString(),
+              workspace_root: workspaceRoot,
+            }
+          : await discoverWorkspaceProjectContext(sandbox);
         if (cancelled) return;
         await syncProjectContextToHabitat({ conversationId, snapshot });
-        const host = getCodingRemoteToolsHost();
-        if (host && snapshot.mcpServers.length > 0) {
-          await host.refreshProjectMcp(snapshot.mcpServers);
-        } else if (host) {
-          await host.refreshProjectMcp([]);
+        if (!isSshSession) {
+          const host = getCodingRemoteToolsHost();
+          if (host && snapshot.mcpServers.length > 0) {
+            await host.refreshProjectMcp(snapshot.mcpServers);
+          } else if (host) {
+            await host.refreshProjectMcp([]);
+          }
         }
       } catch (e) {
         console.warn("project context sync failed", e);
@@ -268,7 +379,13 @@ export function CodingApp() {
     return () => {
       cancelled = true;
     };
-  }, [sessionMeta?.conversation_id, activeAgent?.conversationId, workspaceRoot]);
+  }, [
+    sessionMeta?.conversation_id,
+    activeAgent?.conversationId,
+    workspaceRoot,
+    activeAgent,
+    isSshSession,
+  ]);
 
   const bindConversation = useCallback(
     async (_firstMessage: string): Promise<string | null> => {
@@ -327,7 +444,9 @@ export function CodingApp() {
     setContextTab("preview");
     setKnownFiles((prev) => (prev.includes(relPath) ? prev : [...prev, relPath]));
     setPreviewLoading(true);
-    const backend = createPortalShellWorkspaceBackend();
+    const backend = resolveSessionWorkspaceBackend(activeAgent, {
+      conversationId: sessionMeta?.conversation_id ?? null,
+    });
     if (!backend || !workspaceRoot) {
       setPreviewText("");
       setPreviewLoading(false);
@@ -347,7 +466,10 @@ export function CodingApp() {
   };
 
   const createLockedSession = (workspaceRootValue: string | null) => {
-    const s = createAgentSession({ workspaceRoot: workspaceRootValue });
+    const s = createAgentSession({
+      workspaceRoot: workspaceRootValue,
+      workspaceKind: workspaceRootValue ? "local" : "none",
+    });
     setAgents((prev) => {
       const remembered =
         workspaceRootValue == null || workspaceRootValue === ""
@@ -357,9 +479,52 @@ export function CodingApp() {
         sessions: [...remembered.sessions, s],
         activeSessionId: s.id,
         knownWorkspaces: remembered.knownWorkspaces,
+        knownSshTargets: remembered.knownSshTargets,
       };
     });
     setNewAgentOpen(false);
+  };
+
+  const createSshSession = async (draft: {
+    user: string;
+    host: string;
+    port?: number;
+    identityFile?: string;
+    remoteWorkspace: string;
+  }) => {
+    setSshError(null);
+    setSshBusy(true);
+    try {
+      const target: SshRemoteTarget = {
+        user: draft.user,
+        host: draft.host,
+        remoteWorkspace: draft.remoteWorkspace,
+        ...(draft.port != null ? { port: draft.port } : {}),
+        ...(draft.identityFile ? { identityFile: draft.identityFile } : {}),
+      };
+      const remote = await connectDesktopSshRemote(target);
+      const s = createAgentSession({
+        workspaceRoot: target.remoteWorkspace,
+        workspaceKind: "ssh",
+        remote: target,
+        outpostInstanceId: remote.instanceId,
+      });
+      await bindSessionSshTunnel(s.id, remote.tunnel?.handleId);
+      setAgents((prev) => {
+        const remembered = rememberSshTarget(prev, target);
+        return {
+          sessions: [...remembered.sessions, s],
+          activeSessionId: s.id,
+          knownWorkspaces: remembered.knownWorkspaces,
+          knownSshTargets: remembered.knownSshTargets,
+        };
+      });
+      setNewAgentOpen(false);
+    } catch (e) {
+      setSshError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSshBusy(false);
+    }
   };
 
   const searchActions: SearchAction[] = useMemo(
@@ -402,11 +567,15 @@ export function CodingApp() {
         <span className="muted coding-toolbar-hint">一对话一根工作区 · 创建后不可变</span>
         <div className="coding-attach" title="remote tools attach">
           <span className={attach.remote_tools_connected ? "dot on" : "dot"} />
-          {attach.remote_tools_connected
-            ? "Outpost 已连接"
-            : window.portalShell?.remoteAuth?.token
-              ? "Outpost 连接中…"
-              : "Outpost 未连接（需主窗配置 Habitat Token）"}
+          {isSshSession
+            ? attach.remote_tools_connected
+              ? `SSH Outpost ${activeAgent?.remote ? `${activeAgent.remote.user}@${activeAgent.remote.host}` : ""}`
+              : "SSH 前哨未就绪"
+            : attach.remote_tools_connected
+              ? "Outpost 已连接"
+              : window.portalShell?.remoteAuth?.token
+                ? "Outpost 连接中…"
+                : "Outpost 未连接（需主窗配置 Habitat Token）"}
           {attach.instance_id ? (
             <code className="coding-instance">instance_id={attach.instance_id}</code>
           ) : null}
@@ -428,8 +597,14 @@ export function CodingApp() {
           activeSessionId={agents.activeSessionId}
           onSelect={(id) => setAgents((prev) => ({ ...prev, activeSessionId: id }))}
           onNew={() => setNewAgentOpen(true)}
-          onArchive={(id) => setAgents((prev) => archiveSession(prev, id))}
-          onDelete={(id) => setAgents((prev) => removeSession(prev, id))}
+          onArchive={(id) => {
+            void releaseSessionSshTunnel(id);
+            setAgents((prev) => archiveSession(prev, id));
+          }}
+          onDelete={(id) => {
+            void releaseSessionSshTunnel(id);
+            setAgents((prev) => removeSession(prev, id));
+          }}
           onOpenSearch={() => setSearchOpen(true)}
         />
 
@@ -543,10 +718,17 @@ export function CodingApp() {
 
       <NewAgentDialog
         open={newAgentOpen}
-        onClose={() => setNewAgentOpen(false)}
+        onClose={() => {
+          setNewAgentOpen(false);
+          setSshError(null);
+        }}
         workspaceRoots={knownWorkspaceRoots}
+        knownSshTargets={knownSshTargets}
+        sshBusy={sshBusy}
+        sshError={sshError}
         onSelectWorkspace={(root) => createLockedSession(root)}
         onNoWorkspace={() => createLockedSession(null)}
+        onConnectSsh={(draft) => void createSshSession(draft)}
         onPickFolder={() => {
           void pickWorkspacePath()
             .then((p) => {

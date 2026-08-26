@@ -1,4 +1,4 @@
-export const CODING_APP_ID = "coding" as const;
+export { CODING_APP_ID } from "@freeanima/shared/coding/constants.ts";
 
 /** Coding 工作台窗默认尺寸（逻辑 px） */
 export const CODING_WINDOW_WIDTH = 1280;

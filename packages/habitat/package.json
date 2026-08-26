@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "bin": {
-    "anima": "./portal/cli/cli.ts"
+    "anima": "./portal/cli/cli.ts",
+    "anima-client": "./portal/client/cli.ts",
+    "anima-probe": "./portal/probe/cli.ts"
   },
   "exports": {
     "./*": "./*"

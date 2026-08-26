@@ -65,3 +65,28 @@ export const codingProjectContextSyncOutputSchema = z.object({
   conversation_id: z.string(),
 });
 export type CodingProjectContextSyncOutput = z.infer<typeof codingProjectContextSyncOutputSchema>;
+
+/** UI 只读：经 Habitat 同步调用远端 coding outpost 工具（不做 client 中继） */
+export const CODING_OUTPOST_EXEC_TOOLS = [
+  "file_list",
+  "file_read",
+  "file_search",
+  "project_context",
+] as const;
+export type CodingOutpostExecTool = (typeof CODING_OUTPOST_EXEC_TOOLS)[number];
+
+export const codingOutpostExecInputSchema = z.object({
+  instance_id: z.string().min(1),
+  tool: z.enum(CODING_OUTPOST_EXEC_TOOLS),
+  args: z.record(z.string(), z.unknown()).default({}),
+  workspace_root: z.string().min(1).optional(),
+  /** 可选：写入 tool.call payload，便于 probe 侧日志关联 */
+  conversation_id: z.string().min(1).optional(),
+});
+export type CodingOutpostExecInput = z.infer<typeof codingOutpostExecInputSchema>;
+
+export const codingOutpostExecOutputSchema = z.object({
+  ok: z.literal(true),
+  content: z.string(),
+});
+export type CodingOutpostExecOutput = z.infer<typeof codingOutpostExecOutputSchema>;
