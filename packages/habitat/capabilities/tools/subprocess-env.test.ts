@@ -18,18 +18,18 @@ function spawnPrintEnv(key: string, env?: NodeJS.ProcessEnv) {
 }
 
 describe("buildSubprocessEnv", () => {
-  it("Bun: omitting spawn env does not see runtime process.env mutations", () => {
+  it("Bun 1.4+: omitting spawn env inherits runtime process.env mutations", () => {
     process.env[KEY] = "from-parent";
     try {
       const omitted = spawnPrintEnv(KEY);
-      expect(omitted.status).not.toBe(0);
-      expect((omitted.stdout ?? "").trim()).toBe("");
+      expect(omitted.status).toBe(0);
+      expect((omitted.stdout ?? "").trim()).toBe("from-parent");
     } finally {
       delete process.env[KEY];
     }
   });
 
-  it("explicit buildSubprocessEnv makes runtime mutations visible to child", () => {
+  it("explicit buildSubprocessEnv snapshots runtime mutations for child", () => {
     process.env[KEY] = "from-parent";
     try {
       const withEnv = spawnPrintEnv(KEY, buildSubprocessEnv());
