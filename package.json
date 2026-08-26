@@ -7,7 +7,7 @@
     "@splicemood/lcov-to-cobertura": "^0.1.1",
     "@tailwindcss/vite": "^4.3.3",
     "@tauri-apps/cli": "^2.11.4",
-    "@types/bun": "^1.3.14",
+    "@types/bun": "^1.4.0",
     "@types/chrome": "^0.2.6",
     "@types/diff": "^8.0.0",
     "@types/node": "^26.2.0",
@@ -39,9 +39,9 @@
   "description": "逸灵风 Free Anima (TypeScript)",
   "license": "MIT",
   "engines": {
-    "bun": ">=1.3.14"
+    "bun": ">=1.4.0"
   },
-  "packageManager": "bun@1.3.14",
+  "packageManager": "bun@1.4.0",
   "private": true,
   "workspaces": [
     "packages/*",

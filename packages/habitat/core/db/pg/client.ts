@@ -45,8 +45,8 @@ export function isPostgresPrimary(): boolean {
 /**
  * 与部署 PG max_connections 对齐的默认池；可通过环境变量覆盖。
  *
- * idleTimeout 默认 0（关闭）：Bun ≤1.3.14 会在查询执行中误触
- * ERR_POSTGRES_IDLE_TIMEOUT（oven-sh/bun#30646），启动迁移 / HNSW 建索
+ * idleTimeout 默认 0（关闭）：Bun ≤1.4.0 会在查询执行中误触
+ * ERR_POSTGRES_IDLE_TIMEOUT（oven-sh/bun#30646，1.4 仍复现），启动迁移 / HNSW 建索
  * / 大批量 backfill 超过 30s 时直接把 Service startup 打挂。
  * Bun 修好后可用 FREEANIMA_PG_POOL_IDLE_TIMEOUT=30 再打开。
  *

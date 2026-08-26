@@ -22,7 +22,7 @@ title: 安装
 
 | 组件           | 版本 / 说明                                                                                                                                                |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Bun**        | >= 1.3.14 — **源码**安装必需（[bun.sh](https://bun.sh)；Windows：`winget install Oven-sh.Bun`）；独立二进制不需要                                          |
+| **Bun**        | >= 1.4.0 — **源码**安装必需（[bun.sh](https://bun.sh)；Windows：`winget install Oven-sh.Bun`）；独立二进制不需要                                           |
 | **just**       | [casey/just](https://github.com/casey/just) — Justfile 需要 `PATH` 上的 **bash**（原生 Windows 用 Git for Windows；见 [`windows-dev.md`](windows-dev.md)） |
 | **PostgreSQL** | 推荐 17；扩展：`vector`、FTS 辅助 — 见 [`database.md`](database.md)（Docker 为跨平台默认）                                                                 |
 | **Redis**      | 推荐 7.x；配置后默认 `127.0.0.1:6379`                                                                                                                      |
@@ -169,7 +169,7 @@ anima --version
 
 ### 1. 克隆并安装依赖
 
-**前置：** Bun >= 1.3.14 · PostgreSQL（pgvector）· Redis（推荐）· Vault（推荐）· [just](https://github.com/casey/just)（`PATH` 上有 bash —— Windows 用 Git Bash）。Windows 搭建：[`windows-dev.md`](windows-dev.md)。
+**前置：** Bun >= 1.4.0 · PostgreSQL（pgvector）· Redis（推荐）· Vault（推荐）· [just](https://github.com/casey/just)（`PATH` 上有 bash —— Windows 用 Git Bash）。Windows 搭建：[`windows-dev.md`](windows-dev.md)。
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git

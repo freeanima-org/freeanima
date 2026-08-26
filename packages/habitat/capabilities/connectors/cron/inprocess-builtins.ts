@@ -5,6 +5,7 @@ import { notifyInprocessBuiltinFailure } from "@freeanima/habitat/platform/ports
 import { asRecord } from "@freeanima/shared/util";
 
 import { resolveBunSchedule } from "./bun-schedule.ts";
+import { scheduleBunCronUtc } from "./bun-cron-utc.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
 
 export type InprocessBuiltinDef = {
@@ -204,7 +205,7 @@ export function startInprocessBuiltins(): void {
       throw new Error(`inprocess builtin ${def.id} requires recurring cron schedule`);
     }
 
-    const handle = Bun.cron(resolved.expr, () => {
+    const handle = scheduleBunCronUtc(resolved.expr, () => {
       void fire(def.id);
     });
     handles.set(def.id, handle);

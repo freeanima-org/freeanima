@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/freeanima-org/freeanima/actions/workflows/ci.yml/badge.svg)](https://github.com/freeanima-org/freeanima/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
-[![Bun](https://img.shields.io/badge/Bun-%3E%3D1.3.14-black?logo=bun)](https://bun.sh)
+[![Bun](https://img.shields.io/badge/Bun-%3E%3D1.4.0-black?logo=bun)](https://bun.sh)
 
 _A runtime for persistently existing digital life — not just another agent toolkit._
 
@@ -79,7 +79,7 @@ anima --version
 
 Then configure `~/.anima/config.yaml` (at least `database.url`) and run `anima service start`. See [`docs/ops/install.md`](docs/ops/install.md), [`docs/ops/database.md`](docs/ops/database.md), [`docs/ops/security.md`](docs/ops/security.md).
 
-**Source / contributors** (requires Bun ≥ 1.3.14; `just` needs bash — on Windows use Git Bash, see [`windows-dev.md`](docs/ops/windows-dev.md)):
+**Source / contributors** (requires Bun ≥ 1.4.0; `just` needs bash — on Windows use Git Bash, see [`windows-dev.md`](docs/ops/windows-dev.md)):
 
 ```bash
 git clone https://github.com/freeanima-org/freeanima.git && cd freeanima

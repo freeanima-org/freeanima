@@ -1,4 +1,5 @@
 import { logComponent } from "@freeanima/habitat/platform/logging";
+import { scheduleBunCronUtc } from "./bun-cron-utc.ts";
 import type { CronJob } from "./models.ts";
 import { resolveBunSchedule } from "./bun-schedule.ts";
 
@@ -36,7 +37,7 @@ export class CronHandleManager {
         void this.onFire(job.id);
       }, delayMs);
     } else {
-      entry.cronHandle = Bun.cron(resolved.expr, () => {
+      entry.cronHandle = scheduleBunCronUtc(resolved.expr, () => {
         void this.onFire(job.id);
       });
     }
