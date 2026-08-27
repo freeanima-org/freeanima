@@ -38,6 +38,7 @@ import {
   type FillPayload,
 } from "../runtime/messages.ts";
 import { loadSettings } from "../runtime/settings.ts";
+import { sendTabMessageAllFrames } from "../runtime/tab-frames.ts";
 import {
   ensureBookmarkAlarm,
   isBookmarkSyncAlarm,
@@ -270,7 +271,7 @@ export default defineBackground(() => {
       }
       if (command === "generate-password") {
         const password = generatePassword({ length: 20, symbols: true });
-        await chrome.tabs.sendMessage(tab.id, { type: "fill_password_only", password });
+        await sendTabMessageAllFrames(tab.id, { type: "fill_password_only", password });
         return;
       }
       if (command === "autofill-login") {
@@ -280,7 +281,7 @@ export default defineBackground(() => {
         if (!first) return;
         const fillRes = await handleMessage({ type: "get_fill_payload", item_id: first.id });
         if (!fillRes.ok || !("fill" in fillRes)) return;
-        await chrome.tabs.sendMessage(tab.id, { type: "fill_login", fill: fillRes.fill });
+        await sendTabMessageAllFrames(tab.id, { type: "fill_login", fill: fillRes.fill });
         void recordFillUsed(first.id);
       }
     })();
@@ -291,7 +292,7 @@ export default defineBackground(() => {
       if (!tab?.id || !tab.url) return;
       if (info.menuItemId === "fa-generate-password") {
         const password = generatePassword({ length: 20, symbols: true });
-        await chrome.tabs.sendMessage(tab.id, { type: "fill_password_only", password });
+        await sendTabMessageAllFrames(tab.id, { type: "fill_password_only", password });
         return;
       }
       const listRes = await handleMessage({ type: "list_for_tab", tab_url: tab.url });
@@ -312,7 +313,7 @@ export default defineBackground(() => {
       if (!fillRes.ok || !("fill" in fillRes)) return;
       const fill = fillRes.fill;
       if (info.menuItemId === "fa-fill-username") {
-        await chrome.tabs.sendMessage(tab.id, {
+        await sendTabMessageAllFrames(tab.id, {
           type: "fill_field",
           value: fill.username ?? "",
         });
@@ -320,7 +321,7 @@ export default defineBackground(() => {
         return;
       }
       if (info.menuItemId === "fa-fill-password") {
-        await chrome.tabs.sendMessage(tab.id, {
+        await sendTabMessageAllFrames(tab.id, {
           type: "fill_field",
           value: fill.password ?? "",
         });
@@ -328,7 +329,7 @@ export default defineBackground(() => {
         return;
       }
       if (info.menuItemId === "fa-fill-totp") {
-        await chrome.tabs.sendMessage(tab.id, {
+        await sendTabMessageAllFrames(tab.id, {
           type: "fill_field",
           value: fill.totp ?? "",
         });
@@ -336,12 +337,12 @@ export default defineBackground(() => {
         return;
       }
       if (info.menuItemId === "fa-fill-card") {
-        await chrome.tabs.sendMessage(tab.id, { type: "fill_card", fill });
+        await sendTabMessageAllFrames(tab.id, { type: "fill_card", fill });
         void recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-identity") {
-        await chrome.tabs.sendMessage(tab.id, { type: "fill_identity", fill });
+        await sendTabMessageAllFrames(tab.id, { type: "fill_identity", fill });
         void recordFillUsed(item.id);
         return;
       }

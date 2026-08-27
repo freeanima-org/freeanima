@@ -76,7 +76,9 @@ LLM **从不**看到明文密钥，只见元数据；注入经 `terminal_run` / 
 - 页内：聚焦密码框、可识别的用户名框（关键词 / `autocomplete` / `type=email`，或同表单·邻近有 password）、
   或 TOTP/身份验证器框时，Shadow DOM 浮层列出匹配登录项（类 Bitwarden），并提供填充 / 复制密码（TOTP 焦点为「填充验证码」）；
   搜索、图形验证码、短信/手机验证码等非登录框不弹出
-- content script：原生 DOM 填充（不挂 React）
+- content script：原生 DOM 填充（不挂 React）；`all_frames` 注入各子 frame，background/popup 经
+  `webNavigation.getAllFrames` 广播填充消息，以支持跨域 iframe 登录框（如 `passport.aliyun.com`）；
+  `fill_field` / 密码生成仅写入当前有焦点的 frame
 
 ## 相关
 

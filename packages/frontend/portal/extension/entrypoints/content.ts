@@ -5,21 +5,25 @@ import {
   fillIdentity,
   fillLogin,
 } from "../features/vault/dom-fill.ts";
+import { dispatchVaultFillMessage } from "../features/vault/fill-dispatch.ts";
 import { attachPageAutofillUi } from "../features/vault/page-ui.ts";
 import type { FillPayload } from "../runtime/messages.ts";
 import { sendBg } from "../runtime/messages.ts";
 
 export default defineContentScript({
   matches: ["http://*/*", "https://*/*"],
+  allFrames: true,
   runAt: "document_idle",
   main() {
     chrome.runtime.onMessage.addListener(
       (msg: { type: string; fill?: FillPayload; password?: string; value?: string }) => {
-        if (msg.type === "fill_login" && msg.fill) fillLogin(msg.fill);
-        if (msg.type === "fill_password_only" && msg.password) fillActiveField(msg.password);
-        if (msg.type === "fill_field" && typeof msg.value === "string") fillActiveField(msg.value);
-        if (msg.type === "fill_card" && msg.fill) fillCard(msg.fill);
-        if (msg.type === "fill_identity" && msg.fill) fillIdentity(msg.fill);
+        dispatchVaultFillMessage(msg, {
+          hasFocus: () => document.hasFocus(),
+          fillLogin,
+          fillActiveField,
+          fillCard,
+          fillIdentity,
+        });
       },
     );
 

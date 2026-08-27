@@ -12,6 +12,7 @@ import {
 } from "@freeanima/features/vault/ui/shared";
 import { sendBg, type ExtVaultEditorItem, type ExtVaultListItem } from "../../runtime/messages.ts";
 import { loadSettings, saveSettings } from "../../runtime/settings.ts";
+import { sendTabMessageAllFrames } from "../../runtime/tab-frames.ts";
 
 type TabId = "vault" | "bookmarks" | "generator" | "options";
 type Screen = { kind: "main" } | { kind: "editor"; itemId: number | null };
@@ -202,7 +203,7 @@ export function VaultPopupApp() {
     if (!fillRes.ok || !("fill" in fillRes)) return;
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return;
-    await chrome.tabs.sendMessage(tab.id, { type: "fill_login", fill: fillRes.fill });
+    await sendTabMessageAllFrames(tab.id, { type: "fill_login", fill: fillRes.fill });
     void sendBg({ type: "record_fill_used", item_id: id });
     window.close();
   };
@@ -723,7 +724,7 @@ export function VaultPopupApp() {
                 onFill={async (password) => {
                   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
                   if (!tab?.id) return;
-                  await chrome.tabs.sendMessage(tab.id, {
+                  await sendTabMessageAllFrames(tab.id, {
                     type: "fill_password_only",
                     password,
                   });
