@@ -40,6 +40,29 @@ describe("normalizeTotpSecret", () => {
     ).toBe("JBSWY3DPEHPK3PXP");
   });
 
+  test("Google 风格 otpauth URI：secret 含字面空格", () => {
+    const expected = "JBSWY3DPEHPK3PXP";
+    const spacedSecret = "jbsw y3dp ehpk 3pxp";
+    const uri =
+      "otpauth://totp/Google%3Auser%40example.com?secret=jbsw y3dp ehpk 3pxp&issuer=Google";
+
+    expect(normalizeTotpSecret(uri)).toBe(expected);
+    expect(normalizeTotpSecret(spacedSecret)).toBe(expected);
+    expect(
+      normalizeTotpSecret(
+        "otpauth://totp/Google%3Auser%40example.com?secret=JBSWY3DPEHPK3PXP&issuer=Google",
+      ),
+    ).toBe(expected);
+  });
+
+  test("Google 风格 otpauth URI：secret 含 %20 编码空格", () => {
+    expect(
+      normalizeTotpSecret(
+        "otpauth://totp/Google%3Auser%40example.com?secret=jbsw%20y3dp%20ehpk%203pxp&issuer=Google",
+      ),
+    ).toBe("JBSWY3DPEHPK3PXP");
+  });
+
   test("无效 URI / 空串", () => {
     expect(normalizeTotpSecret("")).toBe("");
     expect(normalizeTotpSecret("otpauth://totp/x?issuer=y")).toBe("");
@@ -71,6 +94,14 @@ describe("generateTotpCode", () => {
   test("无效密钥返回 null", () => {
     expect(generateTotpCode("!!!")).toBeNull();
     expect(generateTotpCode("")).toBeNull();
+  });
+
+  test("带空格的 Google otpauth URI 归一化后可生成验证码", () => {
+    const uri =
+      "otpauth://totp/Google%3Auser%40example.com?secret=jbsw y3dp ehpk 3pxp&issuer=Google";
+    const result = generateTotpCode(uri);
+    expect(result?.code).toMatch(/^\d{6}$/);
+    expect(result?.period).toBe(30);
   });
 });
 

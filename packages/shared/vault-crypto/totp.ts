@@ -11,6 +11,35 @@ export type TotpCodeResult = {
   periodRemaining: number;
 };
 
+function normalizeBase32Fragment(raw: string): string {
+  return raw.replace(/[\s=-]+/g, "").toUpperCase();
+}
+
+/** Google 等导出常在 secret 参数里插入空格；otpauth 库的 URI.parse 不接受。 */
+function preprocessOtpauthUri(uri: string): string {
+  return uri.replace(/([?&]secret=)([^&]*)/i, (_, prefix, secretValue: string) => {
+    let decoded = secretValue;
+    try {
+      decoded = decodeURIComponent(secretValue);
+    } catch {
+      // 保留原值
+    }
+    return prefix + decoded.replace(/\s+/g, "");
+  });
+}
+
+function extractSecretFromOtpauthUri(uri: string): string {
+  const match = uri.match(/[?&]secret=([^&]*)/i);
+  if (!match?.[1]) return "";
+  let raw = match[1];
+  try {
+    raw = decodeURIComponent(raw);
+  } catch {
+    // 保留原值
+  }
+  return normalizeBase32Fragment(raw);
+}
+
 /** 去空格；若为 otpauth:// URI 则提取 secret。失败返回空串。 */
 export function normalizeTotpSecret(input: string): string {
   const trimmed = input.trim();
@@ -18,15 +47,15 @@ export function normalizeTotpSecret(input: string): string {
 
   if (/^otpauth:\/\//i.test(trimmed)) {
     try {
-      const parsed = OTPAuth.URI.parse(trimmed);
+      const parsed = OTPAuth.URI.parse(preprocessOtpauthUri(trimmed));
       const base32 = parsed.secret?.base32;
       return typeof base32 === "string" ? base32.replace(/=+$/g, "") : "";
     } catch {
-      return "";
+      return extractSecretFromOtpauthUri(trimmed);
     }
   }
 
-  return trimmed.replace(/[\s=-]+/g, "").toUpperCase();
+  return normalizeBase32Fragment(trimmed);
 }
 
 function createTotp(
