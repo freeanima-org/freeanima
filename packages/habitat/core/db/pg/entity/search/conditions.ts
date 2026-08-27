@@ -35,6 +35,7 @@ import {
   parseBookmarkSearchFilters,
   HEALTH_RECORD_COMPONENT,
   parseHealthSearchFilters,
+  VAULT_ITEM_COMPONENT,
 } from "@freeanima/habitat/core/db/schema";
 import { TaskContainer, resolveTaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 import { pgBigintArray } from "../../utils/pg-sql.ts";
@@ -744,12 +745,33 @@ export function normalizeEntitySearchQuery(raw: string): string {
     .trim();
 }
 
-function entitySearchableTextExpr(): SQL {
-  return sql`btrim(
+function entitySearchableTextExpr(opts?: Pick<EntitySearchOpts, "primary_component">): SQL {
+  const base = sql`btrim(
     coalesce(${entities.title}, '') || ' ' ||
     coalesce(${entities.summary}, '') || ' ' ||
     coalesce(${entities.content}, '')
   )`;
+  if (opts?.primary_component === VAULT_ITEM_COMPONENT) {
+    return sql`btrim(${base} || ' ' || ${vaultItemBodySearchTextExpr()})`;
+  }
+  return base;
+}
+
+/** trgm 通道：与 ILIKE 共用同一 haystack 规则 */
+export function entitySearchableTextExprForTrgm(opts: EntitySearchOpts): SQL {
+  return entitySearchableTextExpr(
+    opts.primary_component ? { primary_component: opts.primary_component } : undefined,
+  );
+}
+
+/** vault_item body.url / body.uris / body.username，供 ILIKE / trgm 直查（不依赖 content 是否同步） */
+export function vaultItemBodySearchTextExpr(): SQL {
+  return sql`coalesce(${entities.body}->>'username', '') || ' ' ||
+    coalesce(${entities.body}->>'url', '') || ' ' ||
+    coalesce((
+      SELECT string_agg(elem->>'uri', ' ')
+      FROM jsonb_array_elements(COALESCE(${entities.body}->'uris', '[]'::jsonb)) AS elem
+    ), '')`;
 }
 
 function isCjkChar(ch: string): boolean {
@@ -776,20 +798,30 @@ export function buildCjkOrderedCharRegexPattern(query: string): string | null {
 }
 
 /** 连续子串 ILIKE */
-export function buildTitleIlikeCondition(query: string): SQL {
+export function buildTitleIlikeCondition(
+  query: string,
+  opts?: Pick<EntitySearchOpts, "primary_component">,
+): SQL {
   const pattern = `%${query.replace(/[%_\\]/g, "\\$&")}%`;
-  return sql`(
+  const base = sql`(
     ${entities.title} ILIKE ${pattern} ESCAPE '\\'
     OR ${entities.summary} ILIKE ${pattern} ESCAPE '\\'
     OR ${entities.content} ILIKE ${pattern} ESCAPE '\\'
   )`;
+  if (opts?.primary_component === VAULT_ITEM_COMPONENT) {
+    return sql`(${base} OR ${vaultItemBodySearchTextExpr()} ILIKE ${pattern} ESCAPE '\\')`;
+  }
+  return base;
 }
 
 /** 子串 + CJK 顺序模糊（filter_only / hybrid 兜底） */
-export function buildEntityTextMatchCondition(query: string): SQL {
-  const ilike = buildTitleIlikeCondition(query);
+export function buildEntityTextMatchCondition(
+  query: string,
+  opts?: Pick<EntitySearchOpts, "primary_component">,
+): SQL {
+  const ilike = buildTitleIlikeCondition(query, opts);
   const ordered = buildCjkOrderedCharRegexPattern(query);
   if (!ordered) return ilike;
-  const haystack = entitySearchableTextExpr();
+  const haystack = entitySearchableTextExpr(opts);
   return sql`(${ilike} OR ${haystack} ~ ${ordered})`;
 }
