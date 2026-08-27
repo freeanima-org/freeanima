@@ -1,4 +1,6 @@
 const STORAGE_KEY = "freeanima.shell-modules.visible";
+/** 一次性：旧 localStorage 未含 bedroom/rooms/health 时补为可见；之后尊重用户勾选 */
+const NEW_MODULES_MIGRATION_KEY = "freeanima.shell-modules.v2-new-modules";
 
 export type ShellModuleId =
   | "chat"
@@ -84,10 +86,25 @@ function parseVisible(raw: string | null): Set<ShellModuleId> {
     for (const locked of SHELL_MODULE_LOCKED) {
       if (!ids.includes(locked)) ids.push(locked);
     }
-    // 新顶级模块默认可见（旧 localStorage 未列出时补上）
-    if (!ids.includes("bedroom")) ids.push("bedroom");
-    if (!ids.includes("rooms")) ids.push("rooms");
-    if (!ids.includes("health")) ids.push("health");
+    // 一次性迁移：升级前已保存的可见集完全不含 bedroom/rooms/health 时，首次读取补为可见并持久化
+    if (raw != null) {
+      try {
+        const store = storage();
+        if (store && !store.getItem(NEW_MODULES_MIGRATION_KEY)) {
+          store.setItem(NEW_MODULES_MIGRATION_KEY, "1");
+          const hadAnyNewModule =
+            ids.includes("bedroom") || ids.includes("rooms") || ids.includes("health");
+          if (!hadAnyNewModule) {
+            if (!ids.includes("bedroom")) ids.push("bedroom");
+            if (!ids.includes("rooms")) ids.push("rooms");
+            if (!ids.includes("health")) ids.push("health");
+            store.setItem(STORAGE_KEY, serializeVisible(new Set(ids)));
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
     return ids.length > 0 ? new Set(ids) : new Set(DEFAULT_VISIBLE);
   } catch {
     return new Set(DEFAULT_VISIBLE);
@@ -196,4 +213,5 @@ export function resetShellModuleVisibilityForTest(): void {
   memoryFallback = null;
   if (typeof localStorage === "undefined") return;
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(NEW_MODULES_MIGRATION_KEY);
 }
