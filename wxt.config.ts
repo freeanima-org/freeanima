@@ -79,6 +79,7 @@ export default defineConfig({
         "notifications",
         "bookmarks",
         "alarms",
+        "webNavigation",
       ],
       host_permissions: ["http://*/*", "https://*/*"],
       commands: {
