@@ -6,7 +6,7 @@ import { getActiveRuntimeConfig, getFtsTrgmMinSimilarity } from "@freeanima/habi
 import type { EntitySearchOpts } from "../types.ts";
 
 import { getDb } from "../../client.ts";
-import { buildEntitySearchWhere } from "./conditions.ts";
+import { buildEntitySearchWhere, entitySearchableTextExprForTrgm } from "./conditions.ts";
 
 export type EntityTrgmHit = ReturnType<typeof mapEntityRow> & { docKey: string; rank: number };
 
@@ -19,11 +19,7 @@ export async function searchEntitiesTrgm(
 
   const limit = Math.max(1, Math.min(100, opts.limit ?? 10));
   const minSim = getFtsTrgmMinSimilarity(getActiveRuntimeConfig().data);
-  const searchText = sql<string>`btrim(
-    coalesce(${entities.title}, '') || ' ' ||
-    coalesce(${entities.summary}, '') || ' ' ||
-    coalesce(${entities.content}, '')
-  )`;
+  const searchText = entitySearchableTextExprForTrgm(opts);
 
   const db = getDb();
   const rankExpr = sql<number>`similarity(${searchText}, ${q})`.as("rank");

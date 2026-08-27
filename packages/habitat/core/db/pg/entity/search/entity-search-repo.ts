@@ -68,7 +68,7 @@ async function searchFilterOnly(opts: EntitySearchOpts): Promise<EntitySearchHit
 
   const conditions = where ? [where] : [];
   if (q) {
-    conditions.push(buildEntityTextMatchCondition(q));
+    conditions.push(buildEntityTextMatchCondition(q, opts));
   }
 
   const orderExprs = defaultOrderBy(opts.primary_component, { hasQuery: Boolean(q) });
@@ -176,7 +176,7 @@ export async function countEntitiesSearch(
   const conditions = where ? [where] : [];
   if (q) {
     // hybrid 也用文本谓词近似（FTS∪ILIKE），避免「仅结构化过滤」撑大 total
-    conditions.push(buildEntityTextMatchCondition(q));
+    conditions.push(buildEntityTextMatchCondition(q, opts));
   }
   const [row] = await db
     .select({ value: count() })
