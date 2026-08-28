@@ -7,6 +7,11 @@ import {
 } from "../features/vault/dom-fill.ts";
 import { dispatchVaultFillMessage } from "../features/vault/fill-dispatch.ts";
 import { attachPageAutofillUi } from "../features/vault/page-ui.ts";
+import {
+  isSavePromptMuted,
+  muteSavePromptForHost,
+} from "../features/vault/save-prompt-settings.ts";
+import { showSaveLoginPrompt } from "../features/vault/save-prompt-ui.ts";
 import type { FillPayload } from "../runtime/messages.ts";
 import { sendBg } from "../runtime/messages.ts";
 
@@ -50,10 +55,17 @@ export default defineContentScript({
         const needsUpdate =
           exists && "needs_password_update" in existing && Boolean(existing.needs_password_update);
         if (exists && !needsUpdate) return;
-        const prompt = needsUpdate
-          ? `检测到密码已变更，是否更新 FreeAnima 保险库？\n${creds.username || "(无用户名)"}\n${url}`
-          : `将登录凭据保存到 FreeAnima 保险库？\n${creds.username || "(无用户名)"}\n${url}`;
-        if (!window.confirm(prompt)) return;
+        if (await isSavePromptMuted(location.hostname)) return;
+        const action = await showSaveLoginPrompt({
+          mode: needsUpdate ? "update" : "save",
+          username: creds.username,
+          url,
+        });
+        if (action === "cancel") return;
+        if (action === "mute") {
+          await muteSavePromptForHost(location.hostname);
+          return;
+        }
         const res = await sendBg({
           type: "save_login",
           title,
