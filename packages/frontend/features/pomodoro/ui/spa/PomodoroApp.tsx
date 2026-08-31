@@ -78,6 +78,10 @@ function parseTaskIdFromLocation(): number | null {
   return readPomodoroLaunchParamsFromLocation().taskId;
 }
 
+function parseEventIdFromLocation(): number | null {
+  return readPomodoroLaunchParamsFromLocation().eventId;
+}
+
 function formatDurationMs(ms: number): string {
   const min = Math.max(1, Math.round(ms / 60_000));
   return `${min} 分钟`;
@@ -207,7 +211,7 @@ export function PomodoroApp() {
     () => new Map<number, PomodoroTaskFocusRow[]>(),
   );
   const [taskItemId, setTaskItemId] = useState<number | null>(parseTaskIdFromLocation());
-  const [calendarEventId, setCalendarEventId] = useState<number | null>(null);
+  const [calendarEventId, setCalendarEventId] = useState<number | null>(parseEventIdFromLocation());
   const [linkedLabel, setLinkedLabel] = useState<string | null>(null);
   const [taskPickerOpen, setTaskPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -327,12 +331,16 @@ export function PomodoroApp() {
     if (loading || !config) return;
     void navTick;
     const launch = readPomodoroLaunchParamsFromLocation();
-    if (launch.taskId == null && !launch.autostart) return;
+    if (launch.taskId == null && launch.eventId == null && !launch.autostart) return;
 
     if (launch.taskId != null) {
       setTaskItemId(launch.taskId);
       setCalendarEventId(null);
       void resolvePomodoroLinkLabel({ taskItemId: launch.taskId }).then(setLinkedLabel);
+    } else if (launch.eventId != null) {
+      setCalendarEventId(launch.eventId);
+      setTaskItemId(null);
+      void resolvePomodoroLinkLabel({ calendarEventId: launch.eventId }).then(setLinkedLabel);
     }
 
     if (active) {
@@ -341,23 +349,42 @@ export function PomodoroApp() {
           switchWorkFocusLink(active, { taskItemId: launch.taskId, calendarEventId: null }),
           subjectId,
         );
+      } else if (launch.eventId != null && active.calendarEventId !== launch.eventId) {
+        void applyPomodoroActive(
+          switchWorkFocusLink(active, { taskItemId: null, calendarEventId: launch.eventId }),
+          subjectId,
+        );
       }
       clearPomodoroLaunchParamsFromUrl();
       return;
     }
 
-    if (launch.autostart && launch.taskId != null && !autostartHandledRef.current) {
-      autostartHandledRef.current = true;
-      clearPomodoroLaunchParamsFromUrl();
-      void applyPomodoroActive(
-        createInitialActiveState(config, {
-          taskItemId: launch.taskId,
-          calendarEventId: null,
-          sessionLocalId: randomPublicId(),
-        }),
-        subjectId,
-        { alertConfig: config },
-      );
+    if (launch.autostart && !autostartHandledRef.current) {
+      if (launch.taskId != null) {
+        autostartHandledRef.current = true;
+        clearPomodoroLaunchParamsFromUrl();
+        void applyPomodoroActive(
+          createInitialActiveState(config, {
+            taskItemId: launch.taskId,
+            calendarEventId: null,
+            sessionLocalId: randomPublicId(),
+          }),
+          subjectId,
+          { alertConfig: config },
+        );
+      } else if (launch.eventId != null) {
+        autostartHandledRef.current = true;
+        clearPomodoroLaunchParamsFromUrl();
+        void applyPomodoroActive(
+          createInitialActiveState(config, {
+            taskItemId: null,
+            calendarEventId: launch.eventId,
+            sessionLocalId: randomPublicId(),
+          }),
+          subjectId,
+          { alertConfig: config },
+        );
+      }
     }
   }, [loading, config, active, subjectId, navTick]);
 

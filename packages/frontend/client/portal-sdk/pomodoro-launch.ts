@@ -34,19 +34,26 @@ export function navigateAppModulePath(pathWithSearch: string): void {
 
 export type PomodoroLaunchParams = {
   taskId: number | null;
+  eventId: number | null;
   autostart: boolean;
 };
+
+function parsePositiveIntParam(raw: string | null): number | null {
+  if (raw == null) return null;
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
 
 export function readPomodoroLaunchParamsFromLocation(): PomodoroLaunchParams {
   const search = window.location.search;
   const hash = window.location.hash;
   const query = search || (hash.includes("?") ? (hash.split("?")[1] ?? "") : "");
   const params = new URLSearchParams(query);
-  const rawId = params.get("taskId");
-  const taskId =
-    rawId != null && Number.isInteger(Number(rawId)) && Number(rawId) > 0 ? Number(rawId) : null;
+  const taskId = parsePositiveIntParam(params.get("taskId"));
+  // 与 taskId 同时出现时优先 task
+  const eventId = taskId != null ? null : parsePositiveIntParam(params.get("eventId"));
   const autostart = params.get("autostart") === "1" || params.get("autostart") === "true";
-  return { taskId, autostart };
+  return { taskId, eventId, autostart };
 }
 
 export function clearPomodoroLaunchParamsFromUrl(): void {
@@ -65,6 +72,7 @@ export function clearPomodoroLaunchParamsFromUrl(): void {
 
   const url = new URL(window.location.href);
   url.searchParams.delete("taskId");
+  url.searchParams.delete("eventId");
   url.searchParams.delete("autostart");
   const next = `${url.pathname}${url.search}${url.hash}`;
   window.history.replaceState(null, "", next);

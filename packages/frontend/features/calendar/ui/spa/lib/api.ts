@@ -216,6 +216,31 @@ export async function convertCalendarEventToTask(
   return { id: data.item.id, title: data.item.title };
 }
 
+/** 议程菜单：完成任务（含重复虚拟实例 → live series id） */
+export async function completeAgendaTask(subjectId: number, id: number): Promise<void> {
+  await habitat().call("task.complete", { subject_id: subjectId, id });
+}
+
+export async function uncompleteAgendaTask(subjectId: number, id: number): Promise<void> {
+  await habitat().call("task.uncomplete", { subject_id: subjectId, id });
+}
+
+export async function deleteAgendaTask(subjectId: number, id: number): Promise<void> {
+  await habitat().call("task.delete", { subject_id: subjectId, id });
+}
+
+/** 同 id 有损转为日历事件 */
+export async function convertAgendaTaskToEvent(
+  subjectId: number,
+  id: number,
+): Promise<{ id: number; title: string }> {
+  const data = await habitat().call("task.convertToEvent", {
+    subject_id: subjectId,
+    id,
+  });
+  return { id: data.item.id, title: data.item.title };
+}
+
 /** 议程日期行新建任务：计划开始锚定该日 09:00（与拖拽改 due 日锚点一致） */
 export async function createAgendaTask(
   subjectId: number,

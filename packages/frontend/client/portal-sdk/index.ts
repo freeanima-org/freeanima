@@ -179,6 +179,8 @@ export {
 } from "./pomodoro-launch.ts";
 export { launchPomodoroForTask } from "./pomodoro-task-launch.ts";
 export type { PomodoroTaskLaunchInput } from "./pomodoro-task-launch.ts";
+export { launchPomodoroForEvent } from "./pomodoro-event-launch.ts";
+export type { PomodoroEventLaunchInput } from "./pomodoro-event-launch.ts";
 export {
   actualDurationMs,
   effectiveFinishedAtIso,
