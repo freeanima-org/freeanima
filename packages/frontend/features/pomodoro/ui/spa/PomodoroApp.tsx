@@ -28,6 +28,7 @@ import {
 } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
+import { pomodoroPhaseAccentCss } from "../../shared/phase-accent.ts";
 import {
   AUTO_PERSIST_SHORT,
   createAutoPersistScheduler,
@@ -546,13 +547,26 @@ export function PomodoroApp() {
           <Card>
             <CardContent className="flex flex-col items-center gap-4 pt-6">
               <div
-                className="relative flex h-48 w-48 items-center justify-center rounded-full border-4 border-primary/30"
-                style={{
-                  background: `conic-gradient(hsl(var(--primary)) ${progress * 360}deg, transparent 0)`,
-                }}
+                className={cn(
+                  "relative flex h-48 w-48 items-center justify-center rounded-full border-4",
+                  !active && "border-primary/30",
+                )}
+                style={
+                  active
+                    ? {
+                        borderColor: `color-mix(in srgb, ${pomodoroPhaseAccentCss(active.phase)} 30%, transparent)`,
+                        background: `conic-gradient(${pomodoroPhaseAccentCss(active.phase)} ${progress * 360}deg, transparent 0)`,
+                      }
+                    : {
+                        background: `conic-gradient(hsl(var(--primary)) ${progress * 360}deg, transparent 0)`,
+                      }
+                }
               >
                 <div className="bg-background flex h-40 w-40 flex-col items-center justify-center rounded-full">
-                  <span className="text-muted-foreground text-sm">
+                  <span
+                    className={cn("text-sm", !active && "text-muted-foreground")}
+                    style={active ? { color: pomodoroPhaseAccentCss(active.phase) } : undefined}
+                  >
                     {active ? phaseLabel(active.phase) : "就绪"}
                   </span>
                   <span className="font-mono text-4xl tabular-nums">

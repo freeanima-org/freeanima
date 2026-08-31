@@ -18,6 +18,7 @@ import {
   subscribePomodoroSync,
 } from "@freeanima/client/portal-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active.ts";
+import { pomodoroPhaseAccentKind } from "../../shared/phase-accent.ts";
 import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
 import {
   POMODORO_ACTIVE_CHANGED_EVENT,
@@ -491,7 +492,11 @@ export function PomodoroFloatApp() {
       >
         <div className="pomodoro-float-bar-track" aria-hidden>
           <div
-            className={`pomodoro-float-bar-fill${active ? "" : " pomodoro-float-bar-fill--idle"}`}
+            className={`pomodoro-float-bar-fill${
+              active
+                ? ` pomodoro-float-bar-fill--${pomodoroPhaseAccentKind(active.phase)}`
+                : " pomodoro-float-bar-fill--idle"
+            }`}
             style={verticalBar ? { height: `${ratio * 100}%` } : { width: `${ratio * 100}%` }}
           />
         </div>
@@ -516,12 +521,22 @@ export function PomodoroFloatApp() {
   return (
     <div className="pomodoro-float dark" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <div className="pomodoro-float-top" onMouseDown={onDragStart}>
-        <span className="pomodoro-float-phase">{phaseText}</span>
+        <span
+          className={`pomodoro-float-phase${
+            active ? ` pomodoro-float-phase--${pomodoroPhaseAccentKind(active.phase)}` : ""
+          }`}
+        >
+          {phaseText}
+        </span>
         <span className="pomodoro-float-clock">{active ? formatPomodoroClock(rem) : "--:--"}</span>
       </div>
       <div className="pomodoro-float-progress" aria-hidden>
         <div
-          className={`pomodoro-float-progress-fill${active ? "" : " pomodoro-float-progress-fill--idle"}`}
+          className={`pomodoro-float-progress-fill${
+            active
+              ? ` pomodoro-float-progress-fill--${pomodoroPhaseAccentKind(active.phase)}`
+              : " pomodoro-float-progress-fill--idle"
+          }`}
           style={{ width: `${ratio * 100}%` }}
         />
       </div>
