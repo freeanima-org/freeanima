@@ -20,11 +20,11 @@
     "./companion-app/*": "./companion-app/*"
   },
   "dependencies": {
-    "@noble/ed25519": "^2",
-    "@noble/hashes": "^2.3.0",
+    "@noble/ed25519": "^3",
+    "@noble/hashes": "^2.4.0",
     "chinese-days": "^1.5.9",
     "lunar-javascript": "^1.7.7",
-    "nanoid": "^5",
+    "nanoid": "^6",
     "otpauth": "^9.5.1",
     "zod": "^4.4.3"
   },
