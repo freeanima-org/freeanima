@@ -176,7 +176,12 @@ export function EventEditorDialog({
       <div className="flex flex-col gap-3 px-1 py-2">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="cal-title">{"标题"}</Label>
-          <Input id="cal-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Input
+            id="cal-title"
+            {...(target?.mode === "create" ? { focusOnMount: true } : {})}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </div>
         <div className="flex items-center justify-between gap-3">
           <Label htmlFor="cal-allday">{"全天"}</Label>

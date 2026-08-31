@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger, cn } from "@freeanima/ui-kit";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite/types.ts";
 import { ChevronRight } from "lucide-react";
 
 import type { CalendarRangeItem } from "../lib/api.ts";
@@ -8,15 +9,16 @@ import {
   structureAgendaDay,
   type AgendaProjectGroup,
 } from "../lib/agenda-items.ts";
-import { AgendaList } from "./AgendaList.tsx";
+import { AgendaList, type AgendaListHandlers } from "./AgendaList.tsx";
 
-type AgendaHandlers = {
-  onOpenEvent: (id: number) => void;
-  onOpenTask: (id: number) => void;
-  onOpenProject: (id: number) => void;
-  onEditEvent: (id: number) => void;
-  onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
+type AgendaMenuProps = {
+  contextMenuEnabled?: boolean;
+  useActionSheet?: boolean;
+  contextMenuItemsForItem?: (item: CalendarRangeItem) => ActionSheetItem[];
+  onOpenItemMenu?: (item: CalendarRangeItem) => void;
 };
+
+type AgendaHandlers = AgendaListHandlers & AgendaMenuProps;
 
 type AgendaDayViewProps = AgendaHandlers & {
   day: string;
@@ -112,8 +114,22 @@ export function AgendaDayView({
   onOpenProject,
   onEditEvent,
   onOpenHoliday,
+  contextMenuEnabled,
+  useActionSheet,
+  contextMenuItemsForItem,
+  onOpenItemMenu,
 }: AgendaDayViewProps) {
-  const handlers = { onOpenEvent, onOpenTask, onOpenProject, onEditEvent, onOpenHoliday };
+  const handlers: AgendaHandlers = {
+    onOpenEvent,
+    onOpenTask,
+    onOpenProject,
+    onEditEvent,
+    onOpenHoliday,
+    ...(contextMenuEnabled !== undefined ? { contextMenuEnabled } : {}),
+    ...(useActionSheet !== undefined ? { useActionSheet } : {}),
+    ...(contextMenuItemsForItem != null ? { contextMenuItemsForItem } : {}),
+    ...(onOpenItemMenu != null ? { onOpenItemMenu } : {}),
+  };
   const sections = structureAgendaDay(items, day, today);
 
   if (!agendaDayHasItems(sections)) {

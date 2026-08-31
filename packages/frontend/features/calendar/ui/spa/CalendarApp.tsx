@@ -2,8 +2,13 @@ import {
   openEntityResource,
   subscribeEntityOverlayClose,
 } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
+import { launchPomodoroForEvent, launchPomodoroForTask } from "@freeanima/client/portal-sdk";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
-import { useUserSubjectId } from "@freeanima/client/portal-sdk/react.tsx";
+import {
+  useActionSheetCapability,
+  useContextMenuCapability,
+  useUserSubjectId,
+} from "@freeanima/client/portal-sdk/react.tsx";
 import {
   Button,
   cn,
@@ -13,7 +18,8 @@ import {
   DropdownMenuTrigger,
   Spinner,
 } from "@freeanima/ui-kit";
-import { toast } from "@freeanima/ui-kit/composite";
+import { ActionSheet, showConfirm, toast } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem } from "@freeanima/ui-kit/composite/types.ts";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
 import { Check, ChevronDown, ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -35,19 +41,24 @@ import {
   mergeCalendarItems,
   planOverdueFiltersForAgenda,
 } from "./lib/agenda-items.ts";
+import { buildAgendaMenuItems, type AgendaMenuHandlers } from "./lib/agenda-menus.ts";
 import {
   type CalendarEventRow,
   type CalendarRangeItem,
   type CalendarRangeKind,
+  completeAgendaTask,
+  convertAgendaTaskToEvent,
   convertCalendarEventToTask,
   createAgendaTask,
   createCalendarEvent,
+  deleteAgendaTask,
   deleteCalendarEvent,
   fetchCalendarEventById,
   fetchCalendarPrefs,
   fetchCalendarRange,
   fetchDueTasksForAgenda,
   patchTaskDueAt,
+  uncompleteAgendaTask,
   updateCalendarEvent,
   updateCalendarPrefs,
 } from "./lib/api.ts";
@@ -90,9 +101,13 @@ function openProject(id: number) {
   void openEntityResource({ id, component: "project", present: "overlay" });
 }
 
+type SheetMenuState = { title?: string; items: ActionSheetItem[] };
+
 export function CalendarApp() {
   const subjectId = useUserSubjectId();
   const compact = useCompactLayout();
+  const contextMenuEnabled = useContextMenuCapability();
+  const useActionSheet = useActionSheetCapability();
   const today = cstDayKey();
   const [cursor, setCursor] = useState(() => {
     const parts = today.split("-").map(Number);
@@ -115,6 +130,7 @@ export function CalendarApp() {
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
   const [refreshing, setRefreshing] = useState(false);
   const [displaySheetOpen, setDisplaySheetOpen] = useState(false);
+  const [sheetMenu, setSheetMenu] = useState<SheetMenuState | null>(null);
 
   const patchPrefs = useCallback((patch: CalendarUiPrefsWritePatch) => {
     const next = writeCalendarUiPrefs(patch);
@@ -360,9 +376,107 @@ export function CalendarApp() {
     };
   }, [applyDay, eventsById]);
 
-  const openEvent = (id: number) => {
-    const ev = eventsById.get(id);
-    if (ev) setEditor({ mode: "edit", event: ev });
+  const openEvent = useCallback(
+    (id: number) => {
+      const ev = eventsById.get(id);
+      if (ev) setEditor({ mode: "edit", event: ev });
+    },
+    [eventsById],
+  );
+
+  const agendaMenuHandlers: AgendaMenuHandlers = useMemo(
+    () => ({
+      onEditEvent: (item) => openEvent(item.id),
+      onStartPomodoroEvent: (item) => launchPomodoroForEvent({ id: item.id, title: item.title }),
+      onConvertEventToTask: (item) => {
+        void (async () => {
+          const ok = await showConfirm({
+            title: "转为任务",
+            description: `将「${item.title}」转为任务？此操作有损且不可撤销。`,
+          });
+          if (!ok) return;
+          const created = await convertCalendarEventToTask(subjectId, item.id);
+          setEditor(null);
+          await refresh();
+          void openEntityResource({
+            id: created.id,
+            component: "task_item",
+            present: "overlay",
+          });
+        })();
+      },
+      onDeleteEvent: (item) => {
+        void (async () => {
+          const ok = await showConfirm({
+            title: "删除事件",
+            description: `删除「${item.title}」？`,
+          });
+          if (!ok) return;
+          await deleteCalendarEvent(subjectId, item.id);
+          setEditor(null);
+          await refresh();
+        })();
+      },
+      onEditTask: (item) => openTask(item.id),
+      onStartPomodoroTask: (item) => launchPomodoroForTask({ id: item.id, title: item.title }),
+      onToggleCompleteTask: (item) => {
+        void (async () => {
+          if (item.status === "completed") {
+            await uncompleteAgendaTask(subjectId, item.id);
+          } else {
+            await completeAgendaTask(subjectId, item.id);
+          }
+          await refresh();
+        })();
+      },
+      onConvertTaskToEvent: (item) => {
+        void (async () => {
+          const ok = await showConfirm({
+            title: "转为事件",
+            description: `将「${item.title}」转为事件？此操作有损且不可撤销。`,
+          });
+          if (!ok) return;
+          const created = await convertAgendaTaskToEvent(subjectId, item.id);
+          await refresh();
+          const row = await fetchCalendarEventById(created.id);
+          if (row) setEditor({ mode: "edit", event: row });
+        })();
+      },
+      onDeleteTask: (item) => {
+        void (async () => {
+          const ok = await showConfirm({
+            title: "删除任务",
+            description: `删除「${item.title}」？`,
+          });
+          if (!ok) return;
+          await deleteAgendaTask(subjectId, item.id);
+          await refresh();
+        })();
+      },
+      onOpenProject: (item) => openProject(item.id),
+    }),
+    [openEvent, refresh, subjectId],
+  );
+
+  const contextMenuItemsForItem = useCallback(
+    (item: CalendarRangeItem) => buildAgendaMenuItems(item, agendaMenuHandlers),
+    [agendaMenuHandlers],
+  );
+
+  const openItemMenuSheet = useCallback(
+    (item: CalendarRangeItem) => {
+      const menuItems = buildAgendaMenuItems(item, agendaMenuHandlers);
+      if (menuItems.length === 0) return;
+      setSheetMenu({ title: item.title, items: menuItems });
+    },
+    [agendaMenuHandlers],
+  );
+
+  const agendaMenuProps = {
+    contextMenuEnabled,
+    useActionSheet,
+    contextMenuItemsForItem,
+    onOpenItemMenu: openItemMenuSheet,
   };
 
   return (
@@ -713,6 +827,7 @@ export function CalendarApp() {
             onOpenHoliday={openHoliday}
             onCreateEvent={(day) => setEditor({ mode: "create", day })}
             onCreateTask={(day) => setTaskCreateDay(day)}
+            {...agendaMenuProps}
           />
         </section>
       ) : (
@@ -777,6 +892,7 @@ export function CalendarApp() {
                 onOpenTask={openTask}
                 onOpenProject={openProject}
                 onOpenHoliday={openHoliday}
+                {...agendaMenuProps}
               />
             </div>
           </section>
@@ -825,6 +941,13 @@ export function CalendarApp() {
           await refresh();
         }}
       />
+      {sheetMenu ? (
+        <ActionSheet
+          {...(sheetMenu.title != null ? { title: sheetMenu.title } : {})}
+          items={sheetMenu.items}
+          onClose={() => setSheetMenu(null)}
+        />
+      ) : null}
     </div>
   );
 }

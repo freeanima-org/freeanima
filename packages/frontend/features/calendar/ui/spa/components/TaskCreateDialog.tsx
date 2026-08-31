@@ -51,6 +51,7 @@ export function TaskCreateDialog({ open, day, today, onClose, onSave }: TaskCrea
           <Label htmlFor="cal-task-title">{"标题"}</Label>
           <Input
             id="cal-task-title"
+            focusOnMount
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => {
