@@ -8,6 +8,7 @@ import {
   countNotifications,
   createNotification as createPgNotification,
   listNotifications as listPgNotifications,
+  markAllNotificationsReadBySourceRef,
   markNotificationRead as markPgNotificationRead,
 } from "@freeanima/habitat/core/db/pg/notifications";
 import type { RuntimeDeps } from "./runtime-deps.ts";
@@ -60,7 +61,14 @@ export async function markNotificationRead(
   _deps: RuntimeDeps,
   id: string,
 ): Promise<NotificationRow | null> {
-  return markPgNotificationRead(id.trim());
+  const row = await markPgNotificationRead(id.trim());
+  if (row == null) return null;
+  // soft-failure / cron 等会 user+agent 双写同一 source_ref；任一侧已读则两侧都清，避免卧室已读仍旁侧注入
+  const sourceRef = row.source_ref?.trim();
+  if (sourceRef) {
+    await markAllNotificationsReadBySourceRef(sourceRef);
+  }
+  return row;
 }
 
 export async function createNotification(

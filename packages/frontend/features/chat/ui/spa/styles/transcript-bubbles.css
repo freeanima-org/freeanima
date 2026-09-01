@@ -105,17 +105,26 @@
   }
 }
 
+/*
+ * 气泡：内容自己撑开，只封顶 max-width。
+ * max-width % 必须相对「满宽外层」（transcript 行），禁止相对缩裹 column（否则短句按窄可用宽折行、外壳却按 preferred 撑开）。
+ * 禁止 width:max-content + border-box（padding 会吃进内容区导致末字裁切）。
+ */
 .chat-bubble {
-  /* w-fit + shrink-0：按内容撑开，避免 flex 子项被 min-w-0 压窄导致短句过早换行 */
   @apply w-fit max-w-[85%] shrink-0 rounded-2xl px-4 py-2;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+  line-break: strict;
+}
+.chat-bubble .md-content {
+  /* 覆盖全局 .md-content 的 anywhere / break-word，避免字间软折行 */
+  max-width: none;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+  line-break: strict;
 }
 .chat-bubble-user {
   @apply bg-primary text-primary-foreground ml-auto;
-}
-.chat-bubble-user .md-content {
-  /* 用户短句按内容撑开；anywhere 会在窄盒子里把「你好呀」拆成多行 */
-  overflow-wrap: break-word;
-  word-break: normal;
 }
 .chat-bubble-user .anima-uri-chip {
   @apply border-primary-foreground/35 bg-primary-foreground/15 text-primary-foreground;

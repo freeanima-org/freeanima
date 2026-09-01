@@ -93,12 +93,15 @@ export async function listPipelineStepRuns(
 /**
  * Distinct CST days with a completed or skipped pipeline step
  * (used by sleep catch-up to skip already completed retain-catch-up days).
+ *
+ * `agent_subject_id`：卧室单 Anima 水位。匹配该 agent，或 output 无 agent（历史/实例级水位，视为全员完成）。
  */
 export async function listCompletedStepDays(opts: {
   pipeline_id: string;
   step_id: string;
   from_day?: string;
   to_day?: string;
+  agent_subject_id?: number;
 }): Promise<string[]> {
   const conditions = [
     eq(pipelineStepRun.pipeline_id, opts.pipeline_id),
@@ -110,6 +113,13 @@ export async function listCompletedStepDays(opts: {
   }
   if (opts.to_day?.trim()) {
     conditions.push(sql`${pipelineStepRun.day} <= ${opts.to_day.trim()}`);
+  }
+  if (opts.agent_subject_id != null && opts.agent_subject_id > 0) {
+    const agentKey = String(opts.agent_subject_id);
+    conditions.push(sql`(
+      ${pipelineStepRun.output}->>'agent_subject_id' IS NULL
+      OR ${pipelineStepRun.output}->>'agent_subject_id' = ${agentKey}
+    )`);
   }
 
   const db = getDb();

@@ -164,3 +164,18 @@ export async function markNotificationsReadBySourceRef(
     .returning({ id: notifications.id });
   return updated.length;
 }
+
+/** 同一 source_ref 的全部收件人副本一并已读（user/agent 双写 Inbox 联动） */
+export async function markAllNotificationsReadBySourceRef(sourceRef: string): Promise<number> {
+  const trimmed = sourceRef.trim();
+  if (!trimmed) return 0;
+
+  const now = new Date();
+  const db = getDb();
+  const updated = await db
+    .update(notifications)
+    .set({ read_at: now })
+    .where(and(eq(notifications.source_ref, trimmed), isNull(notifications.read_at)))
+    .returning({ id: notifications.id });
+  return updated.length;
+}

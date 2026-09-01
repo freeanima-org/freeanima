@@ -240,7 +240,7 @@ export const ConversationTranscript = memo(function ConversationTranscript({
           return (
             <div
               key={`d${i}`}
-              className={`flex max-w-full flex-col items-end ${canSelect ? "cursor-pointer" : ""}`}
+              className={`flex w-full max-w-full flex-col items-end ${canSelect ? "cursor-pointer" : ""}`}
               onClick={
                 messagePos != null && canSelect
                   ? () => {
@@ -256,7 +256,7 @@ export const ConversationTranscript = memo(function ConversationTranscript({
                     onToggle={() => onToggleSelectPos?.(messagePos)}
                   />
                 ) : null}
-                <div className="flex max-w-full flex-col items-end">
+                <div className="flex w-full max-w-full flex-col items-end">
                   <ChatMessageBubble
                     align="end"
                     className={`chat-bubble-user${
@@ -268,7 +268,7 @@ export const ConversationTranscript = memo(function ConversationTranscript({
                     }`}
                   >
                     <div
-                      className="md-content max-w-full"
+                      className="md-content"
                       dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
                       onClick={(e) => onMdClick(e, onAnimaUriClick)}
                     />
@@ -329,7 +329,7 @@ export const ConversationTranscript = memo(function ConversationTranscript({
           return (
             <div
               key={`d${i}`}
-              className={`flex min-w-0 max-w-full flex-col items-start ${canSelect ? "cursor-pointer" : ""}`}
+              className={`flex w-full max-w-full flex-col items-start ${canSelect ? "cursor-pointer" : ""}`}
               onClick={
                 messagePos != null && canSelect
                   ? () => {
@@ -345,10 +345,10 @@ export const ConversationTranscript = memo(function ConversationTranscript({
                     onToggle={() => onToggleSelectPos?.(messagePos)}
                   />
                 ) : null}
-                <div className="flex min-w-0 max-w-full flex-col items-start">
+                <div className="flex w-full max-w-full flex-col items-start">
                   <ChatMessageBubble align="start" className="chat-bubble-assistant">
                     <div
-                      className="md-content min-w-0 max-w-full"
+                      className="md-content"
                       dangerouslySetInnerHTML={{ __html: renderMd(item.content) }}
                       onClick={(e) => onMdClick(e, onAnimaUriClick)}
                     />
@@ -400,7 +400,7 @@ export const ConversationTranscript = memo(function ConversationTranscript({
 
       {awaiting ? (
         streamIsVisible && streamText ? (
-          <div className="flex min-w-0 max-w-full flex-col items-start">
+          <div className="flex w-full max-w-full flex-col items-start">
             <div className="chat-bubble chat-bubble-assistant">
               <div
                 className="md-content"

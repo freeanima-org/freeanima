@@ -27,15 +27,13 @@ function ShareMessageList({ display }: { display: DisplayItem[] }) {
           return (
             <div
               key={`s${i}`}
-              className={`flex w-full ${alignEnd ? "justify-end" : "justify-start"}`}
+              className={`flex w-full max-w-full ${alignEnd ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`chat-bubble max-w-[min(100%,42rem)] ${
-                  alignEnd ? "chat-bubble-user" : "chat-bubble-assistant"
-                }`}
+                className={`chat-bubble ${alignEnd ? "chat-bubble-user" : "chat-bubble-assistant"}`}
               >
                 <div
-                  className="md-content min-w-0 max-w-full"
+                  className="md-content"
                   dangerouslySetInnerHTML={{ __html: renderMarkdownHtml(item.content) }}
                 />
               </div>

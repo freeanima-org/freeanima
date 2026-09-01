@@ -39,7 +39,7 @@ export function RoomTranscript({ messages, selfPublicId, streamDraft }: RoomTran
               longPressEnabled={false}
             >
               <div
-                className={`md-content max-w-full${isMention ? " ring-primary/30 rounded-sm ring-1" : ""}`}
+                className={`md-content${isMention ? " ring-primary/30 rounded-sm ring-1" : ""}`}
                 dangerouslySetInnerHTML={{ __html: renderMarkdownHtml(msg.text) }}
               />
             </ChatMessageBubble>
@@ -58,7 +58,7 @@ export function RoomTranscript({ messages, selfPublicId, streamDraft }: RoomTran
             longPressEnabled={false}
           >
             <div
-              className="md-content min-w-0 max-w-full"
+              className="md-content"
               dangerouslySetInnerHTML={{
                 __html: renderMarkdownHtml(streamDraft.text || "…"),
               }}

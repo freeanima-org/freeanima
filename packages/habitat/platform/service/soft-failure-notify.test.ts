@@ -83,6 +83,36 @@ describe("deliverSoftFailureNotify / notifySoftFailure", () => {
     );
   });
 
+  it("notifies user only when audience is user", async () => {
+    const created: Array<{ recipient_kind: string }> = [];
+    await withNotificationPort(
+      {
+        getUserRecipient: () => ({ kind: "user" as const, id: 1 }),
+        getAgentRecipient: () => ({ kind: "agent" as const, id: 2 }),
+        existsBySourceRef: async () => false,
+        create: async (input) => {
+          created.push(input);
+          return {} as never;
+        },
+        list: async () => [],
+        markRead: async () => null,
+        markReadBySourceRef: async () => 0,
+      },
+      async () => {
+        registerSoftFailureNotify(deliverSoftFailureNotify);
+        const action = await notifySoftFailure({
+          sourceRef: "test:soft:user-only",
+          title: "仅用户",
+          body: "详情",
+          audience: "user",
+        });
+        expect(action).toBe("notified");
+        expect(created).toHaveLength(1);
+        expect(created[0]?.recipient_kind).toBe("user");
+      },
+    );
+  });
+
   it("skips when notification port missing", async () => {
     const spy = spyOn(notificationMod, "getNotificationPort").mockReturnValue(null);
     try {

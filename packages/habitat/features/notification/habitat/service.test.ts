@@ -65,11 +65,26 @@ const markPgNotificationReadMock = mock(async (id: string): Promise<Notification
   return updated;
 });
 
+const markAllBySourceRefMock = mock(async (sourceRef: string): Promise<number> => {
+  const trimmed = sourceRef.trim();
+  if (!trimmed) return 0;
+  let n = 0;
+  const now = new Date();
+  for (const [id, row] of rows) {
+    if (row.source_ref === trimmed && row.read_at == null) {
+      rows.set(id, { ...row, read_at: now });
+      n += 1;
+    }
+  }
+  return n;
+});
+
 mock.module("@freeanima/habitat/core/db/pg/notifications", () => ({
   createNotification: createPgNotificationMock,
   listNotifications: listPgNotificationsMock,
   countNotifications: countNotificationsMock,
   markNotificationRead: markPgNotificationReadMock,
+  markAllNotificationsReadBySourceRef: markAllBySourceRefMock,
 }));
 
 import { createNotification, listNotifications, markNotificationRead } from "./service.ts";
@@ -89,6 +104,7 @@ describe("service-notifications", () => {
     listPgNotificationsMock.mockClear();
     countNotificationsMock.mockClear();
     markPgNotificationReadMock.mockClear();
+    markAllBySourceRefMock.mockClear();
   });
 
   it("lists unread notifications for recipient", async () => {
@@ -139,6 +155,34 @@ describe("service-notifications", () => {
       read_filter: "unread",
     });
     expect(unread.total).toBe(0);
+  });
+
+  it("markNotificationRead clears sibling copies with same source_ref", async () => {
+    const deps = testDeps();
+    const userRow = await createNotification(deps, {
+      recipient_kind: "user",
+      recipient_id: USER_ID,
+      title: "Dual",
+      body: "both",
+      source_ref: "soft:dual:1",
+    });
+    await createNotification(deps, {
+      recipient_kind: "agent",
+      recipient_id: AGENT_ID,
+      title: "Dual",
+      body: "both",
+      source_ref: "soft:dual:1",
+    });
+
+    await markNotificationRead(deps, userRow.id);
+
+    const agentUnread = await listNotifications(deps, {
+      recipient_kind: "agent",
+      recipient_id: AGENT_ID,
+      read_filter: "unread",
+    });
+    expect(agentUnread.total).toBe(0);
+    expect(markAllBySourceRefMock).toHaveBeenCalledWith("soft:dual:1");
   });
 
   it("createNotification can fan out to user and agent", async () => {

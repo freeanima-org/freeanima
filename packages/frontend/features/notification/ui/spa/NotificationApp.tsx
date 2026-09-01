@@ -160,7 +160,11 @@ export function NotificationApp() {
   return (
     <div className="h-full overflow-y-auto p-4 md:p-6">
       <h2 className="mb-1 text-lg font-bold">通知</h2>
-      <p className="text-muted-foreground mb-4 text-sm">默认显示未读；点击「标记已读」确认处理。</p>
+      <p className="text-muted-foreground mb-4 text-sm">
+        {recipientKind === "agent"
+          ? "所选 Anima 的收件箱；标记已读会同步清除同事件的用户副本。"
+          : "用户收件箱；标记已读会同步清除同事件的 Agent 副本（避免旁侧仍注入）。"}
+      </p>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="inline-flex overflow-hidden rounded-md border shadow-xs">

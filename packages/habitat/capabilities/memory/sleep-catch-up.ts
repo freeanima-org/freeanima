@@ -5,7 +5,7 @@ import {
 } from "@freeanima/habitat/core/db/pg/conversation";
 import { listCompletedStepDays } from "@freeanima/habitat/core/db/pg/pipeline";
 import { listTemporalSummariesInRange } from "@freeanima/habitat/core/db/pg/temporal-summary";
-import { CST_OFFSET_MS, omitUndefined } from "@freeanima/habitat/core/util";
+import { CST_OFFSET_MS } from "@freeanima/habitat/core/util";
 
 import type { SleepCatchUpPlan } from "./sleep-catch-up-types.ts";
 
@@ -93,14 +93,76 @@ export function computeSleepCatchUpDays(input: {
   return { light_days, temporal_days, cascade_days, days };
 }
 
+/**
+ * 按 Anima 分别算缺口再求并集。
+ * 卧室补跑写带 agent_subject_id 的水位；实例级水位（无 agent）对所有 Anima 视为已完成。
+ */
 export async function planSleepCatchUp(opts?: {
   nowMs?: number;
   agent_subject_id?: number;
 }): Promise<{ ok: true; plan: SleepCatchUpPlan } | { ok: false; reason: string }> {
   const end = todayCstDay(opts?.nowMs);
-  const agentFilter = omitUndefined({ agent_subject_id: opts?.agent_subject_id });
-  const start =
-    (await getEarliestConversationDay(agentFilter)) ?? (await getEarliestMessageDay()) ?? null;
+  const { assertBindableAgentSubject, listEnabledBoundAgents } =
+    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
+  const agents =
+    opts?.agent_subject_id != null && opts.agent_subject_id > 0
+      ? [await assertBindableAgentSubject(opts.agent_subject_id)]
+      : await listEnabledBoundAgents();
+  if (agents.length === 0) {
+    return { ok: false, reason: "no_agents" };
+  }
+
+  const lightSet = new Set<string>();
+  const temporalSet = new Set<string>();
+  let start: string | null = null;
+
+  for (const agent of agents) {
+    const agentFilter = { agent_subject_id: agent.agent_subject_id };
+    const agentStart =
+      (await getEarliestConversationDay(agentFilter)) ??
+      (agents.length === 1 ? await getEarliestMessageDay() : null);
+    if (!agentStart) continue;
+    if (start == null || agentStart < start) start = agentStart;
+    if (agentStart > end) continue;
+
+    const activityDays = await listConversationActivityDays(agentStart, end, agentFilter);
+    const [completedRetain, completedLegacyLight] = await Promise.all([
+      listCompletedStepDays({
+        pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
+        step_id: RETAIN_CATCH_UP_STEP_ID,
+        from_day: agentStart,
+        to_day: end,
+        agent_subject_id: agent.agent_subject_id,
+      }),
+      listCompletedStepDays({
+        pipeline_id: LEGACY_SLEEP_CYCLE_PIPELINE_ID,
+        step_id: LEGACY_LIGHT_SLEEP_STEP_ID,
+        from_day: agentStart,
+        to_day: end,
+        agent_subject_id: agent.agent_subject_id,
+      }),
+    ]);
+    const completedLight = new Set([...completedRetain, ...completedLegacyLight]);
+
+    const rows = await listTemporalSummariesInRange({
+      window: "day",
+      period_start_from: agentStart,
+      period_start_to: end,
+      world_id: agent.agent_world_id,
+    });
+    const existingTemporal = new Set<string>(rows.map((r) => r.period_start));
+
+    const computed = computeSleepCatchUpDays({
+      activityDays,
+      completedLightDays: completedLight,
+      existingTemporalDays: existingTemporal,
+      from: agentStart,
+      to: end,
+    });
+    for (const d of computed.light_days) lightSet.add(d);
+    for (const d of computed.temporal_days) temporalSet.add(d);
+  }
+
   if (!start) {
     return { ok: false, reason: "no_conversations_or_messages" };
   }
@@ -108,57 +170,13 @@ export async function planSleepCatchUp(opts?: {
     return { ok: false, reason: "start_after_end" };
   }
 
-  const activityDays = await listConversationActivityDays(start, end, agentFilter);
-  const [completedRetain, completedLegacyLight] = await Promise.all([
-    listCompletedStepDays({
-      pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
-      step_id: RETAIN_CATCH_UP_STEP_ID,
-      from_day: start,
-      to_day: end,
-    }),
-    listCompletedStepDays({
-      pipeline_id: LEGACY_SLEEP_CYCLE_PIPELINE_ID,
-      step_id: LEGACY_LIGHT_SLEEP_STEP_ID,
-      from_day: start,
-      to_day: end,
-    }),
-  ]);
-  const completedLight = new Set([...completedRetain, ...completedLegacyLight]);
-  const { assertBindableAgentSubject, listEnabledBoundAgents } =
-    await import("@freeanima/habitat/engine/conversation/resolve-conversation-agent.ts");
-  const agents =
-    opts?.agent_subject_id != null && opts.agent_subject_id > 0
-      ? [await assertBindableAgentSubject(opts.agent_subject_id)]
-      : await listEnabledBoundAgents();
-  let existingIntersection: Set<string> | null = null;
-  for (const agent of agents) {
-    const rows = await listTemporalSummariesInRange({
-      window: "day",
-      period_start_from: start,
-      period_start_to: end,
-      world_id: agent.agent_world_id,
-    });
-    const periods = new Set<string>(rows.map((r) => r.period_start));
-    if (existingIntersection == null) {
-      existingIntersection = periods;
-    } else {
-      const next = new Set<string>();
-      for (const p of existingIntersection) {
-        if (periods.has(p)) next.add(p);
-      }
-      existingIntersection = next;
-    }
-  }
+  const light_days = [...lightSet].toSorted();
+  const temporal_days = [...temporalSet].toSorted();
+  const days = [...new Set([...light_days, ...temporal_days])].toSorted();
+  const cascade_days =
+    light_days.length > 0 || temporal_days.length > 0 ? listMonthStartsInRange(start, end) : [];
 
-  const computed = computeSleepCatchUpDays({
-    activityDays,
-    completedLightDays: completedLight,
-    existingTemporalDays: existingIntersection ?? new Set<string>(),
-    from: start,
-    to: end,
-  });
-
-  if (computed.light_days.length === 0 && computed.temporal_days.length === 0) {
+  if (light_days.length === 0 && temporal_days.length === 0) {
     return { ok: false, reason: "nothing_to_catch_up" };
   }
 
@@ -167,7 +185,10 @@ export async function planSleepCatchUp(opts?: {
     plan: {
       start,
       end,
-      ...computed,
+      light_days,
+      temporal_days,
+      cascade_days,
+      days,
     },
   };
 }
