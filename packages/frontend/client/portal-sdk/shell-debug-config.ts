@@ -55,7 +55,7 @@ export function parseShellDebugConfig(raw: unknown): ShellDebugConfig {
 
 export function normalizeShellDebugConfig(input: ShellDebugConfig): ShellDebugConfig {
   return {
-    vConsoleEnabled: input.vConsoleEnabled === true,
-    offlineOutboxDevtoolsEnabled: input.offlineOutboxDevtoolsEnabled === true,
+    vConsoleEnabled: input.vConsoleEnabled,
+    offlineOutboxDevtoolsEnabled: input.offlineOutboxDevtoolsEnabled,
   };
 }
