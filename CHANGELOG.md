@@ -3,6 +3,161 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.12.0](https://github.com/freeanima-org/freeanima/compare/v0.11.0...v0.12.0) (2026-09-01)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** 删除顶层 llm 配置段，不迁移旧 providers。
+
+### Features
+
+* **auth:** 细化 Service API Token 结构化授权 ([0668df1](https://github.com/freeanima-org/freeanima/commit/0668df1bd0422370f939a5be945af8eadae6133f))
+* **bedroom:** 新增维护页并按所选 Anima 收口记忆巩固 ([f5d77bf](https://github.com/freeanima-org/freeanima/commit/f5d77bf51b6643a46c379495c58a012f964da446))
+* **calendar:** 优化日程日期页议程布局与新建入口 ([61be1eb](https://github.com/freeanima-org/freeanima/commit/61be1eb98952e4c2b5746f566c52a52c1a40e372))
+* **calendar:** 增加可开关的内置日历源 ([51820e3](https://github.com/freeanima-org/freeanima/commit/51820e3aeaba2ca328be914e921f7a27a72ebf72))
+* **calendar:** 增加日与近几天议程并移除到期智能清单 ([64534e8](https://github.com/freeanima-org/freeanima/commit/64534e8d3a52e865cbea4b29176976ea202604da))
+* **calendar:** 日程已完成双轴显示与按视图偏好 ([fba17d8](https://github.com/freeanima-org/freeanima/commit/fba17d881b9755cd4d4c828e97bba9bf4e85812f))
+* **calendar:** 议程分组、浮层关闭刷新与窄屏更多菜单 ([6677bf2](https://github.com/freeanima-org/freeanima/commit/6677bf2c334138f3b102108892e768781e87adb7))
+* **calendar:** 议程行溢出菜单并支持事件番茄与新建聚焦 ([4518c96](https://github.com/freeanima-org/freeanima/commit/4518c960e46c52d4259cff1ce283b69a39365228))
+* **chat:** 对话列表支持置顶 ([df1d467](https://github.com/freeanima-org/freeanima/commit/df1d467a976adadd51c95abe9be2775e72cb6bca))
+* **chat:** 支持对话临时公开分享与栖息地管理 ([2479935](https://github.com/freeanima-org/freeanima/commit/247993584ccf865dc18c3d28f942f5bcd33b8c95))
+* **chat:** 运行时 public.origin 驱动分享绝对链接 ([3a3362e](https://github.com/freeanima-org/freeanima/commit/3a3362ed30ddc8b8cf564266d927b7e85f08a759))
+* **coding:** SSH Remote 与 coding 提示词精简 ([7cf8f82](https://github.com/freeanima-org/freeanima/commit/7cf8f82c6ef226be5f433be24465914d4d013476))
+* **config:** 连接升为顶层段并按能力层配置 ([f84b609](https://github.com/freeanima-org/freeanima/commit/f84b609fe170d8df2175ce5fe6deec88ef7ff569))
+* **contact:** 落地 Commons 通讯录并接入邮件关联 ([1e93ea7](https://github.com/freeanima-org/freeanima/commit/1e93ea7b4ca5a6b5f2e0afc821559df9959f946b))
+* **entity:** 通用 Morph attach/detach/promote ([deda426](https://github.com/freeanima-org/freeanima/commit/deda426df4ab55aa88a853087114540224f40961))
+* **eval:** 新增 LoCoMo 评测 adapter 与 conv-26 样例报告 ([14ba11d](https://github.com/freeanima-org/freeanima/commit/14ba11dc2d7fd70d8bb23b581fb2a7ac6edcb887))
+* **extension:** 保存密码提示支持本域名不再提示 ([435dd3f](https://github.com/freeanima-org/freeanima/commit/435dd3f870e48a2842228f8d28c61687265bf383))
+* **extension:** 区分验证码与 TOTP 弹层并检测改密 ([6d496ff](https://github.com/freeanima-org/freeanima/commit/6d496ffe41d0eda8946fc8d0a446a73b33a401ef))
+* **extension:** 支持跨域 iframe 内登录框自动填充 ([5dfef9e](https://github.com/freeanima-org/freeanima/commit/5dfef9ebe5c6c7163c28592990ca671853c777d1))
+* **federation:** 跨实例星型联邦与 Room 主序同步 ([9e8ba0c](https://github.com/freeanima-org/freeanima/commit/9e8ba0c2766a5885abb37dba42debb1fdee75758))
+* **habitat:** AutoLLM 开跑即写入 running 并逐轮落库 ([e541d09](https://github.com/freeanima-org/freeanima/commit/e541d09b6704c9c61fb501f36df6c3a62496066b))
+* **habitat:** 实例与主体公开身份及字母数字 nanoid ([dd08e1f](https://github.com/freeanima-org/freeanima/commit/dd08e1f96901d86d05add12fd100b0b9c2461f23))
+* **habitat:** 贯通行级 subject 并加入数据完整性检查 ([5f9bf0e](https://github.com/freeanima-org/freeanima/commit/5f9bf0ea2a433855a1496a94e48114aba2c00ac6))
+* **health:** 新增 health_record ECS 全栈底座 ([feb6870](https://github.com/freeanima-org/freeanima/commit/feb6870d8bf120431cceaae1df807fa3dae2ed9e))
+* **llm:** 供应商用量统计与上下文窗口展示 ([ae9ea9d](https://github.com/freeanima-org/freeanima/commit/ae9ea9d85f666b87006b0b47f1993582ed0c1b39))
+* **llm:** 场景直选连接、文生图与 object_file 预览 ([20a82e2](https://github.com/freeanima-org/freeanima/commit/20a82e2a06a37429db6ca6ba2e8aa9b9a4a2a341))
+* **llm:** 新增 Ollama 内置预设并按用途过滤模型列表 ([87487df](https://github.com/freeanima-org/freeanima/commit/87487df4d71eccccc766f62d2bf546cb46206682))
+* **llm:** 方案 title 与场景用途指派 ([99bfb60](https://github.com/freeanima-org/freeanima/commit/99bfb60118fc3ae19178658154752d80bb91f8f9))
+* **memory:** HDBSCAN 语义聚类与短簇标题 ([acd358a](https://github.com/freeanima-org/freeanima/commit/acd358a7cfd7adb85e70fc81d0e41dfbf2bcdaf7))
+* **memory:** reflect 作业集并入跨族近邻 ([2f333ef](https://github.com/freeanima-org/freeanima/commit/2f333ef726d89a0d538269e11de517b3a3f94e2a))
+* **memory:** 多 Anima 会话绑定记忆与卧室 Observer ([44498e6](https://github.com/freeanima-org/freeanima/commit/44498e62df9b5a7af2fb15506278aac9459b0c8e))
+* **memory:** 统一 AutoLlm 记忆与对话消息的 XML 渲染 ([2407df0](https://github.com/freeanima-org/freeanima/commit/2407df09f5121d89f9fc775891f9cdde95432d1c))
+* **objective:** EntityPicker、列表快捷菜单与子目标完成率 ([5481090](https://github.com/freeanima-org/freeanima/commit/54810907f043977ac5f034defed2b43a6e372990))
+* **objective:** 新增目标模块 v1（完成标准与壳入口） ([7559127](https://github.com/freeanima-org/freeanima/commit/7559127a79c9c71f8b28e2a5b0c73e0fec7e5ba8))
+* **offline:** 弱网自动本地优先并为笔记接入 CRUD outbox ([2e29faf](https://github.com/freeanima-org/freeanima/commit/2e29fafa1ab4e4c42a84d563de240eeb3e322a5d))
+* **pomodoro:** 专注与休息阶段使用不同强调色 ([d6167f3](https://github.com/freeanima-org/freeanima/commit/d6167f39205a86249e231b2f35de02b27b5c3874))
+* **pomodoro:** 关联今日议程任务或日历事件 ([b20c36c](https://github.com/freeanima-org/freeanima/commit/b20c36c6d732a7963f6a59fd7fed7597b61d5eaa))
+* **pomodoro:** 导航倒计时与桌面迷你窗 ([b69941c](https://github.com/freeanima-org/freeanima/commit/b69941c458f9d3d6beb3854466a74f837928cc90))
+* **pomodoro:** 滴答式迷你窗并修复跨窗同步与打包加速 ([0135083](https://github.com/freeanima-org/freeanima/commit/0135083ed07406887a4218bf592a868df30c0667))
+* **room:** 群聊核心能力与会话列表优化 ([f3bf77e](https://github.com/freeanima-org/freeanima/commit/f3bf77e90d1f75a6f6ac538fe01c9318041e81d0))
+* **shell-quick:** 增加跨模块快捷入口 ([fecc0c0](https://github.com/freeanima-org/freeanima/commit/fecc0c0247daee147eb6d141d970426e94a35d9d))
+* **task:** 拆分计划与截止并支持时间段区间选择 ([75700ce](https://github.com/freeanima-org/freeanima/commit/75700ce2d2572727c213fcc0a1661fd1f88ff9b9))
+* **vault:** 优化保险库锁定、侧栏检索与 URI 预览 ([f60b4a2](https://github.com/freeanima-org/freeanima/commit/f60b4a244a335fec690dd765b93e77a2dc625b2b))
+* **vault:** 搜索支持 url 与 uris 字段 ([6707422](https://github.com/freeanima-org/freeanima/commit/670742228e1fc27c032b6ac60d798dc2007f8947))
+* **voice:** 按协议补静态音色目录并拆分模型与音色 ([f6ef107](https://github.com/freeanima-org/freeanima/commit/f6ef1072a3751a1cee9cda6978bc5724482f8a89))
+* **voice:** 语音合成场景族与文生声工具 ([6307f6a](https://github.com/freeanima-org/freeanima/commit/6307f6a5a6ce848066f8091b075dbe1bb5c4cdb6))
+* **workflow:** 实现 Workflow 一等实体与顺序执行引擎 ([1f24c6e](https://github.com/freeanima-org/freeanima/commit/1f24c6e22188593299cfc6102c8400a682fc0f04))
+
+
+### Bug Fixes
+
+* **calendar:** 今日议程逾期含项目内与计划已结束任务 ([99ed467](https://github.com/freeanima-org/freeanima/commit/99ed4672a3ee1acbcfcb5fe53e9274ed36684563))
+* **chat:** PC 会话行在 active/hover 露出归档按钮 ([cc4870c](https://github.com/freeanima-org/freeanima/commit/cc4870c336e8cc98e93c0b22e42b748e9c15178f))
+* **chat:** 停止按钮即时中断并收敛跨会话等待占位 ([f60bdb4](https://github.com/freeanima-org/freeanima/commit/f60bdb4ea6d1a86e5b5b8b0f8da67f5d72a0f5da))
+* **chat:** 切回会话时先同步 display 再决定【继续】 ([3c01727](https://github.com/freeanima-org/freeanima/commit/3c017273cfedc6b42601638f908036e83c04a1c6))
+* **ci:** 修复番茄钟导航色 token 与文档 title ([e862eab](https://github.com/freeanima-org/freeanima/commit/e862eabd92404f04ce21e99ad69ca5cb2a9c5bc2))
+* **coding:** 解同进程 IPC 卡死并堵住栖息地本机 shell ([cfb844e](https://github.com/freeanima-org/freeanima/commit/cfb844ef90717500e9ffcfa1a8a21330975df46b))
+* **contact:** Commons 唯一化、user 全权限与邮件实时关联 ([cf98b9c](https://github.com/freeanima-org/freeanima/commit/cf98b9c62d1eb80d74aa82768f79cf6924be1c69))
+* **contact:** user 维护 Commons 通讯录免 grant 校验 ([6d1bb79](https://github.com/freeanima-org/freeanima/commit/6d1bb7983b86820d0ce0c9f1090fbb0f0c6b7433))
+* **docs:** 补 media 文档 title，并补齐栖息地 i18n 配置段 ([c906452](https://github.com/freeanima-org/freeanima/commit/c9064521c808c73194be9a29d0d51a313b0c8876))
+* **email:** 阅读后清除列表未读圆点 ([a361ebd](https://github.com/freeanima-org/freeanima/commit/a361ebd08d2efc5fc442c8e28a5139fc8aaf24fb))
+* **env-health:** PG 不可用时跳过 Inbox 去重查询 ([61ac254](https://github.com/freeanima-org/freeanima/commit/61ac2540962390cc7a9c438a8eb39298b47c0352))
+* **extension:** 密码库标签拉取鉴权失败 ([3215e42](https://github.com/freeanima-org/freeanima/commit/3215e42edfd2081dc9390020ee9be2decb0a03ea))
+* **federation:** 合并 builtin-plugins 时保留 health 与 federation ([b376ac4](https://github.com/freeanima-org/freeanima/commit/b376ac4c728e79f31bf7719efbb688be59eed083))
+* **habitat:** 加宽被动召回调试抽屉并默认折叠流水线阶段 ([0ca5f23](https://github.com/freeanima-org/freeanima/commit/0ca5f23b07a779d044078a40a1d06131760ff237))
+* **habitat:** 完整性检查 CLI 勿吞掉数据库错误 ([7f1710e](https://github.com/freeanima-org/freeanima/commit/7f1710e03822d782c1d0860e826f872068b5362c))
+* **habitat:** 数据维护页可清残留 Redis 锁并缩短租约 ([2d03862](https://github.com/freeanima-org/freeanima/commit/2d038628be6332a70af26a5911330ab402ce1973))
+* **habitat:** 禁止默认聊天 Anima 作 LLM/工具/记忆静默回退 ([e92a8e6](https://github.com/freeanima-org/freeanima/commit/e92a8e63decce1021caa1bb2db5212e88aeda0c5))
+* **health:** 修复健康页 Select 与 /web/health 路由冲突 ([f7dff40](https://github.com/freeanima-org/freeanima/commit/f7dff40d253488944a26274fe929dbc4fa4414ec))
+* **llm:** 端点不可达时缩短连接超时 ([5545c68](https://github.com/freeanima-org/freeanima/commit/5545c684c904253e73dadea8b01a7a801225b5d4))
+* **llm:** 配额耗尽的超长 Retry-After 不再让 SDK 睡眠重试 ([1a5caa4](https://github.com/freeanima-org/freeanima/commit/1a5caa453af3568f12bb8fe0e4fa3062117254e5))
+* **memory:** temporal_summary 唯一索引改为按 world ([bcb7801](https://github.com/freeanima-org/freeanima/commit/bcb78014406da43330bbecc2424aa451b7a88463))
+* **memory:** 会话标题串行并补全分族名称入口 ([9935431](https://github.com/freeanima-org/freeanima/commit/9935431b8edf211399e5b395f84fc39a316afd24))
+* **memory:** 分族与族名拆步并将墙钟 abort 传到 fetch ([e54b029](https://github.com/freeanima-org/freeanima/commit/e54b02981901f95c2ba1641e408d4094dbfef345))
+* **memory:** 正文召回忽略未闭合引号以免补跑失败 ([ef4f227](https://github.com/freeanima-org/freeanima/commit/ef4f2270801133590242fcca601e2fe687cb8807))
+* **memory:** 语义聚类族按观测主体过滤 ([89d976d](https://github.com/freeanima-org/freeanima/commit/89d976dbd50a3891a1e0c2b6ff6a3c4fc2bc6836))
+* **pg:** 默认 maxLifetime 与毒连接回收缓解 Bun SQL 串台 ([bd173e4](https://github.com/freeanima-org/freeanima/commit/bd173e4ff472a9cd977f6eb1a947c20a42d4d4f4))
+* **portal-sdk:** Bun 单测无 window 时不走 Habitat 在线写穿 ([ad07665](https://github.com/freeanima-org/freeanima/commit/ad07665de05bedf5546bcd9a50ec8f3bdd4ec506))
+* **portal:** 修复 Tauri 壳测试通但 RPC 连不上 ([0f991e6](https://github.com/freeanima-org/freeanima/commit/0f991e6e9ca277d656add32362871b0483f932a4))
+* **portal:** 原生壳文件实体下载改为本机另存 ([03c4462](https://github.com/freeanima-org/freeanima/commit/03c4462760bce95136d30dfa5190f245ba51a6c8))
+* **settings:** 栖息地配置侧栏露出时区段 ([e8a5874](https://github.com/freeanima-org/freeanima/commit/e8a587407b85033e9daecc10218914eb9047e8d0))
+* **shell:** 修复卧室/群聊/健康模块无法取消勾选 ([62e2215](https://github.com/freeanima-org/freeanima/commit/62e2215de2327e5cef26ba763989badb3a1916b7))
+* **shell:** 修复日记跳聊天、侧栏高亮与任务快捷清单切换 ([8b4a39c](https://github.com/freeanima-org/freeanima/commit/8b4a39c64c75be4b005eed8a93855779392d5c12))
+* **subagent:** 优化子代理提示并修复父对话卡住 ([6bfb109](https://github.com/freeanima-org/freeanima/commit/6bfb1094f576fe31d86c38494f3bdc9402a8aeb4))
+* **task:** 引入 TaskContainer 并修复日程今日缺项目已完成任务 ([0d2955c](https://github.com/freeanima-org/freeanima/commit/0d2955c105f1bc547ed972e7ed0362544dc64343))
+* **task:** 日程任务弹窗完成立即落盘 ([034c5d7](https://github.com/freeanima-org/freeanima/commit/034c5d7d44779917be2be4b627137fc01e94fdb3))
+* **tauri:** Windows 安装包下载启用系统代理 ([d08d9c3](https://github.com/freeanima-org/freeanima/commit/d08d9c3f5d50f81e71858568641de12ef44f48e8))
+* **vault:** 支持 Google 风格带空格的 otpauth URI ([a3893bd](https://github.com/freeanima-org/freeanima/commit/a3893bd0deecc357430e29e24e0a12bffadb26a5))
+* **vault:** 非安全上下文解锁给出 HTTPS 引导 ([af7d6ae](https://github.com/freeanima-org/freeanima/commit/af7d6aec94c7dc756637c240948e6ea6feb107cb))
+* 修复时间摘要 tick 缺 agent 与用户气泡短句换行 ([6c49024](https://github.com/freeanima-org/freeanima/commit/6c4902410ed58bc9136d728801a4072398d8ea11))
+* 修复短气泡折行与 Retain 通知已读/注入 ([ce17fc4](https://github.com/freeanima-org/freeanima/commit/ce17fc429ccf674008f524a311225ff96e7ee3b2))
+
+
+### Performance
+
+* **memory:** 收窄 retain 对照集并排除本会话被动召回 ([11261a6](https://github.com/freeanima-org/freeanima/commit/11261a6bd6d282d6d8822d3b62d7e28f9d9bea21))
+* **pg:** 优化会话未读、消息时间索引与 Entity FTS ([0f87e82](https://github.com/freeanima-org/freeanima/commit/0f87e82a15f14225b9dbcfab2a783873dcd2d2fc))
+
+
+### Documentation
+
+* **product:** 收口 [#18916](https://github.com/freeanima-org/freeanima/issues/18916) 对话拓扑契约 ([d426f39](https://github.com/freeanima-org/freeanima/commit/d426f39ddff0146f64bf001331377db06fd86ac3))
+* **product:** 落盘单实例群聊最小契约（Room≠LLM队列） ([76391fa](https://github.com/freeanima-org/freeanima/commit/76391fa7c1cd7cfadc873fa4586a61eedf7e0794))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump the dev-dependencies group with 9 updates ([27bc5a7](https://github.com/freeanima-org/freeanima/commit/27bc5a733ff7ad4ce4b7a9d9c4ca22581a89f444))
+* **deps:** bump the production-dependencies group with 11 updates ([c044b34](https://github.com/freeanima-org/freeanima/commit/c044b3449faf8d7faaf43deaebbc1e9b29985440))
+* **docs:** oxfmt 对齐 conversation-topology 表格 ([1732fc4](https://github.com/freeanima-org/freeanima/commit/1732fc40e1adf083c77e516cb526a761601f297b))
+* **lint:** 将 no-unsafe-type-assertion 升为 error 并清零 ([29f7cca](https://github.com/freeanima-org/freeanima/commit/29f7cca89d74df16d24e3fad163fada0b9a3dd41))
+* **nix:** 增加 flake 开发环境与 direnv ([335011b](https://github.com/freeanima-org/freeanima/commit/335011b1d704f8736a004fee75eac275c85879c6))
+* **nix:** 用 rust-overlay 提供可用 cargo/rustc ([b3778e5](https://github.com/freeanima-org/freeanima/commit/b3778e5a1d967bb5d4ed42fae8b1f66ab206ba58))
+* **tauri:** 补交 workspace_fs_search 自动生成 ACL ([970e4d8](https://github.com/freeanima-org/freeanima/commit/970e4d80b68702bf2f6dea83af7b3503a3d8f0b2))
+
+
+### Refactoring
+
+* **bedroom:** 观测命名统一为卧室 ([3ebee99](https://github.com/freeanima-org/freeanima/commit/3ebee9905da6950418c2b60d056334b43d28558e))
+* **lint:** 收紧 exhaustive-deps 并收敛离线写路径 ([5ea8c47](https://github.com/freeanima-org/freeanima/commit/5ea8c470c4a098912c0d21cd6fa12ef7486b4a54))
+* **memory:** 重构 Reflect 提示数据层与 pin 精简策略 ([0cebfb7](https://github.com/freeanima-org/freeanima/commit/0cebfb79ab521027eaa19f29547add64226c152a))
+* **self:** 将 self_blocks 迁入 entity ([28891d7](https://github.com/freeanima-org/freeanima/commit/28891d782fd9070fb44a7058356f645789dfb848))
+
+
+### Tests
+
+* **cron:** createJob 显式传入 subject_id ([65fc814](https://github.com/freeanima-org/freeanima/commit/65fc8147c0a3eba2df66820d13c50145b1c1bad5))
+* **federation:** trusted satellite 集成测补齐进程隔离 ([b749596](https://github.com/freeanima-org/freeanima/commit/b749596759ed07fc60fbcb21bb5bec6ff56ed766))
+* **habitat:** 对齐多 Anima 后集成测的 agent_subject_id 与工具 subjectId ([b912c59](https://github.com/freeanima-org/freeanima/commit/b912c5987f8362261df65c8ae52a574e15235a73))
+* **habitat:** 补齐任务日程与记忆的高收益单测 ([4abe2cc](https://github.com/freeanima-org/freeanima/commit/4abe2cc961a797eead8478d12cf4be7609aa5113))
+* **habitat:** 集成测写入消息时补齐 subject_id ([1b38804](https://github.com/freeanima-org/freeanima/commit/1b38804b413c4eebfadd8e274c7ef0ff5b5f95da))
+* **memory:** 按能力绑定开启 FTS 重建 embedding 集成测 ([727514d](https://github.com/freeanima-org/freeanima/commit/727514dc0985d520558dac3aea87c4570bfd54c6))
+* **runtime:** 消息 timestamp 改用合法 ISO，适配 payload 索引 ([ea97c2d](https://github.com/freeanima-org/freeanima/commit/ea97c2d2b1ba907a83f7f1a3e891a91493fa7ade))
+* **tools:** 对齐 Bun 1.4 spawn 对环境变量的继承行为 ([c8dfde5](https://github.com/freeanima-org/freeanima/commit/c8dfde59e558b960fc6fca65a862617cf68b222d))
+
+
+### CI
+
+* **android:** 默认只编 aarch64 并缓存 NDK/Gradle ([b0274ad](https://github.com/freeanima-org/freeanima/commit/b0274ad7bd5776adb3a7fbc78fdbc794cd0984b3))
+* 从 GitHub Releases 安装 just，避开 just.systems 403 ([97ed6c5](https://github.com/freeanima-org/freeanima/commit/97ed6c540ececc3e7c974f5e75db69fe6635eb50))
+
+
+### Build
+
+* **bun:** 升级至 1.4.0 并固定 cron UTC ([46c5ca5](https://github.com/freeanima-org/freeanima/commit/46c5ca5d0683b51e4b162ffe3a5754e04b095bfc))
+
 ## [0.11.0](https://github.com/freeanima-org/freeanima/compare/v0.10.1...v0.11.0) (2026-08-16)
 
 
