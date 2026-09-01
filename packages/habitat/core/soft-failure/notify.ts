@@ -10,6 +10,11 @@ export type SoftFailureNotifyInput = {
   payload?: Record<string, unknown>;
   /** Optional log label when the bound impl fails (platform may ignore). */
   logLabel?: string;
+  /**
+   * 收件范围。默认 both（user+默认 agent）。
+   * `user`：仅用户 Inbox，不进 agent 旁侧 `<notification>` 注入（适合「请到卧室点按钮」类）。
+   */
+  audience?: "both" | "user" | "agent";
 };
 
 export type SoftFailureNotifyFn = (

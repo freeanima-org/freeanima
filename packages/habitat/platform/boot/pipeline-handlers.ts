@@ -95,6 +95,7 @@ async function recordStepWatermark(
   day: string,
   trigger: MaintenanceTrigger,
   result: MaintenanceStepResult,
+  agentSubjectId?: number,
 ): Promise<void> {
   if (!isPostgresPrimary()) return;
   if (
@@ -106,6 +107,13 @@ async function recordStepWatermark(
   }
   if (result.status !== "completed" && result.status !== "skipped") return;
 
+  const baseOutput =
+    asRecord(result.output) ?? (result.output != null ? { value: result.output } : null);
+  const output =
+    agentSubjectId != null && agentSubjectId > 0
+      ? { ...baseOutput, agent_subject_id: agentSubjectId }
+      : baseOutput;
+
   await appendPipelineStepRun({
     pipeline_id: MEMORY_MAINTENANCE_PIPELINE_ID,
     run_id: newRunId(),
@@ -115,7 +123,7 @@ async function recordStepWatermark(
     status: result.status,
     started_at: null,
     finished_at: formatCstIso(),
-    output: asRecord(result.output) ?? (result.output != null ? { value: result.output } : null),
+    output,
     error: result.error ?? null,
     skipped_reason: result.skipped_reason ?? null,
   });
@@ -549,10 +557,8 @@ export async function runMemoryMaintenanceStep(
       };
   }
 
-  // 单 Anima 手动维护不写实例级 watermark，避免污染全实例补跑计划
-  if (ctx.agent_subject_id == null) {
-    await recordStepWatermark(mapped, day, ctx.trigger, result);
-  }
+  // 卧室单 Anima 补跑也要写 watermark（output 带 agent_subject_id），否则缺口日永远清不掉
+  await recordStepWatermark(mapped, day, ctx.trigger, result, ctx.agent_subject_id);
   return result;
 }
 
@@ -584,7 +590,7 @@ export async function checkRetainGapsAndNotify(): Promise<{
     title: "Retain 补跑缺口",
     body: [
       "夜间检查发现有活动日尚未完成 Retain 补跑（不会自动执行）。",
-      "请到语义记忆页手动「Retain 补跑」或「一键补跑」。",
+      "请到卧室「维护」手动「运行 Retain」或「一键补跑」。",
       `缺口日：${preview}${more}`,
     ].join("\n"),
     payload: {
@@ -594,6 +600,8 @@ export async function checkRetainGapsAndNotify(): Promise<{
       end: planned.plan.end,
     },
     logLabel: "retain_gap",
+    // 人去卧室点按钮；勿写入 agent Inbox，否则旁侧 <notification> 会反复注入
+    audience: "user",
   });
   return { light_days, notified: true };
 }

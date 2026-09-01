@@ -98,14 +98,15 @@ Subject 实体 id 在栖息地启动时绑定进内存 **`ResolvedWorldContext`*
 每行存储 `recipient_kind`（`user` | `agent`）与 `recipient_id`
 （实体 id 字符串）。
 
-| 写入方                              | 典型收件人                                      |
-| ----------------------------------- | ----------------------------------------------- |
-| Cron 成功（当 `notify_on_success`） | **双方** user + agent                           |
-| Cron 失败                           | **双方** user + agent                           |
-| 任务 **due**（目标）                | 任务所属 World 的 subject                       |
-| 环境/健康基线变化                   | **双方** user + agent（`builtin-env-health`）   |
-| 进程内 builtin 失败                 | **双方** user + agent（无 `cron_log` 时的替代） |
-| `notification_send` 工具            | user / agent / both；可选 `subject_id`          |
+| 写入方                              | 典型收件人                                              |
+| ----------------------------------- | ------------------------------------------------------- |
+| Cron 成功（当 `notify_on_success`） | **双方** user + agent                                   |
+| Cron 失败                           | **双方** user + agent                                   |
+| Soft-failure（默认）                | **双方**；`audience: "user"` 时仅用户（如 Retain 缺口） |
+| 任务 **due**（目标）                | 任务所属 World 的 subject                               |
+| 环境/健康基线变化                   | **双方** user + agent（`builtin-env-health`）           |
+| 进程内 builtin 失败                 | **双方** user + agent（无 `cron_log` 时的替代）         |
+| `notification_send` 工具            | user / agent / both；可选 `subject_id`                  |
 
 梦境流水线**不会**创建通知（提醒已移除）。
 
@@ -130,6 +131,8 @@ Subject 实体 id 在栖息地启动时绑定进内存 **`ResolvedWorldContext`*
 未标已读的未读项会在下一用户回合再次注入。若注入块被截断，可用
 `notification_list(recipient=agent, read_filter=unread)`（必须指定 recipient 或
 `subject_id`）。
+
+**双写 Inbox**：多数系统通知会同时写入 user 与默认 agent（同一 `source_ref`）。卧室或工具对**任一侧**标已读时，会按 `source_ref` 同步清除两侧，避免「卧室已读、旁侧仍注入」。仅面向人的运维提示（如 Retain 补跑缺口）应 `audience: "user"`，不进 agent 注入。
 
 ## LLM 工具（ToolSet `notification`）
 

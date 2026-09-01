@@ -17,11 +17,15 @@ export const deliverSoftFailureNotify: SoftFailureNotifyFn = async (
   if (!port) return "skipped";
 
   const sourceRef = input.sourceRef;
+  const audience = input.audience ?? "both";
   const user = port.getUserRecipient();
   const agent = port.getAgentRecipient();
+  const wantUser = audience === "both" || audience === "user";
+  const wantAgent = audience === "both" || audience === "agent";
+
   const [userExists, agentExists] = await Promise.all([
-    port.existsBySourceRef(sourceRef, user),
-    port.existsBySourceRef(sourceRef, agent),
+    wantUser ? port.existsBySourceRef(sourceRef, user) : Promise.resolve(true),
+    wantAgent ? port.existsBySourceRef(sourceRef, agent) : Promise.resolve(true),
   ]);
   if (userExists && agentExists) return "deduped";
 
@@ -29,7 +33,7 @@ export const deliverSoftFailureNotify: SoftFailureNotifyFn = async (
   const payload = input.payload ?? { kind: "soft_failure" };
 
   try {
-    if (!userExists) {
+    if (wantUser && !userExists) {
       await port.create({
         recipient_kind: user.kind,
         recipient_id: user.id,
@@ -40,7 +44,7 @@ export const deliverSoftFailureNotify: SoftFailureNotifyFn = async (
         payload,
       });
     }
-    if (!agentExists) {
+    if (wantAgent && !agentExists) {
       await port.create({
         recipient_kind: agent.kind,
         recipient_id: agent.id,

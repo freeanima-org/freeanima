@@ -214,7 +214,15 @@ export async function startMemoryMaintenanceCatchUp(
     const planned: { ok: true; plan: SleepCatchUpPlan } | { ok: false; reason: string } =
       await planSleepCatchUp(omitUndefined({ agent_subject_id: opts?.agent_subject_id }));
     if (!planned.ok) {
-      return { ok: false, error: planned.reason };
+      const reason =
+        planned.reason === "nothing_to_catch_up"
+          ? "没有待补跑的缺口日（Retain / 日摘要均已覆盖）"
+          : planned.reason === "no_agents"
+            ? "没有可维护的 Anima"
+            : planned.reason === "no_conversations_or_messages"
+              ? "没有会话或消息，无需补跑"
+              : planned.reason;
+      return { ok: false, error: reason };
     }
     plan = planned.plan;
   }
@@ -331,6 +339,7 @@ export async function startMemoryMaintenanceCatchUp(
         body: ["一键补跑中途失败；已记录状态，可稍后重试。", `错误：${message}`].join("\n"),
         payload: { kind: "memory_catch_up_failed", error: message },
         logLabel: "memory_catch_up",
+        audience: "user",
       });
     } finally {
       await lock.handle.release();

@@ -6,4 +6,5 @@ export {
   markNotificationRead,
   notificationExistsBySourceRef,
   markNotificationsReadBySourceRef,
+  markAllNotificationsReadBySourceRef,
 } from "./repos/notification-crud-repo.ts";
