@@ -31,6 +31,10 @@ import {
   desktopSaveBlobBridge,
 } from "../lib/coding-shell-fs.ts";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import {
+  loadDebugKvFromLocalStorage,
+  saveDebugKvToLocalStorage,
+} from "../../shared/debug-kv-local-storage.ts";
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
 
@@ -347,6 +351,9 @@ export async function bootstrapTauriBridge(): Promise<void> {
         const visible = await invoke<boolean>("get_companion_visible");
         return { visible };
       }
+      if (scope.kind === "kv" && scope.id === "debug") {
+        return loadDebugKvFromLocalStorage();
+      }
       return null;
     },
     save: async (scope, value) => {
@@ -372,6 +379,10 @@ export async function bootstrapTauriBridge(): Promise<void> {
         const visible = assertNarrow<{ visible?: boolean }>(value).visible !== false;
         await invoke("set_companion_visible", { visible });
         notifyShellConfigChanged();
+        return;
+      }
+      if (scope.kind === "kv" && scope.id === "debug") {
+        saveDebugKvToLocalStorage(value);
       }
     },
     test: async (scope, value) => {

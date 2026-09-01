@@ -18,6 +18,10 @@ import {
   notifyShellConfigChanged,
 } from "../lib/apply-habitat-to-shell.ts";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import {
+  loadDebugKvFromLocalStorage,
+  saveDebugKvToLocalStorage,
+} from "../../shared/debug-kv-local-storage.ts";
 
 type HabitatCfg = { habitatUrl: string; remoteAuthToken: string };
 
@@ -147,6 +151,9 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
           remoteAuthToken: c.remoteAuthToken,
         };
       }
+      if (scope.kind === "kv" && scope.id === "debug") {
+        return loadDebugKvFromLocalStorage();
+      }
       return null;
     },
     save: async (scope, value) => {
@@ -158,6 +165,10 @@ export async function bootstrapTauriMobileBridge(): Promise<void> {
         });
         applyHabitatConfigToShell(shell, raw.habitatUrl, raw.remoteAuthToken);
         notifyShellConfigChanged();
+        return;
+      }
+      if (scope.kind === "kv" && scope.id === "debug") {
+        saveDebugKvToLocalStorage(value);
       }
     },
     test: async (scope, value) => {

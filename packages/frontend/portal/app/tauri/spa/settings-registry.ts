@@ -1,5 +1,6 @@
 import {
   desktopGeneralSettingsSection,
+  debugSettingsSection,
   type SettingsBinding,
 } from "@freeanima/client/portal-sdk/settings";
 import { companionClientSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-client-settings-section.ts";
@@ -30,6 +31,7 @@ export function createDesktopSettingsBindings(
       section: companionHabitatSettingsSection,
       deps: { companion: apis.companion },
     },
+    { section: debugSettingsSection, store: stores.debug },
     { section: aboutSettingsSection },
   ];
 }

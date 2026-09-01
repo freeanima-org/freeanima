@@ -41,8 +41,11 @@ export {
 export type { ShellDebugConfig } from "./shell-debug-config.ts";
 export {
   DEFAULT_SHELL_DEBUG,
+  isOfflineOutboxDevtoolsEnabled,
   normalizeShellDebugConfig,
   parseShellDebugConfig,
+  readOfflineOutboxDevtoolsFlag,
+  DEBUG_OFFLINE_OUTBOX_DEVTOOLS_KEY,
 } from "./shell-debug-config.ts";
 export type { ShellSettings } from "./shell-settings.ts";
 export {

@@ -2,18 +2,18 @@ import type { SettingsStorageScope } from "@freeanima/client/portal-sdk/settings
 import type { ScopedSettingsBackend } from "@freeanima/client/portal-sdk/settings";
 import {
   COMPANION_VISIBLE_KEY,
-  DEBUG_VCONSOLE_ENABLED_KEY,
   HABITAT_URL_KEY,
   LAUNCH_AT_LOGIN_KEY,
   readStoredHabitatUrl,
   REMOTE_AUTH_TOKEN_KEY,
 } from "@freeanima/client/portal-sdk/settings";
-import {
-  parseShellDebugConfig,
-  normalizeShellDebugConfig,
-} from "@freeanima/client/portal-sdk/shell-debug-config";
 import { normalizeShellClientConfig } from "@freeanima/client/portal-sdk";
 import { isRecord } from "@freeanima/shared/util";
+
+import {
+  loadDebugKvFromLocalStorage,
+  saveDebugKvToLocalStorage,
+} from "../../shared/debug-kv-local-storage.ts";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("dev backend 不支持 file scope");
@@ -27,9 +27,7 @@ function loadKvScope(scope: SettingsStorageScope): unknown {
     return { habitatUrl, remoteAuthToken, launchAtLogin };
   }
   if (scope.id === "debug") {
-    return parseShellDebugConfig({
-      vConsoleEnabled: localStorage.getItem(DEBUG_VCONSOLE_ENABLED_KEY) === "1",
-    });
+    return loadDebugKvFromLocalStorage();
   }
   if (scope.id === "companion-shell") {
     return { visible: localStorage.getItem(COMPANION_VISIBLE_KEY) !== "0" };
@@ -53,8 +51,7 @@ function saveKvScope(scope: SettingsStorageScope, value: unknown): void {
     return;
   }
   if (scope.id === "debug") {
-    const cfg = normalizeShellDebugConfig(parseShellDebugConfig(value));
-    localStorage.setItem(DEBUG_VCONSOLE_ENABLED_KEY, cfg.vConsoleEnabled ? "1" : "0");
+    saveDebugKvToLocalStorage(value);
     return;
   }
   if (scope.id === "companion-shell") {

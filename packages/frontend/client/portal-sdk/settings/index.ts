@@ -6,6 +6,7 @@ export {
   HABITAT_SETTINGS_SCOPE,
 } from "./scopes.ts";
 export {
+  DEBUG_OFFLINE_OUTBOX_DEVTOOLS_KEY,
   DEBUG_VCONSOLE_ENABLED_KEY,
   HABITAT_URL_KEY,
   readStoredHabitatUrl,

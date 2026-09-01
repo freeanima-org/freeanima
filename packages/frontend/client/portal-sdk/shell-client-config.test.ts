@@ -78,12 +78,19 @@ describe("shell-debug-config", () => {
   test("parseShellDebugConfig defaults", () => {
     expect(parseShellDebugConfig(null)).toEqual({
       vConsoleEnabled: false,
+      offlineOutboxDevtoolsEnabled: false,
     });
   });
 
   test("normalizeShellDebugConfig passes through vConsole", () => {
-    expect(normalizeShellDebugConfig({ vConsoleEnabled: true })).toEqual({
+    expect(
+      normalizeShellDebugConfig({
+        vConsoleEnabled: true,
+        offlineOutboxDevtoolsEnabled: false,
+      }),
+    ).toEqual({
       vConsoleEnabled: true,
+      offlineOutboxDevtoolsEnabled: false,
     });
   });
 });
@@ -103,11 +110,13 @@ describe("shell-settings-node", () => {
       saveShellDebugConfig(
         {
           vConsoleEnabled: true,
+          offlineOutboxDevtoolsEnabled: false,
         },
         home,
       );
       expect(loadShellDebugConfig(home)).toEqual({
         vConsoleEnabled: true,
+        offlineOutboxDevtoolsEnabled: false,
       });
       expect(loadShellClientConfig(home)?.habitatUrl).toBe("https://habitat.example.com");
     } finally {
@@ -121,19 +130,21 @@ describe("shell-settings-node", () => {
       saveShellSettings(
         {
           habitat: { habitatUrl: "https://a.com", remoteAuthToken: "token-at-least-16-ch" },
-          debug: { vConsoleEnabled: false },
+          debug: { vConsoleEnabled: false, offlineOutboxDevtoolsEnabled: false },
         },
         home,
       );
       saveShellDebugConfig(
         {
           vConsoleEnabled: true,
+          offlineOutboxDevtoolsEnabled: true,
         },
         home,
       );
       const settings = loadShellSettings(home);
       expect(settings.habitat?.habitatUrl).toBe("https://a.com");
       expect(settings.debug.vConsoleEnabled).toBe(true);
+      expect(settings.debug.offlineOutboxDevtoolsEnabled).toBe(true);
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

@@ -1,3 +1,4 @@
+import { notifyDebugConfigChanged } from "@freeanima/client/app-frame/spa/debug-config-events.ts";
 import {
   createHabitatDebugSettingsStores,
   type HabitatDebugSettingsStores,
@@ -16,7 +17,7 @@ export function createMobileSettingsStores(): MobileSettingsStores {
     },
     // token 同步在 bootstrap freeanimaScopedSettings.save → applyHabitatConfigToShell
     onHabitatSave: () => undefined,
-    notifyDebugChanged: () => undefined,
+    notifyDebugChanged: notifyDebugConfigChanged,
     notifyShellConfigChanged: () => {
       window.dispatchEvent(new CustomEvent("freeanima:shell-config-changed"));
     },

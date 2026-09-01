@@ -113,7 +113,7 @@ flowchart LR
 | Key 助手 + inflight 去重                                      | 已交付                                                   |
 | Lint：功能 UI 无第二 IDB 读路径                               | oxlint `freeanima/no-direct-offline-cache`               |
 | 离线 / outbox 状态基元                                        | 已交付（`subscribeOutboxChanges` / `use*OutboxSummary`） |
-| 可选 devtools                                                 | 方向                                                     |
+| 可选 Outbox Devtools（只读；DEV 或设置 flag）                 | 已交付（`OfflineOutboxDevtools`）                        |
 | ETag/304 与 IDB 绑定                                          | 带宽 / 多设备成本证明前范围外                            |
 
 自动拉取仅在 **key 变化**、**`updatedAt === 0`（未拉 / invalidate）**、或 **idle 无 data** 时触发；`fetchQuery` 成功写入的新时间戳**不得**再触发 reload（否则与 subscribe notify 死循环刷屏）。`reload` / `setData` 依赖 **keyHash**（非 key 数组引用），避免内联 `queryKey` 导致父组件 effect 反复 `resetDetail`。
