@@ -18,7 +18,7 @@ title: 番茄钟
 | 桌面迷你窗     | 仅 Tauri desktop：置顶 `pomodoro-float`（独立显隐；可贴边折叠为进度条，悬停展开开始/暂停/结束） |
 | Android 小组件 | 主屏小组件 MVP（`set_pomodoro_widget_state`）                                                   |
 
-离开 `/pomodoro` 后，主壳 `PomodoroShellWatcher` 继续阶段完成与同步（**不**再驱动迷你窗显隐）。
+离开 `/pomodoro` 后，主壳 `PomodoroShellWatcher` 继续阶段完成与同步（**不**再驱动迷你窗显隐）。桌面迷你窗同样挂载阶段完成 tick（主窗最小化/后台节流时仍可自动进入休息）。
 
 ## 桌面迷你窗
 

@@ -33,6 +33,7 @@ import {
   pullPomodoroActive,
   runPhaseAbort,
 } from "../spa/lib/pomodoro-sync.ts";
+import { bindPomodoroPhaseCompleteTick } from "../spa/lib/pomodoro-phase-complete-tick.ts";
 import { bindPomodoroShellActiveSync } from "../spa/lib/pomodoro-shell-sync.ts";
 import {
   createInitialActiveState,
@@ -233,6 +234,11 @@ export function PomodoroFloatApp() {
 
   useEffect(() => {
     return bindPomodoroShellActiveSync(subjectId);
+  }, [subjectId]);
+
+  /** 主窗后台时 timer 会被节流；迷你窗也须自行完成阶段切换 */
+  useEffect(() => {
+    return bindPomodoroPhaseCompleteTick(subjectId);
   }, [subjectId]);
 
   useEffect(() => {

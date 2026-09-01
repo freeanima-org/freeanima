@@ -1,13 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import {
   useHabitatConnection,
   useNetworkOnline,
   useUserSubjectId,
 } from "@freeanima/client/portal-sdk/react.tsx";
-import {
-  getPomodoroSyncSnapshot,
-  subscribePomodoroSync,
-} from "@freeanima/client/portal-sdk/pomodoro-sync-local.ts";
+import { getPomodoroSyncSnapshot } from "@freeanima/client/portal-sdk/pomodoro-sync-local.ts";
 import { readPomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active.ts";
 import { whenPortalHabitatRpcReady } from "@freeanima/client/portal-sdk/habitat-rpc-call";
 import {
@@ -17,46 +14,18 @@ import {
 
 import { fetchPomodoroConfig } from "./lib/api.ts";
 import { syncPomodoroPhaseLocalAlert } from "./lib/pomodoro-phase-alert.ts";
+import { bindPomodoroPhaseCompleteTick } from "./lib/pomodoro-phase-complete-tick.ts";
 import {
   applyPomodoroActiveChangedEvent,
   flushPomodoroOutbox,
   pullPomodoroActive,
-  runPhaseComplete,
 } from "./lib/pomodoro-sync.ts";
 import { bindPomodoroShellActiveSync } from "./lib/pomodoro-shell-sync.ts";
-import { remainingMs } from "./lib/timer-engine.ts";
-
-const POLL_MS = 1_000;
 
 export function PomodoroShellWatcher() {
   const subjectId = useUserSubjectId();
   const networkOnline = useNetworkOnline();
   const habitatConnection = useHabitatConnection();
-  const tickRef = useRef(0);
-  const completingRef = useRef(false);
-
-  useEffect(() => {
-    const bump = () => {
-      tickRef.current += 1;
-    };
-    const unsub = subscribePomodoroSync(bump);
-    const onCustom = (event: Event) => {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- DOM 事件目标边界
-      const detail = (event as CustomEvent<{ subjectId?: number }>).detail;
-      if (detail?.subjectId === subjectId) bump();
-    };
-    const onStorage = (event: StorageEvent) => {
-      if (!event.key?.startsWith("freeanima.pomodoro.active:")) return;
-      if (event.key.endsWith(`:${subjectId}`)) bump();
-    };
-    window.addEventListener("freeanima:pomodoro-active-changed", onCustom);
-    window.addEventListener("storage", onStorage);
-    return () => {
-      unsub();
-      window.removeEventListener("freeanima:pomodoro-active-changed", onCustom);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, [subjectId]);
 
   useEffect(() => {
     return bindPomodoroShellActiveSync(subjectId);
@@ -118,26 +87,7 @@ export function PomodoroShellWatcher() {
   }, [networkOnline, habitatConnection, subjectId]);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
-      void (async () => {
-        if (completingRef.current) return;
-        const active =
-          getPomodoroSyncSnapshot(subjectId).active ??
-          readPomodoroActiveState(undefined, subjectId);
-        if (!active || active.runState !== "running") return;
-        if (remainingMs(active) > 0) return;
-        completingRef.current = true;
-        try {
-          const config = await fetchPomodoroConfig(subjectId);
-          await runPhaseComplete({ state: active, config, subjectId });
-        } catch {
-          /* 下次 tick 重试 */
-        } finally {
-          completingRef.current = false;
-        }
-      })();
-    }, POLL_MS);
-    return () => clearInterval(id);
+    return bindPomodoroPhaseCompleteTick(subjectId);
   }, [subjectId]);
 
   return null;

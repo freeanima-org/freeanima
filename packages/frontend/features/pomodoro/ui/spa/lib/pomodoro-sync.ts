@@ -56,6 +56,10 @@ export function markPhaseHandled(state: PomodoroActiveState): boolean {
   return true;
 }
 
+export function clearHandledPhaseKeysForTest(): void {
+  handledPhaseKeys.clear();
+}
+
 async function resolveAlertConfig(
   subjectId: number,
   explicit?: PomodoroConfigRow | null,
@@ -214,15 +218,23 @@ export async function runPhaseComplete(options: {
   deliverAlerts?: boolean;
 }): Promise<"ok" | "duplicate"> {
   const { state, config, subjectId, deliverAlerts = true } = options;
+  // 跨 WebView（主壳 ↔ 迷你窗）可能同时看到 remaining=0；先确认本地仍是同一阶段
+  const current = readPomodoroActiveState(undefined, subjectId);
+  if (
+    current == null ||
+    phaseCompletionKey(current) !== phaseCompletionKey(state) ||
+    current.runState !== "running"
+  ) {
+    return "duplicate";
+  }
   if (!markPhaseHandled(state)) return "duplicate";
 
   const completedTag = pomodoroPhaseAlertTag(state);
-  /* 撤掉本阶段预登记，避免与即时 deliver 双弹；页存活时由 deliver 兜底 */
-  await cancelPomodoroPhaseAlert(state);
-
   const transition = nextPhaseAfterComplete(config, state.phase, state.completedWorkInCycle);
   const autoStart = shouldAutoStartNext(config, state.phase);
 
+  // 先落本地并广播，缩短主壳/迷你窗同时看到 remaining=0 的竞态窗口
+  // （syncPomodoroPhaseLocalAlert 会撤掉本阶段预登记，避免与下方 deliver 双弹）
   if (!autoStart) {
     await applyPomodoroActive(null, subjectId, { alertConfig: config });
   } else {
