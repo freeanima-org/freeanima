@@ -21,8 +21,9 @@ function row(partial: Partial<ContentBlockRow> & Pick<ContentBlockRow, "id">): C
     block_type: "text",
     parent_id: 1,
     sort_order: 0,
-    url: null,
     client_op_id: null,
+    url: null,
+
     components: ["content_block", "limbic"],
     limbic: null,
     narrative: null,

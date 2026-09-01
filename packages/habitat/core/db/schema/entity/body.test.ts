@@ -150,23 +150,19 @@ describe("validateEntityBody", () => {
 });
 
 describe("stripRemovedComponentBodyFields", () => {
-  test("note+diary_entry: detach note keeps shared client_op_id and diary entry_at", () => {
+  test("note+diary_entry: detach note keeps diary entry_at（client_op_id 已升实体列，不在 body）", () => {
     const body = {
       entry_at: "2026-08-19T00:00:00.000+08:00",
-      client_op_id: "op-shared",
     };
     const next = stripRemovedComponentBodyFields(body, NOTE_COMPONENT, [DIARY_ENTRY_COMPONENT]);
     expect(next.entry_at).toBe(body.entry_at);
-    expect(next.client_op_id).toBe("op-shared");
   });
 
-  test("note+diary_entry: detach diary_entry drops entry_at but keeps client_op_id for note", () => {
+  test("note+diary_entry: detach diary_entry drops entry_at", () => {
     const body = {
       entry_at: "2026-08-19T00:00:00.000+08:00",
-      client_op_id: "op-shared",
     };
     const next = stripRemovedComponentBodyFields(body, DIARY_ENTRY_COMPONENT, [NOTE_COMPONENT]);
     expect(next.entry_at).toBeUndefined();
-    expect(next.client_op_id).toBe("op-shared");
   });
 });

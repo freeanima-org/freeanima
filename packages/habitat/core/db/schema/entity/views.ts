@@ -72,7 +72,6 @@ import {
   type ContentBlockBody,
   type DiaryBlockTemplateBody,
   type DiaryEntryBody,
-  type NoteBody,
   type EmailAccountBody,
   type EmailMessageBody,
   type EmailThreadBody,
@@ -113,6 +112,8 @@ export type EntityRow = {
   summary: string;
   content: string;
   body: Record<string, unknown>;
+  /** 离线幂等键；null 表示未设置 */
+  client_op_id: string | null;
   pinned: boolean;
   reference_count: number;
   tag_ids: number[];
@@ -137,6 +138,7 @@ export const entityRowSelectColumns = {
   summary: entities.summary,
   content: entities.content,
   body: entities.body,
+  client_op_id: entities.client_op_id,
   pinned: entities.pinned,
   reference_count: entities.reference_count,
   tag_ids: entities.tag_ids,
@@ -156,6 +158,7 @@ export const entityListSelectColumns = {
   title: entities.title,
   summary: entities.summary,
   body: entities.body,
+  client_op_id: entities.client_op_id,
   pinned: entities.pinned,
   reference_count: entities.reference_count,
   tag_ids: entities.tag_ids,
@@ -181,6 +184,7 @@ export function mapEntityRow(
     summary: row.summary ?? "",
     content: row.content ?? "",
     body: asRecord(row.body) ?? {},
+    client_op_id: row.client_op_id ?? null,
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [...(row.tag_ids ?? [])],
@@ -201,10 +205,14 @@ export function worldAccessFromRow(row: EntityRow): WorldConfigBody | null {
   return asWorld(row);
 }
 
-export function asTaskList(row: EntityRow): (TaskListBody & { id: number; name: string }) | null {
+export function asTaskList(
+  row: EntityRow,
+): (TaskListBody & { id: number; name: string } & { client_op_id: string | null }) | null {
   if (row.primary_component !== TASK_LIST_COMPONENT) return null;
   const parsed = taskListBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, name: row.title, ...parsed.data } : null;
+  return parsed.success
+    ? { id: row.id, name: row.title, ...parsed.data, client_op_id: row.client_op_id ?? null }
+    : null;
 }
 
 export function asSmartList(
@@ -215,71 +223,128 @@ export function asSmartList(
   return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
 }
 
-export function asTaskItem(
-  row: EntityRow,
-): (TaskItemBody & { id: number; title: string; content: string }) | null {
+export function asTaskItem(row: EntityRow):
+  | (TaskItemBody & { id: number; title: string; content: string } & {
+      client_op_id: string | null;
+    })
+  | null {
   if (!row.components.includes(TASK_ITEM_COMPONENT)) return null;
   const parsed = taskItemBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
-export function asTaskOccurrence(
-  row: EntityRow,
-): (TaskOccurrenceBody & { id: number; title: string; content: string }) | null {
+export function asTaskOccurrence(row: EntityRow):
+  | (TaskOccurrenceBody & { id: number; title: string; content: string } & {
+      client_op_id: string | null;
+    })
+  | null {
   if (row.primary_component !== TASK_OCCURRENCE_COMPONENT) return null;
   const parsed = taskOccurrenceBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
-export function asDiaryEntry(
-  row: EntityRow,
-): (DiaryEntryBody & { id: number; title: string; content: string; summary: string }) | null {
+export function asDiaryEntry(row: EntityRow):
+  | (DiaryEntryBody & { id: number; title: string; content: string; summary: string } & {
+      client_op_id: string | null;
+    })
+  | null {
   if (row.primary_component !== DIARY_ENTRY_COMPONENT) return null;
   const parsed = diaryEntryBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        summary: row.summary,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
-export function asNote(
-  row: EntityRow,
-): (NoteBody & { id: number; title: string; content: string; summary: string }) | null {
+export function asNote(row: EntityRow): {
+  id: number;
+  title: string;
+  content: string;
+  summary: string;
+  client_op_id: string | null;
+} | null {
   if (row.primary_component !== NOTE_COMPONENT) return null;
   const parsed = noteBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        summary: row.summary,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
-export function asCalendarEvent(
-  row: EntityRow,
-): (CalendarEventBody & { id: number; title: string; content: string; summary: string }) | null {
+export function asCalendarEvent(row: EntityRow):
+  | (CalendarEventBody & { id: number; title: string; content: string; summary: string } & {
+      client_op_id: string | null;
+    })
+  | null {
   if (row.primary_component !== CALENDAR_EVENT_COMPONENT) return null;
   const parsed = calendarEventBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        summary: row.summary,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
 export function asDiaryBlockTemplate(
   row: EntityRow,
-): (DiaryBlockTemplateBody & { id: number; name: string }) | null {
+):
+  | (DiaryBlockTemplateBody & { id: number; name: string } & { client_op_id: string | null })
+  | null {
   if (row.primary_component !== DIARY_BLOCK_TEMPLATE_COMPONENT) return null;
   const parsed = diaryBlockTemplateBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, name: row.title, ...parsed.data } : null;
+  return parsed.success
+    ? { id: row.id, name: row.title, ...parsed.data, client_op_id: row.client_op_id ?? null }
+    : null;
 }
 
-export function asContentBlock(
-  row: EntityRow,
-): (ContentBlockBody & { id: number; title: string; content: string; summary: string }) | null {
+export function asContentBlock(row: EntityRow):
+  | (ContentBlockBody & { id: number; title: string; content: string; summary: string } & {
+      client_op_id: string | null;
+    })
+  | null {
   if (row.primary_component !== CONTENT_BLOCK_COMPONENT) return null;
   const parsed = contentBlockBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, summary: row.summary, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        summary: row.summary,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
@@ -353,10 +418,12 @@ export function asCalendarUiPrefs(row: EntityRow): (CalendarUiPrefsBody & { id: 
 
 export function asPomodoroSession(
   row: EntityRow,
-): (PomodoroSessionBody & { id: number; title: string }) | null {
+): (PomodoroSessionBody & { id: number; title: string } & { client_op_id: string | null }) | null {
   if (row.primary_component !== POMODORO_SESSION_COMPONENT) return null;
   const parsed = pomodoroSessionBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
+  return parsed.success
+    ? { id: row.id, title: row.title, ...parsed.data, client_op_id: row.client_op_id ?? null }
+    : null;
 }
 
 export function asPomodoroTaskFocus(
@@ -375,29 +442,47 @@ export function asPomodoroActive(row: EntityRow): (PomodoroActiveBody & { id: nu
 
 export function asProjectFolder(
   row: EntityRow,
-): (ProjectFolderBody & { id: number; name: string }) | null {
+): (ProjectFolderBody & { id: number; name: string } & { client_op_id: string | null }) | null {
   if (row.primary_component !== PROJECT_FOLDER_COMPONENT) return null;
   const parsed = projectFolderBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, name: row.title, ...parsed.data } : null;
+  return parsed.success
+    ? { id: row.id, name: row.title, ...parsed.data, client_op_id: row.client_op_id ?? null }
+    : null;
 }
 
 export function asProject(
   row: EntityRow,
-): (ProjectBody & { id: number; title: string; content: string }) | null {
+):
+  | (ProjectBody & { id: number; title: string; content: string } & { client_op_id: string | null })
+  | null {
   if (row.primary_component !== PROJECT_COMPONENT) return null;
   const parsed = projectBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
-export function asObjective(
-  row: EntityRow,
-): (ObjectiveBody & { id: number; title: string; content: string }) | null {
+export function asObjective(row: EntityRow):
+  | (ObjectiveBody & { id: number; title: string; content: string } & {
+      client_op_id: string | null;
+    })
+  | null {
   if (row.primary_component !== OBJECTIVE_COMPONENT) return null;
   const parsed = objectiveBodySchema.safeParse(row.body);
   return parsed.success
-    ? { id: row.id, title: row.title, content: row.content, ...parsed.data }
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+      }
     : null;
 }
 
@@ -421,10 +506,14 @@ export function asObjectFolder(
     : null;
 }
 
-export function asTag(row: EntityRow): (TagBody & { id: number; title: string }) | null {
+export function asTag(
+  row: EntityRow,
+): (TagBody & { id: number; title: string } & { client_op_id: string | null }) | null {
   if (row.primary_component !== TAG_COMPONENT) return null;
   const parsed = tagBodySchema.safeParse(row.body);
-  return parsed.success ? { id: row.id, title: row.title, ...parsed.data } : null;
+  return parsed.success
+    ? { id: row.id, title: row.title, ...parsed.data, client_op_id: row.client_op_id ?? null }
+    : null;
 }
 
 export function asBookmark(row: EntityRow):
@@ -435,6 +524,7 @@ export function asBookmark(row: EntityRow):
       deleted_at: Date | null;
       created_at: Date;
       updated_at: Date;
+      client_op_id: string | null;
     })
   | null {
   if (row.primary_component !== BOOKMARK_COMPONENT) return null;
@@ -448,6 +538,7 @@ export function asBookmark(row: EntityRow):
         created_at: row.created_at,
         updated_at: row.updated_at,
         ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
       }
     : null;
 }
@@ -461,6 +552,7 @@ export function asHealthRecord(row: EntityRow):
       deleted_at: Date | null;
       created_at: Date;
       updated_at: Date;
+      client_op_id: string | null;
     })
   | null {
   if (row.primary_component !== HEALTH_RECORD_COMPONENT) return null;
@@ -475,6 +567,7 @@ export function asHealthRecord(row: EntityRow):
         created_at: row.created_at,
         updated_at: row.updated_at,
         ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
       }
     : null;
 }
@@ -488,6 +581,7 @@ export function asContact(row: EntityRow):
       world_id: number;
       created_at: Date;
       updated_at: Date;
+      client_op_id: string | null;
     })
   | null {
   if (row.primary_component !== CONTACT_COMPONENT) return null;
@@ -502,6 +596,7 @@ export function asContact(row: EntityRow):
         created_at: row.created_at,
         updated_at: row.updated_at,
         ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
       }
     : null;
 }

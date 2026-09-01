@@ -35,6 +35,7 @@ export const pomodoroSessionRowSchema = z
     calendar_event_id: z.number().int().positive().nullable().default(null),
     cycle_index: z.number().int().nonnegative(),
     interrupted: z.boolean(),
+    client_op_id: z.string().nullable().optional(),
     created_at: z.string(),
     updated_at: z.string(),
   })

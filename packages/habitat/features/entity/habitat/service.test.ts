@@ -113,6 +113,7 @@ function row(partial: Partial<EntityRow> & Pick<EntityRow, "id">): EntityRow {
     primary_component: partial.primary_component ?? "task_item",
     components: partial.components ?? ["task_item"],
     body: partial.body ?? {},
+    client_op_id: partial.client_op_id ?? null,
     world_id: partial.world_id ?? 10,
     pinned: partial.pinned ?? false,
     reference_count: partial.reference_count ?? 0,
@@ -398,7 +399,8 @@ describe("serviceEntityAddComponent / setPrimaryComponent", () => {
       id: 5,
       primary_component: "note",
       components: ["note"],
-      body: { client_op_id: null },
+      body: {},
+      client_op_id: null,
     });
     getEntityMock.mockImplementation(async () => existing);
     addEntityComponentMock.mockImplementation(
@@ -508,7 +510,8 @@ describe("serviceEntityAddComponent / setPrimaryComponent", () => {
       id: 5,
       primary_component: "note",
       components: ["note", "diary_entry"],
-      body: { entry_at: "2026-08-19T00:00:00.000+08:00", client_op_id: "x" },
+      body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
+      client_op_id: "x",
     });
     getEntityMock.mockImplementation(async () => existing);
     promoteEntityComponentMock.mockImplementation(async () =>

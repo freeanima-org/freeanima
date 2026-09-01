@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUserSubjectId, useShellQuickIdSet } from "@freeanima/client/portal-sdk/react.tsx";
 import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
-import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { useIdMappingRemap } from "@freeanima/client/portal-sdk/use-id-mapping-remap";
 import { usePortalInfiniteQuery } from "@freeanima/client/portal-sdk/portal-query";
+import { useModuleOutboxSummary } from "@freeanima/client/portal-sdk/use-outbox-summary";
 import { registerDiaryOfflineModule } from "./lib/offline-store.ts";
 import {
-  countDiaryPendingOps,
   createDiaryBlock,
   createDiaryEntry,
   deleteDiaryBlock,
@@ -88,7 +88,7 @@ function applyEntryToList(prev: DiaryEntryRow[], item: DiaryEntryRow): DiaryEntr
 export function DiaryApp() {
   const subjectId = useUserSubjectId();
   const quickIds = useShellQuickIdSet();
-  const [pendingOps, setPendingOps] = useState(0);
+  const { pending: pendingOps } = useModuleOutboxSummary("diary");
   const writesDisabled = false;
   const [selectedId, setSelectedIdState] = useState<number | null>(() => readUrlDiaryId());
   const [draft, setDraft] = useState<EntryDraft | null>(null);
@@ -228,57 +228,46 @@ export function DiaryApp() {
     registerDiaryOfflineModule();
   }, []);
 
-  useEffect(() => {
-    return subscribeIdMappings((event) => {
-      if (event.moduleId !== "diary") return;
-      const { tempId, serverId } = event;
-      setEntries((prev) => {
-        let changed = false;
-        const next = prev.map((e) => {
-          if (e.id === tempId) {
-            changed = true;
-            return {
-              ...e,
-              id: serverId,
-              blocks: e.blocks.map((b) => ({ ...b, parent_id: serverId })),
-            };
-          }
-          const blocks = e.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b));
-          if (blocks.some((b, i) => b.id !== e.blocks[i]?.id)) {
-            changed = true;
-            return { ...e, blocks };
-          }
-          return e;
-        });
-        return changed ? sortEntries(next) : prev;
+  useIdMappingRemap("diary", (event) => {
+    const { tempId, serverId } = event;
+    setEntries((prev) => {
+      let changed = false;
+      const next = prev.map((e) => {
+        if (e.id === tempId) {
+          changed = true;
+          return {
+            ...e,
+            id: serverId,
+            blocks: e.blocks.map((b) => ({ ...b, parent_id: serverId })),
+          };
+        }
+        const blocks = e.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b));
+        if (blocks.some((b, i) => b.id !== e.blocks[i]?.id)) {
+          changed = true;
+          return { ...e, blocks };
+        }
+        return e;
       });
-      setSelectedId((prev) => (prev === tempId ? serverId : prev));
-      setDraft((prev) => {
-        if (!prev) return prev;
-        if (!prev.blocks.some((b) => b.id === tempId)) return prev;
-        return {
-          ...prev,
-          blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
-        };
-      });
-      setDraftBaseline((prev) => {
-        if (!prev) return prev;
-        if (!prev.blocks.some((b) => b.id === tempId)) return prev;
-        return {
-          ...prev,
-          blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
-        };
-      });
+      return changed ? sortEntries(next) : prev;
     });
-  }, []);
-
-  useEffect(() => {
-    void countDiaryPendingOps().then(setPendingOps);
-    const timer = window.setInterval(() => {
-      void countDiaryPendingOps().then(setPendingOps);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [entries, saving, creating]);
+    setSelectedId((prev) => (prev === tempId ? serverId : prev));
+    setDraft((prev) => {
+      if (!prev) return prev;
+      if (!prev.blocks.some((b) => b.id === tempId)) return prev;
+      return {
+        ...prev,
+        blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
+      };
+    });
+    setDraftBaseline((prev) => {
+      if (!prev) return prev;
+      if (!prev.blocks.some((b) => b.id === tempId)) return prev;
+      return {
+        ...prev,
+        blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
+      };
+    });
+  });
 
   useEffect(() => subscribeShellConfigChanges(), []);
 

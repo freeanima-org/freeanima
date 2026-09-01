@@ -68,7 +68,6 @@ export const contactBodySchema = z.object({
    * @deprecated 收敛到 animas[].kind=local；读路径仍兼容，写路径应同步 animas。
    */
   subject_id: z.number().int().positive().nullable().optional(),
-  client_op_id: z.string().min(1).nullable().optional(),
 });
 
 export type ContactBody = z.infer<typeof contactBodySchema>;

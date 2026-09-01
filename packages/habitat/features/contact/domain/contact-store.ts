@@ -106,7 +106,6 @@ function buildBody(input: {
   wechats?: ContactChannelEntry[];
   animas?: ContactAnimaEntry[];
   subject_id?: number | null;
-  client_op_id?: string | null;
 }): ContactBody {
   const animas = input.animas ?? [];
   const localSubject =
@@ -121,7 +120,6 @@ function buildBody(input: {
     wechats: normalizeEntries("wechat", input.wechats),
     animas,
     subject_id: localSubject,
-    client_op_id: input.client_op_id ?? null,
   };
 }
 
@@ -310,7 +308,6 @@ export async function createContact(
     ...(input.wechats != null ? { wechats: input.wechats } : {}),
     ...(input.animas != null ? { animas: input.animas } : {}),
     ...(input.subject_id !== undefined ? { subject_id: input.subject_id } : {}),
-    ...(input.client_op_id != null ? { client_op_id: input.client_op_id } : {}),
   });
   await assertNoIdentityConflict(worldId, body);
   const title = input.title.trim() || "未命名联系人";
@@ -324,6 +321,7 @@ export async function createContact(
     summary,
     content: contentSummary(body),
     body,
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asContact(row);
   if (!parsed) throw new Error("contact create parse failed");
@@ -346,7 +344,6 @@ export async function updateContact(
     wechats: input.wechats ?? current.wechats,
     animas: input.animas ?? current.animas ?? [],
     subject_id: input.subject_id !== undefined ? input.subject_id : (current.subject_id ?? null),
-    client_op_id: input.client_op_id ?? current.client_op_id ?? null,
   });
   await assertNoIdentityConflict(worldId, body, input.id);
 

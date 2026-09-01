@@ -168,8 +168,8 @@ export async function createProjectFolder(
     body: {
       parent_id: input.parent_id ?? null,
       sort_order: input.sort_order ?? siblings.length,
-      client_op_id: input.client_op_id ?? null,
     },
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asProjectFolder(row);
   if (!parsed) throw new Error("project folder create failed");

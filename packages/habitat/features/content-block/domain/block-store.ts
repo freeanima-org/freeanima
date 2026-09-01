@@ -148,6 +148,7 @@ function mapHit(row: {
     content: row.content,
     summary: row.summary,
     body: row.body,
+    client_op_id: null,
     pinned: row.pinned,
     reference_count: row.reference_count,
     tag_ids: [],
@@ -265,7 +266,6 @@ export async function createContentBlock(
     parent_id: input.parent_id,
     sort_order: input.sort_order ?? 0,
     url: input.url ?? null,
-    client_op_id: input.client_op_id ?? null,
     ...semanticBodyFields(input),
   };
 
@@ -278,6 +278,7 @@ export async function createContentBlock(
     summary: input.summary?.trim() ?? "",
     content: input.content?.trim() ?? "",
     body,
+    client_op_id: input.client_op_id ?? null,
   });
 
   const mapped = mapHit(row);
@@ -341,7 +342,6 @@ export async function updateContentBlock(
         parent_id: input.parent_id ?? parsedExisting.parent_id,
         sort_order: input.sort_order ?? parsedExisting.sort_order,
         url: input.url !== undefined ? input.url : parsedExisting.url,
-        client_op_id: parsedExisting.client_op_id,
         entity_id: nextSemanticRef?.entity_id,
       })
     : Object.keys(bodyPatch).length > 0

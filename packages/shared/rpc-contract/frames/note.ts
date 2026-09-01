@@ -71,7 +71,6 @@ export const notePatchInputSchema = z.object({
   summary: z.string().optional(),
   tags: z.array(z.string()).optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type NotePatchInput = z.infer<typeof notePatchInputSchema>;
 export const notePatchOutputSchema = z.object({ item: noteRowSchema });
@@ -80,7 +79,6 @@ export type NotePatchOutput = z.infer<typeof notePatchOutputSchema>;
 export const noteDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type NoteDeleteInput = z.infer<typeof noteDeleteInputSchema>;
 export const noteDeleteOutputSchema = z.object({ ok: z.literal(true) });
@@ -127,7 +125,6 @@ export const noteBlockPatchInputSchema = z.object({
   title: z.string().optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
   sort_order: z.number().int().optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type NoteBlockPatchInput = z.infer<typeof noteBlockPatchInputSchema>;
 export const noteBlockPatchOutputSchema = z.object({ item: noteTextBlockSchema });
@@ -136,7 +133,6 @@ export type NoteBlockPatchOutput = z.infer<typeof noteBlockPatchOutputSchema>;
 export const noteBlockDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type NoteBlockDeleteInput = z.infer<typeof noteBlockDeleteInputSchema>;
 export const noteBlockDeleteOutputSchema = z.object({ ok: z.literal(true) });

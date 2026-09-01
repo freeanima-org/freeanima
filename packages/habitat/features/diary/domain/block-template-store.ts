@@ -132,7 +132,6 @@ export async function createDiaryBlockTemplate(
     tag_ids: [],
     body: {
       sort_order: sortOrder,
-      client_op_id: input.client_op_id ?? null,
       preset,
     },
   });
@@ -214,7 +213,6 @@ export async function ensureDiaryBlockTemplateSeeds(ctx: DiaryStoreContext): Pro
       tag_ids: [],
       body: {
         sort_order: index,
-        client_op_id: null,
         preset: {
           title: name,
           content: "",

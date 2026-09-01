@@ -58,7 +58,6 @@ export async function createTaskOccurrence(
     due_at: input.due_at ?? null,
     list_id: input.list_id ?? null,
     project_id: input.project_id ?? null,
-    client_op_id: input.client_op_id ?? null,
   };
 
   const row = await createEntity({
@@ -69,6 +68,7 @@ export async function createTaskOccurrence(
     title: input.title.trim(),
     content: input.content?.trim() ?? "",
     body,
+    client_op_id: input.client_op_id ?? null,
   });
 
   if (!asTaskOccurrence(row)) throw new Error("task occurrence create failed");

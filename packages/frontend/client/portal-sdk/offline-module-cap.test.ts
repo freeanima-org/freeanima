@@ -5,7 +5,11 @@ import {
   registerOfflineModuleCap,
   resetOfflineModuleRegistryForTests,
 } from "./offline-module-registry.ts";
-import { getGlobalOutboxSummary } from "./offline-module-cap.ts";
+import {
+  getGlobalOutboxSummary,
+  getModuleOutboxSummary,
+  getModulePendingCount,
+} from "./offline-module-cap.ts";
 import {
   enqueueOutboxOp,
   markOutboxOpStale,
@@ -61,5 +65,9 @@ describe("getGlobalOutboxSummary", () => {
     expect(summary.failed).toBe(1);
     expect(summary.stale).toBe(1);
     expect(summary.ops).toHaveLength(3);
+
+    const moduleSummary = await getModuleOutboxSummary(scope, "diary");
+    expect(moduleSummary.pending).toBe(1);
+    expect(await getModulePendingCount(scope, "diary")).toBe(1);
   });
 });

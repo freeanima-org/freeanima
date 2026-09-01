@@ -81,7 +81,6 @@ export const objectiveBodySchema = z.object({
   completion: objectiveCompletionSchema.default({ kind: "qualitative" }),
   links: z.array(objectiveLinkSchema).default([]),
   sort_order: z.number().int().optional(),
-  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type ObjectiveBody = z.infer<typeof objectiveBodySchema>;

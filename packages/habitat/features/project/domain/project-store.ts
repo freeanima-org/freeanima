@@ -168,8 +168,8 @@ export async function createProject(
       product_tag: input.product_tag,
       sort_order: input.sort_order ?? siblings.length,
       linked_diary_ids: [],
-      client_op_id: input.client_op_id ?? null,
     },
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asProject(row);
   if (!parsed) throw new Error("project create failed");

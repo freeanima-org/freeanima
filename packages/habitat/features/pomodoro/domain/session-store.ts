@@ -132,8 +132,8 @@ async function persistSessionWithFocus(
       calendar_event_id: input.task_item_id != null ? null : (input.calendar_event_id ?? null),
       cycle_index: cycleIndex,
       interrupted,
-      client_op_id: input.client_op_id ?? null,
     },
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asPomodoroSession(created);
   if (!parsed) throw new Error("failed to persist pomodoro session");

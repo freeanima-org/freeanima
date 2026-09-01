@@ -176,7 +176,6 @@ export async function createCalendarEvent(
     remind_at: reminders.remind_at,
     reminders: reminders.reminders,
     last_notified_at: null,
-    client_op_id: input.client_op_id ?? null,
   };
 
   const row = await createEntity({
@@ -189,6 +188,7 @@ export async function createCalendarEvent(
     content: input.content?.trim() ?? "",
     tag_ids: input.tag_ids ?? [],
     body,
+    client_op_id: input.client_op_id ?? null,
   });
 
   const parsed = asCalendarEvent(row);

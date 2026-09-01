@@ -95,7 +95,6 @@ export async function ensureDiaryEntryForDay(
   const entryAt = diaryEntryAtNoon(dayKey);
   const body: DiaryEntryBody = {
     entry_at: entryAt,
-    client_op_id: null,
   };
   const title = titleFromDiaryDay(dayKey);
   const row = await createEntity({

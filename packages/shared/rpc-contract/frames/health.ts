@@ -138,7 +138,6 @@ export const healthPatchInputSchema = z.object({
   doctor_name: z.string().optional(),
   follow_up_at: z.string().optional(),
   file_entity_ids: z.array(z.number().int().positive()).optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type HealthPatchInput = z.infer<typeof healthPatchInputSchema>;
 export const healthPatchOutputSchema = z.object({ item: healthRowSchema });

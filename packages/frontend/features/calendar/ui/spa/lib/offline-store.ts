@@ -315,7 +315,6 @@ export async function offlineUpdateCalendarEvent(
           all_day: input.all_day,
           remind_at: input.remind_at,
           reminders: input.reminders,
-          client_op_id: opId,
         }),
         ...(isTempId(input.id) ? { tempEntityId: input.id } : {}),
         createdAt: formatCstIso(),
@@ -349,7 +348,7 @@ export async function offlineDeleteCalendarEvent(subjectId: number, id: number):
         id: opId,
         moduleId: MODULE_ID,
         method: "calendar.delete",
-        payload: { subject_id: subjectId, id, client_op_id: opId },
+        payload: { subject_id: subjectId, id },
         createdAt: formatCstIso(),
       });
       scheduleFlush(scope);

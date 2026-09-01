@@ -3,7 +3,7 @@ import {
   readModuleSelection,
   writeModuleSelection,
 } from "@freeanima/client/portal-sdk/module-selection.ts";
-import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { useIdMappingRemap } from "@freeanima/client/portal-sdk/use-id-mapping-remap";
 import { usePortalRead } from "@freeanima/client/portal-sdk/portal-query";
 import {
   useUserSubjectId,
@@ -256,77 +256,74 @@ export function ProjectApp() {
     },
   });
 
-  useEffect(() => {
-    return subscribeIdMappings((event) => {
-      if (event.moduleId !== "project") return;
-      const { tempId, serverId } = event;
-      const remapId = (id: number) => (id === tempId ? serverId : id);
+  useIdMappingRemap("project", (event) => {
+    const { tempId, serverId } = event;
+    const remapId = (id: number) => (id === tempId ? serverId : id);
 
-      setFolders((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id !== tempId && row.parent_id !== tempId) return row;
-          changed = true;
-          return {
-            ...row,
-            id: remapId(row.id),
-            parent_id: row.parent_id === tempId ? serverId : row.parent_id,
-          };
-        });
-        return changed ? next : prev;
-      });
-
-      setProjects((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id !== tempId && row.folder_id !== tempId) return row;
-          changed = true;
-          return {
-            ...row,
-            id: remapId(row.id),
-            folder_id: row.folder_id === tempId ? serverId : row.folder_id,
-          };
-        });
-        return changed ? next : prev;
-      });
-
-      setTasks((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id !== tempId && row.project_id !== tempId) {
-            return row;
-          }
-          changed = true;
-          return {
-            ...row,
-            id: remapId(row.id),
-            project_id: row.project_id === tempId ? serverId : row.project_id,
-          };
-        });
-        return changed ? next : prev;
-      });
-
-      setSelectedFolderId((prev) => (prev === tempId ? serverId : prev));
-      setSelectedProjectId((prev) => {
-        if (prev === tempId) {
-          writeModuleSelection("project", serverId, { subjectId });
-          return serverId;
-        }
-        return prev;
-      });
-      setDetailItem((prev) => {
-        if (!prev) return prev;
-        if (prev.id !== tempId && prev.project_id !== tempId) {
-          return prev;
-        }
+    setFolders((prev) => {
+      let changed = false;
+      const next = prev.map((row) => {
+        if (row.id !== tempId && row.parent_id !== tempId) return row;
+        changed = true;
         return {
-          ...prev,
-          id: remapId(prev.id),
-          project_id: prev.project_id === tempId ? serverId : prev.project_id,
+          ...row,
+          id: remapId(row.id),
+          parent_id: row.parent_id === tempId ? serverId : row.parent_id,
         };
       });
+      return changed ? next : prev;
     });
-  }, [setDetailItem, subjectId]);
+
+    setProjects((prev) => {
+      let changed = false;
+      const next = prev.map((row) => {
+        if (row.id !== tempId && row.folder_id !== tempId) return row;
+        changed = true;
+        return {
+          ...row,
+          id: remapId(row.id),
+          folder_id: row.folder_id === tempId ? serverId : row.folder_id,
+        };
+      });
+      return changed ? next : prev;
+    });
+
+    setTasks((prev) => {
+      let changed = false;
+      const next = prev.map((row) => {
+        if (row.id !== tempId && row.project_id !== tempId) {
+          return row;
+        }
+        changed = true;
+        return {
+          ...row,
+          id: remapId(row.id),
+          project_id: row.project_id === tempId ? serverId : row.project_id,
+        };
+      });
+      return changed ? next : prev;
+    });
+
+    setSelectedFolderId((prev) => (prev === tempId ? serverId : prev));
+    setSelectedProjectId((prev) => {
+      if (prev === tempId) {
+        writeModuleSelection("project", serverId, { subjectId });
+        return serverId;
+      }
+      return prev;
+    });
+    setDetailItem((prev) => {
+      if (!prev) return prev;
+      if (prev.id !== tempId && prev.project_id !== tempId) {
+        return prev;
+      }
+      return {
+        ...prev,
+        id: remapId(prev.id),
+        project_id: prev.project_id === tempId ? serverId : prev.project_id,
+      };
+    });
+  });
 
   const [sheetItems, setSheetItems] = useState<ActionSheetItem[] | null>(null);
   const [deleteFolderTarget, setDeleteFolderTarget] = useState<ProjectFolderRow | null>(null);

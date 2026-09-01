@@ -18,6 +18,7 @@ export type PomodoroConfigRow = PomodoroConfigBody;
 export type PomodoroSessionRow = PomodoroSessionBody & {
   id: number;
   title: string;
+  client_op_id: string | null;
   created_at: string;
   updated_at: string;
 };

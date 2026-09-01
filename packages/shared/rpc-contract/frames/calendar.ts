@@ -66,7 +66,6 @@ export const calendarPatchInputSchema = z.object({
   remind_at: z.string().nullable().optional(),
   reminders: z.array(calendarReminderEntrySchema).optional(),
   tag_ids: z.array(z.number().int().positive()).optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type CalendarPatchInput = z.infer<typeof calendarPatchInputSchema>;
 export const calendarPatchOutputSchema = z.object({ item: calendarEventRowSchema });
@@ -75,7 +74,6 @@ export type CalendarPatchOutput = z.infer<typeof calendarPatchOutputSchema>;
 export const calendarDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type CalendarDeleteInput = z.infer<typeof calendarDeleteInputSchema>;
 export const calendarDeleteOutputSchema = z.object({ ok: z.literal(true) });

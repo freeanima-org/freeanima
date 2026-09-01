@@ -58,7 +58,6 @@ function buildBody(input: {
   parent_id: number | null;
   sort_order: number;
   browser_id: string | null;
-  client_op_id: string | null;
 }): BookmarkBody {
   return {
     kind: input.kind,
@@ -66,7 +65,6 @@ function buildBody(input: {
     parent_id: input.parent_id,
     sort_order: input.sort_order,
     browser_id: input.browser_id,
-    client_op_id: input.client_op_id,
   };
 }
 
@@ -173,7 +171,6 @@ export async function createBookmark(
     parent_id: input.parent_id ?? null,
     sort_order: input.sort_order ?? 0,
     browser_id: input.browser_id ?? null,
-    client_op_id: input.client_op_id ?? null,
   });
   const row = await createEntity({
     type: "content",
@@ -184,6 +181,7 @@ export async function createBookmark(
     summary: "",
     content: contentFor(input.kind, input.url),
     body,
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asBookmark(row);
   if (!parsed) throw new Error("bookmark create parse failed");
@@ -205,8 +203,6 @@ export async function updateBookmark(
   const sort_order = input.sort_order !== undefined ? input.sort_order : (current.sort_order ?? 0);
   const browser_id =
     input.browser_id !== undefined ? input.browser_id : (current.browser_id ?? null);
-  const client_op_id =
-    input.client_op_id !== undefined ? input.client_op_id : (current.client_op_id ?? null);
 
   const title = input.title !== undefined ? input.title.trim() || current.title : current.title;
 
@@ -220,7 +216,6 @@ export async function updateBookmark(
       parent_id,
       sort_order,
       browser_id,
-      client_op_id,
     }),
   });
   if (!updated) return null;

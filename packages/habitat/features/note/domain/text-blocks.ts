@@ -79,6 +79,7 @@ function mapHit(row: {
     content: row.content,
     summary: row.summary,
     body: row.body,
+    client_op_id: null,
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [...(row.tag_ids ?? [])],
@@ -172,8 +173,8 @@ export async function createNoteTextBlock(
       parent_id: input.parent_id,
       sort_order: sortOrder,
       url: null,
-      client_op_id: input.client_op_id ?? null,
     },
+    client_op_id: input.client_op_id ?? null,
   });
 
   const mapped = mapHit(row);

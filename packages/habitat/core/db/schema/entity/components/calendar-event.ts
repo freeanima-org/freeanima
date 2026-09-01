@@ -12,7 +12,6 @@ export const calendarEventBodySchema = plannedTimeBodySchema
     start_at: z.string().min(1),
     end_at: z.string().nullable().default(null),
     all_day: z.boolean().default(false),
-    client_op_id: z.string().min(1).nullable().default(null),
   })
   .superRefine((data, ctx) => {
     const end = data.end_at != null && data.end_at !== "" ? data.end_at : null;

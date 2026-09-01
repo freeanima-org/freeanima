@@ -320,7 +320,6 @@ export async function createTaskItem(
     remind_at: reminders.remind_at,
     reminders: reminders.reminders,
     completed_at: null,
-    client_op_id: input.client_op_id ?? null,
     project_id: projectId,
     parent_id: input.parent_id ?? null,
     recurrence,
@@ -335,6 +334,7 @@ export async function createTaskItem(
     content: input.content?.trim() ?? "",
     body,
     tag_ids: tagIds,
+    client_op_id: input.client_op_id ?? null,
   });
 
   if (!asTaskItem(row)) throw new Error("task item create failed");

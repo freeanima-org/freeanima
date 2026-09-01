@@ -17,7 +17,6 @@ export type DiaryBlockTemplatePreset = z.infer<typeof diaryBlockTemplatePresetSc
 
 export const diaryBlockTemplateBodySchema = z.object({
   sort_order: z.number().int().optional(),
-  client_op_id: z.string().min(1).nullable().default(null),
   preset: diaryBlockTemplatePresetSchema,
 });
 

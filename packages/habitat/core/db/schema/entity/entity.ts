@@ -21,6 +21,8 @@ export const entities = pgTable(
     summary: text("summary").notNull().default(""),
     content: text("content").notNull().default(""),
     body: jsonb("body").notNull().default({}),
+    /** 离线/重试幂等键（跨组件契约；非 body） */
+    client_op_id: text("client_op_id"),
     /** Entity-level pin（任意 primary_component） */
     pinned: boolean("pinned").notNull().default(false),
     /** Entity-level citation weight sum（[[anima:id]]） */
@@ -55,6 +57,7 @@ export const entities = pgTable(
     ),
     index("idx_entities_tag_ids").using("gin", t.tag_ids),
     index("idx_entities_deleted_at").on(t.deleted_at),
+    // client_op_id partial unique：见 migration 追加 SQL（drizzle-kit 难表达 WHERE IS NOT NULL）
     // gin_trgm / body 表达式索引：见 migrations 追加 SQL（drizzle-kit 难表达 opclass / partial）
     // Commons 唯一：idx_entities_world_common（body.common=true partial unique）
   ],

@@ -15,6 +15,7 @@ export type EntityCreateInput = {
   pinned?: boolean;
   reference_count?: number;
   tag_ids?: number[];
+  client_op_id?: string | null;
   created_at?: Date;
   updated_at?: Date;
 };

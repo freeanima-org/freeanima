@@ -12,7 +12,6 @@ export const taskOccurrenceBodySchema = z.object({
   due_at: z.string().nullable().optional(),
   list_id: z.number().int().positive().nullable().optional(),
   project_id: z.number().int().positive().nullable().optional(),
-  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type TaskOccurrenceBody = z.infer<typeof taskOccurrenceBodySchema>;

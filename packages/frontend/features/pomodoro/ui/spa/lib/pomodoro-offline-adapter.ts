@@ -1,11 +1,11 @@
 import { readOfflineCache, writeOfflineCache } from "@freeanima/client/portal-sdk/offline-cache";
+import { getModulePendingCount } from "@freeanima/client/portal-sdk/offline-module-cap";
 import {
   registerOfflineModule,
   registerOfflineModuleCap,
 } from "@freeanima/client/portal-sdk/offline-module-registry";
 import type { RpcModuleAdapter } from "@freeanima/client/portal-sdk/offline-module-types";
 import {
-  listOutboxOps,
   resolveOutboxScope,
   type OfflineOutboxOp,
 } from "@freeanima/client/portal-sdk/offline-outbox";
@@ -159,5 +159,5 @@ export async function readCachedPomodoroStats(
 }
 
 export async function countPomodoroPendingOps(): Promise<number> {
-  return listOutboxOps(resolveOutboxScope(), POMODORO_OUTBOX_MODULE_ID).then((ops) => ops.length);
+  return getModulePendingCount(resolveOutboxScope(), POMODORO_OUTBOX_MODULE_ID);
 }
