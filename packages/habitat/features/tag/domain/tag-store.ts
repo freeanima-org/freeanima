@@ -209,8 +209,8 @@ export async function createTag(worldId: number, input: TagCreateInput): Promise
     title,
     body: {
       sort_order: input.sort_order ?? existing.length,
-      client_op_id: input.client_op_id ?? null,
     },
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asTag(row);
   if (!parsed) throw new Error("tag create failed");

@@ -57,7 +57,6 @@ export const healthRecordBodySchema = z.object({
   doctor_name: z.string().optional(),
   follow_up_at: z.string().optional(),
   file_entity_ids: z.array(z.number().int().positive()).default([]),
-  client_op_id: z.string().min(1).nullable().optional(),
 });
 
 export type HealthRecordBody = z.infer<typeof healthRecordBodySchema>;

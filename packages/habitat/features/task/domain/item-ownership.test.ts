@@ -16,6 +16,7 @@ function entityRow(id: number, primary: string, body: Record<string, unknown>, t
     summary: "",
     content: "",
     body,
+    client_op_id: null,
     pinned: false,
     reference_count: 0,
     tag_ids: [],
@@ -40,7 +41,7 @@ describe("updateTaskItem ownership XOR", () => {
           project_id: null,
           status: "pending",
           priority: "none",
-          client_op_id: null,
+
           sort_order: 0,
         });
       }
@@ -84,7 +85,7 @@ describe("updateTaskItem ownership XOR", () => {
         project_id: 10,
         status: "pending",
         priority: "none",
-        client_op_id: null,
+
         sort_order: 0,
         ...(input.body as object),
       }),
@@ -109,7 +110,7 @@ describe("updateTaskItem ownership XOR", () => {
         project_id: 10,
         status: "pending",
         priority: "none",
-        client_op_id: null,
+
         sort_order: 0,
       }),
     );
@@ -155,7 +156,6 @@ describe("releaseTasksFromProject", () => {
           project_id: 10,
           status: "pending",
           priority: "none",
-          client_op_id: null,
         }),
       ],
     });
@@ -165,7 +165,6 @@ describe("releaseTasksFromProject", () => {
         project_id: null,
         status: "pending",
         priority: "none",
-        client_op_id: null,
       }),
     );
 

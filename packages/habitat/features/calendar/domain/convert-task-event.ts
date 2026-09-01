@@ -94,7 +94,6 @@ export function mapTaskItemBodyToCalendarEvent(task: {
     remind_at: normalized.remind_at,
     reminders: normalized.reminders,
     last_notified_at: null,
-    client_op_id: null,
   };
 }
 
@@ -138,7 +137,6 @@ export function mapCalendarEventBodyToTaskItemFields(
     reminders: reminders.reminders,
     completed_at: null,
     parent_id: null,
-    client_op_id: null,
     recurrence: null,
   };
 }

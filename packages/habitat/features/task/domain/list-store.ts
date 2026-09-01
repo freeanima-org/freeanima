@@ -217,7 +217,6 @@ export async function ensureDefaultTaskListForWorld(worldId: number): Promise<Ta
       is_default: true,
       is_folder: false,
       parent_id: null,
-      client_op_id: null,
     };
     const row = await createEntity(
       {
@@ -337,7 +336,6 @@ export async function createTaskList(
     is_default: false,
     is_folder,
     parent_id,
-    client_op_id: input.client_op_id ?? null,
   };
   const row = await createEntity({
     type: "content",
@@ -346,6 +344,7 @@ export async function createTaskList(
     primary_component: TASK_LIST_COMPONENT,
     title: input.name.trim(),
     body,
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asTaskList(row);
   if (!parsed) throw new Error("failed to create task list");

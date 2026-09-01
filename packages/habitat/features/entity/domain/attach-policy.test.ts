@@ -20,6 +20,7 @@ function baseContent(overrides: Partial<EntityRow> = {}): EntityRow {
     summary: "",
     content: "",
     body: {},
+    client_op_id: null,
     pinned: false,
     reference_count: 0,
     tag_ids: [],

@@ -13,7 +13,8 @@ function contentRow(partial: Record<string, unknown> = {}) {
     title: "n",
     summary: "",
     content: "",
-    body: { client_op_id: null },
+    body: {},
+    client_op_id: null,
     components: ["note"],
     pinned: false,
     reference_count: 0,
@@ -61,7 +62,7 @@ describe("entity morph tools", () => {
     addSpy.mockResolvedValue(
       contentRow({
         components: ["note", "diary_entry"],
-        body: { client_op_id: null, entry_at: "2026-08-19T00:00:00.000+08:00" },
+        body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
       }),
     );
 
@@ -104,14 +105,14 @@ describe("entity morph tools", () => {
     getSpy.mockResolvedValue(
       contentRow({
         components: ["note", "diary_entry"],
-        body: { entry_at: "2026-08-19T00:00:00.000+08:00", client_op_id: "a" },
+        body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
       }),
     );
     promoteSpy.mockResolvedValue(
       contentRow({
         primary_component: "diary_entry",
         components: ["note", "diary_entry"],
-        body: { entry_at: "2026-08-19T00:00:00.000+08:00", client_op_id: "a" },
+        body: { entry_at: "2026-08-19T00:00:00.000+08:00" },
       }),
     );
 

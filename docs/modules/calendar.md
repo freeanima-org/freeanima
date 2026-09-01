@@ -32,16 +32,16 @@ title: 日历
 实体：`type=content`，`primary_component: calendar_event`，归属 subject 默认
 private world（壳 `subject_kind`）。
 
-| 字段                        | 位置      | 说明                                           |
-| --------------------------- | --------- | ---------------------------------------------- |
-| `title` / `content`         | entity 列 | 标题与备注                                     |
-| `start_at`                  | body      | 必填 ISO8601（计划开始）                       |
-| `end_at`                    | body      | 可空；空则瞬时点                               |
-| `all_day`                   | body      | 全天                                           |
-| `remind_at` / `reminders[]` | body      | 相对**开始**的提醒；`remind_at` 为最早一项镜像 |
-| `last_notified_at`          | body      | Inbox 幂等                                     |
-| `tag_ids`                   | entity 列 | 可选                                           |
-| `client_op_id`              | body      | 离线幂等                                       |
+| 字段                        | 位置       | 说明                                           |
+| --------------------------- | ---------- | ---------------------------------------------- |
+| `title` / `content`         | entity 列  | 标题与备注                                     |
+| `start_at`                  | body       | 必填 ISO8601（计划开始）                       |
+| `end_at`                    | body       | 可空；空则瞬时点                               |
+| `all_day`                   | body       | 全天                                           |
+| `remind_at` / `reminders[]` | body       | 相对**开始**的提醒；`remind_at` 为最早一项镜像 |
+| `last_notified_at`          | body       | Inbox 幂等                                     |
+| `tag_ids`                   | entity 列  | 可选                                           |
+| `client_op_id`              | 实体顶层列 | 离线幂等                                       |
 
 时间基准：全局 `i18n.timezone`（IANA，默认 Asia/Shanghai）。事件**无** `due_at`。
 

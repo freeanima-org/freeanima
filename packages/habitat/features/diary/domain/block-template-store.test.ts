@@ -19,7 +19,6 @@ describe("diary_block_template preset", () => {
     });
     expect(body.preset.title).toBe("块标题");
     expect(body.preset.tag_ids).toEqual([2]);
-    expect(body.client_op_id).toBeNull();
   });
 
   test("preset.components 缺 content_block 时由 normalize 侧补齐（schema 仍要求非空）", () => {

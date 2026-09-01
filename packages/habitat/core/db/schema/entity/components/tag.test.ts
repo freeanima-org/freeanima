@@ -9,13 +9,11 @@ describe("tag component", () => {
 
   test("tagBodySchema defaults", () => {
     const parsed = tagBodySchema.parse({});
-    expect(parsed.client_op_id).toBeNull();
     expect(parsed.sort_order).toBeUndefined();
   });
 
   test("tagBodySchema accepts sort_order", () => {
-    const parsed = tagBodySchema.parse({ sort_order: 2, client_op_id: "c1" });
+    const parsed = tagBodySchema.parse({ sort_order: 2 });
     expect(parsed.sort_order).toBe(2);
-    expect(parsed.client_op_id).toBe("c1");
   });
 });

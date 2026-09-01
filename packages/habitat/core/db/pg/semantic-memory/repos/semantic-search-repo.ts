@@ -62,6 +62,7 @@ const semanticSelect = {
   summary: entities.summary,
   content: entities.content,
   body: entities.body,
+  client_op_id: entities.client_op_id,
   pinned: entities.pinned,
   reference_count: entities.reference_count,
   created_at: entities.created_at,
@@ -79,6 +80,7 @@ function mapBrowseRow(row: {
   summary: string;
   content: string;
   body: unknown;
+  client_op_id: string | null;
   pinned: boolean;
   reference_count: number;
   created_at: Date;
@@ -96,6 +98,7 @@ function mapBrowseRow(row: {
     summary: row.summary ?? "",
     content: row.content ?? "",
     body: asRecord(row.body) ?? {},
+    client_op_id: row.client_op_id ?? null,
     pinned: row.pinned ?? false,
     reference_count: row.reference_count ?? 0,
     tag_ids: [],

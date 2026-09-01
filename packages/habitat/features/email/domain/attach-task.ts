@@ -87,7 +87,6 @@ export async function attachTaskToEmailMessage(
     reminders: reminders.reminders,
     completed_at: null,
     parent_id: null,
-    client_op_id: null,
     recurrence: null,
   };
 

@@ -6,7 +6,6 @@ export { DIARY_ENTRY_COMPONENT };
 
 export const diaryEntryBodySchema = z.object({
   entry_at: z.string().min(1),
-  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type DiaryEntryBody = z.infer<typeof diaryEntryBodySchema>;

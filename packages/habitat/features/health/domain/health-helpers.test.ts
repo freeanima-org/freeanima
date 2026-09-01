@@ -49,7 +49,7 @@ describe("buildSummary", () => {
       recorded_at: "2026-08-24T00:00:00.000Z",
       profile_key: "self",
       file_entity_ids: [],
-      client_op_id: null,
+
       readings: [
         { metric_key: "blood_pressure_systolic", value: 120 },
         { metric_key: "blood_pressure_diastolic", value: 80 },
@@ -67,7 +67,7 @@ describe("buildSummary", () => {
       recorded_at: "2026-08-24T00:00:00.000Z",
       profile_key: "self",
       file_entity_ids: [],
-      client_op_id: null,
+
       exam_items: [
         { metric_key: "a", name: "A", value: 1, flag: "normal" },
         { metric_key: "b", name: "B", value: 2, flag: "high" },
@@ -87,7 +87,7 @@ describe("collectMetricSeries", () => {
           recorded_at: "2026-08-20T00:00:00.000Z",
           profile_key: "self",
           file_entity_ids: [],
-          client_op_id: null,
+
           readings: [{ metric_key: "weight", value: 70 }],
         },
       },
@@ -98,7 +98,7 @@ describe("collectMetricSeries", () => {
           recorded_at: "2026-08-24T00:00:00.000Z",
           profile_key: "self",
           file_entity_ids: [],
-          client_op_id: null,
+
           readings: [{ metric_key: "weight", value: 69 }],
         },
       },

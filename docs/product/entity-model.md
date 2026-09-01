@@ -67,7 +67,7 @@ Subject **不**属于某个 world。每个 subject 可有且仅有**一个默认
 | **detach**  | 去掉附加组件（即 deleteComponent）；载体实体保留；**body 共用键保留**                        | `deleteEntityComponent` → `stripRemovedComponentBodyFields`；`entity.deleteComponent` / `entity_detach_component`；`email.message.detachTask`；或 `task.delete` 在 primary≠`task_item` 时 |
 | **promote** | 同 id：仅改 `primary_component` 指向已有 `components` 成员；**不改** components / body       | `promoteEntityComponent`；`entity.setPrimaryComponent` / `entity_promote_component`                                                                                                       |
 
-`entities.body` 为**扁平 merge**（非按组件嵌套）。多组件可声明同一键（如 `note` 与 `diary_entry` 共用 `client_op_id`）。**detach** 仅删除「剩余组件 schema 不再需要」的键，禁止按卸下组件整表清字段。**promote** 零 body 变更；**attach** 时 patch 同键覆盖，调用方应尽量只传新组件字段。
+`entities.body` 为**扁平 merge**（非按组件嵌套）。离线幂等键 **`entities.client_op_id`** 为实体顶层列（跨组件契约；非 body）。**detach** 仅删除「剩余组件 schema 不再需要」的 body 键，禁止按卸下组件整表清字段；**不**清除顶层 `client_op_id`。**promote** 零 body 变更；**attach** 时 patch 同键覆盖，调用方应尽量只传新组件字段。
 
 补充规则：
 
@@ -202,7 +202,7 @@ SAP 任务/邮件方法接受可选 `subject_kind`（默认：任务 `user`，�
 | ---- | -------------- | ----- |
 | 标签 | `type=content` | `tag` |
 
-- **名称**在实体 `title`；body 仅 `sort_order` / `client_op_id`
+- **名称**在实体 `title`；body 仅 `sort_order`；幂等键见顶层 `client_op_id`
 - 任意 content entity 通过顶层 **`tag_ids`** 挂载标签；含义由「实体类型 + 标签」组合自然产生（不做语义空间区分）
 - **禁止** component `body.tags` 字符串数组（vault / email / task / diary 均已收敛到 `tag_ids`）
 - 同 World 内 title（trim 后）唯一；删除标签时从该 World 所有实体的 `tag_ids` 剔除
@@ -236,7 +236,7 @@ SAP 任务/邮件方法接受可选 `subject_kind`（默认：任务 `user`，�
 | ---- | -------------- | ----------- |
 | 目标 | `type=content` | `objective` |
 
-Body：`parent_id`（可嵌套）、`status`（`not_started` / `in_progress` / `completed` / `cancelled` / `on_hold`）、可选 `start_at`/`end_at`、`completion`（定性 / 手工量化 / 自动统计）、`links`（弱引用执行面）、`sort_order`、`client_op_id`。壳 `/objectives`；RPC `objective.*`。
+Body：`parent_id`（可嵌套）、`status`（`not_started` / `in_progress` / `completed` / `cancelled` / `on_hold`）、可选 `start_at`/`end_at`、`completion`（定性 / 手工量化 / 自动统计）、`links`（弱引用执行面）、`sort_order`。幂等键为实体顶层 `client_op_id`。壳 `/objectives`；RPC `objective.*`。
 
 完整规格：[`docs/modules/objective.md`](../modules/objective.md)。
 
@@ -293,7 +293,7 @@ LLM ToolSets：`@freeanima/feature-email/domain` — `email-account`（账户实
 | ---- | -------------- | ---------------- |
 | 事件 | `type=content` | `calendar_event` |
 
-事件位于各 subject 的默认私有 world。Body：`start_at`（必填）、`end_at`、`all_day`、`remind_at` / `last_notified_at`（可调度）、`client_op_id`。标题/备注在实体列。
+事件位于各 subject 的默认私有 world。Body：`start_at`（必填）、`end_at`、`all_day`、`remind_at` / `last_notified_at`（可调度）。幂等键为实体顶层 `client_op_id`。标题/备注在实体列。
 
 - **SAP：** `calendar.list` / `create` / `get` / `patch` / `delete` + `calendar.range`（聚合 event + task due + project 区间）
 - **UI：** 壳 `/calendar` — 日/近三天/近七天议程 + 周/月网格

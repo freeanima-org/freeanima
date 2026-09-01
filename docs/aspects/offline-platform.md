@@ -86,7 +86,9 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 - 失败/冲突 toast：单条 **重试** + **丢弃**；「重连并全部重试」仅用于未连接时的纯 pending toast
 - chat 流式 flush 在离开聊天页时回退到无头 context（headless），全局 bar 仍可 flush
 
-写 RPC 可选 `client_op_id`；flush 重试使用同一 id；create 响应含完整 `item` 供 id-map 写入。
+写 RPC：**仅 create / append（新建 block）/ `message.send`** 可选 `client_op_id`；patch/delete 等不再接受。实体侧存 **`entities.client_op_id`**（非 body）；Chat 仍在 `messages.payload`。flush 重试使用同一 id；create 响应含完整 `item` 供 id-map 写入。
+
+Outbox 状态：portal-sdk `subscribeOutboxChanges` + `useGlobalOutboxSummary` / `useModuleOutboxSummary`（事件驱动，无轮询）。
 
 ## Temp id 生命周期契约（CRUD outbox）
 
@@ -105,7 +107,7 @@ id；session 用 `client_op_id` 幂等。
 
 ## 接入清单
 
-1. Habitat 写 RPC 支持 `client_op_id`（若尚未有）
+1. Habitat **create/append/send** 写 RPC 支持 `client_op_id`（若尚未有）；实体写入顶层列
 2. 实现 `features/<slug>/ui/spa/lib/offline-store.ts`（或 stream adapter）
 3. `registerOfflineModule(adapter)` + `registerOfflineModuleCap({
 offlineWritable: true })`

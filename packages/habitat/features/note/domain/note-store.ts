@@ -154,9 +154,7 @@ export async function createNote(ctx: NoteStoreContext, input: NoteCreateInput):
   }
 
   const tagIds = await resolveCreateTagIds(ctx.worldId, input);
-  const body: NoteBody = {
-    client_op_id: input.client_op_id ?? null,
-  };
+  const body: NoteBody = {};
 
   const row = await createEntity({
     type: "content",
@@ -168,6 +166,7 @@ export async function createNote(ctx: NoteStoreContext, input: NoteCreateInput):
     content: "",
     tag_ids: tagIds,
     body,
+    client_op_id: input.client_op_id ?? null,
   });
 
   const parsed = asNote(row);

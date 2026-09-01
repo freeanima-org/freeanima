@@ -17,6 +17,7 @@ function block(
     content: "正文",
     sort_order: 0,
     client_op_id: null,
+
     components: ["content_block"],
     tag_ids: [],
     created_at: "2026-08-14T12:00:00+08:00",

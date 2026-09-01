@@ -69,13 +69,67 @@ function isOfflineOutboxOp(raw: unknown): raw is OfflineOutboxOp {
   return isRecord(raw.payload);
 }
 
+export type OutboxChangeEvent = {
+  scope: string;
+};
+
+type OutboxChangeListener = (event: OutboxChangeEvent) => void;
+
+const outboxListeners = new Set<OutboxChangeListener>();
+const dirtyOutboxScopes = new Set<string>();
+let outboxNotifyScheduled = false;
+
+function flushOutboxNotifications(): void {
+  outboxNotifyScheduled = false;
+  if (dirtyOutboxScopes.size === 0 || outboxListeners.size === 0) {
+    dirtyOutboxScopes.clear();
+    return;
+  }
+  const scopes = [...dirtyOutboxScopes];
+  dirtyOutboxScopes.clear();
+  for (const scope of scopes) {
+    const event: OutboxChangeEvent = { scope };
+    for (const listener of outboxListeners) {
+      try {
+        listener(event);
+      } catch {
+        /* listener 不得打断写路径 */
+      }
+    }
+  }
+}
+
+/** 同 tab outbox 变更；短窗内多次写合并为每 scope 一次（跨 await flush）。 */
+function scheduleOutboxNotify(scope: string): void {
+  dirtyOutboxScopes.add(scope);
+  if (outboxNotifyScheduled) return;
+  outboxNotifyScheduled = true;
+  setTimeout(flushOutboxNotifications, 0);
+}
+
+/** 订阅 outbox 入队 / 删除 / 状态变更；返回取消订阅。 */
+export function subscribeOutboxChanges(listener: OutboxChangeListener): () => void {
+  outboxListeners.add(listener);
+  return () => {
+    outboxListeners.delete(listener);
+  };
+}
+
+export function resetOutboxChangeListenersForTests(): void {
+  outboxListeners.clear();
+  dirtyOutboxScopes.clear();
+  outboxNotifyScheduled = false;
+}
+
 export function setOfflineOutboxBackendForTests(map: MemoryBackend | null): void {
   setOfflineDbBackendForTests(map);
   setSatelliteOfflineCacheBackendForTests(map);
+  resetOutboxChangeListenersForTests();
 }
 
 export async function enqueueOutboxOp(scope: string, op: OfflineOutboxOp): Promise<void> {
   await offlineDbPut(OFFLINE_OUTBOX_STORE, outboxKey(scope, op.id), op);
+  scheduleOutboxNotify(scope);
 }
 
 export async function getOutboxOp(scope: string, opId: string): Promise<OfflineOutboxOp | null> {
@@ -101,6 +155,7 @@ export async function listOutboxOps(
 
 export async function removeOutboxOp(scope: string, opId: string): Promise<void> {
   await offlineDbDelete(OFFLINE_OUTBOX_STORE, outboxKey(scope, opId));
+  scheduleOutboxNotify(scope);
 }
 
 export function shouldAutoRetryOp(op: OfflineOutboxOp): boolean {

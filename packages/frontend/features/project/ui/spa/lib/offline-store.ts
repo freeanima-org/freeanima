@@ -4,6 +4,7 @@ import {
   registerOfflineModule,
   registerOfflineModuleCap,
 } from "@freeanima/client/portal-sdk/offline-module-registry";
+import { getModulePendingCount } from "@freeanima/client/portal-sdk/offline-module-cap";
 import type { RpcModuleAdapter } from "@freeanima/client/portal-sdk/offline-module-types";
 import {
   enqueueOutboxOp,
@@ -680,7 +681,6 @@ export async function offlineUpdateProjectFolder(
       payload: omitUndefined({
         ...getCachedSubjectIdPayload(),
         id: existing.id,
-        client_op_id: opId,
         ...patch,
       }),
       createdAt: now,
@@ -697,13 +697,11 @@ export async function offlineUpdateProjectFolder(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const data = await habitat().call(
       "projectfolder.patch",
       omitUndefined({
         ...getCachedSubjectIdPayload(),
         id: existing.id,
-        client_op_id: opId,
         ...patch,
       }),
     );
@@ -740,7 +738,7 @@ export async function offlineDeleteProjectFolder(id: number): Promise<void> {
       id: opId,
       moduleId: MODULE_ID,
       method: "projectfolder.delete",
-      payload: { ...getCachedSubjectIdPayload(), id: resolvedId, client_op_id: opId },
+      payload: { ...getCachedSubjectIdPayload(), id: resolvedId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
@@ -751,11 +749,9 @@ export async function offlineDeleteProjectFolder(id: number): Promise<void> {
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("projectfolder.delete", {
       ...getCachedSubjectIdPayload(),
       id: resolvedId,
-      client_op_id: opId,
     });
     await removeLocalFolder(scope, resolvedId);
     if (resolvedId !== id) await removeLocalFolder(scope, id);
@@ -888,7 +884,6 @@ export async function offlineUpdateProject(
       payload: omitUndefined({
         ...getCachedSubjectIdPayload(),
         id: existing.id,
-        client_op_id: opId,
         ...patch,
       }),
       createdAt: now,
@@ -905,13 +900,11 @@ export async function offlineUpdateProject(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const data = await habitat().call(
       "project.patch",
       omitUndefined({
         ...getCachedSubjectIdPayload(),
         id: existing.id,
-        client_op_id: opId,
         ...patch,
       }),
     );
@@ -949,7 +942,7 @@ export async function offlineDeleteProject(id: number): Promise<void> {
       id: opId,
       moduleId: MODULE_ID,
       method: "project.delete",
-      payload: { ...getCachedSubjectIdPayload(), id: resolvedId, client_op_id: opId },
+      payload: { ...getCachedSubjectIdPayload(), id: resolvedId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
@@ -960,11 +953,9 @@ export async function offlineDeleteProject(id: number): Promise<void> {
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("project.delete", {
       ...getCachedSubjectIdPayload(),
       id: resolvedId,
-      client_op_id: opId,
     });
     await removeLocalProject(scope, resolvedId);
     if (resolvedId !== id) await removeLocalProject(scope, id);
@@ -1147,7 +1138,7 @@ export async function offlineUpdateProjectTask(
         id: opId,
         moduleId: MODULE_ID,
         method,
-        payload: { ...getCachedSubjectIdPayload(), id: existing.id, client_op_id: opId },
+        payload: { ...getCachedSubjectIdPayload(), id: existing.id },
         createdAt: now,
       });
     } else {
@@ -1159,7 +1150,6 @@ export async function offlineUpdateProjectTask(
         payload: omitUndefined({
           ...getCachedSubjectIdPayload(),
           id: existing.id,
-          client_op_id: opId,
           ...contentPatch,
         }),
         createdAt: now,
@@ -1174,7 +1164,6 @@ export async function offlineUpdateProjectTask(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const method =
       patch.status === "completed"
         ? "task.complete"
@@ -1186,7 +1175,6 @@ export async function offlineUpdateProjectTask(
       const data = await habitat().call(method, {
         ...getCachedSubjectIdPayload(),
         id: existing.id,
-        client_op_id: opId,
       });
       await upsertLocalItem(scope, data.item);
       return data.item;
@@ -1198,7 +1186,6 @@ export async function offlineUpdateProjectTask(
       omitUndefined({
         ...getCachedSubjectIdPayload(),
         id: existing.id,
-        client_op_id: opId,
         ...contentPatch,
       }),
     );
@@ -1242,7 +1229,7 @@ export async function offlineDeleteProjectTask(id: number): Promise<void> {
       id: opId,
       moduleId: MODULE_ID,
       method: "task.delete",
-      payload: { ...getCachedSubjectIdPayload(), id: resolvedId, client_op_id: opId },
+      payload: { ...getCachedSubjectIdPayload(), id: resolvedId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
@@ -1253,11 +1240,9 @@ export async function offlineDeleteProjectTask(id: number): Promise<void> {
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("task.delete", {
       ...getCachedSubjectIdPayload(),
       id: resolvedId,
-      client_op_id: opId,
     });
     if (projectId != null) {
       await removeLocalItem(scope, projectId, resolvedId);
@@ -1290,7 +1275,6 @@ export async function offlineMoveProjectTaskToList(taskId: number, listId: numbe
         ...getCachedSubjectIdPayload(),
         id: resolvedId,
         list_id: listId,
-        client_op_id: opId,
       },
       createdAt: new Date().toISOString(),
     });
@@ -1302,12 +1286,10 @@ export async function offlineMoveProjectTaskToList(taskId: number, listId: numbe
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("task.moveToList", {
       ...getCachedSubjectIdPayload(),
       id: resolvedId,
       list_id: listId,
-      client_op_id: opId,
     });
     await removeLocalItem(scope, found.projectId, resolvedId);
     if (found.item.status === "pending") {
@@ -1373,7 +1355,6 @@ export async function offlineMoveTaskToProject(
         ...getCachedSubjectIdPayload(),
         id: row.id,
         project_id: projectId,
-        client_op_id: opId,
       },
       createdAt: now,
     } satisfies OfflineOutboxOp;
@@ -1399,12 +1380,10 @@ export async function offlineMoveTaskToProject(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const data = await habitat().call("task.moveToProject", {
       ...getCachedSubjectIdPayload(),
       id: resolvedTaskId,
       project_id: projectId,
-      client_op_id: opId,
     });
     if (found && found.projectId !== projectId) {
       await removeLocalItem(scope, found.projectId, found.item.id);
@@ -1421,5 +1400,5 @@ export async function offlineMoveTaskToProject(
 }
 
 export async function countProjectPendingOps(): Promise<number> {
-  return listOutboxOps(resolveOutboxScope(), MODULE_ID).then((ops) => ops.length);
+  return getModulePendingCount(resolveOutboxScope(), MODULE_ID);
 }

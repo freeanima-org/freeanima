@@ -9,6 +9,7 @@ import {
   resetOutboxOpForRetry,
   setOfflineOutboxBackendForTests,
   shouldAutoRetryOp,
+  subscribeOutboxChanges,
   updateOutboxOpError,
 } from "./offline-outbox.ts";
 
@@ -106,5 +107,32 @@ describe("offline-outbox", () => {
     expect(op?.lastError).toBeUndefined();
     expect(op?.attempts).toBe(0);
     expect(op?.syncStatus).toBeUndefined();
+  });
+
+  it("subscribeOutboxChanges notifies once per scope after debounce", async () => {
+    const events: string[] = [];
+    const unsub = subscribeOutboxChanges((event) => {
+      events.push(event.scope);
+    });
+    await enqueueOutboxOp("scope-a", {
+      id: "op-1",
+      moduleId: "diary",
+      method: "diary.create",
+      payload: {},
+      createdAt: "2026-01-01T00:00:00.000Z",
+    });
+    await enqueueOutboxOp("scope-a", {
+      id: "op-2",
+      moduleId: "diary",
+      method: "diary.patch",
+      payload: {},
+      createdAt: "2026-01-01T00:00:01.000Z",
+    });
+    await removeOutboxOp("scope-a", "op-1");
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    expect(events).toEqual(["scope-a"]);
+    unsub();
   });
 });

@@ -8,6 +8,7 @@ import {
   registerOfflineModule,
   registerOfflineModuleCap,
 } from "@freeanima/client/portal-sdk/offline-module-registry";
+import { getModulePendingCount } from "@freeanima/client/portal-sdk/offline-module-cap";
 import type { RpcModuleAdapter } from "@freeanima/client/portal-sdk/offline-module-types";
 import {
   enqueueOutboxOp,
@@ -16,6 +17,10 @@ import {
   resolveOutboxScope,
   type OfflineOutboxOp,
 } from "@freeanima/client/portal-sdk/offline-outbox";
+import {
+  mergeServerRowsKeepingPendingTemps,
+  preserveEmptyChildArrays,
+} from "@freeanima/client/portal-sdk/offline-list-merge";
 import {
   flushOfflineModule,
   recordFlushIdMapping,
@@ -172,23 +177,12 @@ async function mergeServerList(
   const local = await readLocalList(scope, subjectId);
   const localById = new Map(local.map((e) => [e.id, e]));
   // diary.list 故意不带 blocks（空数组=未加载）；勿覆盖本地已缓存的块
-  const withBlocks = serverItems.map((server) => {
-    const prev = localById.get(server.id);
-    if (!prev || server.blocks.length > 0 || prev.blocks.length === 0) return server;
-    return {
-      ...server,
-      blocks: prev.blocks.map((b) =>
-        b.parent_id === server.id ? b : { ...b, parent_id: server.id },
-      ),
-    };
-  });
+  const withBlocks = preserveEmptyChildArrays(serverItems, localById);
 
   const tempIds = await pendingTempEntryIds(scope);
-  if (tempIds.size === 0) return withBlocks;
-  const serverIds = new Set(withBlocks.map((e) => e.id));
-  const pendingTemps = local.filter((e) => tempIds.has(e.id) && !serverIds.has(e.id));
-  if (pendingTemps.length === 0) return withBlocks;
-  return [...pendingTemps, ...withBlocks].toSorted((a, b) => b.entry_at.localeCompare(a.entry_at));
+  return mergeServerRowsKeepingPendingTemps(withBlocks, local, tempIds, (rows) =>
+    rows.toSorted((a, b) => b.entry_at.localeCompare(a.entry_at)),
+  );
 }
 
 export async function reconcileServerDiaryList(
@@ -445,7 +439,6 @@ export async function offlineUpdateDiaryEntry(
       payload: {
         subject_id: subjectId,
         id: resolvedId,
-        client_op_id: opId,
         ...patch,
       },
       createdAt: now,
@@ -459,11 +452,9 @@ export async function offlineUpdateDiaryEntry(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const data = await habitat().call("diary.patch", {
       subject_id: subjectId,
       id: resolvedId,
-      client_op_id: opId,
       ...patch,
     });
     await upsertLocalEntry(scope, subjectId, data.item);
@@ -686,7 +677,6 @@ export async function offlineUpdateDiaryBlock(
       payload: {
         subject_id: subjectId,
         id: resolvedId,
-        client_op_id: opId,
         ...patch,
       },
       createdAt: now,
@@ -700,11 +690,9 @@ export async function offlineUpdateDiaryBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const data = await habitat().call("diary.blockPatch", {
       subject_id: subjectId,
       id: resolvedId,
-      client_op_id: opId,
       ...patch,
     });
     const entry = await findLocalEntry(scope, subjectId, localParent.id);
@@ -754,7 +742,7 @@ export async function offlineDeleteDiaryBlock(
       id: opId,
       moduleId: MODULE_ID,
       method: "diary.blockDelete",
-      payload: { subject_id: subjectId, id: blockId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: blockId },
       createdAt: now,
     });
     scheduleFlush(scope);
@@ -765,11 +753,9 @@ export async function offlineDeleteDiaryBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("diary.blockDelete", {
       subject_id: subjectId,
       id: blockId,
-      client_op_id: opId,
     });
     const entry = await findLocalEntry(scope, subjectId, parentId);
     if (entry) {
@@ -862,7 +848,7 @@ export async function offlineDeleteDiaryEntry(subjectId: number, id: number): Pr
       id: opId,
       moduleId: MODULE_ID,
       method: "diary.delete",
-      payload: { subject_id: subjectId, id: resolvedId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: resolvedId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
@@ -873,19 +859,18 @@ export async function offlineDeleteDiaryEntry(subjectId: number, id: number): Pr
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("diary.delete", {
       subject_id: subjectId,
       id: resolvedId,
-      client_op_id: opId,
     });
     await removeLocalEntry(scope, subjectId, resolvedId);
     if (resolvedId !== id) await removeLocalEntry(scope, subjectId, id);
   }, doOffline);
 }
 
+/** 仅未失败、未 stale 的待同步条数（与全局 toast 口径一致）。 */
 export async function countDiaryPendingOps(): Promise<number> {
-  return listOutboxOps(resolveOutboxScope(), MODULE_ID).then((ops) => ops.length);
+  return getModulePendingCount(resolveOutboxScope(), MODULE_ID);
 }
 
 export { resolveHabitatCacheScope };

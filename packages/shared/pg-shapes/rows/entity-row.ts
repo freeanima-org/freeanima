@@ -13,6 +13,8 @@ export type EntityRow = {
   summary: string;
   content: string;
   body: Record<string, unknown>;
+  /** 离线幂等键；null 表示未设置 */
+  client_op_id: string | null;
   pinned: boolean;
   reference_count: number;
   tag_ids: number[];

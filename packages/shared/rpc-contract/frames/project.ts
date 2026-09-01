@@ -58,7 +58,6 @@ export const projectfolderPatchInputSchema = z.object({
   name: z.string().min(1).optional(),
   parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectfolderPatchInput = z.infer<typeof projectfolderPatchInputSchema>;
 export const projectfolderPatchOutputSchema = z.object({ item: projectFolderRowSchema });
@@ -67,7 +66,6 @@ export type ProjectfolderPatchOutput = z.infer<typeof projectfolderPatchOutputSc
 export const projectfolderDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectfolderDeleteInput = z.infer<typeof projectfolderDeleteInputSchema>;
 export const projectfolderDeleteOutputSchema = z.object({ ok: z.literal(true) });
@@ -134,7 +132,6 @@ export const projectPatchInputSchema = z.object({
   sort_order: z.number().int().optional(),
   release_tasks: z.boolean().optional(),
   linked_diary_ids: z.array(z.number().int().positive()).optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectPatchInput = z.infer<typeof projectPatchInputSchema>;
 export const projectPatchOutputSchema = z.object({ item: projectRowSchema });
@@ -143,7 +140,6 @@ export type ProjectPatchOutput = z.infer<typeof projectPatchOutputSchema>;
 export const projectDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type ProjectDeleteInput = z.infer<typeof projectDeleteInputSchema>;
 export const projectDeleteOutputSchema = z.object({ ok: z.literal(true) });

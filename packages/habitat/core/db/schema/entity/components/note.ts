@@ -4,8 +4,6 @@ import { NOTE_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids
 
 export { NOTE_COMPONENT };
 
-export const noteBodySchema = z.object({
-  client_op_id: z.string().min(1).nullable().default(null),
-});
+export const noteBodySchema = z.object({});
 
 export type NoteBody = z.infer<typeof noteBodySchema>;

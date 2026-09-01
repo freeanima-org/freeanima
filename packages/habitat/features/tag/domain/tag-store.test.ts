@@ -21,6 +21,7 @@ function entityRow(
     summary: "",
     content: "",
     body,
+    client_op_id: null,
     pinned: false,
     reference_count: 0,
     tag_ids: opts?.tag_ids ?? [],
@@ -38,7 +39,7 @@ describe("tag-store setEntityTagIds", () => {
 
   test("rejects tagging a tag entity", async () => {
     spyOn(entityPg, "getEntity").mockResolvedValue(
-      entityRow(9, TAG_COMPONENT, { sort_order: 0, client_op_id: null }, "x"),
+      entityRow(9, TAG_COMPONENT, { sort_order: 0 }, "x"),
     );
     spyOn(entityPg, "assertEntityInWorld").mockResolvedValue(undefined);
     await expect(setEntityTagIds(1, 9, [])).rejects.toThrow(/cannot set tags on a tag/);
@@ -50,7 +51,7 @@ describe("tag-store setEntityTagIds", () => {
         return entityRow(10, TASK_ITEM_COMPONENT, { list_id: 1, status: "pending" }, "task");
       }
       if (id === 1 || id === 2) {
-        return entityRow(id, TAG_COMPONENT, { sort_order: 0, client_op_id: null }, `t${id}`);
+        return entityRow(id, TAG_COMPONENT, { sort_order: 0 }, `t${id}`);
       }
       return null;
     });

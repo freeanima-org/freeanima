@@ -69,6 +69,24 @@ function assertHealthInWorld(
   return existing.world_id === worldId;
 }
 
+async function findHealthByClientOpId(
+  worldId: number,
+  clientOpId: string,
+): Promise<HealthRow | null> {
+  const result = await searchEntities({
+    world_id: worldId,
+    primary_component: HEALTH_RECORD_COMPONENT,
+    filters: { client_op_id: clientOpId },
+    limit: 1,
+    mode: "filter_only",
+    include_count: false,
+  });
+  const row = result.results[0];
+  if (!row) return null;
+  const parsed = asHealthRecord(row);
+  return parsed ? toHealthRow(parsed) : null;
+}
+
 function normalizeBody(
   input: HealthCreateInput | HealthUpdateInput,
   existing?: HealthRecordBody,
@@ -103,8 +121,6 @@ function normalizeBody(
     doctor_name: input.doctor_name ?? existing?.doctor_name,
     follow_up_at: input.follow_up_at ?? existing?.follow_up_at,
     file_entity_ids: input.file_entity_ids ?? existing?.file_entity_ids ?? [],
-    client_op_id:
-      input.client_op_id !== undefined ? input.client_op_id : (existing?.client_op_id ?? null),
   };
 
   return body;
@@ -173,6 +189,10 @@ export async function createHealthRecord(
   worldId: number,
   input: HealthCreateInput,
 ): Promise<HealthRow> {
+  if (input.client_op_id) {
+    const existing = await findHealthByClientOpId(worldId, input.client_op_id);
+    if (existing) return existing;
+  }
   const body = normalizeBody(input);
   const title = input.title.trim();
   if (!title) throw new Error("title is required");
@@ -187,6 +207,7 @@ export async function createHealthRecord(
     summary,
     content: input.content?.trim() ?? "",
     body,
+    client_op_id: input.client_op_id ?? null,
   });
 
   const parsed = asHealthRecord(row);

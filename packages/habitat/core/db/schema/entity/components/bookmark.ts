@@ -20,7 +20,6 @@ export const bookmarkBodySchema = z.object({
   sort_order: z.number().int().optional(),
   /** 浏览器书签节点 id（字符串） */
   browser_id: z.string().min(1).nullable().optional(),
-  client_op_id: z.string().min(1).nullable().optional(),
 });
 
 export type BookmarkBody = z.infer<typeof bookmarkBodySchema>;

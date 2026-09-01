@@ -130,7 +130,7 @@ function buildPomodoroSessionBodyConditions(
     );
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -288,7 +288,7 @@ function buildTaskItemBodyConditions(
     );
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -349,7 +349,7 @@ function buildTaskOccurrenceBodyConditions(
     );
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -359,7 +359,7 @@ function buildTaskListBodyConditions(
 ): SQL[] {
   const conditions: SQL[] = [];
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -369,7 +369,7 @@ function buildProjectFolderBodyConditions(
 ): SQL[] {
   const conditions: SQL[] = [];
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -377,7 +377,7 @@ function buildProjectFolderBodyConditions(
 function buildProjectBodyConditions(filters: ReturnType<typeof parseProjectSearchFilters>): SQL[] {
   const conditions: SQL[] = [];
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   // 有 start_at，且与 [range_start, range_end] 相交：
   // start_at <= range_end AND COALESCE(end_at, start_at) >= range_start
@@ -403,7 +403,7 @@ function buildProjectBodyConditions(filters: ReturnType<typeof parseProjectSearc
 function buildTagBodyConditions(filters: ReturnType<typeof parseTagSearchFilters>): SQL[] {
   const conditions: SQL[] = [];
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -424,7 +424,7 @@ function buildDiaryEntryBodyConditions(
     );
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -432,7 +432,7 @@ function buildDiaryEntryBodyConditions(
 function buildNoteBodyConditions(filters: ReturnType<typeof parseNoteSearchFilters>): SQL[] {
   const conditions: SQL[] = [];
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -457,7 +457,7 @@ function buildCalendarEventBodyConditions(
     }
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -473,7 +473,7 @@ function buildContentBlockBodyConditions(
     conditions.push(sql`${entities.body}->>'block_type' = ${filters.block_type}`);
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   if (filters.conversation_id) {
     conditions.push(sql`${entities.body}->>'conversation_id' = ${filters.conversation_id}`);
@@ -596,7 +596,7 @@ function buildHealthBodyConditions(filters: ReturnType<typeof parseHealthSearchF
     conditions.push(sql`${entities.body}->>'profile_key' = ${filters.profile_key}`);
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }
@@ -619,7 +619,7 @@ function buildBookmarkBodyConditions(
     conditions.push(sql`${entities.body}->>'parent_id' = ${String(filters.parent_id)}`);
   }
   if (filters.client_op_id) {
-    conditions.push(sql`${entities.body}->>'client_op_id' = ${filters.client_op_id}`);
+    conditions.push(sql`${entities.client_op_id} = ${filters.client_op_id}`);
   }
   return conditions;
 }

@@ -151,7 +151,6 @@ export const objectivePatchInputSchema = z.object({
   completion: objectiveCompletionSchema.optional(),
   links: z.array(objectiveLinkSchema).optional(),
   sort_order: z.number().int().optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type ObjectivePatchInput = z.infer<typeof objectivePatchInputSchema>;
 export const objectivePatchOutputSchema = z.object({ item: objectiveRowSchema });
@@ -160,7 +159,6 @@ export type ObjectivePatchOutput = z.infer<typeof objectivePatchOutputSchema>;
 export const objectiveDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type ObjectiveDeleteInput = z.infer<typeof objectiveDeleteInputSchema>;
 export const objectiveDeleteOutputSchema = z.object({ ok: z.literal(true) });
@@ -170,7 +168,6 @@ export const objectiveLinkInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   link: objectiveLinkSchema,
-  client_op_id: z.string().min(1).optional(),
 });
 export type ObjectiveLinkInput = z.infer<typeof objectiveLinkInputSchema>;
 export const objectiveLinkOutputSchema = z.object({ item: objectiveRowSchema });
@@ -180,7 +177,6 @@ export const objectiveUnlinkInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
   link: objectiveLinkSchema,
-  client_op_id: z.string().min(1).optional(),
 });
 export type ObjectiveUnlinkInput = z.infer<typeof objectiveUnlinkInputSchema>;
 export const objectiveUnlinkOutputSchema = z.object({ item: objectiveRowSchema });

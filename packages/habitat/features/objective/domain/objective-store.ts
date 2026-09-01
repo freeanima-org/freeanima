@@ -112,7 +112,6 @@ function buildBody(input: {
   completion: ObjectiveCompletion;
   links: ObjectiveLink[];
   sort_order: number;
-  client_op_id: string | null;
 }): ObjectiveBody {
   return {
     parent_id: input.parent_id,
@@ -122,7 +121,6 @@ function buildBody(input: {
     completion: input.completion,
     links: input.links,
     sort_order: input.sort_order,
-    client_op_id: input.client_op_id,
   };
 }
 
@@ -210,7 +208,6 @@ export async function createObjective(
     completion,
     links: input.links ?? [],
     sort_order: input.sort_order ?? 0,
-    client_op_id: input.client_op_id ?? null,
   });
 
   const row = await createEntity({
@@ -222,6 +219,7 @@ export async function createObjective(
     summary: "",
     content: input.content?.trim() ?? "",
     body,
+    client_op_id: input.client_op_id ?? null,
   });
   const parsed = asObjective(row);
   if (!parsed) throw new Error("objective create parse failed");
@@ -259,8 +257,6 @@ export async function updateObjective(
     completion,
     links: input.links !== undefined ? input.links : (current.links ?? []),
     sort_order: input.sort_order !== undefined ? input.sort_order : (current.sort_order ?? 0),
-    client_op_id:
-      input.client_op_id !== undefined ? input.client_op_id : (current.client_op_id ?? null),
   });
 
   const updated = await updateEntity(

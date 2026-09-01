@@ -223,7 +223,6 @@ export async function createDiaryEntry(
   const tagIds = await resolveCreateTagIds(ctx.worldId, input);
   const body: DiaryEntryBody = {
     entry_at: entryAt,
-    client_op_id: input.client_op_id ?? null,
   };
 
   const row = await createEntity({
@@ -236,6 +235,7 @@ export async function createDiaryEntry(
     content: "",
     tag_ids: tagIds,
     body,
+    client_op_id: input.client_op_id ?? null,
   });
 
   const parsed = asDiaryEntry(row);

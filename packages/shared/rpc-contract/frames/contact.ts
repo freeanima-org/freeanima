@@ -122,7 +122,6 @@ export const contactPatchInputSchema = z.object({
   title: z.string().min(1).optional(),
   summary: z.string().optional(),
   ...contactChannelsInput,
-  client_op_id: z.string().min(1).optional(),
 });
 export type ContactPatchInput = z.infer<typeof contactPatchInputSchema>;
 export const contactPatchOutputSchema = z.object({ item: contactRowSchema });
@@ -131,7 +130,6 @@ export type ContactPatchOutput = z.infer<typeof contactPatchOutputSchema>;
 export const contactDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type ContactDeleteInput = z.infer<typeof contactDeleteInputSchema>;
 export const contactDeleteOutputSchema = z.object({ ok: z.literal(true) });

@@ -14,7 +14,6 @@ export const projectBodySchema = z.object({
   product_tag: z.string().optional(),
   sort_order: z.number().int().optional(),
   linked_diary_ids: z.array(z.number().int().positive()).default([]),
-  client_op_id: z.string().min(1).nullable().default(null),
 });
 
 export type ProjectBody = z.infer<typeof projectBodySchema>;

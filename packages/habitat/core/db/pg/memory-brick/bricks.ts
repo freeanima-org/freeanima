@@ -48,6 +48,7 @@ function mapBrick(row: {
     content: row.content,
     summary: row.summary,
     body: row.body,
+    client_op_id: null,
     pinned: row.pinned,
     reference_count: row.reference_count,
     tag_ids: [],

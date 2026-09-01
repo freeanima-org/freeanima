@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "rea
 import { FileText, Plus, Search, Trash2 } from "lucide-react";
 import { useUserSubjectId, useShellQuickIdSet } from "@freeanima/client/portal-sdk/react.tsx";
 import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
-import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { useIdMappingRemap } from "@freeanima/client/portal-sdk/use-id-mapping-remap";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
 import { Button, Input, Spinner, Textarea } from "@freeanima/ui-kit";
 import { EmptyState, StatusAlert, PullToRefresh } from "@freeanima/ui-kit/composite";
@@ -263,52 +263,49 @@ export function NoteApp(): JSX.Element {
     registerNoteOfflineModule();
   }, []);
 
-  useEffect(() => {
-    return subscribeIdMappings((event) => {
-      if (event.moduleId !== "note") return;
-      const { tempId, serverId } = event;
-      setItems((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id === tempId) {
-            changed = true;
-            return {
-              ...row,
-              id: serverId,
-              blocks: row.blocks.map((b) => ({ ...b, parent_id: serverId })),
-            };
-          }
-          const blocks = row.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b));
-          if (blocks.some((b, i) => b.id !== row.blocks[i]?.id)) {
-            changed = true;
-            return { ...row, blocks };
-          }
-          return row;
-        });
-        return changed ? next : prev;
-      });
-      if (selectedId === tempId) setSelectedId(serverId);
-      setDetail((prev) => {
-        if (!prev) return prev;
-        if (prev.id === tempId) {
+  useIdMappingRemap("note", (event) => {
+    const { tempId, serverId } = event;
+    setItems((prev) => {
+      let changed = false;
+      const next = prev.map((row) => {
+        if (row.id === tempId) {
+          changed = true;
           return {
-            ...prev,
+            ...row,
             id: serverId,
-            blocks: prev.blocks.map((b) =>
-              b.id === tempId
-                ? { ...b, id: serverId, parent_id: serverId }
-                : { ...b, parent_id: serverId },
-            ),
+            blocks: row.blocks.map((b) => ({ ...b, parent_id: serverId })),
           };
         }
-        if (!prev.blocks.some((b) => b.id === tempId)) return prev;
+        const blocks = row.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b));
+        if (blocks.some((b, i) => b.id !== row.blocks[i]?.id)) {
+          changed = true;
+          return { ...row, blocks };
+        }
+        return row;
+      });
+      return changed ? next : prev;
+    });
+    if (selectedId === tempId) setSelectedId(serverId);
+    setDetail((prev) => {
+      if (!prev) return prev;
+      if (prev.id === tempId) {
         return {
           ...prev,
-          blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
+          id: serverId,
+          blocks: prev.blocks.map((b) =>
+            b.id === tempId
+              ? { ...b, id: serverId, parent_id: serverId }
+              : { ...b, parent_id: serverId },
+          ),
         };
-      });
+      }
+      if (!prev.blocks.some((b) => b.id === tempId)) return prev;
+      return {
+        ...prev,
+        blocks: prev.blocks.map((b) => (b.id === tempId ? { ...b, id: serverId } : b)),
+      };
     });
-  }, [selectedId, setSelectedId]);
+  });
 
   const loadList = useCallback(async () => {
     setError("");

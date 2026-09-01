@@ -5,7 +5,7 @@ import {
   launchPomodoroForTask,
 } from "@freeanima/client/portal-sdk";
 import type { TaskModuleSelection } from "@freeanima/client/portal-sdk";
-import { subscribeIdMappings } from "@freeanima/client/portal-sdk/offline-id-map";
+import { useIdMappingRemap } from "@freeanima/client/portal-sdk/use-id-mapping-remap";
 import { usePortalRead, invalidatePortalReads } from "@freeanima/client/portal-sdk/portal-query";
 import {
   useUserSubjectId,
@@ -532,84 +532,81 @@ export function TaskApp() {
     registerTaskOfflineModule();
   }, []);
 
-  useEffect(() => {
-    return subscribeIdMappings((event) => {
-      if (event.moduleId !== "task") return;
-      const { tempId, serverId } = event;
+  useIdMappingRemap("task", (event) => {
+    const { tempId, serverId } = event;
 
-      const remapId = (id: number) => (id === tempId ? serverId : id);
+    const remapId = (id: number) => (id === tempId ? serverId : id);
 
-      setLists((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id !== tempId && row.parent_id !== tempId) return row;
-          changed = true;
-          return {
-            ...row,
-            id: remapId(row.id),
-            parent_id: row.parent_id === tempId ? serverId : row.parent_id,
-          };
-        });
-        return changed ? next : prev;
-      });
-
-      setItems((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id !== tempId && row.list_id !== tempId) return row;
-          changed = true;
-          return {
-            ...row,
-            id: remapId(row.id),
-            list_id: row.list_id === tempId ? serverId : row.list_id,
-          };
-        });
-        return changed ? next : prev;
-      });
-
-      setSearchHits((prev) => {
-        let changed = false;
-        const next = prev.map((row) => {
-          if (row.id !== tempId && row.list_id !== tempId) return row;
-          changed = true;
-          return {
-            ...row,
-            id: remapId(row.id),
-            list_id: row.list_id === tempId ? serverId : row.list_id,
-          };
-        });
-        return changed ? next : prev;
-      });
-
-      setDetailItem((prev) => {
-        if (!prev) return prev;
-        if (prev.id !== tempId && prev.list_id !== tempId) return prev;
+    setLists((prev) => {
+      let changed = false;
+      const next = prev.map((row) => {
+        if (row.id !== tempId && row.parent_id !== tempId) return row;
+        changed = true;
         return {
-          ...prev,
-          id: remapId(prev.id),
-          list_id: prev.list_id === tempId ? serverId : prev.list_id,
+          ...row,
+          id: remapId(row.id),
+          parent_id: row.parent_id === tempId ? serverId : row.parent_id,
         };
       });
-
-      setSelectedItemIds((prev) => {
-        if (!prev.has(tempId)) return prev;
-        const next = new Set(prev);
-        next.delete(tempId);
-        next.add(serverId);
-        return next;
-      });
-
-      setSelectedFolderId((prev) => (prev === tempId ? serverId : prev));
-
-      setSelection((prev) => {
-        if (prev == null || prev.kind !== "list" || prev.id !== tempId) return prev;
-        return { ...prev, id: serverId };
-      });
-
-      setMovePickerItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
-      setMoveProjectItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
+      return changed ? next : prev;
     });
-  }, [setDetailItem]);
+
+    setItems((prev) => {
+      let changed = false;
+      const next = prev.map((row) => {
+        if (row.id !== tempId && row.list_id !== tempId) return row;
+        changed = true;
+        return {
+          ...row,
+          id: remapId(row.id),
+          list_id: row.list_id === tempId ? serverId : row.list_id,
+        };
+      });
+      return changed ? next : prev;
+    });
+
+    setSearchHits((prev) => {
+      let changed = false;
+      const next = prev.map((row) => {
+        if (row.id !== tempId && row.list_id !== tempId) return row;
+        changed = true;
+        return {
+          ...row,
+          id: remapId(row.id),
+          list_id: row.list_id === tempId ? serverId : row.list_id,
+        };
+      });
+      return changed ? next : prev;
+    });
+
+    setDetailItem((prev) => {
+      if (!prev) return prev;
+      if (prev.id !== tempId && prev.list_id !== tempId) return prev;
+      return {
+        ...prev,
+        id: remapId(prev.id),
+        list_id: prev.list_id === tempId ? serverId : prev.list_id,
+      };
+    });
+
+    setSelectedItemIds((prev) => {
+      if (!prev.has(tempId)) return prev;
+      const next = new Set(prev);
+      next.delete(tempId);
+      next.add(serverId);
+      return next;
+    });
+
+    setSelectedFolderId((prev) => (prev === tempId ? serverId : prev));
+
+    setSelection((prev) => {
+      if (prev == null || prev.kind !== "list" || prev.id !== tempId) return prev;
+      return { ...prev, id: serverId };
+    });
+
+    setMovePickerItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
+    setMoveProjectItemIds((prev) => (prev?.includes(tempId) ? prev.map(remapId) : prev));
+  });
 
   useEffect(() => {
     itemsLoadGenRef.current += 1;

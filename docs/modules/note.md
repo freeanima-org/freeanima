@@ -28,7 +28,7 @@ title: 笔记本
 
 **容器**（`note`）：
 
-- `body.client_op_id` — 可选幂等键
+- `entities.client_op_id` — 可选幂等键（顶层列；仅 create）
 - `tag_ids` — 可选标签（顶层 `entities.tag_ids`）
 - `title` / `summary` — entity 列（主题组织主靠 title）
 - 容器 **`content` 不用于正文**

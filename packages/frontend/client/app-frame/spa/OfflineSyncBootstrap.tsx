@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { buildHeadlessChatStreamFlushContext } from "@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts";
 import { updateChatSendPayload } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
-import {
-  getGlobalOutboxSummary,
-  type GlobalOutboxSummary,
-} from "@freeanima/client/portal-sdk/offline-module-cap";
+import type { GlobalOutboxSummary } from "@freeanima/client/portal-sdk/offline-module-cap";
 import { getOfflineModule } from "@freeanima/client/portal-sdk/offline-module-registry";
 import {
   isStaleOutboxOp,
@@ -21,6 +18,7 @@ import {
 } from "@freeanima/client/portal-sdk/offline-sync";
 import { isHabitatFetchAvailable } from "@freeanima/client/portal-sdk/habitat-fetch-gate";
 import { subscribeLocalPrefer } from "@freeanima/client/portal-sdk/local-prefer";
+import { useGlobalOutboxSummary } from "@freeanima/client/portal-sdk/use-outbox-summary";
 import { reconnectHabitat, useHabitatConnection } from "@freeanima/client/portal-sdk/react.tsx";
 import type { StreamFlushContext } from "@freeanima/client/portal-sdk/offline-module-types";
 import { dismissShellToast, showShellToast, SHELL_TOAST_IDS } from "@freeanima/ui-kit/composite";
@@ -93,40 +91,21 @@ function buildIssueDescription(issues: OfflineOutboxOp[]): string | undefined {
 
 export function OfflineSyncBootstrap(): null {
   const habitatConnection = useHabitatConnection();
-  const [summary, setSummary] = useState<GlobalOutboxSummary>({
-    pending: 0,
-    failed: 0,
-    stale: 0,
-    ops: [],
-  });
+  const summary = useGlobalOutboxSummary();
   const [busy, setBusy] = useState(false);
-
-  const refreshSummary = useCallback(() => {
-    void getGlobalOutboxSummary(resolveOutboxScope()).then(setSummary);
-  }, []);
 
   useEffect(() => {
     registerAllOfflineModules();
   }, []);
 
-  useEffect(() => {
-    refreshSummary();
-    const timer = window.setInterval(refreshSummary, 3000);
-    return () => clearInterval(timer);
-  }, [refreshSummary]);
-
-  const runFlush = useCallback(
-    async (opts?: { forceRetry?: boolean; forceTail?: boolean }) => {
-      if (!isHabitatFetchAvailable()) return;
-      const scope = resolveOutboxScope();
-      await flushAllOfflineModules(scope, {
-        ...resolveFlushOptions(opts?.forceTail ?? false),
-        ...(opts?.forceRetry ? { forceRetry: true } : {}),
-      });
-      refreshSummary();
-    },
-    [refreshSummary],
-  );
+  const runFlush = useCallback(async (opts?: { forceRetry?: boolean; forceTail?: boolean }) => {
+    if (!isHabitatFetchAvailable()) return;
+    const scope = resolveOutboxScope();
+    await flushAllOfflineModules(scope, {
+      ...resolveFlushOptions(opts?.forceTail ?? false),
+      ...(opts?.forceRetry ? { forceRetry: true } : {}),
+    });
+  }, []);
 
   useEffect(() => {
     const flush = () => {
@@ -160,45 +139,37 @@ export function OfflineSyncBootstrap(): null {
     }
   }, [runFlush, summary]);
 
-  const handleRetryOp = useCallback(
-    async (op: OfflineOutboxOp) => {
-      setBusy(true);
-      try {
-        const scope = resolveOutboxScope();
-        const forceTail = op.moduleId === "chat" && isStaleOutboxOp(op);
-        await resetOutboxOpForRetry(scope, op.id);
-        if (forceTail) {
-          await updateChatSendPayload(op.id, { force_tail: true }, scope);
-        }
-        await flushOfflineModule(op.moduleId, scope, {
-          ...resolveFlushOptions(forceTail),
-          forceRetry: true,
-        });
-        refreshSummary();
-      } finally {
-        setBusy(false);
+  const handleRetryOp = useCallback(async (op: OfflineOutboxOp) => {
+    setBusy(true);
+    try {
+      const scope = resolveOutboxScope();
+      const forceTail = op.moduleId === "chat" && isStaleOutboxOp(op);
+      await resetOutboxOpForRetry(scope, op.id);
+      if (forceTail) {
+        await updateChatSendPayload(op.id, { force_tail: true }, scope);
       }
-    },
-    [refreshSummary],
-  );
+      await flushOfflineModule(op.moduleId, scope, {
+        ...resolveFlushOptions(forceTail),
+        forceRetry: true,
+      });
+    } finally {
+      setBusy(false);
+    }
+  }, []);
 
-  const handleDiscardOp = useCallback(
-    async (op: OfflineOutboxOp) => {
-      setBusy(true);
-      try {
-        const scope = resolveOutboxScope();
-        await removeOutboxOp(scope, op.id);
-        if (isHabitatFetchAvailable()) {
-          const adapter = getOfflineModule(op.moduleId);
-          await adapter?.refreshAll?.(scope);
-        }
-        refreshSummary();
-      } finally {
-        setBusy(false);
+  const handleDiscardOp = useCallback(async (op: OfflineOutboxOp) => {
+    setBusy(true);
+    try {
+      const scope = resolveOutboxScope();
+      await removeOutboxOp(scope, op.id);
+      if (isHabitatFetchAvailable()) {
+        const adapter = getOfflineModule(op.moduleId);
+        await adapter?.refreshAll?.(scope);
       }
-    },
-    [refreshSummary],
-  );
+    } finally {
+      setBusy(false);
+    }
+  }, []);
 
   const issues = problemOps(summary);
   const showToast = shouldShowOfflineSyncToast(summary, habitatConnection);

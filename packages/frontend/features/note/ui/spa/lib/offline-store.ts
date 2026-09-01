@@ -8,6 +8,7 @@ import {
   registerOfflineModule,
   registerOfflineModuleCap,
 } from "@freeanima/client/portal-sdk/offline-module-registry";
+import { getModulePendingCount } from "@freeanima/client/portal-sdk/offline-module-cap";
 import type { RpcModuleAdapter } from "@freeanima/client/portal-sdk/offline-module-types";
 import {
   enqueueOutboxOp,
@@ -16,6 +17,10 @@ import {
   resolveOutboxScope,
   type OfflineOutboxOp,
 } from "@freeanima/client/portal-sdk/offline-outbox";
+import {
+  mergeServerRowsKeepingPendingTemps,
+  preserveEmptyChildArrays,
+} from "@freeanima/client/portal-sdk/offline-list-merge";
 import {
   flushOfflineModule,
   recordFlushIdMapping,
@@ -179,23 +184,10 @@ async function mergeServerList(
   const local = await readLocalList(scope, subjectId);
   const localById = new Map(local.map((e) => [e.id, e]));
   // note.list 故意不带 blocks（空数组=未加载）；勿覆盖本地已缓存的块
-  const withBlocks = serverItems.map((server) => {
-    const prev = localById.get(server.id);
-    if (!prev || server.blocks.length > 0 || prev.blocks.length === 0) return server;
-    return {
-      ...server,
-      blocks: prev.blocks.map((b) =>
-        b.parent_id === server.id ? b : { ...b, parent_id: server.id },
-      ),
-    };
-  });
+  const withBlocks = preserveEmptyChildArrays(serverItems, localById);
 
   const tempIds = await pendingTempNoteIds(scope);
-  if (tempIds.size === 0) return withBlocks;
-  const serverIds = new Set(withBlocks.map((e) => e.id));
-  const pendingTemps = local.filter((e) => tempIds.has(e.id) && !serverIds.has(e.id));
-  if (pendingTemps.length === 0) return withBlocks;
-  return sortNotes([...pendingTemps, ...withBlocks]);
+  return mergeServerRowsKeepingPendingTemps(withBlocks, local, tempIds, sortNotes);
 }
 
 export async function reconcileServerNoteList(
@@ -430,7 +422,6 @@ export async function offlineUpdateNote(
       payload: {
         subject_id: subjectId,
         id: resolvedId,
-        client_op_id: opId,
         ...patch,
       },
       createdAt: now,
@@ -444,11 +435,9 @@ export async function offlineUpdateNote(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const data = await habitat().call("note.patch", {
       subject_id: subjectId,
       id: resolvedId,
-      client_op_id: opId,
       ...patch,
     });
     await upsertLocalNote(scope, subjectId, data.item);
@@ -486,7 +475,7 @@ export async function offlineDeleteNote(subjectId: number, id: number): Promise<
       id: opId,
       moduleId: MODULE_ID,
       method: "note.delete",
-      payload: { subject_id: subjectId, id: resolvedId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: resolvedId },
       createdAt: new Date().toISOString(),
     });
     scheduleFlush(scope);
@@ -497,11 +486,9 @@ export async function offlineDeleteNote(subjectId: number, id: number): Promise<
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("note.delete", {
       subject_id: subjectId,
       id: resolvedId,
-      client_op_id: opId,
     });
     await removeLocalNote(scope, subjectId, resolvedId);
     if (resolvedId !== id) await removeLocalNote(scope, subjectId, id);
@@ -647,7 +634,6 @@ export async function offlineUpdateNoteBlock(
       payload: {
         subject_id: subjectId,
         id: resolvedId,
-        client_op_id: opId,
         ...patch,
       },
       createdAt: now,
@@ -661,11 +647,9 @@ export async function offlineUpdateNoteBlock(
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     const data = await habitat().call("note.blockPatch", {
       subject_id: subjectId,
       id: resolvedId,
-      client_op_id: opId,
       ...patch,
     });
     const note = await findLocalNote(scope, subjectId, localParent.id);
@@ -720,7 +704,7 @@ export async function offlineDeleteNoteBlock(subjectId: number, blockId: number)
       id: opId,
       moduleId: MODULE_ID,
       method: "note.blockDelete",
-      payload: { subject_id: subjectId, id: resolvedId, client_op_id: opId },
+      payload: { subject_id: subjectId, id: resolvedId },
       createdAt: now,
     });
     scheduleFlush(scope);
@@ -731,11 +715,9 @@ export async function offlineDeleteNoteBlock(subjectId: number, blockId: number)
   }
 
   return preferOnlineWrite(async () => {
-    const opId = randomPublicId();
     await habitat().call("note.blockDelete", {
       subject_id: subjectId,
       id: resolvedId,
-      client_op_id: opId,
     });
     const note = await findLocalNote(scope, subjectId, existing.id);
     if (note) {
@@ -749,7 +731,7 @@ export async function offlineDeleteNoteBlock(subjectId: number, blockId: number)
 }
 
 export async function countNotePendingOps(): Promise<number> {
-  return listOutboxOps(resolveOutboxScope(), MODULE_ID).then((ops) => ops.length);
+  return getModulePendingCount(resolveOutboxScope(), MODULE_ID);
 }
 
 export { resolveHabitatCacheScope };

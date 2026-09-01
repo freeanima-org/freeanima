@@ -74,7 +74,6 @@ export const bookmarkPatchInputSchema = z.object({
   parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
   browser_id: z.string().min(1).nullable().optional(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type BookmarkPatchInput = z.infer<typeof bookmarkPatchInputSchema>;
 export const bookmarkPatchOutputSchema = z.object({ item: bookmarkRowSchema });
@@ -83,7 +82,6 @@ export type BookmarkPatchOutput = z.infer<typeof bookmarkPatchOutputSchema>;
 export const bookmarkDeleteInputSchema = z.object({
   subject_id: z.number().int().positive(),
   id: z.number().int().positive(),
-  client_op_id: z.string().min(1).optional(),
 });
 export type BookmarkDeleteInput = z.infer<typeof bookmarkDeleteInputSchema>;
 export const bookmarkDeleteOutputSchema = z.object({ ok: z.literal(true) });
@@ -99,7 +97,7 @@ export const bookmarkUpsertItemSchema = z.object({
   parent_id: z.number().int().positive().nullable().optional(),
   sort_order: z.number().int().optional(),
   browser_id: z.string().min(1),
-  client_op_id: z.string().min(1).optional(),
+
   /** 软删：扩展侧浏览器已删除 */
   deleted: z.boolean().optional(),
 });

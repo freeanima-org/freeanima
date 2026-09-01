@@ -48,7 +48,7 @@ metric_auto          可自动统计
 
 ## `client_op_id`
 
-可选离线幂等键：`string`（非强制 UUID），存 **`body.client_op_id`**；写 RPC 亦可传入。见 [`offline-platform.md`](../aspects/offline-platform.md)。
+可选离线幂等键：`string`（非强制 UUID），存 **`entities.client_op_id`**；仅 create 写 RPC 传入。见 [`offline-platform.md`](../aspects/offline-platform.md)。
 
 ## 数据模型
 
@@ -58,7 +58,8 @@ metric_auto          可自动统计
 | body   | `parent_id`                      | 嵌套；防环            |
 | body   | `status` / `start_at` / `end_at` | 生命周期与可选周期    |
 | body   | `completion` / `links`           | 完成标准；导航链接    |
-| body   | `sort_order` / `client_op_id`    | 排序；幂等            |
+| body   | `sort_order`                     | 排序                  |
+| 顶层列 | `client_op_id`                   | 离线幂等              |
 
 删除目标时**一并软删**全部子孙目标。链接目标不删执行实体。
 

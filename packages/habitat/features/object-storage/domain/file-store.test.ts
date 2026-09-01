@@ -68,6 +68,7 @@ function objectFileEntity(partial: {
       size: partial.size ?? 3,
       mime_type: "application/octet-stream",
     },
+    client_op_id: null,
     tag_ids: [],
     pinned: false,
     reference_count: 0,

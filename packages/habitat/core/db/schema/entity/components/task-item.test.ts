@@ -9,7 +9,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      client_op_id: null,
     });
     expect(parsed.success).toBe(true);
     if (parsed.success) {
@@ -24,7 +23,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: 10,
       status: "pending",
       priority: "none",
-      client_op_id: null,
     });
     expect(parsed.success).toBe(true);
     if (parsed.success) {
@@ -39,7 +37,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: 10,
       status: "pending",
       priority: "none",
-      client_op_id: null,
     });
     expect(parsed.success).toBe(true);
     if (parsed.success) {
@@ -54,7 +51,6 @@ describe("taskItemBodySchema ownership XOR", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      client_op_id: null,
     });
     expect(parsed.success).toBe(false);
   });
@@ -67,7 +63,7 @@ describe("taskItemBodySchema 计划 / deadline / 提醒", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      client_op_id: null,
+
       due_at: null,
       start_at: null,
       end_at: null,
@@ -94,7 +90,7 @@ describe("taskItemBodySchema 计划 / deadline / 提醒", () => {
       project_id: 10,
       status: "pending",
       priority: "none",
-      client_op_id: null,
+
       due_at: "2026-08-01T09:00:00+08:00",
       reminders: [{ at: "2026-08-01T08:00:00+08:00", anchor: "due" }],
     });
@@ -111,7 +107,7 @@ describe("taskItemBodySchema 计划 / deadline / 提醒", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      client_op_id: null,
+
       start_at: "2026-08-01T08:00:00+08:00",
       end_at: null,
       due_at: "2026-08-05T18:00:00+08:00",
@@ -129,7 +125,7 @@ describe("taskItemBodySchema 计划 / deadline / 提醒", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      client_op_id: null,
+
       start_at: "2026-08-02T09:00:00+08:00",
       end_at: "2026-08-01T09:00:00+08:00",
     });
@@ -142,7 +138,7 @@ describe("taskItemBodySchema 计划 / deadline / 提醒", () => {
       project_id: 10,
       status: "pending",
       priority: "none",
-      client_op_id: null,
+
       due_at: "2026-08-10T18:00:00+08:00",
       end_at: null,
       reminders: [{ at: "2026-08-10T09:00:00+08:00", anchor: "due" }],
@@ -154,7 +150,7 @@ describe("taskItemBodySchema 计划 / deadline / 提醒", () => {
       project_id: 10,
       status: "pending",
       priority: "none",
-      client_op_id: null,
+
       due_at: "2026-08-10T18:00:00+08:00",
       end_at: "2026-08-10T18:00:00+08:00",
       recurrence: {
@@ -178,7 +174,7 @@ describe("taskItemBodySchema 计划 / deadline / 提醒", () => {
       project_id: null,
       status: "pending",
       priority: "none",
-      client_op_id: null,
+
       start_at: "2026-08-01T08:00:00+08:00",
       end_at: "2026-08-01T09:00:00+08:00",
       due_at: "2026-08-05T18:00:00+08:00",

@@ -19,6 +19,7 @@ describe("listSmartListsMerged", () => {
         content: "",
         summary: "",
         body: { sort_order: 20, filters: { status: "pending", priority: "high" } },
+        client_op_id: null,
         pinned: false,
         reference_count: 0,
         tag_ids: [],
