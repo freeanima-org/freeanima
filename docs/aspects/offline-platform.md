@@ -90,6 +90,8 @@ FreeAnima 卫星壳离线能力按**读/写能力**划分（勿再使用 Tier �
 
 Outbox 状态：portal-sdk `subscribeOutboxChanges` + `useGlobalOutboxSummary` / `useModuleOutboxSummary`（事件驱动，无轮询）。
 
+只读 **Outbox Devtools**（`OfflineOutboxDevtools`）：展示 scope、pending/failed/stale 与各 op id；Vite DEV 默认可用，生产经设置「调试 → 离线 Outbox 调试面板」或 `localStorage freeanima.debug.offlineOutboxDevtools=1`。不提供写操作（重试/丢弃仍走同步 toast）。
+
 ## Temp id 生命周期契约（CRUD outbox）
 
 create flush 成功后，本地世界里不得再以「裸 temp id」作为查找键：

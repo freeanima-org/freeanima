@@ -1,11 +1,16 @@
 import {
   COMPANION_SHELL_SCOPE,
+  createDebugSettingsStore,
   createScopedSettingsStore,
   HABITAT_SETTINGS_SCOPE,
   parseHabitatClientSettings,
   type SettingsStore,
 } from "@freeanima/client/portal-sdk/settings";
-import { normalizeShellClientConfig, type ShellClientConfig } from "@freeanima/client/portal-sdk";
+import {
+  normalizeShellClientConfig,
+  type ShellClientConfig,
+  type ShellDebugConfig,
+} from "@freeanima/client/portal-sdk";
 import { isRecord } from "@freeanima/shared/util";
 
 import { createDesktopScopedBackend, testScopedSettings } from "./settings-ipc-backend.ts";
@@ -18,6 +23,7 @@ export type DesktopGeneralSettings = ShellClientConfig & {
 export type DesktopSettingsStores = {
   habitat: SettingsStore<DesktopGeneralSettings>;
   companionShell: SettingsStore<CompanionShellSettings>;
+  debug: SettingsStore<ShellDebugConfig>;
 };
 
 function parseDesktopGeneralSettings(raw: unknown): DesktopGeneralSettings {
@@ -56,5 +62,6 @@ export function createDesktopSettingsStores(): DesktopSettingsStores {
       parseLoad: parseCompanionShellSettings,
       normalizeSave: (value) => ({ visible: value.visible }),
     }),
+    debug: createDebugSettingsStore(backend),
   };
 }

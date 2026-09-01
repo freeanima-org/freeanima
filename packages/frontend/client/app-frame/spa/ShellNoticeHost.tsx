@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Toaster } from "@freeanima/ui-kit/components/ui/sonner.tsx";
 
+import { OfflineOutboxDevtools } from "./OfflineOutboxDevtools.tsx";
 import { OfflineSyncBootstrap } from "./OfflineSyncBootstrap.tsx";
 import { ShellConnectivityBar } from "./ShellConnectivityBar.tsx";
 import { ShellUpdateBanner } from "./ShellUpdateBanner.tsx";
@@ -11,6 +12,7 @@ export function ShellNoticeWatchers(): ReactNode {
       <ShellConnectivityBar />
       <ShellUpdateBanner />
       <OfflineSyncBootstrap />
+      <OfflineOutboxDevtools />
     </>
   );
 }
