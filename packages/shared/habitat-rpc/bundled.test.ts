@@ -1,14 +1,19 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import {
   getBundledHabitatRpcClient,
   getHabitatRpcConnectionState,
+  getInitialHabitatRpcConnectionStateForUi,
   resetBundledHabitatRpcClientForTests,
   subscribeHabitatRpcConnectionState,
   type HabitatRpcConnectionState,
 } from "./bundled-browser.ts";
 
 describe("subscribeHabitatRpcConnectionState", () => {
+  beforeEach(() => {
+    resetBundledHabitatRpcClientForTests();
+  });
+
   afterEach(() => {
     resetBundledHabitatRpcClientForTests();
     delete (globalThis as { window?: Window & { portalShell?: unknown } }).window;
@@ -54,5 +59,22 @@ describe("subscribeHabitatRpcConnectionState", () => {
     expect(legacy.length).toBeGreaterThanOrEqual(1);
     expect(subscribed.length).toBeGreaterThanOrEqual(1);
     unsub();
+  });
+});
+
+describe("getInitialHabitatRpcConnectionStateForUi", () => {
+  afterEach(() => {
+    resetBundledHabitatRpcClientForTests();
+    delete (globalThis as { window?: Window & { portalShell?: unknown } }).window;
+  });
+
+  test("无 token 时首帧为 disconnected", () => {
+    (globalThis as { window?: Window }).window = {
+      portalShell: undefined,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => true,
+    } as unknown as Window;
+    expect(getInitialHabitatRpcConnectionStateForUi()).toBe("disconnected");
   });
 });

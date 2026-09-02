@@ -9,6 +9,7 @@ export type { HabitatRpcConnectionState as HabitatConnectionState };
 export {
   subscribeHabitatRpcConnectionState,
   getHabitatRpcConnectionState,
+  getInitialHabitatRpcConnectionStateForUi,
 } from "@freeanima/shared/habitat-rpc/bundled-browser.ts";
 
 export async function reconnectHabitat(

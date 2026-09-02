@@ -162,7 +162,7 @@ export async function testHabitatHealthConnection(
     throw new Error("栖息地可达，但认证失败：请检查 Service API Token");
   }
 
-  if (isTauriShellRuntime()) {
+  if (token) {
     await probeHabitatRpcWebSocket(habitatUrl, token);
   }
 }

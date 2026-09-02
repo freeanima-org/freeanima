@@ -69,6 +69,7 @@ export async function attachShellQuick(entityId: number): Promise<ShellQuickEntr
 export async function detachShellQuick(entityId: number): Promise<void> {
   await habitat().call("shell_quick.detach", await withSubjectId({ id: entityId }), httpOnly);
   cache = cache.filter((e) => e.id !== entityId);
+  notify();
 }
 
 export async function toggleShellQuick(entityId: number): Promise<"attached" | "detached"> {

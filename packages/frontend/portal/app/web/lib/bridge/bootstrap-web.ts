@@ -1,6 +1,7 @@
 import { parseShellClientConfig } from "@freeanima/client/portal-sdk/shell-client-config";
 import type { SettingsStorageScope } from "@freeanima/client/portal-sdk/settings";
 import { HABITAT_SETTINGS_SCOPE } from "@freeanima/client/portal-sdk/settings";
+import { prefetchResolvedWorldContextIfAuthed } from "@freeanima/client/portal-sdk/world-context.ts";
 
 import { createWebScopedBackend } from "../settings-local-backend.ts";
 import {
@@ -86,6 +87,7 @@ export async function bootstrapWebBridge(
   }
 
   redirectToHubSetupIfNeeded();
+  prefetchResolvedWorldContextIfAuthed();
   if (window.portalShell?.remoteAuth?.token?.trim()) {
     window.dispatchEvent(new CustomEvent("freeanima:shell-config-changed"));
   }
