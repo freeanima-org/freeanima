@@ -1,4 +1,4 @@
-import { afterAll, afterEach, describe, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 
 import {
   formatHabitatHealthProbeFetchError,
@@ -125,6 +125,23 @@ describe("habitat-health-probe", () => {
       );
       expect(fetchCalled).toBe(false);
     } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  test("testHabitatHealthConnection 有 token 时 Web 也探测 WebSocket", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      Response.json({ status: "ok", authed: true })) as unknown as typeof fetch;
+
+    const healthProbe = await import("./habitat-health-probe.ts");
+    const wsSpy = spyOn(healthProbe, "probeHabitatRpcWebSocket").mockImplementation(async () => {});
+
+    try {
+      await healthProbe.testHabitatHealthConnection("https://habitat.example.com", "fa_at_test");
+      expect(wsSpy.mock.calls.length).toBe(1);
+    } finally {
+      wsSpy.mockRestore();
       globalThis.fetch = originalFetch;
     }
   });

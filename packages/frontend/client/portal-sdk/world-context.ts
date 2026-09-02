@@ -108,7 +108,12 @@ export function resetResolvedWorldContextCacheForTest(): void {
   inflight = null;
 }
 
-// 模块加载时预取（失败不阻塞；调用方仍会 await load）
-void loadResolvedWorldContext().catch(() => {
-  /* Habitat 尚未连通时忽略；首次 RPC 再拉 */
-});
+/** shell bridge 注入 token 后预取；无 token 时不发起 RPC（避免无 Bearer 的 worlds.context）。 */
+export function prefetchResolvedWorldContextIfAuthed(): void {
+  if (typeof window === "undefined") return;
+  const token = window.portalShell?.remoteAuth?.token?.trim();
+  if (!token) return;
+  void loadResolvedWorldContext().catch(() => {
+    /* 离线 / 认证失败时调用方 await 再拉 */
+  });
+}

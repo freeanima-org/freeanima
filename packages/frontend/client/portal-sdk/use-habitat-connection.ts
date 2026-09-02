@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import {
-  getHabitatRpcConnectionState,
+  getInitialHabitatRpcConnectionStateForUi,
   subscribeHabitatConnection,
   type HabitatConnectionState,
 } from "./habitat-connection.ts";
@@ -9,7 +9,7 @@ import {
 /** 与 Habitat 的 HabitatRPC WebSocket 连接状态 */
 export function useHabitatConnection(): HabitatConnectionState {
   const [connection, setConnection] = useState<HabitatConnectionState>(() =>
-    typeof window !== "undefined" ? getHabitatRpcConnectionState() : "connecting",
+    typeof window !== "undefined" ? getInitialHabitatRpcConnectionStateForUi() : "connecting",
   );
 
   useEffect(() => {

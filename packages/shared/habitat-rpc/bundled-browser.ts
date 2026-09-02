@@ -49,6 +49,15 @@ export function getHabitatRpcConnectionState(): HabitatRpcConnectionState {
   return cachedConnectionState;
 }
 
+/** React 首帧初始态：无 token 时不应误显「连接中」。 */
+export function getInitialHabitatRpcConnectionStateForUi(): HabitatRpcConnectionState {
+  if (typeof window === "undefined") return "connecting";
+  if (!hasBundledHabitatRpcAuthToken() && cachedConnectionState === "connecting" && !sharedClient) {
+    return "disconnected";
+  }
+  return cachedConnectionState;
+}
+
 export function getHabitatRpcLastInboundAt(): number | null {
   return sharedTransport?.getLastInboundAt() ?? null;
 }
@@ -181,7 +190,7 @@ function createBundledHabitatRpcClient(
         if (startedAtEpoch !== epoch) return;
         // transport 内会自动退避重连；短中断（如 just dev Habitat 硬重启）保持 connecting，避免条幅狂闪
         notify("connecting");
-        clearDisconnectGrace();
+        if (disconnectGraceTimer != null) return;
         disconnectGraceTimer = setTimeout(() => {
           disconnectGraceTimer = null;
           if (startedAtEpoch !== epoch) return;
