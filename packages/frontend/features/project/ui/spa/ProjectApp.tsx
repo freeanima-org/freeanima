@@ -31,10 +31,12 @@ import {
   MoveToListPicker,
   MoveToProjectPicker,
   PullToRefresh,
-  QuickAddBar,
+  TaskQuickAddComposer,
   useDetailPanelState,
 } from "@freeanima/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem, QuickAddSubmitPayload } from "@freeanima/ui-kit/composite";
+import { searchTaskQuickAddTags } from "@freeanima/features/task/ui/spa/lib/task-quick-add-handlers.ts";
+import { createTaskItem } from "@freeanima/features/task/ui/spa/lib/api.ts";
 import {
   ThreeColumnLayout,
   useDrawerNav,
@@ -210,7 +212,6 @@ export function ProjectApp() {
 
   const [newFolderName, setNewFolderName] = useState("");
   const [newProjectTitle, setNewProjectTitle] = useState("");
-  const [quickTaskTitle, setQuickTaskTitle] = useState("");
 
   const [editorTarget, setEditorTarget] = useState<ProjectEditorTarget | null>(null);
   const [childFolderParentId, setChildFolderParentId] = useState<number | null>(null);
@@ -333,6 +334,12 @@ export function ProjectApp() {
   const [moveToProjectItem, setMoveToProjectItem] = useState<TaskItemRow | null>(null);
   const [taskListsForMove, setTaskListsForMove] = useState<TaskListRow[]>([]);
   const [projectsForMove, setProjectsForMove] = useState<ProjectPickerRow[]>([]);
+
+  useEffect(() => {
+    void fetchTaskListsForMove(subjectId)
+      .then(setTaskListsForMove)
+      .catch(() => {});
+  }, [subjectId]);
 
   const selectedProject = useMemo(
     () => projects.find((p) => p.id === selectedProjectId) ?? null,
@@ -500,20 +507,46 @@ export function ProjectApp() {
     });
   };
 
-  const handleQuickAddTask = async () => {
+  const handleQuickAddSubmit = async (payload: QuickAddSubmitPayload) => {
     if (selectedProjectId == null) return;
-    const title = quickTaskTitle.trim();
-    if (!title) return;
-    // 省略 sort_order：与清单一致，domain / offline 统一 prepend 到 pending 最前
-    const created = await createProjectTask(subjectId, {
-      title,
-      project_id: selectedProjectId,
-    });
-    setQuickTaskTitle("");
-    await reloadProjectDetail();
-    await reload();
-    openTaskDetail(created);
+    const hasExtraMeta =
+      payload.startAt != null ||
+      payload.priority !== "none" ||
+      payload.tagIds.length > 0 ||
+      payload.container?.kind === "list";
+    try {
+      let created;
+      if (payload.container?.kind === "list") {
+        created = await createTaskItem({
+          title: payload.title,
+          list_id: payload.container.id,
+          ...(payload.tagIds.length > 0 ? { tag_ids: payload.tagIds } : {}),
+          ...(payload.priority !== "none" ? { priority: payload.priority } : {}),
+          ...(payload.startAt ? { start_at: payload.startAt } : {}),
+        });
+      } else {
+        const projectId =
+          payload.container?.kind === "project" ? payload.container.id : selectedProjectId;
+        created = await createProjectTask(subjectId, {
+          title: payload.title,
+          project_id: projectId,
+          ...(payload.tagIds.length > 0 ? { tag_ids: payload.tagIds } : {}),
+          ...(payload.priority !== "none" ? { priority: payload.priority } : {}),
+          ...(payload.startAt ? { start_at: payload.startAt } : {}),
+        });
+      }
+      await reloadProjectDetail();
+      await reload();
+      if (hasExtraMeta) openTaskDetail(created);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   };
+
+  const projectQuickAddContainer = useMemo(() => {
+    if (selectedProject == null) return null;
+    return { kind: "project" as const, id: selectedProject.id, label: selectedProject.title };
+  }, [selectedProject]);
 
   const persistProjectTaskOrder = async (orderedPending: TaskItemRow[]) => {
     const completed = tasks.filter((t) => t.status === "completed");
@@ -880,12 +913,15 @@ export function ProjectApp() {
           middle={
             selectedProject ? (
               <div className="flex h-full min-h-0 flex-col">
-                <QuickAddBar
-                  value={quickTaskTitle}
-                  onChange={setQuickTaskTitle}
+                <TaskQuickAddComposer
+                  lists={taskListsForMove}
+                  projects={projects}
+                  defaultContainer={projectQuickAddContainer}
+                  hideContainerPicker
                   disabled={writesDisabled}
-                  onSubmit={() => void handleQuickAddTask()}
-                  className="border flex shrink-0 gap-2 border-b p-3"
+                  searchTags={searchTaskQuickAddTags}
+                  onSubmit={(payload) => void handleQuickAddSubmit(payload)}
+                  className="border flex shrink-0 flex-col gap-2 border-b p-3"
                 />
                 <TaskTagFilterBar
                   tags={projectTags}

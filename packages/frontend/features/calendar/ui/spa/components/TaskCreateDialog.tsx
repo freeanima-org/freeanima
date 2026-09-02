@@ -1,13 +1,12 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { Dialog, DialogHeader, DialogTitle } from "@freeanima/ui-kit";
 import {
-  Button,
-  Dialog,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Label,
-} from "@freeanima/ui-kit";
+  TaskQuickAddComposer,
+  type ProjectPickerRow,
+  type QuickAddSubmitPayload,
+  type QuickAddTagOption,
+} from "@freeanima/ui-kit/composite";
+import type { TaskListRowLike } from "@freeanima/ui-kit/lib/task-list-tree.ts";
 
 import { dayHeadingLabel } from "../lib/format-calendar.ts";
 
@@ -15,72 +14,55 @@ type TaskCreateDialogProps = {
   open: boolean;
   day: string | null;
   today: string;
+  lists: TaskListRowLike[];
+  projects: ProjectPickerRow[];
+  defaultListId: number | null;
+  searchTags: (query: string) => Promise<QuickAddTagOption[]>;
   onClose: () => void;
-  onSave: (input: { title: string; day: string }) => void | Promise<void>;
+  onSave: (payload: QuickAddSubmitPayload) => void | Promise<void>;
 };
 
-export function TaskCreateDialog({ open, day, today, onClose, onSave }: TaskCreateDialogProps) {
-  const [title, setTitle] = useState("");
-  const [saving, setSaving] = useState(false);
+export function TaskCreateDialog({
+  open,
+  day,
+  today,
+  lists,
+  projects,
+  defaultListId,
+  searchTags,
+  onClose,
+  onSave,
+}: TaskCreateDialogProps) {
+  const defaultContainer = useMemo(() => {
+    if (defaultListId == null) return null;
+    const row = lists.find((l) => l.id === defaultListId);
+    return { kind: "list" as const, id: defaultListId, label: row?.name ?? "收件箱" };
+  }, [defaultListId, lists]);
 
-  useEffect(() => {
-    if (!open) return;
-    setTitle("");
-    setSaving(false);
-  }, [open, day]);
-
-  const handleSave = async () => {
-    const trimmed = title.trim();
-    if (!trimmed || day == null) return;
-    setSaving(true);
-    try {
-      await onSave({ title: trimmed, day });
-      onClose();
-    } finally {
-      setSaving(false);
-    }
-  };
+  if (!open || day == null) return null;
 
   return (
-    <Dialog isOpen={open} onOpenChange={(next) => !next && onClose()} className="max-w-md">
+    <Dialog isOpen={open} onOpenChange={(next) => !next && onClose()} className="max-w-lg">
       <DialogHeader>
         <DialogTitle>{"新建任务"}</DialogTitle>
+        <p className="text-muted-foreground text-sm">
+          {"计划开始："}
+          {dayHeadingLabel(day, today)}
+        </p>
       </DialogHeader>
-      <div className="flex flex-col gap-3 px-1 py-2">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="cal-task-title">{"标题"}</Label>
-          <Input
-            id="cal-task-title"
-            focusOnMount
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                void handleSave();
-              }
-            }}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label>{"计划开始"}</Label>
-          <p className="text-sm text-muted-foreground">
-            {day != null ? dayHeadingLabel(day, today) : "—"}
-          </p>
-        </div>
-      </div>
-      <DialogFooter className="gap-2">
-        <Button type="button" variant="ghost" isDisabled={saving} onPress={onClose}>
-          {"取消"}
-        </Button>
-        <Button
-          type="button"
-          isDisabled={saving || !title.trim() || day == null}
-          onPress={() => void handleSave()}
-        >
-          {"保存"}
-        </Button>
-      </DialogFooter>
+      <TaskQuickAddComposer
+        lists={lists}
+        projects={projects}
+        defaultContainer={defaultContainer}
+        fixedStartDay={day}
+        searchTags={searchTags}
+        onSubmit={async (payload) => {
+          await onSave(payload);
+          onClose();
+        }}
+        className="flex flex-col gap-2 px-1 py-2"
+        submitLabel="保存"
+      />
     </Dialog>
   );
 }

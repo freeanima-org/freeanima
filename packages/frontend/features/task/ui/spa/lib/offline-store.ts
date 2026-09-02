@@ -861,6 +861,8 @@ export async function offlineCreateTaskItem(input: {
   content?: string;
   tag_ids?: number[];
   priority?: TaskItemRow["priority"];
+  start_at?: string | null;
+  end_at?: string | null;
   due_at?: string | null;
   remind_at?: string | null;
   parent_id?: number | null;
@@ -876,6 +878,8 @@ export async function offlineCreateTaskItem(input: {
     content: input.content?.trim() ?? "",
     tag_ids: input.tag_ids ?? [],
     priority: input.priority ?? ("none" as const),
+    start_at: input.start_at ?? null,
+    end_at: input.end_at ?? null,
     due_at: input.due_at ?? null,
     remind_at: input.remind_at ?? null,
     ...(input.parent_id != null ? { parent_id: input.parent_id } : {}),
@@ -903,6 +907,8 @@ export async function offlineCreateTaskItem(input: {
       content: payload.content,
       tag_ids: payload.tag_ids,
       priority: payload.priority,
+      start_at: payload.start_at,
+      end_at: payload.end_at,
       due_at: payload.due_at,
       sort_order,
       status: "pending",

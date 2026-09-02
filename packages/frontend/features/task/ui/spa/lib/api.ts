@@ -251,6 +251,8 @@ export async function createTaskItem(input: {
   content?: string;
   tag_ids?: number[];
   priority?: TaskItemRow["priority"];
+  start_at?: string | null;
+  end_at?: string | null;
   due_at?: string | null;
   remind_at?: string | null;
   parent_id?: number | null;

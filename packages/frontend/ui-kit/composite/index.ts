@@ -49,6 +49,13 @@ export {
 export type { AutoPersistScheduler, AutoPersistTiming } from "../lib/auto-persist-schedule.ts";
 export { DETAIL_EDIT_HISTORY_KEY } from "./detail-edit-chrome.ts";
 export { QuickAddBar } from "./QuickAddBar.tsx";
+export { TaskQuickAddComposer } from "./task-quick-add/TaskQuickAddComposer.tsx";
+export type {
+  QuickAddContainer,
+  QuickAddSubmitPayload,
+  QuickAddTagOption,
+  TaskQuickAddComposerProps,
+} from "./task-quick-add/TaskQuickAddComposer.tsx";
 export { ModuleScopeBar } from "./ModuleScopeBar.tsx";
 export { MoveToListPicker } from "./MoveToListPicker.tsx";
 export type { MoveToListPickerProps } from "./MoveToListPicker.tsx";
