@@ -24,7 +24,7 @@ describe("edge-dock", () => {
   test("collapsedSize orientation", () => {
     expect(collapsedSize("left")).toEqual({ width: 8, height: 120 });
     expect(collapsedSize("top")).toEqual({ width: 120, height: 8 });
-    expect(expandedSize()).toEqual({ width: 220, height: 156 });
+    expect(expandedSize()).toEqual({ width: 260, height: 220 });
   });
 
   test("snapCollapsedFrame pins to edge", () => {
@@ -41,8 +41,8 @@ describe("edge-dock", () => {
     const collapsed = { x: 0, y: 500, width: 8, height: 120 };
     const expanded = snapExpandedNearEdge("left", collapsed, work);
     expect(expanded.x).toBe(0);
-    expect(expanded.width).toBe(220);
-    expect(expanded.height).toBe(156);
+    expect(expanded.width).toBe(260);
+    expect(expanded.height).toBe(220);
   });
 
   test("progressRatio", () => {

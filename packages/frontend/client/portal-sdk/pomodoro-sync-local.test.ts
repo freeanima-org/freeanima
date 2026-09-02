@@ -62,11 +62,33 @@ describe("mergeRemoteActive", () => {
     expect(merged.active?.sessionLocalId).toBe("remote-session");
   });
 
-  test("keeps local when local meta is newer", () => {
-    const merged = mergeRemoteActive(remoteBody, localState, {
-      device_id: "device-local",
-      updated_at_ms: 3_000,
-    });
+  test("keeps local when local meta is newer（同 session）", () => {
+    const merged = mergeRemoteActive(
+      { ...remoteBody, session_local_id: "local-session" },
+      localState,
+      {
+        device_id: "device-local",
+        updated_at_ms: 3_000,
+      },
+    );
+    expect(merged.active?.sessionLocalId).toBe("local-session");
+  });
+
+  test("不同 sessionLocalId 且 remote 来自其他设备时采纳 remote", () => {
+    const merged = mergeRemoteActive(
+      { ...remoteBody, session_local_id: "remote-session", device_id: "device-remote" },
+      { ...localState, sessionLocalId: "local-session" },
+      { device_id: "device-local", updated_at_ms: 9_000 },
+    );
+    expect(merged.active?.sessionLocalId).toBe("remote-session");
+  });
+
+  test("不同 sessionLocalId 但同 device 且 local 更新时保留 local", () => {
+    const merged = mergeRemoteActive(
+      { ...remoteBody, session_local_id: "remote-session", device_id: "device-a" },
+      { ...localState, sessionLocalId: "local-session" },
+      { device_id: "device-a", updated_at_ms: 9_000 },
+    );
     expect(merged.active?.sessionLocalId).toBe("local-session");
   });
 
