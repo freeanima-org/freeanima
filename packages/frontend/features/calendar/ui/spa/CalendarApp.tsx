@@ -49,7 +49,6 @@ import {
   completeAgendaTask,
   convertAgendaTaskToEvent,
   convertCalendarEventToTask,
-  createAgendaTask,
   createCalendarEvent,
   deleteAgendaTask,
   deleteCalendarEvent,
@@ -62,6 +61,16 @@ import {
   updateCalendarEvent,
   updateCalendarPrefs,
 } from "./lib/api.ts";
+import {
+  fetchProjectsForMove,
+  fetchTaskLists,
+  type TaskListRow,
+} from "@freeanima/features/task/ui/spa/lib/api.ts";
+import { resolveDefaultListId } from "@freeanima/features/task/ui/spa/lib/resolve-list.ts";
+import {
+  searchTaskQuickAddTags,
+  submitTaskQuickAdd,
+} from "@freeanima/features/task/ui/spa/lib/task-quick-add-handlers.ts";
 import { readCalendarEventFromUrl, writeCalendarEventToUrl } from "./lib/calendar-event-url.ts";
 import {
   type BuiltinCalendarSourceId,
@@ -127,6 +136,10 @@ export function CalendarApp() {
   const agendaMode = isAgendaViewMode(viewMode);
   const [editor, setEditor] = useState<EventEditorTarget | null>(null);
   const [taskCreateDay, setTaskCreateDay] = useState<string | null>(null);
+  const [taskLists, setTaskLists] = useState<TaskListRow[]>([]);
+  const [projectsForTask, setProjectsForTask] = useState<
+    Awaited<ReturnType<typeof fetchProjectsForMove>>
+  >([]);
   const [weekAnchor, setWeekAnchor] = useState(() => weekStartMonday(today));
   const [refreshing, setRefreshing] = useState(false);
   const [displaySheetOpen, setDisplaySheetOpen] = useState(false);
@@ -162,6 +175,15 @@ export function CalendarApp() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    void fetchTaskLists()
+      .then(setTaskLists)
+      .catch(() => {});
+    void fetchProjectsForMove()
+      .then(setProjectsForTask)
+      .catch(() => {});
   }, []);
 
   const applyDay = useCallback((day: string) => {
@@ -935,9 +957,19 @@ export function CalendarApp() {
         open={taskCreateDay != null}
         day={taskCreateDay}
         today={today}
+        lists={taskLists}
+        projects={projectsForTask}
+        defaultListId={resolveDefaultListId(taskLists)}
+        searchTags={searchTaskQuickAddTags}
         onClose={() => setTaskCreateDay(null)}
-        onSave={async ({ title, day }) => {
-          await createAgendaTask(subjectId, { title, day });
+        onSave={async (payload) => {
+          await submitTaskQuickAdd({
+            payload,
+            subjectId,
+            lists: taskLists,
+            smartListRow: null,
+            fallbackListId: resolveDefaultListId(taskLists),
+          });
           await refresh();
         }}
       />

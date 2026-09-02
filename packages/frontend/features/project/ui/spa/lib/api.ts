@@ -226,7 +226,15 @@ export async function fetchProjectTasks(
 
 export async function createProjectTask(
   _subjectId: number,
-  input: { title: string; project_id: number; sort_order?: number },
+  input: {
+    title: string;
+    project_id: number;
+    tag_ids?: number[];
+    priority?: TaskItemRow["priority"];
+    start_at?: string | null;
+    end_at?: string | null;
+    sort_order?: number;
+  },
 ): Promise<TaskItemRow> {
   ensureProjectOfflineModule();
   return offlineCreateProjectTask(input);

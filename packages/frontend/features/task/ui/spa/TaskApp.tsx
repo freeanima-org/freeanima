@@ -32,10 +32,10 @@ import {
   EmptyState,
   ModuleScopeBar,
   PullToRefresh,
-  QuickAddBar,
+  TaskQuickAddComposer,
   useDetailPanelState,
 } from "@freeanima/ui-kit/composite";
-import type { ActionSheetItem } from "@freeanima/ui-kit/composite";
+import type { ActionSheetItem, QuickAddSubmitPayload } from "@freeanima/ui-kit/composite";
 import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { TaskKanbanBoard, type KanbanGroupBy } from "./components/TaskKanbanBoard.tsx";
@@ -58,7 +58,6 @@ import {
   completeTaskItem,
   convertTaskItemToEvent,
   createSmartList,
-  createTaskItem,
   createTaskList,
   closeTaskList,
   deleteSmartList,
@@ -108,8 +107,12 @@ import { moveTaskItemsToList, moveTaskItemsToProject } from "./lib/move-items.ts
 import { taskAttributionLabel } from "./lib/task-attribution.ts";
 import { applyShiftRangeSelect } from "./lib/range-select.ts";
 import { resolveTaskSelection } from "./lib/resolve-task-selection.ts";
-import { resolveSmartListDueAt } from "./lib/resolve-smart-list-due.ts";
 import { resolveDefaultListId } from "./lib/resolve-list.ts";
+import {
+  resolveQuickAddDefaultContainer,
+  searchTaskQuickAddTags,
+  submitTaskQuickAdd,
+} from "./lib/task-quick-add-handlers.ts";
 import {
   allowsSmartListQuickAdd,
   findSmartListRowByKey,
@@ -150,7 +153,6 @@ export function TaskApp() {
   const [newListName, setNewListName] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
-  const [quickTitle, setQuickTitle] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchHits, setSearchHits] = useState<TaskItemRow[]>([]);
   const [searching, setSearching] = useState(false);
@@ -950,31 +952,6 @@ export function TaskApp() {
     }
   };
 
-  const handleQuickAdd = async () => {
-    const title = quickTitle.trim();
-    if (!title) return;
-    const targetListId = selection?.kind === "list" ? selection.id : resolveDefaultListId(lists);
-    if (targetListId == null) return;
-    try {
-      let due_at: string | null = null;
-      if (selection?.kind === "smart_list") {
-        const row = findSmartListRowByKey(smartLists, selection.key);
-        if (row) due_at = resolveSmartListDueAt(row.filters);
-      }
-      // 省略 sort_order：domain / offline 统一 prepend 到 pending 最前
-      const created = await createTaskItem({
-        title,
-        list_id: targetListId,
-        ...(due_at ? { due_at } : {}),
-      });
-      setQuickTitle("");
-      await Promise.all([reloadCurrentItems(), loadLists()]);
-      openTaskDetail(created);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
-  };
-
   const toggleComplete = async (item: TaskItemRow) => {
     try {
       if (item.status === "completed") {
@@ -1112,12 +1089,50 @@ export function TaskApp() {
   const listSidebarSelectedId = selection?.kind === "list" && !inboxSelected ? selection.id : null;
   const activeSmartListRow =
     selection?.kind === "smart_list" ? findSmartListRowByKey(smartLists, selection.key) : null;
+  const selectedList =
+    selection?.kind === "list" ? (lists.find((l) => l.id === selection.id) ?? null) : null;
   const smartListMode = selection?.kind === "smart_list";
   const smartListCompletedOnly = activeSmartListRow
     ? isCompletedOnlyFilters(activeSmartListRow.filters)
     : false;
-  const selectedList =
-    selection?.kind === "list" ? (lists.find((l) => l.id === selection.id) ?? null) : null;
+
+  const quickAddDefaultContainer = useMemo(
+    () =>
+      resolveQuickAddDefaultContainer(
+        lists,
+        selection?.kind === "list" || selection?.kind === "smart_list" ? selection : null,
+        selectedList,
+      ),
+    [lists, selection, selectedList],
+  );
+
+  const handleQuickAddSubmit = async (payload: QuickAddSubmitPayload) => {
+    const hasExtraMeta =
+      payload.startAt != null ||
+      payload.priority !== "none" ||
+      payload.tagIds.length > 0 ||
+      (payload.container != null &&
+        (selection?.kind !== "list" || payload.container.id !== selection.id));
+    try {
+      const created = await submitTaskQuickAdd({
+        payload,
+        subjectId,
+        lists,
+        smartListRow: activeSmartListRow ?? null,
+        fallbackListId: selection?.kind === "list" ? selection.id : defaultInboxId,
+      });
+      await Promise.all([reloadCurrentItems(), loadLists()]);
+      if (hasExtraMeta) openTaskDetail(created);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  useEffect(() => {
+    void fetchProjectsForMove()
+      .then(setProjectsForMove)
+      .catch(() => {});
+  }, []);
   const activeLists = useMemo(() => lists.filter((l) => !l.closed && !l.is_default), [lists]);
   const closedLists = useMemo(() => lists.filter((l) => l.closed), [lists]);
   // 保留文件夹供树形展示；MoveToListPicker 不会把文件夹当作可选目标
@@ -1580,12 +1595,14 @@ export function TaskApp() {
                         </Button>
                       </div>
                     ) : searchActive || !canQuickAdd ? null : (
-                      <QuickAddBar
-                        value={quickTitle}
-                        onChange={setQuickTitle}
+                      <TaskQuickAddComposer
+                        lists={lists}
+                        projects={projectsForMove}
+                        defaultContainer={quickAddDefaultContainer}
                         disabled={writesDisabled}
-                        onSubmit={() => void handleQuickAdd()}
-                        className="border flex shrink-0 gap-2 border-b p-3"
+                        searchTags={searchTaskQuickAddTags}
+                        onSubmit={(payload) => void handleQuickAddSubmit(payload)}
+                        className="border flex shrink-0 flex-col gap-2 border-b p-3"
                       />
                     )}
                     <PullToRefresh

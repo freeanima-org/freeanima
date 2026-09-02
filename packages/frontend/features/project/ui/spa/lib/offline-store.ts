@@ -965,6 +965,10 @@ export async function offlineDeleteProject(id: number): Promise<void> {
 export async function offlineCreateProjectTask(input: {
   title: string;
   project_id: number;
+  tag_ids?: number[];
+  priority?: TaskItemRow["priority"];
+  start_at?: string | null;
+  end_at?: string | null;
   sort_order?: number;
 }): Promise<TaskItemRow> {
   const title = input.title.trim();
@@ -974,6 +978,10 @@ export async function offlineCreateProjectTask(input: {
   const createPayload = {
     title,
     project_id: input.project_id,
+    tag_ids: input.tag_ids ?? [],
+    priority: input.priority ?? ("none" as const),
+    start_at: input.start_at ?? null,
+    end_at: input.end_at ?? null,
     ...(autoPrepend ? {} : { sort_order: input.sort_order }),
   };
 
@@ -995,9 +1003,11 @@ export async function offlineCreateProjectTask(input: {
       id: tempId,
       title,
       content: "",
-      tag_ids: [],
+      tag_ids: createPayload.tag_ids,
       status: "pending",
-      priority: "none",
+      priority: createPayload.priority,
+      start_at: createPayload.start_at,
+      end_at: createPayload.end_at,
       due_at: null,
       remind_at: null,
       list_id: null,
