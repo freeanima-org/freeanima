@@ -1,4 +1,6 @@
 import { getShellBuildTarget } from "./shell-build-target.ts";
+
+export { getShellBuildTarget, type ShellBuildTarget } from "./shell-build-target.ts";
 import { isTauriRuntime } from "./tauri-runtime.ts";
 
 /** 壳子维：运行时壳类型（与布局/交互正交） */

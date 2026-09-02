@@ -14,6 +14,8 @@ mod ssh_remote;
 mod apk_installer_plugin;
 #[cfg(mobile)]
 mod blob_saver_plugin;
+#[cfg(mobile)]
+mod voice_wake_plugin;
 
 use serde::{Deserialize, Serialize};
 #[cfg(desktop)]
@@ -1257,6 +1259,7 @@ pub fn run() {
     builder = builder
       .plugin(apk_installer_plugin::init())
       .plugin(blob_saver_plugin::init())
+      .plugin(voice_wake_plugin::init())
       .invoke_handler(tauri::generate_handler![
         get_habitat_config,
         set_habitat_config,

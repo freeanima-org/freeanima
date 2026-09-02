@@ -1,41 +1,31 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test";
 
 import { HABITAT_RPC_DISCONNECT_GRACE_MS } from "./constants.ts";
-
-const transportOriginal = await import("./transport.ts");
-
-function restoreTransportModule(): void {
-  mock.module("./transport.ts", () => transportOriginal);
-}
+import * as transport from "./transport.ts";
 
 describe("bundled-browser disconnect grace", () => {
   beforeEach(() => {
     delete (globalThis as { window?: Window & { portalShell?: unknown } }).window;
-    mock.restore();
-    restoreTransportModule();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     delete (globalThis as { window?: Window & { portalShell?: unknown } }).window;
-    mock.restore();
-    restoreTransportModule();
+    const bundled = await import("./bundled-browser.ts");
+    bundled.resetBundledHabitatRpcClientForTests();
   });
 
   test("快速连续 onDisconnected 不重置 grace，超时后变为 disconnected", async () => {
     let onDisconnected: (() => void) | undefined;
 
-    mock.module("./transport.ts", () => ({
-      ...transportOriginal,
-      runHabitatRpcTransport: (opts: { onDisconnected?: () => void }) => {
-        onDisconnected = opts.onDisconnected;
-        return {
-          getClient: () => null,
-          whenConnected: () => new Promise(() => {}),
-          getLastInboundAt: () => null,
-          stop: () => {},
-        };
-      },
-    }));
+    const spy = spyOn(transport, "runHabitatRpcTransport").mockImplementation((opts) => {
+      onDisconnected = opts.onDisconnected;
+      return {
+        getClient: () => null,
+        whenConnected: () => new Promise(() => {}),
+        getLastInboundAt: () => null,
+        stop: () => {},
+      };
+    });
 
     const bundled = await import("./bundled-browser.ts");
     bundled.resetBundledHabitatRpcClientForTests();
@@ -57,6 +47,8 @@ describe("bundled-browser disconnect grace", () => {
     onDisconnected?.();
 
     expect(bundled.getHabitatRpcConnectionState()).toBe("connecting");
+
+    spy.mockRestore();
 
     await new Promise<void>((resolve) => {
       setTimeout(resolve, HABITAT_RPC_DISCONNECT_GRACE_MS + 50);

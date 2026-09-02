@@ -94,6 +94,7 @@ export const LLM_SCENE_PURPOSE_IDS = [
   "voice_generate",
   "tts",
   "voice_realtime",
+  "asr",
   "video_generate",
 ] as const;
 export type LlmScenePurposeId = (typeof LLM_SCENE_PURPOSE_IDS)[number];
