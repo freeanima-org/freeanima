@@ -3,6 +3,7 @@ import { shellModulesSettingsSection } from "@freeanima/client/app-frame/spa/set
 import { aboutSettingsSection } from "@freeanima/client/app-frame/spa/settings/about/about-section.ts";
 import { appearanceSettingsSection } from "@freeanima/client/app-frame/spa/settings/appearance/appearance-section.ts";
 import { alertSettingsSection } from "@freeanima/client/app-frame/spa/settings/alert/alert-settings-section.ts";
+import { voiceAssistantSettingsSection } from "@freeanima/client/app-frame/spa/settings/voice-assistant/voice-assistant-settings-section.ts";
 import { habitatConnectionSettingsSection } from "@freeanima/client/app-frame/spa/settings/habitat-config/habitat-connection-section.ts";
 import { habitatConfigSettingsBindings } from "@freeanima/client/app-frame/spa/settings/habitat-config/habitat-config-sections.ts";
 import { companionHabitatSettingsSection } from "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts";
@@ -24,6 +25,7 @@ export function createBrowserLikeSettingsBindings(
     { section: shellModulesSettingsSection },
     { section: appearanceSettingsSection },
     { section: alertSettingsSection },
+    { section: voiceAssistantSettingsSection },
     { section: habitatConnectionSettingsSection, store: stores.habitat },
     ...habitatConfigSettingsBindings,
     {

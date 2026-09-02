@@ -4,6 +4,7 @@
  * - network_security_config：信任用户 CA + 允许 cleartext
  * - APK 覆盖安装：FileProvider + ApkInstallerPlugin + REQUEST_INSTALL_PACKAGES
  * - blob 保存到下载目录：BlobSaverPlugin + WRITE_EXTERNAL_STORAGE(maxSdk 28)
+ * - 语音唤醒：VoiceWakePlugin + ForegroundService + RECORD_AUDIO
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -23,8 +24,10 @@ const xmlDir = join(androidMain, "res/xml");
 const nscPath = join(xmlDir, "network_security_config.xml");
 const pluginSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/apk-installer");
 const blobSaverSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/blob-saver");
+const voiceWakeSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/voice-wake");
 const pluginKtDest = join(androidMain, "java/com/freeanima/portal/apk/ApkInstallerPlugin.kt");
 const blobSaverKtDest = join(androidMain, "java/com/freeanima/portal/blob/BlobSaverPlugin.kt");
+const voiceWakeKtDest = join(androidMain, "java/com/freeanima/portal/voicewake");
 const filePathsDest = join(xmlDir, "file_paths.xml");
 
 const NSC = `<?xml version="1.0" encoding="utf-8"?>
@@ -64,6 +67,22 @@ if (!existsSync(blobSaverKt)) {
 mkdirSync(dirname(blobSaverKtDest), { recursive: true });
 cpSync(blobSaverKt, blobSaverKtDest);
 console.log(`[patch-tauri-android] BlobSaverPlugin → ${blobSaverKtDest}`);
+
+const voiceWakeFiles = [
+  "VoiceWakePlugin.kt",
+  "VoiceWakeForegroundService.kt",
+  "SpeechRecognitionSession.kt",
+];
+for (const name of voiceWakeFiles) {
+  const src = join(voiceWakeSrcDir, name);
+  if (!existsSync(src)) {
+    console.error(`[patch-tauri-android] 缺少 voice-wake 插件源：${src}`);
+    process.exit(1);
+  }
+  mkdirSync(voiceWakeKtDest, { recursive: true });
+  cpSync(src, join(voiceWakeKtDest, name));
+}
+console.log(`[patch-tauri-android] VoiceWakePlugin → ${voiceWakeKtDest}`);
 
 let manifest = readFileSync(manifestPath, "utf-8");
 if (!manifest.includes("networkSecurityConfig")) {
@@ -113,6 +132,36 @@ if (!manifest.includes("WRITE_EXTERNAL_STORAGE")) {
     );
   }
   console.log("[patch-tauri-android] 已添加 WRITE_EXTERNAL_STORAGE (maxSdk 28)");
+}
+
+const voiceWakePermissions = [
+  `<uses-permission android:name="android.permission.RECORD_AUDIO" />`,
+  `<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />`,
+  `<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />`,
+];
+for (const perm of voiceWakePermissions) {
+  const permName = perm.match(/android:name="([^"]+)"/)?.[1];
+  if (permName && manifest.includes(permName)) continue;
+  if (manifest.includes("<uses-permission")) {
+    manifest = manifest.replace(/(<uses-permission\b[^/]*\/>)/, `$1\n    ${perm}`);
+  } else {
+    manifest = manifest.replace(/(<manifest\b[^>]*>)/, `$1\n    ${perm}`);
+  }
+  console.log(`[patch-tauri-android] 已添加 ${permName ?? "permission"}`);
+}
+
+if (!manifest.includes("VoiceWakeForegroundService")) {
+  const service = `
+        <service
+            android:name=".voicewake.VoiceWakeForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />`;
+  if (!manifest.includes("</application>")) {
+    console.error("[patch-tauri-android] Manifest 缺少 </application>");
+    process.exit(1);
+  }
+  manifest = manifest.replace("</application>", `${service}\n    </application>`);
+  console.log("[patch-tauri-android] 已注册 VoiceWakeForegroundService");
 }
 
 if (!manifest.includes(".fileprovider")) {

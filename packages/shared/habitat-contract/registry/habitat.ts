@@ -168,6 +168,16 @@ const ttsSynthesizeInputSchema = z.object({
   pitch: z.number().min(0).max(2).optional(),
   volume: z.number().min(0).max(1).optional(),
 });
+const asrTranscribeInputSchema = z
+  .object({
+    mime_type: z.string().optional(),
+    language: z.string().optional(),
+  })
+  .strict();
+const asrTranscribeOutputSchema = z.object({
+  text: z.string(),
+  confidence: z.number().optional(),
+});
 
 /** Habitat 运维面 HTTP-only methods（conversation.* dual 定义在 chat registry） */
 export const habitatMethodDefs = {
@@ -574,6 +584,16 @@ export const habitatMethodDefs = {
       verb: "POST",
       path: "tts/synthesize",
       response: "raw",
+    }),
+  }),
+  "asr.transcribe": defineHabitatMethod({
+    input: asrTranscribeInputSchema,
+    output: asrTranscribeOutputSchema,
+    meta: binaryHttpMeta({
+      verb: "POST",
+      path: "asr/transcribe",
+      request: "raw",
+      response: "json",
     }),
   }),
 } as const;

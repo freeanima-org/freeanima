@@ -75,6 +75,8 @@ function resolvePurposeBinding(cfg: RuntimeConfig, purpose: string): CapabilityB
       return resolveLayerBinding(cfg.audio_generate, cfg.audio_generate?.tts);
     case "voice_realtime":
       return resolveLayerBinding(cfg.audio_generate, cfg.audio_generate?.voice_realtime);
+    case "asr":
+      return resolveLayerBinding(cfg.audio_generate, cfg.audio_generate?.asr);
     case "embedding":
       return resolveLayerBinding(cfg.embedding);
     case "video_generate":

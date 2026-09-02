@@ -115,6 +115,7 @@ import {
   getTlsCaQrResponse,
 } from "../habitat-api/handlers/tls-ca.ts";
 import { handleTtsSynthesize } from "../tts-handler.ts";
+import { handleAsrTranscribe } from "../asr-handler.ts";
 
 /** 将返回 Response / unknown 的实现接到具体 HabitatRouteHandler（Zod4 ZodTypeAny≠any） */
 function asLooseRouteHandler<I extends z.ZodTypeAny, O extends z.ZodTypeAny>(
@@ -693,6 +694,17 @@ export const habitatCoreRoutes = mergeFeatureRoutes([
     habitatMethodDefs["tts.synthesize"],
     asLooseRouteHandler(habitatMethodDefs["tts.synthesize"], (deps, input, ctx) =>
       handleTtsSynthesize(
+        asRouteDeps<RemoteToolsServerDeps>(deps),
+        input,
+        asRouteCtx<RemoteToolsRequestContext>(ctx),
+      ),
+    ),
+  ),
+  defineHabitatRouteFromDef(
+    "asr.transcribe",
+    habitatMethodDefs["asr.transcribe"],
+    asLooseRouteHandler(habitatMethodDefs["asr.transcribe"], (deps, input, ctx) =>
+      handleAsrTranscribe(
         asRouteDeps<RemoteToolsServerDeps>(deps),
         input,
         asRouteCtx<RemoteToolsRequestContext>(ctx),

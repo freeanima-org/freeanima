@@ -20,6 +20,7 @@ import { AppModuleRail } from "./AppModuleRail.tsx";
 import { PomodoroShellWatcher } from "@freeanima/features/pomodoro/ui/spa/PomodoroShellWatcher.tsx";
 import { ChatUnreadShellWatcher } from "@freeanima/features/chat/ui/spa/ChatUnreadShellWatcher.tsx";
 import { SpeechShellWatcher } from "@freeanima/features/chat/ui/spa/SpeechShellWatcher.tsx";
+import { VoiceAssistantShellWatcher } from "@freeanima/features/voice-assistant/ui/spa/VoiceAssistantShellWatcher.tsx";
 import { NotificationReminderShellWatcher } from "@freeanima/features/notification/ui/spa/NotificationReminderShellWatcher.tsx";
 import { TaskAdvanceReminderShellWatcher } from "@freeanima/features/task/ui/spa/TaskAdvanceReminderShellWatcher.tsx";
 import { AppAttentionShellWatcher } from "./AppAttentionShellWatcher.tsx";
@@ -210,6 +211,7 @@ export function AppFrame() {
       <PomodoroShellWatcher />
       <ChatUnreadShellWatcher />
       <SpeechShellWatcher />
+      <VoiceAssistantShellWatcher />
       <NotificationReminderShellWatcher />
       <TaskAdvanceReminderShellWatcher />
       <AppAttentionShellWatcher />

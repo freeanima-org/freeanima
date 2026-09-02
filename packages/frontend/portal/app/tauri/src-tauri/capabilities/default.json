@@ -35,6 +35,7 @@
     "notification:default",
     "apk-installer:default",
     "blob-saver:default",
+    "voice-wake:default",
     "autostart:default",
     "shell:allow-open",
     "allow-get-habitat-config",

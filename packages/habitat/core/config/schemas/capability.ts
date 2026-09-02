@@ -41,6 +41,7 @@ export const audioGenerateConfigSchema = z
     main: capabilityBindingLooseSchema.optional(),
     tts: optionalChild,
     voice_realtime: optionalChild,
+    asr: optionalChild,
   })
   .passthrough();
 
@@ -64,7 +65,7 @@ export const TEXT_GENERATE_CHILD_KEYS = [
 
 export type TextGenerateChildKey = (typeof TEXT_GENERATE_CHILD_KEYS)[number];
 
-export const AUDIO_GENERATE_CHILD_KEYS = ["tts", "voice_realtime"] as const;
+export const AUDIO_GENERATE_CHILD_KEYS = ["tts", "voice_realtime", "asr"] as const;
 export type AudioGenerateChildKey = (typeof AUDIO_GENERATE_CHILD_KEYS)[number];
 
 export function bindingComplete(

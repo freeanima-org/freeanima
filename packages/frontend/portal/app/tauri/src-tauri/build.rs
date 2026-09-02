@@ -81,6 +81,23 @@ fn main() {
         tauri_build::InlinedPlugin::new()
           .commands(&["saveToDownloads"])
           .default_permission(tauri_build::DefaultPermissionRule::AllowAllCommands),
+      )
+      .plugin(
+        "voice-wake",
+        tauri_build::InlinedPlugin::new()
+          .commands(&[
+            "readVoiceWakePermission",
+            "requestVoiceWakePermission",
+            "startVoiceWake",
+            "stopVoiceWake",
+            "startSpeechRecognition",
+            "stopSpeechRecognition",
+            "registerListener",
+            "register_listener",
+            "removeListener",
+            "remove_listener",
+          ])
+          .default_permission(tauri_build::DefaultPermissionRule::AllowAllCommands),
       ),
   )
   .expect("failed to run tauri-build");
