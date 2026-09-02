@@ -27,6 +27,7 @@ import {
   Switch,
 } from "@freeanima/ui-kit";
 import { useCompactLayout } from "@freeanima/ui-kit/layout";
+import { toast } from "@freeanima/ui-kit/composite";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
 import { pomodoroPhaseAccentCss } from "../../shared/phase-accent.ts";
 import {
@@ -34,7 +35,6 @@ import {
   createAutoPersistScheduler,
 } from "@freeanima/ui-kit/lib/auto-persist-schedule.ts";
 import { openEntityResource } from "@freeanima/client/portal-sdk/open-entity-resource.ts";
-import { randomPublicId } from "@freeanima/shared/util";
 
 import { TaskPickerDialog } from "./components/TaskPickerDialog.tsx";
 import {
@@ -50,6 +50,7 @@ import {
 } from "./lib/api.ts";
 import { formatPomodoroLinkLabel, resolvePomodoroLinkLabel } from "./lib/task-picker-api.ts";
 import { enqueuePomodoroConfigUpdate } from "./lib/pomodoro-offline-store.ts";
+import { ensurePomodoroStart } from "./lib/ensure-pomodoro-start.ts";
 import {
   applyPomodoroActive,
   pullPomodoroActive,
@@ -59,7 +60,6 @@ import {
 import { preferOnlineWrite } from "@freeanima/client/portal-sdk/prefer-online-write";
 import { syncPomodoroPhaseLocalAlert } from "./lib/pomodoro-phase-alert.ts";
 import {
-  createInitialActiveState,
   pauseActiveState,
   phaseLabel,
   remainingMs,
@@ -360,31 +360,20 @@ export function PomodoroApp() {
     }
 
     if (launch.autostart && !autostartHandledRef.current) {
-      if (launch.taskId != null) {
-        autostartHandledRef.current = true;
-        clearPomodoroLaunchParamsFromUrl();
-        void applyPomodoroActive(
-          createInitialActiveState(config, {
-            taskItemId: launch.taskId,
-            calendarEventId: null,
-            sessionLocalId: randomPublicId(),
-          }),
+      autostartHandledRef.current = true;
+      clearPomodoroLaunchParamsFromUrl();
+      void (async () => {
+        const result = await ensurePomodoroStart({
           subjectId,
-          { alertConfig: config },
-        );
-      } else if (launch.eventId != null) {
-        autostartHandledRef.current = true;
-        clearPomodoroLaunchParamsFromUrl();
-        void applyPomodoroActive(
-          createInitialActiveState(config, {
-            taskItemId: null,
-            calendarEventId: launch.eventId,
-            sessionLocalId: randomPublicId(),
-          }),
-          subjectId,
-          { alertConfig: config },
-        );
-      }
+          config,
+          taskItemId: launch.taskId ?? null,
+          calendarEventId: launch.eventId ?? null,
+        });
+        if (result === "adopted_remote") {
+          toast("已在其他设备进行中，已同步进度", { duration: 3000 });
+        }
+        setActive(getPomodoroSyncSnapshot(subjectId).active);
+      })();
     }
   }, [loading, config, active, subjectId, navTick]);
 
@@ -423,15 +412,18 @@ export function PomodoroApp() {
 
   const handleStart = () => {
     if (!config || subjectId == null) return;
-    void applyPomodoroActive(
-      createInitialActiveState(config, {
+    void (async () => {
+      const result = await ensurePomodoroStart({
+        subjectId,
+        config,
         taskItemId,
         calendarEventId,
-        sessionLocalId: randomPublicId(),
-      }),
-      subjectId,
-      { alertConfig: config },
-    );
+      });
+      if (result === "adopted_remote") {
+        toast("已在其他设备进行中，已同步进度", { duration: 3000 });
+      }
+      setActive(getPomodoroSyncSnapshot(subjectId).active);
+    })();
   };
 
   const handlePauseResume = () => {

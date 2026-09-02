@@ -154,8 +154,19 @@ export function mergeRemoteActive(
   if (!local) {
     return { active: habitatBodyToActiveState(remote), meta: remoteMeta };
   }
+  const remoteState = habitatBodyToActiveState(remote);
+  if (remote.session_local_id !== local.sessionLocalId) {
+    if (
+      localMeta &&
+      localMeta.updated_at_ms > remote.updated_at_ms &&
+      localMeta.device_id === remote.device_id
+    ) {
+      return { active: local, meta: localMeta };
+    }
+    return { active: remoteState, meta: remoteMeta };
+  }
   if (!localMeta || remote.updated_at_ms >= localMeta.updated_at_ms) {
-    return { active: habitatBodyToActiveState(remote), meta: remoteMeta };
+    return { active: remoteState, meta: remoteMeta };
   }
   return { active: local, meta: localMeta };
 }

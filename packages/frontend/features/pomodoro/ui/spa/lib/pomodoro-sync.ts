@@ -56,8 +56,12 @@ export function markPhaseHandled(state: PomodoroActiveState): boolean {
   return true;
 }
 
-export function clearHandledPhaseKeysForTest(): void {
+export function clearHandledPhaseKeys(): void {
   handledPhaseKeys.clear();
+}
+
+export function clearHandledPhaseKeysForTest(): void {
+  clearHandledPhaseKeys();
 }
 
 async function resolveAlertConfig(
@@ -165,6 +169,13 @@ export async function pullPomodoroActive(
       preferRemote: opts?.preferRemote === true,
     });
     const prev = local;
+    if (
+      prev?.sessionLocalId != null &&
+      merged.active?.sessionLocalId != null &&
+      prev.sessionLocalId !== merged.active.sessionLocalId
+    ) {
+      clearHandledPhaseKeys();
+    }
     applyLocalPomodoroActive(merged.active, subjectId, merged.meta);
     const alertConfig = await resolveAlertConfig(subjectId);
     await syncPomodoroPhaseLocalAlert(prev, merged.active, alertConfig);
@@ -187,6 +198,13 @@ export function applyPomodoroActiveChangedEvent(
   const local = prev;
   const localMeta = getPomodoroSyncMeta(subjectId);
   const merged = mergeRemoteActive(remote, local, localMeta);
+  if (
+    prev?.sessionLocalId != null &&
+    merged.active?.sessionLocalId != null &&
+    prev.sessionLocalId !== merged.active.sessionLocalId
+  ) {
+    clearHandledPhaseKeys();
+  }
   applyLocalPomodoroActive(merged.active, subjectId, merged.meta);
   void resolveAlertConfig(subjectId).then((config) =>
     syncPomodoroPhaseLocalAlert(prev, merged.active, config),

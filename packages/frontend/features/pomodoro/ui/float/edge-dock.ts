@@ -1,5 +1,10 @@
 /** 贴边折叠几何（物理像素；与 Tauri outerPosition / workArea 一致）。 */
 
+import {
+  POMODORO_FLOAT_WINDOW_HEIGHT,
+  POMODORO_FLOAT_WINDOW_WIDTH,
+} from "../../shared/float-constants.ts";
+
 export type DockEdge = "left" | "right" | "top" | "bottom";
 
 export type RectPx = {
@@ -14,11 +19,8 @@ export type SizePx = { width: number; height: number };
 export const EDGE_DOCK_THRESHOLD_PX = 24;
 export const COLLAPSED_THICKNESS_PX = 8;
 export const COLLAPSED_LENGTH_PX = 120;
-export const EXPANDED_WIDTH_PX = 220;
-export const EXPANDED_HEIGHT_PX = 156;
-
 export function expandedSize(): SizePx {
-  return { width: EXPANDED_WIDTH_PX, height: EXPANDED_HEIGHT_PX };
+  return { width: POMODORO_FLOAT_WINDOW_WIDTH, height: POMODORO_FLOAT_WINDOW_HEIGHT };
 }
 
 export function collapsedSize(edge: DockEdge): SizePx {

@@ -8,11 +8,7 @@ import {
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { whenPortalHabitatRpcReady } from "@freeanima/client/portal-sdk/habitat-rpc-call";
 import { reconnectHabitat } from "@freeanima/client/portal-sdk/habitat-connection.ts";
-import {
-  formatPomodoroClock,
-  pomodoroPhaseLabel,
-  pomodoroRemainingMs,
-} from "@freeanima/client/portal-sdk/pomodoro-remaining.ts";
+import { pomodoroRemainingMs } from "@freeanima/client/portal-sdk/pomodoro-remaining.ts";
 import {
   getPomodoroSyncSnapshot,
   subscribePomodoroSync,
@@ -24,9 +20,11 @@ import {
   POMODORO_ACTIVE_CHANGED_EVENT,
   pomodoroActiveChangedEventSchema,
 } from "@freeanima/shared/rpc-contract/frames/pomodoro";
-import { isRecord, randomPublicId } from "@freeanima/shared/util";
+import { isRecord } from "@freeanima/shared/util";
+import { Button } from "@freeanima/ui-kit";
 
 import { fetchPomodoroConfig } from "../spa/lib/api.ts";
+import { ensurePomodoroStart } from "../spa/lib/ensure-pomodoro-start.ts";
 import {
   applyPomodoroActive,
   applyPomodoroActiveChangedEvent,
@@ -35,11 +33,8 @@ import {
 } from "../spa/lib/pomodoro-sync.ts";
 import { bindPomodoroPhaseCompleteTick } from "../spa/lib/pomodoro-phase-complete-tick.ts";
 import { bindPomodoroShellActiveSync } from "../spa/lib/pomodoro-shell-sync.ts";
-import {
-  createInitialActiveState,
-  pauseActiveState,
-  resumeActiveState,
-} from "../spa/lib/timer-engine.ts";
+import { pauseActiveState, resumeActiveState } from "../spa/lib/timer-engine.ts";
+import { PomodoroFloatTimerRing } from "./PomodoroFloatTimerRing.tsx";
 import { TaskPickerDialog } from "../spa/components/TaskPickerDialog.tsx";
 import { formatPomodoroLinkLabel, resolvePomodoroLinkLabel } from "../spa/lib/task-picker-api.ts";
 import { switchWorkFocusLink } from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
@@ -440,20 +435,17 @@ export function PomodoroFloatApp() {
   }, [active, busy, subjectId]);
 
   const handleStart = useCallback(() => {
-    if (busy) return;
+    if (busy || subjectId == null) return;
     setBusy(true);
     void (async () => {
       try {
         const config = await fetchPomodoroConfig(subjectId);
-        await applyPomodoroActive(
-          createInitialActiveState(config, {
-            sessionLocalId: randomPublicId(),
-            taskItemId: pendingTaskId,
-            calendarEventId: pendingEventId,
-          }),
+        await ensurePomodoroStart({
           subjectId,
-          { alertConfig: config },
-        );
+          config,
+          taskItemId: pendingTaskId,
+          calendarEventId: pendingEventId,
+        });
         setPendingTaskId(null);
         setPendingEventId(null);
         setActive(readActive(subjectId));
@@ -510,11 +502,6 @@ export function PomodoroFloatApp() {
     );
   }
 
-  const phaseText = active
-    ? active.runState === "paused"
-      ? `暂停 · ${pomodoroPhaseLabel(active.phase)}`
-      : pomodoroPhaseLabel(active.phase)
-    : "就绪";
   const pauseLabel = active?.runState === "paused" ? "继续" : "暂停";
   const linkText =
     linkedLabel ??
@@ -525,54 +512,51 @@ export function PomodoroFloatApp() {
         : "未关联");
 
   return (
-    <div className="pomodoro-float dark" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <div className="pomodoro-float-top" onMouseDown={onDragStart}>
-        <span
-          className={`pomodoro-float-phase${
-            active ? ` pomodoro-float-phase--${pomodoroPhaseAccentKind(active.phase)}` : ""
-          }`}
-        >
-          {phaseText}
-        </span>
-        <span className="pomodoro-float-clock">{active ? formatPomodoroClock(rem) : "--:--"}</span>
-      </div>
-      <div className="pomodoro-float-progress" aria-hidden>
-        <div
-          className={`pomodoro-float-progress-fill${
-            active
-              ? ` pomodoro-float-progress-fill--${pomodoroPhaseAccentKind(active.phase)}`
-              : " pomodoro-float-progress-fill--idle"
-          }`}
-          style={{ width: `${ratio * 100}%` }}
-        />
-      </div>
-      <div className="pomodoro-float-link">
-        <span className="pomodoro-float-link-label" title={linkText}>
+    <div
+      className="pomodoro-float dark bg-background/95 border-border flex h-full flex-col items-center gap-2 rounded-xl border p-3 shadow-lg backdrop-blur-md"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <PomodoroFloatTimerRing
+        active={active}
+        remainingMs={rem}
+        plannedMs={planned}
+        onDragStart={onDragStart}
+      />
+
+      <div className="flex w-full min-w-0 items-center gap-1.5">
+        <span className="text-muted-foreground min-w-0 flex-1 truncate text-xs" title={linkText}>
           {linkText}
         </span>
-        <button type="button" disabled={!canPickWhileActive || busy} onClick={openPicker}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 shrink-0 px-2 text-xs"
+          isDisabled={!canPickWhileActive || busy}
+          onPress={openPicker}
+        >
           更换
-        </button>
+        </Button>
       </div>
-      <div className="pomodoro-float-actions">
-        {!active ? (
-          <button type="button" disabled={busy} onClick={handleStart}>
-            开始
-          </button>
-        ) : (
-          <>
-            <button type="button" disabled={busy} onClick={togglePause}>
-              {pauseLabel}
-            </button>
-            <button type="button" disabled={busy} onClick={handleEnd}>
-              结束
-            </button>
-          </>
-        )}
-        <button type="button" onClick={openFull}>
-          打开
-        </button>
-      </div>
+
+      {!active ? (
+        <Button type="button" className="w-full" isDisabled={busy} onPress={handleStart}>
+          开始
+        </Button>
+      ) : (
+        <div className="grid w-full grid-cols-3 gap-1.5">
+          <Button type="button" variant="outline" size="sm" isDisabled={busy} onPress={togglePause}>
+            {pauseLabel}
+          </Button>
+          <Button type="button" variant="outline" size="sm" isDisabled={busy} onPress={handleEnd}>
+            结束
+          </Button>
+          <Button type="button" variant="outline" size="sm" onPress={openFull}>
+            打开
+          </Button>
+        </div>
+      )}
       <TaskPickerDialog
         open={pickerOpen}
         selectedTaskId={active?.taskItemId ?? pendingTaskId}
