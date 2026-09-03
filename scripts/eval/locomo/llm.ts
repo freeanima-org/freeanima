@@ -1,4 +1,9 @@
 import { countTokens } from "@freeanima/habitat/core/tokenizer";
+import {
+  OPENCODE_SESSION_HEADER,
+  isOpencodeGoUrl,
+  resolveOpencodeSessionId,
+} from "@freeanima/habitat/capabilities/llm-openai/opencode-session.ts";
 
 import {
   LOCOMO_DEFAULT_MODEL,
@@ -43,12 +48,17 @@ export async function completeText(opts: LlmAnswerOpts): Promise<string> {
     { role: "system", content: opts.system },
     { role: "user", content: opts.user },
   ];
-  const res = await fetch(`${baseUrl}/chat/completions`, {
+  const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    authorization: `Bearer ${apiKey}`,
+  };
+  if (isOpencodeGoUrl(url)) {
+    headers[OPENCODE_SESSION_HEADER] = resolveOpencodeSessionId();
+  }
+  const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${apiKey}`,
-    },
+    headers,
     body: JSON.stringify({
       model,
       messages,
