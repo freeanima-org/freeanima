@@ -1,6 +1,6 @@
 const STORAGE_KEY = "freeanima.shell-modules.visible";
-/** 一次性：旧 localStorage 未含 bedroom/rooms/health 时补为可见；之后尊重用户勾选 */
-const NEW_MODULES_MIGRATION_KEY = "freeanima.shell-modules.v2-new-modules";
+/** 一次性：旧 localStorage 未含 bedroom/rooms/health/habits 时补为可见；之后尊重用户勾选 */
+const NEW_MODULES_MIGRATION_KEY = "freeanima.shell-modules.v3-habits";
 
 export type ShellModuleId =
   | "chat"
@@ -8,6 +8,7 @@ export type ShellModuleId =
   | "tasks"
   | "projects"
   | "objectives"
+  | "habits"
   | "calendar"
   | "pomodoro"
   | "email"
@@ -29,6 +30,7 @@ export const SHELL_MODULE_IDS: ShellModuleId[] = [
   "tasks",
   "projects",
   "objectives",
+  "habits",
   "calendar",
   "pomodoro",
   "email",
@@ -86,18 +88,25 @@ function parseVisible(raw: string | null): Set<ShellModuleId> {
     for (const locked of SHELL_MODULE_LOCKED) {
       if (!ids.includes(locked)) ids.push(locked);
     }
-    // 一次性迁移：升级前已保存的可见集完全不含 bedroom/rooms/health 时，首次读取补为可见并持久化
+    // 一次性迁移：升级前已保存的可见集完全不含 bedroom/rooms/health/habits 时，首次读取补为可见并持久化
     if (raw != null) {
       try {
         const store = storage();
         if (store && !store.getItem(NEW_MODULES_MIGRATION_KEY)) {
           store.setItem(NEW_MODULES_MIGRATION_KEY, "1");
           const hadAnyNewModule =
-            ids.includes("bedroom") || ids.includes("rooms") || ids.includes("health");
+            ids.includes("bedroom") ||
+            ids.includes("rooms") ||
+            ids.includes("health") ||
+            ids.includes("habits");
           if (!hadAnyNewModule) {
             if (!ids.includes("bedroom")) ids.push("bedroom");
             if (!ids.includes("rooms")) ids.push("rooms");
             if (!ids.includes("health")) ids.push("health");
+            if (!ids.includes("habits")) ids.push("habits");
+            store.setItem(STORAGE_KEY, serializeVisible(new Set(ids)));
+          } else if (!ids.includes("habits")) {
+            ids.push("habits");
             store.setItem(STORAGE_KEY, serializeVisible(new Set(ids)));
           }
         }
@@ -159,6 +168,7 @@ export function resolveShellModuleIdFromPath(pathname: string): ShellModuleId | 
   if (path.startsWith("/tasks")) return "tasks";
   if (path.startsWith("/projects")) return "projects";
   if (path.startsWith("/objectives")) return "objectives";
+  if (path.startsWith("/habits")) return "habits";
   if (path.startsWith("/calendar")) return "calendar";
   if (path.startsWith("/pomodoro")) return "pomodoro";
   if (path.startsWith("/email")) return "email";
@@ -182,6 +192,7 @@ const MODULE_DEFAULT_PATH: Record<ShellModuleId, string> = {
   tasks: "/tasks",
   projects: "/projects",
   objectives: "/objectives",
+  habits: "/habits",
   calendar: "/calendar",
   pomodoro: "/pomodoro",
   email: "/email",

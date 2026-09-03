@@ -110,6 +110,10 @@ function openProject(id: number) {
   void openEntityResource({ id, component: "project", present: "overlay" });
 }
 
+function openHabit(id: number) {
+  window.location.assign(`/web/habits?habit=${id}`);
+}
+
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 
 export function CalendarApp() {
@@ -847,6 +851,7 @@ export function CalendarApp() {
             onOpenTask={openTask}
             onOpenProject={openProject}
             onOpenHoliday={openHoliday}
+            onOpenHabit={openHabit}
             onCreateEvent={(day) => setEditor({ mode: "create", day })}
             onCreateTask={(day) => setTaskCreateDay(day)}
             {...agendaMenuProps}
@@ -877,6 +882,7 @@ export function CalendarApp() {
                 onOpenTask={openTask}
                 onOpenProject={openProject}
                 onOpenHoliday={openHoliday}
+                onOpenHabit={openHabit}
                 onDropTaskDue={(taskId, day) => {
                   void patchTaskDueAt(subjectId, taskId, day).then(() => refresh());
                 }}
@@ -893,6 +899,7 @@ export function CalendarApp() {
                 onOpenTask={openTask}
                 onOpenProject={openProject}
                 onOpenHoliday={openHoliday}
+                onOpenHabit={openHabit}
               />
             )}
           </section>
@@ -914,6 +921,7 @@ export function CalendarApp() {
                 onOpenTask={openTask}
                 onOpenProject={openProject}
                 onOpenHoliday={openHoliday}
+                onOpenHabit={openHabit}
                 {...agendaMenuProps}
               />
             </div>

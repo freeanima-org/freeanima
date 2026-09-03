@@ -15,6 +15,7 @@ export const pomodoroTaskFocusBodySchema = z
     phase_started_at: z.string().min(1),
     task_item_id: z.number().int().positive().nullable().default(null),
     calendar_event_id: z.number().int().positive().nullable().default(null),
+    habit_id: z.number().int().positive().nullable().default(null),
     started_at: z.string().min(1),
     ended_at: z.string().min(1),
     duration_ms: z.number().int().nonnegative(),

@@ -303,10 +303,12 @@ export async function fetchRecentPendingTasksForPicker(): Promise<PomodoroLinkPi
 export async function resolvePomodoroLinkLabel(opts: {
   taskItemId?: number | null;
   calendarEventId?: number | null;
+  habitId?: number | null;
 }): Promise<string | null> {
   const taskId = opts.taskItemId ?? null;
   const eventId = opts.calendarEventId ?? null;
-  if (taskId == null && eventId == null) return null;
+  const habitId = opts.habitId ?? null;
+  if (taskId == null && eventId == null && habitId == null) return null;
 
   if (taskId != null) {
     const today = await searchPendingLinksForPicker("");
@@ -321,6 +323,21 @@ export async function resolvePomodoroLinkLabel(opts: {
     const row = items.find((item) => item.id === taskId);
     if (row) return formatPomodoroLinkLabel(taskRowToPick(row));
     return `任务 #${taskId}`;
+  }
+
+  if (habitId != null) {
+    try {
+      const subjectId = await getUserSubjectId();
+      const data = await habitat().call("habit.get", {
+        subject_id: subjectId,
+        id: habitId,
+      });
+      const title = data.item?.title;
+      if (title) return `习惯 · ${title}`;
+    } catch {
+      /* ignore */
+    }
+    return `习惯 #${habitId}`;
   }
 
   const today = await searchPendingLinksForPicker("");

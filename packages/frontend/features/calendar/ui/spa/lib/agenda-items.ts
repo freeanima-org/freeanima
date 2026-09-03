@@ -46,6 +46,9 @@ export function calendarItemKey(item: CalendarRangeItem): string {
   if (item.kind === "task") {
     return `${item.kind}-${item.id}-${item.end_at ?? item.start_at ?? item.due_at ?? ""}-${item.virtual ? "v" : "l"}`;
   }
+  if (item.kind === "habit") {
+    return `${item.kind}-${item.id}-${item.day}-${item.reminder_time ?? "all"}`;
+  }
   return `${item.kind}-${item.id}`;
 }
 
@@ -204,6 +207,10 @@ function agendaAnchorMs(item: CalendarRangeItem): number {
     const ms = item.start_at ? Date.parse(item.start_at) : NaN;
     return Number.isFinite(ms) ? ms : 0;
   }
+  if (item.kind === "habit") {
+    const ms = Date.parse(item.start_at);
+    return Number.isFinite(ms) ? ms : 0;
+  }
   if (item.status === "completed" && item.completed_at) {
     const ms = Date.parse(item.completed_at);
     return Number.isFinite(ms) ? ms : 0;
@@ -306,6 +313,11 @@ export function structureAgendaDay(
       schedule.push(item);
       continue;
     }
+    if (item.kind === "habit") {
+      schedule.push(item);
+      continue;
+    }
+    if (item.kind !== "task") continue;
     // task
     if (item.status === "completed") {
       if (item.project_id != null) {

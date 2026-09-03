@@ -75,6 +75,7 @@ export const objectiveResolvedProgressSchema = z.object({
     "projects_completed",
     "pomodoro",
     "children_completed",
+    "habit",
     "none",
   ]),
 });

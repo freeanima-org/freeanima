@@ -33,6 +33,7 @@ export const pomodoroSessionRowSchema = z
     actual_duration_ms: z.number().int().nonnegative().nullable(),
     task_item_id: z.number().int().positive().nullable(),
     calendar_event_id: z.number().int().positive().nullable().default(null),
+    habit_id: z.number().int().positive().nullable().default(null),
     cycle_index: z.number().int().nonnegative(),
     interrupted: z.boolean(),
     client_op_id: z.string().nullable().optional(),
@@ -50,6 +51,7 @@ export const pomodoroTaskFocusSegmentInputSchema = z
     phase_started_at: z.string().min(1),
     task_item_id: z.number().int().positive().nullable().optional(),
     calendar_event_id: z.number().int().positive().nullable().optional(),
+    habit_id: z.number().int().positive().nullable().optional(),
     started_at: z.string().min(1),
     ended_at: z.string().min(1),
     duration_ms: z.number().int().nonnegative(),
@@ -60,6 +62,7 @@ export const pomodoroTaskFocusSegmentInputSchema = z
       {
         task_item_id: value.task_item_id ?? null,
         calendar_event_id: value.calendar_event_id ?? null,
+        habit_id: value.habit_id ?? null,
       },
       ctx,
     );
@@ -74,6 +77,7 @@ export const pomodoroTaskFocusRowSchema = z
     phase_started_at: z.string(),
     task_item_id: z.number().int().positive().nullable(),
     calendar_event_id: z.number().int().positive().nullable().default(null),
+    habit_id: z.number().int().positive().nullable().default(null),
     started_at: z.string(),
     ended_at: z.string(),
     duration_ms: z.number().int().nonnegative(),
@@ -121,6 +125,7 @@ export const pomodoroSessionCompleteInputSchema = z
     actual_duration_ms: z.number().int().nonnegative(),
     task_item_id: z.number().int().positive().nullable().optional(),
     calendar_event_id: z.number().int().positive().nullable().optional(),
+    habit_id: z.number().int().positive().nullable().optional(),
     cycle_index: z.number().int().nonnegative().optional(),
     interrupted: z.boolean().optional(),
     title: z.string().optional(),
@@ -133,6 +138,7 @@ export const pomodoroSessionCompleteInputSchema = z
       {
         task_item_id: value.task_item_id ?? null,
         calendar_event_id: value.calendar_event_id ?? null,
+        habit_id: value.habit_id ?? null,
       },
       ctx,
     );
@@ -153,6 +159,7 @@ export const pomodoroSessionAbortInputSchema = z
     actual_duration_ms: z.number().int().nonnegative(),
     task_item_id: z.number().int().positive().nullable().optional(),
     calendar_event_id: z.number().int().positive().nullable().optional(),
+    habit_id: z.number().int().positive().nullable().optional(),
     cycle_index: z.number().int().nonnegative().optional(),
     title: z.string().optional(),
     session_local_id: z.string().min(1).optional(),
@@ -164,6 +171,7 @@ export const pomodoroSessionAbortInputSchema = z
       {
         task_item_id: value.task_item_id ?? null,
         calendar_event_id: value.calendar_event_id ?? null,
+        habit_id: value.habit_id ?? null,
       },
       ctx,
     );
@@ -208,6 +216,7 @@ export const pomodoroFocusListInputSchema = z.object({
   subject_id: z.number().int().positive(),
   task_item_id: z.number().int().positive().optional(),
   calendar_event_id: z.number().int().positive().optional(),
+  habit_id: z.number().int().positive().nullable().optional(),
   session_local_id: z.string().min(1).optional(),
   pomodoro_session_id: z.number().int().positive().optional(),
   phase_started_at: z.string().optional(),
@@ -227,6 +236,7 @@ export const pomodoroFocusSegmentDraftSchema = z
   .object({
     task_item_id: z.number().int().positive().nullable(),
     calendar_event_id: z.number().int().positive().nullable().default(null),
+    habit_id: z.number().int().positive().nullable().default(null),
     started_at: z.string().min(1),
     ended_at: z.string().nullable(),
   })
@@ -243,6 +253,7 @@ export const pomodoroActiveStateSchema = z
     completed_work_in_cycle: z.number().int().nonnegative(),
     task_item_id: z.number().int().positive().nullable(),
     calendar_event_id: z.number().int().positive().nullable().default(null),
+    habit_id: z.number().int().positive().nullable().default(null),
     session_local_id: z.string().min(1),
     phase_started_at: z.string().min(1),
     focus_segments: z.array(pomodoroFocusSegmentDraftSchema),

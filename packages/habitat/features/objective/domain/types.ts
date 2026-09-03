@@ -15,6 +15,7 @@ export type ObjectiveResolvedProgress = {
     | "projects_completed"
     | "pomodoro"
     | "children_completed"
+    | "habit"
     | "none";
 };
 

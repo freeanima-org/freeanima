@@ -70,9 +70,9 @@ export function ShellConnectivityBar(): null {
     }
 
     if (notice.kind === "habitat-connecting") {
-      // 条幅指 WebSocket 实时通道；列表/CRUD 读路径默认 HTTP，连接中仍可能拉到数据或缓存
+      // 条幅指 WebSocket 实时通道；Portal 列表/CRUD 默认 HTTP，连接中仍可读写
       showShellToast(SHELL_TOAST_IDS.connectivity, "实时通道连接中", {
-        description: "列表等读请求仍可用；推送与部分写入需通道就绪。",
+        description: "列表与多数写入仍可用；推送与少数仅 WS 能力需通道就绪。",
         action: {
           label: "重连",
           onClick: () => {

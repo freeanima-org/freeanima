@@ -13,6 +13,7 @@ type MultiDayAgendaProps = {
   onOpenProject: (id: number) => void;
   onEditEvent: (id: number) => void;
   onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
+  onOpenHabit?: (id: number) => void;
   onCreateEvent: (day: string) => void;
   onCreateTask: (day: string) => void;
   contextMenuEnabled?: boolean;
@@ -30,6 +31,7 @@ export function MultiDayAgenda({
   onOpenProject,
   onEditEvent,
   onOpenHoliday,
+  onOpenHabit,
   onCreateEvent,
   onCreateTask,
   contextMenuEnabled,
@@ -43,6 +45,7 @@ export function MultiDayAgenda({
     onOpenProject,
     onEditEvent,
     onOpenHoliday,
+    ...(onOpenHabit != null ? { onOpenHabit } : {}),
     ...(contextMenuEnabled !== undefined ? { contextMenuEnabled } : {}),
     ...(useActionSheet !== undefined ? { useActionSheet } : {}),
     ...(contextMenuItemsForItem != null ? { contextMenuItemsForItem } : {}),

@@ -55,7 +55,7 @@ export type CalendarStoreContext = {
   worldId: number;
 };
 
-export type CalendarRangeKind = "event" | "task" | "project" | "holiday";
+export type CalendarRangeKind = "event" | "task" | "project" | "holiday" | "habit";
 
 export type BuiltinCalendarSourceId = "cn_holiday" | "traditional" | "international" | "solar_term";
 
@@ -109,11 +109,28 @@ export type CalendarRangeHolidayItem = {
   all_day: true;
 };
 
+export type CalendarRangeHabitItem = {
+  kind: "habit";
+  id: number;
+  title: string;
+  start_at: string;
+  end_at: string | null;
+  all_day: boolean;
+  day: string;
+  amount: number;
+  target: number;
+  met: boolean;
+  polarity: "build" | "break";
+  check_in_id: number | null;
+  reminder_time?: string | null;
+};
+
 export type CalendarRangeItem =
   | CalendarRangeEventItem
   | CalendarRangeTaskItem
   | CalendarRangeProjectItem
-  | CalendarRangeHolidayItem;
+  | CalendarRangeHolidayItem
+  | CalendarRangeHabitItem;
 
 export type CalendarRangeOpts = {
   from: string;

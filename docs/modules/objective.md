@@ -41,7 +41,7 @@ metric_auto          可自动统计
   ├── projects_completed
   ├── children_completed（直系子目标；已取消不计分母；读侧现算）
   ├── pomodoro（窗口内 session 次数或分钟；可选 task_ids）
-  └── habit（schema 预留；写入时拒绝「习惯模块未落地」）
+  └── habit（按 habit_id 统计窗内达标日数；见 [habit.md](./habit.md)）
 ```
 
 读接口附带计算字段 `resolved_progress`（**不**写回 body）：`current` / `target` / `unit` / `ratio` / `source`。
@@ -65,7 +65,7 @@ metric_auto          可自动统计
 
 ## UI
 
-壳模块 `objectives`，路由 `/objectives`（Rail「目标」）。创建时可选手动 / 自动完成类型；习惯入口不提供。
+壳模块 `objectives`，路由 `/objectives`（Rail「目标」）。创建时可选手动 / 自动完成类型（含习惯来源）。
 
 列表项快捷菜单（pointer：右键 ContextMenu；touch：⋯ / 长按 ActionSheet）：调整 `status`、添加子目标（预填 `parent_id`）。
 
@@ -85,7 +85,7 @@ metric_auto          可自动统计
 
 ## 非目标（v1）
 
-- 习惯实体 / 健身 App 自动采集
+- 健身 App 自动采集（习惯打卡见 [habit.md](./habit.md)）
 - 进度达标自动 `status → completed`
 - O / KR 双实体；里程碑复活
 - 跨 world 共享目标

@@ -13,7 +13,7 @@ export function launchPomodoroForEvent(event: PomodoroEventLaunchInput): void {
   const active = readPomodoroActiveState();
   if (active) {
     writePomodoroActiveState(
-      switchWorkFocusLink(active, { taskItemId: null, calendarEventId: event.id }),
+      switchWorkFocusLink(active, { taskItemId: null, calendarEventId: event.id, habitId: null }),
     );
     navigateAppModulePath(`/pomodoro?${params}`);
     return;

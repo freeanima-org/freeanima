@@ -63,7 +63,7 @@ describe("objectiveBodySchema", () => {
 });
 
 describe("assertCompletionSupported", () => {
-  test("rejects habit source", () => {
+  test("allows habit source", () => {
     expect(() =>
       assertCompletionSupported({
         kind: "metric_auto",
@@ -71,7 +71,7 @@ describe("assertCompletionSupported", () => {
         target: 1,
         source: { type: "habit", habit_id: 1 },
       }),
-    ).toThrow("习惯模块未落地");
+    ).not.toThrow();
   });
 
   test("allows manual metric", () => {

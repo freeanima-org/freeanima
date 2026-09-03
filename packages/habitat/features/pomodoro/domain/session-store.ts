@@ -36,6 +36,7 @@ function toSessionRow(
     actual_duration_ms: row.actual_duration_ms,
     task_item_id: row.task_item_id,
     calendar_event_id: row.calendar_event_id ?? null,
+    habit_id: row.habit_id ?? null,
     cycle_index: row.cycle_index,
     interrupted: row.interrupted,
     client_op_id: row.client_op_id,
@@ -129,7 +130,14 @@ async function persistSessionWithFocus(
       planned_duration_ms: input.planned_duration_ms,
       actual_duration_ms: input.actual_duration_ms,
       task_item_id: input.task_item_id ?? null,
-      calendar_event_id: input.task_item_id != null ? null : (input.calendar_event_id ?? null),
+      calendar_event_id:
+        input.task_item_id != null || input.habit_id != null
+          ? null
+          : (input.calendar_event_id ?? null),
+      habit_id:
+        input.task_item_id != null || input.calendar_event_id != null
+          ? null
+          : (input.habit_id ?? null),
       cycle_index: cycleIndex,
       interrupted,
     },

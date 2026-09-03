@@ -21,6 +21,7 @@ export type WeekGridProps = {
   onOpenTask: (id: number) => void;
   onOpenProject: (id: number) => void;
   onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
+  onOpenHabit?: (id: number) => void;
   onDropTaskDue: (taskId: number, day: string) => void;
 };
 
@@ -48,11 +49,15 @@ const WEEKDAY_LABELS = ["一", "二", "三", "四", "五", "六", "日"];
 
 function openBar(
   bar: PackedBar,
-  handlers: Pick<WeekGridProps, "onOpenEvent" | "onOpenTask" | "onOpenProject" | "onOpenHoliday">,
+  handlers: Pick<
+    WeekGridProps,
+    "onOpenEvent" | "onOpenTask" | "onOpenProject" | "onOpenHoliday" | "onOpenHabit"
+  >,
 ): void {
   if (bar.item.kind === "event") handlers.onOpenEvent(bar.item.id);
   else if (bar.item.kind === "task") handlers.onOpenTask(bar.item.id);
   else if (bar.item.kind === "holiday") handlers.onOpenHoliday(bar.item);
+  else if (bar.item.kind === "habit") handlers.onOpenHabit?.(bar.item.id);
   else handlers.onOpenProject(bar.item.id);
 }
 
@@ -65,6 +70,7 @@ export function WeekGrid({
   onOpenTask,
   onOpenProject,
   onOpenHoliday,
+  onOpenHabit,
   onDropTaskDue,
 }: WeekGridProps) {
   const days = useMemo(
@@ -84,7 +90,13 @@ export function WeekGrid({
   const hasOverflow = days.some(
     (_, col) => dayOverflowCount(packed, col, MAX_VISIBLE_BAR_LANES) > 0,
   );
-  const handlers = { onOpenEvent, onOpenTask, onOpenProject, onOpenHoliday };
+  const handlers = {
+    onOpenEvent,
+    onOpenTask,
+    onOpenProject,
+    onOpenHoliday,
+    ...(onOpenHabit != null ? { onOpenHabit } : {}),
+  };
 
   return (
     <div className="flex min-h-[16rem] flex-col gap-1">

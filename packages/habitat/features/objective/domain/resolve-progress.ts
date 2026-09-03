@@ -11,6 +11,7 @@ import {
   type ObjectiveBody,
 } from "@freeanima/habitat/core/db/schema/entity";
 import { getEntity, listEntities } from "@freeanima/habitat/core/db/pg/entity";
+import { countHabitMetDaysInWindow } from "@freeanima/features/habit/domain/index.ts";
 
 import type { ObjectiveResolvedProgress } from "./types.ts";
 
@@ -140,7 +141,19 @@ export async function resolveObjectiveProgress(
 
   const { unit, source } = completion;
   if (source.type === "habit") {
-    throw new Error("习惯模块未落地");
+    const current = await countHabitMetDaysInWindow(
+      worldId,
+      source.habit_id,
+      body.start_at ?? null,
+      body.end_at ?? null,
+    );
+    return {
+      current,
+      target: completion.target,
+      unit,
+      ratio: ratioOf(current, completion.target),
+      source: "habit",
+    };
   }
 
   if (source.type === "tasks_completed") {
@@ -206,10 +219,8 @@ export async function resolveObjectiveProgress(
   };
 }
 
-export function assertCompletionSupported(completion: ObjectiveCompletion): void {
-  if (completion.kind === "metric_auto" && completion.source.type === "habit") {
-    throw new Error("习惯模块未落地");
-  }
+export function assertCompletionSupported(_completion: ObjectiveCompletion): void {
+  // habit 源已落地；保留钩子供后续扩展拒绝项
 }
 
 /** 供测试：确认组件常量可被引用 */

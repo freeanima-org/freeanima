@@ -12,6 +12,7 @@ const KIND_OPTIONS: { id: CalendarKindPref; title: string }[] = [
   { id: "event", title: "事件" },
   { id: "task", title: "任务" },
   { id: "project", title: "项目" },
+  { id: "habit", title: "打卡" },
 ];
 
 export type CalendarDisplayControlsProps = {

@@ -15,6 +15,7 @@ export type EnsurePomodoroStartOpts = {
   config: PomodoroConfigRow;
   taskItemId?: number | null;
   calendarEventId?: number | null;
+  habitId?: number | null;
   sessionLocalId?: string;
 };
 
@@ -55,6 +56,7 @@ export async function ensurePomodoroStart(
     createInitialActiveState(config, {
       taskItemId: opts.taskItemId ?? null,
       calendarEventId: opts.calendarEventId ?? null,
+      habitId: opts.habitId ?? null,
       sessionLocalId: opts.sessionLocalId ?? randomPublicId(),
     }),
     subjectId,

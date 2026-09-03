@@ -32,6 +32,7 @@ function expiredWork(nowMs: number): PomodoroActiveState {
     completedWorkInCycle: 0,
     taskItemId: null,
     calendarEventId: null,
+    habitId: null,
     sessionLocalId: "sess-1",
     phaseStartedAt: new Date(nowMs - 60_000).toISOString(),
     focusSegments: [],

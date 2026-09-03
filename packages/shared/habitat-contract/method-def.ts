@@ -30,7 +30,7 @@ export type DualTransportMetaOptions = {
   timeoutMs?: number;
 };
 
-/** HTTP + WS 双传输（只读默认 HTTP GET；写入默认 WS）；超时默认读 3s / 写 10s */
+/** HTTP + WS 双传输（只读默认 HTTP GET；写入：Habitat UI 默认 WS，Portal/outpost 默认 HTTP）；超时默认读 3s / 写 10s */
 export function dualTransportMeta(
   readOnly = true,
   options?: DualTransportMetaOptions,
@@ -39,7 +39,7 @@ export function dualTransportMeta(
     transports: ["http", "ws"],
     defaultByProfile: readOnly
       ? { habitat: "http", outpost: "http" }
-      : { habitat: "ws", outpost: "ws" },
+      : { habitat: "ws", outpost: "http" },
     fallback: readOnly,
     timeoutMs:
       options?.timeoutMs ?? (readOnly ? HABITAT_RPC_READ_TIMEOUT_MS : HABITAT_RPC_WRITE_TIMEOUT_MS),

@@ -65,6 +65,7 @@ true`，不写库）。独立 `due_at` 不作为日历条带终点。
 - **`include_completed`**：另并入已完成根任务（`TaskContainer.ANY`：清单 + 项目内；含 occurrence 历史）：计划与窗相交，**或** `completed_at` 落窗。同一 live id 只返回一条（保留计划字段 + `completed_at`）；前端按**计划段 + 完成日**双轴展示，同日去重。
 - **project**：`status=active`，有 `start_at`，且与区间相交（不含已完成 / 搁置 / 取消）
 - **holiday**：内置日历源合成的只读全天项（不写库、无提醒）。`kinds` 含 `holiday` 且未传 `sources` 时启用全部已实现源；按公历年懒加载并 Redis 缓存（`anima:cache:calendar:builtin:{source}:{year}`）。
+- **habit**：active 习惯在区间内应打卡日展开；有 `reminders` 则按 HH:mm 时间点，否则全天；带当日 `amount` / `met` / `check_in_id`。prefs「显示打卡」对应 kind=`habit`。
 
 ### 内置日历源
 

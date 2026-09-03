@@ -16,6 +16,7 @@ export type AgendaListHandlers = {
   onOpenProject: (id: number) => void;
   onEditEvent: (id: number) => void;
   onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
+  onOpenHabit?: (id: number) => void;
 };
 
 type AgendaListProps = AgendaListHandlers & {
@@ -33,6 +34,7 @@ function kindLabel(item: CalendarRangeItem): string {
   if (item.kind === "event") return "事件";
   if (item.kind === "task") return item.status === "completed" ? "已完成" : "任务";
   if (item.kind === "holiday") return builtinSourceLabel(item.source);
+  if (item.kind === "habit") return item.met ? "已打卡" : "习惯";
   return "项目";
 }
 
@@ -42,6 +44,10 @@ function itemTime(item: CalendarRangeItem, day?: string): string {
     return isoToTimeLocalValue(item.start_at) || "—";
   }
   if (item.kind === "holiday") return "全天";
+  if (item.kind === "habit") {
+    if (item.all_day) return "全天";
+    return isoToTimeLocalValue(item.start_at) || "—";
+  }
   if (item.kind === "task") {
     if (
       item.status === "completed" &&
@@ -123,6 +129,7 @@ function AgendaRow({
           item.kind === "task" && completed && "bg-muted text-muted-foreground",
           item.kind === "project" && "bg-sky-500/15 text-sky-700 dark:text-sky-300",
           item.kind === "holiday" && "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+          item.kind === "habit" && "bg-violet-500/15 text-violet-700 dark:text-violet-300",
         )}
       >
         {kindLabel(item)}
@@ -184,6 +191,7 @@ export function AgendaList({
   onOpenProject,
   onEditEvent,
   onOpenHoliday,
+  onOpenHabit,
   contextMenuEnabled = false,
   useActionSheet = false,
   contextMenuItemsForItem,
@@ -213,6 +221,7 @@ export function AgendaList({
               if (item.kind === "event") onEditEvent(item.id);
               else if (item.kind === "task") onOpenTask(item.id);
               else if (item.kind === "holiday") onOpenHoliday(item);
+              else if (item.kind === "habit") onOpenHabit?.(item.id);
               else onOpenProject(item.id);
             }}
             {...(onOpenItemMenu != null ? { onOpenItemMenu } : {})}

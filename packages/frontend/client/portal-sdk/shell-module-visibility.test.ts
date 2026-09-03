@@ -54,7 +54,7 @@ describe("shell-module-visibility", () => {
     expect(visible.has("chat")).toBe(true);
   });
 
-  test("旧可见集不含新模块时一次性补全 bedroom / rooms / health", () => {
+  test("旧可见集不含新模块时一次性补全 bedroom / rooms / health / habits", () => {
     const backing = new Map<string, string>();
     const mockStorage: Storage = {
       get length() {
@@ -86,7 +86,8 @@ describe("shell-module-visibility", () => {
       expect(visible.has("bedroom")).toBe(true);
       expect(visible.has("rooms")).toBe(true);
       expect(visible.has("health")).toBe(true);
-      expect(localStorage.getItem("freeanima.shell-modules.v2-new-modules")).toBe("1");
+      expect(visible.has("habits")).toBe(true);
+      expect(localStorage.getItem("freeanima.shell-modules.v3-habits")).toBe("1");
     } finally {
       if (hadLocalStorage) {
         Object.defineProperty(globalThis, "localStorage", {
@@ -96,6 +97,7 @@ describe("shell-module-visibility", () => {
       } else {
         Reflect.deleteProperty(globalThis, "localStorage");
       }
+      resetShellModuleVisibilityForTest();
     }
   });
 });
