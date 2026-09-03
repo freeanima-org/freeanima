@@ -4,6 +4,7 @@
  * 本层在 fetch 上标 x-should-retry: false，让 SDK 立刻抛出。
  */
 
+import { wrapOpencodeSession } from "./opencode-session.ts";
 import { LlmTimeoutError, isLlmTimeoutError } from "./request-timeouts.ts";
 export const MAX_PROVIDER_RETRY_AFTER_MS = 10_000;
 
@@ -90,7 +91,7 @@ export function wrapSdkFetch(inner: SdkFetch): SdkFetch {
   };
 }
 
-/** 配额 429 护栏 + 连接/响应头超时（OpenAI / Anthropic SDK 共用） */
+/** 配额 429 护栏 + OpenCode session 头 + 连接/响应头超时（OpenAI / Anthropic SDK 共用） */
 export function createSdkFetch(connectMs: number): SdkFetch {
-  return wrapSdkFetch(wrapConnectTimeout(fetch, connectMs));
+  return wrapSdkFetch(wrapConnectTimeout(wrapOpencodeSession(fetch), connectMs));
 }
