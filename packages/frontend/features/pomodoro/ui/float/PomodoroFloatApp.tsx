@@ -513,7 +513,7 @@ export function PomodoroFloatApp() {
 
   return (
     <div
-      className="pomodoro-float dark bg-background/95 border-border flex h-full flex-col items-center gap-2 rounded-xl border p-3 shadow-lg backdrop-blur-md"
+      className="pomodoro-float dark bg-background/95 text-foreground border-border flex h-full flex-col items-center gap-2 rounded-xl border p-3 shadow-lg backdrop-blur-md"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

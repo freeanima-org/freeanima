@@ -10,6 +10,7 @@ body {
   height: 100%;
   overflow: hidden;
   background: transparent;
+  @apply text-foreground;
   font-family:
     ui-sans-serif,
     system-ui,
