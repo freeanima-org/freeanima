@@ -6,6 +6,7 @@ import {
   computeLayoutShrink,
   computeVisualViewportInset,
   mergeKeyboardInset,
+  stabilizeKeyboardInset,
 } from "@freeanima/features/chat/ui/spa/lib/keyboard-inset.ts";
 
 function readInnerHeight(): number {
@@ -28,10 +29,13 @@ export function useKeyboardInset(): number {
     const vv = window.visualViewport;
     if (!vv) return () => {};
     const update = () => {
-      setInnerHeight(readInnerHeight());
-      setVvInset(computeVisualViewportInset(vv));
+      const nextInner = readInnerHeight();
+      const nextVv = computeVisualViewportInset(vv);
+      setInnerHeight((prev) => (prev === nextInner ? prev : nextInner));
+      setVvInset((prev) => (prev === nextVv ? prev : nextVv));
+      // VV-only：baseline 跟当前 inner，layoutShrink≈0，避免与 vvInset 双重扣减
       if (shouldUseVisualViewportOnly()) {
-        setBaselineInnerHeight(readInnerHeight());
+        setBaselineInnerHeight((prev) => (prev === nextInner ? prev : nextInner));
       }
     };
     update();
@@ -44,5 +48,5 @@ export function useKeyboardInset(): number {
   }, []);
 
   const layoutShrink = computeLayoutShrink(baselineInnerHeight, innerHeight);
-  return mergeKeyboardInset(vvInset, 0, layoutShrink);
+  return stabilizeKeyboardInset(mergeKeyboardInset(vvInset, 0, layoutShrink));
 }
