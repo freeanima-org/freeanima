@@ -15,11 +15,24 @@ import {
   filterBuiltinItemsByDateRange,
   yearsOverlappingRange,
 } from "@freeanima/shared/util/builtin-calendar-sources.ts";
+import {
+  formatOffsetIso,
+  getConfiguredHostTimeZone,
+  timeZoneOffsetMs,
+} from "@freeanima/shared/util/time.ts";
+import {
+  eachDayInclusive,
+  isHabitDayMet,
+  isHabitDueOnDay,
+  listHabits,
+  listHabitCheckIns,
+} from "@freeanima/features/habit/domain/index.ts";
 
 import { getBuiltinCalendarYear, prewarmBuiltinCalendarYears } from "./builtin-year-cache.ts";
 import { expandRecurringTaskVirtuals } from "./expand-recurring-tasks.ts";
 import { listCalendarEvents } from "./event-store.ts";
 import type {
+  CalendarRangeHabitItem,
   CalendarRangeHolidayItem,
   CalendarRangeItem,
   CalendarRangeKind,
@@ -30,7 +43,7 @@ import type {
 import { listCompletedActivity } from "@freeanima/features/task/domain/completed-activity.ts";
 import { TaskContainer } from "@freeanima/shared/pg-shapes/entity/enums.ts";
 
-const ALL_KINDS: CalendarRangeKind[] = ["event", "task", "project", "holiday"];
+const ALL_KINDS: CalendarRangeKind[] = ["event", "task", "project", "holiday", "habit"];
 
 function dayKeyFromIso(iso: string): string {
   return iso.slice(0, 10);
@@ -205,6 +218,69 @@ async function listBuiltinHolidaysInRange(
   }));
 }
 
+function habitDayStartIso(day: string, time?: string): string {
+  const tz = getConfiguredHostTimeZone();
+  const offset = formatOffsetIso(timeZoneOffsetMs(tz, new Date(`${day}T12:00:00Z`)));
+  if (time) return `${day}T${time}:00${offset}`;
+  return `${day}T00:00:00${offset}`;
+}
+
+async function listHabitsInRange(
+  ctx: CalendarStoreContext,
+  from: string,
+  to: string,
+): Promise<CalendarRangeHabitItem[]> {
+  const fromDay = dayKeyFromIso(from);
+  const toDay = dayKeyFromIso(to);
+  const days = eachDayInclusive(fromDay, toDay);
+  const habits = await listHabits(ctx.worldId, { status: "active" });
+  const out: CalendarRangeHabitItem[] = [];
+
+  for (const habit of habits) {
+    const createdDay = habit.created_at.slice(0, 10);
+    const checkIns = await listHabitCheckIns(ctx.worldId, habit.id, fromDay, toDay);
+    const byDay = new Map(checkIns.map((c) => [c.day, c] as const));
+    for (const day of days) {
+      if (!isHabitDueOnDay(habit.frequency, day, createdDay)) continue;
+      const c = byDay.get(day);
+      const amount = c?.amount ?? 0;
+      const met = isHabitDayMet(habit.polarity, amount, habit.target);
+      const base = {
+        kind: "habit" as const,
+        id: habit.id,
+        title: habit.title,
+        day,
+        amount,
+        target: habit.target,
+        met,
+        polarity: habit.polarity,
+        check_in_id: c?.id ?? null,
+      };
+      const reminders = habit.reminders ?? [];
+      if (reminders.length === 0) {
+        out.push({
+          ...base,
+          start_at: habitDayStartIso(day),
+          end_at: null,
+          all_day: true,
+          reminder_time: null,
+        });
+      } else {
+        for (const r of reminders) {
+          out.push({
+            ...base,
+            start_at: habitDayStartIso(day, r.time),
+            end_at: null,
+            all_day: false,
+            reminder_time: r.time,
+          });
+        }
+      }
+    }
+  }
+  return out;
+}
+
 export async function listCalendarRange(
   ctx: CalendarStoreContext,
   opts: CalendarRangeOpts,
@@ -323,6 +399,10 @@ export async function listCalendarRange(
     const sources = resolveHolidaySources(opts.sources);
     items.push(...(await listBuiltinHolidaysInRange(opts.from, opts.to, sources)));
     prewarmBuiltinCalendarYears(sources);
+  }
+
+  if (kindSet.has("habit")) {
+    items.push(...(await listHabitsInRange(ctx, opts.from, opts.to)));
   }
 
   return items.toSorted((a, b) => {

@@ -10,6 +10,8 @@ export const TASK_OCCURRENCE_COMPONENT = "task_occurrence" as const;
 export const PROJECT_FOLDER_COMPONENT = "project_folder" as const;
 export const PROJECT_COMPONENT = "project" as const;
 export const OBJECTIVE_COMPONENT = "objective" as const;
+export const HABIT_COMPONENT = "habit" as const;
+export const HABIT_CHECK_IN_COMPONENT = "habit_check_in" as const;
 export const TAG_COMPONENT = "tag" as const;
 export const DIARY_ENTRY_COMPONENT = "diary_entry" as const;
 export const NOTE_COMPONENT = "note" as const;
@@ -58,6 +60,8 @@ export const COMPONENT_IDS = [
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
   OBJECTIVE_COMPONENT,
+  HABIT_COMPONENT,
+  HABIT_CHECK_IN_COMPONENT,
   TAG_COMPONENT,
   DIARY_ENTRY_COMPONENT,
   NOTE_COMPONENT,

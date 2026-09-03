@@ -577,6 +577,7 @@ export function PomodoroFloatApp() {
             switchWorkFocusLink(active, {
               taskItemId: nextTaskId,
               calendarEventId: nextEventId,
+              habitId: null,
             }),
             subjectId,
           )

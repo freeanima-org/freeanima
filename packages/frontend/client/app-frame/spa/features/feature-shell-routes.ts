@@ -45,6 +45,12 @@ export function registerFeaturePluginShellRoutes(): void {
       ),
     },
     {
+      featureId: "habit",
+      path: "/habits",
+      navLabel: "习惯",
+      load: lazyNamedComponent(() => import("@freeanima/features/habit/ui/spa"), "HabitApp"),
+    },
+    {
       featureId: "calendar",
       path: "/calendar",
       navLabel: "Calendar",

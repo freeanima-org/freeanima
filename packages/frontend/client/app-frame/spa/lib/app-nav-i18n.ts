@@ -9,6 +9,7 @@ import {
   FolderKanban,
   HeartPulse,
   Target,
+  Repeat,
   LayoutDashboard,
   ListTodo,
   Lock,
@@ -94,6 +95,13 @@ export function appNavItems(): AppNavItem[] {
       "/objectives",
       shellNavLabel(() => "目标"),
       Target,
+    ),
+    navItem(
+      "habits",
+      "/habits",
+      "/habits",
+      shellNavLabel(() => "习惯"),
+      Repeat,
     ),
     navItem(
       "calendar",

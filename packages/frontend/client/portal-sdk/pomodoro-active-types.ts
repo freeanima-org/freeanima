@@ -6,14 +6,16 @@ export type TimerRunState = "idle" | "running" | "paused";
 export type PomodoroFocusSegmentDraft = {
   task_item_id: number | null;
   calendar_event_id: number | null;
+  habit_id: number | null;
   started_at: string;
   ended_at: string | null;
 };
 
-/** 关联目标：任务与日历事件互斥 */
+/** 关联目标：任务 / 日历事件 / 习惯 互斥 */
 export type PomodoroFocusLink = {
   taskItemId: number | null;
   calendarEventId: number | null;
+  habitId: number | null;
 };
 
 export type PomodoroActiveState = {
@@ -26,6 +28,7 @@ export type PomodoroActiveState = {
   completedWorkInCycle: number;
   taskItemId: number | null;
   calendarEventId: number | null;
+  habitId: number | null;
   sessionLocalId: string;
   phaseStartedAt: string;
   /** 专注阶段内的任务时间段（仅 work 阶段有效） */

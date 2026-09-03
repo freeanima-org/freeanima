@@ -12,6 +12,8 @@ const DEFAULT_COMPONENT_LABELS: Record<string, string> = {
   task_list: "清单",
   calendar_event: "日程",
   objective: "目标",
+  habit: "习惯",
+  habit_check_in: "习惯打卡",
   note: "笔记",
   diary_entry: "日记",
   tag: "标签",

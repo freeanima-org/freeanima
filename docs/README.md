@@ -65,6 +65,7 @@ Agent 硬禁令 / API 速查 →
 | 编码工作台 | [modules/coding.md](modules/coding.md)         |
 | 日记       | [modules/diary.md](modules/diary.md)           |
 | 日历       | [modules/calendar.md](modules/calendar.md)     |
+| 习惯       | [modules/habit.md](modules/habit.md)           |
 | 会话目标   | [modules/goal.md](modules/goal.md)             |
 | 项目       | [modules/project.md](modules/project.md)       |
 | 移动应用   | [modules/mobile-app.md](modules/mobile-app.md) |

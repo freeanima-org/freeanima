@@ -19,6 +19,7 @@ export const pomodoroSessionBodySchema = z
     actual_duration_ms: z.number().int().nonnegative().nullable(),
     task_item_id: z.number().int().positive().nullable().default(null),
     calendar_event_id: z.number().int().positive().nullable().default(null),
+    habit_id: z.number().int().positive().nullable().default(null),
     cycle_index: z.number().int().nonnegative().default(0),
     interrupted: z.boolean().default(false),
   })

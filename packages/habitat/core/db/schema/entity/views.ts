@@ -19,6 +19,8 @@ import {
   PROJECT_FOLDER_COMPONENT,
   PROJECT_COMPONENT,
   OBJECTIVE_COMPONENT,
+  HABIT_COMPONENT,
+  HABIT_CHECK_IN_COMPONENT,
   TAG_COMPONENT,
   VAULT_CONFIG_COMPONENT,
   VAULT_ITEM_COMPONENT,
@@ -51,6 +53,8 @@ import {
   projectFolderBodySchema,
   projectBodySchema,
   objectiveBodySchema,
+  habitBodySchema,
+  habitCheckInBodySchema,
   tagBodySchema,
   vaultConfigBodySchema,
   vaultItemBodySchema,
@@ -82,6 +86,8 @@ import {
   type ProjectFolderBody,
   type ProjectBody,
   type ObjectiveBody,
+  type HabitBody,
+  type HabitCheckInBody,
   type TagBody,
   type VaultConfigBody,
   type VaultItemBody,
@@ -482,6 +488,50 @@ export function asObjective(row: EntityRow):
         content: row.content,
         ...parsed.data,
         client_op_id: row.client_op_id ?? null,
+      }
+    : null;
+}
+
+export function asHabit(row: EntityRow):
+  | (HabitBody & { id: number; title: string; content: string } & {
+      client_op_id: string | null;
+      created_at: Date;
+      updated_at: Date;
+    })
+  | null {
+  if (row.primary_component !== HABIT_COMPONENT) return null;
+  const parsed = habitBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+      }
+    : null;
+}
+
+export function asHabitCheckIn(row: EntityRow):
+  | (HabitCheckInBody & { id: number; title: string; content: string } & {
+      client_op_id: string | null;
+      created_at: Date;
+      updated_at: Date;
+    })
+  | null {
+  if (row.primary_component !== HABIT_CHECK_IN_COMPONENT) return null;
+  const parsed = habitCheckInBodySchema.safeParse(row.body);
+  return parsed.success
+    ? {
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        ...parsed.data,
+        client_op_id: row.client_op_id ?? null,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
       }
     : null;
 }

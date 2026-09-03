@@ -1,6 +1,7 @@
 import {
   buildTaskFocusSegmentPayloads,
   primaryCalendarEventIdFromSegments,
+  primaryHabitIdFromSegments,
   primaryTaskItemIdFromSegments,
 } from "@freeanima/client/portal-sdk/pomodoro-focus-segments.ts";
 import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
@@ -20,6 +21,7 @@ export type PhaseEndPayload = {
   actual_duration_ms: number;
   task_item_id: number | null;
   calendar_event_id: number | null;
+  habit_id: number | null;
   cycle_index: number;
   session_local_id: string;
   client_op_id: string;
@@ -32,8 +34,10 @@ export function buildPhaseEndPayload(
 ): PhaseEndPayload {
   const segments = buildTaskFocusSegmentPayloads(state, nowMs);
   const taskItemId = primaryTaskItemIdFromSegments(segments) ?? state.taskItemId;
+  const habitId =
+    taskItemId != null ? null : (primaryHabitIdFromSegments(segments) ?? state.habitId ?? null);
   const calendarEventId =
-    taskItemId != null
+    taskItemId != null || habitId != null
       ? null
       : (primaryCalendarEventIdFromSegments(segments) ?? state.calendarEventId);
   return {
@@ -44,6 +48,7 @@ export function buildPhaseEndPayload(
     actual_duration_ms: actualDurationMs(state, nowMs),
     task_item_id: taskItemId,
     calendar_event_id: calendarEventId,
+    habit_id: habitId,
     cycle_index: state.cycleIndex,
     session_local_id: state.sessionLocalId,
     client_op_id: phaseCompletionKey(state),

@@ -74,7 +74,7 @@ function legacyOffsetFromParts(timeZone: string, date: Date): number {
   return asUtc - date.getTime();
 }
 
-function formatOffsetIso(offsetMs: number): string {
+export function formatOffsetIso(offsetMs: number): string {
   const sign = offsetMs >= 0 ? "+" : "-";
   const abs = Math.abs(offsetMs);
   const hours = Math.floor(abs / 3_600_000);

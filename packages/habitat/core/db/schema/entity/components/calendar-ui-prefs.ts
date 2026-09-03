@@ -6,7 +6,7 @@ import { z } from "zod";
 export const calendarViewModeSchema = z.enum(["day", "next3", "next7", "week", "month"]);
 export type CalendarViewMode = z.infer<typeof calendarViewModeSchema>;
 
-export const calendarKindPrefSchema = z.enum(["event", "task", "project"]);
+export const calendarKindPrefSchema = z.enum(["event", "task", "project", "habit"]);
 export type CalendarKindPref = z.infer<typeof calendarKindPrefSchema>;
 
 export const calendarBuiltinSourceSchema = z.enum([
@@ -26,7 +26,7 @@ export const calendarViewDisplayPrefsSchema = z.object({
 
 export type CalendarViewDisplayPrefs = z.infer<typeof calendarViewDisplayPrefsSchema>;
 
-const ALL_KINDS: CalendarKindPref[] = ["event", "task", "project"];
+const ALL_KINDS: CalendarKindPref[] = ["event", "task", "project", "habit"];
 const ALL_SOURCES = ["cn_holiday", "traditional", "international", "solar_term"] as const;
 
 function defaultViewDisplay(mode: CalendarViewMode): CalendarViewDisplayPrefs {

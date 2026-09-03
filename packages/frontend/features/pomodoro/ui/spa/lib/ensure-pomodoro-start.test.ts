@@ -31,6 +31,7 @@ const localState: PomodoroActiveState = {
   completedWorkInCycle: 0,
   taskItemId: null,
   calendarEventId: null,
+  habitId: null,
   sessionLocalId: "local-session",
   phaseStartedAt: new Date().toISOString(),
   focusSegments: [],

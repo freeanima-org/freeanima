@@ -176,7 +176,7 @@ async function handleRange(args: Record<string, unknown>): Promise<string> {
   if (Array.isArray(args.kinds)) {
     kinds = args.kinds.filter(
       (k): k is CalendarRangeKind =>
-        k === "event" || k === "task" || k === "project" || k === "holiday",
+        k === "event" || k === "task" || k === "project" || k === "holiday" || k === "habit",
     );
   }
 
@@ -333,7 +333,7 @@ export function buildCalendarToolDefs() {
           to: { type: "string", description: "ISO8601 range end" },
           kinds: {
             type: "array",
-            items: { type: "string", enum: ["event", "task", "project", "holiday"] },
+            items: { type: "string", enum: ["event", "task", "project", "holiday", "habit"] },
           },
           sources: {
             type: "array",

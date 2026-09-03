@@ -118,7 +118,7 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 
 - 不做独立 template 实体、预创建未来期、**完整通用 RRULE**（滴答 CSV 常见子集见上）
 - 日界与写入 offset 由全局 `i18n.timezone` 决定（默认 Asia/Shanghai）；不做每事件自带时区 / 多日历
-- 不做自然语言快速添加、习惯打卡、倒数日、清单协作、第三方日历**持续**同步
+- 不做自然语言快速添加、**清单内**习惯打卡（独立模块见 [habit.md](./habit.md)）、倒数日、清单协作、第三方日历**持续**同步
 - 不做四象限 / 时间线甘特；项目文件夹级跨项目看板仍属后续
 
 日历侧重复实例为 **虚拟展开**（见 [`calendar.md`](./calendar.md)），不写未来 `task_occurrence`。

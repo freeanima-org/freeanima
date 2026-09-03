@@ -39,6 +39,8 @@ export function buildAgendaMenuItems(
     ];
   }
 
+  if (item.kind === "habit") return [];
+
   const items: ActionSheetItem[] = [{ label: "编辑", onClick: () => handlers.onEditTask(item) }];
   if (item.status === "pending") {
     items.push({ label: "开始番茄", onClick: () => handlers.onStartPomodoroTask(item) });

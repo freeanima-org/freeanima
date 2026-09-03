@@ -119,6 +119,7 @@ export function kindBarClass(
   if (kind === "event") return "bg-primary/20 text-primary";
   if (kind === "task") return "bg-amber-500/20 text-amber-800 dark:text-amber-200";
   if (kind === "holiday") return "bg-emerald-500/20 text-emerald-800 dark:text-emerald-200";
+  if (kind === "habit") return "bg-violet-500/20 text-violet-800 dark:text-violet-200";
   return "bg-sky-500/20 text-sky-800 dark:text-sky-200";
 }
 

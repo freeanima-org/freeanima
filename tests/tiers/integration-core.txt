@@ -14,6 +14,7 @@ tests/integration/memory/recall-hybrid.test.ts
 tests/integration/memory/self-layer-pg.test.ts
 tests/integration/entity/entity-task-pg.test.ts
 tests/integration/entity/objective-pg.test.ts
+tests/integration/entity/habit-pg.test.ts
 tests/integration/entity/entity-search.test.ts
 tests/integration/entity/object-file-blob-gc.test.ts
 tests/integration/server/service-api-auth.test.ts

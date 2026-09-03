@@ -48,7 +48,8 @@ type CompletionMode =
   | "tasks_completed"
   | "projects_completed"
   | "pomodoro"
-  | "children_completed";
+  | "children_completed"
+  | "habit";
 
 const COMPLETION_MODES: readonly CompletionMode[] = [
   "qualitative",
@@ -57,6 +58,7 @@ const COMPLETION_MODES: readonly CompletionMode[] = [
   "projects_completed",
   "pomodoro",
   "children_completed",
+  "habit",
 ];
 
 const POMODORO_COUNT_BY = ["sessions", "minutes"] as const;
@@ -105,6 +107,7 @@ function completionModeOf(c: ObjectiveCompletionPayload): CompletionMode {
   if (c.source.type === "projects_completed") return "projects_completed";
   if (c.source.type === "pomodoro") return "pomodoro";
   if (c.source.type === "children_completed") return "children_completed";
+  if (c.source.type === "habit") return "habit";
   return "qualitative";
 }
 
@@ -142,6 +145,18 @@ function buildCompletion(
       unit: "个",
       target: 0,
       source: { type: "children_completed" },
+    };
+  }
+  if (mode === "habit") {
+    const habitId = entityIds[0];
+    if (habitId == null) {
+      return { kind: "qualitative" };
+    }
+    return {
+      kind: "metric_auto",
+      unit: unit || "天",
+      target,
+      source: { type: "habit", habit_id: habitId },
     };
   }
   return {
@@ -280,6 +295,8 @@ export function ObjectiveApp() {
       else if (src.type === "pomodoro") {
         setPomodoroCountBy(src.filter.count_by);
         setEntityIds(src.filter.task_ids ?? []);
+      } else if (src.type === "habit") {
+        setEntityIds([src.habit_id]);
       } else setEntityIds([]);
     } else {
       setUnit("km");
@@ -597,10 +614,23 @@ export function ObjectiveApp() {
                   <option value="projects_completed">自动：指定项目完成数</option>
                   <option value="children_completed">自动：子目标完成率</option>
                   <option value="pomodoro">自动：番茄钟统计</option>
+                  <option value="habit">自动：习惯达标日</option>
                 </select>
                 <p className="text-xs text-muted-foreground">
-                  自动类进度实时统计；任务/项目的目标数=列表长度；子目标完成率按直系子目标现算（已取消不计）。习惯来源尚未落地。
+                  自动类进度实时统计；任务/项目的目标数=列表长度；子目标完成率按直系子目标现算（已取消不计）；习惯按窗内达标日数。
                 </p>
+                {mode === "habit" ? (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <label className="space-y-1 text-sm">
+                      <span className="text-muted-foreground">单位</span>
+                      <Input value={unit} onChange={(e) => setUnit(e.target.value)} />
+                    </label>
+                    <label className="space-y-1 text-sm">
+                      <span className="text-muted-foreground">目标达标日数</span>
+                      <Input value={target} onChange={(e) => setTarget(e.target.value)} />
+                    </label>
+                  </div>
+                ) : null}
                 {mode === "metric_manual" ? (
                   <div className="grid gap-2 sm:grid-cols-3">
                     <label className="space-y-1 text-sm">
@@ -654,6 +684,19 @@ export function ObjectiveApp() {
                   <p className="text-xs text-muted-foreground">
                     进度 = 已完成的直系子目标数 / 非取消的直系子目标总数（读侧现算，无需选手目标）。
                   </p>
+                ) : null}
+                {mode === "habit" ? (
+                  <div className="space-y-1 text-sm">
+                    <span className="text-muted-foreground">选择习惯</span>
+                    <EntityPicker
+                      mode="single"
+                      value={entityIds[0] ?? null}
+                      onChange={(id) => setEntityIds(id != null ? [id] : [])}
+                      primaryComponents={["habit"]}
+                      placeholder="选择习惯…"
+                      disabled={saving}
+                    />
+                  </div>
                 ) : null}
                 {mode === "tasks_completed" ||
                 mode === "projects_completed" ||

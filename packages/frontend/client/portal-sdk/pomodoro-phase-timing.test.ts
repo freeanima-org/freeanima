@@ -19,10 +19,17 @@ function workState(phaseEndsAt: number, phasePlannedMs = 25 * 60_000): PomodoroA
     completedWorkInCycle: 0,
     taskItemId: null,
     calendarEventId: null,
+    habitId: null,
     sessionLocalId: "session-1",
     phaseStartedAt,
     focusSegments: [
-      { task_item_id: null, calendar_event_id: null, started_at: phaseStartedAt, ended_at: null },
+      {
+        task_item_id: null,
+        calendar_event_id: null,
+        habit_id: null,
+        started_at: phaseStartedAt,
+        ended_at: null,
+      },
     ],
   };
 }

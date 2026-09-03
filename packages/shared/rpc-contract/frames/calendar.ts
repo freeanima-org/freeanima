@@ -117,7 +117,7 @@ export const calendarConvertToTaskOutputSchema = z.object({
 });
 export type CalendarConvertToTaskOutput = z.infer<typeof calendarConvertToTaskOutputSchema>;
 
-export const calendarRangeKindSchema = z.enum(["event", "task", "project", "holiday"]);
+export const calendarRangeKindSchema = z.enum(["event", "task", "project", "holiday", "habit"]);
 export type CalendarRangeKind = z.infer<typeof calendarRangeKindSchema>;
 
 export const builtinCalendarSourceIdSchema = z.enum([
@@ -182,11 +182,30 @@ export const calendarRangeHolidayItemSchema = z.object({
   all_day: z.literal(true),
 });
 
+export const calendarRangeHabitItemSchema = z.object({
+  kind: z.literal("habit"),
+  id: z.number().int().positive(),
+  title: z.string(),
+  /** 当日提醒点或日界全天 */
+  start_at: z.string(),
+  end_at: z.string().nullable(),
+  all_day: z.boolean(),
+  day: z.string(),
+  amount: z.number().nonnegative(),
+  target: z.number().positive(),
+  met: z.boolean(),
+  polarity: z.enum(["build", "break"]),
+  check_in_id: z.number().int().positive().nullable(),
+  /** 多提醒展开时标记同一习惯同日的时间点 */
+  reminder_time: z.string().nullable().optional(),
+});
+
 export const calendarRangeItemSchema = z.discriminatedUnion("kind", [
   calendarRangeEventItemSchema,
   calendarRangeTaskItemSchema,
   calendarRangeProjectItemSchema,
   calendarRangeHolidayItemSchema,
+  calendarRangeHabitItemSchema,
 ]);
 export type CalendarRangeItemPayload = z.infer<typeof calendarRangeItemSchema>;
 
@@ -207,7 +226,7 @@ export const calendarRangeOutputSchema = z.object({
 export type CalendarRangeOutput = z.infer<typeof calendarRangeOutputSchema>;
 
 const calendarViewModeSchema = z.enum(["day", "next3", "next7", "week", "month"]);
-const calendarKindPrefSchema = z.enum(["event", "task", "project"]);
+const calendarKindPrefSchema = z.enum(["event", "task", "project", "habit"]);
 
 export const calendarViewDisplayPrefsSchema = z.object({
   kinds: z.array(calendarKindPrefSchema),

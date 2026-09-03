@@ -25,6 +25,7 @@ type MonthGridProps = {
   onOpenTask: (id: number) => void;
   onOpenProject: (id: number) => void;
   onOpenHoliday: (item: Extract<CalendarRangeItem, { kind: "holiday" }>) => void;
+  onOpenHabit?: (id: number) => void;
 };
 
 function chunkWeeks(cells: (string | null)[]): (string | null)[][] {
@@ -37,11 +38,15 @@ function chunkWeeks(cells: (string | null)[]): (string | null)[][] {
 
 function openBar(
   bar: PackedBar,
-  handlers: Pick<MonthGridProps, "onOpenEvent" | "onOpenTask" | "onOpenProject" | "onOpenHoliday">,
+  handlers: Pick<
+    MonthGridProps,
+    "onOpenEvent" | "onOpenTask" | "onOpenProject" | "onOpenHoliday" | "onOpenHabit"
+  >,
 ): void {
   if (bar.item.kind === "event") handlers.onOpenEvent(bar.item.id);
   else if (bar.item.kind === "task") handlers.onOpenTask(bar.item.id);
   else if (bar.item.kind === "holiday") handlers.onOpenHoliday(bar.item);
+  else if (bar.item.kind === "habit") handlers.onOpenHabit?.(bar.item.id);
   else handlers.onOpenProject(bar.item.id);
 }
 
@@ -56,9 +61,16 @@ export function MonthGrid({
   onOpenTask,
   onOpenProject,
   onOpenHoliday,
+  onOpenHabit,
 }: MonthGridProps) {
   const weeks = useMemo(() => chunkWeeks(buildMonthGrid(year, monthIndex)), [monthIndex, year]);
-  const handlers = { onOpenEvent, onOpenTask, onOpenProject, onOpenHoliday };
+  const handlers = {
+    onOpenEvent,
+    onOpenTask,
+    onOpenProject,
+    onOpenHoliday,
+    ...(onOpenHabit != null ? { onOpenHabit } : {}),
+  };
 
   return (
     <div className="flex flex-col gap-2">

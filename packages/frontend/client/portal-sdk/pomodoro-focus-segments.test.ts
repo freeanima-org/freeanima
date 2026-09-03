@@ -18,12 +18,14 @@ function workState(taskItemId: number | null = 1): PomodoroActiveState {
     completedWorkInCycle: 0,
     taskItemId,
     calendarEventId: null,
+    habitId: null,
     sessionLocalId: "session-1",
     phaseStartedAt: new Date(1_000_000).toISOString(),
     focusSegments: [
       {
         task_item_id: taskItemId,
         calendar_event_id: null,
+        habit_id: null,
         started_at: new Date(1_000_000).toISOString(),
         ended_at: null,
       },
@@ -44,7 +46,7 @@ describe("pomodoro-focus-segments", () => {
   test("switchWorkFocusLink 任务与事件互斥", () => {
     const withEvent = switchWorkFocusLink(
       workState(1),
-      { taskItemId: null, calendarEventId: 9 },
+      { taskItemId: null, calendarEventId: 9, habitId: null },
       1_500_000,
     );
     expect(withEvent.taskItemId).toBeNull();
@@ -54,7 +56,7 @@ describe("pomodoro-focus-segments", () => {
 
     const bothClearedToTask = switchWorkFocusLink(
       withEvent,
-      { taskItemId: 3, calendarEventId: 9 },
+      { taskItemId: 3, calendarEventId: 9, habitId: null },
       1_600_000,
     );
     expect(bothClearedToTask.taskItemId).toBe(3);

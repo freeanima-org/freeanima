@@ -13,6 +13,7 @@ import { shellQuickPlugin } from "@freeanima/features/shell-quick/plugin";
 import { taskPlugin } from "@freeanima/features/task/plugin";
 import { projectPlugin } from "@freeanima/features/project/plugin";
 import { objectivePlugin } from "@freeanima/features/objective/plugin";
+import { habitPlugin } from "@freeanima/features/habit/plugin";
 import { tagPlugin } from "@freeanima/features/tag/plugin";
 import { subagentPlugin } from "@freeanima/features/subagent/plugin";
 import { entityPlugin } from "@freeanima/features/entity/plugin";
@@ -30,6 +31,7 @@ export const builtinFeaturePlugins: FeaturePlugin[] = [
   taskPlugin,
   projectPlugin,
   objectivePlugin,
+  habitPlugin,
   tagPlugin,
   subagentPlugin,
   entityPlugin,

@@ -1,7 +1,9 @@
 import {
   CALENDAR_EVENT_COMPONENT,
+  HABIT_COMPONENT,
   TASK_ITEM_COMPONENT,
   asCalendarEvent,
+  asHabit,
   asTaskItem,
   normalizeSchedulableReminders,
   type SchedulableReminderEntry,
@@ -11,6 +13,12 @@ import { searchEntities, updateEntity } from "@freeanima/habitat/core/db/pg/enti
 import { formatCstIso } from "@freeanima/habitat/core/util";
 import { getNotificationPort } from "@freeanima/habitat/capabilities/tools/notification";
 import type { NotificationRecipientRef } from "@freeanima/habitat/capabilities/tools/notification";
+import {
+  formatOffsetIso,
+  getConfiguredHostTimeZone,
+  hostCalendarDay,
+  timeZoneOffsetMs,
+} from "@freeanima/shared/util/time.ts";
 
 import { emitTaskAdvanceReminder } from "./task-advance-reminder-events.ts";
 
@@ -414,7 +422,97 @@ async function scanCalendarEventReminders(
   return { sent, scanned: search.results.length, skipped_unknown_world: skippedUnknownWorld };
 }
 
-/** 扫描到期任务与日程事件：due→Inbox；advance→本机 Alert；事件 reminders→Inbox */
+function habitReminderFireMs(day: string, time: string): number | null {
+  const tz = getConfiguredHostTimeZone();
+  const offset = formatOffsetIso(timeZoneOffsetMs(tz, new Date(`${day}T12:00:00Z`)));
+  const ms = Date.parse(`${day}T${time}:00${offset}`);
+  return Number.isFinite(ms) ? ms : null;
+}
+
+export function habitReminderSourceRef(habitId: number, time: string, day: string): string {
+  return `habit:${habitId}:time:${time}:${day}`;
+}
+
+async function scanHabitReminders(
+  port: ReminderPort,
+  now: number,
+): Promise<{ sent: number; scanned: number; skipped_unknown_world: number }> {
+  const ctx = getResolvedWorldContext();
+  const search = await searchEntities({
+    primary_component: HABIT_COMPONENT,
+    limit: 500,
+    mode: "filter_only",
+    global: true,
+    accessible_world_ids: [ctx.user_world_id, ctx.agent_world_id],
+  });
+
+  const today = hostCalendarDay(new Date(now));
+  let sent = 0;
+  let skippedUnknownWorld = 0;
+
+  for (const row of search.results) {
+    const habit = asHabit(row);
+    if (!habit || habit.status !== "active") continue;
+    const reminders = habit.reminders ?? [];
+    if (reminders.length === 0) continue;
+
+    const recipient = recipientForTaskWorld(row.world_id, port);
+    let changed = false;
+    const nextReminders = [...reminders];
+
+    for (let i = 0; i < nextReminders.length; i += 1) {
+      const entry = nextReminders[i];
+      if (!entry) continue;
+      if (entry.last_notified_day === today) continue;
+      const fireMs = habitReminderFireMs(today, entry.time);
+      if (fireMs == null || now < fireMs) continue;
+
+      if (!recipient) {
+        skippedUnknownWorld += 1;
+        continue;
+      }
+
+      await port.create({
+        recipient_kind: recipient.kind,
+        recipient_id: recipient.id,
+        title: `习惯提醒：${habit.title}`,
+        body: `提醒时间：${today} ${entry.time}`,
+        source_kind: "system",
+        source_ref: habitReminderSourceRef(habit.id, entry.time, today),
+        payload: { habit_id: habit.id, kind: "habit_reminder", day: today, time: entry.time },
+      });
+      nextReminders[i] = { ...entry, last_notified_day: today };
+      changed = true;
+      sent += 1;
+    }
+
+    if (changed) {
+      await updateEntity({
+        id: habit.id,
+        body: {
+          polarity: habit.polarity,
+          record_mode: habit.record_mode,
+          target: habit.target,
+          unit: habit.unit,
+          auto_amount: habit.auto_amount,
+          frequency: habit.frequency,
+          day_section: habit.day_section,
+          reminders: nextReminders,
+          enable_journal: habit.enable_journal,
+          check_in_style: habit.check_in_style,
+          status: habit.status,
+          sort_order: habit.sort_order,
+          ...(habit.color !== undefined ? { color: habit.color } : {}),
+          ...(habit.icon !== undefined ? { icon: habit.icon } : {}),
+        },
+      });
+    }
+  }
+
+  return { sent, scanned: search.results.length, skipped_unknown_world: skippedUnknownWorld };
+}
+
+/** 扫描到期任务与日程事件：due→Inbox；advance→本机 Alert；事件 reminders→Inbox；习惯 HH:mm→Inbox */
 export async function runTaskReminderScan(): Promise<string> {
   const port = getNotificationPort();
   if (!port) {
@@ -424,14 +522,17 @@ export async function runTaskReminderScan(): Promise<string> {
   const now = Date.now();
   const tasks = await scanTaskReminders(port, now);
   const events = await scanCalendarEventReminders(port, now);
+  const habits = await scanHabitReminders(port, now);
 
   return JSON.stringify({
     ok: true,
-    sent: tasks.sent + events.sent,
-    scanned: tasks.scanned + events.scanned,
-    skipped_unknown_world: tasks.skipped_unknown_world + events.skipped_unknown_world,
+    sent: tasks.sent + events.sent + habits.sent,
+    scanned: tasks.scanned + events.scanned + habits.scanned,
+    skipped_unknown_world:
+      tasks.skipped_unknown_world + events.skipped_unknown_world + habits.skipped_unknown_world,
     tasks,
     calendar_events: events,
+    habits,
   });
 }
 
@@ -478,6 +579,25 @@ export async function queryEarliestTaskReminderFireMs(
     );
     if (next == null) continue;
     if (earliest == null || next < earliest) earliest = next;
+  }
+
+  const habitSearch = await searchEntities({
+    primary_component: HABIT_COMPONENT,
+    limit: 500,
+    mode: "filter_only",
+    global: true,
+    accessible_world_ids: [ctx.user_world_id, ctx.agent_world_id],
+  });
+  const today = hostCalendarDay(new Date(nowMs));
+  for (const row of habitSearch.results) {
+    const habit = asHabit(row);
+    if (!habit || habit.status !== "active") continue;
+    for (const entry of habit.reminders ?? []) {
+      if (entry.last_notified_day === today) continue;
+      const fireMs = habitReminderFireMs(today, entry.time);
+      if (fireMs == null || fireMs < nowMs) continue;
+      if (earliest == null || fireMs < earliest) earliest = fireMs;
+    }
   }
   return earliest;
 }

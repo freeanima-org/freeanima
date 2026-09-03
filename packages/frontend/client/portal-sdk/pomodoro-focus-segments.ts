@@ -11,6 +11,7 @@ export type PomodoroTaskFocusSegmentPayload = {
   phase_started_at: string;
   task_item_id: number | null;
   calendar_event_id: number | null;
+  habit_id: number | null;
   started_at: string;
   ended_at: string;
   duration_ms: number;
@@ -27,19 +28,25 @@ function segmentDurationMs(startedAt: string, endedAtMs: number): number {
   return Math.max(0, endedAtMs - started);
 }
 
-function normalizeLink(link: PomodoroFocusLink): PomodoroFocusLink {
+/** 互斥归一：优先 task → habit → event */
+export function normalizeLink(link: PomodoroFocusLink): PomodoroFocusLink {
   const taskItemId = link.taskItemId ?? null;
+  const habitId = link.habitId ?? null;
   const calendarEventId = link.calendarEventId ?? null;
-  if (taskItemId != null && calendarEventId != null) {
-    return { taskItemId, calendarEventId: null };
+  if (taskItemId != null) {
+    return { taskItemId, calendarEventId: null, habitId: null };
   }
-  return { taskItemId, calendarEventId };
+  if (habitId != null) {
+    return { taskItemId: null, calendarEventId: null, habitId };
+  }
+  return { taskItemId: null, calendarEventId, habitId: null };
 }
 
 function linkFromState(state: PomodoroActiveState): PomodoroFocusLink {
   return normalizeLink({
     taskItemId: state.taskItemId,
     calendarEventId: state.calendarEventId,
+    habitId: state.habitId ?? null,
   });
 }
 
@@ -48,6 +55,7 @@ function draftFromLink(link: PomodoroFocusLink, startedAt: string, endedAt: stri
   return {
     task_item_id: normalized.taskItemId,
     calendar_event_id: normalized.calendarEventId,
+    habit_id: normalized.habitId ?? null,
     started_at: startedAt,
     ended_at: endedAt,
   };
@@ -66,13 +74,14 @@ export function openWorkFocusSegment(
 ): PomodoroActiveState {
   const normalized =
     typeof link === "number" || link === null
-      ? normalizeLink({ taskItemId: link, calendarEventId: null })
+      ? normalizeLink({ taskItemId: link, calendarEventId: null, habitId: null })
       : normalizeLink(link);
   if (state.phase !== "work") {
     return {
       ...state,
       taskItemId: normalized.taskItemId,
       calendarEventId: normalized.calendarEventId,
+      habitId: normalized.habitId,
       focusSegments: [],
     };
   }
@@ -81,6 +90,7 @@ export function openWorkFocusSegment(
     ...state,
     taskItemId: normalized.taskItemId,
     calendarEventId: normalized.calendarEventId,
+    habitId: normalized.habitId,
     focusSegments: [draftFromLink(normalized, startedAt, null)],
   };
 }
@@ -91,7 +101,7 @@ export function switchWorkFocusTask(
   taskItemId: number | null,
   nowMs: number = Date.now(),
 ): PomodoroActiveState {
-  return switchWorkFocusLink(state, { taskItemId, calendarEventId: null }, nowMs);
+  return switchWorkFocusLink(state, { taskItemId, calendarEventId: null, habitId: null }, nowMs);
 }
 
 export function switchWorkFocusLink(
@@ -105,6 +115,7 @@ export function switchWorkFocusLink(
       ...state,
       taskItemId: normalized.taskItemId,
       calendarEventId: normalized.calendarEventId,
+      habitId: normalized.habitId,
     };
   }
   const nowIso = isoNow(nowMs);
@@ -119,6 +130,7 @@ export function switchWorkFocusLink(
     ...state,
     taskItemId: normalized.taskItemId,
     calendarEventId: normalized.calendarEventId,
+    habitId: normalized.habitId,
     focusSegments: [...closed, draftFromLink(normalized, nowIso, null)],
   };
 }
@@ -174,6 +186,7 @@ export function buildTaskFocusSegmentPayloads(
         phase_started_at: state.phaseStartedAt,
         task_item_id: segment.task_item_id,
         calendar_event_id: segment.calendar_event_id ?? null,
+        habit_id: segment.habit_id ?? null,
         started_at: segment.started_at,
         ended_at: new Date(endedMs).toISOString(),
         duration_ms: durationMs,
@@ -188,19 +201,21 @@ export function normalizeRestoredActiveState(state: PomodoroActiveState): Pomodo
   const focusSegments = (state.focusSegments ?? []).map((segment) => ({
     task_item_id: segment.task_item_id,
     calendar_event_id: segment.calendar_event_id ?? null,
+    habit_id: segment.habit_id ?? null,
     started_at: segment.started_at,
     ended_at: segment.ended_at,
   }));
-  const calendarEventId = state.calendarEventId ?? null;
   const normalizedState = normalizeLink({
     taskItemId: state.taskItemId,
-    calendarEventId,
+    calendarEventId: state.calendarEventId ?? null,
+    habitId: state.habitId ?? null,
   });
   if (focusSegments.length > 0) {
     return {
       ...state,
       taskItemId: normalizedState.taskItemId,
       calendarEventId: normalizedState.calendarEventId,
+      habitId: normalizedState.habitId,
       focusSegments,
     };
   }
@@ -209,6 +224,7 @@ export function normalizeRestoredActiveState(state: PomodoroActiveState): Pomodo
       ...state,
       taskItemId: normalizedState.taskItemId,
       calendarEventId: normalizedState.calendarEventId,
+      habitId: normalizedState.habitId,
       focusSegments: [],
     };
   }
@@ -216,6 +232,7 @@ export function normalizeRestoredActiveState(state: PomodoroActiveState): Pomodo
     ...state,
     taskItemId: normalizedState.taskItemId,
     calendarEventId: normalizedState.calendarEventId,
+    habitId: normalizedState.habitId,
     focusSegments: [draftFromLink(normalizedState, state.phaseStartedAt, null)],
   };
 }
@@ -240,4 +257,15 @@ export function primaryCalendarEventIdFromSegments(
     if (!best || segment.duration_ms > best.duration_ms) best = segment;
   }
   return best?.calendar_event_id ?? null;
+}
+
+export function primaryHabitIdFromSegments(
+  segments: PomodoroTaskFocusSegmentPayload[],
+): number | null {
+  let best: PomodoroTaskFocusSegmentPayload | null = null;
+  for (const segment of segments) {
+    if (segment.habit_id == null) continue;
+    if (!best || segment.duration_ms > best.duration_ms) best = segment;
+  }
+  return best?.habit_id ?? null;
 }

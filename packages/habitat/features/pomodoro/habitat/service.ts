@@ -68,6 +68,7 @@ export async function servicePomodoroSessionComplete(
     actual_duration_ms: number;
     task_item_id?: number | null;
     calendar_event_id?: number | null;
+    habit_id?: number | null;
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
@@ -78,6 +79,7 @@ export async function servicePomodoroSessionComplete(
       phase_started_at: string;
       task_item_id?: number | null;
       calendar_event_id?: number | null;
+      habit_id?: number | null;
       started_at: string;
       ended_at: string;
       duration_ms: number;
@@ -103,6 +105,7 @@ export async function servicePomodoroSessionAbort(
     actual_duration_ms: number;
     task_item_id?: number | null;
     calendar_event_id?: number | null;
+    habit_id?: number | null;
     cycle_index?: number;
     title?: string;
     session_local_id?: string;
@@ -113,6 +116,7 @@ export async function servicePomodoroSessionAbort(
       phase_started_at: string;
       task_item_id?: number | null;
       calendar_event_id?: number | null;
+      habit_id?: number | null;
       started_at: string;
       ended_at: string;
       duration_ms: number;

@@ -35,7 +35,7 @@ export function isAgendaViewMode(mode: CalendarViewMode): boolean {
   return mode === "day" || mode === "next3" || mode === "next7";
 }
 
-export type CalendarKindPref = "event" | "task" | "project";
+export type CalendarKindPref = "event" | "task" | "project" | "habit";
 
 export type { BuiltinCalendarSourceId };
 
@@ -54,7 +54,7 @@ export type CalendarUiPrefs = {
   byView: Record<CalendarViewMode, CalendarViewDisplayPrefs>;
 };
 
-const ALL_KINDS: CalendarKindPref[] = ["event", "task", "project"];
+const ALL_KINDS: CalendarKindPref[] = ["event", "task", "project", "habit"];
 
 function defaultViewDisplay(mode: CalendarViewMode): CalendarViewDisplayPrefs {
   const agendaLike = mode === "day" || mode === "next3" || mode === "next7";
@@ -101,7 +101,7 @@ function normalizeViewMode(v: unknown): CalendarViewMode {
 }
 
 function isKind(v: unknown): v is CalendarKindPref {
-  return v === "event" || v === "task" || v === "project";
+  return v === "event" || v === "task" || v === "project" || v === "habit";
 }
 
 function normalizeKinds(raw: unknown): CalendarKindPref[] {
