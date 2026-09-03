@@ -35,6 +35,7 @@ import { useKeyboardInset } from "@freeanima/features/chat/ui/spa/hooks/useKeybo
 import {
   composeKeyboardLift,
   measureAppBottomNavChromePx,
+  shouldOwnCompactImmersiveForKeyboard,
 } from "@freeanima/features/chat/ui/spa/lib/keyboard-inset.ts";
 import { formatConversationIdDateTime } from "@freeanima/features/chat/ui/spa/lib/format-datetime.ts";
 import {
@@ -349,17 +350,13 @@ export function ChatApp() {
       }
       return;
     }
-    if (keyboardInset > 0) {
-      if (!keyboardOwnedImmersiveRef.current) {
-        setCompactImmersive(true);
-        keyboardOwnedImmersiveRef.current = true;
-      }
-      return;
-    }
-    if (keyboardOwnedImmersiveRef.current) {
-      setCompactImmersive(false);
-      keyboardOwnedImmersiveRef.current = false;
-    }
+    const shouldOwn = shouldOwnCompactImmersiveForKeyboard(
+      keyboardInset,
+      keyboardOwnedImmersiveRef.current,
+    );
+    if (shouldOwn === keyboardOwnedImmersiveRef.current) return;
+    setCompactImmersive(shouldOwn);
+    keyboardOwnedImmersiveRef.current = shouldOwn;
   }, [mobileLayout, keyboardInset, setCompactImmersive]);
   useEffect(
     () => () => {
