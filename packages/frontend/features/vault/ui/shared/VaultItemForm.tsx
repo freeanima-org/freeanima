@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Button, FormField, Input, Spinner, Textarea } from "@freeanima/ui-kit";
+import { Eye, EyeOff } from "lucide-react";
+import { Button, FormField, Input, Spinner, Textarea, cn } from "@freeanima/ui-kit";
 import { normalizeTotpSecret, type VaultCustomField } from "@freeanima/shared/vault-crypto";
 import type { VaultUriEntryPayload, VaultUriMatch } from "@freeanima/shared/rpc-contract";
 import { VAULT_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes";
@@ -94,6 +95,8 @@ export function VaultItemForm({
   }));
   const [totpHint, setTotpHint] = useState("");
   const [genLoading, setGenLoading] = useState(false);
+  const [passwordRevealed, setPasswordRevealed] = useState(false);
+  const [customFieldRevealed, setCustomFieldRevealed] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     if (mode !== "edit" || !initial) return;
@@ -104,6 +107,8 @@ export function VaultItemForm({
       tag_ids: initial.tag_ids ?? [],
       custom_fields: initial.custom_fields ?? [],
     });
+    setPasswordRevealed(false);
+    setCustomFieldRevealed({});
   }, [mode, initial]);
 
   const setField = <K extends keyof VaultItemFormValues>(key: K, value: VaultItemFormValues[K]) => {
@@ -152,6 +157,8 @@ export function VaultItemForm({
     });
     if (mode === "create") {
       setValues(emptyVaultItemFormValues());
+      setPasswordRevealed(false);
+      setCustomFieldRevealed({});
     }
   };
 
@@ -208,13 +215,24 @@ export function VaultItemForm({
           <FormField label="密码">
             <div className="flex gap-2">
               <Input
-                className="flex-1"
-                type="password"
+                className="min-w-0 flex-1"
+                type={passwordRevealed ? "text" : "password"}
                 value={values.password}
                 disabled={busy}
                 autoComplete="new-password"
                 onChange={(e) => setField("password", e.target.value)}
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                isDisabled={busy}
+                aria-label={passwordRevealed ? "隐藏密码" : "显示密码"}
+                onClick={() => setPasswordRevealed((v) => !v)}
+              >
+                {passwordRevealed ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </Button>
               {onGeneratePassword ? (
                 <Button
                   type="button"
@@ -338,77 +356,107 @@ export function VaultItemForm({
 
       <FormField label="自定义字段">
         <div className="space-y-2">
-          {values.custom_fields.map((field, i) => (
-            <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Input
-                className="min-w-0 flex-1"
-                placeholder="名称"
-                value={field.name}
-                disabled={busy}
-                autoComplete="off"
-                onChange={(e) =>
-                  setValues((prev) => ({
-                    ...prev,
-                    custom_fields: prev.custom_fields.map((f, j) =>
-                      j === i ? { ...f, name: e.target.value } : f,
-                    ),
-                  }))
-                }
-              />
-              <Input
-                className="min-w-0 flex-1"
-                type={field.type === "hidden" ? "password" : "text"}
-                placeholder="值"
-                value={field.value}
-                disabled={busy}
-                autoComplete="off"
-                onChange={(e) =>
-                  setValues((prev) => ({
-                    ...prev,
-                    custom_fields: prev.custom_fields.map((f, j) =>
-                      j === i ? { ...f, value: e.target.value } : f,
-                    ),
-                  }))
-                }
-              />
-              <select
-                className={`${selectClassName} sm:w-24`}
-                value={field.type}
-                disabled={busy}
-                aria-label="字段类型"
-                onChange={(e) =>
-                  setValues((prev) => ({
-                    ...prev,
-                    custom_fields: prev.custom_fields.map((f, j) =>
-                      j === i && isCustomFieldType(e.target.value)
-                        ? { ...f, type: e.target.value }
-                        : f,
-                    ),
-                  }))
-                }
-              >
-                <option value="text">文本</option>
-                <option value="hidden">隐藏</option>
-                <option value="boolean">布尔</option>
-              </select>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="shrink-0"
-                isDisabled={busy}
-                aria-label="删除自定义字段"
-                onClick={() =>
-                  setValues((prev) => ({
-                    ...prev,
-                    custom_fields: prev.custom_fields.filter((_, j) => j !== i),
-                  }))
-                }
-              >
-                ×
-              </Button>
-            </div>
-          ))}
+          {values.custom_fields.map((field, i) => {
+            const fieldRevealed = customFieldRevealed[i] === true;
+            return (
+              <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Input
+                  className="min-w-0 sm:w-28 sm:shrink-0 sm:flex-none"
+                  placeholder="名称"
+                  value={field.name}
+                  disabled={busy}
+                  autoComplete="off"
+                  onChange={(e) =>
+                    setValues((prev) => ({
+                      ...prev,
+                      custom_fields: prev.custom_fields.map((f, j) =>
+                        j === i ? { ...f, name: e.target.value } : f,
+                      ),
+                    }))
+                  }
+                />
+                <Input
+                  className="min-w-0 flex-1"
+                  type={field.type === "hidden" && !fieldRevealed ? "password" : "text"}
+                  placeholder="值"
+                  value={field.value}
+                  disabled={busy}
+                  autoComplete="off"
+                  onChange={(e) =>
+                    setValues((prev) => ({
+                      ...prev,
+                      custom_fields: prev.custom_fields.map((f, j) =>
+                        j === i ? { ...f, value: e.target.value } : f,
+                      ),
+                    }))
+                  }
+                />
+                <select
+                  className={cn(selectClassName, "sm:w-24 sm:shrink-0")}
+                  value={field.type}
+                  disabled={busy}
+                  aria-label="字段类型"
+                  onChange={(e) =>
+                    setValues((prev) => ({
+                      ...prev,
+                      custom_fields: prev.custom_fields.map((f, j) =>
+                        j === i && isCustomFieldType(e.target.value)
+                          ? { ...f, type: e.target.value }
+                          : f,
+                      ),
+                    }))
+                  }
+                >
+                  <option value="text">文本</option>
+                  <option value="hidden">隐藏</option>
+                  <option value="boolean">布尔</option>
+                </select>
+                {field.type === "hidden" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    isDisabled={busy}
+                    aria-label={fieldRevealed ? "隐藏字段值" : "显示字段值"}
+                    onClick={() =>
+                      setCustomFieldRevealed((prev) => ({
+                        ...prev,
+                        [i]: !fieldRevealed,
+                      }))
+                    }
+                  >
+                    {fieldRevealed ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </Button>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  isDisabled={busy}
+                  aria-label="删除自定义字段"
+                  onClick={() => {
+                    setValues((prev) => ({
+                      ...prev,
+                      custom_fields: prev.custom_fields.filter((_, j) => j !== i),
+                    }));
+                    setCustomFieldRevealed((prev) => {
+                      const next: Record<number, boolean> = {};
+                      for (const [key, revealed] of Object.entries(prev)) {
+                        const idx = Number(key);
+                        if (Number.isNaN(idx) || idx === i) continue;
+                        next[idx > i ? idx - 1 : idx] = revealed;
+                      }
+                      return next;
+                    });
+                  }}
+                >
+                  ×
+                </Button>
+              </div>
+            );
+          })}
           <Button
             type="button"
             variant="outline"
