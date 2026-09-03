@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 
+import { checkInHabit, createHabit } from "@freeanima/features/habit/domain";
 import {
   createObjective,
   deleteObjective,
@@ -100,17 +101,30 @@ describePg("objective module PG", () => {
     const linked = await linkObjective(worldId, auto.id, { kind: "task_item", id: t1.id });
     expect(linked?.links).toContainEqual({ kind: "task_item", id: t1.id });
 
-    await expect(
-      createObjective(worldId, {
-        title: "习惯",
-        completion: {
-          kind: "metric_auto",
-          unit: "次",
-          target: 1,
-          source: { type: "habit", habit_id: 1 },
-        },
-      }),
-    ).rejects.toThrow("习惯模块未落地");
+    const habit = await createHabit(worldId, {
+      title: "喝水",
+      polarity: "build",
+      record_mode: "auto",
+      target: 1,
+      unit: "杯",
+      auto_amount: 1,
+    });
+    const habitObj = await createObjective(worldId, {
+      title: "习惯",
+      completion: {
+        kind: "metric_auto",
+        unit: "天",
+        target: 1,
+        source: { type: "habit", habit_id: habit.id },
+      },
+    });
+    expect(habitObj.resolved_progress?.current).toBe(0);
+    expect(habitObj.resolved_progress?.source).toBe("habit");
+
+    await checkInHabit(worldId, { habit_id: habit.id });
+    const habitAgain = await getObjective(worldId, habitObj.id);
+    expect(habitAgain?.resolved_progress?.current).toBe(1);
+    expect(habitAgain?.resolved_progress?.ratio).toBe(1);
 
     const ok = await deleteObjective(worldId, root.id);
     expect(ok).toBe(true);
