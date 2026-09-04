@@ -1,4 +1,4 @@
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
 
 import type { SubjectKind } from "./subject-scope.ts";
 import { getSubjectKind, setSubjectKind, subscribeSubjectKind } from "./subject-scope-store.ts";
@@ -16,10 +16,13 @@ export function SubjectScopeProvider({ children }: { children: ReactNode }) {
     getSubjectKind,
     () => DEFAULT_SERVER_KIND,
   );
-  const value: SubjectScopeValue = {
-    kind,
-    setKind: setSubjectKind,
-  };
+  const value = useMemo<SubjectScopeValue>(
+    () => ({
+      kind,
+      setKind: setSubjectKind,
+    }),
+    [kind],
+  );
   return <SubjectScopeContext.Provider value={value}>{children}</SubjectScopeContext.Provider>;
 }
 
