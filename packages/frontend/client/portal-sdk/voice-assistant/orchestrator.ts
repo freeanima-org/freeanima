@@ -20,6 +20,13 @@ let phase: VoiceAssistantPhase = "idle";
 let transcript: string | null = null;
 let resultMessage: string | null = null;
 let error: string | null = null;
+/** 缓存快照：useSyncExternalStore 的 getSnapshot 必须引用稳定，否则 mount 即 #185 */
+let snapshot: VoiceAssistantSnapshot = {
+  phase,
+  transcript,
+  resultMessage,
+  error,
+};
 const listeners = new Set<Listener>();
 
 function emit(): void {
@@ -31,11 +38,12 @@ function setState(patch: Partial<VoiceAssistantSnapshot>): void {
   if (patch.transcript !== undefined) transcript = patch.transcript;
   if (patch.resultMessage !== undefined) resultMessage = patch.resultMessage;
   if (patch.error !== undefined) error = patch.error;
+  snapshot = { phase, transcript, resultMessage, error };
   emit();
 }
 
 export function getVoiceAssistantSnapshot(): VoiceAssistantSnapshot {
-  return { phase, transcript, resultMessage, error };
+  return snapshot;
 }
 
 export function subscribeVoiceAssistant(listener: Listener): () => void {

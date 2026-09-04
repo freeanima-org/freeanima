@@ -42,7 +42,11 @@
               "clippy"
               "rustfmt"
             ];
-            targets = [ "x86_64-pc-windows-msvc" ];
+            # windows 交叉 + Android aarch64（just pack/dev tauri-android）
+            targets = [
+              "x86_64-pc-windows-msvc"
+              "aarch64-linux-android"
+            ];
           };
 
           # bun 不纳入：nixpkgs bun 常落后于 engines（>=1.4.0）。
@@ -57,6 +61,7 @@
             jq
             rustToolchain
             rustup
+            android-tools # adb / fastboot（just install tauri-android-apk、真机调试）
           ];
 
           windowsCrossTools =
@@ -93,7 +98,14 @@
             export CARGO_HOME="''${CARGO_HOME:-$HOME/.cargo}"
             # 插件在 CARGO_HOME/bin；追加而非前置，避免 rustup 代理盖住 overlay cargo
             export PATH="$PATH:$CARGO_HOME/bin"
-            echo "[freeanima flake] just=$(command -v just)  rustc=$(command -v rustc)  cargo=$(command -v cargo)  rustup=$(command -v rustup)  makensis=$(command -v makensis || echo missing)  cargo-xwin=$(command -v cargo-xwin || echo missing)${extra}"
+            # Android SDK（just install android）：platform-tools/adb、cmdline-tools
+            # nixpkgs android-tools 已提供 adb；有本地 SDK 时前置其 bin，与 scripts/android-env.sh 一致
+            if [ -d "''${ANDROID_HOME:-$HOME/Android/Sdk}" ]; then
+              export ANDROID_HOME="''${ANDROID_HOME:-$HOME/Android/Sdk}"
+              export ANDROID_SDK_ROOT="''${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+              export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+            fi
+            echo "[freeanima flake] just=$(command -v just)  rustc=$(command -v rustc)  cargo=$(command -v cargo)  rustup=$(command -v rustup)  adb=$(command -v adb || echo missing)  makensis=$(command -v makensis || echo missing)  cargo-xwin=$(command -v cargo-xwin || echo missing)${extra}"
             if ! command -v bun >/dev/null 2>&1; then
               echo "[freeanima flake] 未检测到 bun：请安装 >=1.4.0（https://bun.sh）后再 just dev"
             fi
