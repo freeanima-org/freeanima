@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { buildHeadlessChatStreamFlushContext } from "@freeanima/features/chat/ui/spa/lib/offline-stream-adapter.ts";
 import { updateChatSendPayload } from "@freeanima/features/chat/ui/spa/lib/offline-send-store.ts";
 import type { GlobalOutboxSummary } from "@freeanima/client/portal-sdk/offline-module-cap";
@@ -171,61 +171,64 @@ export function OfflineSyncBootstrap(): null {
     }
   }, []);
 
-  const issues = problemOps(summary);
+  const issues = useMemo(() => problemOps(summary), [summary]);
   const showToast = shouldShowOfflineSyncToast(summary, habitatConnection);
+  // 稳定签名，避免每渲新建 issues 数组触发 toast effect → #185
+  const issuesKey = useMemo(
+    () => issues.map((op) => `${op.id}:${op.lastError ?? ""}:${op.moduleId}`).join("|"),
+    [issues],
+  );
+  const summaryKey = `${summary.pending}:${summary.failed}:${summary.stale}`;
 
   useEffect(() => {
-    if (!showToast) {
-      dismissShellToast(SHELL_TOAST_IDS.offlineSync);
-      return;
-    }
+    // 与 ShellConnectivityBar 相同：勿在 commitPassiveMount 同步写 sonner store
+    const timer = window.setTimeout(() => {
+      if (!showToast) {
+        dismissShellToast(SHELL_TOAST_IDS.offlineSync);
+        return;
+      }
 
-    const firstIssue = issues[0];
-    const description = buildIssueDescription(issues);
-    const message = buildOfflineSyncSummaryMessage(summary, habitatConnection, {
-      pending: (count) => `${count} 项待同步`,
-      failed: (count) => `${count} 项同步失败`,
-      stale: (count) => `${count} 处冲突`,
-    });
+      const firstIssue = issues[0];
+      const description = buildIssueDescription(issues);
+      const message = buildOfflineSyncSummaryMessage(summary, habitatConnection, {
+        pending: (count) => `${count} 项待同步`,
+        failed: (count) => `${count} 项同步失败`,
+        stale: (count) => `${count} 处冲突`,
+      });
 
-    if (firstIssue) {
-      showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
-        ...(description != null ? { description } : {}),
-        action: {
-          label:
-            isStaleOutboxOp(firstIssue) && firstIssue.moduleId === "chat" ? "仍然发送" : "重试",
-          onClick: () => {
-            if (!busy) void handleRetryOp(firstIssue);
+      if (firstIssue) {
+        showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
+          ...(description != null ? { description } : {}),
+          action: {
+            label:
+              isStaleOutboxOp(firstIssue) && firstIssue.moduleId === "chat" ? "仍然发送" : "重试",
+            onClick: () => {
+              if (!busy) void handleRetryOp(firstIssue);
+            },
           },
-        },
-        cancel: {
-          label: "丢弃",
+          cancel: {
+            label: "丢弃",
+            onClick: () => {
+              if (!busy) void handleDiscardOp(firstIssue);
+            },
+          },
+        });
+        return;
+      }
+
+      showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
+        action: {
+          label: "重新连接并全部重试",
           onClick: () => {
-            if (!busy) void handleDiscardOp(firstIssue);
+            if (!busy) void handleRetryAll();
           },
         },
       });
-      return;
-    }
-
-    showShellToast(SHELL_TOAST_IDS.offlineSync, message, {
-      action: {
-        label: "重新连接并全部重试",
-        onClick: () => {
-          if (!busy) void handleRetryAll();
-        },
-      },
-    });
-  }, [
-    busy,
-    handleDiscardOp,
-    handleRetryAll,
-    handleRetryOp,
-    habitatConnection,
-    issues,
-    showToast,
-    summary,
-  ]);
+    }, 0);
+    return () => window.clearTimeout(timer);
+    // issues / summary 经 issuesKey、summaryKey 收敛；handlers 用最新闭包即可
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 避免 unstable 数组/对象引用刷 toast
+  }, [busy, habitatConnection, issuesKey, showToast, summaryKey]);
 
   return null;
 }
