@@ -3,6 +3,35 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.12.1](https://github.com/freeanima-org/freeanima/compare/v0.12.0...v0.12.1) (2026-09-04)
+
+
+### Features
+
+* **entity:** 将 client_op_id 升为顶层列并收敛离线 outbox ([9badcf8](https://github.com/freeanima-org/freeanima/commit/9badcf855edffb54f4521cf5e65bbd9187834c6e))
+* **habit:** 落地习惯打卡模块与戒除日上限语义 ([540b43e](https://github.com/freeanima-org/freeanima/commit/540b43e46d96810449d486c906c3f38cc890838e))
+* **offline:** 增加只读 Outbox Devtools 面板 ([4c05e61](https://github.com/freeanima-org/freeanima/commit/4c05e610c3ed72811df5aab377d6374556908270))
+* **pomodoro:** 重构迷你窗 UI 并加固跨端 active 同步 ([b60f3a4](https://github.com/freeanima-org/freeanima/commit/b60f3a4b7d76f9389d3ea1200e5fb3146e87bfe7))
+* **task:** 统一快速添加作曲器并支持前缀快捷设定 ([8afefbf](https://github.com/freeanima-org/freeanima/commit/8afefbf95a5f58e7c02bdab2077fcad96c4292eb))
+* **voice-assistant:** 实现 Android 唤醒与生活指令闭环 ([d77bea7](https://github.com/freeanima-org/freeanima/commit/d77bea7b8294b4359b640dd8af773733b41bd6f4))
+
+
+### Bug Fixes
+
+* **chat:** 避免伪键盘 inset 触发沉浸更新环 ([8136ccb](https://github.com/freeanima-org/freeanima/commit/8136ccb562d83c2eb5f98b8b31573423196bea2b))
+* **llm:** 为 OpenCode Go 注入 x-opencode-session ([34453d2](https://github.com/freeanima-org/freeanima/commit/34453d2e23f6b1b3d333815f827bc7494430fdcc))
+* **offline:** 去掉 shell-debug normalize 多余布尔比较 ([8c78906](https://github.com/freeanima-org/freeanima/commit/8c78906fd5c1239eeb3988d7fc2f9b7982275476))
+* **pomodoro:** 修复迷你窗深色底前景对比度 ([06ee85b](https://github.com/freeanima-org/freeanima/commit/06ee85b721a93b4e3f7acd03775bda651838f6c0))
+* **pomodoro:** 迷你窗自行完成阶段切换避免卡在 00:00 ([e6d1420](https://github.com/freeanima-org/freeanima/commit/e6d14209bfbc17ca27df9ee457971604b85a891f))
+* **shell:** 修复实时通道条幅与快捷入口刷新 ([74959ff](https://github.com/freeanima-org/freeanima/commit/74959ff16bcb1c7d1533375dc9cc39c0ed58bced))
+* **vault:** 修正自定义字段宽度并支持密码显示切换 ([9a10620](https://github.com/freeanima-org/freeanima/commit/9a106205a6d7fae78168979c7e9f7e9df8db772c))
+* **voice-assistant:** 稳定快照引用避免移动壳 React [#185](https://github.com/freeanima-org/freeanima/issues/185) ([df03f9c](https://github.com/freeanima-org/freeanima/commit/df03f9c6e81f88649b143ccb3ff3f388dd1c793f))
+
+
+### Tests
+
+* **objective:** 习惯落地后改测 metric_auto 进度 ([dd17337](https://github.com/freeanima-org/freeanima/commit/dd17337370587b286fde9550693224a281a75ad3))
+
 ## [0.12.0](https://github.com/freeanima-org/freeanima/compare/v0.11.0...v0.12.0) (2026-09-01)
 
 
