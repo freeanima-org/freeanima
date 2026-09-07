@@ -5,6 +5,7 @@ import {
   addMonthsToDateLocal,
   dateLocalPresets,
   formatDateTime,
+  formatDue,
   formatDueChip,
   formatRemindChip,
   mergeDateTimeLocal,
@@ -20,6 +21,38 @@ describe("formatDateTime", () => {
 
   test("invalid returns raw", () => {
     expect(formatDateTime("not-a-date")).toBe("not-a-date");
+  });
+});
+
+describe("formatDue", () => {
+  test("empty / invalid", () => {
+    expect(formatDue(null)).toBe("");
+    expect(formatDue("not-a-date")).toBe("not-a-date");
+  });
+
+  test("same year omits year", () => {
+    const sameYear = new Date();
+    sameYear.setMonth(6, 13);
+    sameYear.setHours(12, 0, 0, 0);
+    const label = formatDue(sameYear.toISOString());
+    expect(label).toBe(sameYear.toLocaleDateString(undefined, { month: "short", day: "numeric" }));
+    expect(label).not.toContain(String(sameYear.getFullYear()));
+  });
+
+  test("other year includes year", () => {
+    const otherYear = new Date();
+    otherYear.setFullYear(otherYear.getFullYear() - 1);
+    otherYear.setMonth(6, 13);
+    otherYear.setHours(12, 0, 0, 0);
+    const label = formatDue(otherYear.toISOString());
+    expect(label).toBe(
+      otherYear.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+    );
+    expect(label).toContain(String(otherYear.getFullYear()));
   });
 });
 
@@ -46,6 +79,14 @@ describe("formatDueChip", () => {
     expect(result.overdue).toBe(true);
     expect(result.label).toBe(`${past.getMonth() + 1}月${past.getDate()}日, 延期4天`);
   });
+
+  test("other year includes year", () => {
+    const otherYear = new Date();
+    otherYear.setFullYear(otherYear.getFullYear() - 1, 6, 13);
+    otherYear.setHours(12, 0, 0, 0);
+    const result = formatDueChip(otherYear.toISOString());
+    expect(result.label.startsWith(`${otherYear.getFullYear()}年7月13日`)).toBe(true);
+  });
 });
 
 describe("formatRemindChip", () => {
@@ -60,6 +101,13 @@ describe("formatRemindChip", () => {
     expect(formatRemindChip(at.toISOString())).toBe(
       `${at.getMonth() + 1}月${at.getDate()}日 09:30`,
     );
+  });
+
+  test("other year includes year", () => {
+    const at = new Date();
+    at.setFullYear(at.getFullYear() + 1, 0, 5);
+    at.setHours(9, 30, 0, 0);
+    expect(formatRemindChip(at.toISOString())).toBe(`${at.getFullYear()}年1月5日 09:30`);
   });
 });
 
