@@ -104,11 +104,26 @@ export function dateLocalPresets(): DateLocalPreset[] {
   ];
 }
 
+/** 月日展示；非当年则带年份（如「2025年7月13日」） */
+function formatMonthDayLabel(d: Date, now: Date = new Date()): string {
+  const monthDay = `${d.getMonth() + 1}月${d.getDate()}日`;
+  if (d.getFullYear() !== now.getFullYear()) {
+    return `${d.getFullYear()}年${monthDay}`;
+  }
+  return monthDay;
+}
+
+/** 任务行等列表日期：当年仅月日，跨年带年 */
 export function formatDue(due: string | null): string {
   if (!due) return "";
   const d = new Date(due);
   if (Number.isNaN(d.getTime())) return due;
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const sameYear = d.getFullYear() === new Date().getFullYear();
+  return d.toLocaleDateString(undefined, {
+    ...(sameYear ? {} : { year: "numeric" as const }),
+    month: "short",
+    day: "numeric",
+  });
 }
 
 /** UI 列表/详情通用日期时间展示（Intl；空值显示 em dash） */
@@ -119,7 +134,7 @@ export function formatDateTime(value: string | null | undefined, emptyLabel = "�
   return date.toLocaleString();
 }
 
-/** 详情顶栏截止 chip：如「7月13日」或「7月13日, 延期4天」 */
+/** 详情顶栏截止 chip：如「7月13日」或「2025年7月13日, 延期4天」 */
 export function formatDueChip(due: string | null | undefined): {
   label: string;
   overdue: boolean;
@@ -128,7 +143,7 @@ export function formatDueChip(due: string | null | undefined): {
   const d = new Date(due);
   if (Number.isNaN(d.getTime())) return { label: "截止日期", overdue: false };
 
-  const dateLabel = `${d.getMonth() + 1}月${d.getDate()}日`;
+  const dateLabel = formatMonthDayLabel(d);
   const startToday = new Date();
   startToday.setHours(0, 0, 0, 0);
   const startDue = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -144,7 +159,7 @@ export function formatRemindChip(remind: string | null | undefined): string {
   if (!remind) return "提醒";
   const d = new Date(remind);
   if (Number.isNaN(d.getTime())) return "提醒";
-  const dateLabel = `${d.getMonth() + 1}月${d.getDate()}日`;
+  const dateLabel = formatMonthDayLabel(d);
   const time = isoToTimeLocalValue(remind);
   return time ? `${dateLabel} ${time}` : dateLabel;
 }
