@@ -204,7 +204,8 @@ export function VaultPopupApp() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return;
     await sendTabMessageAllFrames(tab.id, { type: "fill_login", fill: fillRes.fill });
-    void sendBg({ type: "record_fill_used", item_id: id });
+    // 须 await：popup 立刻 close 会中断未完成的 sendMessage，导致 last_used_at 不落库
+    await sendBg({ type: "record_fill_used", item_id: id });
     window.close();
   };
 

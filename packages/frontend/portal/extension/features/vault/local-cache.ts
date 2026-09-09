@@ -124,4 +124,42 @@ export function listMetaFromCache(cache: VaultLocalCachePayload): VaultItemMetaR
   return cache.items.map(({ secrets_enc: _s, dek_wrapped: _d, ...meta }) => meta);
 }
 
+/** ISO → ms；无效/缺失为 0（与 uri-match 同分排序一致） */
+export function vaultLastUsedMs(iso: string | undefined): number {
+  if (!iso) return 0;
+  const ms = Date.parse(iso);
+  return Number.isFinite(ms) ? ms : 0;
+}
+
+/** 取较新的 last_used_at（填充乐观更新 vs Habitat list/touch） */
+export function pickNewerLastUsedAt(
+  a: string | undefined,
+  b: string | undefined,
+): string | undefined {
+  if (vaultLastUsedMs(a) >= vaultLastUsedMs(b)) {
+    return a !== undefined ? a : b;
+  }
+  return b !== undefined ? b : a;
+}
+
+/**
+ * 刷新/touch 写回时合并：保留本地密文，且 last_used_at 取较新一侧。
+ * 避免 unlock 全量 list 或 touch 回包缺字段时抹掉刚填充的排序依据。
+ */
+export function mergeCachedVaultItem(
+  remote: VaultItemMetaRowPayload,
+  local: CachedVaultItem | undefined,
+): CachedVaultItem {
+  const last_used_at = pickNewerLastUsedAt(remote.last_used_at, local?.last_used_at);
+  const sealed =
+    local?.secrets_enc && local.dek_wrapped
+      ? { secrets_enc: local.secrets_enc, dek_wrapped: local.dek_wrapped }
+      : {};
+  return {
+    ...remote,
+    ...sealed,
+    ...(last_used_at !== undefined ? { last_used_at } : {}),
+  };
+}
+
 export { decryptCachePayload, encryptCachePayload } from "./local-cache-crypto.ts";

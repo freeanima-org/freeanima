@@ -112,7 +112,7 @@ async function applyFill(itemId: number): Promise<void> {
   const fillRes = await deps.send({ type: "get_fill_payload", item_id: itemId });
   if (!fillRes.ok || !("fill" in fillRes)) return;
   deps.fill(fillRes.fill as FillPayload);
-  void deps.send({ type: "record_fill_used", item_id: itemId });
+  await deps.send({ type: "record_fill_used", item_id: itemId });
   clearUi();
 }
 
@@ -120,7 +120,7 @@ async function applyTotpFill(itemId: number): Promise<void> {
   const fillRes = await deps.send({ type: "get_fill_payload", item_id: itemId });
   if (!fillRes.ok || !("fill" in fillRes) || !fillRes.fill.totp) return;
   if (activeInput) fillInputElement(activeInput, fillRes.fill.totp);
-  void deps.send({ type: "record_fill_used", item_id: itemId });
+  await deps.send({ type: "record_fill_used", item_id: itemId });
   clearUi();
 }
 

@@ -1,5 +1,7 @@
 # Vault feature（浏览器形态）
 
-扩展内保险库能力：会话解锁（含冷启动离线主密码）、加密本地缓存、自动填充（弹窗 / 页内浮层；同分按 Habitat `last_used_at`）、密码生成、保存提示（URI 匹配跳过；可「本域名不再提示」并本地记住）、离线只读门控。
+扩展内保险库能力：会话解锁（含冷启动离线主密码）、加密本地缓存、自动填充（弹窗 / 页内浮层；同分按 `last_used_at`）、密码生成、保存提示（URI 匹配跳过；可「本域名不再提示」并本地记住）、离线只读门控。
+
+填充后须完整走完 `record_fill_used`（popup 在 close 前 await；快捷键/右键 await）：先乐观写本地 `last_used_at`，再 `vault.touch`；unlock 全量 list 与 touch 回包用「较新」合并，避免抹掉刚填充的排序依据。
 
 壳层连接与消息见 `../../runtime/`。产品文档：[`docs/modules/vault.md`](../../../../../docs/modules/vault.md)。
