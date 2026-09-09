@@ -10,6 +10,7 @@ import {
   clearLocalCacheMemory,
   listMetaFromCache,
   loadLocalCache,
+  mergeCachedVaultItem,
   removeLocalCacheItem,
   saveLocalCache,
   upsertLocalCacheItem,
@@ -77,22 +78,16 @@ async function refreshLocalCacheFromHabitat(): Promise<CachedVaultItem[]> {
     subject_id: await getExtUserSubjectId(),
     limit: 2000,
   });
-  const prevSecrets = new Map<number, Pick<CachedVaultItem, "secrets_enc" | "dek_wrapped">>();
+  const prevById = new Map<number, CachedVaultItem>();
   const prev = await loadLocalCache();
   if (prev) {
     for (const item of prev.items) {
-      if (item.secrets_enc && item.dek_wrapped) {
-        prevSecrets.set(item.id, {
-          secrets_enc: item.secrets_enc,
-          dek_wrapped: item.dek_wrapped,
-        });
-      }
+      prevById.set(item.id, item);
     }
   }
-  const items: CachedVaultItem[] = listed.items.map((meta) => {
-    const sealed = prevSecrets.get(meta.id);
-    return sealed ? { ...meta, ...sealed } : { ...meta };
-  });
+  const items: CachedVaultItem[] = listed.items.map((meta) =>
+    mergeCachedVaultItem(meta, prevById.get(meta.id)),
+  );
   await saveLocalCache(items);
   return items;
 }
@@ -202,7 +197,7 @@ async function statusPayload(unlocked: boolean): Promise<ExtBgResponse> {
   };
 }
 
-/** 自动填充后 bump last_used_at：先写本地缓存，再异步上报 Habitat */
+/** 自动填充后 bump last_used_at：先写本地缓存，再上报 Habitat（调用方须 await，防 SW 被回收） */
 async function recordFillUsed(itemId: number): Promise<void> {
   const now = new Date().toISOString();
   const cached = await loadLocalCache();
@@ -215,13 +210,13 @@ async function recordFillUsed(itemId: number): Promise<void> {
       subject_id: await getExtUserSubjectId(),
       id: itemId,
     });
-    const sealed =
-      prev?.secrets_enc && prev.dek_wrapped
-        ? { secrets_enc: prev.secrets_enc, dek_wrapped: prev.dek_wrapped }
-        : {};
-    await upsertLocalCacheItem({ ...toCachedMeta(touched.item), ...sealed });
+    const localHint: CachedVaultItem = prev
+      ? { ...prev, last_used_at: now }
+      : { ...toCachedMeta(touched.item), last_used_at: now };
+    // 用「较新」合并：touch 回包缺 last_used_at 时不得抹掉本地乐观时间
+    await upsertLocalCacheItem(mergeCachedVaultItem(toCachedMeta(touched.item), localHint));
   } catch {
-    /* 本地乐观更新已生效；下次 list/unlock 会与 Habitat 对齐 */
+    /* 本地乐观更新已生效；unlock 刷新也会保留较新的本地 last_used_at */
   }
 }
 
@@ -282,7 +277,7 @@ export default defineBackground(() => {
         const fillRes = await handleMessage({ type: "get_fill_payload", item_id: first.id });
         if (!fillRes.ok || !("fill" in fillRes)) return;
         await sendTabMessageAllFrames(tab.id, { type: "fill_login", fill: fillRes.fill });
-        void recordFillUsed(first.id);
+        await recordFillUsed(first.id);
       }
     })();
   });
@@ -317,7 +312,7 @@ export default defineBackground(() => {
           type: "fill_field",
           value: fill.username ?? "",
         });
-        void recordFillUsed(item.id);
+        await recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-password") {
@@ -325,7 +320,7 @@ export default defineBackground(() => {
           type: "fill_field",
           value: fill.password ?? "",
         });
-        void recordFillUsed(item.id);
+        await recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-totp") {
@@ -333,17 +328,17 @@ export default defineBackground(() => {
           type: "fill_field",
           value: fill.totp ?? "",
         });
-        void recordFillUsed(item.id);
+        await recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-card") {
         await sendTabMessageAllFrames(tab.id, { type: "fill_card", fill });
-        void recordFillUsed(item.id);
+        await recordFillUsed(item.id);
         return;
       }
       if (info.menuItemId === "fa-fill-identity") {
         await sendTabMessageAllFrames(tab.id, { type: "fill_identity", fill });
-        void recordFillUsed(item.id);
+        await recordFillUsed(item.id);
         return;
       }
     })();
