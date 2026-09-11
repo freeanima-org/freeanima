@@ -42,7 +42,7 @@ export async function startRemoteCodingProbe(
 ): Promise<void> {
   const logFile = "$HOME/.anima/outpost/coding/probe.log";
   const cmd = [
-    "mkdir -p $HOME/.anima/outpost/coding",
+    "mkdir -p $HOME/.anima/outpost/coding &&",
     `nohup ${shellQuote(opts.remoteProbeCommand)}`,
     `--habitat-url ${shellQuote(opts.habitatUrl)}`,
     `--token ${shellQuote(opts.token)}`,
