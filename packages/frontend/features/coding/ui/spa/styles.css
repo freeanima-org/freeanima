@@ -157,7 +157,17 @@ body,
   margin-bottom: 0.65rem;
 }
 
+.coding-repo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding-right: 0.15rem;
+}
+
 .coding-repo-label {
+  flex: 1;
+  min-width: 0;
   font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -167,6 +177,15 @@ body,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.coding-repo-add {
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+.coding-repo-add:hover {
+  opacity: 1;
 }
 
 .coding-agents-head {

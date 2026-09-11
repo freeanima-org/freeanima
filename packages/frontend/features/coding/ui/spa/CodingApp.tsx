@@ -26,6 +26,7 @@ import {
   saveAgentSessions,
   upsertSession,
   type AgentSessionsState,
+  type RepoGroup,
 } from "./lib/agent-sessions.ts";
 import {
   createProjectCodingNote,
@@ -527,6 +528,18 @@ export function CodingApp() {
     }
   };
 
+  /** 分组行「新建」：在指定范围内直接建会话，省掉选择一步 */
+  const createSessionInGroup = (group: RepoGroup) => {
+    // SSH 组：复用组内已存连接目标编排（无需再填表单）
+    const sshSession = group.sessions.find((s) => s.workspaceKind === "ssh" && s.remote != null);
+    if (sshSession?.remote) {
+      void createSshSession(sshSession.remote);
+      return;
+    }
+    // 本地 / 无工作区组：直接锁定工作区建会话
+    createLockedSession(group.workspaceRoot);
+  };
+
   const searchActions: SearchAction[] = useMemo(
     () => [
       {
@@ -596,7 +609,7 @@ export function CodingApp() {
           sessions={agents.sessions}
           activeSessionId={agents.activeSessionId}
           onSelect={(id) => setAgents((prev) => ({ ...prev, activeSessionId: id }))}
-          onNew={() => setNewAgentOpen(true)}
+          onNewInGroup={createSessionInGroup}
           onArchive={(id) => {
             void releaseSessionSshTunnel(id);
             setAgents((prev) => archiveSession(prev, id));

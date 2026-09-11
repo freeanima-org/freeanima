@@ -1,17 +1,19 @@
-import { ArchiveIcon, MessageSquarePlusIcon, SearchIcon, Trash2Icon } from "lucide-react";
+import { ArchiveIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react";
 import { cn } from "@freeanima/ui-kit";
 
 import {
   groupSessionsByRepo,
   visibleSessions,
   type CodingAgentSession,
+  type RepoGroup,
 } from "../lib/agent-sessions.ts";
 
 type Props = {
   sessions: CodingAgentSession[];
   activeSessionId: string | null;
   onSelect: (id: string) => void;
-  onNew: () => void;
+  /** 分组行内的「新建会话」：直接在指定范围内创建（省掉选择一步） */
+  onNewInGroup: (group: RepoGroup) => void;
   onArchive: (id: string) => void;
   onDelete: (id: string) => void;
   onOpenSearch?: () => void;
@@ -21,7 +23,7 @@ export function AgentSessionSidebar({
   sessions,
   activeSessionId,
   onSelect,
-  onNew,
+  onNewInGroup,
   onArchive,
   onDelete,
   onOpenSearch,
@@ -43,22 +45,25 @@ export function AgentSessionSidebar({
               <SearchIcon className="size-3.5" />
             </button>
           ) : null}
-          <button
-            type="button"
-            className="coding-btn coding-btn-icon"
-            title="新建 Agent"
-            onClick={onNew}
-          >
-            <MessageSquarePlusIcon className="size-3.5" />
-          </button>
         </div>
       </div>
 
       <div className="coding-agents-scroll">
         {groups.map((g) => (
           <div key={g.key} className="coding-repo-group">
-            <div className="coding-repo-label" title={g.workspaceRoot ?? undefined}>
-              {g.key}
+            <div className="coding-repo-head">
+              <span className="coding-repo-label" title={g.workspaceRoot ?? undefined}>
+                {g.key}
+              </span>
+              <button
+                type="button"
+                className="coding-btn coding-btn-icon coding-repo-add"
+                title={`在「${g.key}」新建会话`}
+                aria-label={`在「${g.key}」新建会话`}
+                onClick={() => onNewInGroup(g)}
+              >
+                <PlusIcon className="size-3" />
+              </button>
             </div>
             <ul className="coding-agents-list">
               {g.sessions.map((s) => (
