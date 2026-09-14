@@ -6,6 +6,7 @@ import { dirname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 
 import { asPosixPath } from "./path.ts";
+import { mergeUserPath } from "./user-path.ts";
 import type { WorkspaceFsBackend } from "./types.ts";
 
 function toAbs(p: string): string {
@@ -107,18 +108,20 @@ export function createNodeWorkspaceBackend(): WorkspaceFsBackend {
     async runCommand(opts) {
       const cwd = opts.cwd ? toAbs(opts.cwd) : process.cwd();
       const useShell = opts.shell ?? false;
+      // 宿主进程（Tauri / anima-probe / 服务）常缺用户 shell 的 PATH：补全 ~/.bun/bin 等
+      const env = { ...process.env, PATH: mergeUserPath(process.env.PATH) };
       return await new Promise((resolvePromise, reject) => {
         let child;
         try {
           child = useShell
-            ? spawn(opts.command, { cwd, shell: true, env: process.env })
+            ? spawn(opts.command, { cwd, shell: true, env })
             : (() => {
                 const parts = splitCommandLine(opts.command.trim());
                 const bin = parts[0];
                 if (!bin) {
                   throw new Error("command is empty");
                 }
-                return spawn(bin, parts.slice(1), { cwd, shell: false, env: process.env });
+                return spawn(bin, parts.slice(1), { cwd, shell: false, env });
               })();
         } catch (err) {
           reject(err instanceof Error ? err : new Error(String(err)));
