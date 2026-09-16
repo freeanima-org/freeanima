@@ -4,6 +4,7 @@ import { Loader } from "@cordisjs/plugin-loader";
 import Hmr from "@cordisjs/plugin-hmr";
 import Timer from "@cordisjs/plugin-timer";
 
+import { mountFeatureService } from "../features/service.ts";
 import { REPO_ROOT } from "../service/repo-paths.ts";
 import type { BootPipelineConfig } from "./boot-context.ts";
 
@@ -40,6 +41,9 @@ export async function runBootPipelineViaLoader(
 ): Promise<BootLoaderHandle> {
   const baseDir = options.baseDir ?? REPO_ROOT;
   ctx.provide("bootOptions", pipeline);
+  // Provided on the root context so every feature plugin in `cordis.yml`
+  // (siblings under the loader) can inject it.
+  mountFeatureService(ctx);
   ctx.baseUrl = pathToFileURL(baseDir).href + "/";
 
   const loaderFiber = await ctx.plugin(Loader);

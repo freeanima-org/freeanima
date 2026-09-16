@@ -31,7 +31,6 @@ import { HabitatSessionRegistry } from "@freeanima/habitat/capabilities/outpost/
 import { RemoteInstanceRegistry } from "@freeanima/habitat/capabilities/outpost/transport/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { ANIMA_VERSION } from "../service/version.ts";
-import { builtinFeaturePlugins, registerFeatures } from "../features/index.ts";
 import { initHabitatRouter } from "../habitat/init.ts";
 
 export type RuntimePhaseResult = {
@@ -112,8 +111,8 @@ export async function bootRuntimePhase(
     await import("@freeanima/features/coding/domain/bind-overlays.ts");
   bindCodingProjectOverlays();
 
+  // Feature plugins are mounted by the boot pipeline (cordis.yml / runBootPipeline).
   initHabitatRouter();
-  registerFeatures(builtinFeaturePlugins);
 
   outpost.loadSessionPlatformExtra = async (conversationId) => {
     const meta = await conversation.loadConversationMeta(conversationId);

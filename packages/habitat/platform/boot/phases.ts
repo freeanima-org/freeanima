@@ -1,5 +1,7 @@
 import type { Context, Plugin } from "cordis";
 
+import { builtinFeaturePlugins } from "../features/builtin-feature-plugins.ts";
+import { mountFeatureService } from "../features/service.ts";
 import { startAsyncIntegrations } from "./integrations-phase.ts";
 import { startupLog } from "./status.ts";
 import type { BootPipelineConfig } from "./boot-context.ts";
@@ -31,10 +33,17 @@ export const BOOT_PHASE_PLUGINS: readonly Plugin.Object[] = [
   runtimePlugin,
 ];
 
-/** 按依赖顺序把每个启动阶段挂载为 Cordis 插件并等待完成。 */
+/**
+ * Feature 插件清单：每个 Habitat route bundle 一个 Cordis 插件，由 loader
+ * 在启动阶段之后挂载（各自 inject `features`，便于按 feature 挂载/热更新）。
+ */
+export const BOOT_FEATURE_PLUGINS: readonly Plugin.Object[] = builtinFeaturePlugins;
+
+/** 按依赖顺序把每个启动阶段与 feature 插件挂载为 Cordis 插件并等待完成。 */
 export async function runBootPipeline(ctx: Context, pipeline: BootPipelineConfig): Promise<void> {
   ctx.provide("bootOptions", pipeline);
-  for (const plugin of BOOT_PHASE_PLUGINS) {
+  mountFeatureService(ctx);
+  for (const plugin of [...BOOT_PHASE_PLUGINS, ...BOOT_FEATURE_PLUGINS]) {
     startupLog(`Boot plugin: ${plugin.name ?? "anonymous"}`);
     await ctx.plugin(plugin);
   }

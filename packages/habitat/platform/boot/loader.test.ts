@@ -40,6 +40,29 @@ describe("runBootPipelineViaLoader", () => {
     }
   });
 
+  it("provides ctx.features to loader-mounted plugins", async () => {
+    const dir = await mkdtemp(join(import.meta.dir, ".tmp-boot-features-"));
+    try {
+      await writeFile(
+        join(dir, "probe-plugin.ts"),
+        'export default { name: "probe", inject: ["features"], apply(ctx) { globalThis.freeanimaFeatureProbe = ctx.features !== undefined; } };\n',
+      );
+      await writeFile(join(dir, "cordis.yml"), "- name: ./probe-plugin.ts\n");
+
+      const ctx = new Context();
+      await runBootPipelineViaLoader(ctx, fakePipeline(), {
+        baseDir: dir,
+        configPath: "./cordis.yml",
+      });
+
+      expect(ctx.get("features")).toBeDefined();
+      expect((globalThis as { freeanimaFeatureProbe?: boolean }).freeanimaFeatureProbe).toBe(true);
+    } finally {
+      delete (globalThis as { freeanimaFeatureProbe?: boolean }).freeanimaFeatureProbe;
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("mounts timer and activates ctx.hmr when hot reload is enabled", async () => {
     const dir = await mkdtemp(join(import.meta.dir, ".tmp-boot-hmr-"));
     try {

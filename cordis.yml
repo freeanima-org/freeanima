@@ -1,5 +1,10 @@
 # Habitat 启动插件树（由 @cordisjs/plugin-loader 挂载；顺序即依赖顺序）。
-# 运行期输入（host/port/http hooks 等）由 serve() 通过 ctx.bootOptions 提供。
+# 运行期输入（host/port/http hooks 等）由 serve() 通过 ctx.bootOptions 提供；
+# ctx.features 由 runBootPipelineViaLoader 在根上下文挂载。
+#
+# 前 8 项是启动阶段（BOOT_PHASE_PLUGINS），其后是 feature 插件
+# （BOOT_FEATURE_PLUGINS）：每个 Habitat route bundle 一个插件，便于按
+# feature 挂载 / 热更新。
 - name: ./packages/habitat/platform/boot/plugins/config.ts
 - name: ./packages/habitat/platform/boot/plugins/persistence.ts
 - name: ./packages/habitat/platform/boot/plugins/identity.ts
@@ -8,3 +13,30 @@
 - name: ./packages/habitat/platform/boot/plugins/service-api-tokens.ts
 - name: ./packages/habitat/platform/boot/plugins/engine.ts
 - name: ./packages/habitat/platform/boot/plugins/runtime.ts
+- name: ./packages/habitat/features/chat/cordis-plugin.ts
+- name: ./packages/habitat/features/habitat/cordis-plugin.ts
+- name: ./packages/habitat/features/task/cordis-plugin.ts
+- name: ./packages/habitat/features/project/cordis-plugin.ts
+- name: ./packages/habitat/features/objective/cordis-plugin.ts
+- name: ./packages/habitat/features/habit/cordis-plugin.ts
+- name: ./packages/habitat/features/tag/cordis-plugin.ts
+- name: ./packages/habitat/features/subagent/cordis-plugin.ts
+- name: ./packages/habitat/features/entity/cordis-plugin.ts
+- name: ./packages/habitat/features/vault/cordis-plugin.ts
+- name: ./packages/habitat/features/bookmark/cordis-plugin.ts
+- name: ./packages/habitat/features/health/cordis-plugin.ts
+- name: ./packages/habitat/features/contact/cordis-plugin.ts
+- name: ./packages/habitat/features/federation/cordis-plugin.ts
+- name: ./packages/habitat/features/room/cordis-plugin.ts
+- name: ./packages/habitat/features/notification/cordis-plugin.ts
+- name: ./packages/habitat/features/companion/cordis-plugin.ts
+- name: ./packages/habitat/features/coding/cordis-plugin.ts
+- name: ./packages/habitat/features/diary/cordis-plugin.ts
+- name: ./packages/habitat/features/note/cordis-plugin.ts
+- name: ./packages/habitat/features/calendar/cordis-plugin.ts
+- name: ./packages/habitat/features/pomodoro/cordis-plugin.ts
+- name: ./packages/habitat/features/shell-quick/cordis-plugin.ts
+- name: ./packages/habitat/features/email/cordis-plugin.ts
+- name: ./packages/habitat/features/mcp/cordis-plugin.ts
+- name: ./packages/habitat/features/object-storage/cordis-plugin.ts
+- name: ./packages/habitat/platform/features/providers/ws-only.ts
