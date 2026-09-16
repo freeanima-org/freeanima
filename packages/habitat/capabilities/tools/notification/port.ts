@@ -1,3 +1,7 @@
+import {
+  getRuntimeContext,
+  isRuntimeContextReady,
+} from "@freeanima/habitat/platform/service/runtime-context.ts";
 import type {
   NotificationCreateInput,
   NotificationListOpts,
@@ -20,16 +24,15 @@ export type NotificationPort = {
   getUserRecipient(): NotificationRecipientRef;
 };
 
-let port: NotificationPort | null = null;
-
-export function registerNotificationPort(next: NotificationPort): void {
-  port = next;
-}
-
+/**
+ * Resolve the notification port from the Cordis service (`ctx.notifications`
+ * on the runtime kernel context).
+ *
+ * No module-level singleton state: `NotificationService` is the single
+ * provider. Returns null before boot / when the service is not mounted, which
+ * is the contract existing deep and background consumers rely on.
+ */
 export function getNotificationPort(): NotificationPort | null {
-  return port;
-}
-
-export function resetNotificationPortForTests(): void {
-  port = null;
+  if (!isRuntimeContextReady()) return null;
+  return getRuntimeContext().kernel.ctx.notifications?.port ?? null;
 }

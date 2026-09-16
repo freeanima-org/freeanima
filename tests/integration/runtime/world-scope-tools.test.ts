@@ -12,15 +12,9 @@ import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { createEmailAccount } from "@freeanima/features/email/domain";
-import {
-  registerNotificationPort,
-  registerNotificationTools,
-  resetNotificationPortForTests,
-} from "@freeanima/habitat/capabilities/tools/notification";
-import { createNotificationPort } from "@freeanima/habitat/platform/service/notification-helpers";
+import { registerNotificationTools } from "@freeanima/habitat/capabilities/tools/notification";
 import {
   getActivePgTestContext,
-  getTestEngine,
   testConv,
   testAgentToolContextOpts,
   testChatAgentSubjectId,
@@ -28,20 +22,11 @@ import {
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId, testUserWorldId } from "../../helpers/world-context.ts";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
-import type { RuntimeDeps } from "@freeanima/habitat/platform/service/runtime-deps";
 
 function testCfg() {
   const ctx = getActivePgTestContext();
   if (!ctx) throw new Error("PG test context not initialized");
   return ctx.config.data;
-}
-
-function testRuntimeDeps(): RuntimeDeps {
-  return {
-    kernel: {} as RuntimeDeps["kernel"],
-    engine: getTestEngine(),
-    conversation: {} as RuntimeDeps["conversation"],
-  };
 }
 
 function userCallerAuth() {
@@ -72,13 +57,10 @@ describePg("world scope tools", () => {
       deleteEmail: async () => ({ ok: true as const }),
       assertPasswordResolvable: async () => {},
     });
-    const pgCtx = getActivePgTestContext()!;
-    registerNotificationPort(createNotificationPort(testRuntimeDeps(), pgCtx.config));
     registerNotificationTools(toolSets);
   });
 
   afterEach(async () => {
-    resetNotificationPortForTests();
     await restoreIntegrationHome(prev);
   });
 

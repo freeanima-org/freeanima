@@ -9,7 +9,6 @@ import { deliverSoftFailureNotify } from "./soft-failure-notify.ts";
 import { notifyTemporalSummarySystemTruncated } from "./temporal-summary-truncate-notify.ts";
 
 afterEach(() => {
-  notificationMod.resetNotificationPortForTests();
   unregisterSoftFailureNotify();
 });
 

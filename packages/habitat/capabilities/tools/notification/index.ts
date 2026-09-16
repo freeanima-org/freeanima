@@ -1,9 +1,5 @@
 export type { NotificationPort, NotificationRecipientRef } from "./port.ts";
-export {
-  registerNotificationPort,
-  getNotificationPort,
-  resetNotificationPortForTests,
-} from "./port.ts";
+export { getNotificationPort } from "./port.ts";
 export { NotificationService, type NotificationServiceConfig } from "./service.ts";
 export { notificationInjectPlugin } from "./inject-plugin.ts";
 export { createNotificationInjectHandler } from "./handler.ts";
