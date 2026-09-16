@@ -10,9 +10,8 @@ import {
 import { REPO_ROOT } from "./service/index.ts";
 import { DEFAULT_BIND_HOST, coalesceBindHosts, parseBindHosts } from "./bind-hosts.ts";
 import { getAppRuntime } from "./service/runtime-context.ts";
-import { BOOT_PHASES, startAsyncIntegrations } from "./boot/phases.ts";
-import { bootEnginePhase } from "./boot/engine-phase.ts";
-import { bootRuntimePhase } from "./boot/runtime-phase.ts";
+import { ensureProcessContext } from "./service/process-context.ts";
+import { runBootPipeline, startAsyncIntegrations } from "./boot/phases.ts";
 import { gracefulShutdown } from "./boot/shutdown.ts";
 import { startupLog, writeStatusFile } from "./boot/status.ts";
 import type { HttpServerHandle, ServeOptions } from "./boot/types.ts";
@@ -85,37 +84,24 @@ export async function serve(
   } = { list: [] };
 
   try {
-    const configPhase = BOOT_PHASES.find((p) => p.id === "config");
-    const persistencePhase = BOOT_PHASES.find((p) => p.id === "persistence");
-    if (!configPhase || !persistencePhase) {
-      throw new Error("boot phases config/persistence missing");
-    }
-    await configPhase.run();
-    const { config } = await persistencePhase.run();
-    const { bootIdentityPhase } = await import("./boot/identity-phase.ts");
-    await bootIdentityPhase(config);
-    const { bootWorldSubjectsPhase } = await import("./boot/world-subjects-phase.ts");
-    await bootWorldSubjectsPhase(config);
-    const { bootConfigSecretsPhase } = await import("./boot/config-secrets-phase.ts");
-    await bootConfigSecretsPhase(config);
-    const { bootServiceApiTokensPhase } = await import("./boot/service-api-tokens-phase.ts");
-    await bootServiceApiTokensPhase(config);
-
+    const root = ensureProcessContext();
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };
 
-    enginePhase = await bootEnginePhase(config, (sid) => {
-      acpSessionUpdatedRef.handler?.(sid);
-      runtimeRef.current?.pokeSessionWatchers(sid);
-    });
-
-    const { runtime } = await bootRuntimePhase(
-      enginePhase,
+    await runBootPipeline(root, {
       statusHost,
       port,
+      onConversationUpdated: (sid) => {
+        acpSessionUpdatedRef.handler?.(sid);
+        runtimeRef.current?.pokeSessionWatchers(sid);
+      },
       runtimeRef,
       acpSessionUpdatedRef,
-    );
+      serveOpts: opts,
+    });
+
+    enginePhase = root.bootEngine;
+    const { runtime } = root.bootRuntime;
     cronInitialized = true;
 
     const http = httpHooks;
