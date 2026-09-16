@@ -57,7 +57,7 @@ export type EngineOpts = {
   /** 必填：由调用方解析 profile；loop 不读默认 chat profile */
   model: string;
   logger?: Logger;
-  /** Injected LLM runtime; falls back to initLlmRuntime() singleton when omitted */
+  /** Injected LLM runtime; falls back to the active `ctx.llmStack` runtime when omitted */
   llm?: LlmRuntime;
   tools?: OpenAiToolSchema[];
   /** Injected tool registry; falls back to getToolRegistry() when omitted */

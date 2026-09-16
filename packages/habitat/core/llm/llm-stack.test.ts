@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll } from "bun:test";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import { createLlmRuntime } from "./llm-stack.ts";
 import { mountLlmStackService } from "./llm-stack-service.ts";
+import { getLlmRuntime, initLlmRuntime, resetLlmRuntimeForTests } from "./llm-stack-runtime.ts";
 import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
 import { minimalChatRuntime } from "@freeanima/habitat/core/config/test-helpers/minimal-llm-config";
@@ -67,5 +68,18 @@ describe("createLlmRuntime", () => {
       text_generate: { main: { connection: "img", model: "gpt-image-1" } },
     });
     expect(rt.profiles.list()).toEqual([]);
+  });
+});
+
+describe("ctx.llmStack runtime lifecycle", () => {
+  it("stores the runtime on the service and resolves it back", () => {
+    const rt = initLlmRuntime(testCfg);
+    expect(getLlmRuntime()).toBe(rt);
+  });
+
+  it("throws after reset until re-initialized", () => {
+    initLlmRuntime(testCfg);
+    resetLlmRuntimeForTests();
+    expect(() => getLlmRuntime()).toThrow(/not initialized/);
   });
 });
