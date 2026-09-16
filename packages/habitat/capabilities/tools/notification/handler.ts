@@ -3,14 +3,14 @@ import { resolveScenarioProfile } from "@freeanima/habitat/core/hooks/prompt";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { getConversationMeta } from "@freeanima/habitat/core/db/pg/conversation";
 
-import { getNotificationPort } from "./port.ts";
+import type { NotificationPort } from "./port.ts";
 import {
   manifestNotificationContext,
   NOTIFICATION_INJECT_LIMIT,
   stripNotificationContextFromMessages,
 } from "./inject.ts";
 
-export function createNotificationInjectHandler() {
+export function createNotificationInjectHandler(port: NotificationPort | null) {
   return async (ctx: BeforeLlmCallContext): Promise<void> => {
     stripNotificationContextFromMessages(ctx.messages);
 
@@ -33,7 +33,6 @@ export function createNotificationInjectHandler() {
       meta != null && isConversationMeta(meta) ? meta.agent_subject_id : undefined;
     if (agentSubjectId == null || agentSubjectId <= 0) return;
 
-    const port = getNotificationPort();
     if (!port) return;
 
     const rows = await port.list({

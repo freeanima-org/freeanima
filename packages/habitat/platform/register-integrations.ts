@@ -1,4 +1,4 @@
-import { createNotificationInjectHandler } from "@freeanima/habitat/capabilities/tools/notification";
+import { notificationInjectPlugin } from "@freeanima/habitat/capabilities/tools/notification";
 import { registerMemoryPassiveRecallHook as registerPassiveRecall } from "@freeanima/habitat/capabilities/memory";
 import { registerClarifyHooks } from "@freeanima/habitat/capabilities/tools/clarify";
 import { createTemporalPeerInjectHandler } from "./service/temporal-summary-inject.ts";
@@ -28,9 +28,9 @@ export function registerServiceIntegrations(opts: {
   });
 }
 
-/** Register unread notification inject beforeLlmCall hook (NotificationPort must be registered) */
+/** Mount unread-notification injector; waits for `ctx.notifications` via inject */
 export function registerNotificationInject(opts: { kernel: Kernel }): void {
-  onBeforeLlmCall(opts.kernel.ctx, createNotificationInjectHandler());
+  opts.kernel.ctx.plugin(notificationInjectPlugin);
 }
 
 /** Register passive semantic memory recall beforeLlmCall hook */
