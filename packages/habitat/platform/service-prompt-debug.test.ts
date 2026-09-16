@@ -25,7 +25,7 @@ import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
 import { bindEnginePorts } from "./bind-engine-ports.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";
-import { SystemPromptService } from "@freeanima/habitat/core/hooks/prompt";
+import { mountSystemPromptService } from "@freeanima/habitat/core/hooks/prompt";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
 import { initRuntimeContext } from "./context.ts";
 import { createAppRuntime } from "./service/app-runtime.ts";
@@ -137,7 +137,7 @@ describe("service-prompt-debug", () => {
       ctx: kernel.ctx,
       getToolRegistry: () => catalog.toolSets,
     });
-    await kernel.ctx.plugin(SystemPromptService, {});
+    mountSystemPromptService(kernel.ctx, {});
     seedContext(catalog, kernel);
     mockConv.conversationExists.mockClear();
     mockConv.loadConversationMeta.mockClear();

@@ -1,5 +1,5 @@
 import { registerEmailSyncPort } from "@freeanima/features/email/domain";
-import { NotificationService } from "@freeanima/habitat/capabilities/tools/notification";
+import { mountNotificationService } from "@freeanima/habitat/capabilities/tools/notification";
 import { emailSyncPortImpl } from "@freeanima/habitat/capabilities/connectors/email";
 
 import { createNotificationPort } from "./service/notification-helpers.ts";
@@ -10,5 +10,5 @@ import type { Config } from "@freeanima/habitat/core/config";
 export function registerServiceStores(deps: FullRuntimeDeps, config: Config): void {
   registerEmailSyncPort(emailSyncPortImpl);
   const port = createNotificationPort(deps, config);
-  deps.kernel.ctx.plugin(NotificationService, { port });
+  mountNotificationService(deps.kernel.ctx, port);
 }

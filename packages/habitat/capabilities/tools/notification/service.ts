@@ -19,10 +19,27 @@ export type NotificationServiceConfig = {
  * `getNotificationPort()` accessor.
  */
 export class NotificationService extends Service {
-  readonly port: NotificationPort;
+  port: NotificationPort;
 
   constructor(ctx: Context, config: NotificationServiceConfig) {
     super(ctx, "notifications");
     this.port = config.port;
   }
+
+  setPort(port: NotificationPort): void {
+    this.port = port;
+  }
+}
+
+/** Mount synchronously (idempotent: re-mounting reuses the instance and swaps the port). */
+export function mountNotificationService(
+  ctx: Context,
+  port: NotificationPort,
+): NotificationService {
+  const existing = ctx.notifications as NotificationService | undefined;
+  if (existing) {
+    existing.setPort(port);
+    return existing;
+  }
+  return new NotificationService(ctx, { port });
 }

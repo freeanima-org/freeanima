@@ -25,11 +25,15 @@ export type SystemPromptServiceConfig = {
  * `systemPromptBuild` Cordis event and folds the collected effects.
  */
 export class SystemPromptService extends Service {
-  private readonly onFold?: SystemPromptServiceConfig["onFold"];
+  private onFold?: SystemPromptServiceConfig["onFold"];
 
   constructor(ctx: Context, config: SystemPromptServiceConfig = {}) {
     super(ctx, "systemPrompt");
     this.onFold = config.onFold;
+  }
+
+  setOnFold(onFold: SystemPromptServiceConfig["onFold"]): void {
+    this.onFold = onFold;
   }
 
   async build(payload: SystemPromptBuildContext): Promise<string> {
@@ -41,4 +45,17 @@ export class SystemPromptService extends Service {
     await this.onFold?.(folded);
     return folded.text;
   }
+}
+
+/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
+export function mountSystemPromptService(
+  ctx: Context,
+  config: SystemPromptServiceConfig = {},
+): SystemPromptService {
+  const existing = ctx.systemPrompt as SystemPromptService | undefined;
+  if (existing) {
+    if (config.onFold) existing.setOnFold(config.onFold);
+    return existing;
+  }
+  return new SystemPromptService(ctx, config);
 }

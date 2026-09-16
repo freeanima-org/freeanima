@@ -12,10 +12,11 @@ import { bindSearchRuntime } from "@freeanima/habitat/core/db/pg/search";
 import { createEngine } from "@freeanima/habitat/engine";
 import {
   initLlmRuntime,
-  registerLlmStackConfigurator,
+  mountLlmStackService,
   resetLlmRuntimeForTests,
 } from "@freeanima/habitat/core/llm";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
+import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
 import {
   createConversationService,
   type ConversationService,
@@ -55,7 +56,7 @@ async function ensureIntegrationWorldContext(config: Config): Promise<void> {
 }
 
 function createTestEngine(config: Config): Engine {
-  registerLlmStackConfigurator(bindLlmStack);
+  mountLlmStackService(ensureProcessContext(), bindLlmStack);
   const llm = initLlmRuntime(config.data);
   return createEngine({ llm, config, logger: createTestLogger() });
 }

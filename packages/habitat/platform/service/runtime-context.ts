@@ -1,6 +1,10 @@
 import { registerAppRuntime } from "@freeanima/habitat/platform/ports/app-runtime-context";
 
-import { RuntimeService, type RuntimeContext, type ServiceAppRuntime } from "./runtime-service.ts";
+import {
+  mountRuntimeService,
+  type RuntimeContext,
+  type ServiceAppRuntime,
+} from "./runtime-service.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type { RuntimeContext, ServiceAppRuntime } from "./runtime-service.ts";
@@ -19,7 +23,7 @@ export function initRuntimeContext(runtime: ServiceAppRuntime): void {
   };
   moduleCtx = ctx;
   (globalThis as GlobalStore)[GLOBAL_KEY] = ctx;
-  runtime.kernel.ctx.plugin(RuntimeService, { runtime: ctx });
+  mountRuntimeService(runtime.kernel.ctx, ctx);
   registerAppRuntime(runtime);
 }
 

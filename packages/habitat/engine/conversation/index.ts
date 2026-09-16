@@ -18,7 +18,6 @@ export type {
 } from "@freeanima/habitat/core/db/domain";
 export * from "@freeanima/habitat/core/db/domain";
 export {
-  registerConversationToolPolicyFilter,
   applyConversationToolPolicyFilter,
   type ConversationToolPolicyFilter,
 } from "@freeanima/habitat/core/tool";

@@ -14,7 +14,11 @@ export {
 export { foldSystemPromptSections, foldSystemPromptSectionsDetailed } from "./fold.ts";
 export type { FoldSystemPromptOptions, FoldSystemPromptResult } from "./fold.ts";
 export { buildSystemPrompt } from "./runner.ts";
-export { SystemPromptService, type SystemPromptServiceConfig } from "./service.ts";
+export {
+  mountSystemPromptService,
+  SystemPromptService,
+  type SystemPromptServiceConfig,
+} from "./service.ts";
 export {
   PROMPT_XML_TAGS,
   wrapPromptXml,

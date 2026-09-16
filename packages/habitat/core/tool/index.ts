@@ -44,10 +44,14 @@ export {
 } from "./conversation-tools.ts";
 export { handleConversationTodo } from "./conversation-todos.ts";
 export {
-  registerConversationToolPolicyFilter,
   applyConversationToolPolicyFilter,
   type ConversationToolPolicyFilter,
 } from "./policy-port.ts";
+export {
+  mountToolPolicyService,
+  ToolPolicyService,
+  type ToolPolicyServiceConfig,
+} from "./policy-service.ts";
 export {
   filterHabitatLocalHandsForCoding,
   isCodingConversationMeta,
