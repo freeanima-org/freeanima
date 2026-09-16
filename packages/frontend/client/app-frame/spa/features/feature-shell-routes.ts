@@ -1,4 +1,8 @@
-import { lazyNamedComponent, shellLazyRoute } from "../lazy-route.tsx";
+import { shellLazyRoute } from "../lazy-route.tsx";
+import {
+  buildFeatureShellRouteEntries,
+  SHELL_ROUTE_EXCLUSIONS,
+} from "./feature-shell-route-entries.ts";
 import { registerShellFeatureRoutes } from "./shell-registry.ts";
 import { registerTaskEntityOverlay } from "@freeanima/features/task/ui/spa/register-task-entity-overlay.ts";
 import { registerSemanticMemoryEntityOverlay } from "@freeanima/features/memory/ui/spa/register-semantic-memory-entity-overlay.ts";
@@ -10,126 +14,11 @@ registerSemanticMemoryEntityOverlay();
 registerCalendarEventEntityOverlay();
 registerObjectFileEntityOverlay();
 
-/** Shell routes for migrated feature plugins (Phase 2+). */
+export { buildFeatureShellRouteEntries, SHELL_ROUTE_EXCLUSIONS };
+
+/** Shell routes for features (path/label from the shared catalog). */
 export function registerFeaturePluginShellRoutes(): void {
-  registerShellFeatureRoutes([
-    {
-      featureId: "chat",
-      path: "/chat",
-      navLabel: "Chat",
-      load: () =>
-        import("@freeanima/features/chat/ui/spa").then(async (mod) => {
-          await import("@freeanima/features/chat/ui/spa/styles.css");
-          return { default: mod.ChatApp };
-        }),
-    },
-    {
-      featureId: "task",
-      path: "/tasks",
-      navLabel: "Tasks",
-      load: lazyNamedComponent(() => import("@freeanima/features/task/ui/spa"), "TaskApp"),
-    },
-    {
-      featureId: "project",
-      path: "/projects",
-      navLabel: "Projects",
-      load: lazyNamedComponent(() => import("@freeanima/features/project/ui/spa"), "ProjectApp"),
-    },
-    {
-      featureId: "objective",
-      path: "/objectives",
-      navLabel: "目标",
-      load: lazyNamedComponent(
-        () => import("@freeanima/features/objective/ui/spa"),
-        "ObjectiveApp",
-      ),
-    },
-    {
-      featureId: "habit",
-      path: "/habits",
-      navLabel: "习惯",
-      load: lazyNamedComponent(() => import("@freeanima/features/habit/ui/spa"), "HabitApp"),
-    },
-    {
-      featureId: "calendar",
-      path: "/calendar",
-      navLabel: "Calendar",
-      load: lazyNamedComponent(() => import("@freeanima/features/calendar/ui/spa"), "CalendarApp"),
-    },
-    {
-      featureId: "pomodoro",
-      path: "/pomodoro",
-      navLabel: "Pomodoro",
-      load: lazyNamedComponent(() => import("@freeanima/features/pomodoro/ui/spa"), "PomodoroApp"),
-    },
-    {
-      featureId: "vault",
-      path: "/vault",
-      navLabel: "Vault",
-      load: lazyNamedComponent(() => import("@freeanima/features/vault/ui/spa"), "VaultApp"),
-    },
-    {
-      featureId: "entity",
-      path: "/entity",
-      navLabel: "Entity",
-      load: lazyNamedComponent(() => import("@freeanima/features/entity/ui/spa"), "EntityApp"),
-    },
-    {
-      featureId: "notification",
-      path: "/notifications",
-      navLabel: "Notifications",
-      load: lazyNamedComponent(
-        () => import("@freeanima/features/notification/ui/spa"),
-        "NotificationApp",
-      ),
-    },
-    {
-      featureId: "diary",
-      path: "/diary",
-      navLabel: "Diary",
-      load: lazyNamedComponent(() => import("@freeanima/features/diary/ui/spa"), "DiaryApp"),
-    },
-    {
-      featureId: "note",
-      path: "/note",
-      navLabel: "Notes",
-      load: lazyNamedComponent(() => import("@freeanima/features/note/ui/spa"), "NoteApp"),
-    },
-    {
-      featureId: "bookmark",
-      path: "/bookmarks",
-      navLabel: "Bookmarks",
-      load: lazyNamedComponent(() => import("@freeanima/features/bookmark/ui/spa"), "BookmarkApp"),
-    },
-    {
-      featureId: "health",
-      path: "/health",
-      navLabel: "健康",
-      load: lazyNamedComponent(() => import("@freeanima/features/health/ui/spa"), "HealthApp"),
-    },
-    {
-      featureId: "contact",
-      path: "/contacts",
-      navLabel: "通讯录",
-      load: lazyNamedComponent(() => import("@freeanima/features/contact/ui/spa"), "ContactApp"),
-    },
-    {
-      featureId: "room",
-      path: "/rooms",
-      navLabel: "群聊",
-      load: () =>
-        import("@freeanima/features/room/ui/spa").then(async (mod) => {
-          await import("@freeanima/features/chat/ui/spa/styles.css");
-          return { default: mod.RoomApp };
-        }),
-    },
-    {
-      featureId: "email",
-      path: "/email",
-      navLabel: "Email",
-      load: lazyNamedComponent(() => import("@freeanima/features/email/ui/spa"), "EmailApp"),
-    },
-  ]);
+  registerShellFeatureRoutes(buildFeatureShellRouteEntries());
 }
 
 /** Habitat/admin SPA embedded in shell (formerly HabitatShell). */
