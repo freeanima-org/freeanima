@@ -1,18 +1,22 @@
-import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import {
   registerSelfLayerRefreshEngine,
   resetSelfLayerRefreshEngineForTests,
 } from "../refresh-engine-port.ts";
-import {
-  resetNotificationPortForTests,
-  registerNotificationPort,
-} from "@freeanima/habitat/capabilities/tools/notification";
+import * as notificationMod from "@freeanima/habitat/capabilities/tools/notification";
 import type { NotificationPort } from "@freeanima/habitat/capabilities/tools/notification";
 import type { NotificationRow } from "@freeanima/habitat/core/db/schema/rows";
 
 import { SELF_LAYER_PROPOSAL_SOURCE_REF } from "./messages.ts";
 import { runSelfLayerRefresh } from "./run.ts";
+
+function withNotificationPort<T>(port: NotificationPort, run: () => Promise<T>): Promise<T> {
+  const spy = spyOn(notificationMod, "getNotificationPort").mockReturnValue(port);
+  return run().finally(() => {
+    spy.mockRestore();
+  });
+}
 
 const listResidentSemanticMemoryMock = mock(async () => [
   {
@@ -153,42 +157,42 @@ describe("runSelfLayerRefresh", () => {
     purgeOrphanSelfBlocksMock.mockClear();
     loadSelfBlocksMock.mockClear();
     resetSelfLayerRefreshEngineForTests();
-    resetNotificationPortForTests();
   });
 
   afterEach(() => {
     resetSelfLayerRefreshEngineForTests();
-    resetNotificationPortForTests();
   });
 
   it("skips when unread proposal pending", async () => {
-    registerNotificationPort(makePort({ unreadProposal: true }));
     registerSelfLayerRefreshEngine(async () => ({ content: '{"propose":true}' }));
-    const result = await runSelfLayerRefresh({ agent_subject_id: 2 });
+    const result = await withNotificationPort(makePort({ unreadProposal: true }), () =>
+      runSelfLayerRefresh({ agent_subject_id: 2 }),
+    );
     expect(result.skipped).toBe("pending_proposal");
     expect(result.proposed).toBe(false);
   });
 
   it("skips when evidence empty", async () => {
     listResidentSemanticMemoryMock.mockImplementationOnce(async () => []);
-    registerNotificationPort(makePort());
     registerSelfLayerRefreshEngine(async () => ({ content: '{"propose":true}' }));
-    const result = await runSelfLayerRefresh({ agent_subject_id: 2 });
+    const result = await withNotificationPort(makePort(), () =>
+      runSelfLayerRefresh({ agent_subject_id: 2 }),
+    );
     expect(result.skipped).toBe("no_evidence");
   });
 
   it("skips when LLM proposes no change", async () => {
     const port = makePort();
-    registerNotificationPort(port);
     registerSelfLayerRefreshEngine(async () => ({ content: '{"propose":false}' }));
-    const result = await runSelfLayerRefresh({ agent_subject_id: 2 });
+    const result = await withNotificationPort(port, () =>
+      runSelfLayerRefresh({ agent_subject_id: 2 }),
+    );
     expect(result.skipped).toBe("no_change");
     expect(port.created).toHaveLength(0);
   });
 
   it("creates agent inbox proposal when LLM proposes blocks", async () => {
     const port = makePort();
-    registerNotificationPort(port);
     registerSelfLayerRefreshEngine(async () => ({
       content: JSON.stringify({
         propose: true,
@@ -197,7 +201,9 @@ describe("runSelfLayerRefresh", () => {
         blocks: { self_model: "I am careful with tools." },
       }),
     }));
-    const result = await runSelfLayerRefresh({ agent_subject_id: 2, selfContent: "self" });
+    const result = await withNotificationPort(port, () =>
+      runSelfLayerRefresh({ agent_subject_id: 2, selfContent: "self" }),
+    );
     expect(result.proposed).toBe(true);
     expect(result.notification_id).toBe("n-1");
     expect(port.created).toHaveLength(1);

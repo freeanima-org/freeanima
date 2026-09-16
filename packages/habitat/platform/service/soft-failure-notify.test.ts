@@ -9,7 +9,6 @@ import {
 import { deliverSoftFailureNotify } from "./soft-failure-notify.ts";
 
 afterEach(() => {
-  notificationMod.resetNotificationPortForTests();
   unregisterSoftFailureNotify();
 });
 
