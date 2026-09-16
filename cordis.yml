@@ -1,0 +1,10 @@
+# Habitat 启动插件树（由 @cordisjs/plugin-loader 挂载；顺序即依赖顺序）。
+# 运行期输入（host/port/http hooks 等）由 serve() 通过 ctx.bootOptions 提供。
+- name: ./packages/habitat/platform/boot/plugins/config.ts
+- name: ./packages/habitat/platform/boot/plugins/persistence.ts
+- name: ./packages/habitat/platform/boot/plugins/identity.ts
+- name: ./packages/habitat/platform/boot/plugins/world-subjects.ts
+- name: ./packages/habitat/platform/boot/plugins/config-secrets.ts
+- name: ./packages/habitat/platform/boot/plugins/service-api-tokens.ts
+- name: ./packages/habitat/platform/boot/plugins/engine.ts
+- name: ./packages/habitat/platform/boot/plugins/runtime.ts

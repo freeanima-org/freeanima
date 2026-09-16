@@ -11,7 +11,8 @@ import { REPO_ROOT } from "./service/index.ts";
 import { DEFAULT_BIND_HOST, coalesceBindHosts, parseBindHosts } from "./bind-hosts.ts";
 import { getAppRuntime } from "./service/runtime-context.ts";
 import { ensureProcessContext } from "./service/process-context.ts";
-import { runBootPipeline, startAsyncIntegrations } from "./boot/phases.ts";
+import { runBootPipelineViaLoader } from "./boot/loader.ts";
+import { startAsyncIntegrations } from "./boot/phases.ts";
 import { gracefulShutdown } from "./boot/shutdown.ts";
 import { startupLog, writeStatusFile } from "./boot/status.ts";
 import type { HttpServerHandle, ServeOptions } from "./boot/types.ts";
@@ -88,7 +89,7 @@ export async function serve(
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };
 
-    await runBootPipeline(root, {
+    await runBootPipelineViaLoader(root, {
       statusHost,
       port,
       onConversationUpdated: (sid) => {

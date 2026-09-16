@@ -114,15 +114,30 @@ describe("runBootPipeline", () => {
   });
 
   it("lists phases in the documented order", () => {
-    expect(BOOT_PHASE_PLUGINS.map((p) => p.id)).toEqual([
-      "config",
-      "persistence",
-      "identity",
-      "world-subjects",
-      "config-secrets",
-      "service-api-tokens",
-      "engine",
-      "runtime",
+    expect(BOOT_PHASE_PLUGINS.map((p) => p.name)).toEqual([
+      "boot-config",
+      "boot-persistence",
+      "boot-identity",
+      "boot-world-subjects",
+      "boot-config-secrets",
+      "boot-service-api-tokens",
+      "boot-engine",
+      "boot-runtime",
     ]);
+  });
+
+  it("cordis.yml lists the same boot plugins in the same order", async () => {
+    const text = await Bun.file(new URL("../../../../cordis.yml", import.meta.url)).text();
+    const specs = [...text.matchAll(/^\s*-\s*name:\s*(\S+)/gm)].map((match) => match[1]!);
+    const rootUrl = new URL("../../../../", import.meta.url);
+    const names = await Promise.all(
+      specs.map(async (spec) => {
+        const mod = (await import(new URL(spec.replace(/^\.\//, ""), rootUrl).href)) as {
+          default?: { name?: string };
+        };
+        return mod.default?.name;
+      }),
+    );
+    expect(names).toEqual(BOOT_PHASE_PLUGINS.map((p) => p.name));
   });
 });
