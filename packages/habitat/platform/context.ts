@@ -8,6 +8,8 @@ export {
   type ServiceAppRuntime,
 } from "./service/runtime-context.ts";
 
+export { RuntimeService } from "./service/runtime-service.ts";
+
 export { assertNotShuttingDown } from "@freeanima/habitat/platform/ports/app-runtime-context";
 
 export type { AppRuntime } from "./service/index.ts";

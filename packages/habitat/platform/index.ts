@@ -14,6 +14,7 @@ export {
   getRuntimeDeps,
   isRuntimeContextReady,
   assertNotShuttingDown,
+  RuntimeService,
   type RuntimeContext,
   type ServiceAppRuntime,
   type AppRuntime,
