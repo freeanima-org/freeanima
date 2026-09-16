@@ -6,7 +6,8 @@ import {
   loadToolSetsIntoConversation,
   unloadToolSetsFromConversation,
 } from "./conversation-tools.ts";
-import { registerConversationToolPolicyFilter } from "./policy-port.ts";
+import { mountToolPolicyService } from "./policy-service.ts";
+import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
 import { filterHabitatLocalHandsForCoding } from "./coding-local-hands.ts";
 
 const patchConversationMetaMock = mock(async () => {});
@@ -132,11 +133,11 @@ describe("unloadToolSetsFromConversation", () => {
 
 describe("loadToolSetsIntoConversation coding policy", () => {
   afterEach(() => {
-    registerConversationToolPolicyFilter((names) => names);
+    mountToolPolicyService(ensureProcessContext(), (names) => names);
   });
 
   it("denies habitat file/shell for coding_agent", async () => {
-    registerConversationToolPolicyFilter((names, meta) =>
+    mountToolPolicyService(ensureProcessContext(), (names, meta) =>
       filterHabitatLocalHandsForCoding(names, meta),
     );
     const meta = {
@@ -161,7 +162,7 @@ describe("loadToolSetsIntoConversation coding policy", () => {
   });
 
   it("still loads file/shell for digital_human chat", async () => {
-    registerConversationToolPolicyFilter((names, meta) =>
+    mountToolPolicyService(ensureProcessContext(), (names, meta) =>
       filterHabitatLocalHandsForCoding(names, meta),
     );
     const meta = {

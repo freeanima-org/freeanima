@@ -14,11 +14,12 @@ export {
   resetLlmRuntimeForTests,
   type LlmRuntime,
 } from "./llm-stack.ts";
+export { applyLlmStackConfigurator, type LlmStackConfigurator } from "./llm-stack-configurator.ts";
 export {
-  registerLlmStackConfigurator,
-  unregisterLlmStackConfigurator,
-  type LlmStackConfigurator,
-} from "./llm-stack-configurator.ts";
+  LlmStackService,
+  mountLlmStackService,
+  type LlmStackServiceConfig,
+} from "./llm-stack-service.ts";
 export {
   getLlmPreset,
   LLM_PRESETS,

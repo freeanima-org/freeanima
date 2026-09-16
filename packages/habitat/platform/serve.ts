@@ -104,7 +104,7 @@ export async function serve(
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };
 
-    enginePhase = bootEnginePhase(config, (sid) => {
+    enginePhase = await bootEnginePhase(config, (sid) => {
       acpSessionUpdatedRef.handler?.(sid);
       runtimeRef.current?.pokeSessionWatchers(sid);
     });

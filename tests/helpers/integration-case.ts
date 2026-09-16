@@ -17,7 +17,7 @@ import {
   resetRegisterServiceToolsForTest,
 } from "@freeanima/habitat/platform";
 import { invalidateSelfLayerPromptCache } from "@freeanima/habitat/capabilities/self";
-import { SystemPromptService } from "@freeanima/habitat/core/hooks/prompt";
+import { mountSystemPromptService } from "@freeanima/habitat/core/hooks/prompt";
 import { upsertSelfBlock } from "@freeanima/habitat/core/db/pg/self-layer";
 
 import { randomUUID } from "node:crypto";
@@ -93,7 +93,7 @@ export async function bindIntegrationRuntimeContext(pg: PgTestContext): Promise<
     ctx: kernel.ctx,
     getToolRegistry: () => pg.engine.catalog.toolSets,
   });
-  await kernel.ctx.plugin(SystemPromptService, {});
+  mountSystemPromptService(kernel.ctx, {});
   registerServiceStores(fullDeps, pg.config);
   invalidateSelfLayerPromptCache();
 }

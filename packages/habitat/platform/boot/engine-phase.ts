@@ -4,9 +4,11 @@ import {
   type Engine,
   type EngineCatalog,
 } from "@freeanima/habitat/engine";
-import { getLlmRuntime, initLlmRuntime } from "@freeanima/habitat/core/llm";
+import { getLlmRuntime, initLlmRuntime, LlmStackService } from "@freeanima/habitat/core/llm";
 import { isLlmConfigured } from "@freeanima/habitat/core/config";
 import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
+import { filterHabitatLocalHandsForCoding, ToolPolicyService } from "@freeanima/habitat/core/tool";
+import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import {
   createConversationService,
   type ConversationService,
@@ -32,14 +34,20 @@ export type EnginePhaseResult = {
 };
 
 /** Phase 3: catalog、kernel、engine、conversation、MCP 管理器 */
-export function bootEnginePhase(
+export async function bootEnginePhase(
   config: RuntimeConfigStore,
   onConversationUpdated: (conversationId: string) => void,
-): EnginePhaseResult {
+): Promise<EnginePhaseResult> {
   startupLog("Registering tools…");
   const catalog = createEngineCatalog();
-  registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills, config });
   const kernel = createServiceKernel(config);
+
+  await kernel.ctx.plugin(LlmStackService, { configurator: bindLlmStack });
+  await kernel.ctx.plugin(ToolPolicyService, {
+    filter: (toolNames, meta) => filterHabitatLocalHandsForCoding(toolNames, meta),
+  });
+
+  registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills, config });
 
   initLlmRuntime(config.data);
   if (!isLlmConfigured(config.data)) {

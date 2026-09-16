@@ -1,4 +1,5 @@
 import type { ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
+import { getProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
 
 /**
  * 对话级工具策略过滤器。
@@ -9,17 +10,12 @@ export type ConversationToolPolicyFilter = (
   meta: ConversationMetaMessage,
 ) => string[];
 
-let sessionToolPolicyFilter: ConversationToolPolicyFilter | null = null;
-
-/** 由 service 组合根注入 */
-export function registerConversationToolPolicyFilter(filter: ConversationToolPolicyFilter): void {
-  sessionToolPolicyFilter = filter;
-}
-
+/** 由 `ctx.toolPolicy` Cordis 服务提供；未挂载时不收窄。 */
 export function applyConversationToolPolicyFilter(
   toolNames: string[],
   meta: ConversationMetaMessage,
 ): string[] {
-  if (!sessionToolPolicyFilter) return toolNames;
-  return sessionToolPolicyFilter(toolNames, meta);
+  const service = getProcessContext()?.toolPolicy;
+  if (!service) return toolNames;
+  return service.apply(toolNames, meta);
 }

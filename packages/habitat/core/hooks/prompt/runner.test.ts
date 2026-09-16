@@ -5,15 +5,14 @@ import { SystemPromptService } from "./service.ts";
 
 let activeCtx = createHookContext();
 
-const runtimeOriginal = await import("@freeanima/habitat/platform/service/runtime-context.ts");
-mock.module("@freeanima/habitat/platform/service/runtime-context.ts", () => ({
-  ...runtimeOriginal,
-  isRuntimeContextReady: () => true,
-  getRuntimeContext: () => ({ kernel: { ctx: activeCtx } }),
+const processOriginal = await import("@freeanima/habitat/platform/service/process-context.ts");
+mock.module("@freeanima/habitat/platform/service/process-context.ts", () => ({
+  ...processOriginal,
+  getProcessContext: () => activeCtx,
 }));
 
 afterAll(() => {
-  mock.module("@freeanima/habitat/platform/service/runtime-context.ts", () => runtimeOriginal);
+  mock.module("@freeanima/habitat/platform/service/process-context.ts", () => processOriginal);
 });
 
 const { buildSystemPrompt } = await import("./runner.ts");

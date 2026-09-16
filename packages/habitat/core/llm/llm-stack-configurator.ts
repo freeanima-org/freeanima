@@ -1,29 +1,18 @@
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/habitat/core/provider";
+import { getProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
 
-export type LlmStackConfigurator = (
-  cfg: RuntimeConfig,
-  backends: BackendRegistry,
-  providers: ProviderRegistry,
-) => void;
+export type { LlmStackConfigurator } from "./llm-stack-service.ts";
 
-let configurator: LlmStackConfigurator | null = null;
-
-export function registerLlmStackConfigurator(fn: LlmStackConfigurator): void {
-  configurator = fn;
-}
-
-export function unregisterLlmStackConfigurator(): void {
-  configurator = null;
-}
-
+/** Resolve the configurator from `ctx.llmStack`; throws when never mounted. */
 export function applyLlmStackConfigurator(
   cfg: RuntimeConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ): void {
-  if (!configurator) {
-    throw new Error("LlmStackConfigurator not registered: load @freeanima/platform first");
+  const service = getProcessContext()?.llmStack;
+  if (!service) {
+    throw new Error("LlmStackService not mounted: load @freeanima/platform first");
   }
-  configurator(cfg, backends, providers);
+  service.configure(cfg, backends, providers);
 }

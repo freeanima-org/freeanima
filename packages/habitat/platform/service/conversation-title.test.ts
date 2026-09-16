@@ -3,8 +3,9 @@ import * as sessionTitleLlm from "@freeanima/habitat/core/llm";
 import { createConversationService } from "@freeanima/habitat/engine/conversation";
 import { Config } from "@freeanima/habitat/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/habitat/engine";
-import { initLlmRuntime, registerLlmStackConfigurator } from "@freeanima/habitat/core/llm";
+import { initLlmRuntime, mountLlmStackService } from "@freeanima/habitat/core/llm";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
+import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
 import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
 import { createLogger } from "@freeanima/habitat/kernel/logging";
 import { createMemorySink } from "@freeanima/habitat/kernel/logging/sinks/memory";
@@ -22,7 +23,7 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-registerLlmStackConfigurator(bindLlmStack);
+mountLlmStackService(ensureProcessContext(), bindLlmStack);
 const testEngine = createEngine({
   catalog,
   config: testConfig,
