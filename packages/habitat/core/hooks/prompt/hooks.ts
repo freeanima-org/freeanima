@@ -1,5 +1,4 @@
 import type { ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
-import { createHook } from "@freeanima/habitat/kernel/hooks";
 import type { PromptMode } from "./scenario.ts";
 import type { PromptXmlAttrs } from "./xml-wrap.ts";
 
@@ -33,8 +32,3 @@ export type SystemPromptSection = {
 export type SystemPromptBuildEffect = {
   sections?: SystemPromptSection[];
 };
-
-export const systemPromptBuild = createHook<SystemPromptBuildContext, SystemPromptBuildEffect>(
-  "@freeanima/habitat/core/hooks/system-prompt-build",
-  "Assemble system prompt sections from registered modules",
-);

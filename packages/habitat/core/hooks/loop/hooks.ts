@@ -1,4 +1,3 @@
-import { createHook, type HookEffectOf } from "@freeanima/habitat/kernel/hooks";
 import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
 import type { TurnControl } from "./hook-stream.ts";
 
@@ -23,14 +22,4 @@ export type BeforeLlmCallContext = {
   llmDebugExtras?: Record<string, unknown>;
 };
 
-export const toolAfterCall = createHook<ToolAfterCallContext, ToolAfterCallEffect>(
-  "@freeanima/habitat/kernel/loop-mechanism-hooks/tool-after-call",
-  "After tool call returns",
-);
-
-export const beforeLlmCall = createHook<BeforeLlmCallContext>(
-  "@freeanima/habitat/kernel/loop-mechanism-hooks/before-llm-call",
-  "Fires before each LLM call (first loop iteration and every subsequent iteration)",
-);
-
-export type { HookEffectOf };
+export type { TurnControl };

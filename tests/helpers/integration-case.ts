@@ -89,7 +89,7 @@ export function bindIntegrationRuntimeContext(pg: PgTestContext): void {
     config: pg.config,
   });
   registerSystemPromptHooks({
-    hookRegistry: kernel.hookRegistry,
+    ctx: kernel.ctx,
     getToolRegistry: () => pg.engine.catalog.toolSets,
   });
   registerServiceStores(fullDeps, pg.config);

@@ -1,5 +1,3 @@
-import { createHook } from "@freeanima/habitat/kernel/hooks";
-
 export type MessageIncomingContext = {
   conversationId: string;
   message: string;
@@ -19,13 +17,3 @@ export type TurnAfterCompleteContext = {
 export type TurnAfterCompleteEffect = {
   displayContent?: string;
 };
-
-export const messageIncoming = createHook<MessageIncomingContext, MessageIncomingEffect>(
-  "@freeanima/habitat/engine/conversation-hooks/message-incoming",
-  "Inbound message intercept",
-);
-
-export const turnAfterComplete = createHook<TurnAfterCompleteContext, TurnAfterCompleteEffect>(
-  "@freeanima/habitat/engine/conversation-hooks/turn-after-complete",
-  "After single turn ends",
-);

@@ -1,5 +1,5 @@
 export { createSemanticMemory, type SemanticMemory } from "./fact.ts";
-export { conversationUpdated, type ConversationUpdatedPayload } from "./events.ts";
+export type { ConversationUpdatedPayload } from "./events.ts";
 export {
   createEmbeddedMemoryService,
   createRemoteMemoryService,

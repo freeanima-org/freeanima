@@ -13,8 +13,8 @@ import type {
   HookStreamEvent,
   TurnControl,
 } from "@freeanima/habitat/core/hooks/loop";
-import { beforeLlmCall, toolAfterCall } from "@freeanima/habitat/core/hooks/loop";
-import { headOkStepData, type HookRegistry, type LlmKind } from "@freeanima/habitat/kernel/hooks";
+import { runBeforeLlmCall, runToolAfterCall } from "@freeanima/habitat/core/hooks/cordis";
+import type { Context } from "cordis";
 import * as llm from "@freeanima/habitat/core/llm";
 import type { LlmRuntime } from "@freeanima/habitat/core/llm";
 import { cleanToolCallsForApi } from "@freeanima/habitat/core/llm";
@@ -66,12 +66,11 @@ export type EngineOpts = {
   toolPolicy?: { allowedTools: readonly string[] };
   /** Executable tool names (cached + staged toolsets); no loaded gate when unset */
   executableTools?: readonly string[];
-  hookRegistry?: HookRegistry;
   /**
-   * Required when `hookRegistry` is set — opaque hook filter scope only
-   * (`conversation` vs `auto_llm`). Loop must not branch behavior on this.
+   * Cordis hook context. When set, `beforeLlmCall` / `toolAfterCall` listeners
+   * run for this loop; callers on non-conversation paths omit it.
    */
-  llm_kind?: LlmKind;
+  hookCtx?: Context;
   /** Explicit session id for hooks; loop does not read tool ALS */
   conversationId?: string;
   /**
@@ -215,29 +214,20 @@ async function afterMessagesPersisted(
 }
 
 async function runToolAfterCallHooks(
-  hookRegistry: HookRegistry | undefined,
-  llm_kind: LlmKind | undefined,
+  hookCtx: Context | undefined,
   conversationId: string,
   toolName: string,
   args: Record<string, unknown>,
   result: string,
 ): Promise<TurnControl | null> {
-  if (!hookRegistry) return null;
-  if (!llm_kind) {
-    throw new Error("EngineOpts.llm_kind is required when hookRegistry is set");
-  }
-  const hookRun = await hookRegistry.run(
-    toolAfterCall,
-    {
-      conversationId,
-      toolName,
-      args,
-      result,
-    },
-    { llm_kind },
-  );
-  const effect = headOkStepData(toolAfterCall, hookRun.chain);
-  const tc = effect?.turnControl;
+  if (!hookCtx) return null;
+  const outcome = await runToolAfterCall(hookCtx, {
+    conversationId,
+    toolName,
+    args,
+    result,
+  });
+  const tc = outcome.turnControl;
   if (!tc?.pause || !Array.isArray(tc.streamEvents)) return null;
   return tc;
 }
@@ -381,19 +371,12 @@ export async function* runStream(
     checkShouldStop(opts);
     // Run beforeLlmCall hook; modules (e.g. notifications) may modify messages before LLM inference
     const llmCallExtras: Record<string, unknown> = {};
-    if (opts.hookRegistry) {
-      if (!opts.llm_kind) {
-        throw new Error("EngineOpts.llm_kind is required when hookRegistry is set");
-      }
-      await opts.hookRegistry.run(
-        beforeLlmCall,
-        {
-          conversationId,
-          messages: messages,
-          ...(opts.llm_debug ? { llm_debug: true as const, llmCallExtras } : {}),
-        },
-        { llm_kind: opts.llm_kind },
-      );
+    if (opts.hookCtx) {
+      await runBeforeLlmCall(opts.hookCtx, {
+        conversationId,
+        messages: messages,
+        ...(opts.llm_debug ? { llm_debug: true as const, llmCallExtras } : {}),
+      });
     }
 
     if (opts.llm_debug) {
@@ -605,8 +588,7 @@ export async function* runStream(
           }
         }
         const control = await runToolAfterCallHooks(
-          opts.hookRegistry,
-          opts.llm_kind,
+          opts.hookCtx,
           conversationId,
           fnName,
           fnArgs,

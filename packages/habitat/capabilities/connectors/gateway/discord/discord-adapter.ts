@@ -16,9 +16,9 @@ import {
 } from "@freeanima/habitat/kernel/loop-mechanism";
 import { getAppRuntime } from "@freeanima/habitat/platform/ports";
 import { resolveCommand } from "@freeanima/habitat/capabilities/tools/slash-commands";
-import { conversationUpdated } from "@freeanima/habitat/capabilities/memory";
+import { onConversationUpdated } from "@freeanima/habitat/core/hooks/cordis";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
-import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
+import type { Context } from "cordis";
 import { KeyedRateLimiter } from "@freeanima/habitat/core/util/backoff";
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import type { MessagingPort } from "@freeanima/habitat/platform/ports/messaging-port";
@@ -260,16 +260,12 @@ export class DiscordAdapter implements PlatformAdapter {
     try {
       // AppRuntimeContext 端口面未暴露 kernel；真实 runtime 有
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- AppRuntime.kernel 组合根边界
-      const kernel = (getAppRuntime() as { kernel?: { hookRegistry: HookRegistry } }).kernel;
-      const registry = kernel?.hookRegistry;
-      if (!registry) return;
-      this.conversationUpdatedOff = registry.subscribe(
-        conversationUpdated,
-        (payload) => {
-          void this.onSessionTitleUpdated(payload.conversation_id);
-        },
-        { llm_kind: "conversation" },
-      );
+      const kernel = (getAppRuntime() as { kernel?: { ctx?: Context } }).kernel;
+      const hookCtx = kernel?.ctx;
+      if (!hookCtx) return;
+      this.conversationUpdatedOff = onConversationUpdated(hookCtx, (payload) => {
+        void this.onSessionTitleUpdated(payload.conversation_id);
+      });
     } catch {
       /* AppRuntime not ready yet; skip */
     }

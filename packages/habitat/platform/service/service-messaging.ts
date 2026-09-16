@@ -13,11 +13,13 @@ import {
   ensureCommandResultText,
 } from "@freeanima/habitat/capabilities/tools/slash-commands";
 import type { CommandDef, CommandUx } from "@freeanima/habitat/capabilities/tools/slash-commands";
-import { messageIncoming, turnAfterComplete } from "@freeanima/habitat/core/hooks/conversation";
-import { headOkStepData } from "@freeanima/habitat/kernel/hooks";
+import {
+  emitConversationUpdated,
+  runMessageIncoming,
+  runTurnAfterComplete,
+} from "@freeanima/habitat/core/hooks/cordis";
 import type { StoredMessage as Message } from "@freeanima/habitat/core/db/domain";
 import type { Kernel } from "@freeanima/habitat/kernel";
-import { conversationUpdated } from "@freeanima/habitat/capabilities/memory";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { ConversationManager } from "./conversation-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
@@ -94,23 +96,18 @@ export async function runIncomingMessageHooks(
   message: string,
   platform: string,
 ): Promise<{ ok: true; message: string; expiredHint?: string } | { ok: false; reason: string }> {
-  const run = await deps.kernel.hookRegistry.run(
-    messageIncoming,
-    {
-      conversationId,
-      message,
-      platform,
-    },
-    { llm_kind: "conversation" },
-  );
-  if (run.blocked) {
-    return { ok: false, reason: run.blockedMessage ?? "" };
+  const outcome = await runMessageIncoming(deps.kernel.ctx, {
+    conversationId,
+    message,
+    platform,
+  });
+  if (outcome.blocked !== undefined) {
+    return { ok: false, reason: outcome.blocked };
   }
-  const effect = headOkStepData(messageIncoming, run.chain);
   return {
     ok: true,
-    message: effect?.transformedMessage ?? message,
-    ...(effect?.expiredHint ? { expiredHint: effect.expiredHint } : {}),
+    message: outcome.transformedMessage ?? message,
+    ...(outcome.expiredHint ? { expiredHint: outcome.expiredHint } : {}),
   };
 }
 
@@ -120,16 +117,11 @@ export async function runTurnAfterCompleteHooks(
   messages: Message[],
   defaultContent: string,
 ): Promise<string> {
-  const run = await deps.kernel.hookRegistry.run(
-    turnAfterComplete,
-    {
-      conversationId,
-      messages: messages,
-    },
-    { llm_kind: "conversation" },
-  );
-  const effect = headOkStepData(turnAfterComplete, run.chain);
-  return effect?.displayContent ?? defaultContent;
+  const outcome = await runTurnAfterComplete(deps.kernel.ctx, {
+    conversationId,
+    messages: messages,
+  });
+  return outcome.displayContent ?? defaultContent;
 }
 
 export function emitSessionUpdated(
@@ -139,11 +131,7 @@ export function emitSessionUpdated(
   },
   conversationId: string,
 ): void {
-  msgDeps.kernel.hookRegistry.emit(
-    conversationUpdated,
-    { conversation_id: conversationId },
-    { llm_kind: "conversation" },
-  );
+  emitConversationUpdated(msgDeps.kernel.ctx, { conversation_id: conversationId });
   msgDeps.onConversationUpdated?.(conversationId);
 }
 

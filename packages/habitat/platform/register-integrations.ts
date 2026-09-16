@@ -4,7 +4,7 @@ import { registerClarifyHooks } from "@freeanima/habitat/capabilities/tools/clar
 import { createTemporalPeerInjectHandler } from "./service/temporal-summary-inject.ts";
 import type { Kernel } from "@freeanima/habitat/kernel";
 import type { Config } from "@freeanima/habitat/core/config";
-import { beforeLlmCall } from "@freeanima/habitat/core/hooks/loop";
+import { onBeforeLlmCall } from "@freeanima/habitat/core/hooks/cordis";
 import type { ConversationService } from "@freeanima/habitat/engine/conversation";
 import type { SkillRegistry } from "@freeanima/habitat/core/skill";
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
@@ -30,9 +30,7 @@ export function registerServiceIntegrations(opts: {
 
 /** Register unread notification inject beforeLlmCall hook (NotificationPort must be registered) */
 export function registerNotificationInject(opts: { kernel: Kernel }): void {
-  opts.kernel.hookRegistry.on(beforeLlmCall, createNotificationInjectHandler(), {
-    llm_kind: "conversation",
-  });
+  onBeforeLlmCall(opts.kernel.ctx, createNotificationInjectHandler());
 }
 
 /** Register passive semantic memory recall beforeLlmCall hook */
@@ -42,7 +40,5 @@ export function registerMemoryPassiveRecallHook(opts: { kernel: Kernel }): void 
 
 /** Register temporal-summary peer timeline inject beforeLlmCall hook */
 export function registerTemporalSummaryPeerInject(opts: { kernel: Kernel }): void {
-  opts.kernel.hookRegistry.on(beforeLlmCall, createTemporalPeerInjectHandler(), {
-    llm_kind: "conversation",
-  });
+  onBeforeLlmCall(opts.kernel.ctx, createTemporalPeerInjectHandler());
 }

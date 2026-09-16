@@ -8,8 +8,8 @@ import {
   buildSystemPrompt,
   foldSystemPromptSectionsDetailed,
   resolveScenarioProfile,
-  systemPromptBuild,
 } from "@freeanima/habitat/core/hooks/prompt";
+import { runSystemPromptBuild } from "@freeanima/habitat/core/hooks/cordis";
 import {
   DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
   peekActiveRuntimeConfig,
@@ -182,12 +182,11 @@ async function buildSystemView(
     peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
     DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
   const mode = resolveScenarioProfile(meta?.scenario).prompt;
-  const run = await deps.kernel.hookRegistry.run(
-    systemPromptBuild,
+  const effects = await runSystemPromptBuild(
+    deps.kernel.ctx,
     omitUndefined({ functionNames, cwd, meta, mode }),
-    { llm_kind: "conversation" },
   );
-  const folded = foldSystemPromptSectionsDetailed(run.chain, {
+  const folded = foldSystemPromptSectionsDetailed(effects, {
     globalBudgetChars: globalBudget,
   });
   const fold: PromptDebugFold = {

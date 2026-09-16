@@ -133,7 +133,7 @@ describe("service-prompt-debug", () => {
     listResidentSemanticMemoryMock.mockClear();
     const kernel = createServiceKernel(minimalConfig);
     registerSystemPromptHooks({
-      hookRegistry: kernel.hookRegistry,
+      ctx: kernel.ctx,
       getToolRegistry: () => catalog.toolSets,
     });
     seedContext(catalog, kernel);

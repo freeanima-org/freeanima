@@ -234,8 +234,6 @@ async function runEngineOnce(
         conversationId: "",
         ...omitUndefined({ toolPolicy, requestParams: input.requestParams, signal }),
         max_loop_iterations: input.maxLoopIterations,
-        hookRegistry: deps.kernel.hookRegistry,
-        llm_kind: "auto_llm",
         onToolRoundComplete: onMessagesPersisted,
       })) {
         switch (ev.event) {

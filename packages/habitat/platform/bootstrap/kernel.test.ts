@@ -3,7 +3,7 @@ import { Config } from "@freeanima/habitat/platform/config";
 import { createServiceKernel } from "./kernel.ts";
 
 describe("service-bootstrap kernel", () => {
-  it("createServiceKernel returns HookRegistry and logger", () => {
+  it("createServiceKernel returns Cordis context and logger", () => {
     const config = Config.fromSnapshot({
       connections: {
         main: {
@@ -17,7 +17,7 @@ describe("service-bootstrap kernel", () => {
       text_generate: { main: { connection: "main", model: "gpt-4" } },
     });
     const kernel = createServiceKernel(config);
-    expect(kernel.hookRegistry).toBeDefined();
+    expect(kernel.ctx).toBeDefined();
     expect(typeof kernel.logger.info).toBe("function");
   });
 });

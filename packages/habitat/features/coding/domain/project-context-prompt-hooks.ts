@@ -3,12 +3,9 @@
  * 非 coding 会话不加载。
  */
 
-import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
-import {
-  PROMPT_XML_TAGS,
-  systemPromptBuild,
-  type SystemPromptSection,
-} from "@freeanima/habitat/core/hooks/prompt";
+import type { Context } from "cordis";
+import { onSystemPromptBuild } from "@freeanima/habitat/core/hooks/cordis";
+import { PROMPT_XML_TAGS, type SystemPromptSection } from "@freeanima/habitat/core/hooks/prompt";
 import {
   formatAlwaysRulesSection,
   formatRequestableRulesCatalog,
@@ -35,55 +32,51 @@ function conversationIdFromMeta(meta: unknown): string | null {
   return null;
 }
 
-export function registerCodingProjectContextPromptHook(registry: HookRegistry): void {
-  registry.on(
-    systemPromptBuild,
-    (ctx) => {
-      if (ctx.mode !== "work" && ctx.meta?.scenario !== "coding_agent") {
-        return { status: "ok" };
-      }
-      if (ctx.meta?.scenario !== "coding_agent") {
-        return { status: "ok" };
-      }
+export function registerCodingProjectContextPromptHook(ctx: Context): void {
+  onSystemPromptBuild(ctx, (event) => {
+    if (event.mode !== "work" && event.meta?.scenario !== "coding_agent") {
+      return undefined;
+    }
+    if (event.meta?.scenario !== "coding_agent") {
+      return undefined;
+    }
 
-      const sid = conversationIdFromMeta(ctx.meta);
+    const sid = conversationIdFromMeta(event.meta);
 
-      // meta 上也可能直接挂 snapshot（测试）
-      const metaRec = asRecord(ctx.meta);
-      let snapshot = asSnapshot(metaRec?.project_agent_context) ?? null;
-      if (!snapshot && sid) snapshot = getProjectAgentContext(sid) ?? null;
-      if (!snapshot) return { status: "ok" };
+    // meta 上也可能直接挂 snapshot（测试）
+    const metaRec = asRecord(event.meta);
+    let snapshot = asSnapshot(metaRec?.project_agent_context) ?? null;
+    if (!snapshot && sid) snapshot = getProjectAgentContext(sid) ?? null;
+    if (!snapshot) return undefined;
 
-      const rules = snapshot.rules;
+    const rules = snapshot.rules;
 
-      const sections: SystemPromptSection[] = [];
+    const sections: SystemPromptSection[] = [];
 
-      const always = formatAlwaysRulesSection(rules);
-      if (always.trim()) {
-        sections.push({
-          id: "project-context",
-          content: always,
-          order: 40,
-          priority: 7,
-          budgetChars: 4_000,
-          xmlTag: PROMPT_XML_TAGS.projectContext,
-        });
-      }
-      const scoped = formatRequestableRulesCatalog(rules);
-      if (scoped.trim()) {
-        sections.push({
-          id: "project-rules-scoped",
-          content: scoped,
-          order: 41,
-          priority: 8,
-          budgetChars: 1_200,
-          xmlTag: PROMPT_XML_TAGS.projectRulesScoped,
-        });
-      }
+    const always = formatAlwaysRulesSection(rules);
+    if (always.trim()) {
+      sections.push({
+        id: "project-context",
+        content: always,
+        order: 40,
+        priority: 7,
+        budgetChars: 4_000,
+        xmlTag: PROMPT_XML_TAGS.projectContext,
+      });
+    }
+    const scoped = formatRequestableRulesCatalog(rules);
+    if (scoped.trim()) {
+      sections.push({
+        id: "project-rules-scoped",
+        content: scoped,
+        order: 41,
+        priority: 8,
+        budgetChars: 1_200,
+        xmlTag: PROMPT_XML_TAGS.projectRulesScoped,
+      });
+    }
 
-      if (sections.length === 0) return { status: "ok" };
-      return { status: "ok", data: { sections } };
-    },
-    { llm_kind: "conversation" },
-  );
+    if (sections.length === 0) return undefined;
+    return { sections };
+  });
 }
