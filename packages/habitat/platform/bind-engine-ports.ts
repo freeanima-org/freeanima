@@ -8,10 +8,8 @@ import {
 } from "@freeanima/habitat/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/habitat/core/compress";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
-import {
-  foldSystemPromptSectionsDetailed,
-  systemPromptBuild,
-} from "@freeanima/habitat/core/hooks/prompt";
+import { foldSystemPromptSectionsDetailed } from "@freeanima/habitat/core/hooks/prompt";
+import { runSystemPromptBuild } from "@freeanima/habitat/core/hooks/cordis";
 import {
   DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
   peekActiveRuntimeConfig,
@@ -25,13 +23,11 @@ export function bindEnginePorts(): void {
 
   registerSystemPromptHookRunner(async (ctx) => {
     const { kernel } = getAppRuntime();
-    const run = await kernel.hookRegistry.run(systemPromptBuild, ctx, {
-      llm_kind: "conversation",
-    });
+    const effects = await runSystemPromptBuild(kernel.ctx, ctx);
     const budget =
       peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
       DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
-    const folded = foldSystemPromptSectionsDetailed(run.chain, { globalBudgetChars: budget });
+    const folded = foldSystemPromptSectionsDetailed(effects, { globalBudgetChars: budget });
     void notifyPromptFoldBudgetSoftFailure(folded);
     return folded.text;
   });

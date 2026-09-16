@@ -1,11 +1,11 @@
-import { HookRegistry } from "./hooks/index.ts";
+import { Context } from "cordis";
 import { createLogger } from "./logging/index.ts";
 import { createConsoleSink } from "./logging/sinks/console.ts";
-import type { HookRegistry as HookRegistryType } from "./hooks/index.ts";
 import type { Logger } from "./logging/index.ts";
 
 export type KernelDeps = {
-  hookRegistry?: HookRegistryType;
+  /** Cordis context that owns hook listeners; defaults to a bare root context. */
+  ctx?: Context;
   logger?: Logger;
 };
 
@@ -13,17 +13,17 @@ function defaultLogger(): Logger {
   return createLogger({ sinks: [createConsoleSink()] });
 }
 
-/** Construct Kernel; omitted deps use safe defaults (console logger) */
+/** Construct Kernel; omitted deps use safe defaults (console logger / bare Cordis ctx) */
 export function createKernel(deps: KernelDeps = {}): Kernel {
   const logger = deps.logger ?? defaultLogger();
-  const hookRegistry = deps.hookRegistry ?? new HookRegistry(logger);
-  return new Kernel(hookRegistry, logger);
+  const ctx = deps.ctx ?? new Context();
+  return new Kernel(ctx, logger);
 }
 
-/** Kernel composition view (hooks / logger) */
+/** Kernel composition view (Cordis hook context / logger) */
 export class Kernel {
   constructor(
-    readonly hookRegistry: HookRegistryType,
+    readonly ctx: Context,
     readonly logger: Logger,
   ) {}
 }
@@ -37,15 +37,3 @@ export type {
   LogSink,
   CreateLoggerOptions,
 } from "./logging/index.ts";
-export type {
-  HookRegistry,
-  Hook,
-  HookHandler,
-  HookSubscriber,
-  PayloadOf as HookPayloadOf,
-  HookEffectOf,
-  HookStepResult,
-  HookStepLink,
-  HookRunResult,
-  HookRunMeta,
-} from "./hooks/index.ts";

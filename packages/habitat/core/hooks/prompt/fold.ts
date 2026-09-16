@@ -1,4 +1,3 @@
-import { walkHookChainOldestFirst, type HookStepLink } from "@freeanima/habitat/kernel/hooks";
 import type { SystemPromptBuildEffect, SystemPromptSection } from "./hooks.ts";
 import { truncatePromptBodyForXmlBudget, wrapPromptXmlSection } from "./xml-wrap.ts";
 
@@ -104,13 +103,13 @@ function finalizeSections(list: SystemPromptSection[]): SystemPromptSection[] {
  * When `xmlTag` is set, truncate the inner body then wrap (closing tags preserved).
  */
 export function foldSystemPromptSectionsDetailed(
-  chain: HookStepLink<SystemPromptBuildEffect> | null,
+  effects: readonly SystemPromptBuildEffect[],
   opts?: FoldSystemPromptOptions,
 ): FoldSystemPromptResult {
   const byId = new Map<string, SystemPromptSection>();
-  for (const step of walkHookChainOldestFirst(chain)) {
-    if (step.status !== "ok" || !step.data?.sections?.length) continue;
-    for (const section of step.data.sections) {
+  for (const effect of effects) {
+    if (!effect.sections?.length) continue;
+    for (const section of effect.sections) {
       byId.set(section.id, section);
     }
   }
@@ -212,8 +211,8 @@ export function foldSystemPromptSectionsDetailed(
 }
 
 export function foldSystemPromptSections(
-  chain: HookStepLink<SystemPromptBuildEffect> | null,
+  effects: readonly SystemPromptBuildEffect[],
   opts?: FoldSystemPromptOptions,
 ): string {
-  return foldSystemPromptSectionsDetailed(chain, opts).text;
+  return foldSystemPromptSectionsDetailed(effects, opts).text;
 }

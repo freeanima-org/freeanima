@@ -96,7 +96,7 @@ export async function bootRuntimePhase(
   startupLog(`Builtin subagents seeded (${subagentSeeded} new)`);
 
   registerSystemPromptHooks({
-    hookRegistry: kernel.hookRegistry,
+    ctx: kernel.ctx,
     getToolRegistry: () => catalog.toolSets,
     getSkillRegistry: () => catalog.skills,
   });

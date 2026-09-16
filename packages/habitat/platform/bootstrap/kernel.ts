@@ -1,14 +1,14 @@
-import { HookRegistry } from "@freeanima/habitat/kernel/hooks";
+import { createHookContext } from "@freeanima/habitat/core/hooks/cordis";
+import { createLogger } from "@freeanima/habitat/kernel/logging";
+import { createConsoleSink } from "@freeanima/habitat/kernel/logging/sinks/console.ts";
 import { createKernel, type Kernel } from "@freeanima/habitat/kernel";
-import type { Config } from "@freeanima/habitat/platform/config";
-import { createServiceLogger, setServiceLogger } from "@freeanima/habitat/platform/logging";
+import type { Config } from "@freeanima/habitat/core/config";
 
-/** Build Kernel for service (logger + HookRegistry) */
+/** Build Kernel for service (logger + Cordis hook context) */
 export function createServiceKernel(_config: Config): Kernel {
-  const logger = createServiceLogger();
-  setServiceLogger(logger);
+  const logger = createLogger({ sinks: [createConsoleSink()] });
   return createKernel({
     logger,
-    hookRegistry: new HookRegistry(logger),
+    ctx: createHookContext(logger),
   });
 }

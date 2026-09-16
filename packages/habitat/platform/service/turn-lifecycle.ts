@@ -27,7 +27,7 @@ import {
   shouldSkipGoalEvaluate,
   toGoalRuntimeDeps,
 } from "@freeanima/habitat/engine/goal";
-import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
+import type { Context } from "cordis";
 import { ConversationManager } from "./conversation-manager.ts";
 import { scheduleMemorySyncAfterTurn } from "./memory-sync-turn.ts";
 import { scheduleSkillEvolveAfterTurn } from "./skill-review-run.ts";
@@ -47,8 +47,7 @@ export type StreamTurnHost = {
     signal: AbortSignal,
     llmDebug?: boolean,
   ): {
-    hookRegistry: HookRegistry;
-    llm_kind: "conversation";
+    hookCtx: Context;
     conversationId: string;
     toolProgress: true;
     onAfterMessagesPersisted: ReturnType<typeof createConversationAfterMessagesPersisted>;
@@ -185,8 +184,7 @@ export async function runSimpleTurn(
             toolProgress: true,
             onAfterMessagesPersisted: createConversationAfterMessagesPersisted(conversationId),
             ...omitUndefined({ executableTools }),
-            hookRegistry: deps.kernel.hookRegistry,
-            llm_kind: "conversation",
+            hookCtx: deps.kernel.ctx,
             ...createTurnMessageCallbacks(deps, conversationId),
           }),
         {

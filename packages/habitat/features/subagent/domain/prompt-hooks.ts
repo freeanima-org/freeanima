@@ -1,9 +1,9 @@
-import type { HookRegistry } from "@freeanima/habitat/kernel/hooks";
+import type { Context } from "cordis";
+import { onSystemPromptBuild } from "@freeanima/habitat/core/hooks/cordis";
 import {
   entityMatchesScenarioCatalog,
   PROMPT_XML_TAGS,
   resolveCodingCatalogTagId,
-  systemPromptBuild,
 } from "@freeanima/habitat/core/hooks/prompt";
 import { isCodingConversationMeta } from "@freeanima/habitat/core/tool";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config";
@@ -34,40 +34,33 @@ export function formatSubagentCatalogContent(
 }
 
 /** Progressive disclosure：系统提示注入 slug + summary；置于 skills 目录之前（仅 conversation） */
-export function registerSubagentCatalogSystemPromptHook(registry: HookRegistry): void {
-  registry.on(
-    systemPromptBuild,
-    async (ctx) => {
-      try {
-        const worldId = getResolvedWorldContext().agent_world_id;
-        const scenario = ctx.meta?.scenario;
-        const codingTagId = await resolveCodingCatalogTagId(worldId);
-        const rows = (await listSubagents(worldId)).filter((row) =>
-          entityMatchesScenarioCatalog(row.tag_ids, codingTagId, scenario),
-        );
-        const content = formatSubagentCatalogContent(rows, {
-          coding: isCodingConversationMeta(ctx.meta),
-        });
-        if (!content.trim()) return { status: "ok" };
-        return {
-          status: "ok",
-          data: {
-            sections: [
-              {
-                id: "subagents-catalog",
-                content,
-                order: 8,
-                priority: 5,
-                budgetChars: 2_000,
-                xmlTag: PROMPT_XML_TAGS.subagents,
-              },
-            ],
+export function registerSubagentCatalogSystemPromptHook(ctx: Context): void {
+  onSystemPromptBuild(ctx, async (event) => {
+    try {
+      const worldId = getResolvedWorldContext().agent_world_id;
+      const scenario = event.meta?.scenario;
+      const codingTagId = await resolveCodingCatalogTagId(worldId);
+      const rows = (await listSubagents(worldId)).filter((row) =>
+        entityMatchesScenarioCatalog(row.tag_ids, codingTagId, scenario),
+      );
+      const content = formatSubagentCatalogContent(rows, {
+        coding: isCodingConversationMeta(event.meta),
+      });
+      if (!content.trim()) return undefined;
+      return {
+        sections: [
+          {
+            id: "subagents-catalog",
+            content,
+            order: 8,
+            priority: 5,
+            budgetChars: 2_000,
+            xmlTag: PROMPT_XML_TAGS.subagents,
           },
-        };
-      } catch {
-        return { status: "ok" };
-      }
-    },
-    { llm_kind: "conversation" },
-  );
+        ],
+      };
+    } catch {
+      return undefined;
+    }
+  });
 }

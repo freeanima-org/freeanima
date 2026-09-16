@@ -1,5 +1,5 @@
 import type { Kernel } from "@freeanima/habitat/kernel";
-import { conversationUpdated } from "@freeanima/habitat/capabilities/memory";
+import { emitConversationUpdated } from "@freeanima/habitat/core/hooks/cordis";
 import { fallbackConversationTitle, generateConversationTitle } from "@freeanima/habitat/core/llm";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
@@ -29,11 +29,7 @@ function emitSessionTitleUpdated(notify: SessionTitleNotify, conversationId: str
     notify.emitSessionUpdated(conversationId);
     return;
   }
-  notify.kernel.hookRegistry.emit(
-    conversationUpdated,
-    { conversation_id: conversationId },
-    { llm_kind: "conversation" },
-  );
+  emitConversationUpdated(notify.kernel.ctx, { conversation_id: conversationId });
   notify.onConversationUpdated?.(conversationId);
 }
 

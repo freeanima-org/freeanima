@@ -1,5 +1,4 @@
 export {
-  systemPromptBuild,
   type SystemPromptBuildContext,
   type SystemPromptBuildEffect,
   type SystemPromptSection,

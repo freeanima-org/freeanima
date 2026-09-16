@@ -1,6 +1,5 @@
 import { describe, expect, it, afterEach } from "bun:test";
-import { createTestHookRegistry } from "@freeanima/habitat/kernel/hooks/testing";
-import { systemPromptBuild } from "@freeanima/habitat/core/hooks/prompt";
+import { createHookContext, runSystemPromptBuild } from "@freeanima/habitat/core/hooks/cordis";
 import { foldSystemPromptSections } from "@freeanima/habitat/core/hooks/prompt";
 
 import {
@@ -44,40 +43,32 @@ describe("registerCodingProjectContextPromptHook", () => {
     };
     setProjectAgentContext("conv-coding-1", snap);
 
-    const registry = createTestHookRegistry();
-    registerCodingProjectContextPromptHook(registry);
+    const ctx = createHookContext();
+    registerCodingProjectContextPromptHook(ctx);
 
-    const codingRun = await registry.run(
-      systemPromptBuild,
-      {
-        functionNames: [],
-        mode: "work",
-        meta: {
-          model: "m",
-          scenario: "coding_agent",
-          conversation_id: "conv-coding-1",
-        } as never,
-      },
-      { llm_kind: "conversation" },
-    );
-    const codingText = foldSystemPromptSections(codingRun.chain);
+    const codingEffects = await runSystemPromptBuild(ctx, {
+      functionNames: [],
+      mode: "work",
+      meta: {
+        model: "m",
+        scenario: "coding_agent",
+        conversation_id: "conv-coding-1",
+      } as never,
+    });
+    const codingText = foldSystemPromptSections(codingEffects);
     expect(codingText).toContain("Use bun test");
     expect(codingText).not.toContain("demo skill");
 
-    const chatRun = await registry.run(
-      systemPromptBuild,
-      {
-        functionNames: [],
-        mode: "digital_human",
-        meta: {
-          model: "m",
-          scenario: "digital_human",
-          conversation_id: "conv-coding-1",
-        } as never,
-      },
-      { llm_kind: "conversation" },
-    );
-    const chatText = foldSystemPromptSections(chatRun.chain);
+    const chatEffects = await runSystemPromptBuild(ctx, {
+      functionNames: [],
+      mode: "digital_human",
+      meta: {
+        model: "m",
+        scenario: "digital_human",
+        conversation_id: "conv-coding-1",
+      } as never,
+    });
+    const chatText = foldSystemPromptSections(chatEffects);
     expect(chatText).not.toContain("Use bun test");
   });
 });

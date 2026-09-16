@@ -117,8 +117,7 @@ export class AppRuntime implements StreamTurnHost, AppRuntimePort {
 
   engineStreamOpts(conversationId: string, signal: AbortSignal, llmDebug?: boolean) {
     return {
-      hookRegistry: this.kernel.hookRegistry,
-      llm_kind: "conversation" as const,
+      hookCtx: this.kernel.ctx,
       conversationId,
       toolProgress: true as const,
       onAfterMessagesPersisted: createConversationAfterMessagesPersisted(conversationId),

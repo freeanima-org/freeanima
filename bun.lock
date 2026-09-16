@@ -107,6 +107,7 @@
         "@sinclair/typebox": "^0.34.52",
         "acme-client": "^5.4.0",
         "commander": "^15.0.0",
+        "cordis": "4.0.0-rc.10",
         "diff": "^9.0.0",
         "discord.js": "^14.27.0",
         "drizzle-orm": "^1.0.0-rc.5-169397b",
@@ -1046,6 +1047,8 @@
 
     "@stablelib/base64": ["@stablelib/base64@1.0.1", "https://registry.npmmirror.com/@stablelib/base64/-/base64-1.0.1.tgz", {}, "sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ=="],
 
+    "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "https://registry.npmmirror.com/@standard-schema/spec/-/spec-1.1.0.tgz", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
+
     "@swc/helpers": ["@swc/helpers@0.5.23", "https://registry.npmmirror.com/@swc/helpers/-/helpers-0.5.23.tgz", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw=="],
 
     "@tailwindcss/node": ["@tailwindcss/node@4.3.3", "https://registry.npmmirror.com/@tailwindcss/node/-/node-4.3.3.tgz", { "dependencies": { "@jridgewell/remapping": "^2.3.5", "enhanced-resolve": "^5.24.1", "jiti": "^2.7.0", "lightningcss": "1.32.0", "magic-string": "^0.30.21", "source-map-js": "^1.2.1", "tailwindcss": "4.3.3" } }, "sha512-/T8IKEsf9VTU6tLjgC7+sv2mOPtQxzE2jMw7u4Tt40Tx+QSZxpzh95/H6cMKoja9XuW7iMdLJYBB0o9G1CaAgg=="],
@@ -1534,6 +1537,8 @@
 
     "cookie-signature": ["cookie-signature@1.2.2", "https://registry.npmmirror.com/cookie-signature/-/cookie-signature-1.2.2.tgz", {}, "sha512-D76uU73ulSXrD1UXF4KE2TMxVVwhsnCgfAyTg9k8P6KGZjlXKrOLe4dJQKI3Bxi5wjesZoFXJWElNWBjPZMbhg=="],
 
+    "cordis": ["cordis@4.0.0-rc.10", "https://registry.npmmirror.com/cordis/-/cordis-4.0.0-rc.10.tgz", { "dependencies": { "@standard-schema/spec": "^1.1.0", "cosmokit": "^1.8.1" }, "peerDependencies": { "@cordisjs/plugin-include": "^1.1.0", "@cordisjs/plugin-loader": "^1.0.0-rc.7" }, "optionalPeers": ["@cordisjs/plugin-include", "@cordisjs/plugin-loader"], "bin": "bin.js" }, "sha512-xG90nPNQxR272cC4lR/m5LHevegIJvdddQBlKdEAdGz3n+zgH5lsgkg8o9fc2P3T/f+pO5D7FN1HZvkNBiABnw=="],
+
     "core-js-compat": ["core-js-compat@3.49.0", "https://registry.npmmirror.com/core-js-compat/-/core-js-compat-3.49.0.tgz", { "dependencies": { "browserslist": "^4.28.1" } }, "sha512-VQXt1jr9cBz03b331DFDCCP90b3fanciLkgiOoy8SBHy06gNf+vQ1A3WFLqG7I8TipYIKeYK9wxd0tUrvHcOZA=="],
 
     "core-util-is": ["core-util-is@1.0.3", "https://registry.npmmirror.com/core-util-is/-/core-util-is-1.0.3.tgz", {}, "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ=="],
@@ -1545,6 +1550,8 @@
     "cosmiconfig": ["cosmiconfig@9.0.2", "https://registry.npmmirror.com/cosmiconfig/-/cosmiconfig-9.0.2.tgz", { "dependencies": { "env-paths": "^2.2.1", "import-fresh": "^3.3.0", "js-yaml": "^4.1.0", "parse-json": "^5.2.0" }, "peerDependencies": { "typescript": ">=4.9.5" }, "optionalPeers": ["typescript"] }, "sha512-gtTZxTDau1wL7Y7zifc2dd8jHSK/k6BTx/2Xp/BpdlAdnlYWFVt7qhJqgwi7637yRwRQ3qL4ZidbB4I8tA5VOg=="],
 
     "cosmiconfig-typescript-loader": ["cosmiconfig-typescript-loader@6.3.0", "https://registry.npmmirror.com/cosmiconfig-typescript-loader/-/cosmiconfig-typescript-loader-6.3.0.tgz", { "dependencies": { "jiti": "2.6.1" }, "peerDependencies": { "@types/node": "*", "cosmiconfig": ">=9", "typescript": ">=5" } }, "sha512-Akr82WH1Wfqatyiqpj8HDkO2o2KmJRu1FhKfSNJP3K4IdXwHfEyL7MOb62i1AGQVLtIQM+iCE9CGOtrfhR+mmA=="],
+
+    "cosmokit": ["cosmokit@1.8.1", "https://registry.npmmirror.com/cosmokit/-/cosmokit-1.8.1.tgz", {}, "sha512-PDBv4l90xZKrUsZ0vtoycgZpO/j4iFsqJXrAxsyBDsnQRI7ZMJXIjgDJsKNjd5L8jnVnnlrDCdhkFbTncgCVjQ=="],
 
     "cross-env": ["cross-env@7.0.3", "https://registry.npmmirror.com/cross-env/-/cross-env-7.0.3.tgz", { "dependencies": { "cross-spawn": "^7.0.1" }, "bin": { "cross-env": "src/bin/cross-env.js", "cross-env-shell": "src/bin/cross-env-shell.js" } }, "sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw=="],
 
