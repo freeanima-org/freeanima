@@ -8,6 +8,8 @@ import { listAllOutpostInstances } from "@freeanima/habitat/core/db/pg/outpost";
 import { createAppRuntime, type AppRuntime } from "../service/app-runtime.ts";
 import { bindServicePorts } from "../bind-api.ts";
 import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
+import { SystemPromptService } from "@freeanima/habitat/core/hooks/prompt";
+import { notifyPromptFoldBudgetSoftFailure } from "../service/prompt-fold-soft-failure-notify.ts";
 import {
   registerNotificationInject,
   registerMemoryPassiveRecallHook,
@@ -99,6 +101,11 @@ export async function bootRuntimePhase(
     ctx: kernel.ctx,
     getToolRegistry: () => catalog.toolSets,
     getSkillRegistry: () => catalog.skills,
+  });
+  await kernel.ctx.plugin(SystemPromptService, {
+    onFold: (folded) => {
+      void notifyPromptFoldBudgetSoftFailure(folded);
+    },
   });
 
   const { bindCodingProjectOverlays } =
