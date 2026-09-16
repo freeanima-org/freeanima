@@ -57,6 +57,10 @@ export class FeatureService extends Service {
     return [...this.contributions.keys()];
   }
 
+  listHandledMethods(): string[] {
+    return [...this.handlers.keys()];
+  }
+
   clear(): void {
     this.contributions.clear();
     this.handlers.clear();

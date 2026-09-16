@@ -1,21 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
-import { listHabitatMethods } from "@freeanima/shared/habitat-contract";
-import { wsOnlyMethodDefs } from "@freeanima/shared/habitat-contract/registry/ws-only.ts";
 import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types.ts";
 import { builtinFeaturePlugins } from "./builtin-feature-plugins.ts";
 import { createFeaturePlugin } from "./plugin.ts";
+import { getFeatureService } from "./service.ts";
 import { resetHabitatRouterForTests } from "../habitat/init.ts";
+import { habitatRouter } from "../habitat/habitat-router.ts";
 import { resetCompiledHttpRoutes } from "../habitat/http-rest-router.ts";
 import {
   getFeatureRpcHandler,
   registerFeatures,
   resetFeatureRegistryForTests,
 } from "./registry.ts";
-
-const WS_ONLY_DISPATCH_METHODS = new Set(Object.keys(wsOnlyMethodDefs));
 
 describe("registerFeatures", () => {
   test("registers feature RPC handler lookup", async () => {
@@ -50,21 +48,19 @@ describe("registerFeatures", () => {
     });
   });
 
-  test("builtin plugins register a handler for every habitat-dispatch method", () => {
+  test("builtin plugins cover exactly the habitat router methods", () => {
     resetFeatureRegistryForTests();
     resetHabitatMethodRegistryForTests();
     resetHabitatRouterForTests();
     resetCompiledHttpRoutes();
     registerFeatures(builtinFeaturePlugins);
 
-    const missing: string[] = [];
-    for (const method of listHabitatMethods()) {
-      if (WS_ONLY_DISPATCH_METHODS.has(method)) continue;
-      if (!getFeatureRpcHandler(method)) {
-        missing.push(method);
-      }
+    const service = getFeatureService();
+    expect(service).toBeDefined();
+    const handled = new Set(service?.listHandledMethods() ?? []);
+    expect(handled).toEqual(new Set(Object.keys(habitatRouter.defs)));
+    for (const method of Object.keys(habitatRouter.defs)) {
+      expect(getFeatureRpcHandler(method)).toBeDefined();
     }
-
-    expect(missing).toEqual([]);
   });
 });
