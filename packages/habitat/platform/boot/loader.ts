@@ -1,7 +1,8 @@
 import { pathToFileURL } from "node:url";
-import type { Context } from "cordis";
+import type { Context, Fiber } from "cordis";
 import { Loader } from "@cordisjs/plugin-loader";
 import Hmr from "@cordisjs/plugin-hmr";
+import Timer from "@cordisjs/plugin-timer";
 
 import { REPO_ROOT } from "../service/repo-paths.ts";
 import type { BootPipelineConfig } from "./boot-context.ts";
@@ -18,6 +19,14 @@ export type BootLoaderOptions = {
   hmr?: boolean;
 };
 
+/** Handle returned by {@link runBootPipelineViaLoader}, mainly for teardown in tests. */
+export type BootLoaderHandle = {
+  /** Fiber of the HMR plugin when hot reload is enabled. */
+  hmr?: Fiber;
+  /** Dispose the HMR watcher and the whole loader tree. */
+  dispose: () => Promise<void>;
+};
+
 /**
  * Mount the boot pipeline through the official Cordis loader.
  *
@@ -28,18 +37,32 @@ export async function runBootPipelineViaLoader(
   ctx: Context,
   pipeline: BootPipelineConfig,
   options: BootLoaderOptions = {},
-): Promise<void> {
+): Promise<BootLoaderHandle> {
   const baseDir = options.baseDir ?? REPO_ROOT;
   ctx.provide("bootOptions", pipeline);
   ctx.baseUrl = pathToFileURL(baseDir).href + "/";
 
-  await ctx.plugin(Loader);
+  const loaderFiber = await ctx.plugin(Loader);
+  let hmrFiber: Fiber | undefined;
   if (options.hmr ?? process.env.FREEANIMA_BOOT_HMR === "1") {
-    await ctx.plugin(Hmr, { root: [baseDir], debounce: 100, ignored: [] });
+    // HMR injects both `loader` and `timer` (it debounces through `ctx.debounce`).
+    // Bun lacks loader internals, so source-code HMR stays disabled; what this
+    // enables is config-level hot reload of `cordis.yml` via the include plugin,
+    // which only starts watching once `hmr` resolves.
+    await ctx.plugin(Timer);
+    hmrFiber = await ctx.plugin(Hmr, { root: [baseDir], debounce: 100, ignored: [] });
   }
   await ctx.loader.create({
     name: "@cordisjs/plugin-include",
     config: { path: options.configPath ?? BOOT_CONFIG_FILE },
   });
   await ctx.loader.await();
+
+  return {
+    ...(hmrFiber ? { hmr: hmrFiber } : {}),
+    dispose: async () => {
+      await hmrFiber?.dispose();
+      await loaderFiber.dispose();
+    },
+  };
 }
