@@ -17,6 +17,7 @@ declare module "cordis" {
  */
 export class FeatureService extends Service {
   private readonly contributions = new Map<string, FeatureContribution>();
+  private readonly contributionMethods = new Map<string, string[]>();
   private readonly handlers = new Map<string, FeatureRpcHandler>();
 
   constructor(ctx: Context) {
@@ -43,6 +44,16 @@ export class FeatureService extends Service {
       this.handlers.set(method, handler);
     }
     this.contributions.set(contribution.id, contribution);
+    this.contributionMethods.set(contribution.id, Object.keys(rpc));
+  }
+
+  /** Remove a contribution and its handlers (used when a plugin is disposed). */
+  revoke(id: string): void {
+    for (const method of this.contributionMethods.get(id) ?? []) {
+      this.handlers.delete(method);
+    }
+    this.contributionMethods.delete(id);
+    this.contributions.delete(id);
   }
 
   getHandler(method: string): FeatureRpcHandler | undefined {
@@ -63,6 +74,7 @@ export class FeatureService extends Service {
 
   clear(): void {
     this.contributions.clear();
+    this.contributionMethods.clear();
     this.handlers.clear();
   }
 }

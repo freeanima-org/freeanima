@@ -66,7 +66,7 @@ mock.module("./integrations-phase.ts", () => ({
   startAsyncIntegrations: () => {},
 }));
 
-const { BOOT_PHASE_PLUGINS, runBootPipeline } = await import("./phases.ts");
+const { BOOT_PHASE_PLUGINS, BOOT_FEATURE_PLUGINS, runBootPipeline } = await import("./phases.ts");
 
 describe("runBootPipeline", () => {
   it("mounts every phase as a Cordis plugin in dependency order", async () => {
@@ -138,6 +138,6 @@ describe("runBootPipeline", () => {
         return mod.default?.name;
       }),
     );
-    expect(names).toEqual(BOOT_PHASE_PLUGINS.map((p) => p.name));
+    expect(names).toEqual([...BOOT_PHASE_PLUGINS, ...BOOT_FEATURE_PLUGINS].map((p) => p.name));
   });
 });

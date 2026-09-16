@@ -11,7 +11,8 @@ export type FeaturePluginModule = Plugin.Object & {
  * Wrap a feature contribution into a Cordis plugin.
  *
  * The plugin injects `features`, so it activates as soon as the feature
- * service is available and is disposed with the rest of its plugin tree.
+ * service is available. The contribution is registered through `ctx.effect`,
+ * so disposing the plugin (reload / unmount) revokes its handlers.
  */
 export function createFeaturePlugin(contribution: FeatureContribution): FeaturePluginModule {
   return {
@@ -19,7 +20,12 @@ export function createFeaturePlugin(contribution: FeatureContribution): FeatureP
     inject: ["features"],
     feature: contribution,
     apply(ctx) {
-      ctx.features.provide(contribution);
+      ctx.effect(() => {
+        ctx.features.provide(contribution);
+        return () => {
+          ctx.features.revoke(contribution.id);
+        };
+      }, `feature(${contribution.id})`);
     },
   };
 }
