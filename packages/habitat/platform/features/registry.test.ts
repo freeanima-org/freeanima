@@ -5,7 +5,8 @@ import { wsOnlyMethodDefs } from "@freeanima/shared/habitat-contract/registry/ws
 import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types.ts";
-import { builtinFeaturePlugins } from "./builtin-plugins.ts";
+import { builtinFeaturePlugins } from "./builtin-feature-plugins.ts";
+import { createFeaturePlugin } from "./plugin.ts";
 import { resetHabitatRouterForTests } from "../habitat/init.ts";
 import { resetCompiledHttpRoutes } from "../habitat/http-rest-router.ts";
 import {
@@ -35,14 +36,12 @@ describe("registerFeatures", () => {
       sendEvent: () => {},
     } satisfies RemoteToolsRequestContext;
     registerFeatures([
-      {
+      createFeaturePlugin({
         id: "mock",
-        habitat: {
-          rpc: {
-            "mock.echo": async () => ({ ok: true }),
-          },
+        rpc: {
+          "mock.echo": async () => ({ ok: true }),
         },
-      },
+      }),
     ]);
     const handler = getFeatureRpcHandler("mock.echo");
     expect(handler).toBeDefined();

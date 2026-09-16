@@ -1,47 +1,28 @@
-import type { FeaturePlugin, FeatureRpcHandler } from "./types.ts";
-import { habitatRouter } from "../habitat/habitat-router.ts";
-import { initHabitatRouter } from "../habitat/init.ts";
-import { toFeatureRpcHandlerMap } from "../habitat/route-handlers.ts";
+import type { Context } from "cordis";
 
-const plugins: FeaturePlugin[] = [];
-const rpcHandlers = new Map<string, FeatureRpcHandler>();
+import { ensureProcessContext } from "../service/process-context.ts";
+import type { FeaturePluginModule } from "./plugin.ts";
+import { getFeatureService, mountFeatureService } from "./service.ts";
+import type { FeatureRpcHandler } from "./types.ts";
 
-function registerHabitatRouterHandlers(): void {
-  initHabitatRouter();
-  for (const [method, handler] of Object.entries(toFeatureRpcHandlerMap(habitatRouter.handlers))) {
-    if (rpcHandlers.has(method)) {
-      throw new Error(`duplicate habitat router handler for ${method}`);
-    }
-    rpcHandlers.set(method, handler);
+/**
+ * Register feature plugins onto the process context.
+ *
+ * Imperative entry point used by boot / integration tests; the production
+ * loader mounts the same plugins through `cordis.yml` instead.
+ */
+export function registerFeatures(plugins: readonly FeaturePluginModule[]): void {
+  const ctx: Context = ensureProcessContext();
+  const features = mountFeatureService(ctx);
+  for (const plugin of plugins) {
+    features.provide(plugin.feature);
   }
-}
-
-export function registerFeatures(entries: FeaturePlugin[]): void {
-  registerHabitatRouterHandlers();
-
-  for (const plugin of entries) {
-    plugins.push(plugin);
-    const rpc = plugin.habitat?.rpc;
-    if (rpc) {
-      for (const [method, handler] of Object.entries(rpc)) {
-        if (rpcHandlers.has(method)) {
-          throw new Error(`duplicate feature RPC handler for ${method} (${plugin.id})`);
-        }
-        rpcHandlers.set(method, handler);
-      }
-    }
-  }
-}
-
-export function listFeaturePlugins(): readonly FeaturePlugin[] {
-  return plugins;
 }
 
 export function getFeatureRpcHandler(method: string): FeatureRpcHandler | undefined {
-  return rpcHandlers.get(method);
+  return getFeatureService()?.getHandler(method);
 }
 
 export function resetFeatureRegistryForTests(): void {
-  plugins.length = 0;
-  rpcHandlers.clear();
+  getFeatureService()?.clear();
 }
