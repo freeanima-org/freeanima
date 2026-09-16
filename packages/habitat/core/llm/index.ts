@@ -7,13 +7,8 @@ export * from "./conversation-title.ts";
 export * from "./goal-judge.ts";
 export * from "./tool-loop-integrity.ts";
 export { repairAndPersistToolLoop as persistToolLoopRepair } from "./tool-loop-persist.ts";
-export {
-  createLlmRuntime,
-  getLlmRuntime,
-  initLlmRuntime,
-  resetLlmRuntimeForTests,
-  type LlmRuntime,
-} from "./llm-stack.ts";
+export { createLlmRuntime, type LlmRuntime } from "./llm-stack.ts";
+export { getLlmRuntime, initLlmRuntime, resetLlmRuntimeForTests } from "./llm-stack-runtime.ts";
 export { applyLlmStackConfigurator, type LlmStackConfigurator } from "./llm-stack-configurator.ts";
 export {
   LlmStackService,

@@ -9,7 +9,8 @@ import {
   mergeStreamingToolCalls,
 } from "@freeanima/habitat/core/provider/stream-tools";
 import { omitUndefined } from "@freeanima/habitat/core/util";
-import { getLlmRuntime, type LlmRuntime } from "./llm-stack.ts";
+import type { LlmRuntime } from "./llm-stack.ts";
+import { getLlmRuntime } from "./llm-stack-runtime.ts";
 import {
   storedMessagesToInvokeInput,
   simpleMessagesToInvokeInput,
@@ -27,7 +28,7 @@ export type LlmInvokeOpts = {
   tools?: OpenAiToolSchema[];
   profileId?: string;
   requestParams?: Partial<LlmCallParams>;
-  /** When omitted, uses module-level runtime from initLlmRuntime() */
+  /** When omitted, resolves the active runtime from `ctx.llmStack` */
   runtime?: LlmRuntime;
   /** 用户中断 / 墙钟取消；下传到 Profile → provider fetch */
   signal?: AbortSignal;

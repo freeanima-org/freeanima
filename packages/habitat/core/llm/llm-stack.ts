@@ -19,9 +19,6 @@ export type LlmRuntime = {
   resolveProfileId: (purpose?: string) => string;
 };
 
-let runtime: LlmRuntime | null = null;
-let runtimeConfig: RuntimeConfig | null = null;
-
 function profileDefsFromConfig(cfg: RuntimeConfig): LlmProfileDef[] {
   return textGenerateProfileHops(cfg).map((hop) =>
     omitUndefined({
@@ -37,6 +34,7 @@ function profileDefsFromConfig(cfg: RuntimeConfig): LlmProfileDef[] {
   );
 }
 
+/** Build an LLM runtime from config, applying the mounted `ctx.llmStack` configurator. */
 export function createLlmRuntime(cfg: RuntimeConfig): LlmRuntime {
   const backends = new BackendRegistry();
   const providers = new ProviderRegistry(backends);
@@ -64,26 +62,4 @@ export function createLlmRuntime(cfg: RuntimeConfig): LlmRuntime {
     profiles: profileRegistry,
     resolveProfileId: (purpose) => resolveConfiguredProfileId(cfg, purpose),
   };
-}
-
-export function initLlmRuntime(cfg: RuntimeConfig): LlmRuntime {
-  runtimeConfig = cfg;
-  runtime = createLlmRuntime(cfg);
-  return runtime;
-}
-
-export function getLlmRuntime(): LlmRuntime {
-  if (!runtime) {
-    throw new Error("LLM runtime not initialized: call initLlmRuntime() first");
-  }
-  return runtime;
-}
-
-export function resetLlmRuntimeForTests(): void {
-  runtime = null;
-  runtimeConfig = null;
-}
-
-export function getLlmRuntimeConfigForTests(): RuntimeConfig | null {
-  return runtimeConfig;
 }
