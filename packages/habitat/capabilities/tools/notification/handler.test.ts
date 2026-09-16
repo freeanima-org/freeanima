@@ -1,7 +1,7 @@
-import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
 import type { NotificationRow } from "@freeanima/habitat/core/db/schema/rows";
-import { registerNotificationPort, resetNotificationPortForTests } from "./port.ts";
+import type { NotificationPort } from "./port.ts";
 
 const listMock = mock(async (): Promise<NotificationRow[]> => []);
 const getConversationMetaMock = mock(async (): Promise<unknown> => null);
@@ -19,26 +19,22 @@ afterAll(() => {
 
 const { createNotificationInjectHandler } = await import("./handler.ts");
 
+const port: NotificationPort = {
+  list: listMock,
+  create: async () => {
+    throw new Error("create not used");
+  },
+  markRead: async () => null,
+  markReadBySourceRef: async () => 0,
+  existsBySourceRef: async () => false,
+  getAgentRecipient: () => ({ kind: "agent", id: 1 }),
+  getUserRecipient: () => ({ kind: "user", id: 1 }),
+};
+
 describe("notification inject binds conversation agent", () => {
   beforeEach(() => {
     listMock.mockClear();
     getConversationMetaMock.mockClear();
-    resetNotificationPortForTests();
-    registerNotificationPort({
-      list: listMock,
-      create: async () => {
-        throw new Error("create not used");
-      },
-      markRead: async () => null,
-      markReadBySourceRef: async () => 0,
-      existsBySourceRef: async () => false,
-      getAgentRecipient: () => ({ kind: "agent", id: 1 }),
-      getUserRecipient: () => ({ kind: "user", id: 1 }),
-    });
-  });
-
-  afterEach(() => {
-    resetNotificationPortForTests();
   });
 
   it("lists unread for session agent_subject_id", async () => {
@@ -48,7 +44,7 @@ describe("notification inject binds conversation agent", () => {
       scenario: "chat",
     }));
     listMock.mockImplementation(async () => []);
-    const handler = createNotificationInjectHandler();
+    const handler = createNotificationInjectHandler(port);
     await handler({
       conversationId: "c-1",
       messages: [{ role: "user", content: "hi" }],
@@ -66,7 +62,7 @@ describe("notification inject binds conversation agent", () => {
       model: "m",
       scenario: "chat",
     }));
-    const handler = createNotificationInjectHandler();
+    const handler = createNotificationInjectHandler(port);
     await handler({
       conversationId: "c-1",
       messages: [{ role: "user", content: "hi" }],
