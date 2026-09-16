@@ -17,6 +17,7 @@ import {
   resetRegisterServiceToolsForTest,
 } from "@freeanima/habitat/platform";
 import { invalidateSelfLayerPromptCache } from "@freeanima/habitat/capabilities/self";
+import { SystemPromptService } from "@freeanima/habitat/core/hooks/prompt";
 import { upsertSelfBlock } from "@freeanima/habitat/core/db/pg/self-layer";
 
 import { randomUUID } from "node:crypto";
@@ -65,7 +66,7 @@ async function flushActiveCompressionSummaries(): Promise<void> {
 }
 
 /** Standard integration-test AppRuntime (builtins / Habitat handler) */
-export function bindIntegrationRuntimeContext(pg: PgTestContext): void {
+export async function bindIntegrationRuntimeContext(pg: PgTestContext): Promise<void> {
   bindHomeChannelConfig(pg.config);
   bindContextWindowLookup();
   const kernel = createServiceKernel(pg.config);
@@ -92,6 +93,7 @@ export function bindIntegrationRuntimeContext(pg: PgTestContext): void {
     ctx: kernel.ctx,
     getToolRegistry: () => pg.engine.catalog.toolSets,
   });
+  await kernel.ctx.plugin(SystemPromptService, {});
   registerServiceStores(fullDeps, pg.config);
   invalidateSelfLayerPromptCache();
 }
@@ -143,7 +145,7 @@ async function beginWithUrl(
     home,
     ...(configYaml !== undefined ? { configYaml } : {}),
   });
-  bindIntegrationRuntimeContext(pg);
+  await bindIntegrationRuntimeContext(pg);
   await syncIntegrationSelfLayer(pg);
   return { home, pg };
 }

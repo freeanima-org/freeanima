@@ -1,30 +1,40 @@
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
+import { afterAll, expect, it, mock } from "bun:test";
 
-import {
-  buildSystemPrompt,
-  registerSystemPromptHookRunner,
-  resetSystemPromptHookRunnerForTest,
-} from "./runner.ts";
+import { createHookContext, onSystemPromptBuild } from "../cordis/index.ts";
+import { SystemPromptService } from "./service.ts";
 
-describe("system prompt runner", () => {
-  beforeEach(() => {
-    resetSystemPromptHookRunnerForTest();
+let activeCtx = createHookContext();
+
+const runtimeOriginal = await import("@freeanima/habitat/platform/service/runtime-context.ts");
+mock.module("@freeanima/habitat/platform/service/runtime-context.ts", () => ({
+  ...runtimeOriginal,
+  isRuntimeContextReady: () => true,
+  getRuntimeContext: () => ({ kernel: { ctx: activeCtx } }),
+}));
+
+afterAll(() => {
+  mock.module("@freeanima/habitat/platform/service/runtime-context.ts", () => runtimeOriginal);
+});
+
+const { buildSystemPrompt } = await import("./runner.ts");
+
+const tick = async (): Promise<void> => {
+  await new Promise<void>((r) => {
+    setTimeout(r, 0);
   });
+};
 
-  afterEach(() => {
-    resetSystemPromptHookRunnerForTest();
-  });
+it("builds via the Cordis SystemPromptService and fold", async () => {
+  activeCtx = createHookContext();
+  onSystemPromptBuild(activeCtx, () => ({
+    sections: [{ id: "a", content: "A", order: 0 }],
+  }));
+  await activeCtx.plugin(SystemPromptService, {});
+  await tick();
+  await expect(buildSystemPrompt(["tool_a"])).resolves.toBe("A");
+});
 
-  it("throws when runner not registered", async () => {
-    await expect(buildSystemPrompt(["tool_a"])).rejects.toThrow(
-      "SystemPromptHookRunner not registered",
-    );
-  });
-
-  it("delegates to registered runner", async () => {
-    registerSystemPromptHookRunner(async ({ functionNames, cwd }) => {
-      return `tools:${functionNames.join(",")};cwd:${cwd ?? "none"}`;
-    });
-    await expect(buildSystemPrompt(["a", "b"], "/tmp")).resolves.toBe("tools:a,b;cwd:/tmp");
-  });
+it("throws when the service is not mounted", async () => {
+  activeCtx = createHookContext();
+  await expect(buildSystemPrompt(["tool_a"])).rejects.toThrow("SystemPromptService not mounted");
 });

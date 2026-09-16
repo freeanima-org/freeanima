@@ -1,32 +1,30 @@
+import {
+  getRuntimeContext,
+  isRuntimeContextReady,
+} from "@freeanima/habitat/platform/service/runtime-context.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import type { SystemPromptBuildContext } from "./hooks.ts";
 import { resolveScenarioProfile } from "./scenario.ts";
 
-export type SystemPromptHookRunner = (ctx: SystemPromptBuildContext) => string | Promise<string>;
-
-let runner: SystemPromptHookRunner | null = null;
-
-/** Injected at composition root; runs systemPromptBuild hooks and folds sections */
-export function registerSystemPromptHookRunner(fn: SystemPromptHookRunner): void {
-  runner = fn;
-}
-
+/**
+ * Build the folded system prompt by delegating to `ctx.systemPrompt`.
+ *
+ * Consumers deep in engine code call this without a context; the Cordis
+ * `SystemPromptService` is resolved from the process runtime.
+ */
 export async function buildSystemPrompt(
   functionNames: string[],
   cwd?: string | null,
   meta?: SystemPromptBuildContext["meta"],
 ): Promise<string> {
-  if (!runner) {
-    throw new Error(
-      "SystemPromptHookRunner not registered: call bindEnginePorts() or registerSystemPromptHookRunner",
-    );
+  if (!isRuntimeContextReady()) {
+    throw new Error("Runtime not initialized: cannot build system prompt before serve()");
+  }
+  const service = getRuntimeContext().kernel.ctx.systemPrompt;
+  if (!service) {
+    throw new Error("SystemPromptService not mounted: call serve() first");
   }
   const mode = resolveScenarioProfile(meta?.scenario).prompt;
-  return runner(omitUndefined({ functionNames, cwd, meta, mode }));
-}
-
-/** Unit test reset */
-export function resetSystemPromptHookRunnerForTest(): void {
-  runner = null;
+  return service.build(omitUndefined({ functionNames, cwd, meta, mode }));
 }

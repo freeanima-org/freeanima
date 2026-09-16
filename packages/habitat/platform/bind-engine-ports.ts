@@ -1,6 +1,5 @@
 import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
 import { registerLlmStackConfigurator } from "@freeanima/habitat/core/llm";
-import { registerSystemPromptHookRunner } from "@freeanima/habitat/core/hooks/prompt";
 import { rebuildConversationCache } from "@freeanima/habitat/engine/conversation";
 import {
   filterHabitatLocalHandsForCoding,
@@ -8,29 +7,11 @@ import {
 } from "@freeanima/habitat/core/tool";
 import { registerCompressionSummaryPostCut } from "@freeanima/habitat/core/compress";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
-import { foldSystemPromptSectionsDetailed } from "@freeanima/habitat/core/hooks/prompt";
-import { runSystemPromptBuild } from "@freeanima/habitat/core/hooks/cordis";
-import {
-  DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS,
-  peekActiveRuntimeConfig,
-} from "@freeanima/habitat/core/config";
 import { getAppRuntime } from "./context.ts";
-import { notifyPromptFoldBudgetSoftFailure } from "./service/prompt-fold-soft-failure-notify.ts";
 
 /** Composition-root binding for engine injection ports (call once before initLlmRuntime) */
 export function bindEnginePorts(): void {
   registerLlmStackConfigurator(bindLlmStack);
-
-  registerSystemPromptHookRunner(async (ctx) => {
-    const { kernel } = getAppRuntime();
-    const effects = await runSystemPromptBuild(kernel.ctx, ctx);
-    const budget =
-      peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
-      DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
-    const folded = foldSystemPromptSectionsDetailed(effects, { globalBudgetChars: budget });
-    void notifyPromptFoldBudgetSoftFailure(folded);
-    return folded.text;
-  });
 
   // 可见对话不强制收窄工具；编码会话去掉栖息地本机 file/shell（走前哨 remote_coding_*）
   registerConversationToolPolicyFilter((toolNames, meta) =>

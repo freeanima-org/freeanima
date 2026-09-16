@@ -5,7 +5,6 @@ import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import type { JsonSchemaObject } from "@freeanima/habitat/core/tool";
 import { descriptionWithReturnSchema } from "@freeanima/habitat/core/tool";
 import {
-  buildSystemPrompt,
   foldSystemPromptSectionsDetailed,
   resolveScenarioProfile,
 } from "@freeanima/habitat/core/hooks/prompt";
@@ -176,16 +175,14 @@ async function buildSystemView(
   const memoryParts = await decomposeSystemPromptParts(selfContent, cwd ?? undefined);
   const toolsets = renderToolsetsSection(deps.engine.catalog.toolSets);
   const parts: SystemPromptParts = { ...memoryParts, toolsets };
-  const composed = await buildSystemPrompt(functionNames, cwd ?? undefined, meta);
+  const mode = resolveScenarioProfile(meta?.scenario).prompt;
+  const payload = omitUndefined({ functionNames, cwd, meta, mode });
+  const composed = await deps.kernel.ctx.systemPrompt.build(payload);
 
   const globalBudget =
     peekActiveRuntimeConfig()?.data.prompt?.system_prompt_budget_chars ??
     DEFAULT_SYSTEM_PROMPT_BUDGET_CHARS;
-  const mode = resolveScenarioProfile(meta?.scenario).prompt;
-  const effects = await runSystemPromptBuild(
-    deps.kernel.ctx,
-    omitUndefined({ functionNames, cwd, meta, mode }),
-  );
+  const effects = await runSystemPromptBuild(deps.kernel.ctx, payload);
   const folded = foldSystemPromptSectionsDetailed(effects, {
     globalBudgetChars: globalBudget,
   });
