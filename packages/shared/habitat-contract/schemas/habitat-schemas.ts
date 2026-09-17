@@ -2,7 +2,7 @@ import {
   clarifyItemSchema,
   semanticMemoryStatusSchema,
   semanticMemoryTypeSchema,
-} from "@freeanima/shared/db-shapes";
+} from "@freeanima/shared/pg-shapes";
 import { z } from "zod";
 
 const memoryListPaginationSchema = z.object({

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { DIARY_ENTRY_COMPONENT, TASK_ITEM_COMPONENT } from "@freeanima/shared/entity-shapes";
+import { DIARY_ENTRY_COMPONENT, TASK_ITEM_COMPONENT } from "@freeanima/shared/pg-shapes/entity";
 
 import { moveNavIndex, navTargetCount } from "./TagPicker.tsx";
 

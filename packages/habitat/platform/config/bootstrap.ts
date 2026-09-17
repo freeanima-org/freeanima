@@ -7,11 +7,12 @@ import {
   type BootstrapConfig,
 } from "@freeanima/habitat/core/config";
 
+import { expandConfigEnv } from "@freeanima/habitat/kernel/config-mechanism";
+import { PATHS } from "@freeanima/habitat/core/config/paths";
+
 import { asRecord } from "@freeanima/shared/util";
 
 import { formatBootstrapConfigError, formatMissingConfigYamlError } from "./bootstrap-error.ts";
-import { expandConfigEnv } from "./env-expand.ts";
-import { PATHS } from "./paths.ts";
 import { parseYaml } from "./yaml.ts";
 
 export type LoadedBootstrapConfig = {

@@ -7,6 +7,7 @@ import { importDepth } from "./rules/import-depth.ts";
 import { layerDeps } from "./rules/layer-deps.ts";
 import { noDirectChat } from "./rules/no-direct-chat.ts";
 import { noDirectOfflineCache } from "./rules/no-direct-offline-cache.ts";
+import { noModuleGlobals } from "./rules/no-module-globals.ts";
 import { pgSqlArrayBind } from "./rules/pg-sql-array-bind.ts";
 
 const plugin = {
@@ -18,6 +19,7 @@ const plugin = {
     "layer-deps": layerDeps,
     "no-direct-offline-cache": noDirectOfflineCache,
     "no-direct-chat": noDirectChat,
+    "no-module-globals": noModuleGlobals,
     "pg-sql-array-bind": pgSqlArrayBind,
   },
 };

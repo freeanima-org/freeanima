@@ -1,5 +1,5 @@
-export * from "./paths.ts";
-export { expandConfigEnv } from "./env-expand.ts";
+export * from "@freeanima/habitat/core/config/paths";
+export { expandConfigEnv } from "@freeanima/habitat/kernel/config-mechanism";
 export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./config.ts";
 export {
@@ -17,14 +17,22 @@ export {
 } from "@freeanima/habitat/core/config";
 export * from "./database.ts";
 export * from "./redis.ts";
-export * from "./repo-root.ts";
+export * from "@freeanima/habitat/core/config/repo-root";
 export * from "./version.ts";
 export * from "./config-sanitize.ts";
 export { restoreMaskedSecrets } from "./restore-masked-secrets.ts";
-export * from "./cjk.ts";
-export * from "./fts.ts";
-export * from "./embedding.ts";
-export * from "./llm-config.ts";
+export * from "@freeanima/habitat/core/config/cjk-config";
+export * from "@freeanima/habitat/core/config/fts";
+export * from "@freeanima/habitat/core/config/embedding-helpers";
+export {
+  isLlmConfigured,
+  LLM_NOT_CONFIGURED_MESSAGE,
+  getDefaultProfileId,
+  getProfileHopModel,
+  getProfileHopProviderId,
+  getProviderBaseUrl,
+  getDefaultProviderBaseUrl,
+} from "@freeanima/habitat/core/config";
 export { resolveValue, resolveCredentialRef } from "./resolve.ts";
 export { loadConfigYamlRecord } from "./yaml-io.ts";
 export { patchRuntimeConfigSection, loadRuntimeConfigSection } from "./runtime-config-patch.ts";

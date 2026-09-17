@@ -36,7 +36,7 @@ import {
   useDetailPanelState,
 } from "@freeanima/ui-kit/composite";
 import type { ActionSheetItem, QuickAddSubmitPayload } from "@freeanima/ui-kit/composite";
-import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
+import { taskDeleteDetachesCarrier } from "@freeanima/shared/pg-shapes/entity";
 import { CompletedTaskList } from "./components/CompletedTaskList.tsx";
 import { TaskKanbanBoard, type KanbanGroupBy } from "./components/TaskKanbanBoard.tsx";
 import { ListSidebar } from "./components/ListSidebar.tsx";

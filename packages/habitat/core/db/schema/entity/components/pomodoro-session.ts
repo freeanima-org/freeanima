@@ -4,7 +4,7 @@ import {
   POMODORO_SESSION_COMPONENT,
   pomodoroPhaseSchema,
   type PomodoroPhase,
-} from "@freeanima/shared/entity-shapes";
+} from "@freeanima/shared/pg-shapes/entity";
 
 export { POMODORO_SESSION_COMPONENT, pomodoroPhaseSchema, type PomodoroPhase };
 

@@ -1,235 +1,96 @@
 #!/usr/bin/env bun
 /**
- * 全仓 import 迁移：短别名 + 逻辑包名 → @freeanima/* 物理路径。
- * 用法：bun scripts/codemod-freeanima-imports.ts [--dry-run]
+ * 全仓 `@freeanima/*` import 说明符迁移。
+ *
+ * 大重构（13 包拆分）分阶段落地：每阶段只扩展
+ * `scripts/lib/import-rewrites.ts` 的 `REWRITES` / `RETIRED_PREFIXES` 两张表，
+ * 再用同一 CLI 做机械改写。
+ *
+ * 用法：
+ *   bun scripts/codemod-freeanima-imports.ts            # 原地改写
+ *   bun scripts/codemod-freeanima-imports.ts --dry-run  # 只打印
+ *   bun scripts/codemod-freeanima-imports.ts --check    # 校验（just qa check）
+ *
+ * `--check` 失败（退出码 1）条件：
+ *   - 仍存在 `RETIRED_PREFIXES` 前缀的 import 说明符；
+ *   - 仍存在会被 `REWRITES` 改写的说明符（表已更新但未执行改写）。
  */
-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
+import { rewriteSource } from "./lib/import-rewrites.ts";
+
 const REPO_ROOT = join(import.meta.dir, "..");
-const DRY_RUN = process.argv.includes("--dry-run");
+const MODE = process.argv.includes("--check")
+  ? "check"
+  : process.argv.includes("--dry-run")
+    ? "dry-run"
+    : "write";
 
-/** 按前缀长度降序；先匹配更长规则 */
-const PREFIX_REWRITES: [string, string][] = [
-  // 短作用域别名
-  ["@/", "@freeanima/features/companion/ui/spa/"],
-  ["@chat/", "@freeanima/features/chat/ui/spa/"],
-  ["@console/", "@freeanima/features/habitat/ui/habitat/"],
-  ["@shared/", "@freeanima/features/companion/shared/"],
-  ["@task/", "@freeanima/features/task/ui/spa/"],
-  // capabilities 复合名（先于 capabilities- 单段）
-  ["@freeanima/capabilities-tools/", "@freeanima/habitat/capabilities/tools/"],
-  ["@freeanima/capabilities-satellite/", "@freeanima/habitat/capabilities/outpost/"],
-  ["@freeanima/capabilities-llm-openai/", "@freeanima/habitat/capabilities/llm-openai/"],
-  ["@freeanima/capabilities-mcp-client/", "@freeanima/habitat/capabilities/mcp-client/"],
-  ["@freeanima/capabilities-mcp-server/", "@freeanima/habitat/capabilities/mcp-server/"],
-  ["@freeanima/capabilities-memory/", "@freeanima/habitat/capabilities/memory/"],
-  ["@freeanima/capabilities-acp/", "@freeanima/habitat/capabilities/acp/"],
-  // feature / app / shared 逻辑包
-  ["@freeanima/feature-", "@freeanima/features/"],
-  ["@freeanima/satellite-companion/", "@freeanima/features/companion/"],
-  ["@freeanima/app-desktop/", "@freeanima/portal/app/tauri/"],
-  ["@freeanima/app-mobile/", "@freeanima/portal/app/tauri/"],
-  ["@freeanima/app-web/", "@freeanima/portal/app/web/"],
-  ["@freeanima/habitat-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
-  ["@freeanima/habitat-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
-  ["@freeanima/ui-kit/", "@freeanima/ui-kit/"],
-  ["@freeanima/client/app-frame/", "@freeanima/client/app-frame/"],
-  ["@freeanima/client/portal-sdk/", "@freeanima/client/portal-sdk/"],
-  [
-    "@freeanima/habitat/platform/commands/",
-    "@freeanima/habitat/capabilities/tools/slash-commands/",
-  ],
-  ["@freeanima/admin-api/", "@freeanima/features/habitat/habitat/habitat-api/"],
-  ["@freeanima/admin-contract/", "@freeanima/features/habitat/protocol/habitat-contract/"],
-  ["@freeanima/vault-crypto/", "@freeanima/shared/vault-crypto/"],
-  // bare imports（精确匹配，无尾斜杠）
-  ["@freeanima/capabilities-tools", "@freeanima/habitat/capabilities/tools"],
-  ["@freeanima/capabilities-satellite", "@freeanima/habitat/capabilities/outpost"],
-  ["@freeanima/capabilities-llm-openai", "@freeanima/habitat/capabilities/llm-openai"],
-  ["@freeanima/capabilities-mcp-client", "@freeanima/habitat/capabilities/mcp-client"],
-  ["@freeanima/capabilities-mcp-server", "@freeanima/habitat/capabilities/mcp-server"],
-  ["@freeanima/capabilities-memory", "@freeanima/habitat/capabilities/memory"],
-  ["@freeanima/capabilities-acp", "@freeanima/habitat/capabilities/acp"],
-  ["@freeanima/capabilities-identity", "@freeanima/habitat/capabilities/self"],
-  ["@freeanima/satellite-companion", "@freeanima/features/companion/lib"],
-  ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
-  ["@freeanima/habitat-api", "@freeanima/features/habitat/habitat/habitat-api"],
-  ["@freeanima/habitat-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
-  ["@freeanima/ui-kit", "@freeanima/ui-kit"],
-  ["@freeanima/client/app-frame", "@freeanima/client/app-frame/lib"],
-  ["@freeanima/client/portal-sdk", "@freeanima/client/portal-sdk"],
-  ["@freeanima/admin-api", "@freeanima/features/habitat/habitat/habitat-api"],
-  ["@freeanima/admin-contract", "@freeanima/features/habitat/protocol/habitat-contract"],
-  ["@freeanima/vault-crypto", "@freeanima/shared/vault-crypto"],
-  ["@freeanima/feature-diary", "@freeanima/features/diary/domain"],
-  ["@freeanima/feature-email", "@freeanima/features/email/domain"],
-  ["@freeanima/feature-vault", "@freeanima/features/vault/domain"],
-  ["@freeanima/feature-task", "@freeanima/features/task/domain"],
-  ["@freeanima/feature-companion", "@freeanima/features/companion/domain"],
-];
+const SCAN_ROOTS = ["packages", "scripts", "tests", "types"];
+const SCAN_EXT = /\.(ts|tsx)$/;
+/** 迁移表自身与单测故意保留旧前缀，不参与扫描。 */
+const EXCLUDE_FILES = new Set([
+  "scripts/lib/import-rewrites.ts",
+  "scripts/lib/import-rewrites.test.ts",
+]);
+const SKIP_DIRS = new Set([
+  "node_modules",
+  "dist",
+  "dist-types",
+  "dist-desktop",
+  "dist-mobile",
+  "dist-float",
+  "target",
+  ".git",
+  ".wxt",
+  "src-tauri",
+]);
 
-/** 旧 tsconfig override → 物理路径（前缀替换之后应用） */
-const EXACT_REWRITES: Record<string, string> = {
-  "@freeanima/ui-kit/ui/use-acp-progress-dock": "@freeanima/ui-kit/ui/useAcpProgressDock.ts",
-  "@freeanima/ui-kit/ui/acp-types": "@freeanima/ui-kit/ui/acp-dock-types.ts",
-  "@freeanima/ui-kit/ui/acp": "@freeanima/ui-kit/ui/AcpProgressDock.tsx",
-  "@freeanima/ui-kit/globals.css": "@freeanima/ui-kit/styles/globals.css",
-  "@freeanima/ui-kit/form": "@freeanima/ui-kit/form/FormFieldset.tsx",
-  "@freeanima/features/companion/settings-section":
-    "@freeanima/features/companion/ui/spa/settings/companion-settings-section.ts",
-  "@freeanima/features/companion/settings-panel":
-    "@freeanima/features/companion/ui/spa/settings/CompanionSettingsSection.tsx",
-  "@freeanima/features/companion/settings-api":
-    "@freeanima/features/companion/ui/spa/settings/companion-settings-api.ts",
-  "@freeanima/features/companion/manifest": "@freeanima/features/companion/lib/exports/manifest.ts",
-  "@freeanima/features/companion/desktop": "@freeanima/features/companion/lib/exports/desktop.ts",
-  "@freeanima/features/companion/mobile": "@freeanima/features/companion/lib/exports/mobile.ts",
-  "@freeanima/features/companion/build": "@freeanima/features/companion/lib/exports/build.ts",
-  "@freeanima/features/habitat/ui/habitat/i18n":
-    "@freeanima/features/habitat/ui/habitat/lib/i18n.ts",
-  "@freeanima/features/habitat/ui/habitat/router":
-    "@freeanima/features/habitat/ui/habitat/router.tsx",
-  "@freeanima/habitat/kernel/logging/console": "@freeanima/habitat/kernel/logging/sinks/console.ts",
-  "@freeanima/habitat/kernel/logging/file": "@freeanima/habitat/kernel/logging/sinks/file.ts",
-  "@freeanima/habitat/kernel/logging/memory": "@freeanima/habitat/kernel/logging/sinks/memory.ts",
-  "@freeanima/habitat/kernel/logging/null": "@freeanima/habitat/kernel/logging/sinks/null.ts",
-  "@freeanima/client/app-frame/settings": "@freeanima/client/app-frame/lib/settings.ts",
-  "@freeanima/client/app-frame/sentry-test": "@freeanima/client/app-frame/lib/sentry-test.ts",
-  "@freeanima/client/app-frame/bootstrap/sentry":
-    "@freeanima/client/app-frame/spa/bootstrap/sentry.ts",
-  "@freeanima/client/app-frame/mount": "@freeanima/client/app-frame/spa/mount.tsx",
-  "@freeanima/client/app-frame/build": "@freeanima/client/app-frame/build.ts",
-  "@freeanima/portal/app/tauri/companion-settings-api":
-    "@freeanima/portal/app/tauri/spa/companion-settings-api.ts",
-  "@freeanima/portal/app/tauri/settings-registry":
-    "@freeanima/portal/app/tauri/spa/settings-registry.ts",
-  "@freeanima/portal/app/web/static-server": "@freeanima/portal/app/web/lib/static-server.ts",
-  "@freeanima/features/habitat/protocol/habitat-contract/display-util":
-    "@freeanima/features/habitat/protocol/habitat-contract/display-util.ts",
-  "@freeanima/features/habitat/protocol/habitat-contract/date-json":
-    "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts",
-  "@freeanima/shared/habitat-contract/schemas/habitat-schemas":
-    "@freeanima/shared/habitat-contract/schemas/habitat-schemas.ts",
-  "@freeanima/habitat/capabilities/acp/schemas/acp-jsonrpc":
-    "@freeanima/habitat/capabilities/acp/schemas/acp-jsonrpc.ts",
-  "@freeanima/habitat/capabilities/llm-openai/stream-tools":
-    "@freeanima/habitat/capabilities/llm-openai/stream-tools.ts",
-  "@freeanima/habitat/capabilities/llm-openai/messages":
-    "@freeanima/habitat/capabilities/llm-openai/messages.ts",
-  "@freeanima/habitat/capabilities/llm-openai/usage":
-    "@freeanima/habitat/capabilities/llm-openai/usage.ts",
-  "@freeanima/ui-kit/lib/merge-draft-after-save": "@freeanima/ui-kit/lib/merge-draft-after-save.ts",
-  "@freeanima/ui-kit/lib/copy-text": "@freeanima/ui-kit/lib/copy-text.ts",
-  "@freeanima/ui-kit/lib/utils": "@freeanima/ui-kit/lib/utils.ts",
-  "@freeanima/habitat/core/tool/conversation-port":
-    "@freeanima/habitat/core/tool/conversation-port.ts",
-  "@freeanima/habitat/platform/bind-hosts": "@freeanima/habitat/platform/bind-hosts.ts",
-  "@freeanima/habitat/platform/alive": "@freeanima/habitat/platform/alive.ts",
-  "@freeanima/habitat/kernel/random-uuid": "@freeanima/habitat/kernel/random-uuid.ts",
-  "@freeanima/client/portal-sdk/react": "@freeanima/client/portal-sdk/react.tsx",
-  "@freeanima/features/habitat/build/build-utils":
-    "@freeanima/features/habitat/build/build-utils.ts",
-  "@freeanima/features/chat/ui/spa/styles.css": "@freeanima/features/chat/ui/spa/styles.css",
-  "@freeanima/features/habitat/ui/habitat/styles.css":
-    "@freeanima/features/habitat/ui/habitat/styles.css",
-  "@freeanima/ui-kit/styles.css": "@freeanima/ui-kit/styles.css",
-};
-
-const IMPORT_SPEC_RE =
-  /((?:import|export)\s+(?:type\s+)?(?:[^'";]*?\s+from\s+)?['"])([^'"]+)(['"])|import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
-
-function rewriteSpec(spec: string): string {
-  let current = spec;
-  for (let round = 0; round < 8; round += 1) {
-    const exact = EXACT_REWRITES[current];
-    if (exact) {
-      current = exact;
-      continue;
+function collectFiles(): string[] {
+  const out: string[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (SKIP_DIRS.has(entry.name)) continue;
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (SCAN_EXT.test(entry.name)) out.push(full);
     }
-    let next = current;
-    for (const [from, to] of PREFIX_REWRITES) {
-      if (current === from || current.startsWith(from)) {
-        next = to + current.slice(from.length);
-        break;
-      }
-    }
-    if (next === current) break;
-    current = next;
-  }
-  const finalExact = EXACT_REWRITES[current];
-  if (finalExact) return finalExact;
-  return current;
+  };
+  for (const root of SCAN_ROOTS) walk(join(REPO_ROOT, root));
+  return out;
 }
 
-function rewriteFileContent(text: string): { next: string; changed: boolean } {
-  let changed = false;
-  const next = text.replace(
-    IMPORT_SPEC_RE,
-    (
-      match: string,
-      _p1: string | undefined,
-      spec1: string | undefined,
-      _p3: string | undefined,
-      spec2: string | undefined,
-    ) => {
-      const spec = spec1 ?? spec2;
-      if (!spec) return match;
-      const rewritten = rewriteSpec(spec);
-      if (rewritten === spec) return match;
-      changed = true;
-      return match.replace(spec, rewritten);
-    },
+const pending: string[] = [];
+const retired: string[] = [];
+let changedFiles = 0;
+
+for (const file of collectFiles()) {
+  const rel = relative(REPO_ROOT, file);
+  if (EXCLUDE_FILES.has(rel)) continue;
+  const before = readFileSync(file, "utf8");
+  const outcome = rewriteSource(before);
+  for (const entry of outcome.pending) pending.push(`${rel}: ${entry}`);
+  for (const entry of outcome.retired) retired.push(`${rel}: ${entry}`);
+  if (outcome.next !== before) {
+    changedFiles += 1;
+    if (MODE === "write") writeFileSync(file, outcome.next);
+  }
+}
+
+if (MODE === "check") {
+  const problems = [...retired, ...pending];
+  if (problems.length > 0) {
+    console.error(`codemod-freeanima-imports: ${problems.length} 处待处理说明符`);
+    for (const problem of problems.slice(0, 60)) console.error(`  ${problem}`);
+    if (problems.length > 60) console.error(`  … 其余 ${problems.length - 60} 处`);
+    process.exit(1);
+  }
+  console.log("codemod-freeanima-imports: ok");
+} else {
+  console.log(
+    `codemod-freeanima-imports: ${MODE} — ${pending.length} 处说明符 / ${changedFiles} 个文件`,
   );
-  return { next, changed };
+  for (const entry of pending.slice(0, 40)) console.log(`  ${entry}`);
+  if (pending.length > 40) console.log(`  … 其余 ${pending.length - 40} 处`);
 }
-
-function walk(dir: string, out: string[]): void {
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    const st = statSync(full);
-    if (st.isDirectory()) {
-      if (entry === "node_modules" || entry === "dist" || entry === ".turbo") continue;
-      walk(full, out);
-      continue;
-    }
-    if (/\.(ts|tsx|json|md)$/.test(entry)) out.push(full);
-  }
-}
-
-const SCAN_ROOTS = [
-  "packages",
-  "scripts",
-  "tests",
-  "types",
-  ".agent",
-  "docs",
-  ".github",
-  ".husky",
-] as const;
-const files: string[] = [];
-for (const root of SCAN_ROOTS) {
-  const abs = join(REPO_ROOT, root);
-  if (statSync(abs, { throwIfNoEntry: false })?.isDirectory()) walk(abs, files);
-}
-
-// package.json / tsconfig at repo root
-for (const f of ["package.json", "tsconfig.json"]) {
-  const abs = join(REPO_ROOT, f);
-  if (statSync(abs, { throwIfNoEntry: false })?.isFile()) files.push(abs);
-}
-
-let touched = 0;
-for (const file of files) {
-  const text = readFileSync(file, "utf-8");
-  const { next, changed } = rewriteFileContent(text);
-  if (!changed) continue;
-  touched += 1;
-  if (DRY_RUN) {
-    console.log(`would update ${relative(REPO_ROOT, file)}`);
-  } else {
-    writeFileSync(file, next, "utf-8");
-  }
-}
-
-console.log(DRY_RUN ? `dry-run: ${touched} files would change` : `updated ${touched} files`);

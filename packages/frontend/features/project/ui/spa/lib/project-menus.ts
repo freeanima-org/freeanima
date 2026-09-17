@@ -1,4 +1,4 @@
-import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
+import { taskDeleteDetachesCarrier } from "@freeanima/shared/pg-shapes/entity";
 import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 
 import type { TaskItemRow } from "./api.ts";

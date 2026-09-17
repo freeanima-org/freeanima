@@ -15,11 +15,4 @@ export {
   type HabitatMethodOutputs,
 } from "./habitat-router.ts";
 export { initHabitatRouter, resetHabitatRouterForTests } from "./init.ts";
-export {
-  createTypedHabitatClient,
-  getTypedHabitatUiClient,
-  getTypedHabitatClient,
-  resetTypedHabitatClientForTests,
-  type TypedHabitatClient,
-} from "./client.ts";
 export { wsOnlyHabitatRoutes } from "./ws-only-routes.ts";

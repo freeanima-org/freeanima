@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeEach } from "bun:test";
 
-import type { PomodoroActiveBody } from "@freeanima/shared/entity-shapes";
+import type { PomodoroActiveBody } from "@freeanima/shared/pg-shapes/entity";
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
 import {
   applyLocalPomodoroActive,

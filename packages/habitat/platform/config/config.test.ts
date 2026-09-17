@@ -2,8 +2,8 @@ import { describe, it, expect } from "bun:test";
 import { Config } from "@freeanima/habitat/core/config";
 import { parseYaml } from "./yaml.ts";
 import { runtimeConfigSchema } from "@freeanima/habitat/core/config";
-import { expandConfigEnv } from "./env-expand.ts";
-import { getProfileHopModel } from "./llm-config.ts";
+import { expandConfigEnv } from "@freeanima/habitat/kernel/config-mechanism";
+import { getProfileHopModel } from "@freeanima/habitat/core/config";
 import { MINIMAL_LLM_YAML } from "./test-helpers/minimal-llm-config.ts";
 
 function parseMinimalConfig() {
