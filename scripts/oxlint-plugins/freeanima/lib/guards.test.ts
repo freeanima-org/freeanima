@@ -41,11 +41,9 @@ describe("import-depth", () => {
 
 describe("layer-deps", () => {
   test("ui-features 只能依赖 portal-sdk / ui-kit / shared", () => {
+    expect(checkLayerDeps("packages/ui-features/task/ui/a.ts", "@freeanima/portal-sdk")).toBeNull();
     expect(
-      checkLayerDeps("packages/frontend/features/task/ui/a.ts", "@freeanima/client/portal-sdk"),
-    ).toBeNull();
-    expect(
-      checkLayerDeps("packages/frontend/features/task/ui/a.ts", "@freeanima/capabilities/tools"),
+      checkLayerDeps("packages/ui-features/task/ui/a.ts", "@freeanima/capabilities/tools"),
     ).toMatch(/ui-features 不得依赖 capabilities/);
   });
 
@@ -101,21 +99,18 @@ describe("layer-deps", () => {
 
   test("前端层不得 import drizzle-orm / core db", () => {
     expect(
-      checkLayerDeps("packages/frontend/features/task/ui/a.ts", "@freeanima/core/db/schema/entity"),
+      checkLayerDeps("packages/ui-features/task/ui/a.ts", "@freeanima/core/db/schema/entity"),
     ).toMatch(/不得 import drizzle-orm 或 core\/db/);
-    expect(checkLayerDeps("packages/frontend/client/portal-sdk/a.ts", "drizzle-orm")).toMatch(
+    expect(checkLayerDeps("packages/portal-sdk/a.ts", "drizzle-orm")).toMatch(
       /不得 import drizzle-orm 或 core\/db/,
     );
     expect(
-      checkLayerDeps(
-        "packages/frontend/features/task/ui/a.ts",
-        "@freeanima/shared/pg-shapes/entity",
-      ),
+      checkLayerDeps("packages/ui-features/task/ui/a.ts", "@freeanima/shared/pg-shapes/entity"),
     ).toBeNull();
   });
 
   test("server 不得 import 前端层", () => {
-    expect(checkLayerDeps("packages/server/x.ts", "@freeanima/client/portal-sdk/a.ts")).toMatch(
+    expect(checkLayerDeps("packages/server/x.ts", "@freeanima/portal-sdk/a.ts")).toMatch(
       /server 不得依赖 portal-sdk/,
     );
     expect(checkLayerDeps("packages/server/x.ts", "@freeanima/ui-kit")).toMatch(

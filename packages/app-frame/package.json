@@ -1,0 +1,26 @@
+{
+  "name": "@freeanima/app-frame",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./*"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/portal-sdk": "workspace:*",
+    "@freeanima/shared": "workspace:*",
+    "@freeanima/ui-features": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
+    "@tailwindcss/vite": "*",
+    "@tanstack/react-router": "^1.170.27",
+    "@vitejs/plugin-react": "^6.0.5",
+    "lucide-react": "^1.31.0",
+    "react": "19.2.8",
+    "vite": "^8.2.1",
+    "zod": "^4.4.3"
+  }
+}

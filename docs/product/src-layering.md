@@ -8,11 +8,11 @@ title: src 分层与依赖约束
 
 ## 三分包（不发布）
 
-| 包           | 路径                 | 装什么                                                                          | 依赖禁令                            |
-| ------------ | -------------------- | ------------------------------------------------------------------------------- | ----------------------------------- |
-| **shared**   | `packages/shared/`   | 契约、纯 Zod、vault-crypto、同构工具（含 `task/`、`coding/`、`companion-app/`） | 无 drizzle / 无 React / 无 LLM·mail |
-| **habitat**  | `packages/`          | 进程栈（原 host）+ features 服务端 + **CLI** + MCP                              | 无 React                            |
-| **frontend** | `packages/frontend/` | client + ui-kit + features UI + Web/扩展/Tauri SPA                              | 无 drizzle / 无仅后端库             |
+| 包           | 路径               | 装什么                                                                          | 依赖禁令                            |
+| ------------ | ------------------ | ------------------------------------------------------------------------------- | ----------------------------------- |
+| **shared**   | `packages/shared/` | 契约、纯 Zod、vault-crypto、同构工具（含 `task/`、`coding/`、`companion-app/`） | 无 drizzle / 无 React / 无 LLM·mail |
+| **habitat**  | `packages/`        | 进程栈（原 host）+ features 服务端 + **CLI** + MCP                              | 无 React                            |
+| **frontend** | `packages/`        | client + ui-kit + features UI + Web/扩展/Tauri SPA                              | 无 drizzle / 无仅后端库             |
 
 不用 `backend` 命名——与产品「Habitat / 栖息地」对齐。
 
@@ -35,13 +35,13 @@ DDL 仅 habitat。存储形状的纯 Zod 经 **codegen + package exports** 落�
 
 ## Portal：体感 6 vs 代码 4
 
-| form id     | 业务壳      | 路径                                 | 归属         |
-| ----------- | ----------- | ------------------------------------ | ------------ |
-| cli         | CLI         | `packages/cli/cli`                   | **habitat**  |
-| mcp         | MCP         | `packages/capabilities/mcp-server`   | **habitat**  |
-| application | Web         | `packages/frontend/portal/app/web`   | **frontend** |
-| application | 桌面 / 移动 | `packages/frontend/portal/app/tauri` | **frontend** |
-| browser     | 扩展        | `packages/frontend/portal/extension` | **frontend** |
+| form id     | 业务壳      | 路径                               | 归属         |
+| ----------- | ----------- | ---------------------------------- | ------------ |
+| cli         | CLI         | `packages/cli/cli`                 | **habitat**  |
+| mcp         | MCP         | `packages/capabilities/mcp-server` | **habitat**  |
+| application | Web         | `packages/portal/app/web`          | **frontend** |
+| application | 桌面 / 移动 | `packages/portal/app/tauri`        | **frontend** |
+| browser     | 扩展        | `packages/portal/extension`        | **frontend** |
 
 ## 分阶段任务（风巢 17683）
 

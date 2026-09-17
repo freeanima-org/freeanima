@@ -11,15 +11,15 @@ import { build, type Plugin } from "vite";
 import {
   buildViteAliases,
   freeanimaResolvePlugin,
-} from "@freeanima/client/app-frame/vite/module-aliases.ts";
+} from "@freeanima/app-frame/vite/module-aliases.ts";
 
 const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const PROBE_IMPORTS = [
-  "@freeanima/features/task/ui/spa/TaskApp.tsx",
-  "@freeanima/features/vault/ui/spa/VaultApp.tsx",
-  "@freeanima/features/diary/ui/spa/DiaryApp.tsx",
-  "@freeanima/client/portal-sdk/pomodoro-active-store.ts",
+  "@freeanima/ui-features/task/ui/spa/TaskApp.tsx",
+  "@freeanima/ui-features/vault/ui/spa/VaultApp.tsx",
+  "@freeanima/ui-features/diary/ui/spa/DiaryApp.tsx",
+  "@freeanima/portal-sdk/pomodoro-active-store.ts",
   "@freeanima/shared/pg-shapes/entity",
   "@freeanima/shared/pg-shapes/rows/memory-rows",
   "@freeanima/shared/pg-shapes",

@@ -93,7 +93,7 @@ just dev tauri
 # 打包 Dev 安装器（与 Linux 的 just pack tauri 对称）
 $env:FREEANIMA_BUILD_CHANNEL = "local"
 just pack tauri
-# 产物：dist/ 下 NSIS，或 packages/frontend/portal/app/tauri/src-tauri/target/release/bundle/nsis/
+# 产物：dist/ 下 NSIS，或 packages/portal/app/tauri/src-tauri/target/release/bundle/nsis/
 ```
 
 打包前若 `link.exe` 不在 PATH，先开 **x64 Native Tools Command Prompt**，或：

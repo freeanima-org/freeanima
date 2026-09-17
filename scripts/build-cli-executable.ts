@@ -31,7 +31,7 @@ const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
 const CLI_ENTRY = join(ROOT, "packages/cli/cli/cli.ts");
 const META_MODULE = realpathSync(join(ROOT, "packages/cli/cli/standalone-meta.ts"));
-const WEB_DIST_DIR = join(ROOT, "packages/frontend/portal/app/web/dist");
+const WEB_DIST_DIR = join(ROOT, "packages/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 
 async function ensureWebDist(): Promise<void> {
@@ -53,7 +53,7 @@ async function ensureWebDist(): Promise<void> {
   console.log("building Web dist for embed…");
   await $`bun scripts/build-web.ts`.cwd(ROOT);
   if (!existsSync(WEB_DIST_INDEX)) {
-    throw new Error("pack web 完成后仍缺少 packages/frontend/portal/app/web/dist/index.html");
+    throw new Error("pack web 完成后仍缺少 packages/portal/app/web/dist/index.html");
   }
 }
 

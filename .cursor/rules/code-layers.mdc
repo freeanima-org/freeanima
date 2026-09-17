@@ -22,7 +22,7 @@ portal/cli → platform → capabilities → engine → core → kernel
 | capabilities | `packages/capabilities/` | self、memory、tools、outpost、mcp-*、… |
 | platform | `packages/server/` | 组合根；`service/` = AppRuntime |
 
-并列：`packages/shared`、`packages/frontend/{ui-kit,client}`、features（按子树分属两包）、portal（按 form 分属两包）。
+并列：`packages/shared`、`packages/{ui-kit,client}`、features（按子树分属两包）、portal（按 form 分属两包）。
 
 ## Client 消环
 

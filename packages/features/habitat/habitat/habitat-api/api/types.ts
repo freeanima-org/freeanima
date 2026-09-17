@@ -24,7 +24,7 @@ export type {
   ConversationSummary as ConversationListItem,
 } from "@freeanima/shared/rpc-contract/frames/snapshot.ts";
 
-export type { SelfBlockDisplay } from "@freeanima/features/habitat/protocol/habitat-contract/self-block-display.ts";
+export type { SelfBlockDisplay } from "@freeanima/shared/habitat-contract/self-block-display.ts";
 
 export type { CronJobData as CronJobApi } from "@freeanima/capabilities/connectors/cron";
 

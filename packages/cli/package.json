@@ -6,19 +6,17 @@
   "exports": {
     "./*": "./*"
   },
-  "dependencies": {
-    "@freeanima/capabilities": "workspace:*",
-    "@freeanima/core": "workspace:*",
-    "@freeanima/engine": "workspace:*",
-    "@freeanima/features": "workspace:*",
-    "@freeanima/kernel": "workspace:*",
-    "@freeanima/server": "workspace:*",
-    "@freeanima/shared": "workspace:*",
-    "commander": "^15.0.0"
-  },
   "bin": {
     "anima": "./anima/cli.ts",
     "anima-client": "./client/cli.ts",
     "anima-probe": "./probe/cli.ts"
+  },
+  "dependencies": {
+    "@freeanima/capabilities": "workspace:*",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/features": "workspace:*",
+    "@freeanima/server": "workspace:*",
+    "@freeanima/shared": "workspace:*",
+    "commander": "^15.0.0"
   }
 }

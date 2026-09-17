@@ -6,7 +6,7 @@ import {
   validateEdgeTtsText,
   MAX_EDGE_TTS_TEXT_LENGTH,
 } from "./edge-synthesize.ts";
-import { resolveEdgeVoiceName } from "./edge-voices.ts";
+import { resolveEdgeVoiceName } from "@freeanima/shared/tts/edge-voices.ts";
 
 describe("mapProsodyToEdgeStrings", () => {
   it("maps neutral prosody to Edge defaults", () => {

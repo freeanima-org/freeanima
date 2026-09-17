@@ -12,8 +12,8 @@ SSOT：[`i18n/glossary.md`](../../i18n/glossary.md)、[`docs/product/architectur
 
 | 形态       | form id       | 用户侧实现                                         | 代码                                                       |
 | ---------- | ------------- | -------------------------------------------------- | ---------------------------------------------------------- |
-| **应用**   | `application` | Shell（壳）：桌面 / 移动 / **Web 整窗 SPA**        | `packages/frontend/portal/app/{tauri,web}`                 |
-| **浏览器** | `browser`     | 浏览器扩展（MV3）                                  | `packages/frontend/portal/extension`                       |
+| **应用**   | `application` | Shell（壳）：桌面 / 移动 / **Web 整窗 SPA**        | `packages/portal/app/{tauri,web}`                          |
+| **浏览器** | `browser`     | 浏览器扩展（MV3）                                  | `packages/portal/extension`                                |
 | **MCP**    | `mcp`         | Habitat 对外 `/mcp`                                | `packages/capabilities/mcp-server`（**不**迁入 `portal/`） |
 | **CLI**    | `cli`         | 多二进制：`anima` / `anima-client` / `anima-probe` | `packages/cli/{cli,client,probe}`                          |
 
@@ -36,7 +36,7 @@ SSOT：[`i18n/glossary.md`](../../i18n/glossary.md)、[`docs/product/architectur
 ## 目录约定
 
 ```
-packages/frontend/portal/
+packages/portal/
   app/           # 应用形态（Shell）：web / tauri
   extension/     # 浏览器形态
     entrypoints/
@@ -48,13 +48,13 @@ packages/cli/
   probe/         # anima-probe（执行端 Outpost）
 ```
 
-壳内 SPA chrome（Rail / 设置）在 `packages/frontend/client/`，**不是** `portal/` 根。
+壳内 SPA chrome（Rail / 设置）在 `packages/portal-sdk/`，**不是** `portal/` 根。
 
 ## 浏览器形态（扩展）
 
 浏览器形态入口 = **一个** MV3 扩展（展示名 **FreeAnima** / 本地 **FreeAnima Local**），直连栖息地；不是「保险库专用插件」。Vault、规划中的书签同步与网页剪藏均作为扩展内能力模块。
 
-- 代码：`packages/frontend/portal/extension`（WXT MV3；React popup/options + `runtime/` + `features/*`；图标 `public/icon-*.png`）
+- 代码：`packages/portal/extension`（WXT MV3；React popup/options + `runtime/` + `features/*`；图标 `public/icon-*.png`）
 - 构建（Chrome）：`just pack browser-extension-chrome` → `dist/browser-extension/chrome-mv3` + zip
 - 构建（Firefox 维护者 canary）：`just pack browser-extension-firefox` → 签名/未签名 xpi + updates.json
 - 开发：`just dev browser-extension-chrome` / `just dev browser-extension-firefox`
@@ -71,7 +71,7 @@ packages/cli/
 
 ### Firefox（维护者自托管 canary）
 
-- gecko id：`extension@freeanima.com`（对齐 `packages/frontend/portal/extension`；**变更 id = 新扩展**，已装旧 id 须卸旧装新并重配连接）
+- gecko id：`extension@freeanima.com`（对齐 `packages/portal/extension`；**变更 id = 新扩展**，已装旧 id 须卸旧装新并重配连接）
 - 安装：从 GitHub canary Release 下载 `freeanima-browser-extension-firefox.xpi`；之后由
   `https://freeanima.com/extension/firefox/updates.json` 指向同一 Release 固定资产名自动升级
 - 签名：需 `FREEANIMA_AMO_API_KEY` / `FREEANIMA_AMO_API_SECRET`（AMO unlisted）；未配置时仅能 `about:debugging` 临时加载 — 见 [`.github/SECRETS.md`](../../.github/SECRETS.md)

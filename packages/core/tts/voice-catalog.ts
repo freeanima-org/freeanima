@@ -9,7 +9,7 @@ import {
   VOICE_PROTOCOL_OPENAI_AUDIO,
   type VoiceProtocolId,
 } from "@freeanima/core/config/schemas/llm-config";
-import { EDGE_TTS_VOICE_OPTIONS } from "./edge-voices.ts";
+import { EDGE_TTS_VOICE_OPTIONS } from "@freeanima/shared/tts/edge-voices.ts";
 
 export type VoiceCatalogEntry = {
   id: string;

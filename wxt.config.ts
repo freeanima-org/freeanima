@@ -10,7 +10,7 @@ import {
   resolveFirefoxAddonVersion,
 } from "./packages/core/config/firefox-addon.ts";
 import { resolveBuildVersionFromEnv } from "./packages/core/config/resolve-build-version.ts";
-import { buildViteAliases } from "./packages/frontend/client/app-frame/vite/module-aliases.ts";
+import { buildViteAliases } from "./packages/app-frame/vite/module-aliases.ts";
 
 const repoRoot = path.resolve(import.meta.dirname);
 
@@ -50,9 +50,9 @@ const extensionName = isLocal ? "FreeAnima Local" : "FreeAnima";
 
 /** 浏览器形态入口（MV3；Chrome 默认，Firefox 另轨） */
 export default defineConfig({
-  srcDir: "packages/frontend/portal/extension",
+  srcDir: "packages/portal/extension",
   outDir: "dist/browser-extension",
-  publicDir: "packages/frontend/portal/extension/public",
+  publicDir: "packages/portal/extension/public",
   modules: [],
   // Firefox 默认 MV2；强制 MV3（与 Chrome 同轨，且支持 update_url / service worker）
   manifestVersion: 3,

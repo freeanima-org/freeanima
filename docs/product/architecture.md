@@ -16,12 +16,12 @@ title: 架构
 | 外部连接器（类）               | **Portal**       | **入口**           | 进入栖息地的方式类；四种**形态**：application / browser / mcp / cli                              |
 | 入口形态                       | —                | **入口形态**       | 入口的实现种类                                                                                   |
 | 应用形态入口                   | **Shell**        | **壳** / 应用形态  | 形态 `application` — 整窗 SPA（desktop / mobile / web）。**不是**应用布局                        |
-| 浏览器形态入口                 | —                | **浏览器形态入口** | 形态 `browser` — 浏览器扩展（MV3）；`packages/frontend/portal/extension`；**不是** Web 壳        |
+| 浏览器形态入口                 | —                | **浏览器形态入口** | 形态 `browser` — 浏览器扩展（MV3）；`packages/portal/extension`；**不是** Web 壳                 |
 | MCP 形态入口                   | **MCP**          | **MCP 形态入口**   | 形态 `mcp` — 栖息地 `/mcp`（`mcp-server`）。入站 `mcp-client` **不是**入口                       |
 | CLI 形态入口                   | **CLI**          | **CLI 形态入口**   | 形态 `cli` — `anima` / `anima-client` / `anima-probe`；`packages/cli/{cli,client,probe}`         |
 | 远程工具注册方                 | **Outpost**      | **前哨**           | 不可达本地应用，经 `remote_tools.attach`（入口内嵌伴侣或独立工具）；**不是**入口                 |
 | 壳                             | **Shell**        | **壳**             | 应用形态入口（desktop / mobile / web）。**不是**栖息地；**不是**应用布局；**不是**浏览器形态入口 |
-| 应用布局                       | **app frame**    | **应用布局**       | `packages/frontend/client/app-frame`（`AppFrame`）中的 SPA chrome；随视口；与壳正交              |
+| 应用布局                       | **app frame**    | **应用布局**       | `packages/app-frame`（`AppFrame`）中的 SPA chrome；随视口；与壳正交                              |
 | 管理 / 检视 UI（遗留 Habitat） | **Habitat** (UI) | **栖息地**         | `/habitat/*` 区域；「打开栖息地」vs「连接栖息地」——**实例**运维 / 检视                           |
 | 管理首页                       | **Dashboard**    | **仪表盘**         | 仅 `/habitat/dashboard`；其他栖息地路由保留各自标签                                              |
 | Anima 私有空间 UI              | **Bedroom**      | **卧室**           | `/bedroom/*`；与栖息地成对——选一个 Anima，看其自我层 / 记忆 / 生活资产（群租房隐喻）             |
@@ -30,7 +30,7 @@ title: 架构
 
 动词：**连接栖息地**（URL + token）；**打开栖息地**（管理 UI）；**经入口到达**（壳 / 浏览器扩展 / MCP / CLI）。
 
-代码布局：`packages/frontend/portal/{app,extension}` + `packages/cli/{cli,client,probe}`；MCP 形态实现仍在 `packages/capabilities/mcp-server`。见 [`docs/modules/portal.md`](../modules/portal.md)。
+代码布局：`packages/portal/{app,extension}` + `packages/cli/{cli,client,probe}`；MCP 形态实现仍在 `packages/capabilities/mcp-server`。见 [`docs/modules/portal.md`](../modules/portal.md)。
 
 资源层 **躯体（Body）**（四层模型下的 VM / OS / 网络）是 subject 认知上的「我跑在什么上」— **不是**栖息地进程名。
 
@@ -181,29 +181,29 @@ Working 组装（fold / 压缩四段 / 被动召回）与业界对照见 [`../co
 
 ### 仓库布局（Phase 1 — host/client）
 
-目标布局是 `packages/features/<slug>/`（domain / habitat / plugin）与 `packages/frontend/features/<slug>/`（UI）下的**功能模块**。栖息地管理台使用与聊天室/任务**相同的模块形态**——不是单独的 admin-\* 栈。`packages/*/features/companion/` 为遗留命名；勿在此新增产品。
+目标布局是 `packages/features/<slug>/`（domain / habitat / plugin）与 `packages/ui-features/<slug>/`（UI）下的**功能模块**。栖息地管理台使用与聊天室/任务**相同的模块形态**——不是单独的 admin-\* 栈。`packages/*/features/companion/` 为遗留命名；勿在此新增产品。
 
 **终态：** 每功能一份栖息地 RPC；业务方法走 `POST|WS /rpc/v1`（同一信封）。公开 health/TLS 探测与二进制方法（如 `tts.synthesize`）为栖息地 RPC REST，按注册表声明 `auth: optional` 或 Bearer。
 
 权威规格：[`.cursor/rules/repository-topology.mdc`](../../.cursor/rules/repository-topology.mdc)。目标三分包与 portal 归属 → [`src-layering.md`](src-layering.md)。
 
-Host 栈：`packages/{kernel,core,engine,capabilities,platform}`。Client：`packages/frontend/client/{portal-sdk,app-frame}`。设计系统：`packages/frontend/ui-kit/`（与 `shared/` 并列）。入口壳：`packages/frontend/portal/app/{tauri,web}`。
+Host 栈：`packages/{kernel,core,engine,capabilities,platform}`。Client：`packages/portal-sdk/{portal-sdk,app-frame}`。设计系统：`packages/ui-kit/`（与 `shared/` 并列）。入口壳：`packages/portal/app/{tauri,web}`。
 
 ### 平台 UI 分层
 
 UI/UX 设计系统（三维度、视觉基础、组件、交互模式）→ [`docs/ui/`](../ui/overview.md)。Agent 硬禁令 / API → [`.cursor/rules/frontend-ui.mdc`](../../.cursor/rules/frontend-ui.mdc)。
 
-| 层           | 是否平台原生？                   | 位置                                                                                            | 数据路径                               |
-| ------------ | -------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- |
-| 壳（壳子维） | 是                               | `packages/frontend/portal/app/tauri`、伴侣、栖息地绑定                                          | Tauri IPC / commands                   |
-| 应用布局     | 布局跟视口；设置 chrome 跟布局档 | `packages/frontend/client/app-frame`（`AppFrame`）                                              | 栖息地 RPC（Feature RPC）              |
-| 栖息地 UI    | 壳内嵌（普通功能）               | `packages/frontend/features/habitat` + `packages/features/habitat`（UI + `plugin.habitat.rpc`） | 栖息地 RPC（WS + HTTP POST `/rpc/v1`） |
-| 伴侣宿主     | 浮层 WebView-host（第一方）      | `packages/frontend/features/companion/`（spa attach；薄壳 IPC/FS）                              | 栖息地 RPC + `remote_tools.attach`     |
-| Coding 宿主  | 独立前哨窗（第一方）             | `packages/frontend/features/coding/`（spa attach；开发机 FS/终端）                              | 栖息地 RPC + `remote_tools.attach`     |
+| 层           | 是否平台原生？                   | 位置                                                                                      | 数据路径                               |
+| ------------ | -------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------------- |
+| 壳（壳子维） | 是                               | `packages/portal/app/tauri`、伴侣、栖息地绑定                                             | Tauri IPC / commands                   |
+| 应用布局     | 布局跟视口；设置 chrome 跟布局档 | `packages/app-frame`（`AppFrame`）                                                        | 栖息地 RPC（Feature RPC）              |
+| 栖息地 UI    | 壳内嵌（普通功能）               | `packages/ui-features/habitat` + `packages/features/habitat`（UI + `plugin.habitat.rpc`） | 栖息地 RPC（WS + HTTP POST `/rpc/v1`） |
+| 伴侣宿主     | 浮层 WebView-host（第一方）      | `packages/ui-features/companion/`（spa attach；薄壳 IPC/FS）                              | 栖息地 RPC + `remote_tools.attach`     |
+| Coding 宿主  | 独立前哨窗（第一方）             | `packages/ui-features/coding/`（spa attach；开发机 FS/终端）                              | 栖息地 RPC + `remote_tools.attach`     |
 
 导航与主布局**必须**使用 `useLayoutMode()` / 视口断点（布局维）。**禁止**用 `getShellKind()` 锁定应用布局。交互（右键菜单 / 长按 / Enter 发送）使用 `portal-sdk` 交互 API。视觉、组件、模式规范均经同一三维度适配。
 
-**边界：** `app-frame` 与主壳 `packages/frontend/features/*/ui` 经 `portal-sdk` + Feature RPC 到达栖息地。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于栖息地无法拨号的本地应用（今日：伴侣浮层 + **Coding 前哨窗**；壳只提供窗口/IPC/FS；**无** Node sidecar）。**主壳产品模块**（聊天室、任务、设置、…）**不** attach；**前哨窗可以既是 UI 又是手**。可拨号对等方用 **MCP**。见 [`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)、[`coding.md`](../modules/coding.md)。
+**边界：** `app-frame` 与主壳 `packages/ui-features/*/ui` 经 `portal-sdk` + Feature RPC 到达栖息地。**远程工具注册**（`remote_tools.attach` + `tool.*`）仅用于栖息地无法拨号的本地应用（今日：伴侣浮层 + **Coding 前哨窗**；壳只提供窗口/IPC/FS；**无** Node sidecar）。**主壳产品模块**（聊天室、任务、设置、…）**不** attach；**前哨窗可以既是 UI 又是手**。可拨号对等方用 **MCP**。见 [`.cursor/rules/frontend-features.mdc`](../../.cursor/rules/frontend-features.mdc)、[`docs/ops/habitat-rpc.md`](../ops/habitat-rpc.md)、[`coding.md`](../modules/coding.md)。
 
 ### 编码工作台（跨机前哨）
 
@@ -339,7 +339,7 @@ Agent 行为
 生产（standalone 安装版 CLI）：`anima service`（systemd --user）。崩溃后自动重启；只有 `systemctl stop` 能停服务。源码树 `anima` **不**注册 `service`——本地栖息地用 `just dev habitat`。
 
 - **栖息地 / service**：长驻——栖息地 HTTP（`/rpc/v1`）、Discord / 微信 Gateway、cron
-- **UI**：`packages/frontend/portal/app/tauri` + `web/dist-*` 打包 SPA（聊天室 + 栖息地）；栖息地不托管 `/habitat`
+- **UI**：`packages/portal/app/tauri` + `web/dist-*` 打包 SPA（聊天室 + 栖息地）；栖息地不托管 `/habitat`
 
 ```bash
 # standalone install
@@ -448,7 +448,7 @@ Judge 使用可选 `llm.profiles.goal_judge`；judge 调用/解析失败时目�
 
 **Portal Shell 运行时**：**Tauri**（Rust 主进程 + 系统 WebView；桌面与 Android 统一壳层）。壳规则：[`.cursor/rules/tauri-shell.mdc`](../../.cursor/rules/tauri-shell.mdc)。**禁止**为 companion 再打 Node sidecar；`remote_tools.attach` 在第一方伴侣浮层（见 Desktop companion）。
 
-**UI 源码产物**：`packages/frontend/portal/app/web/dist`（`base: /web/`）。
+**UI 源码产物**：`packages/portal/app/web/dist`（`base: /web/`）。
 
 | 客户端                            | UI 加载                                                         | 更新方式                                                                                                                                                                              |
 | --------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -467,10 +467,10 @@ settings「连接」（`/settings`）；无独立 bootstrap Habitat 页。
 
 ### 壳 vs 应用布局
 
-| 概念            | 含义                                                           | 代码                                                                                        |
-| --------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| **壳（Shell）** | 入口宿主运行时（browser / Tauri；形态 web / desktop / mobile） | `packages/frontend/portal/app/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
-| **应用布局**    | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome           | `packages/frontend/client/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定              |
+| 概念            | 含义                                                           | 代码                                                                               |
+| --------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **壳（Shell）** | 入口宿主运行时（browser / Tauri；形态 web / desktop / mobile） | `packages/portal/app/*`；`portal-sdk` 中 `getShellKind` / `ShellApi` / buildTarget |
+| **应用布局**    | SPA chrome：模块左栏 Rail / 底栏 Tabs、设置页 chrome           | `packages/app-frame`（`AppFrame`）；跟视口，**不**由壳类型锁定                     |
 
 ### 三维度模型（壳子 / 布局 / 交互）
 

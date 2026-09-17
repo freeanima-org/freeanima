@@ -1,4 +1,4 @@
 export {
   formatCstDisplay,
   type FormatCstDisplayOpts,
-} from "@freeanima/features/habitat/protocol/habitat-contract/display-util.ts";
+} from "@freeanima/shared/habitat-contract/display-util.ts";

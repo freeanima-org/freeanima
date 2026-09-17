@@ -37,6 +37,6 @@ title: 健康
 
 ## 相关
 
-- Feature：`packages/features/health/` + `packages/frontend/features/health/`
+- Feature：`packages/features/health/` + `packages/ui-features/health/`
 - 对象存储：[`object-storage`](object-storage.md)（`createObjectFile`）
 - 任务提醒：[`task`](task.md)（`related_task_id`）

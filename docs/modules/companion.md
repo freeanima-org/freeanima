@@ -6,12 +6,12 @@ title: 桌面伴侣
 
 > **桌面伴侣** / **Companion**：产品功能。**伴侣浮层**（companion overlay）：入口透明 VRM 窗（`embedded-overlay`）。**前哨**（Outpost）：overlay 内 `remote_tools.attach` 角色。目标壳：**Tauri**（见 [`.cursor/rules/tauri-shell.mdc`](../../.cursor/rules/tauri-shell.mdc)）。不经 `config.yaml` 管理；**禁止**再打独立 Node sidecar。
 
-内容包（React + VRM）由**桌面 Tauri 壳**（`packages/frontend/portal/app/tauri`）嵌入。打包后的浮层从 `frontendDist` 的 `ui/companion/` 经 `WebviewUrl::App` 加载（与主窗同一自定义协议 —— **不是** `file://` 资源）。浮层用栖息地 RPC 连接，调用 `remote_tools.attach`，并向 Agent 暴露本机工具（`bubble`、`play_slot`）。聊天室等产品模块只用栖息地 RPC（不 attach）。
+内容包（React + VRM）由**桌面 Tauri 壳**（`packages/portal/app/tauri`）嵌入。打包后的浮层从 `frontendDist` 的 `ui/companion/` 经 `WebviewUrl::App` 加载（与主窗同一自定义协议 —— **不是** `file://` 资源）。浮层用栖息地 RPC 连接，调用 `remote_tools.attach`，并向 Agent 暴露本机工具（`bubble`、`play_slot`）。聊天室等产品模块只用栖息地 RPC（不 attach）。
 
 ## 架构
 
 ```text
-FreeAnima Portal (packages/frontend/portal/app/tauri)
+FreeAnima Portal (packages/portal/app/tauri)
 ├── Tauri (Rust) — tray / multi-window + prefs / IPC
 │   ├── companion overlay — work-area fullscreen transparent; VRM stage + remote_tools.attach
 │   ├── companion settings — settings in main window (Habitat RPC + object_storage.file.get)
@@ -24,12 +24,12 @@ FreeAnima Portal (packages/frontend/portal/app/tauri)
 
 ### 栖息地 vs 本机边界
 
-| 层              | 位置                                  | 职责                                                                                                               |
-| --------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **栖息地 SSOT** | `packages/features/companion/`        | runtime 段 `companion`（behavior / slots / 模型与动作注册表 + `object_file_id`）；字节在对象存储；设置经栖息地 RPC |
-| **设置 UI**     | 桌面设置 → 伴侣                       | 栖息地 RPC（`companion.config.*`、model/motion CRUD）；二进制经 `object_storage.file.get`                          |
-| **伴侣宿主**    | overlay SPA（`spa/`）                 | `remote_tools.attach`、本机 runtime；桌面经 `companion.sync.pull` 把缺文件落到本机缓存                             |
-| **Tauri 宿主**  | `packages/frontend/portal/app/tauri/` | 透明窗、点击穿透、托盘、显隐 + FS / prefs IPC                                                                      |
+| 层              | 位置                           | 职责                                                                                                               |
+| --------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| **栖息地 SSOT** | `packages/features/companion/` | runtime 段 `companion`（behavior / slots / 模型与动作注册表 + `object_file_id`）；字节在对象存储；设置经栖息地 RPC |
+| **设置 UI**     | 桌面设置 → 伴侣                | 栖息地 RPC（`companion.config.*`、model/motion CRUD）；二进制经 `object_storage.file.get`                          |
+| **伴侣宿主**    | overlay SPA（`spa/`）          | `remote_tools.attach`、本机 runtime；桌面经 `companion.sync.pull` 把缺文件落到本机缓存                             |
+| **Tauri 宿主**  | `packages/portal/app/tauri/`   | 透明窗、点击穿透、托盘、显隐 + FS / prefs IPC                                                                      |
 
 管理**仅在设置**——栖息地没有伴侣管理页。
 
@@ -43,7 +43,7 @@ Tauri   ◄──IPC──────────► Settings         (show/hid
 Agent    ──Habitat RPC tool.call─► Overlay
 ```
 
-内容包在 [`packages/frontend/features/companion/`](../../packages/frontend/features/companion/)（`ui/spa/` 等）。栖息地域逻辑：[`packages/features/companion/`](../../packages/features/companion/)（`server/` / `domain` / `plugin.ts`）。
+内容包在 [`packages/ui-features/companion/`](../../packages/ui-features/companion/)（`ui/spa/` 等）。栖息地域逻辑：[`packages/features/companion/`](../../packages/features/companion/)（`server/` / `domain` / `plugin.ts`）。
 
 |         | 聊天室 / 其他产品模块     | 桌面伴侣                                       |
 | ------- | ------------------------- | ---------------------------------------------- |
@@ -82,7 +82,7 @@ Agent    ──Habitat RPC tool.call─► Overlay
 
 设置 → **模型**标签页：列表、导入、删除、重命名、**排序**（上移/下移 → `companion.model.reorder`）、切换当前模型。上传到栖息地（`companion.model.upload` → `createObjectFile`）；加载走 `object_storage.file.get`。
 
-开发时，`packages/frontend/features/companion/public/models/` 中的文件作回退。
+开发时，`packages/ui-features/companion/public/models/` 中的文件作回退。
 
 ### VRMA 库与槽位
 

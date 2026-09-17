@@ -5,7 +5,7 @@
  * 源码运行需 bunfig preload；仓内目录须存在（可仅有 `.gitignore` / `.gitkeep`），
  * 无构建产物时为空 map。仅 standalone-boot（runtimeMeta 非 null）时 dynamic import；非空才注册。
  */
-import webDistFiles from "dir:../../../frontend/portal/app/web/dist";
+import webDistFiles from "dir:../../../portal/app/web/dist";
 
 import type { EmbeddedWebDistFile } from "./web-dist-embedded.ts";
 

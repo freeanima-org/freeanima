@@ -1,6 +1,6 @@
 ---
 description: 表单选实体 id 必须用可搜 EntityPicker
-globs: packages/frontend/features/**/ui/**/*.{ts,tsx},packages/frontend/client/**/*.{ts,tsx}
+globs: packages/ui-features/**/ui/**/*.{ts,tsx},packages/portal-sdk/**/*.{ts,tsx}
 alwaysApply: false
 ---
 

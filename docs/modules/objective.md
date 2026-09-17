@@ -81,7 +81,7 @@ metric_auto          可自动统计
 | `objective.delete`           | 软删（含子树）                                             |
 | `objective.link` / `unlink`  | 增删导航 `links`                                           |
 
-实现：`packages/features/objective/`；UI：`packages/frontend/features/objective/`。
+实现：`packages/features/objective/`；UI：`packages/ui-features/objective/`。
 
 ## 非目标（v1）
 

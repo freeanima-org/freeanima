@@ -18,7 +18,7 @@ import { createDirImportPlugin } from "bun-plugin-dir-import";
 const ROOT = join(import.meta.dir, "..");
 const MIGRATIONS_DIR = join(ROOT, "packages/core/migrations");
 const DOCS_DIR = join(ROOT, "docs");
-const WEB_DIST_DIR = join(ROOT, "packages/frontend/portal/app/web/dist");
+const WEB_DIST_DIR = join(ROOT, "packages/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 
 function listMigrationDirsFromDisk(): string[] {

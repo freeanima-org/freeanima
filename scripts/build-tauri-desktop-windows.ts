@@ -14,7 +14,7 @@ import { resolveTauriRustBuildEnv } from "./tauri-rust-build-env.ts";
 
 const TARGET = "x86_64-pc-windows-msvc";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "packages/frontend/portal/app/tauri");
+const tauriDir = join(root, "packages/portal/app/tauri");
 const nsisOut = join(tauriDir, "src-tauri/target", TARGET, "release/bundle/nsis");
 
 function which(cmd: string): boolean {

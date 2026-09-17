@@ -1,6 +1,6 @@
 import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 import { toSelfBlockView } from "@freeanima/capabilities/self";
-import type { SelfBlockDisplay } from "@freeanima/features/habitat/protocol/habitat-contract/self-block-display.ts";
+import type { SelfBlockDisplay } from "@freeanima/shared/habitat-contract/self-block-display.ts";
 import type { RuntimeDeps } from "./runtime-deps.ts";
 import { listSelfBlocks as listPgSelfBlocks } from "@freeanima/core/db/pg/self-layer";
 

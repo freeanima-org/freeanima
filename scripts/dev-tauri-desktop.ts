@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "packages/frontend/portal/app/tauri");
+const tauriDir = join(root, "packages/portal/app/tauri");
 
 process.env.COMPANION_OVERLAY_URL ??= "http://127.0.0.1:4176/?view=overlay";
 process.env.CODING_WINDOW_URL ??= "http://127.0.0.1:4186/";
@@ -27,7 +27,7 @@ const companion = spawn("bun", ["packages/features/companion/dev.ts"], {
 
 const coding = spawn(
   "bun",
-  ["x", "vite", "--config", "packages/frontend/features/coding/vite.config.ts"],
+  ["x", "vite", "--config", "packages/ui-features/coding/vite.config.ts"],
   {
     cwd: root,
     stdio: "inherit",
@@ -37,7 +37,7 @@ const coding = spawn(
 
 const pomodoroFloat = spawn(
   "bun",
-  ["x", "vite", "--config", "packages/frontend/features/pomodoro/vite.float.config.ts"],
+  ["x", "vite", "--config", "packages/ui-features/pomodoro/vite.float.config.ts"],
   {
     cwd: root,
     stdio: "inherit",

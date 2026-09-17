@@ -33,5 +33,5 @@ title: 书签
 ## 相关
 
 - [`portal.md`](portal.md) 浏览器形态
-- 扩展：`packages/frontend/portal/extension/features/bookmarks/`
-- Feature：`packages/features/bookmark/` + `packages/frontend/features/bookmark/`
+- 扩展：`packages/portal/extension/features/bookmarks/`
+- Feature：`packages/features/bookmark/` + `packages/ui-features/bookmark/`

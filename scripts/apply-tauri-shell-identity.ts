@@ -21,7 +21,7 @@ import {
 import { asRecord } from "@freeanima/shared/util";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const srcTauriDefault = join(root, "packages/frontend/portal/app/tauri/src-tauri");
+const srcTauriDefault = join(root, "packages/portal/app/tauri/src-tauri");
 
 export const TAURI_IDENTITY_OVERLAY_NAME = "tauri.conf.identity.generated.json";
 
