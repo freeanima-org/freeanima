@@ -1,20 +1,19 @@
-import type { Logger } from "@freeanima/habitat/kernel/logging";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { createLogger, type Logger } from "@freeanima/habitat/kernel/logging";
+import { createNullSink } from "@freeanima/habitat/kernel/logging/sinks/null.ts";
 
-import { fallbackRuntimeLogger, mountRuntimeLoggerService } from "./runtime-logger-service.ts";
+let runtimeLogger: Logger | null = null;
+
+const fallbackLogger = createLogger({ level: "error", sinks: [createNullSink()] });
 
 /** Composition root: register process logger (same instance as Engine.logger) */
 export function registerRuntimeLogger(logger: Logger): void {
-  mountRuntimeLoggerService(ensureProcessContext()).setLogger(logger);
+  runtimeLogger = logger;
 }
 
 export function getRuntimeLogger(): Logger {
-  return getProcessContext()?.runtimeLogger?.getLogger() ?? fallbackRuntimeLogger;
+  return runtimeLogger ?? fallbackLogger;
 }
 
 export function resetRuntimeLoggerForTest(): void {
-  getProcessContext()?.runtimeLogger?.reset();
+  runtimeLogger = null;
 }
