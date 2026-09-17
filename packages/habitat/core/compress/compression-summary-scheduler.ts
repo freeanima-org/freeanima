@@ -6,7 +6,13 @@ import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
 import type { CompressionState } from "@freeanima/habitat/core/db/domain";
 import { getRuntimeLogger } from "@freeanima/habitat/core/config";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
 import { generateConversationSummary } from "./compression-summary.ts";
+import { mountCompressionSummaryPostCutService } from "./compression-summary-post-cut-service.ts";
 
 export type CompressionSummaryPostCut = (conversationId: string) => Promise<void>;
 
@@ -17,14 +23,16 @@ export type CompressionSummaryJobResult = {
   runId?: string;
 };
 
-let postCutRebuild: CompressionSummaryPostCut | null = null;
+function postCutRebuild(): CompressionSummaryPostCut | null {
+  return getProcessContext()?.compressionSummaryPostCut?.get() ?? null;
+}
 
 export function registerCompressionSummaryPostCut(fn: CompressionSummaryPostCut): void {
-  postCutRebuild = fn;
+  mountCompressionSummaryPostCutService(ensureProcessContext()).bind(fn);
 }
 
 export function resetCompressionSummaryPostCutForTests(): void {
-  postCutRebuild = null;
+  getProcessContext()?.compressionSummaryPostCut?.reset();
 }
 
 const pendingCompressionSummaries = new Map<string, Promise<CompressionSummaryJobResult>>();
@@ -132,9 +140,10 @@ async function finalizeCompressionSummary(
   }
 
   await patchConversationCompression(conversationId, merged);
-  if (postCutRebuild) {
+  const rebuildPostCut = postCutRebuild();
+  if (rebuildPostCut) {
     try {
-      await postCutRebuild(conversationId);
+      await rebuildPostCut(conversationId);
     } catch (e) {
       getRuntimeLogger()
         .with({ component: "compression" })
