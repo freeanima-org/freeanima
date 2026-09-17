@@ -135,6 +135,16 @@ export function dropIsolatedTestDb(fileSlug: string): void {
 
 async function prepareTemplateDb(baseUrl: string): Promise<void> {
   assertNotDailyPgUrl(baseUrl);
+  // 复用 preset PG 时，上次遗留的模板库不能直接 DROP（cannot drop a template database），
+  // 先解除 template / 连接限制；库不存在时忽略失败。
+  try {
+    execSync(
+      `psql "${baseUrl}" -v ON_ERROR_STOP=1 -c "ALTER DATABASE ${TEMPLATE_DB} IS_TEMPLATE false" -c "ALTER DATABASE ${TEMPLATE_DB} ALLOW_CONNECTIONS true"`,
+      { stdio: "ignore" },
+    );
+  } catch {
+    // template 库不存在，继续走 CREATE
+  }
   execSync(
     `psql "${baseUrl}" -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS ${TEMPLATE_DB} WITH (FORCE)"`,
     { stdio: "ignore" },
