@@ -1,4 +1,13 @@
 import type { Logger } from "@freeanima/habitat/kernel/logging";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
+import {
+  mountCapabilityInjectionService,
+  type CapabilityInjectionService,
+} from "./capability-injection-service.ts";
 import { getRuntimeLogger } from "./runtime-logger.ts";
 import { readAppVersion } from "./version.ts";
 
@@ -14,18 +23,25 @@ export type CapabilityInjection = {
   readAppVersion?: (repoRoot?: string) => string;
 };
 
-let injection: CapabilityInjection = {};
+function capabilityInjectionService(): CapabilityInjectionService {
+  return mountCapabilityInjectionService(ensureProcessContext());
+}
+
+function capabilityInjection(): CapabilityInjection {
+  return getProcessContext()?.capabilityInjection?.get() ?? {};
+}
 
 /** Composition root wires platform config helpers for capabilities packages */
 export function registerCapabilityInjection(next: CapabilityInjection): void {
-  injection = { ...injection, ...next };
+  capabilityInjectionService().register(next);
 }
 
 export function resetCapabilityInjectionForTest(): void {
-  injection = {};
+  getProcessContext()?.capabilityInjection?.reset();
 }
 
 export async function vaultForCapability(itemId: number, field: string): Promise<string> {
+  const injection = capabilityInjection();
   if (!injection.vault) {
     throw new Error("vault not registered; call registerCapabilityInjection at composition root");
   }
@@ -33,6 +49,7 @@ export async function vaultForCapability(itemId: number, field: string): Promise
 }
 
 export function readAppVersionForCapability(repoRoot?: string): string {
+  const injection = capabilityInjection();
   if (injection.readAppVersion) {
     return injection.readAppVersion(repoRoot);
   }
