@@ -7,7 +7,7 @@ import {
 } from "./default-conversation-toolsets.ts";
 import { applyConversationToolPolicyFilter } from "./policy-port.ts";
 import { mountToolPolicyService } from "./policy-service.ts";
-import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import { ToolSetRegistry } from "./toolset.ts";
 
 function stubTool(name: string) {
@@ -45,7 +45,7 @@ describe("filterToolSetsByAllowedTools", () => {
 
 describe("resolveDefaultConversationToolSetsForMeta", () => {
   afterEach(() => {
-    mountToolPolicyService(ensureProcessContext(), (names) => names);
+    mountToolPolicyService(ensureRootContext(), (names) => names);
   });
 
   it("returns only default toolsets present in registry", () => {
@@ -62,7 +62,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
   });
 
   it("applies conversation tool policy filter when registered", () => {
-    mountToolPolicyService(ensureProcessContext(), (names) =>
+    mountToolPolicyService(ensureRootContext(), (names) =>
       names.filter((n) => n.startsWith("memory_")),
     );
     const registry = new ToolSetRegistry();

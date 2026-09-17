@@ -1,5 +1,7 @@
 import type { CronJob } from "@freeanima/habitat/capabilities/connectors/cron/models";
 
+import { platformPorts } from "./service.ts";
+
 export type CronNotifyPayload = {
   jobName: string;
   success: boolean;
@@ -17,19 +19,19 @@ export function shouldNotifyCronJobResult(
   return !success || job.notify_on_success;
 }
 
-let notifyImpl: CronNotifyFn | null = null;
-
+/** Composition root binds the implementation onto `ctx.platformPorts`. */
 export function registerCronNotify(fn: CronNotifyFn): void {
-  notifyImpl = fn;
+  platformPorts().cronNotify = fn;
 }
 
 export function unregisterCronNotify(): void {
-  notifyImpl = null;
+  platformPorts().cronNotify = null;
 }
 
 export async function notifyCronResult(job: CronJob, payload: CronNotifyPayload): Promise<void> {
-  if (!notifyImpl) return;
-  await notifyImpl(job, payload);
+  const fn = platformPorts().cronNotify;
+  if (!fn) return;
+  await fn(job, payload);
 }
 
 export function formatCronNotificationText(
@@ -52,7 +54,7 @@ export function formatCronNotificationText(
   };
 }
 
-/** 进程内 builtin（无 cron_log）失败 → Inbox；由 platform bind 到 notifyBothRecipients */
+/** 进程内 builtin（无 cron_log）失败 → Inbox；由 composition root 绑定 */
 export type InprocessBuiltinFailurePayload = {
   id: string;
   name: string;
@@ -64,21 +66,20 @@ export type InprocessBuiltinFailureNotifyFn = (
   payload: InprocessBuiltinFailurePayload,
 ) => Promise<void>;
 
-let inprocessFailureNotify: InprocessBuiltinFailureNotifyFn | null = null;
-
 export function registerInprocessBuiltinFailureNotify(fn: InprocessBuiltinFailureNotifyFn): void {
-  inprocessFailureNotify = fn;
+  platformPorts().inprocessFailureNotify = fn;
 }
 
 export function unregisterInprocessBuiltinFailureNotify(): void {
-  inprocessFailureNotify = null;
+  platformPorts().inprocessFailureNotify = null;
 }
 
 export async function notifyInprocessBuiltinFailure(
   payload: InprocessBuiltinFailurePayload,
 ): Promise<void> {
-  if (!inprocessFailureNotify) return;
-  await inprocessFailureNotify(payload);
+  const fn = platformPorts().inprocessFailureNotify;
+  if (!fn) return;
+  await fn(payload);
 }
 
 export function formatInprocessBuiltinFailureText(payload: InprocessBuiltinFailurePayload): {

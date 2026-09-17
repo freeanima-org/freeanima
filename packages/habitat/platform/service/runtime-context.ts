@@ -1,7 +1,8 @@
-import { registerAppRuntime } from "@freeanima/habitat/platform/ports/app-runtime-context";
+import { getRootContextOrNull } from "@freeanima/kernel";
 
 import {
   mountRuntimeService,
+  RuntimeService,
   type RuntimeContext,
   type ServiceAppRuntime,
 } from "./runtime-service.ts";
@@ -9,30 +10,35 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type { RuntimeContext, ServiceAppRuntime } from "./runtime-service.ts";
 
-const GLOBAL_KEY = Symbol.for("@freeanima/runtime-context");
-
-type GlobalStore = typeof globalThis & { [GLOBAL_KEY]?: RuntimeContext };
-
-let moduleCtx: RuntimeContext | undefined;
-
+/**
+ * Runtime context handle.
+ *
+ * The Cordis `appRuntime` service is the single source of truth (mounted by
+ * {@link initRuntimeContext}); the previous module + process-global duality
+ * (a `Symbol.for` registry mirror) is gone.
+ */
 export function initRuntimeContext(runtime: ServiceAppRuntime): void {
   const ctx: RuntimeContext = {
     deps: runtime.fullDeps(),
     app: runtime,
     kernel: runtime.kernel,
   };
-  moduleCtx = ctx;
-  (globalThis as GlobalStore)[GLOBAL_KEY] = ctx;
   mountRuntimeService(runtime.kernel.ctx, ctx);
-  registerAppRuntime(runtime);
+}
+
+function runtimeService(): RuntimeService | null {
+  const ctx = getRootContextOrNull();
+  if (!ctx) return null;
+  const service: unknown = ctx.reflect.get("appRuntime", false);
+  return service instanceof RuntimeService ? service : null;
 }
 
 export function getRuntimeContext(): RuntimeContext {
-  const ctx = moduleCtx ?? (globalThis as GlobalStore)[GLOBAL_KEY];
-  if (!ctx) {
+  const service = runtimeService();
+  if (!service) {
     throw new Error("RuntimeContext not initialized; call serve() first");
   }
-  return ctx;
+  return { deps: service.deps, app: service.app, kernel: service.kernel };
 }
 
 export function getAppRuntime(): ServiceAppRuntime {
@@ -44,5 +50,5 @@ export function getRuntimeDeps(): FullRuntimeDeps {
 }
 
 export function isRuntimeContextReady(): boolean {
-  return moduleCtx !== undefined || (globalThis as GlobalStore)[GLOBAL_KEY] !== undefined;
+  return runtimeService() !== null;
 }

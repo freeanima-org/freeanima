@@ -1,10 +1,7 @@
 import { getVaultItem } from "@freeanima/features/vault/domain/item-store";
 import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 import {
   vaultResolveSecretUserInputSchema,
   vaultResolveSecretUserOutputSchema,
@@ -16,7 +13,7 @@ import {
 } from "./shell-send-request-service.ts";
 
 export function bindVaultShellSendRequest(fn: ShellSendRequest | null): void {
-  mountVaultShellSendRequestService(ensureProcessContext()).bind(fn);
+  mountVaultShellSendRequestService(ensureRootContext()).bind(fn);
 }
 
 export async function resolveUserVaultSecret(input: {
@@ -25,7 +22,7 @@ export async function resolveUserVaultSecret(input: {
   conversation_id?: string;
   world_id?: number;
 }): Promise<string> {
-  const shellSendRequest = getProcessContext()?.vaultShellSendRequest?.get() ?? null;
+  const shellSendRequest = getRootContextOrNull()?.vaultShellSendRequest?.get() ?? null;
   if (!shellSendRequest) {
     throw new Error("VAULT_SHELL_OFFLINE");
   }

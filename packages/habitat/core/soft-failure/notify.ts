@@ -1,8 +1,5 @@
 import { CST_OFFSET_MS } from "@freeanima/habitat/core/util";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountSoftFailureService } from "./service.ts";
 
@@ -29,11 +26,11 @@ export type SoftFailureNotifyFn = (
 
 /** Bind the delivery impl onto `ctx.softFailure` (mounting the service if needed). */
 export function registerSoftFailureNotify(fn: SoftFailureNotifyFn): void {
-  mountSoftFailureService(ensureProcessContext(), fn);
+  mountSoftFailureService(ensureRootContext(), fn);
 }
 
 export function unregisterSoftFailureNotify(): void {
-  getProcessContext()?.softFailure?.setNotify(null);
+  getRootContextOrNull()?.softFailure?.setNotify(null);
 }
 
 /** CST calendar date YYYY-MM-DD for instant (same calendar as temporal-summary buckets). */
@@ -57,7 +54,7 @@ export function cstDaySourceRef(prefix: string, nowMs: number = Date.now()): str
 export async function notifySoftFailure(
   input: SoftFailureNotifyInput,
 ): Promise<SoftFailureNotifyResult> {
-  const service = getProcessContext()?.softFailure;
+  const service = getRootContextOrNull()?.softFailure;
   if (!service) return "skipped";
   try {
     return await service.deliver(input);

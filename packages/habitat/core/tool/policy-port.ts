@@ -1,5 +1,5 @@
 import type { ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
-import { getProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { getRootContextOrNull } from "@freeanima/kernel";
 
 /**
  * 对话级工具策略过滤器。
@@ -15,7 +15,7 @@ export function applyConversationToolPolicyFilter(
   toolNames: string[],
   meta: ConversationMetaMessage,
 ): string[] {
-  const service = getProcessContext()?.toolPolicy;
+  const service = getRootContextOrNull()?.toolPolicy;
   if (!service) return toolNames;
   return service.apply(toolNames, meta);
 }

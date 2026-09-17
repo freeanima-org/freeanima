@@ -1,8 +1,5 @@
 import type { Logger } from "@freeanima/kernel/logging";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import {
   mountCapabilityInjectionService,
@@ -24,11 +21,11 @@ export type CapabilityInjection = {
 };
 
 function capabilityInjectionService(): CapabilityInjectionService {
-  return mountCapabilityInjectionService(ensureProcessContext());
+  return mountCapabilityInjectionService(ensureRootContext());
 }
 
 function capabilityInjection(): CapabilityInjection {
-  return getProcessContext()?.capabilityInjection?.get() ?? {};
+  return getRootContextOrNull()?.capabilityInjection?.get() ?? {};
 }
 
 /** Composition root wires platform config helpers for capabilities packages */
@@ -37,7 +34,7 @@ export function registerCapabilityInjection(next: CapabilityInjection): void {
 }
 
 export function resetCapabilityInjectionForTest(): void {
-  getProcessContext()?.capabilityInjection?.reset();
+  getRootContextOrNull()?.capabilityInjection?.reset();
 }
 
 export async function vaultForCapability(itemId: number, field: string): Promise<string> {

@@ -7,26 +7,28 @@ import {
   patchRuntimeConfigSection,
 } from "@freeanima/habitat/platform/config";
 
+import { platformPorts } from "./service.ts";
+
 export type HomeChannel = {
   chat_id: string;
   thread_id?: string;
 };
 
-let homeChannelConfig: Config | null = null;
-
+/** Composition root binds the runtime config onto `ctx.platformPorts`. */
 export function bindHomeChannelConfig(config: Config): void {
-  homeChannelConfig = config;
+  platformPorts().homeChannelConfig = config;
 }
 
 export function resetHomeChannelConfigForTest(): void {
-  homeChannelConfig = null;
+  platformPorts().homeChannelConfig = null;
 }
 
 function requireHomeChannelConfig(): Config {
-  if (!homeChannelConfig) {
+  const config = platformPorts().homeChannelConfig;
+  if (!config) {
     throw new Error("Home channel config not bound; call bindHomeChannelConfig first");
   }
-  return homeChannelConfig;
+  return config;
 }
 
 export function getHomeChannel(platform: string): HomeChannel | null {

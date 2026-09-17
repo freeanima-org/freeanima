@@ -1,3 +1,5 @@
+import { platformPorts } from "./service.ts";
+
 export type CronEngineJobInput = {
   id?: string;
   name?: string;
@@ -11,19 +13,19 @@ export type CronEngineJobInput = {
 
 export type RunCronEngineTurnFn = (job: CronEngineJobInput, prompt: string) => Promise<string>;
 
-let runCronEngineTurnImpl: RunCronEngineTurnFn | null = null;
-
+/** Composition root binds the implementation onto `ctx.platformPorts`. */
 export function registerCronUseCases(port: { runCronEngineTurn: RunCronEngineTurnFn }): void {
-  runCronEngineTurnImpl = port.runCronEngineTurn;
+  platformPorts().runCronEngineTurn = port.runCronEngineTurn;
 }
 
 export function unregisterCronUseCases(): void {
-  runCronEngineTurnImpl = null;
+  platformPorts().runCronEngineTurn = null;
 }
 
 export async function runCronEngineTurn(job: CronEngineJobInput, prompt: string): Promise<string> {
-  if (!runCronEngineTurnImpl) {
-    throw new Error("runCronEngineTurn not registered: load @freeanima/platform first");
+  const fn = platformPorts().runCronEngineTurn;
+  if (!fn) {
+    throw new Error("runCronEngineTurn not registered: load @freeanima/habitat/platform first");
   }
-  return runCronEngineTurnImpl(job, prompt);
+  return fn(job, prompt);
 }

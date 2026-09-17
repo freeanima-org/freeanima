@@ -1,3 +1,5 @@
+import { platformPorts } from "./service.ts";
+
 export type RunSimpleTurnOpts = {
   conversationId: string;
   prompt: string;
@@ -6,20 +8,20 @@ export type RunSimpleTurnOpts = {
 
 export type RunSimpleTurnFn = (opts: RunSimpleTurnOpts) => Promise<string>;
 
-let runSimpleTurnImpl: RunSimpleTurnFn | null = null;
-
+/** Composition root binds the implementation onto `ctx.platformPorts`. */
 export function registerRunSimpleTurn(fn: RunSimpleTurnFn): void {
-  runSimpleTurnImpl = fn;
+  platformPorts().runSimpleTurn = fn;
 }
 
 export function unregisterRunSimpleTurn(): void {
-  runSimpleTurnImpl = null;
+  platformPorts().runSimpleTurn = null;
 }
 
-/** Non-streaming full turn for cron / scripts; implementation registered by @freeanima/platform at startup */
+/** Non-streaming full turn for cron / scripts; bound by the server composition root */
 export async function runSimpleTurn(opts: RunSimpleTurnOpts): Promise<string> {
-  if (!runSimpleTurnImpl) {
-    throw new Error("runSimpleTurn not registered: load @freeanima/platform first");
+  const fn = platformPorts().runSimpleTurn;
+  if (!fn) {
+    throw new Error("runSimpleTurn not registered: load @freeanima/habitat/platform first");
   }
-  return runSimpleTurnImpl(opts);
+  return fn(opts);
 }

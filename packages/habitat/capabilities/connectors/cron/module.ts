@@ -7,10 +7,7 @@ import {
   updateCronJob,
 } from "@freeanima/habitat/core/db/pg/cron";
 import { logComponent } from "@freeanima/habitat/platform/logging";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountCronHandleService, type CronHandleService } from "./cron-handle-service.ts";
 import { CronHandleManager } from "./handle-manager.ts";
@@ -23,17 +20,17 @@ import { CronJob } from "./models.ts";
 import { runJobById } from "./runner.ts";
 
 function cronHandleService(): CronHandleService {
-  return mountCronHandleService(ensureProcessContext());
+  return mountCronHandleService(ensureRootContext());
 }
 
 export function getCronHandleManager(): CronHandleManager {
-  const handles = getProcessContext()?.cronHandleManager?.get() ?? null;
+  const handles = getRootContextOrNull()?.cronHandleManager?.get() ?? null;
   if (!handles) throw new Error("Cron module not initialized");
   return handles;
 }
 
 export function isCronModuleInitialized(): boolean {
-  return getProcessContext()?.cronHandleManager?.get() != null;
+  return getRootContextOrNull()?.cronHandleManager?.get() != null;
 }
 
 export async function initCronModule(): Promise<void> {
@@ -59,7 +56,7 @@ export function stopCronModule(): void {
     m.stopTaskReminderScheduler();
   });
   stopInprocessBuiltins();
-  const service = getProcessContext()?.cronHandleManager;
+  const service = getRootContextOrNull()?.cronHandleManager;
   service?.get()?.stopAll();
   service?.reset();
 }
@@ -76,7 +73,7 @@ export {
 } from "./inprocess-builtins.ts";
 
 export async function loadAllJobs(): Promise<CronJob[]> {
-  if (!getProcessContext()?.cronHandleManager?.get()) return [];
+  if (!getRootContextOrNull()?.cronHandleManager?.get()) return [];
   const rows = await listAllCronJobs();
   return rows.map((row: CronJobRow) => CronJob.fromRow(row));
 }

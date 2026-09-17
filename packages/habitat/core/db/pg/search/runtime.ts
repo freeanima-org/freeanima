@@ -1,17 +1,14 @@
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountSearchBackendService } from "./runtime-service.ts";
 import type { SearchBackend } from "./types.ts";
 
 export function registerSearchBackend(next: SearchBackend | null): void {
-  mountSearchBackendService(ensureProcessContext()).set(next);
+  mountSearchBackendService(ensureRootContext()).set(next);
 }
 
 export function getSearchBackend(): SearchBackend {
-  const service = getProcessContext()?.searchBackend;
+  const service = getRootContextOrNull()?.searchBackend;
   if (!service) {
     throw new Error("SearchBackend is not registered (bindSearchRuntime not called)");
   }
@@ -19,10 +16,10 @@ export function getSearchBackend(): SearchBackend {
 }
 
 export function tryGetSearchBackend(): SearchBackend | null {
-  return getProcessContext()?.searchBackend?.tryGet() ?? null;
+  return getRootContextOrNull()?.searchBackend?.tryGet() ?? null;
 }
 
 /** Test teardown */
 export function resetSearchBackendForTest(): void {
-  getProcessContext()?.searchBackend?.reset();
+  getRootContextOrNull()?.searchBackend?.reset();
 }

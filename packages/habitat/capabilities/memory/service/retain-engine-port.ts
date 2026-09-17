@@ -1,7 +1,4 @@
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountRetainEngineService } from "./retain-engine-service.ts";
 
@@ -31,15 +28,15 @@ export type RetainEngineResult = {
 export type RetainEngineFn = (input: RetainEngineInput) => Promise<RetainEngineResult>;
 
 export function registerRetainEngine(fn: RetainEngineFn): void {
-  mountRetainEngineService(ensureProcessContext()).register(fn);
+  mountRetainEngineService(ensureRootContext()).register(fn);
 }
 
 export function resetRetainEngineForTests(): void {
-  getProcessContext()?.retainEngine?.reset();
+  getRootContextOrNull()?.retainEngine?.reset();
 }
 
 export function tryGetRetainEngine(): RetainEngineFn | null {
-  return getProcessContext()?.retainEngine?.get() ?? null;
+  return getRootContextOrNull()?.retainEngine?.get() ?? null;
 }
 
 export async function runRetainEngine(input: RetainEngineInput): Promise<RetainEngineResult> {

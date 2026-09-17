@@ -1,7 +1,4 @@
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountEmbeddingRuntimeService } from "./runtime-service.ts";
 import type { AfterEmbeddingStoredFn } from "./runtime-service.ts";
@@ -10,38 +7,38 @@ import type { EmbedTextFn, EmbedTextsFn } from "./types.ts";
 export type { AfterEmbeddingStoredFn };
 
 export function registerEmbedTextFn(fn: EmbedTextFn | null): void {
-  mountEmbeddingRuntimeService(ensureProcessContext()).setEmbedTextFn(fn);
+  mountEmbeddingRuntimeService(ensureRootContext()).setEmbedTextFn(fn);
 }
 
 export function getEmbedTextFn(): EmbedTextFn | null {
-  return getProcessContext()?.embeddingRuntime?.getEmbedTextFn() ?? null;
+  return getRootContextOrNull()?.embeddingRuntime?.getEmbedTextFn() ?? null;
 }
 
 export function registerEmbedTextsFn(fn: EmbedTextsFn | null): void {
-  mountEmbeddingRuntimeService(ensureProcessContext()).setEmbedTextsFn(fn);
+  mountEmbeddingRuntimeService(ensureRootContext()).setEmbedTextsFn(fn);
 }
 
 export function getEmbedTextsFn(): EmbedTextsFn | null {
-  return getProcessContext()?.embeddingRuntime?.getEmbedTextsFn() ?? null;
+  return getRootContextOrNull()?.embeddingRuntime?.getEmbedTextsFn() ?? null;
 }
 
 export function registerAfterEmbeddingStored(fn: AfterEmbeddingStoredFn | null): void {
-  mountEmbeddingRuntimeService(ensureProcessContext()).setAfterEmbeddingStored(fn);
+  mountEmbeddingRuntimeService(ensureRootContext()).setAfterEmbeddingStored(fn);
 }
 
 export function getAfterEmbeddingStored(): AfterEmbeddingStoredFn | null {
-  return getProcessContext()?.embeddingRuntime?.getAfterEmbeddingStored() ?? null;
+  return getRootContextOrNull()?.embeddingRuntime?.getAfterEmbeddingStored() ?? null;
 }
 
 /** Test teardown */
 export function resetEmbedTextFnForTest(): void {
-  getProcessContext()?.embeddingRuntime?.setEmbedTextFn(null);
+  getRootContextOrNull()?.embeddingRuntime?.setEmbedTextFn(null);
 }
 
 export function resetEmbedTextsFnForTest(): void {
-  getProcessContext()?.embeddingRuntime?.setEmbedTextsFn(null);
+  getRootContextOrNull()?.embeddingRuntime?.setEmbedTextsFn(null);
 }
 
 export function resetAfterEmbeddingStoredForTest(): void {
-  getProcessContext()?.embeddingRuntime?.setAfterEmbeddingStored(null);
+  getRootContextOrNull()?.embeddingRuntime?.setAfterEmbeddingStored(null);
 }

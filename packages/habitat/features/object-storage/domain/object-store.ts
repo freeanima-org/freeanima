@@ -6,10 +6,7 @@ import type { S3Client } from "bun";
 
 import type { ObjectStorageConfigInput } from "@freeanima/habitat/core/config";
 import { homePath } from "@freeanima/habitat/core/config/paths";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountObjectStoreService } from "./object-store-service.ts";
 
@@ -242,11 +239,11 @@ export function createObjectStore(cfg: ObjectStorageConfigInput = {}): ObjectSto
 }
 
 export function bindObjectStore(store: ObjectStore): void {
-  mountObjectStoreService(ensureProcessContext()).bind(store);
+  mountObjectStoreService(ensureRootContext()).bind(store);
 }
 
 export function getObjectStore(): ObjectStore {
-  const service = mountObjectStoreService(ensureProcessContext());
+  const service = mountObjectStoreService(ensureRootContext());
   const existing = service.get();
   if (existing) return existing;
   const created = createObjectStore({});
@@ -255,7 +252,7 @@ export function getObjectStore(): ObjectStore {
 }
 
 export function resetObjectStoreForTest(): void {
-  getProcessContext()?.objectStore?.reset();
+  getRootContextOrNull()?.objectStore?.reset();
 }
 
 export { NOT_CONFIGURED as OBJECT_STORAGE_NOT_CONFIGURED };

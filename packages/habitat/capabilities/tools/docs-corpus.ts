@@ -3,10 +3,7 @@ import { basename, join } from "node:path";
 import { Glob } from "bun";
 
 import { getRepoRoot } from "@freeanima/habitat/core/config/repo-root";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountDocsCorpusService, type DocsCorpusService } from "./docs-corpus-service.ts";
 import { getRegisteredEmbeddedDocs, type EmbeddedDocsFile } from "./docs-embedded.ts";
@@ -37,7 +34,7 @@ const DEFAULT_SEARCH_LIMIT = 20;
 const SNIPPET_RADIUS = 80;
 
 function docsCorpusService(): DocsCorpusService {
-  return mountDocsCorpusService(ensureProcessContext());
+  return mountDocsCorpusService(ensureRootContext());
 }
 
 /** 测试注入内存 corpus；传 null 清除 */
@@ -46,7 +43,7 @@ export function setDocsCorpusForTest(corpus: DocsCorpus | null): void {
 }
 
 export function resetDocsCorpusCacheForTest(): void {
-  getProcessContext()?.docsCorpus?.setCached(null);
+  getRootContextOrNull()?.docsCorpus?.setCached(null);
 }
 
 /** 从 Markdown 解析展示标题：frontmatter title → 首个 # 标题 → 文件名 */

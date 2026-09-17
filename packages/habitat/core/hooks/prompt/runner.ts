@@ -1,4 +1,4 @@
-import { getProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { getRootContextOrNull } from "@freeanima/kernel";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
 import type { SystemPromptBuildContext } from "./hooks.ts";
@@ -15,7 +15,7 @@ export async function buildSystemPrompt(
   cwd?: string | null,
   meta?: SystemPromptBuildContext["meta"],
 ): Promise<string> {
-  const ctx = getProcessContext();
+  const ctx = getRootContextOrNull();
   if (!ctx) {
     throw new Error("Process context not initialized: cannot build system prompt before serve()");
   }

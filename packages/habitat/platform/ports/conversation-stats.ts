@@ -1,3 +1,5 @@
+import { platformPorts } from "./service.ts";
+
 export type StatsReportOpts = {
   allConversations?: boolean;
 };
@@ -7,22 +9,22 @@ export type StatsReportFn = (
   opts?: StatsReportOpts,
 ) => Promise<string>;
 
-let statsReportImpl: StatsReportFn | null = null;
-
+/** Composition root binds the implementation onto `ctx.platformPorts`. */
 export function registerStatsReport(fn: StatsReportFn): void {
-  statsReportImpl = fn;
+  platformPorts().statsReport = fn;
 }
 
 export function unregisterStatsReport(): void {
-  statsReportImpl = null;
+  platformPorts().statsReport = null;
 }
 
 export async function statsReport(
   conversationId?: string | null,
   opts?: StatsReportOpts,
 ): Promise<string> {
-  if (!statsReportImpl) {
-    throw new Error("statsReport not registered: load @freeanima/platform first");
+  const fn = platformPorts().statsReport;
+  if (!fn) {
+    throw new Error("statsReport not registered: load @freeanima/habitat/platform first");
   }
-  return statsReportImpl(conversationId, opts);
+  return fn(conversationId, opts);
 }

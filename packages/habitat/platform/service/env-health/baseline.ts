@@ -9,7 +9,7 @@ import {
 } from "@freeanima/habitat/core/redis";
 import type { EnvHealthMarkers } from "./types.ts";
 import { asRecord } from "@freeanima/shared/util";
-import { ensureProcessContext } from "../process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import { mountEnvHealthBaselineStoreService } from "./baseline-store-service.ts";
 
 export const ENV_HEALTH_BASELINE_FILENAME = "env-health-baseline.json";
@@ -126,7 +126,7 @@ export function resetBaselineMemoryCacheForTests(): void {
 }
 
 export function getBaselineStore(): EnvHealthBaselineStore {
-  const service = mountEnvHealthBaselineStoreService(ensureProcessContext());
+  const service = mountEnvHealthBaselineStoreService(ensureRootContext());
   const existing = service.get();
   if (existing) return existing;
   const created = createBaselineStore();
@@ -136,6 +136,6 @@ export function getBaselineStore(): EnvHealthBaselineStore {
 
 /** 测试注入 */
 export function setBaselineStoreForTests(store: EnvHealthBaselineStore | null): void {
-  mountEnvHealthBaselineStoreService(ensureProcessContext()).bind(store);
+  mountEnvHealthBaselineStoreService(ensureRootContext()).bind(store);
   memoryCache = undefined;
 }

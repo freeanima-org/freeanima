@@ -10,7 +10,7 @@ import {
 import { REPO_ROOT } from "./service/index.ts";
 import { DEFAULT_BIND_HOST, coalesceBindHosts, parseBindHosts } from "./bind-hosts.ts";
 import { getAppRuntime } from "./service/runtime-context.ts";
-import { ensureProcessContext } from "./service/process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import { runBootPipelineViaLoader } from "./boot/loader.ts";
 import { startAsyncIntegrations } from "./boot/phases.ts";
 import { gracefulShutdown } from "./boot/shutdown.ts";
@@ -85,7 +85,7 @@ export async function serve(
   } = { list: [] };
 
   try {
-    const root = ensureProcessContext();
+    const root = ensureRootContext();
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };
 

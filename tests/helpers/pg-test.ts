@@ -16,7 +16,7 @@ import {
   resetLlmRuntimeForTests,
 } from "@freeanima/habitat/core/llm";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
-import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import {
   createConversationService,
   type ConversationService,
@@ -56,7 +56,7 @@ async function ensureIntegrationWorldContext(config: Config): Promise<void> {
 }
 
 function createTestEngine(config: Config): Engine {
-  mountLlmStackService(ensureProcessContext(), bindLlmStack);
+  mountLlmStackService(ensureRootContext(), bindLlmStack);
   const llm = initLlmRuntime(config.data);
   return createEngine({ llm, config, logger: createTestLogger() });
 }

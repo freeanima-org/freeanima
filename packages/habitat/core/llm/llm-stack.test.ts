@@ -3,7 +3,7 @@ import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import { createLlmRuntime } from "./llm-stack.ts";
 import { mountLlmStackService } from "./llm-stack-service.ts";
 import { getLlmRuntime, initLlmRuntime, resetLlmRuntimeForTests } from "./llm-stack-runtime.ts";
-import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
 import { minimalChatRuntime } from "@freeanima/habitat/core/config/test-helpers/minimal-llm-config";
 
@@ -12,7 +12,7 @@ const testCfg = {
 } as RuntimeConfig;
 
 beforeAll(() => {
-  mountLlmStackService(ensureProcessContext(), bindLlmStack);
+  mountLlmStackService(ensureRootContext(), bindLlmStack);
 });
 
 describe("createLlmRuntime", () => {

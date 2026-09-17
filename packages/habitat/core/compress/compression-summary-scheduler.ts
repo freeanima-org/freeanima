@@ -6,10 +6,7 @@ import { formatCstIso, omitUndefined } from "@freeanima/habitat/core/util";
 import type { CompressionState } from "@freeanima/habitat/core/db/domain";
 import { getRuntimeLogger } from "@freeanima/habitat/core/config";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/habitat/core/soft-failure";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { generateConversationSummary } from "./compression-summary.ts";
 import { mountCompressionSummaryPostCutService } from "./compression-summary-post-cut-service.ts";
@@ -24,15 +21,15 @@ export type CompressionSummaryJobResult = {
 };
 
 function postCutRebuild(): CompressionSummaryPostCut | null {
-  return getProcessContext()?.compressionSummaryPostCut?.get() ?? null;
+  return getRootContextOrNull()?.compressionSummaryPostCut?.get() ?? null;
 }
 
 export function registerCompressionSummaryPostCut(fn: CompressionSummaryPostCut): void {
-  mountCompressionSummaryPostCutService(ensureProcessContext()).bind(fn);
+  mountCompressionSummaryPostCutService(ensureRootContext()).bind(fn);
 }
 
 export function resetCompressionSummaryPostCutForTests(): void {
-  getProcessContext()?.compressionSummaryPostCut?.reset();
+  getRootContextOrNull()?.compressionSummaryPostCut?.reset();
 }
 
 const pendingCompressionSummaries = new Map<string, Promise<CompressionSummaryJobResult>>();

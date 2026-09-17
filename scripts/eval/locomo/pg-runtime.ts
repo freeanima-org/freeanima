@@ -25,7 +25,7 @@ import {
   resetLlmRuntimeForTests,
 } from "@freeanima/habitat/core/llm";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
-import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import { createEngine } from "@freeanima/habitat/engine";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
@@ -162,7 +162,7 @@ export async function beginLocomoPgRuntime(opts: {
   const world = await ensureWorldSubjects(config.data);
   bindResolvedWorldContext(world);
 
-  mountLlmStackService(ensureProcessContext(), bindLlmStack);
+  mountLlmStackService(ensureRootContext(), bindLlmStack);
   const llm = initLlmRuntime(config.data);
   createEngine({ llm, config, logger: createTestLogger() });
 
