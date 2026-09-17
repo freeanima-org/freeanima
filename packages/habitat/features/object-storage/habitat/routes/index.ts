@@ -8,7 +8,7 @@ import {
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { handleObjectStorageFileGet } from "../binary.ts";
-import { objectStorageMethodDefs } from "../method-defs.ts";
+import { objectStorageMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/object-storage.ts";
 
 function depsOf(deps: unknown): RemoteToolsServerDeps {
   return asRouteDeps<RemoteToolsServerDeps>(deps);

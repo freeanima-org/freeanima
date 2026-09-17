@@ -1,3 +1,4 @@
+/** Feature Habitat RPC method defs（契约 SSOT —— 由 features/object-storage/habitat/method-defs.ts 上提）。 */
 import { z } from "zod";
 import { binaryHttpMeta, defineHabitatMethod } from "@freeanima/shared/habitat-contract";
 import { HABITAT_RPC_BINARY_TRANSFER_TIMEOUT_MS } from "@freeanima/shared/habitat-rpc";

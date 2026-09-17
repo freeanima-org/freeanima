@@ -7,7 +7,7 @@ import {
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types";
 
-import { roomMethodDefs } from "../method-defs.ts";
+import { roomMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/room.ts";
 import * as room from "../../domain/room-service.ts";
 import { startRoomAgentTurnStream } from "../stream.ts";
 

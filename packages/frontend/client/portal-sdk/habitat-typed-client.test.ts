@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, test } from "bun:test";
 
 import { isHabitatMethod } from "@freeanima/shared/habitat-contract";
 import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
+
 import {
   ensureClientHabitatMethodRegistry,
   resetClientHabitatMethodRegistryForTests,
-} from "./install-client-method-registry.ts";
+} from "./habitat-typed-client.ts";
 
 describe("ensureClientHabitatMethodRegistry", () => {
   beforeEach(() => {

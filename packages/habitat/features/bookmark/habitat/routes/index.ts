@@ -6,7 +6,7 @@ import {
   asRouteCtx,
 } from "@freeanima/shared/habitat-contract/route.ts";
 
-import { bookmarkMethodDefs } from "../method-defs.ts";
+import { bookmarkMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/bookmark.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 

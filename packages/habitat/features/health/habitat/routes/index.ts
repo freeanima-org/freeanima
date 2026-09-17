@@ -7,7 +7,7 @@ import {
 } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { handleHealthAttachFiles, handleHealthFileUpload } from "../binary.ts";
-import { healthMethodDefs } from "../method-defs.ts";
+import { healthMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/health.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 

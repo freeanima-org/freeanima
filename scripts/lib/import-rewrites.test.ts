@@ -38,6 +38,17 @@ describe("import-rewrites", () => {
     expect(retired).toHaveLength(0);
   });
 
+  test("P1：feature method-defs 上提到契约层", () => {
+    expect(rewriteSpecifier("@freeanima/features/task/habitat/method-defs.ts")).toBe(
+      "@freeanima/shared/rpc-contract/feature-rpc/methods/task.ts",
+    );
+    expect(rewriteSpecifier("@freeanima/features/object-storage/habitat/method-defs.ts")).toBe(
+      "@freeanima/shared/rpc-contract/feature-rpc/methods/object-storage.ts",
+    );
+    expect(rewriteSpecifier("@freeanima/features/task/habitat/routes/index.ts")).toBeNull();
+    expect(retiredBy("@freeanima/features/task/habitat/method-defs.ts")).not.toBeNull();
+  });
+
   test("未覆盖的退役前缀进入 retired 清单", () => {
     const { pending, retired } = rewriteSource('import x from "@freeanima/host/core/db";');
     expect(pending).toHaveLength(0);

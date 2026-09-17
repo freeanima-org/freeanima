@@ -1,3 +1,4 @@
+/** Feature Habitat RPC method defs（契约 SSOT —— 由 features/project/habitat/method-defs.ts 上提）。 */
 import { defineHabitatMethod, dualTransportMeta } from "@freeanima/shared/habitat-contract";
 import {
   projectCreateInputSchema,

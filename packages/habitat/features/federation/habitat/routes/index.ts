@@ -2,7 +2,7 @@ import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { bindHabitatRouteHandlers, asRouteCtx } from "@freeanima/shared/habitat-contract/route.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
-import { federationMethodDefs } from "../method-defs.ts";
+import { federationMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/federation.ts";
 import * as service from "../service.ts";
 
 function ctxAuth(ctx: unknown) {

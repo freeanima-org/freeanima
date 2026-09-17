@@ -7,7 +7,7 @@ import {
   mcpStopServer,
 } from "@freeanima/features/habitat/habitat/habitat-api/handlers/mcp.ts";
 
-import { mcpMethodDefs } from "../method-defs.ts";
+import { mcpMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/mcp.ts";
 
 export const mcpHabitatRoutes = bindHabitatRouteHandlers(mcpMethodDefs, {
   "mcp.status": async () => getMcpStatus(),

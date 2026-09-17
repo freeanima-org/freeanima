@@ -16,61 +16,9 @@ import {
   isHabitatMethodRegistryInstalled,
 } from "@freeanima/shared/habitat-contract/registry/runtime.ts";
 import type { HabitatMethodDef } from "@freeanima/shared/habitat-contract";
+import { FEATURE_METHOD_DEFS } from "@freeanima/shared/rpc-contract/feature-rpc";
 
-import { chatMethodDefs } from "@freeanima/features/chat/habitat/method-defs.ts";
-import { codingMethodDefs } from "@freeanima/features/coding/habitat/method-defs.ts";
-import { companionMethodDefs } from "@freeanima/features/companion/habitat/method-defs.ts";
-import { diaryMethodDefs } from "@freeanima/features/diary/habitat/method-defs.ts";
-import { noteMethodDefs } from "@freeanima/features/note/habitat/method-defs.ts";
-import { calendarMethodDefs } from "@freeanima/features/calendar/habitat/method-defs.ts";
-import { emailMethodDefs } from "@freeanima/features/email/habitat/method-defs.ts";
-import { mcpMethodDefs } from "@freeanima/features/mcp/habitat/method-defs.ts";
-import { notificationMethodDefs } from "@freeanima/features/notification/habitat/method-defs.ts";
-import { objectStorageMethodDefs } from "@freeanima/features/object-storage/habitat/method-defs.ts";
-import { pomodoroMethodDefs } from "@freeanima/features/pomodoro/habitat/method-defs.ts";
-import { shellQuickMethodDefs } from "@freeanima/features/shell-quick/habitat/method-defs.ts";
-import { projectMethodDefs } from "@freeanima/features/project/habitat/method-defs.ts";
-import { objectiveMethodDefs } from "@freeanima/features/objective/habitat/method-defs.ts";
-import { habitMethodDefs } from "@freeanima/features/habit/habitat/method-defs.ts";
-import { tagMethodDefs } from "@freeanima/features/tag/habitat/method-defs.ts";
-import { subagentMethodDefs } from "@freeanima/features/subagent/habitat/method-defs.ts";
-import { entityMethodDefs } from "@freeanima/features/entity/habitat/method-defs.ts";
-import { taskMethodDefs } from "@freeanima/features/task/habitat/method-defs.ts";
-import { vaultMethodDefs } from "@freeanima/features/vault/habitat/method-defs.ts";
-import { bookmarkMethodDefs } from "@freeanima/features/bookmark/habitat/method-defs.ts";
-import { healthMethodDefs } from "@freeanima/features/health/habitat/method-defs.ts";
-import { contactMethodDefs } from "@freeanima/features/contact/habitat/method-defs.ts";
-import { roomMethodDefs } from "@freeanima/features/room/habitat/method-defs.ts";
-import { federationMethodDefs } from "@freeanima/features/federation/habitat/method-defs.ts";
-
-/** 聚合各 feature method-defs（浏览器 client registry；无 handler） */
-export const FEATURE_METHOD_DEFS = {
-  ...chatMethodDefs,
-  ...codingMethodDefs,
-  ...taskMethodDefs,
-  ...projectMethodDefs,
-  ...objectiveMethodDefs,
-  ...habitMethodDefs,
-  ...tagMethodDefs,
-  ...subagentMethodDefs,
-  ...entityMethodDefs,
-  ...vaultMethodDefs,
-  ...bookmarkMethodDefs,
-  ...healthMethodDefs,
-  ...contactMethodDefs,
-  ...roomMethodDefs,
-  ...federationMethodDefs,
-  ...emailMethodDefs,
-  ...diaryMethodDefs,
-  ...noteMethodDefs,
-  ...calendarMethodDefs,
-  ...pomodoroMethodDefs,
-  ...shellQuickMethodDefs,
-  ...notificationMethodDefs,
-  ...companionMethodDefs,
-  ...objectStorageMethodDefs,
-  ...mcpMethodDefs,
-} as const;
+export { FEATURE_METHOD_DEFS };
 
 const CLIENT_METHOD_REGISTRY = {
   ...STATIC_METHOD_REGISTRY,

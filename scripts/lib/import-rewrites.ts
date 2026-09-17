@@ -60,8 +60,18 @@ export const RETIRED_PREFIXES: readonly string[] = [
 /** 匹配静态/动态 import 与 export-from 的字符串说明符。 */
 export const SPECIFIER_RE = /(\bfrom\s*|\bimport\s*\(\s*)(["'])([^"'\n]+)\2/g;
 
+/** ── P1：feature method-defs 上提到契约层 ───────────────────────── */
+const METHOD_DEFS_RE = /^@freeanima\/features\/([a-z-]+)\/habitat\/method-defs\.ts$/;
+
+/** 正则形式的退役模式（无法用固定前缀表达）。 */
+export const RETIRED_PATTERNS: readonly RegExp[] = [METHOD_DEFS_RE];
+
 /** 命中替换表则返回新说明符，否则 null。 */
 export function rewriteSpecifier(spec: string): string | null {
+  const methodDefs = METHOD_DEFS_RE.exec(spec);
+  if (methodDefs?.[1]) {
+    return `@freeanima/shared/rpc-contract/feature-rpc/methods/${methodDefs[1]}.ts`;
+  }
   for (const [from, to] of REWRITES) {
     if (spec === from) return to;
     if (spec.startsWith(`${from}/`)) return `${to}${spec.slice(from.length)}`;
@@ -69,8 +79,11 @@ export function rewriteSpecifier(spec: string): string | null {
   return null;
 }
 
-/** 命中已退役前缀则返回该前缀，否则 null。 */
+/** 命中已退役前缀/模式则返回标签，否则 null。 */
 export function retiredBy(spec: string): string | null {
+  for (const pattern of RETIRED_PATTERNS) {
+    if (pattern.test(spec)) return pattern.source;
+  }
   for (const prefix of RETIRED_PREFIXES) {
     if (spec === prefix || spec.startsWith(prefix)) return prefix;
   }
