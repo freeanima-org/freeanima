@@ -1,6 +1,15 @@
 import { randomPublicId } from "@freeanima/shared/util";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
 import { encodeFederationFrame, parseFederationFrame } from "./handshake.ts";
 import { getFederationManager } from "./runtime-context.ts";
+import {
+  mountSatelliteFederationTransportService,
+  type SatelliteTransport,
+} from "./satellite-transport-service.ts";
 
 type Pending = {
   resolve: (payload: unknown) => void;
@@ -11,15 +20,8 @@ type Pending = {
 const pending = new Map<string, Pending>();
 const REQUEST_TIMEOUT_MS = 30_000;
 
-type SatelliteTransport = {
-  sendRaw: (data: string) => void;
-  onFrame: (handler: (method: string, payload: unknown) => void) => () => void;
-};
-
-let transport: SatelliteTransport | null = null;
-
 export function bindSatelliteFederationTransport(next: SatelliteTransport | null): void {
-  transport = next;
+  mountSatelliteFederationTransportService(ensureProcessContext()).bind(next);
 }
 
 export function handleSatelliteRpcResult(method: string, payload: unknown): boolean {
@@ -47,6 +49,7 @@ export async function requestFederationRpc<T>(method: string, payload: unknown):
   if (!mgr?.satelliteClient?.isHubTrusted()) {
     throw new Error("HUB_UNAVAILABLE");
   }
+  const transport = getProcessContext()?.satelliteFederationTransport?.get() ?? null;
   if (!transport) throw new Error("HUB_UNAVAILABLE");
 
   const request_id = randomPublicId();
