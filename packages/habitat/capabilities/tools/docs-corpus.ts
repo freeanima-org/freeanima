@@ -3,7 +3,12 @@ import { basename, join } from "node:path";
 import { Glob } from "bun";
 
 import { getRepoRoot } from "@freeanima/habitat/core/config/repo-root";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
 
+import { mountDocsCorpusService, type DocsCorpusService } from "./docs-corpus-service.ts";
 import { getRegisteredEmbeddedDocs, type EmbeddedDocsFile } from "./docs-embedded.ts";
 
 export type DocsDoc = {
@@ -31,17 +36,17 @@ export type DocsCorpus = {
 const DEFAULT_SEARCH_LIMIT = 20;
 const SNIPPET_RADIUS = 80;
 
-let injectedCorpus: DocsCorpus | null = null;
-let cachedCorpus: DocsCorpus | null = null;
+function docsCorpusService(): DocsCorpusService {
+  return mountDocsCorpusService(ensureProcessContext());
+}
 
 /** 测试注入内存 corpus；传 null 清除 */
 export function setDocsCorpusForTest(corpus: DocsCorpus | null): void {
-  injectedCorpus = corpus;
-  cachedCorpus = null;
+  docsCorpusService().setInjected(corpus);
 }
 
 export function resetDocsCorpusCacheForTest(): void {
-  cachedCorpus = null;
+  getProcessContext()?.docsCorpus?.setCached(null);
 }
 
 /** 从 Markdown 解析展示标题：frontmatter title → 首个 # 标题 → 文件名 */
@@ -127,13 +132,17 @@ function loadFromFilesystem(docsRoot: string): DocsCorpus {
 
 /** 解析当前可用 corpus：测试注入 > 嵌入 > 仓库 docs/ */
 export function resolveDocsCorpus(): DocsCorpus | { error: string } {
-  if (injectedCorpus) return injectedCorpus;
-  if (cachedCorpus) return cachedCorpus;
+  const service = docsCorpusService();
+  const injected = service.getInjected();
+  if (injected) return injected;
+  const cached = service.getCached();
+  if (cached) return cached;
 
   const embedded = getRegisteredEmbeddedDocs();
   if (embedded) {
-    cachedCorpus = loadFromEmbedded(embedded);
-    return cachedCorpus;
+    const corpus = loadFromEmbedded(embedded);
+    service.setCached(corpus);
+    return corpus;
   }
 
   let root: string;
@@ -146,11 +155,12 @@ export function resolveDocsCorpus(): DocsCorpus | { error: string } {
   if (!existsSync(docsRoot)) {
     return { error: `docs/ not found at ${docsRoot}` };
   }
-  cachedCorpus = loadFromFilesystem(docsRoot);
-  if (cachedCorpus.byPath.size === 0) {
+  const corpus = loadFromFilesystem(docsRoot);
+  service.setCached(corpus);
+  if (corpus.byPath.size === 0) {
     return { error: `No Markdown files under ${docsRoot}` };
   }
-  return cachedCorpus;
+  return corpus;
 }
 
 export function listDocs(corpus: DocsCorpus, prefix?: string): DocsListEntry[] {
