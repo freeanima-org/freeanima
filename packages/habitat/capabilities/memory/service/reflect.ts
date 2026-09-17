@@ -1,6 +1,12 @@
 import type { ReflectInput, ReflectResult } from "./types.ts";
 import { runBuiltinReflect } from "./builtin-reflect.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
+import { mountReflectEngineService } from "./reflect-engine-service.ts";
 
 /**
  * reflect 巩固作业（#16102 / #18010）。
@@ -20,19 +26,18 @@ export type ReflectEngineResult = ReflectResult & {
 
 export type ReflectEngineFn = (input: ReflectEngineInput) => Promise<ReflectEngineResult>;
 
-let engine: ReflectEngineFn | null = null;
-
 export function registerReflectEngine(fn: ReflectEngineFn): void {
-  engine = fn;
+  mountReflectEngineService(ensureProcessContext()).register(fn);
 }
 
 export function resetReflectEngineForTests(): void {
-  engine = null;
+  getProcessContext()?.reflectEngine?.reset();
 }
 
 export async function runReflectEngine(
   input: ReflectEngineInput = {},
 ): Promise<ReflectEngineResult> {
+  const engine = getProcessContext()?.reflectEngine?.get() ?? null;
   if (engine) return engine(input);
   return runBuiltinReflect(input);
 }
