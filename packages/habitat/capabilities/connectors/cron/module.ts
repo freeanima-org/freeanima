@@ -7,6 +7,12 @@ import {
   updateCronJob,
 } from "@freeanima/habitat/core/db/pg/cron";
 import { logComponent } from "@freeanima/habitat/platform/logging";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
+import { mountCronHandleService, type CronHandleService } from "./cron-handle-service.ts";
 import { CronHandleManager } from "./handle-manager.ts";
 import {
   purgeInprocessBuiltinRowsFromPg,
@@ -16,20 +22,25 @@ import {
 import { CronJob } from "./models.ts";
 import { runJobById } from "./runner.ts";
 
-let handles: CronHandleManager | null = null;
+function cronHandleService(): CronHandleService {
+  return mountCronHandleService(ensureProcessContext());
+}
 
 export function getCronHandleManager(): CronHandleManager {
+  const handles = getProcessContext()?.cronHandleManager?.get() ?? null;
   if (!handles) throw new Error("Cron module not initialized");
   return handles;
 }
 
 export function isCronModuleInitialized(): boolean {
-  return handles != null;
+  return getProcessContext()?.cronHandleManager?.get() != null;
 }
 
 export async function initCronModule(): Promise<void> {
-  if (handles) return;
-  handles = new CronHandleManager((jobId) => runJobById(jobId));
+  const service = cronHandleService();
+  if (service.get()) return;
+  const handles = new CronHandleManager((jobId) => runJobById(jobId));
+  service.set(handles);
   await ensureBuiltinCronJobs();
   const purged = await purgeInprocessBuiltinRowsFromPg();
   if (purged > 0) {
@@ -48,8 +59,9 @@ export function stopCronModule(): void {
     m.stopTaskReminderScheduler();
   });
   stopInprocessBuiltins();
-  handles?.stopAll();
-  handles = null;
+  const service = getProcessContext()?.cronHandleManager;
+  service?.get()?.stopAll();
+  service?.reset();
 }
 
 /** Tier 2 test injection — clears cron module singleton between cases */
@@ -64,7 +76,7 @@ export {
 } from "./inprocess-builtins.ts";
 
 export async function loadAllJobs(): Promise<CronJob[]> {
-  if (!handles) return [];
+  if (!getProcessContext()?.cronHandleManager?.get()) return [];
   const rows = await listAllCronJobs();
   return rows.map((row: CronJobRow) => CronJob.fromRow(row));
 }
