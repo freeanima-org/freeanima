@@ -17,8 +17,8 @@ import { join } from "node:path";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/outpost-clis");
-const CLIENT_ENTRY = join(ROOT, "packages/habitat/portal/client/cli.ts");
-const PROBE_ENTRY = join(ROOT, "packages/habitat/portal/probe/cli.ts");
+const CLIENT_ENTRY = join(ROOT, "packages/cli/client/cli.ts");
+const PROBE_ENTRY = join(ROOT, "packages/cli/probe/cli.ts");
 
 async function compileOne(entrypoint: string, outfile: string, label: string): Promise<void> {
   console.log(`[pack client-probe] compiling ${label} → ${outfile}`);

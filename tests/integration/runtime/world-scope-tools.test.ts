@@ -6,13 +6,13 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/habitat/engine/loop-mechanism";
-import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
-import { getProfileHopModel } from "@freeanima/habitat/platform/config";
+import { runWithToolContext } from "@freeanima/engine/loop-mechanism";
+import { ToolSetRegistry } from "@freeanima/core/tool";
+import { getProfileHopModel } from "@freeanima/server/config";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
 import { registerEmailTools } from "@freeanima/features/email/domain";
 import { createEmailAccount } from "@freeanima/features/email/domain";
-import { registerNotificationTools } from "@freeanima/habitat/capabilities/tools/notification";
+import { registerNotificationTools } from "@freeanima/capabilities/tools/notification";
 import {
   getActivePgTestContext,
   testConv,
@@ -21,7 +21,7 @@ import {
 } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testAgentWorldId, testUserWorldId } from "../../helpers/world-context.ts";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 
 function testCfg() {
   const ctx = getActivePgTestContext();

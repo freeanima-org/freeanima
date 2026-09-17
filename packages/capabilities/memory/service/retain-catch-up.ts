@@ -1,0 +1,114 @@
+/**
+ * 按 CST 日补跑 retain：当日有消息的会话各 retain 一次（force）。
+ */
+
+import { logCapability as logComponent } from "@freeanima/core/config/capability-injection";
+import {
+  listConversationIdsUpdatedBetween,
+  listMessageRowsPage,
+} from "@freeanima/core/db/pg/conversation";
+import { omitUndefined } from "@freeanima/core/util";
+
+import { collectConversationBlocks, cstDayRange } from "../day-window/build-messages.ts";
+import { createEmbeddedMemoryService } from "./embedded.ts";
+
+export type RetainCatchUpResult = {
+  ok: boolean;
+  day: string;
+  conversations: number;
+  retained: number;
+  skipped: number;
+  errors: number;
+  summary: string;
+  skipped_reason?: string;
+  /** 首个会话失败原因（便于通知/排障） */
+  first_error?: string;
+};
+
+export async function runRetainCatchUp(
+  opts: { day?: string; agent_subject_id?: number } = {},
+): Promise<RetainCatchUpResult> {
+  const range = cstDayRange(opts.day);
+  const conversationIds = await listConversationIdsUpdatedBetween(
+    range.fromIso,
+    range.toIso,
+    omitUndefined({ agent_subject_id: opts.agent_subject_id }),
+  );
+  if (conversationIds.length === 0) {
+    return {
+      ok: true,
+      day: range.day,
+      conversations: 0,
+      retained: 0,
+      skipped: 0,
+      errors: 0,
+      summary: "No conversation activity; skipping retain catch-up",
+      skipped_reason: "no_sessions",
+    };
+  }
+
+  const blocks = await collectConversationBlocks(conversationIds, range);
+  const activeIds = blocks.map((b) => b.conversationId);
+  if (activeIds.length === 0) {
+    return {
+      ok: true,
+      day: range.day,
+      conversations: 0,
+      retained: 0,
+      skipped: 0,
+      errors: 0,
+      summary: "No messages in day window; skipping retain catch-up",
+      skipped_reason: "no_day_messages",
+    };
+  }
+
+  const svc = createEmbeddedMemoryService();
+  let retained = 0;
+  let skipped = 0;
+  let errors = 0;
+  let first_error: string | undefined;
+
+  for (const conversation_id of activeIds) {
+    try {
+      const rows = await listMessageRowsPage(conversation_id, 0, 500);
+      const message_ids = rows.map((m) => m.message_id).filter(Boolean);
+      if (message_ids.length === 0) {
+        skipped += 1;
+        continue;
+      }
+      const result = await svc.retain({
+        conversation_id,
+        message_ids,
+        force: true,
+      });
+      if (result.skipped) skipped += 1;
+      else retained += 1;
+    } catch (err) {
+      errors += 1;
+      const errMsg = err instanceof Error ? err.message : String(err);
+      if (first_error === undefined) {
+        first_error = `${conversation_id}:${errMsg}`;
+      }
+      logComponent("memory").warn("retain catch-up conversation failed", {
+        conversation_id,
+        err: errMsg,
+      });
+    }
+  }
+
+  const summaryParts = [
+    `retain-catch-up:${range.day}:ok=${retained}:skip=${skipped}:err=${errors}`,
+  ];
+  if (first_error) summaryParts.push(first_error);
+
+  return omitUndefined({
+    ok: errors === 0,
+    day: range.day,
+    conversations: activeIds.length,
+    retained,
+    skipped,
+    errors,
+    summary: summaryParts.join(" "),
+    first_error,
+  });
+}

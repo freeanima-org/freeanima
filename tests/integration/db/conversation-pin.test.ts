@@ -1,13 +1,13 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
-import { conversations } from "@freeanima/habitat/core/db/schema";
-import { getDb } from "@freeanima/habitat/core/db/pg";
+import { conversations } from "@freeanima/core/db/schema";
+import { getDb } from "@freeanima/core/db/pg";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import {
   listConversationSummaries,
   pinConversation,
   unpinConversation,
-} from "@freeanima/habitat/engine/conversation";
+} from "@freeanima/engine/conversation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { upsertTestConversationMeta } from "../../helpers/pg-test.ts";
 import {

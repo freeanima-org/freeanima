@@ -1,33 +1,30 @@
 import type { PgTestContext } from "./pg-test.ts";
-import {
-  flushCompressionSummaries,
-  abandonCompressionSummaries,
-} from "@freeanima/habitat/engine/turn";
-import { createConversationService } from "@freeanima/habitat/engine/conversation";
-import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
+import { flushCompressionSummaries, abandonCompressionSummaries } from "@freeanima/engine/turn";
+import { createConversationService } from "@freeanima/engine/conversation";
+import { createServiceKernel } from "@freeanima/server/bootstrap";
 import {
   createAppRuntime,
   initRuntimeContext,
   bindServicePorts,
   registerSystemPromptHooks,
-} from "@freeanima/habitat/platform";
+} from "@freeanima/server";
 import {
   registerServiceTools,
   registerServiceStores,
   resetRegisterServiceToolsForTest,
-} from "@freeanima/habitat/platform";
-import { invalidateSelfLayerPromptCache } from "@freeanima/habitat/capabilities/self";
-import { mountSystemPromptService } from "@freeanima/habitat/core/hooks/prompt";
-import { upsertSelfBlock } from "@freeanima/habitat/core/db/pg/self-layer";
+} from "@freeanima/server";
+import { invalidateSelfLayerPromptCache } from "@freeanima/capabilities/self";
+import { mountSystemPromptService } from "@freeanima/core/hooks/prompt";
+import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
 
 import { randomUUID } from "node:crypto";
-import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/habitat/core/util/temp-dir";
-import { conversations } from "@freeanima/habitat/core/db/schema";
+import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util/temp-dir";
+import { conversations } from "@freeanima/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 
-import { bindHomeChannelConfig } from "@freeanima/habitat/platform/ports/home-channel";
-import { bindContextWindowLookup } from "@freeanima/habitat/platform/bind-context-window.ts";
-import { getDb } from "@freeanima/habitat/core/db/pg";
+import { bindHomeChannelConfig } from "@freeanima/server/ports/home-channel";
+import { bindContextWindowLookup } from "@freeanima/server/bind-context-window.ts";
+import { getDb } from "@freeanima/core/db/pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
 import { getActivePgTestContext } from "./pg-test.ts";
@@ -103,8 +100,7 @@ export async function syncIntegrationSelfLayer(
   selfModel?: string,
 ): Promise<void> {
   if (selfModel !== undefined) {
-    const { getResolvedWorldContext } =
-      await import("@freeanima/habitat/core/config/world-context");
+    const { getResolvedWorldContext } = await import("@freeanima/core/config/world-context");
     await upsertSelfBlock(
       {
         block_key: "self_model",

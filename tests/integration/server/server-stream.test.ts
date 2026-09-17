@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { getAppRuntime } from "@freeanima/habitat/platform";
+import { getAppRuntime } from "@freeanima/server";
 import { getTestEngine, seedSession } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 

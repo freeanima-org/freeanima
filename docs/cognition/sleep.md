@@ -20,7 +20,7 @@ title: 记忆维护（原睡眠机制）
 
 ## 夜间编排（非 DAG）
 
-见 [`packages/habitat/platform/boot/pipeline-handlers.ts`](../../packages/habitat/platform/boot/pipeline-handlers.ts) 的 `runNightlyMemoryMaintenance`。
+见 [`packages/server/boot/pipeline-handlers.ts`](../../packages/server/boot/pipeline-handlers.ts) 的 `runNightlyMemoryMaintenance`。
 
 顺序：
 

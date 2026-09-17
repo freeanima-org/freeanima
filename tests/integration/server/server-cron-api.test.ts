@@ -8,12 +8,8 @@ import {
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  createJob,
-  initCronModule,
-  stopCronModule,
-} from "@freeanima/habitat/capabilities/connectors/cron";
-import { getAppRuntime } from "@freeanima/habitat/platform";
+import { createJob, initCronModule, stopCronModule } from "@freeanima/capabilities/connectors/cron";
+import { getAppRuntime } from "@freeanima/server";
 import {
   listCronJobs,
   pauseCronJob,
@@ -23,7 +19,7 @@ import {
   deleteCronJob,
   ApiHandlerError,
 } from "@freeanima/features/habitat/habitat/habitat-api/handlers";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 
 describePg("server cron API", () => {
   let home: string;

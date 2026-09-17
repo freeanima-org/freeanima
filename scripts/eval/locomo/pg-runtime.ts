@@ -7,37 +7,28 @@ import { dirname, join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 
-import { runMigrations as applyMigrations } from "@freeanima/habitat/core/db/index.ts";
-import {
-  closeDb,
-  getDb,
-  initDatabase,
-  setDbForTest,
-} from "@freeanima/habitat/core/db/pg/client.ts";
-import { bindSearchRuntime } from "@freeanima/habitat/core/db/pg/search";
-import { relations } from "@freeanima/habitat/core/db/schema";
-import { bindActiveRuntimeConfig } from "@freeanima/habitat/core/config";
-import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context";
-import { ensureWorldSubjects } from "@freeanima/habitat/core/db/pg/entity/subject-world";
-import {
-  initLlmRuntime,
-  mountLlmStackService,
-  resetLlmRuntimeForTests,
-} from "@freeanima/habitat/core/llm";
-import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
+import { runMigrations as applyMigrations } from "@freeanima/core/db/index.ts";
+import { closeDb, getDb, initDatabase, setDbForTest } from "@freeanima/core/db/pg/client.ts";
+import { bindSearchRuntime } from "@freeanima/core/db/pg/search";
+import { relations } from "@freeanima/core/db/schema";
+import { bindActiveRuntimeConfig } from "@freeanima/core/config";
+import { bindResolvedWorldContext } from "@freeanima/core/config/resolved-world-context";
+import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world";
+import { initLlmRuntime, mountLlmStackService, resetLlmRuntimeForTests } from "@freeanima/core/llm";
+import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
 import { ensureRootContext } from "@freeanima/kernel";
-import { createEngine } from "@freeanima/habitat/engine";
+import { createEngine } from "@freeanima/engine";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
-import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
+import { FileConfig } from "@freeanima/server/config/file-config.ts";
 import { asRecord } from "@freeanima/shared/util";
-import { initRedis, resetRedisForTest } from "@freeanima/habitat/core/redis";
+import { initRedis, resetRedisForTest } from "@freeanima/core/redis";
 import {
   createEmbeddedMemoryService,
   registerRetainEngine,
   resetRetainEngineForTests,
   resetRetainLlmForTests,
   type MemoryService,
-} from "@freeanima/habitat/capabilities/memory/service";
+} from "@freeanima/capabilities/memory/service";
 import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
 
@@ -117,7 +108,7 @@ memory:
 
 async function migrate(pgUrl: string): Promise<void> {
   const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
-  const extensionsPath = join(repoRoot, "packages/habitat/core/scripts/ensure-pg-extensions.sql");
+  const extensionsPath = join(repoRoot, "packages/core/scripts/ensure-pg-extensions.sql");
   try {
     execSync(`psql "${pgUrl}" -v ON_ERROR_STOP=1 -f "${extensionsPath}"`, {
       stdio: "ignore",

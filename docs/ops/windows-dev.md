@@ -151,7 +151,7 @@ bun install --registry=https://registry.npmjs.org
 若 `just` 找不到 `bash`，用 Bun 跑同一套入口：
 
 ```bash
-bun packages/habitat/portal/cli/dev-habitat.ts          # Habitat; random port ≥10000
+bun packages/cli/cli/dev-habitat.ts          # Habitat; random port ≥10000
 bun scripts/dev-web.ts                     # Vite Web; set FREEANIMA_URL to Habitat
 bun scripts/dev.ts                         # Habitat then Web (same as just dev)
 bun scripts/dev-tauri-desktop.ts           # Tauri shell (need Vite :5000)

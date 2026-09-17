@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createTempDir, removeTempDir } from "@freeanima/habitat/core/util/temp-dir";
+import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 import { resolveTauriAndroidMain } from "./tauri-android-gen-paths.ts";
 
 describe("resolveTauriAndroidMain", () => {

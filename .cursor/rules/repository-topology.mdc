@@ -14,7 +14,7 @@ alwaysApply: false
 | ------- | ---- | ---- |
 | `freeanima` | 仓库根 | 编排（just / scripts / tests / docs）；workspace 根 |
 | `@freeanima/shared` | `packages/shared/` | 前后端共享契约与纯工具（不发布） |
-| `@freeanima/habitat` | `packages/habitat/` | 栖息地进程栈 + CLI + MCP + features 服务端（不发布） |
+| `@freeanima/habitat` | `packages/` | 栖息地进程栈 + CLI + MCP + features 服务端（不发布） |
 | `@freeanima/frontend` | `packages/frontend/` | client / ui-kit / features UI / Web·扩展·Tauri（不发布） |
 | `@freeanima/site` | `site/` | Astro/Starlight 文档站 |
 
@@ -50,7 +50,7 @@ packages/
     └── features/<slug>/{ui,lib,…}
 ```
 
-MCP 在 `packages/habitat/capabilities/mcp-server`。Habitat 管理台 = `features/habitat`（UI 在 frontend，RPC 在 habitat）。
+MCP 在 `packages/capabilities/mcp-server`。Habitat 管理台 = `features/habitat`（UI 在 frontend，RPC 在 habitat）。
 
 ## Module resolution
 

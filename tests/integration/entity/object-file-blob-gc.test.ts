@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, expect, it } from "bun:test";
 
-import {
-  deleteEntity,
-  getEntity,
-  purgeSoftDeletedEntities,
-} from "@freeanima/habitat/core/db/pg/entity";
+import { deleteEntity, getEntity, purgeSoftDeletedEntities } from "@freeanima/core/db/pg/entity";
 import {
   bindObjectStore,
   createObjectFile,

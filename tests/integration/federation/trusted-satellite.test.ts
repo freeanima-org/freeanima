@@ -4,7 +4,7 @@ import {
   getTrustedSatellite,
   listTrustedSatellites,
   revokeTrustedSatellite,
-} from "@freeanima/habitat/core/db/pg/federation";
+} from "@freeanima/core/db/pg/federation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

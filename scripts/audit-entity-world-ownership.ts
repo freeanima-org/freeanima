@@ -4,12 +4,12 @@
  * 用法：DATABASE_URL=… bun scripts/audit-entity-world-ownership.ts
  *
  * 逻辑与数据维护页「数据完整性」共用
- * `@freeanima/habitat/core/db/pg/data-integrity`。
+ * `@freeanima/core/db/pg/data-integrity`。
  */
-import { resolveWorldSubjectIds } from "@freeanima/habitat/core/config/worlds.ts";
-import { initDatabase } from "@freeanima/habitat/core/db/pg/index.ts";
-import { runIntegrityChecks } from "@freeanima/habitat/core/db/pg/data-integrity/index.ts";
-import { RuntimeConfigStore } from "@freeanima/habitat/platform/config/runtime-config-store.ts";
+import { resolveWorldSubjectIds } from "@freeanima/core/config/worlds.ts";
+import { initDatabase } from "@freeanima/core/db/pg/index.ts";
+import { runIntegrityChecks } from "@freeanima/core/db/pg/data-integrity/index.ts";
+import { RuntimeConfigStore } from "@freeanima/server/config/runtime-config-store.ts";
 
 async function main(): Promise<void> {
   const url = process.env.DATABASE_URL;

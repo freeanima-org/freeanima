@@ -5,7 +5,7 @@ import { createFileSink } from "../logging/sinks/file.ts";
 import { createMemorySink } from "../logging/sinks/memory.ts";
 import { createNullSink } from "../logging/sinks/null.ts";
 
-describe("@freeanima/habitat/kernel/logging subpath exports", () => {
+describe("@freeanima/kernel/logging subpath exports", () => {
   it("sinks subpath composes", () => {
     const memory = createMemorySink();
     const logger = createLogger({

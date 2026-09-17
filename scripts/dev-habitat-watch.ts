@@ -21,8 +21,8 @@ import { join } from "node:path";
 import { asRecord } from "@freeanima/shared/util";
 
 const root = join(import.meta.dir, "..");
-const habitatEntry = join(root, "packages/habitat/portal/cli/dev-habitat.ts");
-const watchRoots = [join(root, "packages/habitat"), join(root, "packages/shared")];
+const habitatEntry = join(root, "packages/cli/cli/dev-habitat.ts");
+const watchRoots = [join(root, "packages"), join(root, "packages/shared")];
 const habitatArgs = process.argv.slice(2);
 
 function animaHome(): string {
@@ -65,7 +65,7 @@ function parsePortArg(args: string[]): number | null {
   return null;
 }
 
-/** `filename` 相对某一 watchRoot（packages/habitat 或 packages/shared） */
+/** `filename` 相对某一 watchRoot（packages 或 packages/shared） */
 function shouldRestartForPath(filename: string): boolean {
   const n = filename.replaceAll("\\", "/");
   if (n.includes("node_modules/")) return false;

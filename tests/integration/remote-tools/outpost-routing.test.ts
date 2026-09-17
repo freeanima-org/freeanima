@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
+import { ToolSetRegistry } from "@freeanima/core/tool";
 import { formatRemoteToolName } from "@freeanima/shared/rpc-contract";
-import { RemoteToolsManager } from "@freeanima/habitat/capabilities/outpost";
+import { RemoteToolsManager } from "@freeanima/capabilities/outpost";
 
 describe("outpost bind-at-register integration", () => {
   it("does not fall back to habitat-local file_read for unregistered remote tool", () => {

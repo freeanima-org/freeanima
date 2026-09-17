@@ -1,9 +1,9 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { eq } from "drizzle-orm";
-import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
-import { conversations, messages } from "@freeanima/habitat/core/db/schema";
-import { getDb } from "@freeanima/habitat/core/db/pg";
-import { getConversationMetaLite } from "@freeanima/habitat/core/db/pg/conversation";
+import { isConversationMeta } from "@freeanima/core/db/domain";
+import { conversations, messages } from "@freeanima/core/db/schema";
+import { getDb } from "@freeanima/core/db/pg";
+import { getConversationMetaLite } from "@freeanima/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import {
   archiveConversation,
@@ -12,7 +12,7 @@ import {
   listConversationSummaries,
   loadConversationMeta,
   unarchiveConversation,
-} from "@freeanima/habitat/engine/conversation";
+} from "@freeanima/engine/conversation";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { appendTestMessage, upsertTestConversationMeta } from "../../helpers/pg-test.ts";
 import {

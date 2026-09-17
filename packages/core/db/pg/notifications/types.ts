@@ -1,0 +1,30 @@
+import type { NotificationRow } from "@freeanima/core/db/schema/rows";
+
+export const NOTIFICATION_RECIPIENT_KINDS = ["user", "agent"] as const;
+export type NotificationRecipientKind = (typeof NOTIFICATION_RECIPIENT_KINDS)[number];
+
+export const NOTIFICATION_READ_FILTERS = ["all", "unread"] as const;
+export type NotificationReadFilter = (typeof NOTIFICATION_READ_FILTERS)[number];
+
+export const NOTIFICATION_SOURCE_KINDS = ["system", "cron", "acp", "tool"] as const;
+export type NotificationSourceKind = (typeof NOTIFICATION_SOURCE_KINDS)[number];
+
+export type { NotificationRow };
+
+export type NotificationCreateInput = {
+  recipient_kind: NotificationRecipientKind;
+  recipient_id: number;
+  title: string;
+  body: string;
+  payload?: Record<string, unknown> | null;
+  source_kind?: NotificationSourceKind | null;
+  source_ref?: string | null;
+};
+
+export type NotificationListOpts = {
+  recipient_kind: NotificationRecipientKind;
+  recipient_id: number;
+  read_filter?: NotificationReadFilter;
+  offset?: number;
+  limit?: number;
+};

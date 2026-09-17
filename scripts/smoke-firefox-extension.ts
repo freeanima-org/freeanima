@@ -13,8 +13,8 @@ import {
   FIREFOX_ADDON_ID,
   FIREFOX_ADDON_UPDATE_URL,
   resolveFirefoxAddonVersion,
-} from "@freeanima/habitat/core/config/firefox-addon.ts";
-import { resolvePackArtifactMeta } from "@freeanima/habitat/core/config/pack-artifact-names.ts";
+} from "@freeanima/core/config/firefox-addon.ts";
+import { resolvePackArtifactMeta } from "@freeanima/core/config/pack-artifact-names.ts";
 import { asRecord } from "@freeanima/shared/util";
 
 const root = join(import.meta.dir, "..");

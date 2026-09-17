@@ -1,9 +1,9 @@
-import { countTokens } from "@freeanima/habitat/core/tokenizer";
+import { countTokens } from "@freeanima/core/tokenizer";
 import {
   OPENCODE_SESSION_HEADER,
   isOpencodeGoUrl,
   resolveOpencodeSessionId,
-} from "@freeanima/habitat/capabilities/llm-openai/opencode-session.ts";
+} from "@freeanima/capabilities/llm-openai/opencode-session.ts";
 
 import {
   LOCOMO_DEFAULT_MODEL,

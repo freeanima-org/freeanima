@@ -1,7 +1,7 @@
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { randomUUID } from "node:crypto";
-import type { ConversationMessage } from "@freeanima/habitat/core/db/domain";
-import { pingDatabase } from "@freeanima/habitat/core/db/pg";
+import type { ConversationMessage } from "@freeanima/core/db/domain";
+import { pingDatabase } from "@freeanima/core/db/pg";
 import {
   getConversationMeta,
   listMessages,
@@ -9,7 +9,7 @@ import {
   shiftMessagePositions,
   sumConversationUsage,
   updateCompression,
-} from "@freeanima/habitat/core/db/pg/conversation";
+} from "@freeanima/core/db/pg/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import { appendTestMessage, upsertTestConversationMeta } from "../../helpers/pg-test.ts";

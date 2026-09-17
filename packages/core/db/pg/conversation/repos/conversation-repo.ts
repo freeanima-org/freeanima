@@ -1,0 +1,782 @@
+import { and, desc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
+import {
+  compressionStateSchema,
+  conversationTodoStoreSchema,
+  mergeCompressionKeepingSummary,
+  parseCompressionState,
+  type CompressionState,
+  type ConversationMetaMessage,
+  type ConversationTodoStore,
+} from "@freeanima/core/db/domain";
+
+import type { ConversationCleanupResult, ConversationSummaryRow } from "../types.ts";
+import {
+  acpTasksSchema,
+  awaitingClarifySchema,
+  buildOriginIdentityProbe,
+  conversationCachedToolsetsSchema,
+  conversationFunctionsSchema,
+  conversationGoalSchema,
+  conversationInsertSchema,
+  conversationStagedToolsetsSchema,
+  conversations,
+} from "@freeanima/core/db/schema";
+
+import { getDb } from "../../client.ts";
+import {
+  patchCompression,
+  patchTodos,
+  rowToConversationMeta,
+  conversationMetaToInsert,
+} from "../transform.ts";
+import { formatDbError } from "../../utils/db-error.ts";
+import { listUnreadConversationIds } from "./conversation-read-state-repo.ts";
+import { pgJsonbOrNull, pgTextOrNull } from "../../utils/timestamp.ts";
+import type { ConversationInsert } from "@freeanima/core/db/schema";
+
+const pgNow = (): Date => new Date();
+
+export async function getConversationMeta(
+  conversation_id: string,
+): Promise<ConversationMetaMessage | null> {
+  const db = getDb();
+  const rows = await db
+    .select()
+    .from(conversations)
+    .where(eq(conversations.id, conversation_id))
+    .limit(1);
+  const metaRow = rows[0];
+  if (!metaRow) return null;
+  return rowToConversationMeta(metaRow);
+}
+
+/** 是否为历史 cron agent 创建的 session（platform_info.platform = cron） */
+export async function isCronSession(conversation_id: string): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      platform: sql<string | null>`${conversations.platform_info}->>'platform'`,
+    })
+    .from(conversations)
+    .where(eq(conversations.id, conversation_id))
+    .limit(1);
+  return rows[0]?.platform === "cron";
+}
+
+/** 列出 platform_info.platform = cron 的 conversation id */
+export async function listCronSessionIds(): Promise<string[]> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(sql`COALESCE(${conversations.platform_info}->>'platform', '') = 'cron'`);
+  return rows.map((r) => r.id);
+}
+
+/** Hot-path meta: keep cached/staged toolsets for runtime */
+export async function getConversationMetaLite(
+  conversation_id: string,
+): Promise<ConversationMetaMessage | null> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      id: conversations.id,
+      model: conversations.model,
+      title: conversations.title,
+      cwd: conversations.cwd,
+      system_prompt: conversations.system_prompt,
+      system_prompt_built_at: conversations.system_prompt_built_at,
+      platform_info: conversations.platform_info,
+      scenario: conversations.scenario,
+      agent_subject_id: conversations.agent_subject_id,
+      agent_public_id: conversations.agent_public_id,
+      room_id: conversations.room_id,
+      last_projected_room_seq: conversations.last_projected_room_seq,
+      compression: conversations.compression,
+      temporal_day: conversations.temporal_day,
+      todos: conversations.todos,
+      awaiting_clarify: conversations.awaiting_clarify,
+      acp_tasks: conversations.acp_tasks,
+      goal: conversations.goal,
+      cached_toolsets: conversations.cached_toolsets,
+      staged_toolsets: conversations.staged_toolsets,
+      functions: conversations.functions,
+      debug: conversations.debug,
+      archived_at: conversations.archived_at,
+      pinned_at: conversations.pinned_at,
+      created_at: conversations.created_at,
+      updated_at: conversations.updated_at,
+    })
+    .from(conversations)
+    .where(eq(conversations.id, conversation_id))
+    .limit(1);
+  const metaRow = rows[0];
+  if (!metaRow) return null;
+  return rowToConversationMeta(metaRow);
+}
+
+export async function getConversationTools(
+  conversation_id: string,
+): Promise<ConversationMetaMessage["cached_toolsets"]> {
+  const db = getDb();
+  const rows = await db
+    .select({ cached_toolsets: conversations.cached_toolsets })
+    .from(conversations)
+    .where(eq(conversations.id, conversation_id))
+    .limit(1);
+  const toolsRow = rows[0];
+  if (!toolsRow) return [];
+  return conversationCachedToolsetsSchema.parse(toolsRow.cached_toolsets ?? []);
+}
+
+export async function upsertConversationMeta(
+  conversation_id: string,
+  meta: ConversationMetaMessage,
+): Promise<void> {
+  const db = getDb();
+  const row = conversationInsertSchema.parse(conversationMetaToInsert(conversation_id, meta));
+  try {
+    const existing = await db
+      .select({ id: conversations.id })
+      .from(conversations)
+      .where(eq(conversations.id, conversation_id))
+      .limit(1);
+    if (existing.length > 0) {
+      await db
+        .update(conversations)
+        .set({
+          model: row.model,
+          title: row.title,
+          cwd: row.cwd,
+          system_prompt: row.system_prompt,
+          system_prompt_built_at: row.system_prompt_built_at,
+          platform_info: row.platform_info,
+          scenario: row.scenario,
+          agent_subject_id: row.agent_subject_id,
+          compression: row.compression,
+          todos: row.todos,
+          awaiting_clarify: row.awaiting_clarify,
+          acp_tasks: row.acp_tasks,
+          goal: row.goal,
+          cached_toolsets: row.cached_toolsets,
+          staged_toolsets: row.staged_toolsets,
+          functions: row.functions,
+          debug: row.debug,
+          updated_at: row.updated_at,
+        })
+        .where(eq(conversations.id, conversation_id));
+      return;
+    }
+    await db.insert(conversations).values(row);
+  } catch (e) {
+    throw new Error(formatDbError(e), { cause: e });
+  }
+}
+
+export async function patchConversationMeta(
+  conversation_id: string,
+  patch: Partial<ConversationMetaMessage> & Record<string, unknown>,
+): Promise<void> {
+  const db = getDb();
+
+  // platform_info 衍生字段（gateway_tool_display）须走全量 upsert
+  if (
+    "gateway_tool_display" in patch ||
+    patch.platform !== undefined ||
+    patch.platform_extra !== undefined
+  ) {
+    const existing = await getConversationMeta(conversation_id);
+    if (!existing) return;
+    const merged: ConversationMetaMessage = { ...existing, ...patch };
+    if ("gateway_tool_display" in patch && patch.gateway_tool_display === undefined) {
+      delete merged.gateway_tool_display;
+    }
+    await upsertConversationMeta(conversation_id, merged);
+    return;
+  }
+
+  const set: Partial<ConversationInsert> = { updated_at: pgNow() };
+  let hasColumnPatch = false;
+
+  if (patch.title !== undefined) {
+    set.title = pgTextOrNull(patch.title);
+    hasColumnPatch = true;
+  }
+  if (patch.cwd !== undefined) {
+    set.cwd = pgTextOrNull(patch.cwd);
+    hasColumnPatch = true;
+  }
+  if (patch.system_prompt !== undefined) {
+    set.system_prompt = pgTextOrNull(patch.system_prompt);
+    hasColumnPatch = true;
+    if (typeof patch.system_prompt_built_at === "string" && patch.system_prompt_built_at.trim()) {
+      const parsed = new Date(patch.system_prompt_built_at);
+      set.system_prompt_built_at = Number.isNaN(parsed.getTime()) ? pgNow() : parsed;
+    } else {
+      set.system_prompt_built_at = pgNow();
+    }
+  } else if (typeof patch.system_prompt_built_at === "string") {
+    const parsed = new Date(patch.system_prompt_built_at);
+    set.system_prompt_built_at = Number.isNaN(parsed.getTime()) ? null : parsed;
+    hasColumnPatch = true;
+  }
+  // 须用 `in`：`undefined == null` 为 true，未传 compression 时不可清空该列
+  // （否则 rebuildConversationCache / system_prompt 等 patch 会抹掉刚写入的摘要边界）
+  if ("compression" in patch) {
+    if (patch.compression == null) {
+      set.compression = null;
+    } else {
+      const compression = compressionStateSchema.parse(patch.compression);
+      if (compression == null) {
+        set.compression = null;
+      } else {
+        const existingMeta = await getConversationMeta(conversation_id);
+        const existingState = existingMeta ? parseCompressionState(existingMeta.compression) : null;
+        Object.assign(
+          set,
+          patchCompression(mergeCompressionKeepingSummary(compression, existingState)),
+        );
+      }
+    }
+    hasColumnPatch = true;
+  }
+  if (patch.cached_toolsets !== undefined) {
+    set.cached_toolsets = conversationCachedToolsetsSchema.parse(patch.cached_toolsets);
+    hasColumnPatch = true;
+  }
+  if (patch.staged_toolsets !== undefined) {
+    set.staged_toolsets = conversationStagedToolsetsSchema.parse(patch.staged_toolsets);
+    hasColumnPatch = true;
+  }
+  if (patch.functions !== undefined) {
+    set.functions = conversationFunctionsSchema.parse(patch.functions);
+    hasColumnPatch = true;
+  }
+  if (patch.todos !== undefined) {
+    Object.assign(set, patchTodos(conversationTodoStoreSchema.parse(patch.todos)));
+    hasColumnPatch = true;
+  }
+  if (patch.debug !== undefined) {
+    set.debug = patch.debug;
+    hasColumnPatch = true;
+  }
+  if ("awaiting_clarify" in patch) {
+    const awaitingRaw = pgJsonbOrNull(patch.awaiting_clarify);
+    set.awaiting_clarify = awaitingRaw ? awaitingClarifySchema.parse(awaitingRaw) : null;
+    hasColumnPatch = true;
+  }
+  if ("acp_tasks" in patch) {
+    const acpRaw = pgJsonbOrNull(patch.acp_tasks);
+    set.acp_tasks = acpRaw ? acpTasksSchema.parse(acpRaw) : null;
+    hasColumnPatch = true;
+  }
+  if ("goal" in patch) {
+    const goalRaw = pgJsonbOrNull(patch.goal);
+    set.goal = goalRaw ? conversationGoalSchema.parse(goalRaw) : null;
+    hasColumnPatch = true;
+  }
+  if (patch.model !== undefined) {
+    set.model = patch.model;
+    hasColumnPatch = true;
+  }
+  if (patch.agent_subject_id !== undefined) {
+    set.agent_subject_id = patch.agent_subject_id;
+    hasColumnPatch = true;
+  }
+  if (patch.scenario !== undefined) {
+    set.scenario = patch.scenario;
+    hasColumnPatch = true;
+  }
+
+  if (hasColumnPatch) {
+    try {
+      await db.update(conversations).set(set).where(eq(conversations.id, conversation_id));
+      return;
+    } catch (e) {
+      throw new Error(formatDbError(e), { cause: e });
+    }
+  }
+
+  const existing = await getConversationMeta(conversation_id);
+  if (!existing) return;
+  const merged: ConversationMetaMessage = { ...existing, ...patch };
+  await upsertConversationMeta(conversation_id, merged);
+}
+
+export async function updateCompression(
+  conversation_id: string,
+  compression: CompressionState,
+): Promise<void> {
+  const db = getDb();
+  const existingMeta = await getConversationMeta(conversation_id);
+  const existingState = existingMeta ? parseCompressionState(existingMeta.compression) : null;
+  await db
+    .update(conversations)
+    .set(patchCompression(mergeCompressionKeepingSummary(compression, existingState)))
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function updateTodos(
+  conversation_id: string,
+  todos: ConversationTodoStore,
+): Promise<void> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set(patchTodos(todos))
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function listConversationIds(
+  platform?: string | null,
+  opts?: { includeArchived?: boolean },
+): Promise<string[]> {
+  const db = getDb();
+  const where = buildConversationListWhere(platform, opts?.includeArchived);
+  const rows = await db
+    .select({
+      id: conversations.id,
+      updated_at: conversations.updated_at,
+    })
+    .from(conversations)
+    .where(where)
+    .orderBy(...conversationListOrderBy());
+  return rows.map((r) => r.id);
+}
+
+export async function listDebugConversationIds(): Promise<string[]> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(eq(conversations.debug, true));
+  return rows.map((r) => r.id);
+}
+
+export async function countConversationsByPlatform(): Promise<Record<string, number>> {
+  const db = getDb();
+  const platformExpr = sql<string>`COALESCE(NULLIF(btrim(${conversations.platform_info}->>'platform'), ''), 'unknown')`;
+  const rows = await db
+    .select({
+      platform: platformExpr,
+      n: sql<number>`count(*)::int`,
+    })
+    .from(conversations)
+    .groupBy(platformExpr);
+  const byPlatform: Record<string, number> = {};
+  for (const row of rows) {
+    byPlatform[row.platform] = row.n;
+  }
+  return byPlatform;
+}
+
+function sessionPlatformWhere(platform?: string | null) {
+  if (!platform) return undefined;
+  return sql`${conversations.platform_info}->>'platform' = ${platform}`;
+}
+
+function buildConversationListWhere(
+  platform?: string | null,
+  includeArchived?: boolean,
+  scenario?: "digital_human" | "coding_agent" | "room_inner" | null,
+) {
+  const conds = [];
+  const platformCond = sessionPlatformWhere(platform);
+  if (platformCond) conds.push(platformCond);
+  if (!includeArchived) conds.push(isNull(conversations.archived_at));
+  if (scenario === "digital_human") {
+    // NULL 兼容旧行 = digital_human
+    conds.push(
+      sql`(${conversations.scenario} IS NULL OR ${conversations.scenario} = 'digital_human')`,
+    );
+  } else if (scenario === "coding_agent" || scenario === "room_inner") {
+    conds.push(eq(conversations.scenario, scenario));
+  }
+  if (conds.length === 0) return undefined;
+  if (conds.length === 1) return conds[0];
+  return and(...conds);
+}
+
+/** 置顶优先，再按 pinned_at / updated_at 降序（NULL pinned 排在未置顶组） */
+function conversationListOrderBy() {
+  return [
+    sql`(CASE WHEN ${conversations.pinned_at} IS NULL THEN 0 ELSE 1 END) DESC`,
+    desc(conversations.pinned_at),
+    desc(conversations.updated_at),
+  ] as const;
+}
+
+function parseScenario(
+  raw: string | null | undefined,
+): "digital_human" | "coding_agent" | "room_inner" | undefined {
+  if (raw === "digital_human" || raw === "coding_agent" || raw === "room_inner") return raw;
+  return undefined;
+}
+
+function mapConversationSummaryRow(row: {
+  id: string;
+  title: string | null;
+  platform_info: { platform?: string } | null;
+  created_at: Date;
+  updated_at: Date;
+  archived_at?: Date | null;
+  pinned_at?: Date | null;
+  unread?: boolean | null;
+  agent_subject_id?: number | null;
+  scenario?: string | null;
+  room_id?: string | null;
+}): ConversationSummaryRow {
+  const raw = row.platform_info?.platform;
+  const scenario = parseScenario(row.scenario);
+  const roomId = row.room_id?.trim();
+  return {
+    id: row.id,
+    title: row.title ?? "",
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    platform: typeof raw === "string" ? raw : "",
+    archived_at: row.archived_at ?? null,
+    pinned_at: row.pinned_at ?? null,
+    ...(row.unread === true ? { unread: true } : row.unread === false ? { unread: false } : {}),
+    ...(row.agent_subject_id != null && row.agent_subject_id > 0
+      ? { agent_subject_id: row.agent_subject_id }
+      : {}),
+    ...(scenario ? { scenario } : {}),
+    ...(roomId ? { room_id: roomId } : {}),
+  };
+}
+
+export async function touchConversationUpdatedAt(conversation_id: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set({ updated_at: pgNow() })
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function getConversationUpdatedAt(conversation_id: string): Promise<Date | null> {
+  const db = getDb();
+  const rows = await db
+    .select({ updated_at: conversations.updated_at })
+    .from(conversations)
+    .where(eq(conversations.id, conversation_id))
+    .limit(1);
+  return rows[0]?.updated_at ?? null;
+}
+
+async function attachUnreadFlags(
+  items: ConversationSummaryRow[],
+  userSubjectId: number | undefined,
+): Promise<ConversationSummaryRow[]> {
+  if (userSubjectId == null || userSubjectId <= 0 || items.length === 0) return items;
+  const unreadIds = await listUnreadConversationIds(
+    userSubjectId,
+    items.map((item) => item.id),
+  );
+  return items.map((item) => ({
+    ...item,
+    unread: unreadIds.has(item.id),
+  }));
+}
+
+const conversationSummarySelect = {
+  id: conversations.id,
+  title: conversations.title,
+  platform_info: conversations.platform_info,
+  created_at: conversations.created_at,
+  updated_at: conversations.updated_at,
+  archived_at: conversations.archived_at,
+  pinned_at: conversations.pinned_at,
+  agent_subject_id: conversations.agent_subject_id,
+  scenario: conversations.scenario,
+  room_id: conversations.room_id,
+} as const;
+
+export async function listConversationSummaries(
+  platform?: string | null,
+  opts?: {
+    includeArchived?: boolean;
+    user_subject_id?: number;
+    scenario?: "digital_human" | "coding_agent" | "room_inner";
+  },
+): Promise<ConversationSummaryRow[]> {
+  const db = getDb();
+  const where = buildConversationListWhere(platform, opts?.includeArchived, opts?.scenario);
+  const rows = await db
+    .select(conversationSummarySelect)
+    .from(conversations)
+    .where(where)
+    .orderBy(...conversationListOrderBy());
+  return attachUnreadFlags(rows.map(mapConversationSummaryRow), opts?.user_subject_id);
+}
+
+export async function listConversationSummariesPage(opts?: {
+  platform?: string | null;
+  offset?: number;
+  limit?: number;
+  includeArchived?: boolean;
+  /** 若提供，则为用户视角计算 unread */
+  user_subject_id?: number;
+  scenario?: "digital_human" | "coding_agent" | "room_inner";
+}): Promise<{ items: ConversationSummaryRow[]; total: number }> {
+  const offset = Math.max(0, opts?.offset ?? 0);
+  const limit = Math.min(500, Math.max(1, opts?.limit ?? 20));
+  const platform = opts?.platform;
+  const db = getDb();
+  const where = buildConversationListWhere(platform, opts?.includeArchived, opts?.scenario);
+
+  const countRows = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(conversations)
+    .where(where);
+  const total = countRows[0]?.count ?? 0;
+
+  const rows = await db
+    .select(conversationSummarySelect)
+    .from(conversations)
+    .where(where)
+    .orderBy(...conversationListOrderBy())
+    .limit(limit)
+    .offset(offset);
+
+  return {
+    items: await attachUnreadFlags(rows.map(mapConversationSummaryRow), opts?.user_subject_id),
+    total,
+  };
+}
+
+export async function deleteDebugConversations(): Promise<number> {
+  const db = getDb();
+  const rows = await db
+    .delete(conversations)
+    .where(eq(conversations.debug, true))
+    .returning({ id: conversations.id });
+  return rows.length;
+}
+
+export async function deleteConversation(conversation_id: string): Promise<void> {
+  const db = getDb();
+  await db.delete(conversations).where(eq(conversations.id, conversation_id));
+}
+
+export async function archiveConversation(conversation_id: string): Promise<void> {
+  const db = getDb();
+  const now = pgNow();
+  await db
+    .update(conversations)
+    .set({ archived_at: now, updated_at: now })
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function unarchiveConversation(conversation_id: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set({ archived_at: null, updated_at: pgNow() })
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function pinConversation(conversation_id: string): Promise<void> {
+  const db = getDb();
+  const now = pgNow();
+  await db
+    .update(conversations)
+    .set({ pinned_at: now, updated_at: now })
+    .where(eq(conversations.id, conversation_id));
+}
+
+export async function unpinConversation(conversation_id: string): Promise<void> {
+  const db = getDb();
+  await db
+    .update(conversations)
+    .set({ pinned_at: null, updated_at: pgNow() })
+    .where(eq(conversations.id, conversation_id));
+}
+
+const staleSessionCleanupPredicate = sql`(
+  NOT EXISTS (SELECT 1 FROM messages m WHERE m.conversation_id = ${conversations.id})
+  OR (SELECT count(*)::int FROM messages m WHERE m.conversation_id = ${conversations.id}) = 1
+  OR (
+    (SELECT count(*)::int FROM messages m WHERE m.conversation_id = ${conversations.id}) > 1
+    AND NOT EXISTS (
+      SELECT 1 FROM messages m
+      WHERE m.conversation_id = ${conversations.id}
+        AND (m.payload)->>'role' = 'assistant'
+    )
+  )
+)`;
+
+export async function listStaleConversationIdsForCleanup(opts: {
+  olderThan: Date;
+}): Promise<string[]> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(
+      and(
+        eq(conversations.debug, false),
+        isNull(conversations.archived_at),
+        lt(conversations.updated_at, opts.olderThan),
+        staleSessionCleanupPredicate,
+      ),
+    );
+  return rows.map((r) => r.id);
+}
+
+export async function deleteStaleConversations(opts: {
+  olderThan: Date;
+}): Promise<ConversationCleanupResult> {
+  const ids = await listStaleConversationIdsForCleanup(opts);
+  if (ids.length === 0) return { deleted: 0, ids: [] };
+  const db = getDb();
+  const deleted = await db
+    .delete(conversations)
+    .where(inArray(conversations.id, ids))
+    .returning({ id: conversations.id });
+  return { deleted: deleted.length, ids: deleted.map((r) => r.id) };
+}
+
+export async function conversationExists(conversation_id: string): Promise<boolean> {
+  const db = getDb();
+  const rows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(eq(conversations.id, conversation_id))
+    .limit(1);
+  return rows.length > 0;
+}
+
+/**
+ * Find active conversation by platform + platform_extra identity (excludes routing meta from probe).
+ * Falls back to most recently updated match for legacy rows without origin_active.
+ */
+export async function findConversationIdByPlatformInfo(
+  platform: string,
+  platformExtra: Record<string, unknown> = {},
+): Promise<string | null> {
+  const probe = buildOriginIdentityProbe(platform, platformExtra);
+  if (!probe) return null;
+  const db = getDb();
+  const probeJson = JSON.stringify(probe);
+
+  const activeRows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(
+      sql`${conversations.platform_info} @> ${probeJson}::jsonb
+        AND (${conversations.platform_info}->>'origin_active')::boolean IS TRUE`,
+    )
+    .orderBy(desc(conversations.updated_at))
+    .limit(1);
+  if (activeRows[0]?.id) return activeRows[0].id;
+
+  const legacyRows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(
+      sql`${conversations.platform_info} @> ${probeJson}::jsonb
+        AND COALESCE((${conversations.platform_info}->>'origin_active')::boolean, false) IS NOT TRUE
+        AND (${conversations.platform_info}->>'origin_active') IS NULL`,
+    )
+    .orderBy(desc(conversations.updated_at))
+    .limit(1);
+  return legacyRows[0]?.id ?? null;
+}
+
+/** All conversation ids whose platform_info contains the identity probe (routing meta excluded). */
+export async function listConversationIdsMatchingPlatformProbe(
+  platform: string,
+  platformExtra: Record<string, unknown> = {},
+): Promise<string[]> {
+  const probe = buildOriginIdentityProbe(platform, platformExtra);
+  if (!probe) return [];
+  const db = getDb();
+  const rows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(sql`${conversations.platform_info} @> ${JSON.stringify(probe)}::jsonb`)
+    .orderBy(desc(conversations.updated_at));
+  return rows.map((r) => r.id);
+}
+
+/** Non-debug conversation ids with conversations.updated_at in [fromIso, toIso) */
+export async function listConversationIdsUpdatedBetween(
+  fromIso: string,
+  toIso: string,
+  opts?: { agent_subject_id?: number },
+): Promise<string[]> {
+  const db = getDb();
+  const conditions = [
+    sql`${conversations.updated_at} >= ${fromIso}::timestamptz`,
+    sql`${conversations.updated_at} < ${toIso}::timestamptz`,
+    eq(conversations.debug, false),
+    sql`COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
+  ];
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
+  }
+  const rows = await db
+    .select({ id: conversations.id })
+    .from(conversations)
+    .where(and(...conditions))
+    .orderBy(desc(conversations.updated_at));
+  return rows.map((r) => r.id);
+}
+
+/** Earliest non-debug conversation CST calendar day YYYY-MM-DD */
+export async function getEarliestConversationDay(opts?: {
+  agent_subject_id?: number;
+}): Promise<string | null> {
+  const db = getDb();
+  const conditions = [eq(conversations.debug, false)];
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
+  }
+  const rows = await db
+    .select({
+      day: sql<string | null>`to_char(
+        (MIN(${conversations.created_at}) AT TIME ZONE 'Asia/Shanghai')::date,
+        'YYYY-MM-DD'
+      )`,
+    })
+    .from(conversations)
+    .where(and(...conditions));
+  const day = rows[0]?.day?.trim();
+  return day || null;
+}
+
+/**
+ * CST calendar days YYYY-MM-DD with conversation.updated_at activity in [fromDay, toDay]
+ * (same non-debug / non-cron filter as retain day-window).
+ */
+export async function listConversationActivityDays(
+  fromDay: string,
+  toDay: string,
+  opts?: { agent_subject_id?: number },
+): Promise<string[]> {
+  const fromIso = `${fromDay}T00:00:00+08:00`;
+  // toDay inclusive: upper bound = start of day after toDay
+  const toEndExclusive = `${toDay}T00:00:00+08:00`;
+  const dayExpr = sql<string>`to_char(
+    (${conversations.updated_at} AT TIME ZONE 'Asia/Shanghai')::date,
+    'YYYY-MM-DD'
+  )`;
+  const db = getDb();
+  const conditions = [
+    sql`${conversations.updated_at} >= ${fromIso}::timestamptz`,
+    sql`${conversations.updated_at} < (${toEndExclusive}::timestamptz + interval '1 day')`,
+    eq(conversations.debug, false),
+    sql`COALESCE(${conversations.platform_info}->>'platform', '') <> 'cron'`,
+  ];
+  if (opts?.agent_subject_id != null && opts.agent_subject_id > 0) {
+    conditions.push(eq(conversations.agent_subject_id, opts.agent_subject_id));
+  }
+  const rows = await db
+    .select({ day: dayExpr })
+    .from(conversations)
+    .where(and(...conditions))
+    .groupBy(dayExpr)
+    .orderBy(dayExpr);
+  return rows.map((r) => r.day).filter((d) => d.length > 0 && d >= fromDay && d <= toDay);
+}

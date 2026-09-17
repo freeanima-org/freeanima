@@ -19,8 +19,8 @@ function isAllowed(rel: string): boolean {
 
 function isChatFromLlm(spec: string): boolean {
   if (spec === "./llm.ts" || spec.endsWith("/llm.ts")) return true;
-  if (spec === "@freeanima/habitat/core/llm") return true;
-  if (spec.startsWith("@freeanima/habitat/core/llm/")) return true;
+  if (spec === "@freeanima/core/llm") return true;
+  if (spec.startsWith("@freeanima/core/llm/")) return true;
   return false;
 }
 

@@ -35,7 +35,7 @@ Release Please defaults to `feat` / `fix` / `deps` as releasable commit triggers
 ```bash
 bun -p "require('./package.json').version"
 # Or after build:
-bun packages/habitat/portal/cli/cli.ts -- --help
+bun packages/cli/cli/cli.ts -- --help
 ./dist/anima-executable/anima --version
 # standalone install: anima service status
 ```
@@ -88,7 +88,7 @@ Specify version in commit body with `Release-As: x.y.z` (see [Release Please doc
 | Firefox xpi（canary 自托管） | `freeanima-browser-extension-firefox.xpi` | `freeanima-browser-extension-firefox-{ver}-{channel}.xpi` |
 | Firefox updates.json   | `freeanima-browser-extension-firefox-updates.json` | `…-updates-{ver}-{channel}.json`               |
 
-`just pack *` 经 [`pack-artifact-names.ts`](../../packages/habitat/core/config/pack-artifact-names.ts) **双写**：版本化主名 + 固定别名（updater / 文档 curl）。`{ver}` 来自 `FREEANIMA_BUILD_VERSION`，或本机缺省 `{package.json}-local+{UTC YYYYMMDDHHmm}`（`+` → `.`）。未设 channel 时为 `local`。
+`just pack *` 经 [`pack-artifact-names.ts`](../../packages/core/config/pack-artifact-names.ts) **双写**：版本化主名 + 固定别名（updater / 文档 curl）。`{ver}` 来自 `FREEANIMA_BUILD_VERSION`，或本机缺省 `{package.json}-local+{UTC YYYYMMDDHHmm}`（`+` → `.`）。未设 channel 时为 `local`。
 
 差异仅 **channel / 版本号 / 发布目标**：
 
@@ -134,7 +134,7 @@ just pack cli   # 默认 channel=local；CI 设 FREEANIMA_BUILD_CHANNEL
 
 | Mode           | How to run                                               |
 | -------------- | -------------------------------------------------------- |
-| **source**     | `bun install` + `bun packages/habitat/portal/cli/cli.ts` / `just dev` |
+| **source**     | `bun install` + `bun packages/cli/cli/cli.ts` / `just dev` |
 | **standalone** | Unpack Release tarball; run `./anima`                    |
 
 There is **no** npm package publish and **no** Docker image publish.

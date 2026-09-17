@@ -1,4 +1,4 @@
-import { computeStats, statsReport, getAppRuntime } from "@freeanima/habitat/platform";
+import { computeStats, statsReport, getAppRuntime } from "@freeanima/server";
 import { it, expect, beforeEach, afterEach, afterAll } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
@@ -8,17 +8,17 @@ import {
 } from "../../helpers/integration-case.ts";
 import { getTestEngine, testConv } from "../../helpers/pg-test.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import { FALLBACK_TOKENIZER_REPO } from "@freeanima/habitat/core/tokenizer";
+import { FALLBACK_TOKENIZER_REPO } from "@freeanima/core/tokenizer";
 import {
   registerCatalogContextWindowLookup,
   resetCatalogContextWindowLookupForTest,
-} from "@freeanima/habitat/core/config";
+} from "@freeanima/core/config";
 import {
   bindModelToFallbackForTest,
   ensureFallbackTokenizer,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
-} from "@freeanima/habitat/core/tokenizer/testing";
+} from "@freeanima/core/tokenizer/testing";
 
 describePg("runtime context stats", () => {
   const prev = process.env.FREEANIMA_HOME;

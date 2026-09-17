@@ -8,16 +8,16 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { computeAndroidVersionCode } from "@freeanima/habitat/core/config/android-version-code.ts";
-import { resolveBuildChannelFromEnv } from "@freeanima/habitat/core/config/build-meta.ts";
-import type { BuildChannel } from "@freeanima/habitat/core/config/build-meta.parse.ts";
-import { resolveBuildVersionFromEnv } from "@freeanima/habitat/core/config/resolve-build-version.ts";
+import { computeAndroidVersionCode } from "@freeanima/core/config/android-version-code.ts";
+import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta.ts";
+import type { BuildChannel } from "@freeanima/core/config/build-meta.parse.ts";
+import { resolveBuildVersionFromEnv } from "@freeanima/core/config/resolve-build-version.ts";
 import {
   resolveDesktopShellIdentity,
   resolveMobileShellIdentity,
   type DesktopShellIdentity,
   type MobileShellIdentity,
-} from "@freeanima/habitat/core/config/shell-identity.ts";
+} from "@freeanima/core/config/shell-identity.ts";
 import { asRecord } from "@freeanima/shared/util";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");

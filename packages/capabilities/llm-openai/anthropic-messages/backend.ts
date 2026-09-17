@@ -1,0 +1,377 @@
+import Anthropic from "@anthropic-ai/sdk";
+import type {
+  MessageParam,
+  Tool,
+  ToolResultBlockParam,
+} from "@anthropic-ai/sdk/resources/messages";
+import {
+  LlmBackend,
+  collectChatCompletion,
+  type BackendContext,
+  type ChatCompletion,
+  type ChatRequest,
+  type ChatStreamEvent,
+  type LlmTurnMessage,
+  type ModelInfo,
+  type ProviderError,
+  type ToolCall,
+  ProviderError as ProviderErrorClass,
+  providerErrorFromHttpStatus,
+} from "@freeanima/core/provider";
+import { LLM_FORMAT_ANTHROPIC_MESSAGES } from "@freeanima/core/config";
+import { omitUndefined } from "@freeanima/core/util";
+import { cleanToolCallsForApi } from "@freeanima/core/provider/stream-tools";
+import { defaultModelInfoEnriched } from "../catalog.ts";
+import { CATALOG_DEFAULT_MAX_OUTPUT_TOKENS } from "../models-dev/enrich.ts";
+import {
+  parseOpenAiCompatibleContext,
+  resolveChatTimeouts,
+  type OpenAiCompatibleContext,
+} from "../context.ts";
+import {
+  createLlmTimeoutController,
+  extractLlmTimeoutError,
+  isLlmTimeoutError,
+  mergeAbortSignals,
+} from "../request-timeouts.ts";
+import { normalizeUsage } from "../usage.ts";
+import { coerceString } from "@freeanima/shared/coerce-string";
+import { isQuotaExhaustedText, createSdkFetch } from "../sdk-retry-guard.ts";
+import { asRecord } from "@freeanima/shared/util";
+
+export const ANTHROPIC_MESSAGES_FORMAT_ID = LLM_FORMAT_ANTHROPIC_MESSAGES;
+
+/** Messages API requires max_tokens; use catalog when business did not set one. */
+async function resolveAnthropicMaxTokens(model: string, request: ChatRequest): Promise<number> {
+  if (request.params.maxOutputTokens != null) {
+    return request.params.maxOutputTokens;
+  }
+  const info = await defaultModelInfoEnriched(model);
+  return info.maxOutputTokens > 0 ? info.maxOutputTokens : CATALOG_DEFAULT_MAX_OUTPUT_TOKENS;
+}
+
+function rethrowTimeout(err: unknown): never {
+  const llm = extractLlmTimeoutError(err);
+  if (llm) throw llm;
+  throw err;
+}
+
+function createAnthropicClient(context: OpenAiCompatibleContext): Anthropic {
+  const { overallMs, connectMs } = resolveChatTimeouts(context);
+  return new Anthropic({
+    apiKey: context.apiKey,
+    baseURL: context.baseUrl,
+    timeout: overallMs,
+    fetch: createSdkFetch(connectMs),
+  });
+}
+
+function toAnthropicMessages(messages: LlmTurnMessage[]): MessageParam[] {
+  const out: MessageParam[] = [];
+  for (const msg of messages) {
+    switch (msg.role) {
+      case "user": {
+        const media = msg.content_media?.filter((m) => m.type === "image") ?? [];
+        if (media.length === 0) {
+          out.push({ role: "user", content: msg.content });
+          break;
+        }
+        const blocks: Array<
+          | { type: "text"; text: string }
+          | {
+              type: "image";
+              source: {
+                type: "base64";
+                media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+                data: string;
+              };
+            }
+        > = [];
+        if (msg.content.trim()) {
+          blocks.push({ type: "text", text: msg.content });
+        }
+        for (const m of media) {
+          const mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp" =
+            m.mime_type === "image/jpeg" ||
+            m.mime_type === "image/png" ||
+            m.mime_type === "image/gif" ||
+            m.mime_type === "image/webp"
+              ? m.mime_type
+              : "image/png";
+          blocks.push({
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: mediaType,
+              data: m.data_base64,
+            },
+          });
+        }
+        if (blocks.length === 0) {
+          blocks.push({ type: "text", text: msg.content || "(附件)" });
+        }
+        out.push({ role: "user", content: blocks });
+        break;
+      }
+      case "system":
+        // system handled separately
+        break;
+      case "assistant": {
+        const cleaned = msg.tool_calls?.length ? cleanToolCallsForApi(msg.tool_calls) : [];
+        const contentBlocks: Array<
+          | { type: "text"; text: string }
+          | { type: "tool_use"; id: string; name: string; input: Record<string, unknown> }
+        > = [];
+        if (msg.content) contentBlocks.push({ type: "text", text: msg.content });
+        for (const tc of cleaned) {
+          let input: Record<string, unknown> = {};
+          try {
+            const parsed: unknown = JSON.parse(tc.function.arguments || "{}");
+            const rec = asRecord(parsed);
+            if (rec) input = rec;
+          } catch {
+            input = {};
+          }
+          contentBlocks.push({
+            type: "tool_use",
+            id: tc.id,
+            name: tc.function.name,
+            input,
+          });
+        }
+        if (contentBlocks.length === 0) contentBlocks.push({ type: "text", text: "" });
+        out.push({ role: "assistant", content: contentBlocks });
+        break;
+      }
+      case "tool": {
+        const block: ToolResultBlockParam = {
+          type: "tool_result",
+          tool_use_id: msg.tool_call_id,
+          content: msg.content,
+        };
+        const last = out[out.length - 1];
+        if (last?.role === "user" && Array.isArray(last.content)) {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Anthropic tool_result content 数组边界
+          (last.content as ToolResultBlockParam[]).push(block);
+        } else {
+          out.push({ role: "user", content: [block] });
+        }
+        break;
+      }
+      default: {
+        const _exhaustive: never = msg;
+        throw new Error(`Unknown message role: ${JSON.stringify(_exhaustive)}`);
+      }
+    }
+  }
+  return out;
+}
+
+function toAnthropicTools(request: ChatRequest): Tool[] | undefined {
+  if (!request.tools?.length) return undefined;
+  return request.tools.map((t) =>
+    omitUndefined({
+      name: t.function.name,
+      description: t.function.description,
+      input_schema: (() => {
+        const schema = t.function.parameters ?? {
+          type: "object",
+          properties: {},
+        };
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Anthropic Tool.input_schema 边界
+        return schema as Tool["input_schema"];
+      })(),
+    }),
+  );
+}
+
+function mapAnthropicError(err: unknown, meta?: { providerId?: string }): ProviderError {
+  if (err instanceof ProviderErrorClass) return err;
+  const llmTimeout = isLlmTimeoutError(err) ? err : extractLlmTimeoutError(err);
+  if (llmTimeout) {
+    return new ProviderErrorClass(
+      llmTimeout.message,
+      "timeout",
+      true,
+      omitUndefined({ providerId: meta?.providerId, cause: llmTimeout }),
+    );
+  }
+  if (err && typeof err === "object" && "status" in err) {
+    const errRec = asRecord(err);
+    const status = typeof errRec?.status === "number" ? errRec.status : 0;
+    const message = err instanceof Error ? err.message : coerceString(err);
+    if (status === 429 && isQuotaExhaustedText(message)) {
+      return new ProviderErrorClass(
+        message,
+        "rate_limited",
+        false,
+        omitUndefined({
+          providerId: meta?.providerId,
+          cause: err instanceof Error ? err : undefined,
+        }),
+      );
+    }
+    return providerErrorFromHttpStatus(
+      status,
+      message,
+      omitUndefined({
+        providerId: meta?.providerId,
+        cause: err instanceof Error ? err : undefined,
+      }),
+    );
+  }
+  if (err instanceof Error) {
+    const msg = err.message.toLowerCase();
+    if (msg.includes("timeout") || msg.includes("timed out")) {
+      return new ProviderErrorClass(
+        err.message,
+        "timeout",
+        true,
+        omitUndefined({ providerId: meta?.providerId, cause: err }),
+      );
+    }
+    if (msg.includes("abort") || err.name === "AbortError") {
+      return new ProviderErrorClass(
+        err.message,
+        "cancelled",
+        false,
+        omitUndefined({ providerId: meta?.providerId, cause: err }),
+      );
+    }
+  }
+  return new ProviderErrorClass(
+    err instanceof Error ? err.message : String(err),
+    "unknown",
+    false,
+    omitUndefined({ providerId: meta?.providerId, cause: err instanceof Error ? err : undefined }),
+  );
+}
+
+export async function* runAnthropicMessagesStream(
+  model: string,
+  request: ChatRequest,
+  context: BackendContext,
+  signal?: AbortSignal,
+): AsyncGenerator<ChatStreamEvent> {
+  const parsed = parseOpenAiCompatibleContext(context);
+  const { overallMs, firstByteMs, idleMs } = resolveChatTimeouts(parsed);
+  const timeouts = createLlmTimeoutController({
+    overallMs,
+    firstByteMs,
+    idleMs,
+    ...(signal ? { external: signal } : {}),
+  });
+  const client = createAnthropicClient(parsed);
+  const toolCallsAcc = new Map<number, { id: string; name: string; arguments: string }>();
+  let modelName = model;
+  let lastUsage: Record<string, number> | null = null;
+  let finishReason: string | null = null;
+
+  try {
+    const system =
+      request.systemPrompt?.trim() ||
+      request.messages
+        .filter((m) => m.role === "system")
+        .map((m) => m.content)
+        .join("\n");
+    const max_tokens = await resolveAnthropicMaxTokens(model, request);
+    const stream = client.messages.stream(
+      omitUndefined({
+        model,
+        max_tokens,
+        system: system || undefined,
+        messages: toAnthropicMessages(request.messages),
+        tools: toAnthropicTools(request),
+        temperature: request.params.temperature,
+        top_p: request.params.topP,
+        ...request.params.extra,
+      }),
+      { signal: mergeAbortSignals(timeouts.signal, request.signal) },
+    );
+
+    for await (const event of stream) {
+      timeouts.onChunk();
+      if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+        yield { type: "content", content: event.delta.text };
+      }
+      if (event.type === "content_block_start" && event.content_block.type === "tool_use") {
+        toolCallsAcc.set(event.index, {
+          id: event.content_block.id,
+          name: event.content_block.name,
+          arguments: "",
+        });
+      }
+      if (event.type === "content_block_delta" && event.delta.type === "input_json_delta") {
+        const acc = toolCallsAcc.get(event.index);
+        if (acc) acc.arguments += event.delta.partial_json;
+      }
+      if (event.type === "message_delta") {
+        if (event.delta.stop_reason) finishReason = event.delta.stop_reason;
+        if (event.usage) {
+          lastUsage = normalizeUsage({
+            prompt_tokens: 0,
+            completion_tokens: event.usage.output_tokens,
+            total_tokens: event.usage.output_tokens,
+          });
+        }
+      }
+      if (event.type === "message_start" && event.message.model) {
+        modelName = event.message.model;
+        lastUsage = normalizeUsage({
+          prompt_tokens: event.message.usage.input_tokens,
+          completion_tokens: event.message.usage.output_tokens,
+          total_tokens: event.message.usage.input_tokens + event.message.usage.output_tokens,
+        });
+      }
+    }
+
+    const tool_calls: ToolCall[] = [...toolCallsAcc.values()].map((tc) => ({
+      id: tc.id,
+      type: "function" as const,
+      function: { name: tc.name, arguments: tc.arguments || "{}" },
+    }));
+    if (tool_calls.length > 0) yield { type: "tool_calls", tool_calls };
+    yield {
+      type: "done",
+      usage: lastUsage,
+      finish_reason: finishReason ?? (tool_calls.length > 0 ? "tool_calls" : "stop"),
+      model: modelName,
+    };
+    return;
+  } catch (err) {
+    if (timeouts.signal.aborted && isLlmTimeoutError(timeouts.signal.reason)) {
+      throw timeouts.signal.reason;
+    }
+    rethrowTimeout(err);
+  } finally {
+    timeouts.dispose();
+  }
+}
+
+/** Anthropic Messages API format adapter. */
+export class AnthropicMessagesBackend extends LlmBackend {
+  async listModels(_context: BackendContext): Promise<ModelInfo[]> {
+    return [];
+  }
+
+  async getModel(model: string, _context: BackendContext): Promise<ModelInfo | null> {
+    return defaultModelInfoEnriched(model);
+  }
+
+  mapError(err: unknown, _context: BackendContext, meta?: { providerId?: string }): ProviderError {
+    return mapAnthropicError(err, meta);
+  }
+
+  chat(model: string, request: ChatRequest, context: BackendContext): Promise<ChatCompletion> {
+    return collectChatCompletion(this.chatStream(model, request, context, request.signal));
+  }
+
+  chatStream(
+    model: string,
+    request: ChatRequest,
+    context: BackendContext,
+    signal?: AbortSignal,
+  ): AsyncIterable<ChatStreamEvent> {
+    return runAnthropicMessagesStream(model, request, context, signal);
+  }
+}

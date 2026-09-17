@@ -12,7 +12,7 @@ import { beginLocomoPgRuntime, type LocomoPgRuntime } from "./pg-runtime.ts";
 import { reportToMarkdown, writeReport } from "./report.ts";
 import { resolveLocomoModel } from "./env.ts";
 import type { ArmAnswer, ArmName, LocomoSample } from "./types.ts";
-import type { MemoryService } from "@freeanima/habitat/capabilities/memory/service";
+import type { MemoryService } from "@freeanima/capabilities/memory/service";
 
 type CliOpts = {
   dryRun: boolean;

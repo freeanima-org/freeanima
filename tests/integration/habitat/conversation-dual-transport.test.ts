@@ -12,8 +12,8 @@ import {
   getFeatureRpcHandler,
   registerFeatures,
   resetFeatureRegistryForTests,
-} from "@freeanima/habitat/platform/features";
-import { getAppRuntime } from "@freeanima/habitat/platform";
+} from "@freeanima/server/features";
+import { getAppRuntime } from "@freeanima/server";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import { testConv } from "../../helpers/pg-test.ts";
 

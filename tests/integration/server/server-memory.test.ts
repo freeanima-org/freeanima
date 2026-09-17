@@ -7,15 +7,12 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { getAppRuntime } from "@freeanima/habitat/platform";
-import { SELF_BLOCK_KEYS } from "@freeanima/habitat/core/db/pg/self-layer/types";
-import {
-  createSemanticMemory,
-  getSemanticMemory,
-} from "@freeanima/habitat/core/db/pg/semantic-memory";
-import { upsertSelfBlock } from "@freeanima/habitat/core/db/pg/self-layer";
-import { countSemanticMemory } from "@freeanima/habitat/core/db/pg/semantic-memory";
-import { setSearchDocumentClusterId } from "@freeanima/habitat/core/db/pg/search";
+import { getAppRuntime } from "@freeanima/server";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
+import { createSemanticMemory, getSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
+import { upsertSelfBlock } from "@freeanima/core/db/pg/self-layer";
+import { countSemanticMemory } from "@freeanima/core/db/pg/semantic-memory";
+import { setSearchDocumentClusterId } from "@freeanima/core/db/pg/search";
 import { getActivePgTestContext } from "../../helpers/pg-test.ts";
 
 describePg("server memory API", () => {
@@ -229,8 +226,7 @@ describePg("server memory API", () => {
     const seven = clusters.items.find((row) => row.cluster_id === 7);
     expect(seven?.count).toBeGreaterThanOrEqual(2);
 
-    const { getResolvedWorldContext } =
-      await import("@freeanima/habitat/core/config/world-context");
+    const { getResolvedWorldContext } = await import("@freeanima/core/config/world-context");
     const agentId = getResolvedWorldContext().default_chat_agent_subject_id;
     const scopedClusters = await getAppRuntime().listSemanticMemoryClusters({
       agent_subject_id: agentId,
@@ -243,8 +239,7 @@ describePg("server memory API", () => {
   });
 
   it("listSelfBlocks returns five blocks in order", async () => {
-    const { getResolvedWorldContext } =
-      await import("@freeanima/habitat/core/config/world-context");
+    const { getResolvedWorldContext } = await import("@freeanima/core/config/world-context");
     const agentId = getResolvedWorldContext().default_chat_agent_subject_id;
     await upsertSelfBlock(
       {

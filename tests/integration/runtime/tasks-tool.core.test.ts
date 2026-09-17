@@ -7,12 +7,12 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/habitat/engine/loop-mechanism";
-import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
-import { getProfileHopModel } from "@freeanima/habitat/platform/config";
+import { runWithToolContext } from "@freeanima/engine/loop-mechanism";
+import { ToolSetRegistry } from "@freeanima/core/tool";
+import { getProfileHopModel } from "@freeanima/server/config";
 import { registerTaskTools, getDefaultTaskList } from "@freeanima/features/task/domain";
 import { createTag } from "@freeanima/features/tag/domain";
-import { getEntity } from "@freeanima/habitat/core/db/pg/entity";
+import { getEntity } from "@freeanima/core/db/pg/entity";
 import {
   getActivePgTestContext,
   testConv,

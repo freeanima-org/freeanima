@@ -7,18 +7,18 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { existsSync } from "node:fs";
-import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/habitat/core/tool";
+import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/core/tool";
 import {
   registerCatalogContextWindowLookup,
   resetCatalogContextWindowLookupForTest,
-} from "@freeanima/habitat/core/config";
-import { bindContextWindowLookup } from "@freeanima/habitat/platform/bind-context-window.ts";
-import { registerServiceTools } from "@freeanima/habitat/platform";
+} from "@freeanima/core/config";
+import { bindContextWindowLookup } from "@freeanima/server/bind-context-window.ts";
+import { registerServiceTools } from "@freeanima/server";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import { getConversationTools } from "@freeanima/habitat/core/db/pg/conversation";
-import * as conversationPg from "@freeanima/habitat/core/db/pg/conversation";
+import { getConversationTools } from "@freeanima/core/db/pg/conversation";
+import * as conversationPg from "@freeanima/core/db/pg/conversation";
 import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/pg-test.ts";
 
 describePg("conversation", () => {

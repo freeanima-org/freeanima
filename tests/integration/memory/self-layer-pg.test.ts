@@ -5,14 +5,14 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { SELF_BLOCK_KEYS } from "@freeanima/habitat/core/db/pg/self-layer/types";
+import { SELF_BLOCK_KEYS } from "@freeanima/core/db/pg/self-layer/types";
 import {
   getSelfBlock,
   listSelfBlocks,
   updateSelfBlock,
   upsertSelfBlock,
-} from "@freeanima/habitat/core/db/pg/self-layer";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+} from "@freeanima/core/db/pg/self-layer";
+import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 
 describePg("self layer PG", () => {
   const prev = process.env.FREEANIMA_HOME;

@@ -3,13 +3,13 @@ import path from "node:path";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import type { Plugin } from "vite";
-import { resolveBuildChannelFromEnv } from "./packages/habitat/core/config/build-meta.ts";
+import { resolveBuildChannelFromEnv } from "./packages/core/config/build-meta.ts";
 import {
   FIREFOX_ADDON_ID,
   FIREFOX_ADDON_UPDATE_URL,
   resolveFirefoxAddonVersion,
-} from "./packages/habitat/core/config/firefox-addon.ts";
-import { resolveBuildVersionFromEnv } from "./packages/habitat/core/config/resolve-build-version.ts";
+} from "./packages/core/config/firefox-addon.ts";
+import { resolveBuildVersionFromEnv } from "./packages/core/config/resolve-build-version.ts";
 import { buildViteAliases } from "./packages/frontend/client/app-frame/vite/module-aliases.ts";
 
 const repoRoot = path.resolve(import.meta.dirname);
