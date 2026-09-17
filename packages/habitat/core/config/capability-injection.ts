@@ -1,4 +1,4 @@
-import type { Logger } from "@freeanima/habitat/kernel/logging";
+import type { Logger } from "@freeanima/kernel/logging";
 import {
   ensureProcessContext,
   getProcessContext,

@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 
 import type { Message, TextBasedChannel } from "discord.js";
 import { describe, expect, it, vi } from "bun:test";

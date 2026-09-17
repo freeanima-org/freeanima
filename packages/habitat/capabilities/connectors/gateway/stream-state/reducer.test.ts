@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import { describe, expect, it } from "bun:test";
 import { ToolRoundBuffer } from "../stream-tool-format.ts";
 import { applyStreamEvent, initialStreamReplyState, reduceStreamEvents } from "./reducer.ts";

@@ -1,7 +1,7 @@
-import type { Logger } from "@freeanima/habitat/kernel/logging";
-import { formatError, type LogAttributes } from "@freeanima/habitat/kernel/logging";
-import { createLogger } from "@freeanima/habitat/kernel/logging";
-import { createNullSink } from "@freeanima/habitat/kernel/logging/sinks/null.ts";
+import type { Logger } from "@freeanima/kernel/logging";
+import { formatError, type LogAttributes } from "@freeanima/kernel/logging";
+import { createLogger } from "@freeanima/kernel/logging";
+import { createNullSink } from "@freeanima/kernel/logging/sinks/null.ts";
 
 let apiLogger: Logger | null = null;
 let sseLogger: Logger | null = null;

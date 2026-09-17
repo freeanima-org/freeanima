@@ -28,7 +28,7 @@ import { bindActiveRuntimeConfig } from "@freeanima/habitat/core/config";
 import { bindResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
 import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context";
 import { ensureWorldSubjects } from "@freeanima/habitat/core/db/pg/entity/subject-world";
-import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import type { StoredMessage, ConversationMetaMessage } from "@freeanima/habitat/core/db/domain";
 import type { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { relations } from "@freeanima/habitat/core/db/schema";

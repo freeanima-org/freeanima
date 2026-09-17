@@ -13,7 +13,7 @@ import {
   isEngineStreamError,
   isTransientNetworkError,
   networkErrorUserHint,
-} from "@freeanima/habitat/kernel/loop-mechanism";
+} from "@freeanima/habitat/engine/loop-mechanism";
 import { getAppRuntime } from "@freeanima/habitat/platform/ports";
 import { resolveCommand } from "@freeanima/habitat/capabilities/tools/slash-commands";
 import { onConversationUpdated } from "@freeanima/habitat/core/hooks/cordis";
@@ -478,7 +478,7 @@ export class DiscordAdapter implements PlatformAdapter {
         await streamReplyToInteraction(
           interaction,
           (async function* (): AsyncGenerator<
-            import("@freeanima/habitat/kernel/loop-mechanism").StreamEvent
+            import("@freeanima/habitat/engine/loop-mechanism").StreamEvent
           > {
             yield { event: "token", data: { content: networkErrorUserHint(e) } };
             yield { event: "done", data: {} };

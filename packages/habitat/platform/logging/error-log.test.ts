@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { createLogger } from "@freeanima/habitat/kernel/logging";
-import { createMemorySink } from "@freeanima/habitat/kernel/logging/sinks/memory.ts";
-import type { MemorySink } from "@freeanima/habitat/kernel/logging/sinks/memory.ts";
+import { createLogger } from "@freeanima/kernel/logging";
+import { createMemorySink } from "@freeanima/kernel/logging/sinks/memory.ts";
+import type { MemorySink } from "@freeanima/kernel/logging/sinks/memory.ts";
 import { logComponent, logStartupError, resetServiceLogger, setServiceLogger } from "./index.ts";
 describe("error-log", () => {
   let memory: MemorySink;

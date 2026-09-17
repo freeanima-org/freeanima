@@ -1,5 +1,5 @@
 import { Context } from "cordis";
-import type { Logger } from "@freeanima/habitat/kernel/logging";
+import type { Logger } from "@freeanima/kernel/logging";
 import type { MessageIncomingContext, TurnAfterCompleteContext } from "../conversation/hooks.ts";
 import type { BeforeLlmCallContext, ToolAfterCallContext } from "../loop/hooks.ts";
 import type { SystemPromptBuildContext, SystemPromptBuildEffect } from "../prompt/hooks.ts";

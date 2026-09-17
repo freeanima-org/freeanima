@@ -1,4 +1,4 @@
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { Config } from "@freeanima/habitat/core/config";
 import { bindClarifyConfig } from "./clarify.ts";
 import type { ConversationPort } from "@freeanima/habitat/core/tool/conversation-port.ts";

@@ -5,11 +5,11 @@ import type {
   ServiceSnapshot,
   ConversationSummary,
 } from "@freeanima/habitat/platform/schemas/snapshot";
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import type { StoredMessage as Message } from "@freeanima/habitat/core/db/domain";
 import type { ConversationService } from "@freeanima/habitat/engine/conversation";
 import type { CronJobData } from "@freeanima/habitat/capabilities/connectors/cron";
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { AppRuntimePort } from "@freeanima/habitat/platform/ports/app-runtime-port";
 import type { McpManagerPort } from "@freeanima/habitat/platform/ports/mcp-manager";
 import type { RemoteToolsManagerPort } from "@freeanima/habitat/platform/ports/remote-tools-manager";
@@ -17,7 +17,7 @@ import type { ServiceEnginePort } from "@freeanima/habitat/platform/ports/servic
 import {
   collectStreamReply,
   createConversationAfterMessagesPersisted,
-} from "@freeanima/habitat/kernel/loop-mechanism";
+} from "@freeanima/habitat/engine/loop-mechanism";
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
 import { ConversationManager } from "./conversation-manager.ts";
@@ -34,7 +34,7 @@ import * as llmUsage from "./service-llm-usage.ts";
 import * as messaging from "./service-messaging.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 
-export type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+export type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 export { ConversationManager } from "./conversation-manager.ts";
 
 export type CreateAppRuntimeInput = FullRuntimeDeps;

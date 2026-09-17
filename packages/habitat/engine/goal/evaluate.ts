@@ -6,7 +6,7 @@ import { judgeGoal } from "@freeanima/habitat/core/llm/goal-judge";
 import { PROFILE_GOAL_JUDGE } from "@freeanima/habitat/core/provider";
 import type { ConversationPort } from "@freeanima/habitat/core/tool/conversation-port.ts";
 import type { LlmRuntime } from "@freeanima/habitat/core/llm";
-import type { Logger } from "@freeanima/habitat/kernel/logging";
+import type { Logger } from "@freeanima/kernel/logging";
 
 import {
   formatGoalAchievedMessage,

@@ -1,8 +1,5 @@
 import type { Config } from "@freeanima/habitat/core/config";
-import {
-  applyConfigSection,
-  listTransferredSectionKeys,
-} from "@freeanima/habitat/kernel/config-mechanism";
+import { applyConfigSection, listTransferredSectionKeys } from "@freeanima/kernel/config-mechanism";
 import { logComponent } from "@freeanima/habitat/platform/logging";
 
 import {

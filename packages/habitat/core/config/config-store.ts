@@ -8,7 +8,7 @@ import {
   getActiveRuntimeConfig as getActiveRuntimeConfigKernel,
   peekActiveRuntimeConfig as peekActiveRuntimeConfigKernel,
   resetActiveConfigForTest,
-} from "@freeanima/habitat/kernel/config-mechanism";
+} from "@freeanima/kernel/config-mechanism";
 
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 

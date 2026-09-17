@@ -10,7 +10,7 @@ import {
   pickRuntimeDocument,
   hasRuntimeSectionsInYaml,
   isEmptyRuntimeDocument,
-} from "@freeanima/habitat/kernel/config-mechanism";
+} from "@freeanima/kernel/config-mechanism";
 
 export {
   BOOTSTRAP_CONFIG_KEYS,

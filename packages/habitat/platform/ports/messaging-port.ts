@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 
 /** Gateway / 平台消息入口 */
 export type MessagingPort = {

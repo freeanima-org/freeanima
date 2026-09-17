@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023"],
-    "types": ["bun"],
     "composite": true,
     "declaration": true,
     "declarationMap": true,
@@ -13,13 +12,10 @@
     "allowImportingTsExtensions": false
   },
   "include": ["./**/*.ts", "../../types/**/*.d.ts"],
-  "exclude": ["**/dist/**", "**/dist-types/**", "**/node_modules/**", "**/src-tauri/**"],
+  "exclude": ["**/dist/**", "**/dist-types/**", "**/node_modules/**", "**/*.test.ts"],
   "references": [
     {
       "path": "../shared"
-    },
-    {
-      "path": "../kernel"
     }
   ]
 }

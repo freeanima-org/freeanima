@@ -2,7 +2,7 @@ import { notificationInjectPlugin } from "@freeanima/habitat/capabilities/tools/
 import { registerMemoryPassiveRecallHook as registerPassiveRecall } from "@freeanima/habitat/capabilities/memory";
 import { registerClarifyHooks } from "@freeanima/habitat/capabilities/tools/clarify";
 import { createTemporalPeerInjectHandler } from "./service/temporal-summary-inject.ts";
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { Config } from "@freeanima/habitat/core/config";
 import { onBeforeLlmCall } from "@freeanima/habitat/core/hooks/cordis";
 import type { ConversationService } from "@freeanima/habitat/engine/conversation";

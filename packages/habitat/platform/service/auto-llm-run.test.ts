@@ -1,5 +1,5 @@
 import { describe, it, expect, spyOn, afterAll, afterEach, mock } from "bun:test";
-import * as loopEngine from "@freeanima/habitat/kernel/loop-mechanism";
+import * as loopEngine from "@freeanima/habitat/engine/loop-mechanism";
 import * as conv from "@freeanima/habitat/engine/conversation";
 import type {
   AutoLlmMessageAppendInput,
@@ -11,7 +11,7 @@ import { createEngine, createEngineCatalog } from "@freeanima/habitat/engine";
 import { initLlmRuntime, mountLlmStackService } from "@freeanima/habitat/core/llm";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
-import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
 import { parseYaml } from "@freeanima/habitat/platform/config";
 import { runtimeConfigSchema } from "@freeanima/habitat/core/config";

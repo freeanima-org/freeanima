@@ -1,4 +1,4 @@
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import { onBeforeLlmCall } from "@freeanima/habitat/core/hooks/cordis";
 
 import { createPassiveMemoryRecallHandler } from "./passive-recall/handler.ts";

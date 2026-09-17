@@ -1,4 +1,4 @@
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import type { ToolDisplayMode } from "../tool-display.ts";
 import { DEFAULT_TOOL_DISPLAY_MODE } from "../tool-display.ts";
 import { ToolRoundBuffer } from "../stream-tool-format.ts";

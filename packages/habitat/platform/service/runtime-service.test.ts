@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { createHookContext } from "@freeanima/habitat/core/hooks/cordis";
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import { RuntimeService, type RuntimeContext } from "./runtime-service.ts";
 
 function stubRuntime(): RuntimeContext {

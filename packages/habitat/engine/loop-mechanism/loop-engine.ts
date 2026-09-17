@@ -6,7 +6,7 @@ import {
   validateToolArgs,
 } from "@freeanima/habitat/core/tool";
 import { getRuntimeLogger } from "@freeanima/habitat/core/config";
-import type { Logger } from "@freeanima/habitat/kernel/logging";
+import type { Logger } from "@freeanima/kernel/logging";
 import { ProviderError, type LlmCallParams } from "@freeanima/habitat/core/provider";
 import type {
   HookClarifyItem,

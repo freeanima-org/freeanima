@@ -20,8 +20,8 @@ mock.module("@freeanima/habitat/core/db/pg/semantic-memory", () => ({
 import { createEngineCatalog } from "@freeanima/habitat/engine";
 import type { Engine } from "@freeanima/habitat/engine";
 import { Config } from "@freeanima/habitat/core/config";
-import type { Kernel } from "@freeanima/habitat/kernel";
-import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
+import type { Kernel } from "@freeanima/kernel";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
 import { bindEnginePorts } from "./bind-engine-ports.ts";
 import { registerSystemPromptHooks } from "./register-prompt-hooks.ts";

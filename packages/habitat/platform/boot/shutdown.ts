@@ -2,7 +2,7 @@ import { closeRedis, isRedisConfigured } from "@freeanima/habitat/core/redis";
 import { stopCronModule } from "@freeanima/habitat/capabilities/connectors/cron";
 import { stopPlatforms } from "@freeanima/habitat/capabilities/connectors/gateway";
 import { logComponent } from "@freeanima/habitat/platform/logging";
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { MCPManager } from "@freeanima/habitat/capabilities/mcp-client";
 import type { PlatformAdapter } from "@freeanima/habitat/capabilities/connectors/gateway";
 

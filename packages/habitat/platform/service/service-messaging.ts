@@ -19,7 +19,7 @@ import {
   runTurnAfterComplete,
 } from "@freeanima/habitat/core/hooks/cordis";
 import type { StoredMessage as Message } from "@freeanima/habitat/core/db/domain";
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { EngineRunControl } from "./engine-run-control.ts";
 import type { ConversationManager } from "./conversation-manager.ts";
 import { runExclusiveStreamTurn, streamErrorEvent, type StreamTurnHost } from "./turn-lifecycle.ts";
@@ -29,7 +29,7 @@ import {
   checkPlatform,
   resolveMessagingPlatform,
 } from "./service-conversations.ts";
-import { collectStreamReply, type StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import { collectStreamReply, type StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { asRecord } from "@freeanima/shared/util";
