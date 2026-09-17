@@ -13,7 +13,13 @@ import {
 import { safeParseOrNull } from "@freeanima/habitat/core/util";
 import { parseToolResult } from "@freeanima/habitat/core/tool";
 import type { ConversationPort } from "@freeanima/habitat/core/tool/conversation-port.ts";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
 import { asRecord } from "@freeanima/shared/util";
+
+import { mountClarifyConfigService } from "./clarify-config-service.ts";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;
@@ -27,21 +33,20 @@ export type GuardAwaitingResult =
 const DEFAULT_TIMEOUT_SEC = 1800;
 const DEFAULT_MAX_ITEMS = 5;
 
-let clarifyConfig: Config | null = null;
-
 export function bindClarifyConfig(config: Config): void {
-  clarifyConfig = config;
+  mountClarifyConfigService(ensureProcessContext()).set(config);
 }
 
 export function resetClarifyConfigForTest(): void {
-  clarifyConfig = null;
+  getProcessContext()?.clarifyConfig?.reset();
 }
 
 function requireClarifyConfig(): Config {
-  if (!clarifyConfig) {
+  const service = getProcessContext()?.clarifyConfig;
+  if (!service) {
     throw new Error("Clarify config not bound; call registerClarifyHooks first");
   }
-  return clarifyConfig;
+  return service.require();
 }
 
 function parseAwaiting(raw: unknown): AwaitingClarify | null {
