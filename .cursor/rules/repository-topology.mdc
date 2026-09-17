@@ -1,65 +1,94 @@
 ---
-description: 仓库拓扑、包命名 RFC、tsconfig paths、oxlint 护栏
+description: 仓库拓扑、13 包、import 前缀、tsconfig paths、oxlint 护栏
 globs: packages/**/*,**/tsconfig*.json,**/package.json
 alwaysApply: false
 ---
 
 # Repository topology & packages
 
-> **Code is SSOT** — 结构漂移时与代码同 PR 改本文件。分层矩阵 → [`code-layers.mdc`](code-layers.mdc)。
+> **Code is SSOT** — 结构漂移时与代码同 PR 改本文件。分层矩阵 → [`code-layers.mdc`](code-layers.mdc)；
+> 依赖理由与债务 → [`docs/product/src-layering.md`](../../docs/product/src-layering.md)。
 
-## Packages
+## Packages（13 个运行时包 + 文档站）
 
 | Package | Path | Role |
 | ------- | ---- | ---- |
 | `freeanima` | 仓库根 | 编排（just / scripts / tests / docs）；workspace 根 |
-| `@freeanima/shared` | `packages/shared/` | 前后端共享契约与纯工具（不发布） |
-| `@freeanima/habitat` | `packages/` | 栖息地进程栈 + CLI + MCP + features 服务端（不发布） |
-| `@freeanima/frontend` | `packages/` | client / ui-kit / features UI / Web·扩展·Tauri（不发布） |
+| `@freeanima/shared` | `packages/shared/` | 契约（Zod）/ pg-shapes / rpc-contract / habitat-contract / vault-crypto / 同构工具 |
+| `@freeanima/kernel` | `packages/kernel/` | Cordis 组合根句柄、logger、config-mechanism、logging |
+| `@freeanima/core` | `packages/core/` | drizzle schema+migrations、PG、Redis、config 段、llm/tool/tokenizer/tts/compress |
+| `@freeanima/engine` | `packages/engine/` | conversation / turn / goal / pipeline / loop-mechanism |
+| `@freeanima/capabilities` | `packages/capabilities/` | memory / tools / connectors / self / outpost / mcp-* / federation / llm-openai |
+| `@freeanima/features` | `packages/features/` | 27 个**服务端**特性（domain/habitat/protocol + cordis-plugin.ts） |
+| `@freeanima/server` | `packages/server/` | 组合根：boot、habitat-api、ports、config 真实现、tls |
+| `@freeanima/cli` | `packages/cli/` | `anima` / `anima-client` / `anima-probe` |
+| `@freeanima/ui-kit` | `packages/ui-kit/` | 设计系统 |
+| `@freeanima/portal-sdk` | `packages/portal-sdk/` | SPA 运行时与数据面 |
+| `@freeanima/ui-features` | `packages/ui-features/` | 24 个 **UI** 特性（`ui/<bundle>`） |
+| `@freeanima/app-frame` | `packages/app-frame/` | 应用布局 chrome、路由、设置 chrome |
+| `@freeanima/portal` | `packages/portal/` | 入口宿主：`app/{web,tauri}` + `extension` |
 | `@freeanima/site` | `site/` | Astro/Starlight 文档站 |
 
-分层方向 SSOT：[`docs/product/src-layering.md`](../../docs/product/src-layering.md)。
-
-## Import prefixes（RFC #1）
+## Import prefixes
 
 | Shape | Pattern | Example |
 | ----- | ------- | ------- |
-| Habitat layer | `@freeanima/habitat/{layer}` | `habitat/kernel` … `habitat/platform` |
-| Capability | `@freeanima/habitat/capabilities/{slug}` | `self`, `memory`, `tools`, `outpost` |
-| Feature | `@freeanima/features/{slug}/…` | 解析到 `packages/{frontend,habitat}/features/…` |
-| Shared | `@freeanima/shared/{name}` | `habitat-rpc`, `rpc-contract`, `companion-app` |
-| UI kit | `@freeanima/ui-kit` | 设计系统 |
-| Client | `@freeanima/client/{portal-sdk,app-frame}` | Portal chrome |
-| Entry | `@freeanima/portal/{cli,app,extension}` | CLI ∈ habitat；app/extension ∈ frontend |
+| Kernel | `@freeanima/kernel` / `@freeanima/kernel/*` | `kernel/logging` |
+| Core | `@freeanima/core/*` | `core/db/schema`, `core/config` |
+| Engine | `@freeanima/engine` / `@freeanima/engine/*` | `engine/conversation` |
+| Capability | `@freeanima/capabilities/{slug}` | `memory`, `tools`, `outpost` |
+| Server feature | `@freeanima/features/{slug}/{domain,habitat,protocol}` | `features/task/habitat/routes` |
+| Server / CLI | `@freeanima/server/*`、`@freeanima/cli/{anima,client,probe}/*` | `server/ports` |
+| Shared | `@freeanima/shared/{name}` | `shared/rpc-contract`, `shared/pg-shapes`, `shared/util` |
+| UI kit / SDK | `@freeanima/ui-kit`、`@freeanima/portal-sdk` | 设计系统 / SPA 运行时 |
+| UI feature | `@freeanima/ui-features/{slug}/ui/{bundle}` | `ui-features/task/ui/spa` |
+| App frame / entry | `@freeanima/app-frame/*`、`@freeanima/portal/*` | 布局 / `portal/app/web` |
 
-**Deprecated**：`@freeanima/host/*`、`@freeanima/frontend/*`（旧逻辑前缀）、`@freeanima/runtime`、裸 `@freeanima/platform`、`@freeanima/core`。
+**Deprecated（`codemod-freeanima-imports.ts --check` 会失败）**：`@freeanima/habitat/*`、
+`@freeanima/frontend/*`、`@freeanima/client/*`、`@freeanima/platform/*`、`@freeanima/host/*`、
+`@freeanima/runtime`、裸 `@freeanima/core`（指包时用 `@freeanima/core/*`）。
 
 ## `packages/` map
 
 ```
 packages/
-├── shared/                 # 无 React
-├── habitat/
-│   ├── {kernel,core,engine,capabilities,platform}/
-│   ├── portal/cli/
-│   └── features/<slug>/{domain,habitat,protocol,plugin.ts,…}
-└── frontend/
-    ├── client/{portal-sdk,app-frame}
-    ├── ui-kit/
-    ├── portal/{app/{tauri,web},extension}
-    └── features/<slug>/{ui,lib,…}
+├── shared/                     # 无 React / 无 drizzle
+│   ├── rpc-contract/           # frames + feature-rpc/methods/<slug>.ts（method defs SSOT）
+│   ├── habitat-contract/       # method-def / route / registry（含 full.ts）
+│   ├── pg-shapes/              # codegen 输出（rows/*.gen.ts）+ 手写 jsonb/entity
+│   └── {util,vault-crypto,identity,task,coding,companion-*,tts,llm-usage,...}
+├── kernel/{context.ts,logging,config-mechanism,random-*}
+├── core/{db/{schema,migrations,pg},config,llm,tool,redis,compress,tokenizer,tts,provider,skill,...}
+├── engine/{conversation,turn,goal,pipeline,loop-mechanism}
+├── capabilities/{memory,tools,connectors,self,outpost,mcp-client,mcp-server,federation,llm-openai}
+├── features/<slug>/{cordis-plugin.ts,domain,habitat,protocol}
+├── server/{boot,habitat,habitat-api?,features,service,ports,config,tls,schemas,serve.ts,register-*.ts}
+├── cli/{anima,client,probe}
+├── ui-kit/{components,composite,form,layout,lib,styles,brand}
+├── portal-sdk/
+├── ui-features/<slug>/ui/{spa,float}/ + 卫星 {vite.config.ts,build.ts,dist}
+├── app-frame/{spa/{features,settings,main},vite,lib}
+└── portal/{app/{web,tauri},extension,shared}
 ```
 
-MCP 在 `packages/capabilities/mcp-server`。Habitat 管理台 = `features/habitat`（UI 在 frontend，RPC 在 habitat）。
+栖息地管理台 = 服务端 `features/habitat`（RPC/ops 面）+ UI `ui-features/habitat`。
+MCP 形态实现在 `capabilities/mcp-server`。
 
 ## Module resolution
 
-- TS：`tsconfig.base.json` paths（shared / habitat / client / ui-kit / 双包 features·portal）
-- Vite：`packages/app-frame/vite/module-aliases.ts` + `freeanimaResolvePlugin`
+- TS：`tsconfig.base.json` `paths`（每包一条 `@freeanima/<pkg>` 与 `@freeanima/<pkg>/*`）
+- Vite：`packages/app-frame/vite/module-aliases.ts` —— `@freeanima/<pkg>/<sub>` →
+  `packages/<pkg>/<sub>`（**单一规则**，无 habitat/frontend 双候选）；`freeanimaResolvePlugin` 走 `enforce: "pre"`
+- 运行期（bun）：tsconfig paths + `node_modules/@freeanima/*` workspace 符号链接
+  （新增包须同时加进根 `package.json` 依赖，否则 bun 不建链）
 
-## 护栏
+## 护栏（`just qa check` 全跑）
 
-- 根 `.oxlintrc.json` SSOT + `overrides` 按 `packages/**` 目录覆写；跨层靠 `layer-deps`
-- oxlint `freeanima/import-depth` / `layer-deps`；`dir-import/dir-import-exists`（`bun-plugin-dir-import`）
-- `just qa check-package-deps`
+- 根 `.oxlintrc.json` SSOT + `overrides`；跨层靠 `freeanima/layer-deps`
+- oxlint `freeanima/import-depth` / `layer-deps` / `no-module-globals`；
+  `dir-import/dir-import-exists`（`bun-plugin-dir-import`）
+- `scripts/check-package-deps.ts`（DAG + 反向边债务登记）
+- `scripts/check-layer-deps.ts`（全仓 + 相对路径 + 基线棘轮）
+- `scripts/check-module-globals.ts`、`scripts/check-boot-plugin-parity.ts`
+- `scripts/codemod-freeanima-imports.ts --check`
 - 文档站：`cd site && bun run build`（先根 `bun install`）
