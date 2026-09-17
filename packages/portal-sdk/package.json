@@ -1,0 +1,16 @@
+{
+  "name": "@freeanima/portal-sdk",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*"
+  },
+  "dependencies": {
+    "@freeanima/portal": "workspace:*",
+    "@freeanima/shared": "workspace:*",
+    "react": "19.2.8",
+    "zod": "^4.4.3"
+  }
+}

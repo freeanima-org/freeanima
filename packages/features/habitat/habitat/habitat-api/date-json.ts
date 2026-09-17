@@ -3,4 +3,4 @@ export {
   reviveDates,
   DATE_JSON_KEYS,
   isPlainIsoDateString,
-} from "@freeanima/features/habitat/protocol/habitat-contract/date-json.ts";
+} from "@freeanima/shared/habitat-contract/date-json.ts";

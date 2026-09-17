@@ -10,7 +10,7 @@ describe("resolveTauriAndroidMain", () => {
     try {
       const main = join(
         root,
-        "packages/frontend/portal/app/tauri/src-tauri/gen/android/freeanima_portal/src/main",
+        "packages/portal/app/tauri/src-tauri/gen/android/freeanima_portal/src/main",
       );
       mkdirSync(main, { recursive: true });
       writeFileSync(join(main, "AndroidManifest.xml"), "<manifest/>\n");
@@ -23,10 +23,7 @@ describe("resolveTauriAndroidMain", () => {
   it("falls back to portal if present", () => {
     const root = createTempDir("tauri-android-gen-");
     try {
-      const main = join(
-        root,
-        "packages/frontend/portal/app/tauri/src-tauri/gen/android/portal/src/main",
-      );
+      const main = join(root, "packages/portal/app/tauri/src-tauri/gen/android/portal/src/main");
       mkdirSync(main, { recursive: true });
       writeFileSync(join(main, "AndroidManifest.xml"), "<manifest/>\n");
       expect(resolveTauriAndroidMain(root)).toBe(main);

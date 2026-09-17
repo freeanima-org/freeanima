@@ -7,7 +7,7 @@
  *   3. 根编排包只允许引用 DAG 内的包名。
  *
  * 目标是 P4/P5 迁移后的 13 包；迁移进行中时，`packages` /
- * `packages/frontend` 作为聚合包按同一 DAG 的并集校验。
+ * `packages` 作为聚合包按同一 DAG 的并集校验。
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -51,16 +51,22 @@ const ALLOWED_FREEANIMA_DEPS: Record<string, readonly string[]> = {
  * 文件级明细见 `scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`。
  */
 const REVERSE_EDGE_DEBT: Record<string, readonly string[]> = {
-  // features/*/server 仍直接 import server 的 ports/config/service（P4b 收尾）
-  "@freeanima/features": ["server"],
-  // capabilities 仍直接 import server 的 logging/config/ports（P4b 收尾）
-  "@freeanima/capabilities": ["server"],
+  // features/* 仍直接 import server 的 ports/config/service（P4b 收尾）
+  "@freeanima/features": ["server", "portal-sdk"],
+  // capabilities 仍直接 import server 的 logging/config/ports + features 的连接器（P4b 收尾）
+  "@freeanima/capabilities": ["server", "features"],
+  // core 的跨包 schema/llm 单测仍用 capabilities 的类型（P4b 收尾）
+  "@freeanima/core": ["capabilities"],
+  // ui-kit 的 EntityIdLabel/task-list-tree 仍读 portal-sdk 的 anima-uri / subject-scope（P6 收尾）
+  "@freeanima/ui-kit": ["portal-sdk"],
+  // 前端设置表单仍读 core 的 LLM 预设/连接 schema（契约应下沉 shared；P6 收尾）
+  "@freeanima/app-frame": ["core"],
+  "@freeanima/portal-sdk": ["portal"],
+  // 卫星窗经 portal 的 tauri bootstrap 动态 import（应改为 portal 注册壳桥；P6 收尾）
+  "@freeanima/ui-features": ["portal"],
 };
 
 const LLM_AND_MAIL = ["@anthropic-ai/sdk", "openai", "nodemailer", "mailparser", "imapflow"];
-
-/** 迁移进行中的聚合包：只校验「不得多」，拆分完成后移出本集合。 */
-const AGGREGATE_PACKAGES: ReadonlySet<string> = new Set(["@freeanima/frontend"]);
 
 /** 包名 → 禁止的外部依赖前缀。 */
 const BANNED_EXTERNAL: Record<string, readonly string[]> = {
@@ -129,9 +135,8 @@ function checkPackage(pkg: Pkg, where: string): void {
     .toSorted();
   const expected = [...allowed].toSorted();
   const debt = REVERSE_EDGE_DEBT[name] ?? [];
-  // 聚合包（迁移中）只校验「不得多」；拆分完成后按精确集合校验。
-  const aggregate = AGGREGATE_PACKAGES.has(name);
-  const missing = aggregate ? [] : expected.filter((dep) => !internal.includes(dep));
+  // 只校验「不得多」：包不必依赖其允许集合里的每一个（下层能力可不用）。
+  const missing: string[] = [];
   const extra = internal.filter((dep) => !expected.includes(dep) && !debt.includes(dep));
   if (missing.length > 0 || extra.length > 0) {
     const parts: string[] = [];

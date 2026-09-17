@@ -4,20 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "exports": {
-    "./pg-shapes": "./pg-shapes/index.ts",
-    "./pg-shapes/*": "./pg-shapes/*",
-    "./rpc-contract": "./rpc-contract/index.ts",
-    "./rpc-contract/*": "./rpc-contract/*",
-    "./util": "./util/index.ts",
-    "./util/*": "./util/*",
-    "./identity": "./identity/index.ts",
-    "./identity/*": "./identity/*",
-    "./vault-crypto": "./vault-crypto/index.ts",
-    "./vault-crypto/*": "./vault-crypto/*",
-    "./task/*": "./task/*",
-    "./coding/*": "./coding/*",
-    "./*": "./*",
-    "./companion-app/*": "./companion-app/*"
+    "./*": "./*"
   },
   "dependencies": {
     "@noble/ed25519": "^2",

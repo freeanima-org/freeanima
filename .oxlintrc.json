@@ -19,8 +19,8 @@
     "**/dist/**",
     "**/coverage/**",
     "**/www/**",
-    "packages/frontend/features/habitat/ui/habitat/routes/routeTree.gen.ts",
-    "packages/frontend/portal/extension/**"
+    "packages/ui-features/habitat/ui/habitat/routes/routeTree.gen.ts",
+    "packages/portal/extension/**"
   ],
   "rules": {
     "dir-import/dir-import-exists": "error",
@@ -110,7 +110,7 @@
   },
   "overrides": [
     {
-      "files": ["packages/frontend/features/habitat/ui/habitat/**/*.{ts,tsx}"],
+      "files": ["packages/ui-features/habitat/ui/habitat/**/*.{ts,tsx}"],
       "plugins": ["react"],
       "env": {
         "browser": true
@@ -123,7 +123,7 @@
       }
     },
     {
-      "files": ["packages/frontend/features/companion/**/*.{ts,tsx}"],
+      "files": ["packages/ui-features/companion/**/*.{ts,tsx}"],
       "plugins": ["react"],
       "env": {
         "browser": true

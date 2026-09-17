@@ -19,7 +19,7 @@ import { resolveTauriRustBuildEnv } from "./tauri-rust-build-env.ts";
 
 const LOG = "[pack tauri]";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const tauriDir = join(root, "packages/frontend/portal/app/tauri");
+const tauriDir = join(root, "packages/portal/app/tauri");
 const bundleRoot = join(tauriDir, "src-tauri/target/release/bundle");
 const nsisOut = join(bundleRoot, "nsis");
 

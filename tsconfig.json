@@ -10,7 +10,7 @@
     "packages/**/*.tsx",
     "scripts/**/*.ts",
     "tests/**/*.ts",
-    "packages/frontend/features/companion/shared/**/*.json"
+    "packages/ui-features/companion/shared/**/*.json"
   ],
   "exclude": [
     "node_modules",
@@ -18,7 +18,7 @@
     "**/dist-types/**",
     "**/.turbo/**",
     "scripts/codemod-freeanima-imports.ts",
-    "packages/frontend/portal/extension/**",
+    "packages/portal/extension/**",
     "**/src-tauri/**"
   ]
 }

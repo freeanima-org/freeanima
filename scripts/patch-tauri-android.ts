@@ -22,9 +22,9 @@ if (!androidMain) {
 const manifestPath = join(androidMain, "AndroidManifest.xml");
 const xmlDir = join(androidMain, "res/xml");
 const nscPath = join(xmlDir, "network_security_config.xml");
-const pluginSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/apk-installer");
-const blobSaverSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/blob-saver");
-const voiceWakeSrcDir = join(root, "packages/frontend/portal/app/tauri/android-plugins/voice-wake");
+const pluginSrcDir = join(root, "packages/portal/app/tauri/android-plugins/apk-installer");
+const blobSaverSrcDir = join(root, "packages/portal/app/tauri/android-plugins/blob-saver");
+const voiceWakeSrcDir = join(root, "packages/portal/app/tauri/android-plugins/voice-wake");
 const pluginKtDest = join(androidMain, "java/com/freeanima/portal/apk/ApkInstallerPlugin.kt");
 const blobSaverKtDest = join(androidMain, "java/com/freeanima/portal/blob/BlobSaverPlugin.kt");
 const voiceWakeKtDest = join(androidMain, "java/com/freeanima/portal/voicewake");

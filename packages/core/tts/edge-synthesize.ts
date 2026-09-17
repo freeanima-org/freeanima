@@ -1,6 +1,6 @@
 import { Communicate } from "edge-tts-universal";
 
-import { resolveEdgeVoiceName } from "./edge-voices.ts";
+import { resolveEdgeVoiceName } from "@freeanima/shared/tts/edge-voices.ts";
 
 export const MAX_EDGE_TTS_TEXT_LENGTH = 4096;
 

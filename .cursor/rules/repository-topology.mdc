@@ -15,7 +15,7 @@ alwaysApply: false
 | `freeanima` | 仓库根 | 编排（just / scripts / tests / docs）；workspace 根 |
 | `@freeanima/shared` | `packages/shared/` | 前后端共享契约与纯工具（不发布） |
 | `@freeanima/habitat` | `packages/` | 栖息地进程栈 + CLI + MCP + features 服务端（不发布） |
-| `@freeanima/frontend` | `packages/frontend/` | client / ui-kit / features UI / Web·扩展·Tauri（不发布） |
+| `@freeanima/frontend` | `packages/` | client / ui-kit / features UI / Web·扩展·Tauri（不发布） |
 | `@freeanima/site` | `site/` | Astro/Starlight 文档站 |
 
 分层方向 SSOT：[`docs/product/src-layering.md`](../../docs/product/src-layering.md)。
@@ -55,11 +55,11 @@ MCP 在 `packages/capabilities/mcp-server`。Habitat 管理台 = `features/habit
 ## Module resolution
 
 - TS：`tsconfig.base.json` paths（shared / habitat / client / ui-kit / 双包 features·portal）
-- Vite：`packages/frontend/client/app-frame/vite/module-aliases.ts` + `freeanimaResolvePlugin`
+- Vite：`packages/app-frame/vite/module-aliases.ts` + `freeanimaResolvePlugin`
 
 ## 护栏
 
-- 根 `.oxlintrc.json` SSOT + `overrides` 按 `packages/frontend/**` 目录覆写；跨层靠 `layer-deps`
+- 根 `.oxlintrc.json` SSOT + `overrides` 按 `packages/**` 目录覆写；跨层靠 `layer-deps`
 - oxlint `freeanima/import-depth` / `layer-deps`；`dir-import/dir-import-exists`（`bun-plugin-dir-import`）
 - `just qa check-package-deps`
 - 文档站：`cd site && bun run build`（先根 `bun install`）

@@ -1,0 +1,26 @@
+import { registerAlertBackend } from "@freeanima/portal-sdk/alert";
+import { getShellBuildTarget } from "@freeanima/portal-sdk/shell-build-target.ts";
+import { isTauriMobileUserAgent, isTauriRuntime } from "@freeanima/portal-sdk/tauri-runtime";
+
+/** 按运行时注册本机 Alert backend（不跨端）。 */
+export async function registerShellAlertBackend(): Promise<void> {
+  const buildTarget = getShellBuildTarget();
+  const tauri = Boolean(window.portalShell?.isTauri) || isTauriRuntime();
+
+  if (tauri && (buildTarget === "mobile" || isTauriMobileUserAgent())) {
+    const { createMobileAlertBackend } =
+      await import("@freeanima/portal/app/tauri/lib/mobile-alert-backend.ts");
+    registerAlertBackend(createMobileAlertBackend());
+    return;
+  }
+
+  if (buildTarget === "desktop" || tauri) {
+    const { createDesktopAlertBackend } =
+      await import("@freeanima/portal/app/tauri/lib/desktop-alert-backend.ts");
+    registerAlertBackend(createDesktopAlertBackend());
+    return;
+  }
+
+  const { createWebShellAlertBackend } = await import("./alert-backend.ts");
+  registerAlertBackend(createWebShellAlertBackend());
+}

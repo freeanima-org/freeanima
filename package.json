@@ -68,15 +68,19 @@
     "protobufjs"
   ],
   "dependencies": {
+    "@freeanima/app-frame": "workspace:*",
     "@freeanima/capabilities": "workspace:*",
     "@freeanima/cli": "workspace:*",
     "@freeanima/core": "workspace:*",
     "@freeanima/engine": "workspace:*",
     "@freeanima/features": "workspace:*",
-    "@freeanima/frontend": "workspace:*",
     "@freeanima/kernel": "workspace:*",
+    "@freeanima/portal": "workspace:*",
+    "@freeanima/portal-sdk": "workspace:*",
     "@freeanima/server": "workspace:*",
     "@freeanima/shared": "workspace:*",
+    "@freeanima/ui-features": "workspace:*",
+    "@freeanima/ui-kit": "workspace:*",
     "chinese-days": "^1.5.9",
     "lunar-javascript": "^1.7.7"
   }

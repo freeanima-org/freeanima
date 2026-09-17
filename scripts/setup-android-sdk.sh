@@ -64,7 +64,7 @@ else
   echo "Android NDK $NDK_VER already present, skipping"
 fi
 
-PROP_DIR="$(cd "$(dirname "$0")/.." && pwd)/packages/frontend/portal/app/tauri/src-tauri/gen/android"
+PROP_DIR="$(cd "$(dirname "$0")/.." && pwd)/packages/portal/app/tauri/src-tauri/gen/android"
 if [ -d "$PROP_DIR" ]; then
   printf 'sdk.dir=%s\n' "$SDK" >"$PROP_DIR/local.properties"
   echo "Wrote $PROP_DIR/local.properties (sdk.dir=$SDK)"

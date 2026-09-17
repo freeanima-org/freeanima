@@ -119,8 +119,8 @@ async function main(): Promise<void> {
 
   const faviconDests = [
     join(ROOT, "site/public/favicon.png"),
-    join(ROOT, "packages/frontend/portal/app/web/spa/public/favicon.png"),
-    join(ROOT, "packages/frontend/features/habitat/ui/habitat/public/favicon.png"),
+    join(ROOT, "packages/portal/app/web/spa/public/favicon.png"),
+    join(ROOT, "packages/ui-features/habitat/ui/habitat/public/favicon.png"),
   ];
   const favicon32 = await renderIcon(32);
   for (const dest of faviconDests) {
@@ -128,19 +128,19 @@ async function main(): Promise<void> {
   }
 
   writePng(
-    join(ROOT, "packages/frontend/portal/app/web/spa/public/icons/icon-192.png"),
+    join(ROOT, "packages/portal/app/web/spa/public/icons/icon-192.png"),
     await renderIcon(192),
   );
   writePng(
-    join(ROOT, "packages/frontend/portal/app/web/spa/public/icons/icon-512.png"),
+    join(ROOT, "packages/portal/app/web/spa/public/icons/icon-512.png"),
     await renderIcon(512),
   );
   writePng(
-    join(ROOT, "packages/frontend/portal/app/web/spa/public/icons/icon-512-maskable.png"),
+    join(ROOT, "packages/portal/app/web/spa/public/icons/icon-512-maskable.png"),
     await renderMaskable(512),
   );
 
-  const tauriIcons = join(ROOT, "packages/frontend/portal/app/tauri/src-tauri/icons");
+  const tauriIcons = join(ROOT, "packages/portal/app/tauri/src-tauri/icons");
   const png32 = join(tauriIcons, "32x32.png");
   const png128 = join(tauriIcons, "128x128.png");
   const png256 = join(tauriIcons, "256x256.png");
@@ -183,7 +183,7 @@ async function main(): Promise<void> {
     );
   }
 
-  writePng(join(ROOT, "packages/frontend/ui-kit/brand/app-icon.png"), await renderIcon(64));
+  writePng(join(ROOT, "packages/ui-kit/brand/app-icon.png"), await renderIcon(64));
 
   console.log("brand:icons — done");
 }

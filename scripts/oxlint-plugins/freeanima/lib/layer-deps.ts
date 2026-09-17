@@ -142,12 +142,12 @@ function dualTreeLayer(rest: string): string | null {
   let candidates: string[][] | null = null;
   if (head === "features") {
     candidates = [
-      ["packages/frontend/features", ...tail],
+      ["packages/ui-features", ...tail],
       ["packages/features", ...tail],
     ];
   } else if (head === "portal") {
     candidates = [
-      ["packages/frontend/portal", ...tail],
+      ["packages/portal", ...tail],
       ["packages/cli", ...tail],
     ];
   }

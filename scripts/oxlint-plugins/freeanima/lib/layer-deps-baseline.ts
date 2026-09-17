@@ -7,8 +7,8 @@
  */
 export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = {
   "app-frame -> core": [
-    "packages/frontend/client/app-frame/spa/settings/habitat-config/llm-settings-draft.ts",
-    "packages/frontend/client/app-frame/spa/settings/habitat-config/llm-settings-forms.tsx",
+    "packages/app-frame/spa/settings/habitat-config/llm-settings-draft.ts",
+    "packages/app-frame/spa/settings/habitat-config/llm-settings-forms.tsx",
   ],
   "capabilities -> features": [
     "packages/capabilities/connectors/email/idle.ts",
@@ -65,10 +65,7 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/core/llm/tool-loop-integrity.test.ts",
     "packages/core/schemas/cross-package-schemas.test.ts",
   ],
-  "features -> portal-sdk": [
-    "packages/features/companion/server/config.ts",
-    "packages/features/companion/server/habitat-sync.ts",
-  ],
+  "features -> portal-sdk": ["packages/features/companion/server/config.ts"],
   "features -> server": [
     "packages/features/bookmark/cordis-plugin.ts",
     "packages/features/calendar/cordis-plugin.ts",
@@ -128,31 +125,23 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/features/workflow/domain/runner.ts",
     "packages/features/workflow/domain/workflow-tools.ts",
   ],
-  "portal -> core": ["packages/frontend/portal/vite-config-cross-pkg.ts"],
-  "portal-sdk -> core": ["packages/frontend/client/portal-sdk/speech/edge-voices.ts"],
-  "portal-sdk -> portal": ["packages/frontend/client/portal-sdk/pomodoro-active.ts"],
+  "portal -> core": ["packages/portal/vite-config-cross-pkg.ts"],
+  "portal-sdk -> portal": ["packages/portal-sdk/pomodoro-active.ts"],
   "ui-features -> app-frame": [
-    "packages/frontend/features/coding/build.ts",
-    "packages/frontend/features/coding/vite.config.ts",
-    "packages/frontend/features/companion/build.ts",
-    "packages/frontend/features/companion/vite.config.ts",
-    "packages/frontend/features/pomodoro/build-float.ts",
-    "packages/frontend/features/pomodoro/vite.float.config.ts",
-  ],
-  "ui-features -> features": [
-    "packages/frontend/features/habitat/ui/habitat/lib/api.ts",
-    "packages/frontend/features/habitat/ui/habitat/lib/format-datetime.ts",
-    "packages/frontend/features/habitat/ui/habitat/routes/_sidebar/self-layer.tsx",
-    "packages/frontend/features/habitat/ui/habitat/routes/_sidebar/system-prompt.tsx",
-    "packages/frontend/features/habitat/ui/habitat/routes/_sidebar/tools.tsx",
+    "packages/ui-features/coding/build.ts",
+    "packages/ui-features/coding/vite.config.ts",
+    "packages/ui-features/companion/build.ts",
+    "packages/ui-features/companion/vite.config.ts",
+    "packages/ui-features/pomodoro/build-float.ts",
+    "packages/ui-features/pomodoro/vite.float.config.ts",
   ],
   "ui-features -> portal": [
-    "packages/frontend/features/coding/ui/spa/main.tsx",
-    "packages/frontend/features/companion/ui/spa/main.tsx",
-    "packages/frontend/features/pomodoro/ui/float/main.tsx",
+    "packages/ui-features/coding/ui/spa/main.tsx",
+    "packages/ui-features/companion/ui/spa/main.tsx",
+    "packages/ui-features/pomodoro/ui/float/main.tsx",
   ],
   "ui-kit -> portal-sdk": [
-    "packages/frontend/ui-kit/composite/EntityIdLabel.tsx",
-    "packages/frontend/ui-kit/lib/task-list-tree.ts",
+    "packages/ui-kit/composite/EntityIdLabel.tsx",
+    "packages/ui-kit/lib/task-list-tree.ts",
   ],
 };

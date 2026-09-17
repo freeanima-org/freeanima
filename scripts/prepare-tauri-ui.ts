@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * 打包前：按 target 构建 web → `packages/frontend/portal/app/tauri/src-tauri/ui/web`。
+ * 打包前：按 target 构建 web → `packages/portal/app/tauri/src-tauri/ui/web`。
  *
  * FREEANIMA_TAURI_TARGET=desktop|mobile（默认 desktop）
  * - desktop：dist-desktop + ui/companion + ui/coding + ui/pomodoro-float（frontendDist，非 file:// resources）+ 启动 splash
@@ -29,7 +29,7 @@ import {
   parseShellBuildTarget,
   shellWebDistDirName,
   type ShellBuildTarget,
-} from "@freeanima/client/portal-sdk/shell-build-target.ts";
+} from "@freeanima/portal-sdk/shell-build-target.ts";
 import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta.ts";
 import { resolveBuildVersionFromEnv } from "@freeanima/core/config/resolve-build-version.ts";
 import {
@@ -37,9 +37,9 @@ import {
   resolveMobileShellIdentity,
 } from "@freeanima/core/config/shell-identity.ts";
 import { resolveNativeBuildMeta } from "@freeanima/portal/app/shared/resolve-native-build-meta.ts";
-import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
-import { buildCodingApp } from "@freeanima/features/coding/lib/exports/build.ts";
-import { buildPomodoroFloatApp } from "@freeanima/features/pomodoro/build-float.ts";
+import { buildCompanionApp } from "@freeanima/ui-features/companion/lib/exports/build.ts";
+import { buildCodingApp } from "@freeanima/ui-features/coding/lib/exports/build.ts";
+import { buildPomodoroFloatApp } from "@freeanima/ui-features/pomodoro/build-float.ts";
 import { applyTauriShellIdentity } from "./apply-tauri-shell-identity.ts";
 import { isRecord } from "@freeanima/shared/util";
 
@@ -48,8 +48,8 @@ const target: ShellBuildTarget =
   process.env.FREEANIMA_TAURI_TARGET === "mobile"
     ? "mobile"
     : parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET ?? "desktop");
-const srcTauri = join(root, "packages/frontend/portal/app/tauri/src-tauri");
-const webDist = join(root, "packages/frontend/portal/app/web", shellWebDistDirName(target));
+const srcTauri = join(root, "packages/portal/app/tauri/src-tauri");
+const webDist = join(root, "packages/portal/app/web", shellWebDistDirName(target));
 const uiRoot = join(srcTauri, "ui");
 const uiWeb = join(uiRoot, "web");
 const companionUi = join(uiRoot, "companion");
@@ -153,14 +153,14 @@ function computeUiFingerprint(): string {
   hash.update(`target=${target}\nchannel=${buildChannel}\n`);
   accumulatePath(hash, join(root, "scripts/build-web.ts"));
   accumulatePath(hash, join(root, "scripts/prepare-tauri-ui.ts"));
-  accumulatePath(hash, join(root, "packages/frontend/client"));
-  accumulatePath(hash, join(root, "packages/frontend/ui-kit"));
-  accumulatePath(hash, join(root, "packages/frontend/portal/app/web"));
-  accumulatePath(hash, join(root, "packages/frontend/features/companion"));
-  accumulatePath(hash, join(root, "packages/frontend/features/coding"));
-  accumulatePath(hash, join(root, "packages/frontend/features/pomodoro"));
-  accumulatePath(hash, join(root, "packages/frontend/features/chat"));
-  accumulatePath(hash, join(root, "packages/frontend/features/task"));
+  accumulatePath(hash, join(root, "packages/portal-sdk"));
+  accumulatePath(hash, join(root, "packages/ui-kit"));
+  accumulatePath(hash, join(root, "packages/portal/app/web"));
+  accumulatePath(hash, join(root, "packages/ui-features/companion"));
+  accumulatePath(hash, join(root, "packages/ui-features/coding"));
+  accumulatePath(hash, join(root, "packages/ui-features/pomodoro"));
+  accumulatePath(hash, join(root, "packages/ui-features/chat"));
+  accumulatePath(hash, join(root, "packages/ui-features/task"));
   return hash.digest("hex");
 }
 

@@ -1,0 +1,25 @@
+{
+  "name": "@freeanima/ui-kit",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*"
+  },
+  "dependencies": {
+    "@freeanima/portal-sdk": "workspace:*",
+    "@freeanima/shared": "workspace:*",
+    "@internationalized/date": "^3.12.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "isomorphic-dompurify": "^3.22.0",
+    "lucide-react": "^1.31.0",
+    "marked": "^18.0.9",
+    "react": "19.2.8",
+    "react-aria-components": "^1.20.0",
+    "react-dom": "19.2.8",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.6.0"
+  }
+}

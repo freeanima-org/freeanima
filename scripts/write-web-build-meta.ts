@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import {
   parseShellBuildTarget,
   shellWebDistDirName,
-} from "@freeanima/client/portal-sdk/shell-build-target.ts";
+} from "@freeanima/portal-sdk/shell-build-target.ts";
 import {
   createComponentBuildMeta,
   isShipChannel,
@@ -19,12 +19,7 @@ import {
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target = parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET);
-const out = join(
-  root,
-  "packages/frontend/portal/app/web",
-  shellWebDistDirName(target),
-  "build-meta.json",
-);
+const out = join(root, "packages/portal/app/web", shellWebDistDirName(target), "build-meta.json");
 const channel = resolveBuildChannelFromEnv("local");
 const meta = createComponentBuildMeta({
   component: "web",

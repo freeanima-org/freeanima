@@ -177,7 +177,7 @@ mkcert -install  # trust that CA on the Habitat host itself
 
 ## 2. 客户端配置
 
-**入口**（`packages/frontend/portal/app/tauri`）与 **浏览器 Web**（`packages/frontend/portal/app/web`）是远程客户端；它们**不读取**栖息地 `config.yaml` 的 token。
+**入口**（`packages/portal/app/tauri`）与 **浏览器 Web**（`packages/portal/app/web`）是远程客户端；它们**不读取**栖息地 `config.yaml` 的 token。
 
 | 客户端         | 存储                                             |
 | -------------- | ------------------------------------------------ |

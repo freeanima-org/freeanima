@@ -30,14 +30,17 @@
       "@freeanima/engine": ["./packages/engine/index.ts"],
       "@freeanima/engine/*": ["./packages/engine/*"],
       "@freeanima/capabilities/*": ["./packages/capabilities/*"],
-      "@freeanima/features/*": ["./packages/frontend/features/*", "./packages/features/*"],
+      "@freeanima/features/*": ["./packages/features/*"],
       "@freeanima/server": ["./packages/server/index.ts"],
       "@freeanima/server/*": ["./packages/server/*"],
       "@freeanima/cli/*": ["./packages/cli/*"],
-      "@freeanima/client/*": ["./packages/frontend/client/*"],
-      "@freeanima/ui-kit": ["./packages/frontend/ui-kit/index.ts"],
-      "@freeanima/ui-kit/*": ["./packages/frontend/ui-kit/*"],
-      "@freeanima/portal/*": ["./packages/frontend/portal/*"]
+      "@freeanima/ui-kit": ["./packages/ui-kit/index.ts"],
+      "@freeanima/ui-kit/*": ["./packages/ui-kit/*"],
+      "@freeanima/portal-sdk": ["./packages/portal-sdk/index.ts"],
+      "@freeanima/portal-sdk/*": ["./packages/portal-sdk/*"],
+      "@freeanima/ui-features/*": ["./packages/ui-features/*"],
+      "@freeanima/app-frame/*": ["./packages/app-frame/*"],
+      "@freeanima/portal/*": ["./packages/portal/*"]
     }
   }
 }

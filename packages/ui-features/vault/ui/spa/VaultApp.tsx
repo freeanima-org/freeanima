@@ -1,0 +1,895 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePortalRead } from "@freeanima/portal-sdk/portal-query";
+import {
+  getCachedResolvedWorldContext,
+  getUserVaultSession,
+  loadResolvedWorldContext,
+  useHabitatConnection,
+  useNetworkOnline,
+  useUserSubjectId,
+  VAULT_UI_SCOPE,
+} from "@freeanima/portal-sdk/react.tsx";
+import { Button, Card, CardContent, Input, Spinner } from "@freeanima/ui-kit";
+import { ConfirmDialog, EmptyState, StatusAlert } from "@freeanima/ui-kit/composite";
+import { ListDetailLayout } from "@freeanima/ui-kit/layout";
+import type {
+  VaultItemMetaRowPayload,
+  VaultSecretsViewPayload,
+} from "@freeanima/shared/rpc-contract";
+import { isRecord } from "@freeanima/shared/util";
+import {
+  extractCustomFieldNames,
+  type VaultCustomField,
+  type VaultSecretsPayload,
+} from "@freeanima/shared/vault-crypto";
+import { ensureAgentRootKeySsot } from "@freeanima/ui-features/vault/ui/spa/lib/agent-root-key-custody.ts";
+import { generatePassword } from "@freeanima/shared/vault-crypto/password-gen.ts";
+import {
+  normalizeFormUris,
+  primaryUrlFromForm,
+  VaultItemForm,
+  VaultUnlockForm,
+  type VaultItemFormValues,
+} from "@freeanima/ui-features/vault/ui/shared";
+import { fetchTags, type TagRow } from "@freeanima/ui-features/tag/ui/spa/lib/api.ts";
+
+import {
+  changeVaultCryptoConfig,
+  createVaultItem,
+  createVaultItemPlain,
+  deleteVaultItem,
+  ensureAgentVaultConfig,
+  fetchVaultItems,
+  fetchVaultWrappedDeks,
+  getVaultCryptoConfig,
+  getVaultItem,
+  initVaultCryptoConfig,
+  patchVaultItem,
+  patchVaultItemPlain,
+} from "./lib/api.ts";
+import { newUserVaultSalt } from "./lib/crypto-client.ts";
+import { ChangeMasterPasswordDialog } from "./components/ChangeMasterPasswordDialog.tsx";
+import { VaultItemDetail, type VaultDetailSecrets } from "./components/VaultItemDetail.tsx";
+import { VaultItemHistoryDialog } from "./components/VaultItemHistoryDialog.tsx";
+
+/** 与 UserVaultSession 默认一致；壳内显式 configure 便于 onLocked */
+const VAULT_UI_TIMEOUT_MS = 60 * 60 * 1000;
+
+function secretsFromAgentView(secrets?: VaultSecretsViewPayload): VaultDetailSecrets {
+  if (!secrets) return {};
+  const out: VaultDetailSecrets = {};
+  if (typeof secrets.password === "string") out.password = secrets.password;
+  if (typeof secrets.notes === "string") out.notes = secrets.notes;
+  if (typeof secrets.totp === "string") out.totp = secrets.totp;
+  const custom = secrets.custom_fields;
+  if (Array.isArray(custom)) {
+    out.custom_fields = custom.flatMap((field) => {
+      if (!isRecord(field)) return [];
+      if (typeof field.name !== "string" || typeof field.value !== "string") return [];
+      return [{ name: field.name, value: field.value }];
+    });
+  }
+  return out;
+}
+
+function normalizeCustomFields(secrets: VaultSecretsPayload): VaultCustomField[] {
+  const raw = secrets.custom_fields;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(
+      (field): field is VaultCustomField =>
+        !!field &&
+        typeof field === "object" &&
+        typeof field.name === "string" &&
+        typeof field.value === "string",
+    )
+    .map((field) => ({
+      name: field.name,
+      value: field.value,
+      type: field.type === "hidden" || field.type === "boolean" ? field.type : "text",
+    }));
+}
+
+function buildSecretsPayload(
+  values: VaultItemFormValues,
+  existing?: VaultSecretsPayload,
+): VaultSecretsPayload {
+  const secrets: VaultSecretsPayload = { ...existing };
+  if (values.password) secrets.password = values.password;
+  else delete secrets.password;
+  if (values.notes) secrets.notes = values.notes;
+  else delete secrets.notes;
+  if (values.totp) secrets.totp = values.totp;
+  else delete secrets.totp;
+  if (values.custom_fields.length > 0) secrets.custom_fields = values.custom_fields;
+  else delete secrets.custom_fields;
+  return secrets;
+}
+
+export function VaultApp() {
+  const subjectId = useUserSubjectId();
+  const [bootUserSubjectId, setBootUserSubjectId] = useState(
+    () => getCachedResolvedWorldContext()?.user_subject_id ?? 0,
+  );
+  useEffect(() => {
+    let cancelled = false;
+    void loadResolvedWorldContext()
+      .then((ctx) => {
+        if (!cancelled) setBootUserSubjectId(ctx.user_subject_id);
+      })
+      .catch(() => {
+        /* Habitat 未连通 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const networkOnline = useNetworkOnline();
+  const habitatConnection = useHabitatConnection();
+  const writesDisabled = !networkOnline || habitatConnection !== "connected";
+
+  const [items, setItems] = useState<VaultItemMetaRowPayload[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tagFilterId, setTagFilterId] = useState<number | null>(null);
+  const [tagPool, setTagPool] = useState<TagRow[]>([]);
+  const [listOpen, setListOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [userUnlocked, setUserUnlocked] = useState(() =>
+    getUserVaultSession().isUnlocked(VAULT_UI_SCOPE),
+  );
+  const [userSetupMode, setUserSetupMode] = useState(false);
+  const [detailSecrets, setDetailSecrets] = useState<VaultDetailSecrets | null>(null);
+  const [detailSecretsLoading, setDetailSecretsLoading] = useState(false);
+  const [editInitial, setEditInitial] = useState<VaultItemFormValues | null>(null);
+  const [editExistingSecrets, setEditExistingSecrets] = useState<VaultSecretsPayload | undefined>();
+  const [selectionSubjectId, setSelectionSubjectId] = useState(subjectId);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState("");
+
+  if (selectionSubjectId !== subjectId) {
+    setSelectionSubjectId(subjectId);
+    setSelectedId(null);
+    setDetailSecrets(null);
+    setCreating(false);
+    setEditing(false);
+    setEditInitial(null);
+    setTagFilterId(null);
+    setSearchQuery("");
+  }
+
+  const session = useMemo(() => getUserVaultSession(), []);
+  const subjectReady = subjectId > 0 && bootUserSubjectId > 0;
+  /** 用户库要主密码；卧室切到 Anima 时 subjectId ≠ boot user → Agent 库（服务端解密） */
+  const isUserVault = subjectReady && subjectId === bootUserSubjectId;
+  const showLockScreen = isUserVault && !userUnlocked;
+
+  const touchVaultActivity = useCallback(() => {
+    if (isUserVault) session.touchActivity();
+  }, [isUserVault, session]);
+
+  useEffect(() => {
+    session.configure({
+      timeoutMs: VAULT_UI_TIMEOUT_MS,
+      timeoutMode: "sliding",
+      onLocked: () => setUserUnlocked(false),
+    });
+  }, [session]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!showLockScreen) {
+      void fetchTags()
+        .then((tags) => {
+          if (!cancelled) setTagPool(tags);
+        })
+        .catch(() => {
+          if (!cancelled) setTagPool([]);
+        });
+    } else {
+      setTagPool([]);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [showLockScreen, subjectId]);
+
+  const selectedItem = useMemo(
+    () => items.find((item) => item.id === selectedId) ?? null,
+    [items, selectedId],
+  );
+
+  const vaultListQuery = usePortalRead({
+    queryKey:
+      !subjectReady || showLockScreen || (isUserVault && userSetupMode)
+        ? null
+        : ["vault", "list", subjectId, searchQuery.trim(), tagFilterId],
+    queryFn: async () => {
+      touchVaultActivity();
+      const query = searchQuery.trim();
+      return fetchVaultItems(subjectId, {
+        ...(query ? { query } : {}),
+        ...(tagFilterId != null ? { tag_ids: [tagFilterId] } : {}),
+      });
+    },
+    enabled: subjectReady && !showLockScreen,
+  });
+
+  const reloadVaultList = vaultListQuery.reload;
+
+  const reload = useCallback(async () => {
+    if (!subjectReady) return;
+    setError("");
+    touchVaultActivity();
+    try {
+      if (isUserVault) {
+        const config = await getVaultCryptoConfig(subjectId);
+        setUserSetupMode(!config);
+      } else {
+        await ensureAgentVaultConfig(subjectId);
+      }
+      await reloadVaultList();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, [isUserVault, reloadVaultList, subjectId, subjectReady, touchVaultActivity]);
+
+  useEffect(() => {
+    const list = vaultListQuery.data;
+    if (list == null) return;
+    setItems(list);
+    if (selectedId != null && !list.some((item) => item.id === selectedId)) {
+      setSelectedId(null);
+      setDetailSecrets(null);
+      setEditing(false);
+    } else if (selectedId == null && !creating && !editing && list.length > 0) {
+      const first = list[0];
+      if (first) setSelectedId(first.id);
+    }
+  }, [vaultListQuery.data, selectedId, creating, editing]);
+
+  useEffect(() => {
+    if (vaultListQuery.error) setError(vaultListQuery.error.message);
+  }, [vaultListQuery.error]);
+
+  const loading = vaultListQuery.loading;
+
+  useEffect(() => {
+    void reload();
+  }, [reload, subjectId, userUnlocked]);
+
+  useEffect(() => {
+    if (!selectedId || creating || editing) {
+      if (!editing) setDetailSecrets(null);
+      return;
+    }
+    setDetailSecretsLoading(true);
+    void (async () => {
+      try {
+        const detail = await getVaultItem(subjectId, selectedId, true);
+        if (!isUserVault) {
+          setDetailSecrets(secretsFromAgentView(detail.secrets));
+          return;
+        }
+        if (!session.isUnlocked(VAULT_UI_SCOPE)) {
+          setDetailSecrets(null);
+          return;
+        }
+        if (detail.secrets_enc && detail.dek_wrapped) {
+          const secrets = await session.openSecrets(detail.secrets_enc, detail.dek_wrapped);
+          setDetailSecrets({
+            ...(typeof secrets.password === "string" ? { password: secrets.password } : {}),
+            ...(typeof secrets.notes === "string" ? { notes: secrets.notes } : {}),
+            ...(typeof secrets.totp === "string" ? { totp: secrets.totp } : {}),
+            ...(secrets.custom_fields
+              ? {
+                  custom_fields: secrets.custom_fields.map((f) => ({
+                    name: f.name,
+                    value: f.value,
+                  })),
+                }
+              : {}),
+          });
+        } else {
+          setDetailSecrets({});
+        }
+      } catch (e) {
+        setDetailSecrets(null);
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setDetailSecretsLoading(false);
+      }
+    })();
+  }, [selectedId, session, subjectId, isUserVault, userUnlocked, creating, editing]);
+
+  const handleUserUnlock = async (password: string) => {
+    setActionLoading(true);
+    setError("");
+    try {
+      const config = await getVaultCryptoConfig(bootUserSubjectId);
+      if (!config?.salt || !config.verifier) {
+        throw new Error("vault_config_missing");
+      }
+      await session.unlock({
+        masterPassword: password,
+        salt: config.salt,
+        verifier: config.verifier,
+        conversationId: VAULT_UI_SCOPE,
+      });
+      // 先写入 SSOT，再切解锁态触发列表刷新，避免竞态漏掉新条目
+      try {
+        await ensureAgentRootKeySsot();
+      } catch (ensureErr) {
+        setError(ensureErr instanceof Error ? ensureErr.message : String(ensureErr));
+      }
+      setUserUnlocked(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUserSetup = async (password: string, confirm: string) => {
+    if (password !== confirm) {
+      setError("两次输入的主密码不一致");
+      return;
+    }
+    if (password.length < 8) {
+      setError("主密码至少 8 个字符");
+      return;
+    }
+    setActionLoading(true);
+    setError("");
+    try {
+      const salt = newUserVaultSalt();
+      const { verifier } = await session.initCrypto(password, salt);
+      await initVaultCryptoConfig(bootUserSubjectId, { salt, verifier });
+      await session.unlock({
+        masterPassword: password,
+        salt,
+        verifier,
+        conversationId: VAULT_UI_SCOPE,
+      });
+      try {
+        await ensureAgentRootKeySsot();
+      } catch (ensureErr) {
+        setError(ensureErr instanceof Error ? ensureErr.message : String(ensureErr));
+      }
+      setUserSetupMode(false);
+      setUserUnlocked(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCreateItem = async (values: VaultItemFormValues) => {
+    if (writesDisabled) return;
+    setActionLoading(true);
+    setError("");
+    try {
+      const secrets = buildSecretsPayload(values);
+      const uris = normalizeFormUris(values.uris);
+      const url = primaryUrlFromForm(values) || undefined;
+      if (isUserVault) {
+        if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
+        const sealed = await session.sealSecrets(secrets);
+        await createVaultItem(subjectId, {
+          title: values.title,
+          item_type: values.item_type,
+          ...(url ? { url } : {}),
+          ...(uris.length > 0 ? { uris } : {}),
+          ...(values.username ? { username: values.username } : {}),
+          ...(values.tag_ids.length > 0 ? { tag_ids: values.tag_ids } : {}),
+          secrets_enc: sealed.secrets_enc,
+          dek_wrapped: sealed.dek_wrapped,
+          custom_field_names: extractCustomFieldNames(secrets),
+        });
+      } else {
+        await createVaultItemPlain(subjectId, {
+          title: values.title,
+          item_type: values.item_type,
+          ...(url ? { url } : {}),
+          ...(uris.length > 0 ? { uris } : {}),
+          ...(values.username ? { username: values.username } : {}),
+          ...(values.tag_ids.length > 0 ? { tag_ids: values.tag_ids } : {}),
+          secrets,
+        });
+      }
+      setCreating(false);
+      await reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openEdit = async () => {
+    if (!selectedItem || writesDisabled) return;
+    setActionLoading(true);
+    setError("");
+    try {
+      const detail = await getVaultItem(subjectId, selectedItem.id, true);
+      let secrets: VaultSecretsPayload = {};
+      if (!isUserVault) {
+        secrets = detail.secrets ?? {};
+      } else {
+        if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
+        if (detail.secrets_enc && detail.dek_wrapped) {
+          secrets = await session.openSecrets(detail.secrets_enc, detail.dek_wrapped);
+        }
+      }
+      setEditExistingSecrets(secrets);
+      const uris =
+        detail.uris && detail.uris.length > 0
+          ? detail.uris
+          : detail.url
+            ? [{ uri: detail.url, match: "domain" as const }]
+            : [{ uri: "", match: "domain" as const }];
+      setEditInitial({
+        title: selectedItem.title,
+        item_type: selectedItem.item_type,
+        username: selectedItem.username ?? "",
+        tag_ids: selectedItem.tag_ids ?? [],
+        uris,
+        password: typeof secrets.password === "string" ? secrets.password : "",
+        totp: typeof secrets.totp === "string" ? secrets.totp : "",
+        notes: typeof secrets.notes === "string" ? secrets.notes : "",
+        custom_fields: normalizeCustomFields(secrets),
+      });
+      setEditing(true);
+      setCreating(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePatchItem = async (values: VaultItemFormValues) => {
+    if (!selectedItem || writesDisabled) return;
+    setActionLoading(true);
+    setError("");
+    try {
+      const secrets = buildSecretsPayload(values, editExistingSecrets);
+      const uris = normalizeFormUris(values.uris);
+      const url = primaryUrlFromForm(values);
+      if (isUserVault) {
+        if (!session.isUnlocked(VAULT_UI_SCOPE)) throw new Error("vault_locked");
+        const sealed = await session.sealSecrets(secrets);
+        await patchVaultItem(subjectId, {
+          id: selectedItem.id,
+          title: values.title,
+          item_type: values.item_type,
+          url,
+          uris,
+          username: values.username,
+          tag_ids: values.tag_ids,
+          secrets_enc: sealed.secrets_enc,
+          dek_wrapped: sealed.dek_wrapped,
+          custom_field_names: extractCustomFieldNames(secrets),
+        });
+      } else {
+        await patchVaultItemPlain(subjectId, {
+          id: selectedItem.id,
+          title: values.title,
+          item_type: values.item_type,
+          url,
+          uris,
+          username: values.username,
+          tag_ids: values.tag_ids,
+          secrets,
+        });
+      }
+      setEditing(false);
+      setEditInitial(null);
+      setEditExistingSecrets(undefined);
+      await reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    if (!selectedId || writesDisabled) return;
+    setConfirmDeleteOpen(false);
+    setActionLoading(true);
+    setError("");
+    try {
+      await deleteVaultItem(subjectId, selectedId);
+      setSelectedId(null);
+      setEditing(false);
+      await reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleLockUserVault = () => {
+    session.lock(VAULT_UI_SCOPE);
+    setUserUnlocked(false);
+    setDetailSecrets(null);
+    setEditing(false);
+  };
+
+  const handleChangeMasterPassword = async (input: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    if (writesDisabled) return;
+    setChangePasswordError("");
+    if (input.newPassword !== input.confirmPassword) {
+      setChangePasswordError("两次输入的新主密码不一致");
+      return;
+    }
+    if (input.newPassword.length < 8) {
+      setChangePasswordError("新主密码至少 8 个字符");
+      return;
+    }
+    if (input.newPassword === input.currentPassword) {
+      setChangePasswordError("新主密码不能与当前相同");
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const config = await getVaultCryptoConfig(bootUserSubjectId);
+      if (!config?.salt || !config.verifier) {
+        throw new Error("vault_config_missing");
+      }
+      const currentOk = await session.verifyCurrentPassword(
+        input.currentPassword,
+        config.salt,
+        config.verifier,
+      );
+      if (!currentOk) {
+        setChangePasswordError("当前主密码不正确");
+        return;
+      }
+      if (!session.isUnlocked(VAULT_UI_SCOPE)) {
+        await session.unlock({
+          masterPassword: input.currentPassword,
+          salt: config.salt,
+          verifier: config.verifier,
+          conversationId: VAULT_UI_SCOPE,
+        });
+        setUserUnlocked(true);
+      }
+      const wrapped = await fetchVaultWrappedDeks(bootUserSubjectId);
+      const prep = await session.prepareMasterPasswordChange(input.newPassword, wrapped);
+      await changeVaultCryptoConfig({
+        salt: prep.salt,
+        verifier: prep.verifier,
+        rewrapped: prep.rewrapped,
+      });
+      prep.commit();
+      setChangePasswordOpen(false);
+      setError("");
+    } catch (e) {
+      setChangePasswordError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openCreate = () => {
+    setSelectedId(null);
+    setCreating(true);
+    setEditing(false);
+    setListOpen(false);
+  };
+
+  if (showLockScreen) {
+    return (
+      <VaultUnlockForm
+        className="h-full"
+        loading={actionLoading || loading}
+        error={error}
+        setupMode={userSetupMode}
+        onUnlock={(password) => void handleUserUnlock(password)}
+        onSetup={(password, confirm) => void handleUserSetup(password, confirm)}
+      />
+    );
+  }
+
+  const detailTitle = creating
+    ? "新建条目"
+    : editing
+      ? "编辑条目"
+      : (selectedItem?.title ?? (items.length > 0 ? "选择条目" : "保险库"));
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-3 py-2 md:px-4 md:py-3">
+        <h1 className="text-base font-semibold md:text-lg">保险库</h1>
+        {!isUserVault ? (
+          <span className="hidden text-xs text-muted-foreground sm:inline">Agent 库无需主密码</span>
+        ) : null}
+        {isUserVault ? (
+          <>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              isDisabled={writesDisabled || actionLoading}
+              onClick={() => {
+                setChangePasswordError("");
+                setChangePasswordOpen(true);
+              }}
+            >
+              修改主密码
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={handleLockUserVault}>
+              锁定
+            </Button>
+          </>
+        ) : null}
+        <span className="flex-1" />
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          isDisabled={loading}
+          aria-label={"刷新"}
+          onClick={() => void reload()}
+        >
+          {loading ? <Spinner className="size-4" /> : "刷新"}
+        </Button>
+      </div>
+
+      {error ? (
+        <div className="shrink-0 px-4 pt-3">
+          <StatusAlert variant="error">{error}</StatusAlert>
+        </div>
+      ) : null}
+
+      <ListDetailLayout
+        className="min-h-0 flex-1"
+        detailTitle={detailTitle}
+        listTitle="条目"
+        listSubtitle={loading ? "加载中…" : `共 ${items.length} 条`}
+        columnSplitKey="vault"
+        defaultListWidthPx={256}
+        listAsideClassName="border-r bg-muted/20 shrink-0"
+        listOpen={listOpen}
+        onListOpenChange={setListOpen}
+        listToggleAriaLabel="打开条目列表"
+        detailActions={
+          selectedItem && !creating && !editing ? (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                isDisabled={writesDisabled || actionLoading || (isUserVault && !userUnlocked)}
+                onClick={() => setHistoryOpen(true)}
+              >
+                历史
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                isDisabled={writesDisabled || actionLoading}
+                onClick={() => void openEdit()}
+              >
+                编辑
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                isDisabled={writesDisabled || actionLoading}
+                onClick={() => setConfirmDeleteOpen(true)}
+              >
+                删除
+              </Button>
+            </div>
+          ) : null
+        }
+        list={(ctx) => (
+          <div className="flex h-full min-h-0 flex-col">
+            <div className="shrink-0 space-y-2 border-b p-2">
+              <Button
+                type="button"
+                size="sm"
+                className="w-full"
+                isDisabled={writesDisabled || actionLoading}
+                onClick={() => {
+                  openCreate();
+                  ctx.close();
+                }}
+              >
+                新建条目
+              </Button>
+              <Input
+                className="h-8 w-full"
+                placeholder="搜索标题、用户名、URI…"
+                value={searchQuery}
+                onChange={(e) => {
+                  touchVaultActivity();
+                  setSearchQuery(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void reload();
+                }}
+              />
+              <select
+                className="border-input bg-background h-8 w-full rounded-md border px-2 text-xs"
+                value={tagFilterId ?? ""}
+                aria-label="按标签筛选"
+                onChange={(e) => {
+                  touchVaultActivity();
+                  const v = e.target.value;
+                  setTagFilterId(v ? Number(v) : null);
+                }}
+              >
+                <option value="">全部标签</option>
+                {tagPool.map((tag) => (
+                  <option key={tag.id} value={tag.id}>
+                    {tag.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-2">
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <Spinner className="size-5" />
+                </div>
+              ) : items.length === 0 ? (
+                <p className="px-1 py-4 text-center text-sm text-muted-foreground">暂无条目</p>
+              ) : (
+                <ul className="space-y-1">
+                  {items.map((item) => {
+                    const active = item.id === selectedId && !creating && !editing;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-muted ${
+                            active
+                              ? "bg-primary/10 font-medium text-foreground"
+                              : "text-foreground/90"
+                          }`}
+                          onClick={() => {
+                            touchVaultActivity();
+                            setSelectedId(item.id);
+                            setCreating(false);
+                            setEditing(false);
+                            ctx.close();
+                          }}
+                        >
+                          <div className="truncate">{item.title}</div>
+                          {item.username ? (
+                            <div className="truncate text-xs text-muted-foreground">
+                              {item.username}
+                            </div>
+                          ) : null}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+            {ctx.isDrawer ? (
+              <div className="shrink-0 border-t p-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={ctx.close}
+                >
+                  关闭列表
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        )}
+      >
+        <div className="flex h-full min-h-0 flex-col overflow-y-auto p-4 md:p-6">
+          {creating ? (
+            <Card className="mx-auto w-full max-w-lg">
+              <CardContent className="pt-6">
+                <VaultItemForm
+                  mode="create"
+                  disabled={writesDisabled}
+                  loading={actionLoading}
+                  onSubmit={(values) => void handleCreateItem(values)}
+                  onGeneratePassword={() => generatePassword({ length: 20, symbols: true })}
+                />
+              </CardContent>
+            </Card>
+          ) : editing && editInitial ? (
+            <Card className="mx-auto w-full max-w-lg">
+              <CardContent className="pt-6">
+                <VaultItemForm
+                  mode="edit"
+                  initial={editInitial}
+                  disabled={writesDisabled}
+                  loading={actionLoading}
+                  onSubmit={(values) => void handlePatchItem(values)}
+                  onGeneratePassword={() => generatePassword({ length: 20, symbols: true })}
+                  onCancel={() => {
+                    setEditing(false);
+                    setEditInitial(null);
+                    setEditExistingSecrets(undefined);
+                  }}
+                />
+              </CardContent>
+            </Card>
+          ) : selectedItem ? (
+            <VaultItemDetail
+              item={selectedItem}
+              secrets={detailSecrets}
+              secretsLoading={detailSecretsLoading}
+            />
+          ) : (
+            <EmptyState
+              className="mx-auto max-w-md py-16"
+              message={
+                items.length > 0
+                  ? "从左侧列表选择条目查看详情，或新建一条凭据。"
+                  : "还没有保险库条目，先新建一条吧。"
+              }
+              action={
+                <Button type="button" size="sm" isDisabled={writesDisabled} onClick={openCreate}>
+                  新建条目
+                </Button>
+              }
+            />
+          )}
+        </div>
+      </ListDetailLayout>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="删除确认"
+        description={
+          selectedItem ? `确定删除保险库条目「${selectedItem.title}」？此操作不可恢复。` : undefined
+        }
+        confirmLabel="删除"
+        variant="error"
+        onConfirm={() => void handleDeleteItem()}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
+
+      {selectedItem ? (
+        <VaultItemHistoryDialog
+          open={historyOpen}
+          subjectId={subjectId}
+          itemId={selectedItem.id}
+          itemTitle={selectedItem.title}
+          disabled={writesDisabled || actionLoading}
+          onOpenChange={setHistoryOpen}
+          onRestored={async () => {
+            await reload();
+          }}
+        />
+      ) : null}
+
+      <ChangeMasterPasswordDialog
+        open={changePasswordOpen}
+        loading={actionLoading}
+        error={changePasswordError}
+        onOpenChange={setChangePasswordOpen}
+        onSubmit={(input) => void handleChangeMasterPassword(input)}
+      />
+    </div>
+  );
+}
