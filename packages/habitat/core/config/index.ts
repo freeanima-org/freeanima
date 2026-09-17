@@ -15,6 +15,11 @@ export * from "./config-store.ts";
 export * from "./bootstrap-config.ts";
 export * from "./schemas/runtime-config.ts";
 export * from "./runtime-logger.ts";
+export {
+  RuntimeLoggerService,
+  fallbackRuntimeLogger,
+  mountRuntimeLoggerService,
+} from "./runtime-logger-service.ts";
 export * from "./context-window-injection.ts";
 export * from "./standalone-runtime-meta.ts";
 export * from "./build-meta.parse.ts";
