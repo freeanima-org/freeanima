@@ -2,6 +2,12 @@ import { relations, type DbRelations } from "@freeanima/habitat/core/db/schema";
 import { drizzle, type BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
 
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
+import { mountPgClientService, type PgClientService } from "./client-service.ts";
 import { startPgPoolHealer, stopPgPoolHealer } from "./pool-heal.ts";
 import { PG_POOL_APP_NAME, resolvePoolOptions, type PgPoolOptions } from "./pool-options.ts";
 
@@ -21,18 +27,17 @@ export type DbSession = Db | DbTransaction;
 
 export type SqlClient = SQL;
 
-let databaseUrlResolver: DatabaseUrlResolver | null = null;
-let sqlClient: SqlClient | null = null;
-let dbInstance: Db | null = null;
-let activePoolOptions: PgPoolOptions | null = null;
+function pgClientService(): PgClientService {
+  return mountPgClientService(ensureProcessContext());
+}
 
 /** database.url resolver injected by service layer (called once at startup) */
 export function initDatabase(opts: { getDatabaseUrl: DatabaseUrlResolver }): void {
-  databaseUrlResolver = opts.getDatabaseUrl;
+  pgClientService().setResolver(opts.getDatabaseUrl);
 }
 
 export function getDatabaseConfig(): DatabaseConfig | null {
-  const url = databaseUrlResolver?.() ?? null;
+  const url = getProcessContext()?.pgClient?.getResolver()?.() ?? null;
   if (!url) return null;
   return { url };
 }
@@ -60,7 +65,6 @@ export function isPostgresPrimary(): boolean {
  */
 function createDb(url: string): Db {
   const pool = resolvePoolOptions();
-  activePoolOptions = pool;
   const client = new SQL({
     url,
     max: pool.max,
@@ -68,33 +72,36 @@ function createDb(url: string): Db {
     maxLifetime: pool.maxLifetime,
     connection: { application_name: PG_POOL_APP_NAME },
   });
-  sqlClient = client;
-  return drizzle({ client, relations });
+  const db = drizzle({ client, relations });
+  pgClientService().setConnection(db, client, pool);
+  return db;
 }
 
 export function getDb(): Db {
-  if (dbInstance) return dbInstance;
+  const service = pgClientService();
+  const existing = service.getDb();
+  if (existing) return existing;
   const dbCfg = getDatabaseConfig();
   if (!dbCfg?.url) {
     throw new Error("database.url not configured");
   }
-  dbInstance = createDb(dbCfg.url);
-  return dbInstance;
+  return createDb(dbCfg.url);
 }
 
 /** 底层 Bun SQL 池（毒连接回收 / 运维探测）；未 init 时为 null */
 export function getSqlClient(): SqlClient | null {
-  return sqlClient;
+  return getProcessContext()?.pgClient?.getSql() ?? null;
 }
 
 /** 当前池选项（含 healInterval）；池未创建时现算 env */
 export function getActivePoolOptions(): PgPoolOptions {
-  return activePoolOptions ?? resolvePoolOptions();
+  return getProcessContext()?.pgClient?.getPoolOptions() ?? resolvePoolOptions();
 }
 
 /** 启动毒连接回收（业务池已创建后调用） */
 export function startDatabasePoolHealer(): void {
   const dbCfg = getDatabaseConfig();
+  const sqlClient = getSqlClient();
   if (!dbCfg?.url || !sqlClient) return;
   startPgPoolHealer({
     getPool: () => sqlClient,
@@ -105,15 +112,11 @@ export function startDatabasePoolHealer(): void {
 
 export async function closeDb(): Promise<void> {
   await stopPgPoolHealer();
-  if (!sqlClient) {
-    dbInstance = null;
-    activePoolOptions = null;
-    return;
-  }
-  const client = sqlClient;
-  sqlClient = null;
-  dbInstance = null;
-  activePoolOptions = null;
+  const service = getProcessContext()?.pgClient;
+  const client = service?.getSql() ?? null;
+  if (!service) return;
+  service.clearConnection();
+  if (!client) return;
   try {
     await client.close({ timeout: 5 });
   } catch {
@@ -123,15 +126,11 @@ export async function closeDb(): Promise<void> {
 
 /** Inject connection for tests / migration scripts */
 export function setDbForTest(db: Db, client?: SqlClient): void {
-  dbInstance = db;
-  if (client) sqlClient = client;
+  pgClientService().setDb(db, client);
 }
 
 /** Test teardown: reset resolver and connection */
 export function resetDatabaseForTest(): void {
-  databaseUrlResolver = null;
-  sqlClient = null;
-  dbInstance = null;
-  activePoolOptions = null;
+  getProcessContext()?.pgClient?.reset();
   void stopPgPoolHealer();
 }
