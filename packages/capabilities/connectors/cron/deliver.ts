@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 
 export type CronDeliverTarget = {
   platform: string;

@@ -1,4 +1,4 @@
-import { createFeaturePlugin } from "@freeanima/server/features/plugin.ts";
+import { createFeaturePlugin } from "@freeanima/core/features/plugin.ts";
 
 import { shellQuickHabitatRoutes } from "./habitat/routes/index.ts";
 

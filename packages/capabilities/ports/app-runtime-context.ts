@@ -1,7 +1,6 @@
 import type { ConversationService } from "@freeanima/engine/conversation";
 import { getRootContextOrNull } from "@freeanima/kernel";
-
-import { RuntimeService } from "../service/runtime-service.ts";
+import { isRecord } from "@freeanima/shared/util";
 import type { AppRuntimePort } from "./app-runtime-port.ts";
 import type { McpManagerPort } from "./mcp-manager.ts";
 import type { RemoteToolsManagerPort } from "./remote-tools-manager.ts";
@@ -20,15 +19,21 @@ export type AppRuntimeContext = {
  * The service-mounted runtime, or `null` before `initRuntimeContext`.
  *
  * Single source of truth is the Cordis `appRuntime` service (mounted by
- * `initRuntimeContext`); the previous process-global mirror keyed by a
- * `Symbol.for` registry is gone, so a duplicated bundle can no longer observe
- * a second runtime.
+ * `initRuntimeContext`). 这里按结构判定（不 import server 的 RuntimeService），
+ * 使端口层不必反向依赖组合根包。
  */
-function runtimeService(): RuntimeService | null {
+type RuntimeLike = { app: AppRuntimeContext };
+
+function isRuntimeLike(value: unknown): value is RuntimeLike {
+  if (!isRecord(value)) return false;
+  return isRecord(value.app);
+}
+
+function runtimeService(): RuntimeLike | null {
   const ctx = getRootContextOrNull();
   if (!ctx) return null;
   const service: unknown = ctx.reflect.get("appRuntime", false);
-  return service instanceof RuntimeService ? service : null;
+  return isRuntimeLike(service) ? service : null;
 }
 
 export function getAppRuntime(): AppRuntimeContext {

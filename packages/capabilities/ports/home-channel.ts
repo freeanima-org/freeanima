@@ -1,11 +1,7 @@
 import type { Config } from "@freeanima/core/config";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { asRecord } from "@freeanima/shared/util";
-import {
-  getActiveRuntimeConfig,
-  isPatchableRuntimeConfig,
-  patchRuntimeConfigSection,
-} from "@freeanima/server/config";
+import { asRecord, isRecord } from "@freeanima/shared/util";
+import { getActiveRuntimeConfig } from "@freeanima/core/config";
 
 import { platformPorts } from "./service.ts";
 
@@ -46,9 +42,15 @@ export function getHomeChannel(platform: string): HomeChannel | null {
   return threadId ? { chat_id: chatId, thread_id: threadId } : { chat_id: chatId };
 }
 
+/** 结构判定：RuntimeConfigStore 自带 patchSection（不再依赖 server 的类型） */
+function hasPatchSection(config: unknown): boolean {
+  if (!isRecord(config)) return false;
+  return typeof config.patchSection === "function";
+}
+
 function mergePlatformSectionIntoActive(platform: string, patch: Record<string, unknown>): void {
   const config = getActiveRuntimeConfig();
-  if (isPatchableRuntimeConfig(config)) {
+  if (hasPatchSection(config)) {
     // RuntimeConfigStore.patchSection 已更新内存快照
     return;
   }
@@ -67,6 +69,10 @@ export async function setHomeChannel(
     home_channel: chatId,
     home_thread_id: threadId ?? "",
   };
-  await patchRuntimeConfigSection(platform, patch);
+  const patchSection = platformPorts().patchRuntimeConfigSection;
+  if (!patchSection) {
+    throw new Error("runtime config patcher not registered: load @freeanima/server first");
+  }
+  await patchSection(platform, patch);
   mergePlatformSectionIntoActive(platform, patch);
 }

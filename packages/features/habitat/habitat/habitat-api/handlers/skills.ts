@@ -1,4 +1,4 @@
-import { getAppRuntime } from "@freeanima/server/ports";
+import { getAppRuntime } from "@freeanima/capabilities/ports";
 import { getSkillById, findSkillByNameInWorlds } from "@freeanima/core/db/pg/skill";
 import { getResolvedWorldContext } from "@freeanima/core/config";
 import { omitUndefined } from "@freeanima/core/util";

@@ -2,4 +2,4 @@ export {
   getHomeChannel,
   setHomeChannel,
   type HomeChannel,
-} from "@freeanima/server/ports/home-channel";
+} from "@freeanima/capabilities/ports/home-channel";

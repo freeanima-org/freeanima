@@ -1,7 +1,7 @@
 import { synthesizeVoiceFromScene } from "@freeanima/capabilities/llm-openai/voice-synthesize";
 import { getResolvedSpeechConfig } from "@freeanima/core/config/tts-helpers";
 import { getActiveRuntimeConfig } from "@freeanima/core/config";
-import { assertNotShuttingDown } from "@freeanima/server/ports";
+import { assertNotShuttingDown } from "@freeanima/capabilities/ports";
 import type { FeatureRpcHandler } from "@freeanima/server/features";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 

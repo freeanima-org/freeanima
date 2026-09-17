@@ -1,6 +1,6 @@
 import type { Client, Message } from "discord.js";
 
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 
 import { disabledActionRowsFromMessage } from "./discord-clarify-components.ts";
 import { withDiscordRetry } from "./discord-retry.ts";

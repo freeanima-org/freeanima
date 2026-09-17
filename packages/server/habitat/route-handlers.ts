@@ -2,14 +2,13 @@ import type { z } from "zod";
 
 import type { HabitatRouteHandler } from "@freeanima/shared/habitat-contract/route.ts";
 
-import type { FeatureRpcHandler } from "../features/types.ts";
-import type { RemoteToolsServerDeps } from "@freeanima/capabilities/outpost/transport/types.ts";
+import type { FeatureRpcHandler } from "@freeanima/core/features/types.ts";
 
 type AnyHabitatRouteHandler = HabitatRouteHandler<z.ZodTypeAny, z.ZodTypeAny>;
 
 /** Habitat route handler → FeatureRpcHandler（habitatDispatch 已 parse input） */
 export function toFeatureRpcHandler(handler: AnyHabitatRouteHandler): FeatureRpcHandler {
-  return (deps: RemoteToolsServerDeps, payload: unknown, ctx) => handler(deps, payload, ctx);
+  return (deps: unknown, payload: unknown, ctx) => handler(deps, payload, ctx);
 }
 
 export function toFeatureRpcHandlerMap(

@@ -37,7 +37,7 @@ afterAll(() => {
 });
 
 import { Config } from "@freeanima/core/config";
-import type { AppRuntimeContext } from "@freeanima/server/ports/app-runtime-context";
+import type { AppRuntimeContext } from "@freeanima/capabilities/ports/app-runtime-context";
 import { sanitizeConfigForApi } from "@freeanima/server/config";
 
 import { bindHabitatRuntimeContext } from "./runtime.ts";

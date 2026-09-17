@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 
 import * as voiceSynthesize from "@freeanima/capabilities/llm-openai/voice-synthesize";
-import * as ports from "@freeanima/server/ports";
+import * as ports from "@freeanima/capabilities/ports";
 
 import { handleTtsSynthesize } from "./tts-handler.ts";
 import { ApiHandlerError } from "./habitat-api/handlers/errors.ts";
@@ -18,7 +18,7 @@ describe("handleTtsSynthesize", () => {
       mimeType: "audio/mpeg",
     });
 
-    const res = (await handleTtsSynthesize({} as never, { text: "你好" }, {} as never)) as Response;
+    const res = (await handleTtsSynthesize({}, { text: "你好" }, {} as never)) as Response;
     expect(res).toBeInstanceOf(Response);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("audio/mpeg");
@@ -35,7 +35,7 @@ describe("handleTtsSynthesize", () => {
     });
 
     try {
-      await handleTtsSynthesize({} as never, { text: " " }, {} as never);
+      await handleTtsSynthesize({}, { text: " " }, {} as never);
       throw new Error("expected throw");
     } catch (err) {
       expect(err).toBeInstanceOf(ApiHandlerError);
@@ -52,7 +52,7 @@ describe("handleTtsSynthesize", () => {
     });
 
     try {
-      await handleTtsSynthesize({} as never, { text: "hello" }, {} as never);
+      await handleTtsSynthesize({}, { text: "hello" }, {} as never);
       throw new Error("expected throw");
     } catch (err) {
       expect(err).toBeInstanceOf(ApiHandlerError);

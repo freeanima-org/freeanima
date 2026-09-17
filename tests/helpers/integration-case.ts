@@ -22,7 +22,7 @@ import { removeManagedAnimaTmpPath, removeTempDir } from "@freeanima/core/util/t
 import { conversations } from "@freeanima/core/db/schema";
 import { isNotNull } from "drizzle-orm";
 
-import { bindHomeChannelConfig } from "@freeanima/server/ports/home-channel";
+import { bindHomeChannelConfig } from "@freeanima/capabilities/ports/home-channel";
 import { bindContextWindowLookup } from "@freeanima/server/bind-context-window.ts";
 import { getDb } from "@freeanima/core/db/pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";

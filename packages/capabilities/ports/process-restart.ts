@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 
 /** systemctl unit name (without `.service` suffix) */
 export const SYSTEMD_UNIT = "anima";

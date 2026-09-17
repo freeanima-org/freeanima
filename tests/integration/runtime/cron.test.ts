@@ -37,7 +37,7 @@ import { createConversationService } from "@freeanima/engine/conversation";
 import { createAppRuntime } from "@freeanima/server/service/app-runtime";
 import { initRuntimeContext } from "@freeanima/server/service/runtime-context";
 import { registerServiceStores } from "@freeanima/server";
-import { registerCronNotify } from "@freeanima/server/ports/cron-notify";
+import { registerCronNotify } from "@freeanima/capabilities/ports/cron-notify";
 import { notifyBothRecipients } from "@freeanima/server/service/notification-helpers";
 
 describePg("cron", () => {
@@ -121,7 +121,7 @@ describePg("cron", () => {
     });
 
     const { notifyCronResult, shouldNotifyCronJobResult } =
-      await import("@freeanima/server/ports/cron-notify");
+      await import("@freeanima/capabilities/ports/cron-notify");
     const quiet = new CronJob({
       id: "t-quiet",
       name: "quiet-job",

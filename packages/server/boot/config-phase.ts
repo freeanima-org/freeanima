@@ -8,7 +8,9 @@ import {
   validateRuntimeConfigOnStartup,
   type RuntimeConfigStore,
 } from "@freeanima/server/config";
-import { bindHomeChannelConfig } from "@freeanima/server/ports/home-channel";
+import { bindHomeChannelConfig } from "@freeanima/capabilities/ports/home-channel";
+import { platformPorts } from "@freeanima/capabilities/ports/service.ts";
+import { patchRuntimeConfigSection } from "@freeanima/server/config";
 import { bindActiveRuntimeConfig } from "@freeanima/core/config";
 
 import { claimPidFileIfUnowned, startupLog } from "./status.ts";
@@ -32,6 +34,9 @@ export async function bootConfigPhase(): Promise<ConfigPhaseResult> {
 export function bindRuntimeConfig(config: RuntimeConfigStore): void {
   bindActiveRuntimeConfig(config);
   bindHomeChannelConfig(config);
+  // 端口层不 import 组合根：运行时配置写入由此处注入
+  platformPorts().patchRuntimeConfigSection = (section, patch) =>
+    patchRuntimeConfigSection(section, patch);
   validateRuntimeConfigOnStartup(config.data);
 }
 

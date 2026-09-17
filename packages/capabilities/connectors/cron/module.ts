@@ -6,7 +6,7 @@ import {
   listAllCronJobs,
   updateCronJob,
 } from "@freeanima/core/db/pg/cron";
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountCronHandleService, type CronHandleService } from "./cron-handle-service.ts";

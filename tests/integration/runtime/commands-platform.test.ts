@@ -19,7 +19,7 @@ import {
   resolveCommand,
 } from "@freeanima/capabilities/tools/slash-commands";
 import { getAppRuntime } from "@freeanima/server";
-import { getHomeChannel } from "@freeanima/server/ports/home-channel";
+import { getHomeChannel } from "@freeanima/capabilities/ports/home-channel";
 import { getHabitatRuntimeConfigDocument } from "@freeanima/core/db/pg";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 

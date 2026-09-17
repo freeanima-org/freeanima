@@ -7,4 +7,4 @@ export type {
   SafeConfigSnapshot,
   ServiceSnapshot,
   ConversationSummary,
-} from "@freeanima/server/ports/schemas/snapshot";
+} from "@freeanima/capabilities/ports/schemas/snapshot";
