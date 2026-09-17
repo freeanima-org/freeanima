@@ -1,3 +1,9 @@
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
+import { mountEmailSyncPortService } from "./sync-port-service.ts";
 import type { EmailSyncResult } from "./types.ts";
 
 export type EmailSyncPort = {
@@ -5,17 +11,16 @@ export type EmailSyncPort = {
   syncAll: (opts?: { worldId?: number; limit?: number }) => Promise<EmailSyncResult[]>;
 };
 
-let emailSyncPort: EmailSyncPort | null = null;
-
 export function registerEmailSyncPort(port: EmailSyncPort): void {
-  emailSyncPort = port;
+  mountEmailSyncPortService(ensureProcessContext()).register(port);
 }
 
 export function getEmailSyncPort(): EmailSyncPort {
-  if (!emailSyncPort) throw new Error("email sync port not registered");
-  return emailSyncPort;
+  const service = getProcessContext()?.emailSyncPort;
+  if (!service) throw new Error("email sync port not registered");
+  return service.get();
 }
 
 export function resetEmailSyncPortForTests(): void {
-  emailSyncPort = null;
+  getProcessContext()?.emailSyncPort?.reset();
 }
