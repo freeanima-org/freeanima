@@ -5,4 +5,4 @@ export type {
   StreamReplyPhase,
   StreamReplyState,
   StreamReplyTerminal,
-} from "@freeanima/server/ports/stream-reply-state";
+} from "@freeanima/capabilities/ports/stream-reply-state";

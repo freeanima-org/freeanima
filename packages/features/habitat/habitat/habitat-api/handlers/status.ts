@@ -6,7 +6,7 @@ import {
   applyServiceUpdate,
   checkServiceUpdate,
 } from "@freeanima/core/config/app-update/service-update";
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 
 export async function getHealthProbe(auth?: ServiceAuthContext | null) {
   const ctx = habitatCtx();

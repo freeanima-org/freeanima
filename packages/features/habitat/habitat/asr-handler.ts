@@ -1,5 +1,5 @@
 import { transcribeAsrFromScene } from "@freeanima/capabilities/llm-openai/asr-transcribe";
-import { assertNotShuttingDown } from "@freeanima/server/ports";
+import { assertNotShuttingDown } from "@freeanima/capabilities/ports";
 import type { FeatureRpcHandler } from "@freeanima/server/features";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 

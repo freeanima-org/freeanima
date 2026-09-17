@@ -1,7 +1,7 @@
 import { deleteCronJob } from "@freeanima/core/db/pg/cron";
 import { withRedisLock } from "@freeanima/core/redis";
-import { logComponent } from "@freeanima/server/logging";
-import { notifyInprocessBuiltinFailure } from "@freeanima/server/ports/cron-notify";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
+import { notifyInprocessBuiltinFailure } from "@freeanima/capabilities/ports/cron-notify";
 import { asRecord } from "@freeanima/shared/util";
 
 import { resolveBunSchedule } from "./bun-schedule.ts";

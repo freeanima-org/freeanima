@@ -1,9 +1,9 @@
 import { createLogger, type LogLevel, type Logger } from "@freeanima/kernel/logging";
 import { createConsoleSink } from "@freeanima/kernel/logging/sinks/console.ts";
 import { createFileSink } from "@freeanima/kernel/logging/sinks/file.ts";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { PATHS } from "@freeanima/core/config/paths";
 
-let serviceLogger: Logger | null = null;
 let handlersInstalled = false;
 let inStartupPhase = false;
 
@@ -15,7 +15,13 @@ function resolveLogLevel(): LogLevel {
   return "info";
 }
 
-/** Create default service Logger: stderr pretty + ~/.anima/error.log (pretty text lines) */
+/**
+ * Default service logger: stderr pretty + `~/.anima/error.log`.
+ *
+ * The composition root installs it as the kernel root logger
+ * (`createServiceKernel` → `createKernel({ logger })`)，因此低层直接用
+ * `@freeanima/kernel/logging/component.ts` 的 `logComponent` 即拿到同一实例。
+ */
 export function createServiceLogger(options?: { level?: LogLevel }): Logger {
   return createLogger({
     level: options?.level ?? resolveLogLevel(),
@@ -24,26 +30,6 @@ export function createServiceLogger(options?: { level?: LogLevel }): Logger {
       createFileSink({ path: PATHS.errorLog, format: "pretty" }),
     ],
   });
-}
-
-export function setServiceLogger(logger: Logger): void {
-  serviceLogger = logger;
-}
-
-/** Test isolation: reset lazy singleton */
-export function resetServiceLogger(): void {
-  serviceLogger = null;
-}
-
-export function getServiceLogger(): Logger {
-  if (!serviceLogger) {
-    serviceLogger = createServiceLogger();
-  }
-  return serviceLogger;
-}
-
-export function logComponent(component: string): Logger {
-  return getServiceLogger().with({ component });
 }
 
 /** Startup phase marker: log uncaught errors then exit (for systemd failure detection) */

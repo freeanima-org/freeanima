@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { withDiscordRetry, deliverDiscordFinalContent } from "./discord/discord-retry.ts";
 import {
   registerCronDeliverer,

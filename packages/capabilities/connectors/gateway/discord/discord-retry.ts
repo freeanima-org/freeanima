@@ -1,5 +1,5 @@
 import { isTransientNetworkError } from "@freeanima/engine/loop-mechanism";
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { asRecord } from "@freeanima/shared/util";
 
 const DEFAULT_ATTEMPTS = 5;

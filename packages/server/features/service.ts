@@ -2,20 +2,18 @@ import { Service, type Context } from "cordis";
 
 import { toFeatureRpcHandlerMap } from "../habitat/route-handlers.ts";
 import { getRootContextOrNull } from "@freeanima/kernel";
-import type { FeatureContribution, FeatureRpcHandler } from "./types.ts";
-
-declare module "cordis" {
-  interface Context {
-    features: FeatureService;
-  }
-}
+import type {
+  FeatureContribution,
+  FeatureRegistryPort,
+  FeatureRpcHandler,
+} from "@freeanima/core/features/types.ts";
 
 /**
  * Cordis service (`ctx.features`) collecting every feature plugin's Habitat
  * RPC handlers. Replaces the old module-level handler map so features become
  * mountable / disposable Cordis plugins.
  */
-export class FeatureService extends Service {
+export class FeatureService extends Service implements FeatureRegistryPort {
   private readonly contributions = new Map<string, FeatureContribution>();
   private readonly contributionMethods = new Map<string, string[]>();
   private readonly handlers = new Map<string, FeatureRpcHandler>();

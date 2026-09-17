@@ -34,7 +34,7 @@ describe("import-rewrites", () => {
     expect(rewriteSpecifier("@freeanima/habitat/kernel/logging")).toBe("@freeanima/kernel/logging");
     expect(retiredBy("@freeanima/habitat/core/util")).toBe("@freeanima/habitat/");
     expect(retiredBy("@freeanima/core/util")).toBeNull();
-    expect(retiredBy("@freeanima/server/ports")).toBeNull();
+    expect(retiredBy("@freeanima/capabilities/ports")).toBeNull();
   });
 
   test("退役前缀识别", () => {

@@ -1,13 +1,13 @@
-import { registerRunSimpleTurn } from "@freeanima/server/ports/turn-lifecycle";
-import { registerStatsReport } from "@freeanima/server/ports/conversation-stats";
-import { registerCronUseCases } from "@freeanima/server/ports/cron-use-cases";
+import { registerRunSimpleTurn } from "@freeanima/capabilities/ports/turn-lifecycle";
+import { registerStatsReport } from "@freeanima/capabilities/ports/conversation-stats";
+import { registerCronUseCases } from "@freeanima/capabilities/ports/cron-use-cases";
 import {
   formatCronNotificationText,
   formatInprocessBuiltinFailureText,
   registerCronNotify,
   registerInprocessBuiltinFailureNotify,
-} from "@freeanima/server/ports/cron-notify";
-import { registerOnConversationCloseBeforeNew } from "@freeanima/server/ports/conversation-close";
+} from "@freeanima/capabilities/ports/cron-notify";
+import { registerOnConversationCloseBeforeNew } from "@freeanima/capabilities/ports/conversation-close";
 import { getToolConversationId } from "@freeanima/core/tool";
 import { registerToolConversationResolver } from "@freeanima/capabilities/memory/tool-conversation-port";
 import { runSimpleTurn } from "./service/turn-lifecycle.ts";

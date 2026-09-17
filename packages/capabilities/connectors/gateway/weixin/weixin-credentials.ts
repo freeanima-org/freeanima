@@ -1,5 +1,5 @@
 import { getActiveRuntimeConfig } from "@freeanima/server/config";
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { asRecord } from "@freeanima/shared/util";
 
 import { ILINK_BASE_URL } from "./ilink-api.ts";

@@ -1,10 +1,10 @@
 import { SteppedBackoff } from "@freeanima/core/util/backoff";
 import { safeParseOrNull } from "@freeanima/core/util";
 import { PATHS } from "@freeanima/server/config";
-import { logComponent } from "@freeanima/server/logging";
-import { getAppRuntime } from "@freeanima/server/ports";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
+import { getAppRuntime } from "@freeanima/capabilities/ports";
 import { resolveCommand } from "@freeanima/capabilities/tools/slash-commands";
-import type { MessagingPort } from "@freeanima/server/ports/messaging-port";
+import type { MessagingPort } from "@freeanima/capabilities/ports/messaging-port";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 

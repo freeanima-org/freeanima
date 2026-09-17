@@ -3,7 +3,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import {
   registerInprocessBuiltinFailureNotify,
   unregisterInprocessBuiltinFailureNotify,
-} from "@freeanima/server/ports/cron-notify";
+} from "@freeanima/capabilities/ports/cron-notify";
 
 import {
   registerCronBuiltinHandler,

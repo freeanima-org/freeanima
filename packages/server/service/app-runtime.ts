@@ -10,10 +10,10 @@ import type { StoredMessage as Message } from "@freeanima/core/db/domain";
 import type { ConversationService } from "@freeanima/engine/conversation";
 import type { CronJobData } from "@freeanima/capabilities/connectors/cron";
 import type { Kernel } from "@freeanima/kernel";
-import type { AppRuntimePort } from "@freeanima/server/ports/app-runtime-port";
-import type { McpManagerPort } from "@freeanima/server/ports/mcp-manager";
-import type { RemoteToolsManagerPort } from "@freeanima/server/ports/remote-tools-manager";
-import type { ServiceEnginePort } from "@freeanima/server/ports/service-engine";
+import type { AppRuntimePort } from "@freeanima/capabilities/ports/app-runtime-port";
+import type { McpManagerPort } from "@freeanima/capabilities/ports/mcp-manager";
+import type { RemoteToolsManagerPort } from "@freeanima/capabilities/ports/remote-tools-manager";
+import type { ServiceEnginePort } from "@freeanima/capabilities/ports/service-engine";
 import {
   collectStreamReply,
   createConversationAfterMessagesPersisted,

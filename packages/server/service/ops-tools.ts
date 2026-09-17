@@ -11,8 +11,8 @@ import {
   maskConfigSecretsForLlm,
   restoreMaskedSecrets,
 } from "@freeanima/server/config";
-import { getAppRuntime } from "@freeanima/server/ports";
-import { triggerServiceRestart } from "@freeanima/server/ports/process-restart";
+import { getAppRuntime } from "@freeanima/capabilities/ports";
+import { triggerServiceRestart } from "@freeanima/capabilities/ports/process-restart";
 import { asRecord } from "@freeanima/shared/util";
 
 import { OPS_TOOL_RETURNS } from "./ops-return-schemas.ts";

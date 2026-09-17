@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { scheduleBunCronUtc } from "./bun-cron-utc.ts";
 import type { CronJob } from "./models.ts";
 import { resolveBunSchedule } from "./bun-schedule.ts";

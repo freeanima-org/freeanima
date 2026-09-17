@@ -32,6 +32,9 @@ export class PlatformPortsService extends Service {
   cronNotify: CronNotifyFn | null = null;
   inprocessFailureNotify: InprocessBuiltinFailureNotifyFn | null = null;
   homeChannelConfig: Config | null = null;
+  patchRuntimeConfigSection:
+    | ((section: string, patch: Record<string, unknown>) => Promise<void>)
+    | null = null;
 
   constructor(ctx: Context) {
     super(ctx, "platformPorts");

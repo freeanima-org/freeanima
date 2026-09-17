@@ -1,4 +1,4 @@
-import { triggerServiceRestart } from "@freeanima/server/ports/process-restart";
+import { triggerServiceRestart } from "@freeanima/capabilities/ports/process-restart";
 import { resolveAnimaExecutable } from "@freeanima/core/config/cli-install";
 import { logComponent } from "@freeanima/server/logging";
 import { spawnSync } from "node:child_process";
@@ -8,7 +8,7 @@ export {
   isSystemdManaged,
   triggerServiceRestart,
   SYSTEMD_UNIT,
-} from "@freeanima/server/ports/process-restart";
+} from "@freeanima/capabilities/ports/process-restart";
 
 const GRACEFUL_RESTART_DRAIN_MS = 30_000;
 

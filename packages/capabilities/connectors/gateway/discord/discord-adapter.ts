@@ -14,14 +14,14 @@ import {
   isTransientNetworkError,
   networkErrorUserHint,
 } from "@freeanima/engine/loop-mechanism";
-import { getAppRuntime } from "@freeanima/server/ports";
+import { getAppRuntime } from "@freeanima/capabilities/ports";
 import { resolveCommand } from "@freeanima/capabilities/tools/slash-commands";
 import { onConversationUpdated } from "@freeanima/core/hooks/cordis";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { Context } from "cordis";
 import { KeyedRateLimiter } from "@freeanima/core/util/backoff";
-import { logComponent } from "@freeanima/server/logging";
-import type { MessagingPort } from "@freeanima/server/ports/messaging-port";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
+import type { MessagingPort } from "@freeanima/capabilities/ports/messaging-port";
 import { registerDiscordCronDeliverer, unregisterDiscordCronDeliverer } from "../cron-deliver.ts";
 import type { PlatformAdapter } from "../platforms.ts";
 import { resolveToolDisplayMode } from "../tool-display.ts";

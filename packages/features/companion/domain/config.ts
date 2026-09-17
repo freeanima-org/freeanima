@@ -12,7 +12,7 @@ import {
 } from "@freeanima/core/db/pg";
 import { COMPANION_PROFILE_COMPONENT } from "@freeanima/core/db/schema/entity";
 import { listEntities, deleteEntity } from "@freeanima/core/db/pg/entity";
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { mergeBehavior } from "./behavior.ts";
 import type { CompanionConfig } from "./types.ts";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";

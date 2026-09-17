@@ -2,8 +2,8 @@ import { omitUndefined } from "@freeanima/core/util";
 import { existsSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { withRedisLock } from "@freeanima/core/redis";
-import { runCronEngineTurn } from "@freeanima/server/ports/cron-use-cases";
-import { logComponent } from "@freeanima/server/logging";
+import { runCronEngineTurn } from "@freeanima/capabilities/ports/cron-use-cases";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import type { CronJob } from "./models.ts";
 import { CronJob as CronJobClass } from "./models.ts";
 import {
@@ -13,7 +13,10 @@ import {
   resolveScriptPath,
   toOutputRef,
 } from "./paths.ts";
-import { notifyCronResult, shouldNotifyCronJobResult } from "@freeanima/server/ports/cron-notify";
+import {
+  notifyCronResult,
+  shouldNotifyCronJobResult,
+} from "@freeanima/capabilities/ports/cron-notify";
 import { appendCronRunLog } from "./cron-log.ts";
 import { runCronBuiltinHandler } from "./builtin-handlers.ts";
 import { getCronHandleManager, isCronModuleInitialized, updateCronJobRow } from "./module.ts";

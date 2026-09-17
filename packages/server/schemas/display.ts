@@ -4,4 +4,4 @@ export type {
   DisplayToolBlockItem,
   DisplayToolCall,
   MessagesDisplay,
-} from "@freeanima/server/ports/schemas/display";
+} from "@freeanima/capabilities/ports/schemas/display";

@@ -1,1 +1,1 @@
-export { HABITAT_BASE_PATH } from "@freeanima/server/ports/constants";
+export { HABITAT_BASE_PATH } from "@freeanima/capabilities/ports/constants";

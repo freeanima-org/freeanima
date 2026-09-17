@@ -1,5 +1,5 @@
-import { logComponent } from "@freeanima/server/logging";
-import type { MessagingPort } from "@freeanima/server/ports/messaging-port";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
+import type { MessagingPort } from "@freeanima/capabilities/ports/messaging-port";
 import type { StreamEvent } from "@freeanima/engine/loop-mechanism";
 import {
   REST,

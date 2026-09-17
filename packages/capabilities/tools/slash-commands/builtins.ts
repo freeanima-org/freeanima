@@ -5,14 +5,14 @@ import {
   registerCommand,
 } from "./registry.ts";
 import { clearAwaitingClarify, readAwaitingClarify } from "@freeanima/capabilities/tools/clarify";
-import { statsReport } from "@freeanima/server/ports/conversation-stats";
-import { CHAT_PLATFORM_PATTERN } from "@freeanima/server/ports/constants";
+import { statsReport } from "@freeanima/capabilities/ports/conversation-stats";
+import { CHAT_PLATFORM_PATTERN } from "@freeanima/capabilities/ports/constants";
 import { formatCompressionDiagnostics, getCompressionConfig } from "@freeanima/core/compress";
 import type { CompressionAnalysis } from "@freeanima/core/compress";
-import { onConversationCloseBeforeNew } from "@freeanima/server/ports/conversation-close";
+import { onConversationCloseBeforeNew } from "@freeanima/capabilities/ports/conversation-close";
 import { isConversationMeta } from "@freeanima/core/db/domain";
-import { setHomeChannel } from "@freeanima/server/ports/home-channel";
-import { getAppRuntime } from "@freeanima/server/ports";
+import { setHomeChannel } from "@freeanima/capabilities/ports/home-channel";
+import { getAppRuntime } from "@freeanima/capabilities/ports";
 import {
   formatToolDisplayHelp,
   parseToolDisplayMode,
