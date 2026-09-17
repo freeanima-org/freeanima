@@ -27,7 +27,7 @@ import {
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
 import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
 import { createEngine } from "@freeanima/habitat/engine";
-import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { FileConfig } from "@freeanima/habitat/platform/config/file-config.ts";
 import { asRecord } from "@freeanima/shared/util";
 import { initRedis, resetRedisForTest } from "@freeanima/habitat/core/redis";

@@ -1,5 +1,5 @@
-import * as loopEngine from "@freeanima/habitat/kernel/loop-mechanism";
-import { isTransientNetworkError } from "@freeanima/habitat/kernel/loop-mechanism";
+import * as loopEngine from "@freeanima/habitat/engine/loop-mechanism";
+import { isTransientNetworkError } from "@freeanima/habitat/engine/loop-mechanism";
 import { runWithToolContext, toolCallTitleFromArgs } from "@freeanima/habitat/core/tool";
 import type { ConversationGoal, StoredMessage } from "@freeanima/habitat/core/db/domain";
 import { conversationGoalSchema } from "@freeanima/habitat/core/db/domain";

@@ -36,7 +36,7 @@ import { promptSchema } from "./prompt.ts";
 import { identityConfigSchema } from "./identity.ts";
 import { publicConfigSchema } from "./public.ts";
 import { federationConfigSchema } from "./federation.ts";
-import { BOOTSTRAP_CONFIG_KEYS, registerSection } from "@freeanima/habitat/kernel/config-mechanism";
+import { BOOTSTRAP_CONFIG_KEYS, registerSection } from "@freeanima/kernel/config-mechanism";
 
 /**
  * Habitat 运行时配置（PG habitat_runtime_config：一行一段）。

@@ -7,7 +7,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
+import { runWithToolContext } from "@freeanima/habitat/engine/loop-mechanism";
 import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { registerTaskTools, getDefaultTaskList } from "@freeanima/features/task/domain";

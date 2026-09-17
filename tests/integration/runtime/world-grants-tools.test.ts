@@ -6,7 +6,7 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
+import { runWithToolContext } from "@freeanima/habitat/engine/loop-mechanism";
 import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";

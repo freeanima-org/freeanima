@@ -1,5 +1,5 @@
 export * from "@freeanima/habitat/core/config/paths";
-export { expandConfigEnv } from "@freeanima/habitat/kernel/config-mechanism";
+export { expandConfigEnv } from "@freeanima/kernel/config-mechanism";
 export { parseYaml, stringifyYaml } from "./yaml.ts";
 export * from "./config.ts";
 export {

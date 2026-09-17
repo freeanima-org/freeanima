@@ -12,7 +12,7 @@ import { SkillRegistry } from "@freeanima/habitat/core/skill";
 import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { MockBackend } from "@freeanima/habitat/core/provider/test-helpers/mock-backend";
 import { Config, type RuntimeConfig } from "@freeanima/habitat/core/config";
-import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { Engine } from "./engine.ts";
 
 const testCfg = {

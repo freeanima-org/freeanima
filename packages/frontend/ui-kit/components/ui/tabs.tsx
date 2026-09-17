@@ -5,7 +5,6 @@ import {
   TabPanel as TabPanelPrimitive,
   Tab as TabPrimitive,
   Tabs as TabsPrimitive,
-  type TabListProps,
   type TabPanelProps,
   type TabProps,
   type TabsProps,
@@ -59,7 +58,7 @@ function TabsList({
       data-slot="tabs-list"
       data-variant={listVariant}
       className={cn(tabsListVariants({ variant: listVariant }), className)}
-      {...(props as TabListProps<object>)}
+      {...props}
     />
   );
 }

@@ -6,6 +6,9 @@
 
 /** 前缀替换表；较长的 from 必须先于其前缀出现。 */
 export const REWRITES: readonly [string, string][] = [
+  // ── P2：kernel 提包；loop-mechanism 归 engine ────────────────────
+  ["@freeanima/habitat/kernel/loop-mechanism", "@freeanima/habitat/engine/loop-mechanism"],
+  ["@freeanima/habitat/kernel", "@freeanima/kernel"],
   // ── P0：deprecated 形状垫片 → pg-shapes SSOT ─────────────────────
   [
     "@freeanima/shared/entity-shapes/component-ids",
@@ -30,8 +33,8 @@ export const REWRITES: readonly [string, string][] = [
     "@freeanima/shared/pg-shapes/entity/semantic-memory",
   ],
   ["@freeanima/shared/db-shapes", "@freeanima/shared/pg-shapes"],
-  // ── P0：engine/loop 垫片 → kernel/loop-mechanism ─────────────────
-  ["@freeanima/habitat/engine/loop", "@freeanima/habitat/kernel/loop-mechanism"],
+  // ── P0：engine/loop 垫片 → kernel/loop-mechanism（P2 再迁 engine） ─
+  ["@freeanima/habitat/engine/loop", "@freeanima/habitat/engine/loop-mechanism"],
 ];
 
 /** 本阶段之后不得再出现在 import 说明符里的前缀。 */
@@ -43,7 +46,6 @@ export const RETIRED_PREFIXES: readonly string[] = [
   "@freeanima/platform/",
   "@freeanima/capabilities/",
   "@freeanima/capabilities-",
-  "@freeanima/kernel",
   "@freeanima/satellites/",
   "@freeanima/process-context",
   "@freeanima/feature-",
@@ -54,7 +56,7 @@ export const RETIRED_PREFIXES: readonly string[] = [
   "@freeanima/vault-crypto",
   "@freeanima/shared/db-shapes",
   "@freeanima/shared/entity-shapes",
-  "@freeanima/habitat/engine/loop",
+  "@freeanima/habitat/kernel",
 ];
 
 /** 匹配静态/动态 import 与 export-from 的字符串说明符。 */
@@ -62,9 +64,11 @@ export const SPECIFIER_RE = /(\bfrom\s*|\bimport\s*\(\s*)(["'])([^"'\n]+)\2/g;
 
 /** ── P1：feature method-defs 上提到契约层 ───────────────────────── */
 const METHOD_DEFS_RE = /^@freeanima\/features\/([a-z-]+)\/habitat\/method-defs\.ts$/;
+/** P0 删掉的 engine/loop 垫片（精确匹配，避免误伤 engine/loop-mechanism）。 */
+const ENGINE_LOOP_SHIM_RE = /^@freeanima\/habitat\/engine\/loop$/;
 
 /** 正则形式的退役模式（无法用固定前缀表达）。 */
-export const RETIRED_PATTERNS: readonly RegExp[] = [METHOD_DEFS_RE];
+export const RETIRED_PATTERNS: readonly RegExp[] = [METHOD_DEFS_RE, ENGINE_LOOP_SHIM_RE];
 
 /** 命中替换表则返回新说明符，否则 null。 */
 export function rewriteSpecifier(spec: string): string | null {

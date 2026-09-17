@@ -1,6 +1,6 @@
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import type { MessagingPort } from "@freeanima/habitat/platform/ports/messaging-port";
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import {
   REST,
   Routes,

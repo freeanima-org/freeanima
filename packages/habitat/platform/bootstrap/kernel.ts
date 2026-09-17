@@ -1,6 +1,6 @@
-import { createLogger } from "@freeanima/habitat/kernel/logging";
-import { createConsoleSink } from "@freeanima/habitat/kernel/logging/sinks/console.ts";
-import { createKernel, type Kernel } from "@freeanima/habitat/kernel";
+import { createLogger } from "@freeanima/kernel/logging";
+import { createConsoleSink } from "@freeanima/kernel/logging/sinks/console.ts";
+import { createKernel, type Kernel } from "@freeanima/kernel";
 import { ensureProcessContext } from "../service/process-context.ts";
 import type { Config } from "@freeanima/habitat/core/config";
 

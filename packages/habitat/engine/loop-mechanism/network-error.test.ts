@@ -2,7 +2,7 @@ import {
   isTransientNetworkError,
   isEngineStreamError,
   networkErrorUserHint,
-} from "@freeanima/habitat/kernel/loop-mechanism";
+} from "@freeanima/habitat/engine/loop-mechanism";
 import { describe, it, expect } from "bun:test";
 
 describe("network-error", () => {

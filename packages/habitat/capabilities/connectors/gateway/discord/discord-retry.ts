@@ -1,4 +1,4 @@
-import { isTransientNetworkError } from "@freeanima/habitat/kernel/loop-mechanism";
+import { isTransientNetworkError } from "@freeanima/habitat/engine/loop-mechanism";
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import { asRecord } from "@freeanima/shared/util";
 

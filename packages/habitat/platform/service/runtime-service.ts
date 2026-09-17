@@ -1,5 +1,5 @@
 import { Service, type Context } from "cordis";
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { AppRuntime } from "./app-runtime.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 

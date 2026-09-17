@@ -70,6 +70,7 @@
   "dependencies": {
     "@freeanima/frontend": "workspace:*",
     "@freeanima/habitat": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
     "@freeanima/shared": "workspace:*",
     "chinese-days": "^1.5.9",
     "lunar-javascript": "^1.7.7"

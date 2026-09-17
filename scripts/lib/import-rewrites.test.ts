@@ -11,7 +11,11 @@ describe("import-rewrites", () => {
       "@freeanima/shared/pg-shapes/entity/component-ids.ts",
     );
     expect(rewriteSpecifier("@freeanima/habitat/engine/loop")).toBe(
-      "@freeanima/habitat/kernel/loop-mechanism",
+      "@freeanima/habitat/engine/loop-mechanism",
+    );
+    expect(rewriteSpecifier("@freeanima/habitat/kernel/logging")).toBe("@freeanima/kernel/logging");
+    expect(rewriteSpecifier("@freeanima/habitat/kernel/loop-mechanism")).toBe(
+      "@freeanima/habitat/engine/loop-mechanism",
     );
     expect(rewriteSpecifier("@freeanima/shared/pg-shapes")).toBeNull();
   });
@@ -32,7 +36,7 @@ describe("import-rewrites", () => {
     const { next, pending, retired } = rewriteSource(source);
     expect(next).toContain('"@freeanima/shared/pg-shapes/entity"');
     expect(next).toContain('"@freeanima/shared/pg-shapes"');
-    expect(next).toContain('"@freeanima/habitat/kernel/loop-mechanism"');
+    expect(next).toContain('"@freeanima/habitat/engine/loop-mechanism"');
     expect(next).toContain('"@freeanima/shared/util"');
     expect(pending).toHaveLength(3);
     expect(retired).toHaveLength(0);

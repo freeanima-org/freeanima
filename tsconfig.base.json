@@ -23,8 +23,9 @@
     "allowImportingTsExtensions": true,
     "types": ["bun", "bun-plugin-dir-import"],
     "paths": {
-      "@freeanima/shared": ["./packages/shared/index.ts"],
       "@freeanima/shared/*": ["./packages/shared/*"],
+      "@freeanima/kernel": ["./packages/kernel/index.ts"],
+      "@freeanima/kernel/*": ["./packages/kernel/*"],
       "@freeanima/habitat/*": ["./packages/habitat/*"],
       "@freeanima/client/*": ["./packages/frontend/client/*"],
       "@freeanima/ui-kit": ["./packages/frontend/ui-kit/index.ts"],

@@ -1,6 +1,6 @@
-import { createLogger, type LogLevel, type Logger } from "@freeanima/habitat/kernel/logging";
-import { createConsoleSink } from "@freeanima/habitat/kernel/logging/sinks/console.ts";
-import { createFileSink } from "@freeanima/habitat/kernel/logging/sinks/file.ts";
+import { createLogger, type LogLevel, type Logger } from "@freeanima/kernel/logging";
+import { createConsoleSink } from "@freeanima/kernel/logging/sinks/console.ts";
+import { createFileSink } from "@freeanima/kernel/logging/sinks/file.ts";
 import { PATHS } from "@freeanima/habitat/core/config/paths";
 
 let serviceLogger: Logger | null = null;

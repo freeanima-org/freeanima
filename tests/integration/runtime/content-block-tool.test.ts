@@ -6,7 +6,7 @@ import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
 import { createDiaryEntry } from "@freeanima/features/diary/domain";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
 import { getProfileHopModel } from "@freeanima/habitat/platform/config";
-import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
+import { runWithToolContext } from "@freeanima/habitat/engine/loop-mechanism";
 
 import {
   beginIntegrationCase,

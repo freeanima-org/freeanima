@@ -8,9 +8,9 @@ import {
   resetRuntimeLoggerForTest,
 } from "@freeanima/habitat/core/config";
 import { createLlmRuntime, type LlmRuntime } from "@freeanima/habitat/core/llm";
-import type { Logger } from "@freeanima/habitat/kernel/logging";
-import { createLogger } from "@freeanima/habitat/kernel/logging";
-import { createNullSink } from "@freeanima/habitat/kernel/logging/sinks/null.ts";
+import type { Logger } from "@freeanima/kernel/logging";
+import { createLogger } from "@freeanima/kernel/logging";
+import { createNullSink } from "@freeanima/kernel/logging/sinks/null.ts";
 
 export type { EngineCatalog } from "./catalog.ts";
 export { createEngineCatalog } from "./catalog.ts";

@@ -17,7 +17,7 @@ import { createServiceLogger, logComponent } from "@freeanima/habitat/platform/l
 import { MCPManager } from "@freeanima/habitat/capabilities/mcp-client";
 import { RemoteToolsManager } from "@freeanima/habitat/capabilities/outpost";
 import { bindContextWindowLookup } from "../bind-context-window.ts";
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { RuntimeConfigStore } from "@freeanima/habitat/platform/config";
 
 import { registerServiceTools } from "../register.ts";

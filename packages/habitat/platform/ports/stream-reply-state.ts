@@ -9,7 +9,7 @@ import type {
   StreamReplyState as CoreStreamReplyState,
   StreamReplyTerminal,
   StructuredToolCall,
-} from "@freeanima/habitat/kernel/loop-mechanism/stream-reply";
+} from "@freeanima/habitat/engine/loop-mechanism/stream-reply";
 
 export type {
   AnswerSegment,

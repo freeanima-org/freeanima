@@ -1,4 +1,4 @@
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import type { ConversationService } from "@freeanima/habitat/engine/conversation";
 import type { McpManagerPort } from "@freeanima/habitat/platform/ports/mcp-manager";
 import type { RemoteToolsManagerPort } from "@freeanima/habitat/platform/ports/remote-tools-manager";

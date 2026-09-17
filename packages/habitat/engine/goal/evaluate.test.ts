@@ -2,7 +2,7 @@ import { describe, it, expect, spyOn, afterEach } from "bun:test";
 import * as goalJudge from "@freeanima/habitat/core/llm/goal-judge";
 import { Config, runtimeConfigSchema } from "@freeanima/habitat/core/config";
 import type { LlmRuntime } from "@freeanima/habitat/core/llm";
-import { createTestLogger } from "@freeanima/habitat/kernel/logging/testing";
+import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { evaluateGoalAfterTurn, type GoalRuntimeDeps } from "./evaluate.ts";
 import { pauseConversationGoal, setConversationGoal } from "./manager.ts";
 import { readConversationGoal } from "./store.ts";

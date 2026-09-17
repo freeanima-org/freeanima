@@ -7,7 +7,7 @@ import {
   type BootstrapConfig,
 } from "@freeanima/habitat/core/config";
 
-import { expandConfigEnv } from "@freeanima/habitat/kernel/config-mechanism";
+import { expandConfigEnv } from "@freeanima/kernel/config-mechanism";
 import { PATHS } from "@freeanima/habitat/core/config/paths";
 
 import { asRecord } from "@freeanima/shared/util";

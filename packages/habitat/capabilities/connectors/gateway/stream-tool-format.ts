@@ -1,10 +1,10 @@
 /** Gateway streaming tool line formatting (Discord / WeChat shared) */
 
-import type { StructuredToolCall } from "@freeanima/habitat/kernel/loop-mechanism/stream-reply";
+import type { StructuredToolCall } from "@freeanima/habitat/engine/loop-mechanism/stream-reply";
 import {
   ToolRoundBuffer,
   isClarifyTool,
-} from "@freeanima/habitat/kernel/loop-mechanism/stream-reply";
+} from "@freeanima/habitat/engine/loop-mechanism/stream-reply";
 import type { ToolDisplayMode } from "./tool-display.ts";
 
 export { isClarifyTool, ToolRoundBuffer };

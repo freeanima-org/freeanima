@@ -5,7 +5,7 @@ import {
   isConfigSecretKey,
   maskConfigSecretsForLlm as maskConfigSecretsForLlmKernel,
   sanitizeConfigForApi as sanitizeConfigForApiKernel,
-} from "@freeanima/habitat/kernel/config-mechanism";
+} from "@freeanima/kernel/config-mechanism";
 import { asRecord } from "@freeanima/shared/util";
 
 export { CONFIG_MASKED_SECRET, isConfigSecretKey, findForbiddenLlmConfigPatchPath };

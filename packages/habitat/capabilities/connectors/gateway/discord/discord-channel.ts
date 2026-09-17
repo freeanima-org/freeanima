@@ -1,6 +1,6 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { ActionRowBuilder, ButtonBuilder, Message, TextBasedChannel } from "discord.js";
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import { chunkText } from "../chunk-text.ts";
 import type { ClarifyPendingRegistry } from "./discord-clarify-pending.ts";
 import {

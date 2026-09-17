@@ -10,7 +10,7 @@ import {
   type PlatformAdapter,
 } from "@freeanima/habitat/capabilities/connectors/gateway";
 import { bindObjectStore, createObjectStore } from "@freeanima/features/object-storage/domain";
-import { registerSection } from "@freeanima/habitat/kernel/config-mechanism";
+import { registerSection } from "@freeanima/kernel/config-mechanism";
 import { logComponent } from "@freeanima/habitat/platform/logging";
 import { updateFederationManagerConfig } from "@freeanima/habitat/capabilities/federation";
 import type { MessagingPort } from "@freeanima/habitat/platform/ports/messaging-port";

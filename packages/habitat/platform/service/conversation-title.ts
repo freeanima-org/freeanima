@@ -1,4 +1,4 @@
-import type { Kernel } from "@freeanima/habitat/kernel";
+import type { Kernel } from "@freeanima/kernel";
 import { emitConversationUpdated } from "@freeanima/habitat/core/hooks/cordis";
 import { fallbackConversationTitle, generateConversationTitle } from "@freeanima/habitat/core/llm";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";

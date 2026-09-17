@@ -1,10 +1,10 @@
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import {
   ToolRoundBuffer,
   applyStreamReplyEvent,
   initialStreamReplyState,
   type StreamReplyEffect,
-} from "@freeanima/habitat/kernel/loop-mechanism/stream-reply";
+} from "@freeanima/habitat/engine/loop-mechanism/stream-reply";
 import type { DisplayItem } from "@freeanima/habitat/platform/schemas/display";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { mapRuntimeStreamEventToSap } from "@freeanima/shared/rpc-contract";

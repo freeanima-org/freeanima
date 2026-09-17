@@ -10,8 +10,8 @@ import { getActivePgTestContext, getTestEngine, testConv } from "../../helpers/p
 import { registerServiceTools } from "@freeanima/habitat/platform";
 import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
 import { DEFAULT_CONVERSATION_TOOLSETS } from "@freeanima/habitat/core/tool";
-import { runWithToolContext } from "@freeanima/habitat/kernel/loop-mechanism";
-import * as engine from "@freeanima/habitat/kernel/loop-mechanism";
+import { runWithToolContext } from "@freeanima/habitat/engine/loop-mechanism";
+import * as engine from "@freeanima/habitat/engine/loop-mechanism";
 import * as llm from "@freeanima/habitat/core/llm";
 import { resolveExecutableToolNames } from "@freeanima/habitat/engine/conversation";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";

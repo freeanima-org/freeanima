@@ -5,7 +5,7 @@ import {
   interactionToCommandText,
   streamReplyToInteraction,
 } from "@freeanima/habitat/capabilities/connectors/gateway";
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 
 describe("discord slash commands", () => {
   it("buildDiscordSlashCommands includes cwd options", () => {

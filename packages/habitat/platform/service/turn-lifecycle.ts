@@ -9,10 +9,10 @@ import {
 } from "./conversation-title.ts";
 import type { StoredMessage as Message } from "@freeanima/habitat/core/db/domain";
 import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
-import * as loopEngine from "@freeanima/habitat/kernel/loop-mechanism";
-import { createConversationAfterMessagesPersisted } from "@freeanima/habitat/kernel/loop-mechanism";
+import * as loopEngine from "@freeanima/habitat/engine/loop-mechanism";
+import { createConversationAfterMessagesPersisted } from "@freeanima/habitat/engine/loop-mechanism";
 import { runWithToolContext } from "@freeanima/habitat/core/tool";
-import type { StreamEvent } from "@freeanima/habitat/kernel/loop-mechanism";
+import type { StreamEvent } from "@freeanima/habitat/engine/loop-mechanism";
 import { applyClarifyStreamAwaiting } from "@freeanima/habitat/capabilities/tools/clarify";
 import { ProviderError } from "@freeanima/habitat/core/provider";
 import { omitUndefined } from "@freeanima/habitat/core/util";
