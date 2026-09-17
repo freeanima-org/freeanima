@@ -4,6 +4,7 @@ import { bootPersistencePhase } from "../persistence-phase.ts";
 
 const plugin: Plugin.Object = {
   name: "boot-persistence",
+  inject: ["bootConfig"],
   apply: async (ctx) => {
     ctx.provide("bootPersistence", await bootPersistencePhase());
   },

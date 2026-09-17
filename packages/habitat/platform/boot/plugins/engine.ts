@@ -4,7 +4,7 @@ import { bootEnginePhase } from "../engine-phase.ts";
 
 const plugin: Plugin.Object = {
   name: "boot-engine",
-  inject: ["bootOptions", "bootPersistence"],
+  inject: ["bootOptions", "bootPersistence", "bootServiceApiTokens"],
   apply: async (ctx) => {
     ctx.provide(
       "bootEngine",

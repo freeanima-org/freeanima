@@ -4,9 +4,10 @@ import { bootConfigSecretsPhase } from "../config-secrets-phase.ts";
 
 const plugin: Plugin.Object = {
   name: "boot-config-secrets",
-  inject: ["bootPersistence"],
+  inject: ["bootWorldSubjects", "bootPersistence"],
   apply: async (ctx) => {
     await bootConfigSecretsPhase(ctx.bootPersistence.config);
+    ctx.provide("bootConfigSecrets", {});
   },
 };
 

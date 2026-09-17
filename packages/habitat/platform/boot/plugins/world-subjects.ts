@@ -4,7 +4,7 @@ import { bootWorldSubjectsPhase } from "../world-subjects-phase.ts";
 
 const plugin: Plugin.Object = {
   name: "boot-world-subjects",
-  inject: ["bootPersistence"],
+  inject: ["bootIdentity", "bootPersistence"],
   apply: async (ctx) => {
     ctx.provide("bootWorldSubjects", await bootWorldSubjectsPhase(ctx.bootPersistence.config));
   },
