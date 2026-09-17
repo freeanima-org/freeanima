@@ -7,7 +7,7 @@ import {
 } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { handleEmailAttachmentUpload } from "../binary.ts";
-import { emailMethodDefs } from "../method-defs.ts";
+import { emailMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/email.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 

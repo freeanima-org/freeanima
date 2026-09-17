@@ -6,7 +6,7 @@ import {
 } from "@freeanima/shared/rpc-contract/frames/pomodoro";
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types";
 
-import { pomodoroMethodDefs } from "../method-defs.ts";
+import { pomodoroMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/pomodoro.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 

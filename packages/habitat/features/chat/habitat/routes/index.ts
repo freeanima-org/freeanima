@@ -19,7 +19,7 @@ import {
 } from "@freeanima/shared/habitat-contract/route.ts";
 import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
-import { chatMethodDefs } from "../method-defs.ts";
+import { chatMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/chat.ts";
 import { handleChatAttachmentUpload } from "../binary.ts";
 import { chatSessionPumps } from "../session-pumps.ts";
 import {

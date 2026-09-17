@@ -7,7 +7,7 @@ import {
 } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { pumpTaskAdvanceReminders } from "../advance-reminder-stream.ts";
-import { taskMethodDefs } from "../method-defs.ts";
+import { taskMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/task.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 import { taskSessionPumps } from "../session-pumps.ts";

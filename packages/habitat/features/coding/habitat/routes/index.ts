@@ -2,7 +2,7 @@ import { omitUndefined } from "@freeanima/habitat/core/util";
 import type { RemoteToolsServerDeps } from "@freeanima/habitat/capabilities/outpost/transport/types.ts";
 import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 
-import { codingMethodDefs } from "../method-defs.ts";
+import { codingMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/coding.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 

@@ -177,12 +177,7 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
   ],
   "portal -> core": ["packages/frontend/portal/vite-config-cross-pkg.ts"],
   "portal-sdk -> core": ["packages/frontend/client/portal-sdk/speech/edge-voices.ts"],
-  "portal-sdk -> features": ["packages/frontend/client/portal-sdk/habitat-typed-client.ts"],
   "portal-sdk -> portal": ["packages/frontend/client/portal-sdk/pomodoro-active.ts"],
-  "server -> portal-sdk": [
-    "packages/habitat/platform/habitat/feature-method-defs.ts",
-    "packages/habitat/platform/habitat/install-client-method-registry.ts",
-  ],
   "ui-features -> app-frame": [
     "packages/frontend/features/coding/build.ts",
     "packages/frontend/features/coding/vite.config.ts",

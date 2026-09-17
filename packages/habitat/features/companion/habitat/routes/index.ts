@@ -7,7 +7,7 @@ import {
 } from "@freeanima/shared/habitat-contract/route.ts";
 
 import { handleCompanionModelUpload, handleCompanionMotionImport } from "../binary.ts";
-import { companionMethodDefs } from "../method-defs.ts";
+import { companionMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/companion.ts";
 import * as service from "../service.ts";
 
 function depsOf(deps: unknown): RemoteToolsServerDeps {

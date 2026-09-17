@@ -1,7 +1,7 @@
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
 
-import { calendarMethodDefs } from "../method-defs.ts";
+import { calendarMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/calendar.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 

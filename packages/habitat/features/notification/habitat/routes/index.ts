@@ -10,7 +10,7 @@ import type { NotificationRow } from "@freeanima/shared/rpc-contract/frames/noti
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
-import { notificationMethodDefs } from "../method-defs.ts";
+import { notificationMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/notification.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
 import * as service from "../service.ts";
 import { notificationSessionPumps } from "../session-pumps.ts";

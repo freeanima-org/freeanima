@@ -1,3 +1,4 @@
+/** Feature Habitat RPC method defs（契约 SSOT —— 由 features/vault/habitat/method-defs.ts 上提）。 */
 import {
   vaultAgentKeyLockInputSchema,
   vaultAgentKeyLockOutputSchema,
