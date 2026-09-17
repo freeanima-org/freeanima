@@ -1,10 +1,10 @@
-import type { SemanticMemoryRow } from "@freeanima/habitat/core/db/pg/semantic-memory/types";
+import type { SemanticMemoryRow } from "@freeanima/core/db/pg/semantic-memory/types";
 import {
   createEmbeddedMemoryService,
   registerRetainEngine,
   resetRetainEngineForTests,
   type MemoryService,
-} from "@freeanima/habitat/capabilities/memory/service";
+} from "@freeanima/capabilities/memory/service";
 
 import type { FlatTurn, LocomoSample } from "./types.ts";
 import { asString } from "./coerce.ts";

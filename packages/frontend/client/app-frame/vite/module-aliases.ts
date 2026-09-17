@@ -2,21 +2,29 @@ import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Alias, Plugin } from "vite";
 
-/** 与 tsconfig.base.json paths 手动对齐 */
+/** 与 tsconfig.base.json paths 手动对齐（P5 改为同源生成 + 一致性测试） */
 export const MODULE_ALIAS_RULES = {
-  freeanima: "@freeanima/* → packages/{shared,habitat,frontend}/…",
+  freeanima:
+    "@freeanima/* → packages/{shared,kernel,core,engine,capabilities,features,server,cli,frontend}/…",
 } as const;
 
 export function tsconfigPathEntries(): Record<string, string[]> {
   return {
-    "@freeanima/shared": ["./packages/shared/index.ts"],
     "@freeanima/shared/*": ["./packages/shared/*"],
-    "@freeanima/habitat/*": ["./packages/habitat/*"],
+    "@freeanima/kernel": ["./packages/kernel/index.ts"],
+    "@freeanima/kernel/*": ["./packages/kernel/*"],
+    "@freeanima/core/*": ["./packages/core/*"],
+    "@freeanima/engine": ["./packages/engine/index.ts"],
+    "@freeanima/engine/*": ["./packages/engine/*"],
+    "@freeanima/capabilities/*": ["./packages/capabilities/*"],
+    "@freeanima/features/*": ["./packages/frontend/features/*", "./packages/features/*"],
+    "@freeanima/server": ["./packages/server/index.ts"],
+    "@freeanima/server/*": ["./packages/server/*"],
+    "@freeanima/cli/*": ["./packages/cli/*"],
     "@freeanima/client/*": ["./packages/frontend/client/*"],
     "@freeanima/ui-kit": ["./packages/frontend/ui-kit/index.ts"],
     "@freeanima/ui-kit/*": ["./packages/frontend/ui-kit/*"],
-    "@freeanima/features/*": ["./packages/frontend/features/*", "./packages/habitat/features/*"],
-    "@freeanima/portal/*": ["./packages/frontend/portal/*", "./packages/habitat/portal/*"],
+    "@freeanima/portal/*": ["./packages/frontend/portal/*"],
   };
 }
 

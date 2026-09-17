@@ -1,6 +1,6 @@
 import { isRecord } from "@freeanima/shared/util";
 
-/** Habitat REST 默认 HTTP 端口（与 @freeanima/habitat/core/config DEFAULT_HABITAT_HTTP_PORT 保持一致） */
+/** Habitat REST 默认 HTTP 端口（与 @freeanima/core/config DEFAULT_HABITAT_HTTP_PORT 保持一致） */
 import { habitatTlsCaInfoUrl } from "@freeanima/shared/habitat-rpc";
 
 const DEFAULT_HABITAT_HTTP_PORT = 2658;

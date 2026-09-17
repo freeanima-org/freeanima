@@ -1,7 +1,7 @@
 import { normalizeAttributes } from "./serialize-error.ts";
 import type { LogRecord } from "./types.ts";
 
-/** CST (+08:00) offset — mirrors @freeanima/habitat/core/util CST_OFFSET_MS */
+/** CST (+08:00) offset — mirrors @freeanima/core/util CST_OFFSET_MS */
 const CST_OFFSET_MS = 8 * 60 * 60 * 1000;
 
 const pad2 = (n: number): string => String(n).padStart(2, "0");

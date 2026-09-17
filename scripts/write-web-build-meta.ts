@@ -15,7 +15,7 @@ import {
   createComponentBuildMeta,
   isShipChannel,
   resolveBuildChannelFromEnv,
-} from "@freeanima/habitat/core/config/build-meta.ts";
+} from "@freeanima/core/config/build-meta.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const target = parseShellBuildTarget(process.env.FREEANIMA_SHELL_TARGET);

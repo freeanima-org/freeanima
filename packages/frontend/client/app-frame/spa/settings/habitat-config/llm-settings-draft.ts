@@ -15,13 +15,13 @@ import {
   type CustomKindId,
   type LlmPresetId,
   LLM_PRESET_IDS,
-} from "@freeanima/habitat/core/config";
+} from "@freeanima/core/config";
 import {
   getLlmPreset,
   presetAllowsBaseUrlOverride,
   presetModalityFields,
   connectionSupportsLayer,
-} from "@freeanima/habitat/core/llm/presets";
+} from "@freeanima/core/llm/presets";
 import { readHabitatConfigRecord } from "./habitat-config-field-helpers.tsx";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { isRecord, randomPublicId } from "@freeanima/shared/util";

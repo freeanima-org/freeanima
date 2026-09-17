@@ -23,4 +23,4 @@ title: 梦境
 
 `content_block` + `dream` 组件，挂在当日 `diary_entry` 下。运维面无独立 `/dream` 路由；可通过日记 / entity 浏览。
 
-详见存量存储：`packages/habitat/core/db/pg/dream/`（生成代码已删除）。
+详见存量存储：`packages/core/db/pg/dream/`（生成代码已删除）。

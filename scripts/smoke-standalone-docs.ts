@@ -9,19 +9,19 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 
-import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
-import { resetRepoRootForTests } from "@freeanima/habitat/core/config/repo-root";
+import { ToolSetRegistry } from "@freeanima/core/tool";
+import { resetRepoRootForTests } from "@freeanima/core/config/repo-root";
 
-import { registerDocsTools } from "@freeanima/habitat/capabilities/tools/docs";
+import { registerDocsTools } from "@freeanima/capabilities/tools/docs";
 import {
   resetDocsCorpusCacheForTest,
   setDocsCorpusForTest,
-} from "@freeanima/habitat/capabilities/tools/docs-corpus";
+} from "@freeanima/capabilities/tools/docs-corpus";
 import {
   registerEmbeddedDocs,
   resetEmbeddedDocsForTest,
-} from "@freeanima/habitat/capabilities/tools/docs-embedded";
-import { listEmbeddedDocsFromDir } from "@freeanima/habitat/capabilities/tools/docs-dir-import";
+} from "@freeanima/capabilities/tools/docs-embedded";
+import { listEmbeddedDocsFromDir } from "@freeanima/capabilities/tools/docs-dir-import";
 import { asRecord } from "@freeanima/shared/util";
 
 const ROOT = join(import.meta.dir, "..");

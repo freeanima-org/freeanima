@@ -10,19 +10,36 @@ describe("import-rewrites", () => {
     expect(rewriteSpecifier("@freeanima/shared/entity-shapes/component-ids.ts")).toBe(
       "@freeanima/shared/pg-shapes/entity/component-ids.ts",
     );
-    expect(rewriteSpecifier("@freeanima/habitat/engine/loop")).toBe(
-      "@freeanima/habitat/engine/loop-mechanism",
-    );
-    expect(rewriteSpecifier("@freeanima/habitat/kernel/logging")).toBe("@freeanima/kernel/logging");
-    expect(rewriteSpecifier("@freeanima/habitat/kernel/loop-mechanism")).toBe(
-      "@freeanima/habitat/engine/loop-mechanism",
+    expect(rewriteSpecifier("@freeanima/engine/loop")).toBe("@freeanima/engine/loop-mechanism");
+    expect(rewriteSpecifier("@freeanima/kernel/logging")).toBeNull();
+    expect(rewriteSpecifier("@freeanima/kernel/loop-mechanism")).toBe(
+      "@freeanima/engine/loop-mechanism",
     );
     expect(rewriteSpecifier("@freeanima/shared/pg-shapes")).toBeNull();
   });
 
+  test("P4：habitat 拆为 6 个服务端包", () => {
+    expect(rewriteSpecifier("@freeanima/habitat/core/config")).toBe("@freeanima/core/config");
+    expect(rewriteSpecifier("@freeanima/habitat/engine/conversation")).toBe(
+      "@freeanima/engine/conversation",
+    );
+    expect(rewriteSpecifier("@freeanima/habitat/capabilities/tools")).toBe(
+      "@freeanima/capabilities/tools",
+    );
+    expect(rewriteSpecifier("@freeanima/habitat/features/task/domain")).toBe(
+      "@freeanima/features/task/domain",
+    );
+    expect(rewriteSpecifier("@freeanima/habitat/platform/ports")).toBe("@freeanima/server/ports");
+    expect(rewriteSpecifier("@freeanima/habitat/platform")).toBe("@freeanima/server");
+    expect(rewriteSpecifier("@freeanima/habitat/kernel/logging")).toBe("@freeanima/kernel/logging");
+    expect(retiredBy("@freeanima/habitat/core/util")).toBe("@freeanima/habitat/");
+    expect(retiredBy("@freeanima/core/util")).toBeNull();
+    expect(retiredBy("@freeanima/server/ports")).toBeNull();
+  });
+
   test("退役前缀识别", () => {
     expect(retiredBy("@freeanima/host/core/db")).toBe("@freeanima/host/");
-    expect(retiredBy("@freeanima/habitat/core/util")).toBeNull();
+    expect(retiredBy("@freeanima/core/util")).toBeNull();
     expect(retiredBy("@freeanima/shared/entity-shapes")).toBe("@freeanima/shared/entity-shapes");
   });
 
@@ -30,13 +47,13 @@ describe("import-rewrites", () => {
     const source = [
       'import type { X } from "@freeanima/shared/entity-shapes";',
       'export * from "@freeanima/shared/db-shapes";',
-      'const y = await import("@freeanima/habitat/engine/loop");',
+      'const y = await import("@freeanima/engine/loop");',
       'import { ok } from "@freeanima/shared/util";',
     ].join("\n");
     const { next, pending, retired } = rewriteSource(source);
     expect(next).toContain('"@freeanima/shared/pg-shapes/entity"');
     expect(next).toContain('"@freeanima/shared/pg-shapes"');
-    expect(next).toContain('"@freeanima/habitat/engine/loop-mechanism"');
+    expect(next).toContain('"@freeanima/engine/loop-mechanism"');
     expect(next).toContain('"@freeanima/shared/util"');
     expect(pending).toHaveLength(3);
     expect(retired).toHaveLength(0);

@@ -17,7 +17,7 @@ import {
   FIREFOX_ADDON_ID,
   FIREFOX_ADDON_UPDATE_URL,
   buildFirefoxAddonUpdatesJson,
-} from "@freeanima/habitat/core/config/firefox-addon.ts";
+} from "@freeanima/core/config/firefox-addon.ts";
 import { asRecord } from "@freeanima/shared/util";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");

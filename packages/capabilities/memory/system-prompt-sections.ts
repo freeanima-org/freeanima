@@ -1,0 +1,82 @@
+import {
+  decomposeSystemPromptParts,
+  renderResidentMemoryBody,
+  RESIDENT_MEMORY_SYSTEM_FRAME,
+} from "./system-prompt.ts";
+import { MEMORY_RECALL_STRATEGY_RULE, MEMORY_REFERENCE_CITATION_RULE } from "./memory-reference.ts";
+import {
+  PROMPT_XML_TAGS,
+  type PromptMode,
+  type SystemPromptSection,
+} from "@freeanima/core/hooks/prompt";
+import { SELF_LAYER_SYSTEM_FRAME } from "@freeanima/capabilities/self/blocks.ts";
+
+/**
+ * Build self / resident / agents sections for systemPromptBuild hook.
+ * `selfContent` must be the *inner* nested-block XML (no outer `<self_layer>`).
+ */
+export async function buildMemorySystemPromptSections(
+  selfContent: string,
+  cwd?: string | null,
+  mode: PromptMode = "digital_human",
+  opts?: { world_id?: number },
+  flags?: { skipMemoryRules?: boolean },
+): Promise<SystemPromptSection[]> {
+  const includeDigitalHuman = mode !== "work";
+  const world_id = opts?.world_id;
+  const parts = await decomposeSystemPromptParts(includeDigitalHuman ? selfContent : "", cwd, {
+    includeResident: false,
+    ...(world_id != null ? { world_id } : {}),
+  });
+  const sections: SystemPromptSection[] = [];
+  if (includeDigitalHuman && parts.self.trim()) {
+    sections.push({
+      id: "self",
+      content: parts.self.trim(),
+      order: 0,
+      priority: 0,
+      xmlTag: PROMPT_XML_TAGS.selfLayer,
+      xmlFrame: SELF_LAYER_SYSTEM_FRAME,
+    });
+  }
+  if (!flags?.skipMemoryRules) {
+    sections.push({
+      id: "memory-citation",
+      content: MEMORY_REFERENCE_CITATION_RULE,
+      order: 25,
+      priority: 1,
+      xmlTag: PROMPT_XML_TAGS.memoryCitation,
+    });
+    sections.push({
+      id: "memory-recall",
+      content: MEMORY_RECALL_STRATEGY_RULE,
+      order: 26,
+      priority: 1,
+      xmlTag: PROMPT_XML_TAGS.memoryRecall,
+    });
+  }
+  if (includeDigitalHuman && world_id != null && world_id > 0) {
+    const residentBody = await renderResidentMemoryBody({ world_id });
+    if (residentBody.trim()) {
+      sections.push({
+        id: "resident",
+        content: residentBody,
+        order: 30,
+        priority: 4,
+        budgetChars: 6_000,
+        xmlTag: PROMPT_XML_TAGS.residentMemory,
+        xmlFrame: RESIDENT_MEMORY_SYSTEM_FRAME,
+      });
+    }
+  }
+  if (parts.agents.trim()) {
+    sections.push({
+      id: "agents",
+      content: parts.agents,
+      order: 40,
+      priority: 7,
+      budgetChars: 4_000,
+    });
+  }
+  return sections;
+}

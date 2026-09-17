@@ -17,8 +17,8 @@ import { fileURLToPath } from "node:url";
 import {
   DEV_HABITAT_PORT_MIN,
   pickRandomAvailableTcpPort,
-} from "@freeanima/portal/cli/tcp-port-available.ts";
-import { waitForHabitatReady } from "@freeanima/portal/cli/wait-habitat-ready.ts";
+} from "@freeanima/cli/anima/tcp-port-available.ts";
+import { waitForHabitatReady } from "@freeanima/cli/anima/wait-habitat-ready.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 

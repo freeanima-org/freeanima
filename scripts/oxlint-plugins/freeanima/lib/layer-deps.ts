@@ -44,7 +44,8 @@ export const LAYER_ALLOWED: Readonly<Record<LayerName, readonly LayerName[]>> = 
   capabilities: ["engine", "core", "kernel", "shared"],
   features: ["capabilities", "engine", "core", "kernel", "shared"],
   server: ["features", "capabilities", "engine", "core", "kernel", "shared"],
-  cli: ["server", "shared"],
+  // 入口/组合根（同 server）：可依赖全部服务端包
+  cli: ["server", "features", "capabilities", "engine", "core", "kernel", "shared"],
   "ui-kit": ["shared"],
   "portal-sdk": ["ui-kit", "shared"],
   "ui-features": ["portal-sdk", "ui-kit", "shared"],
@@ -142,12 +143,12 @@ function dualTreeLayer(rest: string): string | null {
   if (head === "features") {
     candidates = [
       ["packages/frontend/features", ...tail],
-      ["packages/habitat/features", ...tail],
+      ["packages/features", ...tail],
     ];
   } else if (head === "portal") {
     candidates = [
       ["packages/frontend/portal", ...tail],
-      ["packages/habitat/portal", ...tail],
+      ["packages/cli", ...tail],
     ];
   }
   if (!candidates) return null;
@@ -202,7 +203,7 @@ function isDbImport(spec: string): boolean {
   if (spec === "drizzle-orm" || spec.startsWith("drizzle-orm/")) return true;
   return (
     /(?:^|\/)core\/db(?:\/|$)/.test(spec) ||
-    spec.includes("@freeanima/habitat/core/db") ||
+    spec.includes("@freeanima/core/db") ||
     spec.includes("@freeanima/host/core/db") ||
     spec.startsWith("@freeanima/core/db")
   );

@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import {
   createServiceApiTokenWithSecret,
   getServiceApiTokenById,
@@ -8,23 +8,23 @@ import {
   revealServiceApiTokenPlaintext,
   revokeServiceApiToken,
   updateServiceApiTokenName,
-} from "@freeanima/habitat/core/db/pg/service-api-token";
-import { createServiceApiToken } from "@freeanima/habitat/core/db/pg/service-api-token/repos/token-repo.ts";
-import { getAppRuntime } from "@freeanima/habitat/platform";
+} from "@freeanima/core/db/pg/service-api-token";
+import { createServiceApiToken } from "@freeanima/core/db/pg/service-api-token/repos/token-repo.ts";
+import { getAppRuntime } from "@freeanima/server";
 import {
   builtinFeaturePlugins,
   registerFeatures,
   resetFeatureRegistryForTests,
-} from "@freeanima/habitat/platform/features";
-import { createSapBunHandlers } from "@freeanima/habitat/capabilities/outpost/transport/bun-route";
+} from "@freeanima/server/features";
+import { createSapBunHandlers } from "@freeanima/capabilities/outpost/transport/bun-route";
 import {
   bindRemoteToolsServerDeps,
   clearRemoteToolsServerDeps,
   getRemoteToolsServerDeps,
-} from "@freeanima/habitat/capabilities/outpost/transport/runtime-context";
-import { RemoteInstanceRegistry } from "@freeanima/habitat/capabilities/outpost/transport/instance-registry";
-import { HabitatSessionRegistry } from "@freeanima/habitat/capabilities/outpost/transport/habitat-session-registry";
-import type { RemoteToolsManager } from "@freeanima/habitat/capabilities/outpost";
+} from "@freeanima/capabilities/outpost/transport/runtime-context";
+import { RemoteInstanceRegistry } from "@freeanima/capabilities/outpost/transport/instance-registry";
+import { HabitatSessionRegistry } from "@freeanima/capabilities/outpost/transport/habitat-session-registry";
+import type { RemoteToolsManager } from "@freeanima/capabilities/outpost";
 
 import { bindHabitatRuntimeContext } from "@freeanima/features/habitat/habitat/habitat-api/handlers/runtime.ts";
 import { applyHttpAuth } from "@freeanima/features/habitat/habitat/habitat-api/http-dispatch.ts";

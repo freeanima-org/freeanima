@@ -1,6 +1,6 @@
 ---
 description: 前端功能原型 A/B/C、Feature RPC vs Habitat、touch 清单
-globs: packages/frontend/features/**/*,packages/habitat/features/**/*,packages/frontend/client/**/*,packages/frontend/portal/**/*,packages/habitat/portal/**/*
+globs: packages/frontend/features/**/*,packages/features/**/*,packages/frontend/client/**/*,packages/frontend/portal/**/*,packages/cli/**/*
 alwaysApply: false
 ---
 
@@ -22,7 +22,7 @@ alwaysApply: false
 
 | 层                                            | 必须改                                                                                                       |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `packages/habitat/core/db`                            | entity component 或专用表 + migration                                                                        |
+| `packages/core/db`                            | entity component 或专用表 + migration                                                                        |
 | `packages/{habitat,frontend}/features/<slug>/domain`                  | 域逻辑 SSOT                                                                                                  |
 | `rpc-contract`                                | `feature-rpc/frames/<domain>.ts` + router 子集                                                               |
 | `packages/{habitat,frontend}/features/<slug>/habitat/routes/index.ts` | Habitat RPC handler（`defineHabitatRoute`）                                                                  |
@@ -75,10 +75,10 @@ alwaysApply: false
 1. 在 `packages/{habitat,frontend}/features/<slug>/habitat/method-defs.ts` 增加 method 定义
 2. 在 `packages/shared/rpc-contract/feature-rpc/frames/` 增加 schema（若尚未存在）
 3. 在 `packages/{habitat,frontend}/features/<slug>/habitat/routes/index.ts` 用 `bindHabitatRouteHandlers` 绑定 handler（**禁止** import `habitat-client`）
-4. 在 `packages/habitat/platform/habitat/habitat-router.ts` import 该 feature routes bundle
+4. 在 `packages/server/habitat/habitat-router.ts` import 该 feature routes bundle
 5. Feature UI `api.ts` 使用 `@freeanima/client/portal-sdk` 的 `getTypedHabitatClient` / `call` / `subscribe`（`habitat-typed-client`）；读列表经 `withOfflineCache` 或 `portal-query` hooks，禁止在 feature UI 直接 `readOfflineCache`/`writeOfflineCache`（oxlint `freeanima/no-direct-offline-cache`）
 
-远程工具专用 method（`tool.*` / `remote_tools.attach` / terminal）在 [`packages/habitat/capabilities/outpost/transport/ws-server.ts`](../../packages/habitat/capabilities/outpost/transport/ws-server.ts)。
+远程工具专用 method（`tool.*` / `remote_tools.attach` / terminal）在 [`packages/capabilities/outpost/transport/ws-server.ts`](../../packages/capabilities/outpost/transport/ws-server.ts)。
 
 ## 前端包依赖速查
 

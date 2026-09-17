@@ -6,7 +6,7 @@
  *   2. 每个包的外部依赖禁令（shared 无 drizzle/React/LLM/mail 等）；
  *   3. 根编排包只允许引用 DAG 内的包名。
  *
- * 目标是 P4/P5 迁移后的 13 包；迁移进行中时，`packages/habitat` /
+ * 目标是 P4/P5 迁移后的 13 包；迁移进行中时，`packages` /
  * `packages/frontend` 作为聚合包按同一 DAG 的并集校验。
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -31,26 +31,36 @@ const ALLOWED_FREEANIMA_DEPS: Record<string, readonly string[]> = {
   "@freeanima/capabilities": ["engine", "core", "kernel", "shared"],
   "@freeanima/features": ["capabilities", "engine", "core", "kernel", "shared"],
   "@freeanima/server": ["features", "capabilities", "engine", "core", "kernel", "shared"],
-  "@freeanima/cli": ["server", "shared"],
+  // 入口/组合根（同 server）：可依赖全部服务端包
+  "@freeanima/cli": ["server", "features", "capabilities", "engine", "core", "kernel", "shared"],
   "@freeanima/ui-kit": ["shared"],
   "@freeanima/portal-sdk": ["ui-kit", "shared"],
   "@freeanima/ui-features": ["portal-sdk", "ui-kit", "shared"],
   "@freeanima/app-frame": ["ui-features", "portal-sdk", "ui-kit", "shared"],
   "@freeanima/portal": ["app-frame", "ui-features", "portal-sdk", "ui-kit", "shared"],
   // 迁移进行中的聚合包：允许其未来拆分包集合的并集
-  "@freeanima/habitat": ["capabilities", "core", "engine", "features", "kernel", "shared"],
   "@freeanima/frontend": ["app-frame", "portal-sdk", "shared", "ui-features", "ui-kit"],
   // 文档站：不参与运行时 DAG
   "@freeanima/site": [],
 };
 
+/**
+ * 反向边债务（棘轮）：P4 拆包时尚未清完的反向依赖，必须显式登记。
+ *
+ * 目标是把本表清空；`just qa check` 会在新增未登记反向边时失败。
+ * 文件级明细见 `scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`。
+ */
+const REVERSE_EDGE_DEBT: Record<string, readonly string[]> = {
+  // features/*/server 仍直接 import server 的 ports/config/service（P4b 收尾）
+  "@freeanima/features": ["server"],
+  // capabilities 仍直接 import server 的 logging/config/ports（P4b 收尾）
+  "@freeanima/capabilities": ["server"],
+};
+
 const LLM_AND_MAIL = ["@anthropic-ai/sdk", "openai", "nodemailer", "mailparser", "imapflow"];
 
 /** 迁移进行中的聚合包：只校验「不得多」，拆分完成后移出本集合。 */
-const AGGREGATE_PACKAGES: ReadonlySet<string> = new Set([
-  "@freeanima/habitat",
-  "@freeanima/frontend",
-]);
+const AGGREGATE_PACKAGES: ReadonlySet<string> = new Set(["@freeanima/frontend"]);
 
 /** 包名 → 禁止的外部依赖前缀。 */
 const BANNED_EXTERNAL: Record<string, readonly string[]> = {
@@ -67,7 +77,6 @@ const BANNED_EXTERNAL: Record<string, readonly string[]> = {
   "@freeanima/ui-features": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
   "@freeanima/app-frame": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
   "@freeanima/portal": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
-  "@freeanima/habitat": ["react", "react-dom"],
   "@freeanima/frontend": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
 };
 
@@ -119,15 +128,22 @@ function checkPackage(pkg: Pkg, where: string): void {
     .map((dep) => dep.slice("@freeanima/".length))
     .toSorted();
   const expected = [...allowed].toSorted();
+  const debt = REVERSE_EDGE_DEBT[name] ?? [];
   // 聚合包（迁移中）只校验「不得多」；拆分完成后按精确集合校验。
   const aggregate = AGGREGATE_PACKAGES.has(name);
   const missing = aggregate ? [] : expected.filter((dep) => !internal.includes(dep));
-  const extra = internal.filter((dep) => !expected.includes(dep));
+  const extra = internal.filter((dep) => !expected.includes(dep) && !debt.includes(dep));
   if (missing.length > 0 || extra.length > 0) {
     const parts: string[] = [];
     if (extra.length > 0) parts.push(`多: ${extra.join(", ")}`);
     if (missing.length > 0) parts.push(`少: ${missing.join(", ")}`);
     failures.push(`${name} 的 @freeanima 依赖与 DAG 不符（${parts.join("；")}）`);
+  }
+  // 债务项必须在 package.json 中真实存在（还清后须同步删除登记）
+  for (const dep of debt) {
+    if (!internal.includes(dep)) {
+      failures.push(`${name}: 反向边债务 "${dep}" 已不在依赖中，请从 REVERSE_EDGE_DEBT 删除`);
+    }
   }
 
   assertNone(name, deps, BANNED_EXTERNAL[name] ?? []);
@@ -148,7 +164,6 @@ const TARGET_DIRS = [
   "ui-features",
   "app-frame",
   "portal",
-  "habitat",
   "frontend",
 ];
 

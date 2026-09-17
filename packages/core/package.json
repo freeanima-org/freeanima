@@ -1,0 +1,21 @@
+{
+  "name": "@freeanima/core",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./*"
+  },
+  "dependencies": {
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/shared": "workspace:*",
+    "@node-rs/jieba": "^2.0.2",
+    "cordis": "4.0.0-rc.10",
+    "drizzle-kit": "^1.0.0-rc.5-ab785fc",
+    "drizzle-orm": "^1.0.0-rc.5-169397b",
+    "edge-tts-universal": "^1.4.0",
+    "tiktoken": "^1.0.22",
+    "tokenx": "^2.1.0",
+    "zod": "^4.4.3"
+  }
+}

@@ -8,7 +8,7 @@ import {
 } from "../../helpers/integration-case.ts";
 import type { PgTestContext } from "../../helpers/pg-test.ts";
 
-import { isConversationMeta } from "@freeanima/habitat/core/db/domain";
+import { isConversationMeta } from "@freeanima/core/db/domain";
 import { getTestEngine, seedSession, testConv } from "../../helpers/pg-test.ts";
 import {
   findCommand,
@@ -16,11 +16,11 @@ import {
   isRetryResult,
   resolveCommand,
   commandNeedsPreAck,
-} from "@freeanima/habitat/capabilities/tools/slash-commands";
-import { getAppRuntime } from "@freeanima/habitat/platform";
+} from "@freeanima/capabilities/tools/slash-commands";
+import { getAppRuntime } from "@freeanima/server";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
-import * as engineConversation from "@freeanima/habitat/engine/conversation";
-import { patchConversationMeta } from "@freeanima/habitat/core/db/pg/conversation";
+import * as engineConversation from "@freeanima/engine/conversation";
+import { patchConversationMeta } from "@freeanima/core/db/pg/conversation";
 
 async function patchMetaForTest(
   conversationId: string,

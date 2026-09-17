@@ -5,18 +5,18 @@ import {
   endIntegrationCase,
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
-import { deleteConversation } from "@freeanima/habitat/core/db/pg/conversation";
+import { deleteConversation } from "@freeanima/core/db/pg/conversation";
 import {
   countReferencesBySemanticMemory,
   formatMemoryReferenceMarker,
   syncAllReferenceCounts,
-} from "@freeanima/habitat/core/db/pg/memory-reference";
+} from "@freeanima/core/db/pg/memory-reference";
 import {
   createSemanticMemory,
   deprecateSemanticMemory,
   getSemanticMemory,
   listResidentSemanticMemory,
-} from "@freeanima/habitat/core/db/pg/semantic-memory";
+} from "@freeanima/core/db/pg/semantic-memory";
 import { appendTestMessage, upsertTestConversationMeta } from "../../helpers/pg-test.ts";
 
 async function seedSessionMeta(conversationId: string): Promise<void> {
@@ -96,8 +96,7 @@ describePg("memory_references PG", () => {
   });
 
   it("listResident caps pinned at RESIDENT_PINNED_MAX", async () => {
-    const { RESIDENT_PINNED_MAX } =
-      await import("@freeanima/habitat/core/db/pg/semantic-memory/types");
+    const { RESIDENT_PINNED_MAX } = await import("@freeanima/core/db/pg/semantic-memory/types");
 
     for (let i = 0; i < RESIDENT_PINNED_MAX + 2; i++) {
       await createSemanticMemory({

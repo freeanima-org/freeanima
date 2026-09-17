@@ -9,14 +9,14 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from "node:f
 import { join } from "node:path";
 import { Glob } from "bun";
 
-import { listEmbeddedMigrationsFromDir } from "@freeanima/habitat/core/db/migrations-dir-import";
-import { listEmbeddedDocsFromDir } from "@freeanima/habitat/capabilities/tools/docs-dir-import";
-import { listEmbeddedWebDistFromDir } from "@freeanima/portal/cli/web/web-dist-dir-import";
+import { listEmbeddedMigrationsFromDir } from "@freeanima/core/db/migrations-dir-import";
+import { listEmbeddedDocsFromDir } from "@freeanima/capabilities/tools/docs-dir-import";
+import { listEmbeddedWebDistFromDir } from "@freeanima/cli/anima/web/web-dist-dir-import";
 
 import { createDirImportPlugin } from "bun-plugin-dir-import";
 
 const ROOT = join(import.meta.dir, "..");
-const MIGRATIONS_DIR = join(ROOT, "packages/habitat/core/migrations");
+const MIGRATIONS_DIR = join(ROOT, "packages/core/migrations");
 const DOCS_DIR = join(ROOT, "docs");
 const WEB_DIST_DIR = join(ROOT, "packages/frontend/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");

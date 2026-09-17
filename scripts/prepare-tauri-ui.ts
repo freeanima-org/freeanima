@@ -30,12 +30,12 @@ import {
   shellWebDistDirName,
   type ShellBuildTarget,
 } from "@freeanima/client/portal-sdk/shell-build-target.ts";
-import { resolveBuildChannelFromEnv } from "@freeanima/habitat/core/config/build-meta.ts";
-import { resolveBuildVersionFromEnv } from "@freeanima/habitat/core/config/resolve-build-version.ts";
+import { resolveBuildChannelFromEnv } from "@freeanima/core/config/build-meta.ts";
+import { resolveBuildVersionFromEnv } from "@freeanima/core/config/resolve-build-version.ts";
 import {
   resolveDesktopShellIdentity,
   resolveMobileShellIdentity,
-} from "@freeanima/habitat/core/config/shell-identity.ts";
+} from "@freeanima/core/config/shell-identity.ts";
 import { resolveNativeBuildMeta } from "@freeanima/portal/app/shared/resolve-native-build-meta.ts";
 import { buildCompanionApp } from "@freeanima/features/companion/lib/exports/build.ts";
 import { buildCodingApp } from "@freeanima/features/coding/lib/exports/build.ts";

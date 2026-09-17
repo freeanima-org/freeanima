@@ -1,11 +1,11 @@
-import type { StoredMessage } from "@freeanima/habitat/core/db/domain";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/resolved-world-context";
+import type { StoredMessage } from "@freeanima/core/db/domain";
+import { getResolvedWorldContext } from "@freeanima/core/config/resolved-world-context";
 import {
   appendMessageReturningId,
   upsertConversationMeta,
-} from "@freeanima/habitat/core/db/pg/conversation";
-import { formatCstIso } from "@freeanima/habitat/core/util";
-import type { MemoryService } from "@freeanima/habitat/capabilities/memory/service";
+} from "@freeanima/core/db/pg/conversation";
+import { formatCstIso } from "@freeanima/core/util";
+import type { MemoryService } from "@freeanima/capabilities/memory/service";
 
 import {
   createEvalMemoryHarness,

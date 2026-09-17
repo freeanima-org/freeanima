@@ -6,9 +6,18 @@
 
 /** 前缀替换表；较长的 from 必须先于其前缀出现。 */
 export const REWRITES: readonly [string, string][] = [
-  // ── P2：kernel 提包；loop-mechanism 归 engine ────────────────────
-  ["@freeanima/habitat/kernel/loop-mechanism", "@freeanima/habitat/engine/loop-mechanism"],
+  // ── P4：@freeanima/habitat/* 拆为 6 个服务端包 ───────────────────
+  ["@freeanima/habitat/kernel/loop-mechanism", "@freeanima/engine/loop-mechanism"],
   ["@freeanima/habitat/kernel", "@freeanima/kernel"],
+  ["@freeanima/habitat/core", "@freeanima/core"],
+  ["@freeanima/habitat/engine", "@freeanima/engine"],
+  ["@freeanima/habitat/capabilities", "@freeanima/capabilities"],
+  ["@freeanima/habitat/features", "@freeanima/features"],
+  ["@freeanima/habitat/platform", "@freeanima/server"],
+  ["@freeanima/habitat/portal", "@freeanima/cli"],
+  ["@freeanima/habitat", "@freeanima/server"],
+  // ── P2：kernel 提包；loop-mechanism 归 engine ────────────────────
+  ["@freeanima/kernel/loop-mechanism", "@freeanima/engine/loop-mechanism"],
   // ── P0：deprecated 形状垫片 → pg-shapes SSOT ─────────────────────
   [
     "@freeanima/shared/entity-shapes/component-ids",
@@ -33,18 +42,22 @@ export const REWRITES: readonly [string, string][] = [
     "@freeanima/shared/pg-shapes/entity/semantic-memory",
   ],
   ["@freeanima/shared/db-shapes", "@freeanima/shared/pg-shapes"],
-  // ── P0：engine/loop 垫片 → kernel/loop-mechanism（P2 再迁 engine） ─
-  ["@freeanima/habitat/engine/loop", "@freeanima/habitat/engine/loop-mechanism"],
+  // ── P0：engine/loop 垫片 → engine/loop-mechanism ─────────────────
+  ["@freeanima/engine/loop", "@freeanima/engine/loop-mechanism"],
 ];
 
-/** 本阶段之后不得再出现在 import 说明符里的前缀。 */
+/**
+ * 本阶段之后不得再出现在 import 说明符里的前缀。
+ *
+ * 注意：目标包名（kernel/core/engine/capabilities/features/server/cli/
+ * shared/ui-kit/portal-sdk/ui-features/app-frame/portal）不在此列。
+ */
 export const RETIRED_PREFIXES: readonly string[] = [
   "@freeanima/host/",
   "@freeanima/frontend/",
   "@freeanima/runtime/",
-  "@freeanima/core/",
+  "@freeanima/habitat/",
   "@freeanima/platform/",
-  "@freeanima/capabilities/",
   "@freeanima/capabilities-",
   "@freeanima/satellites/",
   "@freeanima/process-context",
@@ -56,7 +69,6 @@ export const RETIRED_PREFIXES: readonly string[] = [
   "@freeanima/vault-crypto",
   "@freeanima/shared/db-shapes",
   "@freeanima/shared/entity-shapes",
-  "@freeanima/habitat/kernel",
 ];
 
 /** 匹配静态/动态 import 与 export-from 的字符串说明符。 */
@@ -65,7 +77,7 @@ export const SPECIFIER_RE = /(\bfrom\s*|\bimport\s*\(\s*)(["'])([^"'\n]+)\2/g;
 /** ── P1：feature method-defs 上提到契约层 ───────────────────────── */
 const METHOD_DEFS_RE = /^@freeanima\/features\/([a-z-]+)\/habitat\/method-defs\.ts$/;
 /** P0 删掉的 engine/loop 垫片（精确匹配，避免误伤 engine/loop-mechanism）。 */
-const ENGINE_LOOP_SHIM_RE = /^@freeanima\/habitat\/engine\/loop$/;
+const ENGINE_LOOP_SHIM_RE = /^@freeanima\/engine\/loop$/;
 
 /** 正则形式的退役模式（无法用固定前缀表达）。 */
 export const RETIRED_PATTERNS: readonly RegExp[] = [METHOD_DEFS_RE, ENGINE_LOOP_SHIM_RE];

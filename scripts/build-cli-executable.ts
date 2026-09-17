@@ -18,7 +18,7 @@ import { dirname, join } from "node:path";
 import {
   createComponentBuildMeta,
   resolveBuildChannelFromEnv,
-} from "@freeanima/habitat/core/config/build-meta";
+} from "@freeanima/core/config/build-meta";
 import {
   assertStandaloneBinaryHasNoTiktokenBuildPath,
   createTiktokenWasmPlugin,
@@ -29,15 +29,15 @@ import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
-const CLI_ENTRY = join(ROOT, "packages/habitat/portal/cli/cli.ts");
-const META_MODULE = realpathSync(join(ROOT, "packages/habitat/portal/cli/standalone-meta.ts"));
+const CLI_ENTRY = join(ROOT, "packages/cli/cli/cli.ts");
+const META_MODULE = realpathSync(join(ROOT, "packages/cli/cli/standalone-meta.ts"));
 const WEB_DIST_DIR = join(ROOT, "packages/frontend/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 
 async function ensureWebDist(): Promise<void> {
   const force = process.env.FREEANIMA_FORCE_WEB_BUILD === "1";
   if (!force && existsSync(WEB_DIST_INDEX)) {
-    const { assessMonorepoWebDist } = await import("@freeanima/portal/cli/web/ensure-dist.ts");
+    const { assessMonorepoWebDist } = await import("@freeanima/cli/anima/web/ensure-dist.ts");
     const assessment = assessMonorepoWebDist(ROOT, WEB_DIST_DIR);
     if (!assessment.needsRebuild) {
       console.log("Web dist up to date — skip pack web（FREEANIMA_FORCE_WEB_BUILD=1 可强制）");
@@ -60,7 +60,7 @@ async function ensureWebDist(): Promise<void> {
 function buildStandaloneMetaSource(version: string, buildMeta: unknown): string {
   const metaJson = JSON.stringify({ version, buildMeta });
   return `/** VIRTUAL: injected by scripts/build-cli-executable.ts via Bun.build files */
-import type { ComponentBuildMeta } from "@freeanima/habitat/core/config/build-meta.parse";
+import type { ComponentBuildMeta } from "@freeanima/core/config/build-meta.parse";
 
 export type StandaloneRuntimeMetaInject = {
   version: string;

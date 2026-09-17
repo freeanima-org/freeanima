@@ -41,7 +41,7 @@ import {
   ALIBABA_TOKEN_PLAN_ANTHROPIC_BASE_URL,
   effectiveProviderModalities,
   presetAllowsBaseUrlOverride,
-} from "@freeanima/habitat/core/llm/presets";
+} from "@freeanima/core/llm/presets";
 import {
   DEFAULT_EDGE_TTS_BASE_URL,
   LLM_FORMAT_OPENAI_COMPATIBLE,
@@ -51,8 +51,8 @@ import {
   LLM_PRESET_OPENCODE_GO,
   AUDIO_PROTOCOL_EDGE_TTS,
   type LlmPresetId,
-} from "@freeanima/habitat/core/config";
-import { voiceProtocolSeparatesModelAndVoice } from "@freeanima/habitat/core/tts/voice-catalog";
+} from "@freeanima/core/config";
+import { voiceProtocolSeparatesModelAndVoice } from "@freeanima/core/tts/voice-catalog";
 
 function isBuiltinPresetId(value: string): value is Exclude<LlmPresetId, "custom"> {
   return (LLM_PRESET_IDS as readonly string[]).includes(value) && value !== LLM_PRESET_CUSTOM;

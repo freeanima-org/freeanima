@@ -16,11 +16,11 @@ portal/cli → platform → capabilities → engine → core → kernel
 
 | Layer | Directory | Responsibility |
 | ----- | --------- | -------------- |
-| kernel | `packages/habitat/kernel/` | HookRegistry、logging、**config-mechanism**、**loop-mechanism**（P5 自 engine 迁入） |
-| core | `packages/habitat/core/` | PG、Redis、产品 config 段、tool/LLM 原语 |
-| engine | `packages/habitat/engine/` | conversation、turn、goal、pipeline；`loop/` 仅薄 re-export |
-| capabilities | `packages/habitat/capabilities/` | self、memory、tools、outpost、mcp-*、… |
-| platform | `packages/habitat/platform/` | 组合根；`service/` = AppRuntime |
+| kernel | `packages/kernel/` | HookRegistry、logging、**config-mechanism**、**loop-mechanism**（P5 自 engine 迁入） |
+| core | `packages/core/` | PG、Redis、产品 config 段、tool/LLM 原语 |
+| engine | `packages/engine/` | conversation、turn、goal、pipeline；`loop/` 仅薄 re-export |
+| capabilities | `packages/capabilities/` | self、memory、tools、outpost、mcp-*、… |
+| platform | `packages/server/` | 组合根；`service/` = AppRuntime |
 
 并列：`packages/shared`、`packages/frontend/{ui-kit,client}`、features（按子树分属两包）、portal（按 form 分属两包）。
 
@@ -54,4 +54,4 @@ app-frame → features/*/ui → { ui-kit, portal-sdk } → shared
 
 ## Port / Catalog
 
-Boot：`packages/habitat/platform/boot/`；入口：`serve.ts`。Capabilities 访问 PG：`@freeanima/habitat/core/db/pg/*`。
+Boot：`packages/server/boot/`；入口：`serve.ts`。Capabilities 访问 PG：`@freeanima/habitat/core/db/pg/*`。

@@ -123,16 +123,16 @@ function resolveTargetFile(fromFile: string, spec: string): string | null {
   const push = (...segments: string[]): void => {
     candidates.push(join(REPO_ROOT, "packages", ...segments, ...tail));
   };
-  if (head === "habitat") push("habitat");
+  if (head === "habitat") push("server");
   else if (head === "frontend") push("frontend");
   else if (head === "client") push("frontend", "client");
-  else if (head === "platform") push("habitat", "platform");
+  else if (head === "platform") push("server");
   else if (head === "features") {
     push("frontend", "features");
-    push("habitat", "features");
+    push("features");
   } else if (head === "portal") {
     push("frontend", "portal");
-    push("habitat", "portal");
+    push("cli");
   } else if (head === "ui-kit") push("frontend", "ui-kit");
   else push(head);
   for (const candidate of candidates) {

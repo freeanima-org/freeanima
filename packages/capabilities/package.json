@@ -1,0 +1,26 @@
+{
+  "name": "@freeanima/capabilities",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./*"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.117.1",
+    "@freeanima/core": "workspace:*",
+    "@freeanima/engine": "workspace:*",
+    "@freeanima/kernel": "workspace:*",
+    "@freeanima/server": "workspace:*",
+    "@freeanima/shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@opencode-ai/models": "^0.0.43",
+    "cordis": "4.0.0-rc.10",
+    "discord.js": "^14.27.0",
+    "drizzle-orm": "^1.0.0-rc.5-169397b",
+    "imapflow": "^1.7.0",
+    "nodemailer": "^9.0.5",
+    "openai": "^7.4.0",
+    "zod": "^4.4.3"
+  }
+}

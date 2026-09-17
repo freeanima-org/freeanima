@@ -1,4 +1,4 @@
-import type { MemoryService } from "@freeanima/habitat/capabilities/memory/service";
+import type { MemoryService } from "@freeanima/capabilities/memory/service";
 
 import { recallHybrid, recallLocal } from "../ingest.ts";
 import { judgeAnswer } from "../judge.ts";

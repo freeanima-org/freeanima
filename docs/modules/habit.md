@@ -74,7 +74,7 @@ habit（活习惯）
 | `habit.stats`                                        | 总天数、连续、本月、月度格子 |
 | `habit.presets`                                      | 内置习惯库（静态）           |
 
-实现：`packages/habitat/features/habit/`；UI：`packages/frontend/features/habit/`。
+实现：`packages/features/habit/`；UI：`packages/frontend/features/habit/`。
 
 ## UI
 

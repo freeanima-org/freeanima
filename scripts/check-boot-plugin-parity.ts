@@ -4,7 +4,7 @@
  *
  * 校验四件事：
  *   1. `cordis.yml` 里每条 `name:` 的插件文件存在；
- *   2. 每个 `packages/habitat/features/<slug>/cordis-plugin.ts` 都在 `cordis.yml` 中；
+ *   2. 每个 `packages/features/<slug>/cordis-plugin.ts` 都在 `cordis.yml` 中；
  *   3. `platform/features/builtin-feature-plugins.ts` 的 feature 清单 == feature 插件文件集合；
  *   4. `platform/boot/phases.ts` 的启动阶段插件 == `cordis.yml` 前 N 条。
  *
@@ -15,12 +15,9 @@ import { join } from "node:path";
 
 const REPO_ROOT = join(import.meta.dir, "..");
 const CORDIS_YML = join(REPO_ROOT, "cordis.yml");
-const FEATURES_DIR = join(REPO_ROOT, "packages/habitat/features");
-const BUILTIN_PLUGINS = join(
-  REPO_ROOT,
-  "packages/habitat/platform/features/builtin-feature-plugins.ts",
-);
-const PHASES = join(REPO_ROOT, "packages/habitat/platform/boot/phases.ts");
+const FEATURES_DIR = join(REPO_ROOT, "packages/features");
+const BUILTIN_PLUGINS = join(REPO_ROOT, "packages/server/features/builtin-feature-plugins.ts");
+const PHASES = join(REPO_ROOT, "packages/server/boot/phases.ts");
 
 const problems: string[] = [];
 
@@ -52,15 +49,13 @@ const featureSlugs = readdirSync(FEATURES_DIR, { withFileTypes: true })
   .toSorted();
 
 const declaredFeatureSlugs = declared
-  .map((rel) => /^\.\/packages\/habitat\/features\/([^/]+)\/cordis-plugin\.ts$/.exec(rel)?.[1])
+  .map((rel) => /^\.\/packages\/features\/([^/]+)\/cordis-plugin\.ts$/.exec(rel)?.[1])
   .filter((slug): slug is string => Boolean(slug))
   .toSorted();
 
 for (const slug of featureSlugs) {
   if (!declaredFeatureSlugs.includes(slug)) {
-    problems.push(
-      `feature 插件未挂载到 cordis.yml：packages/habitat/features/${slug}/cordis-plugin.ts`,
-    );
+    problems.push(`feature 插件未挂载到 cordis.yml：packages/features/${slug}/cordis-plugin.ts`);
   }
 }
 for (const slug of declaredFeatureSlugs) {
@@ -98,7 +93,7 @@ for (const slug of builtinSlugs) {
 
 /** `phases.ts` 中 `./plugins/<name>.ts` 的启动阶段插件。 */
 const bootPlugins = [...read(PHASES).matchAll(/from "\.\/plugins\/([a-z-]+)\.ts"/g)].map(
-  (match) => `./packages/habitat/platform/boot/plugins/${match[1]}.ts`,
+  (match) => `./packages/server/boot/plugins/${match[1]}.ts`,
 );
 
 const declaredBoot = declared.filter((rel) => rel.includes("/boot/plugins/"));

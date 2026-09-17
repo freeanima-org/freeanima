@@ -6,18 +6,14 @@ import {
   restoreIntegrationHome,
 } from "../../helpers/integration-case.ts";
 
-import { runWithToolContext } from "@freeanima/habitat/engine/loop-mechanism";
-import { ToolSetRegistry } from "@freeanima/habitat/core/tool";
-import { getProfileHopModel } from "@freeanima/habitat/platform/config";
+import { runWithToolContext } from "@freeanima/engine/loop-mechanism";
+import { ToolSetRegistry } from "@freeanima/core/tool";
+import { getProfileHopModel } from "@freeanima/server/config";
 import { registerContentBlockTools } from "@freeanima/features/content-block/domain";
-import {
-  buildWorldConfigBody,
-  getEntity,
-  updateEntity,
-} from "@freeanima/habitat/core/db/pg/entity";
-import { worldConfigBodySchema } from "@freeanima/habitat/core/db/schema";
-import { omitUndefined } from "@freeanima/habitat/core/util";
-import { getResolvedWorldContext } from "@freeanima/habitat/core/config/world-context";
+import { buildWorldConfigBody, getEntity, updateEntity } from "@freeanima/core/db/pg/entity";
+import { worldConfigBodySchema } from "@freeanima/core/db/schema";
+import { omitUndefined } from "@freeanima/core/util";
+import { getResolvedWorldContext } from "@freeanima/core/config/world-context";
 import { testUserWorldId } from "../../helpers/world-context.ts";
 import { TEST_SAP_CHAT_PLATFORM } from "../../helpers/remote-tools-chat-test-platform.ts";
 import {

@@ -1,0 +1,28 @@
+import { omitUndefined } from "@freeanima/core/util";
+import type { RemoteToolsServerDeps } from "@freeanima/capabilities/outpost/transport/types.ts";
+import { bindHabitatRouteHandlers, asRouteDeps } from "@freeanima/shared/habitat-contract/route.ts";
+
+import { codingMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/coding.ts";
+import type { RuntimeDeps } from "../runtime-deps.ts";
+import * as service from "../service.ts";
+
+type CodingRouteDeps = RemoteToolsServerDeps & {
+  runtime: {
+    runtimeDeps(): RuntimeDeps;
+  };
+};
+
+function depsOf(deps: unknown): CodingRouteDeps {
+  return asRouteDeps<CodingRouteDeps>(deps);
+}
+
+export const codingHabitatRoutes = bindHabitatRouteHandlers(codingMethodDefs, {
+  "coding.noteCreate": async (deps, input, _ctx) =>
+    service.serviceCodingNoteCreate(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "coding.noteList": async (deps, input, _ctx) =>
+    service.serviceCodingNoteList(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "coding.projectContextSync": async (deps, input, _ctx) =>
+    service.serviceProjectContextSync(depsOf(deps).runtime.runtimeDeps(), omitUndefined(input)),
+  "coding.outpostExec": async (deps, input, _ctx) =>
+    service.serviceCodingOutpostExec(depsOf(deps).remoteToolsManager, omitUndefined(input)),
+});

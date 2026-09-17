@@ -26,12 +26,18 @@
       "@freeanima/shared/*": ["./packages/shared/*"],
       "@freeanima/kernel": ["./packages/kernel/index.ts"],
       "@freeanima/kernel/*": ["./packages/kernel/*"],
-      "@freeanima/habitat/*": ["./packages/habitat/*"],
+      "@freeanima/core/*": ["./packages/core/*"],
+      "@freeanima/engine": ["./packages/engine/index.ts"],
+      "@freeanima/engine/*": ["./packages/engine/*"],
+      "@freeanima/capabilities/*": ["./packages/capabilities/*"],
+      "@freeanima/features/*": ["./packages/frontend/features/*", "./packages/features/*"],
+      "@freeanima/server": ["./packages/server/index.ts"],
+      "@freeanima/server/*": ["./packages/server/*"],
+      "@freeanima/cli/*": ["./packages/cli/*"],
       "@freeanima/client/*": ["./packages/frontend/client/*"],
       "@freeanima/ui-kit": ["./packages/frontend/ui-kit/index.ts"],
       "@freeanima/ui-kit/*": ["./packages/frontend/ui-kit/*"],
-      "@freeanima/features/*": ["./packages/frontend/features/*", "./packages/habitat/features/*"],
-      "@freeanima/portal/*": ["./packages/frontend/portal/*", "./packages/habitat/portal/*"]
+      "@freeanima/portal/*": ["./packages/frontend/portal/*"]
     }
   }
 }

@@ -19,7 +19,7 @@ process.env.POMODORO_FLOAT_WINDOW_URL ??= "http://127.0.0.1:4196/";
 const identity = applyTauriShellIdentity({ target: "desktop" });
 process.env.FREEANIMA_BUILD_CHANNEL ??= identity.channel;
 
-const companion = spawn("bun", ["packages/habitat/features/companion/dev.ts"], {
+const companion = spawn("bun", ["packages/features/companion/dev.ts"], {
   cwd: root,
   stdio: "inherit",
   env: process.env,

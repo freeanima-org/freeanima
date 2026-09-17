@@ -11,7 +11,7 @@ import {
   purgeStaleAutoLlmRuns,
   sumAutoLlmUsageByRunIds,
   sumAutoLlmUsageFiltered,
-} from "@freeanima/habitat/core/db/pg/auto-llm-run";
+} from "@freeanima/core/db/pg/auto-llm-run";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

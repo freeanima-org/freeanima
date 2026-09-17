@@ -1,0 +1,608 @@
+import type { RuntimeDeps } from "./runtime-deps.ts";
+import { isConversationMeta } from "@freeanima/core/db/domain";
+import type { StoredMessage } from "@freeanima/core/db/domain";
+import {
+  analyzeCompression,
+  buildCompressOptionsResolved,
+  formatCompressionDiagnostics,
+  getCompressionConfig,
+  isCompressed,
+  parseCompressionState,
+} from "@freeanima/core/compress";
+import { getProfileHopModel } from "@freeanima/server/config";
+import { PROFILE_CHAT, normalizeUsage } from "@freeanima/core/provider";
+import {
+  computeRuntimeContextBreakdown,
+  type RuntimeContextBreakdown,
+} from "./runtime-context-stats.ts";
+import { findMessagePos } from "@freeanima/core/db/pg/conversation";
+import { getRetainWatermark } from "@freeanima/capabilities/memory/service";
+import { logCapability as logComponent } from "@freeanima/core/config/capability-injection";
+import {
+  formatTokenK,
+  usageRecordToTotals,
+  type LlmUsageTotals,
+} from "@freeanima/shared/llm-usage";
+
+export type ConversationStats = {
+  conversation: string;
+  message_count: number;
+  assistant_turns: number;
+  usage_turns: number;
+  cached_input_tokens: number;
+  uncached_input_tokens: number;
+  output_tokens: number;
+  avg_tps: number | null;
+  duration_seconds: number | null;
+  throughput_tpm: number | null;
+  partial_usage: boolean;
+  partial_cached: boolean;
+  compression_enabled: boolean;
+  compression_mode: "token" | "messages";
+  compression_l2: number | null;
+  compression_l3: number | null;
+  compression_total_messages: number;
+  compression_visible_messages: number;
+  compression_hidden: number;
+  compression_has_summary: boolean;
+  /** token mode */
+  compression_context_window: number | null;
+  compression_context_window_source: "catalog" | null;
+  compression_effective_budget: number | null;
+  compression_usage_ratio: number | null;
+  compression_trigger_high: number;
+  compression_trigger_low: number;
+  /** message-count fallback mode */
+  compression_max_message_pairs: number;
+  compression_threshold: number;
+  compression_recompress_at: number;
+  compression_window_raw: number;
+  compression_messages_until_recompress: number | null;
+  compression_rounds_until_recompress: number | null;
+  /** Retain watermark vs compression l2（会话级缺口可见性） */
+  retain_watermark_message_id: string | null;
+  retain_watermark_pos: number | null;
+  /** true：已压缩且（无 watermark，或 l2 越过 tip pos） */
+  retain_gap: boolean;
+  /** Runtime view (post-compression) breakdown */
+  context_breakdown: RuntimeContextBreakdown;
+  context_tokens_est: number;
+};
+
+function parseTimestamp(value: unknown): Date | null {
+  if (typeof value !== "string" || !value) return null;
+  const t = Date.parse(value.replace("Z", "+00:00"));
+  return Number.isNaN(t) ? null : new Date(t);
+}
+
+function usageFromMessage(msg: StoredMessage): Record<string, number> | null {
+  if (msg.role !== "assistant") return null;
+  const usage = msg.usage;
+  if (usage && typeof usage === "object") {
+    return normalizeUsage(usage);
+  }
+  return null;
+}
+
+function emptyBreakdown(): RuntimeContextBreakdown {
+  return {
+    system_self: 0,
+    system_agents: 0,
+    system_resident: 0,
+    system_toolsets: 0,
+    summary: 0,
+    messages: 0,
+    tools: 0,
+    total: 0,
+  };
+}
+
+async function readCompressionAndContextFields(
+  deps: RuntimeDeps,
+  conversationId: string,
+  preloaded?: StoredMessage[],
+): Promise<
+  Pick<
+    ConversationStats,
+    | "compression_enabled"
+    | "compression_mode"
+    | "compression_l2"
+    | "compression_l3"
+    | "compression_total_messages"
+    | "compression_visible_messages"
+    | "compression_hidden"
+    | "compression_has_summary"
+    | "compression_context_window"
+    | "compression_context_window_source"
+    | "compression_effective_budget"
+    | "compression_usage_ratio"
+    | "compression_trigger_high"
+    | "compression_trigger_low"
+    | "compression_max_message_pairs"
+    | "compression_threshold"
+    | "compression_recompress_at"
+    | "compression_window_raw"
+    | "compression_messages_until_recompress"
+    | "compression_rounds_until_recompress"
+    | "retain_watermark_message_id"
+    | "retain_watermark_pos"
+    | "retain_gap"
+    | "context_breakdown"
+    | "context_tokens_est"
+  >
+> {
+  const cfg = getCompressionConfig();
+  const meta = await deps.conversation.loadConversationMeta(conversationId);
+  const allMsgs = preloaded ?? (await deps.conversation.loadForRuntime(conversationId));
+  const state = parseCompressionState(isConversationMeta(meta) ? meta.compression : undefined);
+  const l2 = state?.l2 ?? null;
+  const l3 = isCompressed(state) ? (state?.l3 ?? null) : null;
+  const fallbackModel = getProfileHopModel(deps.engine.config.data, PROFILE_CHAT);
+  const tools = isConversationMeta(meta)
+    ? await deps.conversation.loadConversationTools(conversationId, meta)
+    : [];
+  const compressOpts = await buildCompressOptionsResolved(meta, state, fallbackModel, { tools });
+  const analysis = analyzeCompression(allMsgs, compressOpts);
+  const storedTotal = await deps.conversation.countMessages(conversationId);
+
+  let breakdown = emptyBreakdown();
+  if (allMsgs.length > 0) {
+    try {
+      breakdown = await computeRuntimeContextBreakdown(deps, conversationId);
+    } catch {
+      breakdown = emptyBreakdown();
+    }
+  }
+
+  let retain_watermark_message_id: string | null = null;
+  let retain_watermark_pos: number | null = null;
+  try {
+    const wm = await getRetainWatermark(conversationId);
+    if (wm?.message_id) {
+      retain_watermark_message_id = wm.message_id;
+      retain_watermark_pos = await findMessagePos(conversationId, wm.message_id);
+    }
+  } catch (err: unknown) {
+    logComponent("memory").warn("read retain watermark for stats failed", {
+      conversation_id: conversationId,
+      err: String(err instanceof Error ? err.message : err),
+    });
+  }
+
+  const compressed = l2 != null && l2 > 0;
+  const retain_gap =
+    compressed &&
+    (retain_watermark_message_id == null ||
+      (retain_watermark_pos != null && l2 > retain_watermark_pos));
+
+  if (retain_gap) {
+    logComponent("memory").warn("compression l2 ahead of retain watermark", {
+      conversation_id: conversationId,
+      compression_l2: l2,
+      retain_watermark_message_id,
+      retain_watermark_pos,
+    });
+  }
+
+  return {
+    compression_enabled: cfg.enabled,
+    compression_mode: analysis.mode,
+    compression_l2: l2,
+    compression_l3: l3,
+    compression_total_messages: storedTotal,
+    compression_visible_messages: analysis.runtime_message_count,
+    compression_hidden: Math.max(0, storedTotal - analysis.runtime_message_count),
+    compression_has_summary: analysis.has_summary,
+    compression_context_window: analysis.context_window,
+    compression_context_window_source: analysis.context_window_source,
+    compression_effective_budget: analysis.effective_budget,
+    compression_usage_ratio: analysis.usage_ratio,
+    compression_trigger_high: cfg.triggerHigh,
+    compression_trigger_low: cfg.triggerLow,
+    compression_max_message_pairs: cfg.maxMessagePairs,
+    compression_threshold: analysis.threshold,
+    compression_recompress_at: analysis.recompress_at,
+    compression_window_raw: analysis.window_raw,
+    compression_messages_until_recompress:
+      analysis.mode === "messages" ? analysis.messages_until_recompress : null,
+    compression_rounds_until_recompress:
+      analysis.mode === "messages" ? analysis.rounds_until_recompress : null,
+    retain_watermark_message_id,
+    retain_watermark_pos,
+    retain_gap,
+    context_breakdown: breakdown,
+    context_tokens_est: breakdown.total,
+  };
+}
+
+export async function computeStats(
+  deps: RuntimeDeps,
+  conversationId: string,
+): Promise<ConversationStats> {
+  const message_count = await deps.conversation.countMessages(conversationId);
+  const messages = message_count > 0 ? await deps.conversation.load(conversationId) : [];
+  const assistant_msgs = messages.filter((m) => m.role === "assistant");
+  const assistant_turns = assistant_msgs.length;
+
+  let cached_input_tokens = 0;
+  let uncached_input_tokens = 0;
+  let output_tokens = 0;
+  let usage_turns = 0;
+  let cached_records = 0;
+  let latency_total_ms = 0;
+
+  const timestamps: Date[] = [];
+  for (const msg of messages) {
+    const ts = parseTimestamp(msg.timestamp);
+    if (ts) timestamps.push(ts);
+
+    if (msg.role !== "assistant") continue;
+
+    const usage = usageFromMessage(msg);
+    const billed = usageRecordToTotals(usage);
+    if (billed) {
+      usage_turns += 1;
+      cached_input_tokens += billed.cached_input_tokens;
+      uncached_input_tokens += billed.uncached_input_tokens;
+      output_tokens += billed.output_tokens;
+      if (usage?.cached_tokens != null) cached_records += 1;
+    }
+
+    const latency_ms = msg.latency_ms;
+    if (typeof latency_ms === "number" && latency_ms >= 0) {
+      latency_total_ms += latency_ms;
+    }
+  }
+
+  const partial_usage = usage_turns > 0 && usage_turns < assistant_turns;
+  const partial_cached = usage_turns > 0 && cached_records > 0 && cached_records < usage_turns;
+
+  let duration_seconds: number | null = null;
+  if (timestamps.length >= 2) {
+    const lastTs = timestamps.at(-1);
+    const firstTs = timestamps[0];
+    if (lastTs && firstTs) {
+      duration_seconds = Math.max((lastTs.getTime() - firstTs.getTime()) / 1000, 0);
+    }
+  }
+
+  let avg_tps: number | null = null;
+  if (output_tokens > 0) {
+    if (latency_total_ms > 0) {
+      avg_tps = output_tokens / (latency_total_ms / 1000);
+    } else if (duration_seconds && duration_seconds > 0) {
+      avg_tps = output_tokens / duration_seconds;
+    }
+  }
+
+  let throughput_tpm: number | null = null;
+  if (output_tokens > 0 && duration_seconds && duration_seconds > 0) {
+    throughput_tpm = output_tokens / (duration_seconds / 60);
+  }
+
+  return {
+    conversation: conversationId,
+    message_count,
+    assistant_turns,
+    usage_turns,
+    cached_input_tokens,
+    uncached_input_tokens,
+    output_tokens,
+    avg_tps,
+    duration_seconds,
+    throughput_tpm,
+    partial_usage,
+    partial_cached,
+    ...(await readCompressionAndContextFields(deps, conversationId, messages)),
+  };
+}
+
+export function mergeStats(items: ConversationStats[], label = "Summary"): ConversationStats {
+  if (items.length === 0) {
+    const cfg = getCompressionConfig();
+    return {
+      conversation: label,
+      message_count: 0,
+      assistant_turns: 0,
+      usage_turns: 0,
+      cached_input_tokens: 0,
+      uncached_input_tokens: 0,
+      output_tokens: 0,
+      avg_tps: null,
+      duration_seconds: null,
+      throughput_tpm: null,
+      partial_usage: false,
+      partial_cached: false,
+      compression_enabled: false,
+      compression_mode: "messages",
+      compression_l2: null,
+      compression_l3: null,
+      compression_total_messages: 0,
+      compression_visible_messages: 0,
+      compression_hidden: 0,
+      compression_has_summary: false,
+      compression_context_window: null,
+      compression_context_window_source: null,
+      compression_effective_budget: null,
+      compression_usage_ratio: null,
+      compression_trigger_high: cfg.triggerHigh,
+      compression_trigger_low: cfg.triggerLow,
+      compression_max_message_pairs: cfg.maxMessagePairs,
+      compression_threshold: cfg.maxMessagePairs * 2,
+      compression_recompress_at: cfg.maxMessagePairs * 4,
+      compression_window_raw: 0,
+      compression_messages_until_recompress: null,
+      compression_rounds_until_recompress: null,
+      retain_watermark_message_id: null,
+      retain_watermark_pos: null,
+      retain_gap: false,
+      context_breakdown: emptyBreakdown(),
+      context_tokens_est: 0,
+    };
+  }
+
+  const message_count = items.reduce((s, i) => s + i.message_count, 0);
+  const assistant_turns = items.reduce((s, i) => s + i.assistant_turns, 0);
+  const usage_turns = items.reduce((s, i) => s + i.usage_turns, 0);
+  const cached_input_tokens = items.reduce((s, i) => s + i.cached_input_tokens, 0);
+  const uncached_input_tokens = items.reduce((s, i) => s + i.uncached_input_tokens, 0);
+  const output_tokens = items.reduce((s, i) => s + i.output_tokens, 0);
+
+  const duration_values = items
+    .map((s) => s.duration_seconds)
+    .filter((d): d is number => d != null);
+  const duration_seconds =
+    duration_values.length > 0 ? duration_values.reduce((a, b) => a + b, 0) : null;
+
+  let avg_tps: number | null = null;
+  if (output_tokens && output_tokens > 0) {
+    let weighted_latency = 0;
+    for (const s of items) {
+      if (s.output_tokens && s.avg_tps && s.avg_tps > 0) {
+        weighted_latency += s.output_tokens / s.avg_tps;
+      }
+    }
+    if (weighted_latency > 0) {
+      avg_tps = output_tokens / weighted_latency;
+    } else if (duration_seconds && duration_seconds > 0) {
+      avg_tps = output_tokens / duration_seconds;
+    }
+  }
+
+  let throughput_tpm: number | null = null;
+  if (output_tokens && duration_seconds && duration_seconds > 0) {
+    throughput_tpm = output_tokens / (duration_seconds / 60);
+  }
+
+  const bd = emptyBreakdown();
+  for (const s of items) {
+    bd.system_self += s.context_breakdown.system_self;
+    bd.system_agents += s.context_breakdown.system_agents;
+    bd.system_resident += s.context_breakdown.system_resident;
+    bd.system_toolsets += s.context_breakdown.system_toolsets;
+    bd.summary += s.context_breakdown.summary;
+    bd.messages += s.context_breakdown.messages;
+    bd.tools += s.context_breakdown.tools;
+    bd.total += s.context_breakdown.total;
+  }
+
+  return {
+    conversation: label,
+    message_count,
+    assistant_turns,
+    usage_turns,
+    cached_input_tokens,
+    uncached_input_tokens,
+    output_tokens,
+    avg_tps,
+    duration_seconds,
+    throughput_tpm,
+    partial_usage: items.some((s) => s.partial_usage),
+    partial_cached: items.some((s) => s.partial_cached),
+    compression_enabled: items.some((s) => s.compression_enabled),
+    compression_mode: items[0]?.compression_mode ?? "messages",
+    compression_l2: null,
+    compression_l3: null,
+    compression_total_messages: items.reduce((s, i) => s + i.compression_total_messages, 0),
+    compression_visible_messages: items.reduce((s, i) => s + i.compression_visible_messages, 0),
+    compression_hidden: items.reduce((s, i) => s + i.compression_hidden, 0),
+    compression_has_summary: items.some((s) => s.compression_has_summary),
+    compression_context_window: items[0]?.compression_context_window ?? null,
+    compression_context_window_source: items[0]?.compression_context_window_source ?? null,
+    compression_effective_budget: null,
+    compression_usage_ratio: null,
+    compression_trigger_high: items[0]?.compression_trigger_high ?? 0.72,
+    compression_trigger_low: items[0]?.compression_trigger_low ?? 0.55,
+    compression_max_message_pairs: items[0]?.compression_max_message_pairs ?? 50,
+    compression_threshold: items[0]?.compression_threshold ?? 100,
+    compression_recompress_at: items[0]?.compression_recompress_at ?? 200,
+    compression_window_raw: 0,
+    compression_messages_until_recompress: null,
+    compression_rounds_until_recompress: null,
+    retain_watermark_message_id: null,
+    retain_watermark_pos: null,
+    retain_gap: items.some((s) => s.retain_gap),
+    context_breakdown: bd,
+    context_tokens_est: bd.total,
+  };
+}
+
+function formatDuration(seconds: number | null): string {
+  if (seconds == null) return "unknown";
+  const total = Math.round(seconds);
+  if (total < 60) return `${total}s`;
+  const minutes = Math.floor(total / 60);
+  const secs = total % 60;
+  if (minutes < 60) return `${minutes}m ${secs}s`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return `${hours}h ${mins}m ${secs}s`;
+}
+
+function formatNumber(
+  value: number | null,
+  opts?: { partial?: boolean; estimated?: boolean; digits?: number },
+): string {
+  if (value == null) {
+    if (opts?.partial === false && opts?.estimated === false) return "unknown";
+    return "unknown";
+  }
+  const digits = opts?.digits ?? 1;
+  const text =
+    typeof value === "number" && !Number.isInteger(value) ? value.toFixed(digits) : String(value);
+  const suffixes: string[] = [];
+  if (opts?.estimated) suffixes.push("estimated");
+  if (opts?.partial) suffixes.push("partial");
+  if (suffixes.length === 0) return text;
+  return `${opts?.estimated ? "~" : ""}${text} (${suffixes.join(", ")})`;
+}
+
+function formatCompression(stats: ConversationStats): string {
+  if (!stats.compression_enabled) return "Session compression: disabled";
+
+  const lines = ["Session compression: enabled"];
+  const cfg = getCompressionConfig();
+  lines.push(
+    ...formatCompressionDiagnostics(
+      {
+        mode: stats.compression_mode,
+        context_window: stats.compression_context_window,
+        context_window_source: stats.compression_context_window_source,
+        effective_budget: stats.compression_effective_budget,
+        usage_ratio: stats.compression_usage_ratio,
+        threshold: stats.compression_threshold,
+        recompress_at: stats.compression_recompress_at,
+        window_raw: stats.compression_window_raw,
+        messages_until_recompress: stats.compression_messages_until_recompress,
+        rounds_until_recompress: stats.compression_rounds_until_recompress,
+        l3: stats.compression_l3,
+        runtime_message_count: stats.compression_visible_messages,
+        stored_total: stats.compression_total_messages,
+        hidden_by_compression: stats.compression_hidden,
+      },
+      cfg,
+    ),
+  );
+
+  if (stats.compression_l3 == null) {
+    lines.push(
+      `Not yet compressed (archive ${stats.compression_total_messages} messages; runtime ~${formatTokenK(stats.context_tokens_est)} tokens)`,
+    );
+    return lines.join("\n");
+  }
+
+  lines.push(
+    `l2=${stats.compression_l2 ?? 0} l3=${stats.compression_l3}; archive ${stats.compression_total_messages} messages`,
+  );
+  lines.push(
+    `Runtime visible ${stats.compression_visible_messages} messages (hidden vs full archive ${stats.compression_hidden})`,
+  );
+  if (stats.retain_watermark_message_id) {
+    lines.push(
+      `Retain watermark: ${stats.retain_watermark_message_id}` +
+        (stats.retain_watermark_pos != null ? ` (pos=${stats.retain_watermark_pos})` : ""),
+    );
+  } else if (stats.compression_l2 != null && stats.compression_l2 > 0) {
+    lines.push("Retain watermark: not established");
+  }
+  if (stats.retain_gap) {
+    lines.push("Retain gap: compression l2 ahead of retain tip (manual catch-up may be needed)");
+  }
+  if (stats.compression_has_summary) {
+    lines.push(
+      `Session summary: injected (~${formatTokenK(stats.context_breakdown.summary)} tokens)`,
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function formatContextBreakdown(stats: ConversationStats): string[] {
+  const b = stats.context_breakdown;
+  const systemTotal = b.system_self + b.system_agents + b.system_resident + b.system_toolsets;
+  const lines = [
+    `Current context (runtime view, post-compression): ~${formatTokenK(stats.context_tokens_est)} tokens`,
+    `  System prompts total: ~${formatTokenK(systemTotal)}`,
+  ];
+  if (b.system_self > 0) lines.push(`    Self-layer: ~${formatTokenK(b.system_self)}`);
+  if (b.system_toolsets > 0) lines.push(`    ToolSets: ~${formatTokenK(b.system_toolsets)}`);
+  if (b.system_agents > 0) lines.push(`    AGENTS.md: ~${formatTokenK(b.system_agents)}`);
+  if (b.system_resident > 0) lines.push(`    Resident memory: ~${formatTokenK(b.system_resident)}`);
+  if (b.summary > 0) lines.push(`  Session summary: ~${formatTokenK(b.summary)}`);
+  lines.push(`  Session messages: ~${formatTokenK(b.messages)}`);
+  lines.push(`  Tool schema: ~${formatTokenK(b.tools)}`);
+  lines.push(
+    "(tokenizer estimate via @freeanima/core/tokenizer; tools are schema in API request body, not counted in messages array)",
+  );
+  return lines;
+}
+
+function formatUsageNote(stats: ConversationStats): string | null {
+  if (stats.usage_turns > 0) {
+    if (stats.partial_usage) {
+      return `usage records: ${stats.usage_turns}/${stats.assistant_turns} turns (some turns missing records)`;
+    }
+    return null;
+  }
+  return `usage records: 0/${stats.assistant_turns} turns`;
+}
+
+export function billedUsageFromStats(stats: ConversationStats): LlmUsageTotals {
+  return {
+    cached_input_tokens: stats.cached_input_tokens,
+    uncached_input_tokens: stats.uncached_input_tokens,
+    output_tokens: stats.output_tokens,
+  };
+}
+
+export function formatStats(stats: ConversationStats): string {
+  const usageOpts = {
+    partial: stats.partial_usage,
+  };
+  const lines = [
+    `Conversation: ${stats.conversation}`,
+    `Message count: ${stats.message_count} (full archive, including trimmed/hidden)`,
+    `assistant turns: ${stats.assistant_turns}`,
+    formatCompression(stats),
+    ...formatContextBreakdown(stats),
+    `Cached input tokens: ${formatNumber(stats.cached_input_tokens, { partial: stats.partial_cached })}`,
+    `Uncached input tokens: ${formatNumber(stats.uncached_input_tokens, usageOpts)}`,
+    `Output tokens: ${formatNumber(stats.output_tokens, usageOpts)}`,
+    `Avg tps: ${formatNumber(stats.avg_tps, { digits: 1 })}`,
+    `Conversation duration: ${formatDuration(stats.duration_seconds)}`,
+    `Throughput: ${formatNumber(stats.throughput_tpm, { digits: 1 })} token/min`,
+  ];
+  const usageNote = formatUsageNote(stats);
+  if (usageNote) {
+    const tokenIdx = lines.findIndex((l) => l.startsWith("Cached input tokens:"));
+    lines.splice(tokenIdx >= 0 ? tokenIdx : lines.length, 0, usageNote);
+  }
+  return lines.join("\n");
+}
+
+export async function statsReport(
+  deps: RuntimeDeps,
+  conversationId?: string | null,
+  opts?: { allConversations?: boolean },
+): Promise<string> {
+  if (opts?.allConversations) {
+    const conversations = await deps.conversation.listConversations();
+    if (conversations.length === 0) return "(no conversations)";
+    const parts: string[] = [];
+    const perConversation: ConversationStats[] = [];
+    for (const name of conversations) {
+      const item = await computeStats(deps, name);
+      perConversation.push(item);
+      parts.push(formatStats(item));
+    }
+    parts.push(
+      formatStats(mergeStats(perConversation, `Summary (${conversations.length} conversation(s))`)),
+    );
+    return parts.join("\n\n");
+  }
+
+  const name = conversationId;
+  if (!name) return statsReport(deps, null, { allConversations: true });
+  if (!(await deps.conversation.conversationExists(name))) return `Conversation: ${name}\n(empty)`;
+  return formatStats(await computeStats(deps, name));
+}

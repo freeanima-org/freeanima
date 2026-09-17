@@ -147,5 +147,5 @@ completeForever → 写 occurrence（若有规则）+ 清 recurrence + completed
 - 互转 mapper：`features/calendar/domain/convert-task-event.ts`
 - RPC：`packages/shared/rpc-contract/frames/task.ts`（含
   `task.importDidaCsv`、`task.convertToEvent`）
-- 提醒调度：`packages/habitat/platform/boot/task-reminder-scheduler.ts`
+- 提醒调度：`packages/server/boot/task-reminder-scheduler.ts`
 - 导入 UI：栖息地 `data-maintenance` + `DidaImportDialog`

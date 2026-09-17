@@ -10,12 +10,12 @@ SSOT：[`i18n/glossary.md`](../../i18n/glossary.md)、[`docs/product/architectur
 
 ## 四种形态
 
-| 形态       | form id       | 用户侧实现                                         | 代码                                                               |
-| ---------- | ------------- | -------------------------------------------------- | ------------------------------------------------------------------ |
-| **应用**   | `application` | Shell（壳）：桌面 / 移动 / **Web 整窗 SPA**        | `packages/frontend/portal/app/{tauri,web}`                         |
-| **浏览器** | `browser`     | 浏览器扩展（MV3）                                  | `packages/frontend/portal/extension`                               |
-| **MCP**    | `mcp`         | Habitat 对外 `/mcp`                                | `packages/habitat/capabilities/mcp-server`（**不**迁入 `portal/`） |
-| **CLI**    | `cli`         | 多二进制：`anima` / `anima-client` / `anima-probe` | `packages/habitat/portal/{cli,client,probe}`                       |
+| 形态       | form id       | 用户侧实现                                         | 代码                                                       |
+| ---------- | ------------- | -------------------------------------------------- | ---------------------------------------------------------- |
+| **应用**   | `application` | Shell（壳）：桌面 / 移动 / **Web 整窗 SPA**        | `packages/frontend/portal/app/{tauri,web}`                 |
+| **浏览器** | `browser`     | 浏览器扩展（MV3）                                  | `packages/frontend/portal/extension`                       |
+| **MCP**    | `mcp`         | Habitat 对外 `/mcp`                                | `packages/capabilities/mcp-server`（**不**迁入 `portal/`） |
+| **CLI**    | `cli`         | 多二进制：`anima` / `anima-client` / `anima-probe` | `packages/cli/{cli,client,probe}`                          |
 
 - **Web 壳 = 应用形态**（标签页里的整窗 SPA），**不是**浏览器形态。
 - **浏览器形态** = 扩展运行时（popup / content script / background）。
@@ -42,7 +42,7 @@ packages/frontend/portal/
     entrypoints/
     runtime/     # settings、Habitat HTTP client、消息信封
     features/    # 按能力：vault / bookmarks；规划 clipper
-packages/habitat/portal/
+packages/cli/
   cli/           # anima（栖息地运维）
   client/        # anima-client（操作台）
   probe/         # anima-probe（执行端 Outpost）

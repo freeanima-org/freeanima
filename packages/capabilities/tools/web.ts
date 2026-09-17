@@ -1,0 +1,259 @@
+import type { ToolSetRegistry } from "@freeanima/core/tool";
+import {
+  attachToolReturns,
+  formatOversizedToolOutput,
+  toolError,
+  toolResult,
+} from "@freeanima/core/tool";
+import { CAPABILITIES_TOOLS_RETURNS } from "./return-schemas.ts";
+import type { Config } from "@freeanima/core/config";
+import { coerceString } from "@freeanima/shared/coerce-string";
+import { asRecord } from "@freeanima/shared/util";
+import {
+  readAppVersionForCapability as readAppVersion,
+  vaultForCapability,
+} from "@freeanima/core/config/capability-injection";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
+
+import { mountWebToolsConfigService } from "./web-config-service.ts";
+
+function userAgent(): string {
+  return `anima/${readAppVersion()}`;
+}
+const HTTP_TIMEOUT_MS = 60_000;
+const MAX_EXTRACT_URLS = 5;
+const MAX_SEARCH_LIMIT = 20;
+
+type FirecrawlConfig = { apiUrl: string; apiKey: string };
+
+function getWebToolsConfig(): Config | null {
+  return getRootContextOrNull()?.webToolsConfig?.get() ?? null;
+}
+
+export function bindWebToolsConfig(config: Config): void {
+  mountWebToolsConfigService(ensureRootContext()).set(config);
+}
+
+export function resetWebToolsConfigForTest(): void {
+  getRootContextOrNull()?.webToolsConfig?.reset();
+}
+
+async function resolveConfigSecret(raw: string): Promise<string> {
+  const trimmed = raw.trim();
+  const vaultMatch = /^vault\("(\d+)",\s*"([^"]*)"\)$/.exec(trimmed);
+  if (vaultMatch) {
+    const itemId = Number(vaultMatch[1]);
+    const field = vaultMatch[2];
+    if (!Number.isFinite(itemId) || itemId <= 0 || !field) {
+      throw new Error(`Invalid vault reference: ${trimmed}`);
+    }
+    return vaultForCapability(itemId, field);
+  }
+  const envMatch = /^env\("([^"]*)"\)$/.exec(trimmed);
+  if (envMatch) {
+    const key = envMatch[1];
+    if (!key) throw new Error(`Invalid env reference: ${trimmed}`);
+    const value = process.env[key];
+    if (value === undefined || value === "") {
+      throw new Error(`Environment variable ${key} is not set`);
+    }
+    return value;
+  }
+  return trimmed;
+}
+
+async function getFirecrawlConfig(): Promise<FirecrawlConfig> {
+  const webToolsConfig = getWebToolsConfig();
+  if (!webToolsConfig) {
+    return { apiUrl: "https://api.firecrawl.dev", apiKey: "" };
+  }
+  const cfg = asRecord(webToolsConfig.data) ?? {};
+  const fc = asRecord(cfg.firecrawl) ?? {};
+  const apiUrl = (typeof fc.api_url === "string" && fc.api_url) || "https://api.firecrawl.dev";
+  let apiKey = "";
+  const rawKey = fc.api_key;
+  if (typeof rawKey === "string" && rawKey.trim()) {
+    try {
+      apiKey = await resolveConfigSecret(rawKey.trim());
+    } catch {
+      /* optional */
+    }
+  }
+  return { apiUrl: apiUrl.replace(/\/$/, ""), apiKey };
+}
+
+async function checkConfig(): Promise<string | null> {
+  const cfg = await getFirecrawlConfig();
+  if (!cfg.apiUrl && !cfg.apiKey) {
+    return "Firecrawl not configured. Set firecrawl.api_key (env/vault) or firecrawl.api_url.";
+  }
+  return null;
+}
+
+function headers(cfg: FirecrawlConfig): Record<string, string> {
+  const h: Record<string, string> = {
+    "User-Agent": userAgent(),
+    "Content-Type": "application/json",
+  };
+  if (cfg.apiKey) h.Authorization = `Bearer ${cfg.apiKey}`;
+  return h;
+}
+
+async function handleWebSearch(query: string, limit = 5): Promise<string> {
+  const err = await checkConfig();
+  if (err) return toolError(err);
+  if (!query?.trim()) return toolError("query is required");
+
+  const cap = Math.max(1, Math.min(limit, MAX_SEARCH_LIMIT));
+  const cfg = await getFirecrawlConfig();
+  const url = `${cfg.apiUrl}/v1/search`;
+
+  let data: Record<string, unknown>;
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: headers(cfg),
+      body: JSON.stringify({ query: query.trim(), limit: cap }),
+      signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
+    });
+    if (!resp.ok) return toolError(`Search request failed: HTTP ${resp.status}`);
+    data = asRecord(await resp.json()) ?? {};
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("abort") || msg.includes("timeout")) {
+      return toolError("Search request timed out");
+    }
+    return toolError(`Search request failed: ${msg}`);
+  }
+
+  const results: Array<{ title: string; url: string; description: string }> = [];
+  const rawData = data.data;
+  if (Array.isArray(rawData)) {
+    for (const item of rawData) {
+      const row = asRecord(item);
+      if (!row) continue;
+      results.push({
+        title: coerceString(row.title ?? ""),
+        url: coerceString(row.url ?? row.link ?? ""),
+        description: coerceString(row.description ?? row.snippet ?? ""),
+      });
+    }
+  } else if (rawData && typeof rawData === "object") {
+    const web = asRecord(rawData)?.web;
+    if (Array.isArray(web)) {
+      for (const item of web) {
+        const row = asRecord(item);
+        if (!row) continue;
+        results.push({
+          title: coerceString(row.title ?? ""),
+          url: coerceString(row.url ?? row.link ?? ""),
+          description: coerceString(row.description ?? row.snippet ?? ""),
+        });
+      }
+    }
+  }
+
+  return toolResult({ results, total: results.length });
+}
+
+async function handleWebExtract(urls: string[]): Promise<string> {
+  const err = await checkConfig();
+  if (err) return toolError(err);
+  if (!urls?.length) return toolError("urls list is required");
+
+  const cfg = await getFirecrawlConfig();
+  const baseUrl = `${cfg.apiUrl}/v1/scrape`;
+  const hdrs = headers(cfg);
+  const results: Array<{
+    url: string;
+    title: string;
+    content: string;
+    error: string | null;
+  }> = [];
+
+  for (const raw of urls.slice(0, MAX_EXTRACT_URLS)) {
+    const url = raw?.trim() ?? "";
+    if (!url) {
+      results.push({ url: raw, title: "", content: "", error: "Empty URL" });
+      continue;
+    }
+
+    try {
+      const resp = await fetch(baseUrl, {
+        method: "POST",
+        headers: hdrs,
+        body: JSON.stringify({ url }),
+        signal: AbortSignal.timeout(HTTP_TIMEOUT_MS),
+      });
+      if (!resp.ok) {
+        results.push({ url, title: "", content: "", error: `HTTP ${resp.status}` });
+        continue;
+      }
+      const data = asRecord(await resp.json()) ?? {};
+      const payload = data.data ?? data;
+      const row = asRecord(payload);
+      if (row) {
+        const title = coerceString(row.title ?? "");
+        let content = coerceString(row.markdown ?? row.content ?? row.text ?? "");
+        const maxChars = 100_000;
+        if (content.length > maxChars) {
+          // Remote body has no offset API; spill so file_read can continue without re-fetching blindly.
+          content = formatOversizedToolOutput(content, { kind: "web-extract" });
+        }
+        results.push({ url, title, content, error: null });
+      } else {
+        results.push({ url, title: "", content: "", error: "Failed to parse response" });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      results.push({
+        url,
+        title: "",
+        content: "",
+        error: msg.includes("abort") || msg.includes("timeout") ? "Request timed out" : msg,
+      });
+    }
+  }
+
+  return toolResult({ results });
+}
+
+export function registerWebTools(toolSets: ToolSetRegistry): void {
+  toolSets.registerToolSet(
+    "web",
+    "Web search and content extraction",
+    attachToolReturns(
+      [
+        {
+          name: "web_search",
+          description: "Search the web via Firecrawl",
+          parameters: {
+            type: "object",
+            properties: {
+              query: { type: "string" },
+              limit: { type: "integer", default: 5, minimum: 1, maximum: MAX_SEARCH_LIMIT },
+            },
+            required: ["query"],
+          },
+          handler: (a) => handleWebSearch(String(a.query), Number(a.limit ?? 5)),
+        },
+        {
+          name: "web_extract",
+          description: "Fetch URLs and extract content via Firecrawl",
+          parameters: {
+            type: "object",
+            properties: {
+              urls: { type: "array", items: { type: "string" }, maxItems: MAX_EXTRACT_URLS },
+            },
+            required: ["urls"],
+          },
+          handler: (a) => {
+            const urls = Array.isArray(a.urls) ? a.urls.map(String) : [];
+            return handleWebExtract(urls);
+          },
+        },
+      ],
+      CAPABILITIES_TOOLS_RETURNS,
+    ),
+  );
+}
