@@ -4,8 +4,14 @@ import type { Config } from "@freeanima/habitat/core/config";
 import { homePath } from "@freeanima/habitat/core/config/paths";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
+
+import { mountBrowserToolsConfigService } from "./browser-config-service.ts";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const NAVIGATE_TIMEOUT_MS = 60_000;
@@ -32,18 +38,18 @@ type CamofoxConfig = {
 const sessions = new Map<string, CamofoxSession>();
 let vncUrl: string | null = null;
 let vncUrlChecked = false;
-let browserConfig: Config | null = null;
 
 export function bindBrowserToolsConfig(config: Config): void {
-  browserConfig = config;
+  mountBrowserToolsConfigService(ensureProcessContext()).set(config);
 }
 
 export function resetBrowserToolsConfigForTest(): void {
-  browserConfig = null;
+  getProcessContext()?.browserToolsConfig?.reset();
 }
 
 function getCamofoxConfigBlock(): Record<string, unknown> {
   try {
+    const browserConfig = getProcessContext()?.browserToolsConfig?.get() ?? null;
     if (!browserConfig) return {};
     const cfg = asRecord(browserConfig.data) ?? {};
     const browser = asRecord(cfg.browser);

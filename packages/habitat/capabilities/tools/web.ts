@@ -13,6 +13,12 @@ import {
   readAppVersionForCapability as readAppVersion,
   vaultForCapability,
 } from "@freeanima/habitat/core/config/capability-injection";
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
+import { mountWebToolsConfigService } from "./web-config-service.ts";
 
 function userAgent(): string {
   return `anima/${readAppVersion()}`;
@@ -23,14 +29,16 @@ const MAX_SEARCH_LIMIT = 20;
 
 type FirecrawlConfig = { apiUrl: string; apiKey: string };
 
-let webToolsConfig: Config | null = null;
+function getWebToolsConfig(): Config | null {
+  return getProcessContext()?.webToolsConfig?.get() ?? null;
+}
 
 export function bindWebToolsConfig(config: Config): void {
-  webToolsConfig = config;
+  mountWebToolsConfigService(ensureProcessContext()).set(config);
 }
 
 export function resetWebToolsConfigForTest(): void {
-  webToolsConfig = null;
+  getProcessContext()?.webToolsConfig?.reset();
 }
 
 async function resolveConfigSecret(raw: string): Promise<string> {
@@ -58,6 +66,7 @@ async function resolveConfigSecret(raw: string): Promise<string> {
 }
 
 async function getFirecrawlConfig(): Promise<FirecrawlConfig> {
+  const webToolsConfig = getWebToolsConfig();
   if (!webToolsConfig) {
     return { apiUrl: "https://api.firecrawl.dev", apiKey: "" };
   }
