@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { CONTENT_BLOCK_COMPONENT } from "@freeanima/shared/entity-shapes/component-ids.ts";
+import { CONTENT_BLOCK_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
 
 export { CONTENT_BLOCK_COMPONENT };
 

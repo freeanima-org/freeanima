@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { asRecord } from "@freeanima/shared/util";
 
-import { getRepoRoot } from "./repo-root.ts";
+import { getRepoRoot } from "@freeanima/habitat/core/config/repo-root";
 export { readAppVersion } from "@freeanima/habitat/core/config/version";
 
 /** Write monorepo root package.json version */

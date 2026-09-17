@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import type { PomodoroActiveBody } from "@freeanima/shared/entity-shapes";
+import type { PomodoroActiveBody } from "@freeanima/shared/pg-shapes/entity";
 import { isRecord } from "@freeanima/shared/util";
 
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";

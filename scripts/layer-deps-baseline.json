@@ -1,0 +1,20 @@
+{
+  "app-frame -> core": 5,
+  "app-frame -> features": 5,
+  "capabilities -> features": 31,
+  "capabilities -> server": 69,
+  "core -> capabilities": 10,
+  "core -> server": 18,
+  "features -> portal-sdk": 2,
+  "features -> server": 77,
+  "kernel -> core": 30,
+  "portal -> core": 2,
+  "portal-sdk -> core": 1,
+  "portal-sdk -> features": 25,
+  "portal-sdk -> portal": 1,
+  "server -> portal-sdk": 2,
+  "ui-features -> app-frame": 6,
+  "ui-features -> features": 5,
+  "ui-features -> portal": 3,
+  "ui-kit -> portal-sdk": 2
+}

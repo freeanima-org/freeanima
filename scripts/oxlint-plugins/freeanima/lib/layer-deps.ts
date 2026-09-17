@@ -1,150 +1,237 @@
-export function layerOf(rel: string): string {
-  if (rel.startsWith("packages/frontend/ui-kit/")) return "ui-kit";
-  if (
-    rel.startsWith("packages/frontend/client/") ||
-    rel.startsWith("packages/frontend/portal/app/") ||
-    rel.startsWith("packages/frontend/portal/extension/")
-  ) {
-    return "client";
+/**
+ * 仓库层依赖矩阵（SSOT）。
+ *
+ * 大重构后每个层 = 一个 workspace 包；本文件同时服务：
+ *   - oxlint 规则 `freeanima/layer-deps`（单文件即时反馈，按说明符判定）
+ *   - `scripts/check-layer-deps.ts`（全仓扫描 + 存量基线收敛）
+ *
+ * 判定对**相对路径**同样生效（词法解算后再分层），补上旧实现的最大漏洞。
+ * `@freeanima/features/*` / `@freeanima/portal/*` 是双树别名，按**文件存在性**
+ * 解算（frontend 优先，与 tsconfig/Vite 一致）。
+ */
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
+import { REPO_ROOT } from "./repo-path.ts";
+
+/** 目标包（层）名。 */
+export const LAYER_PACKAGES = [
+  "shared",
+  "kernel",
+  "core",
+  "engine",
+  "capabilities",
+  "features",
+  "server",
+  "cli",
+  "ui-kit",
+  "portal-sdk",
+  "ui-features",
+  "app-frame",
+  "portal",
+] as const;
+
+export type LayerName = (typeof LAYER_PACKAGES)[number];
+
+const LAYER_SET: ReadonlySet<string> = new Set(LAYER_PACKAGES);
+
+/** 允许的依赖方向（目标 DAG）。src 只能 import 其中的 dst。 */
+export const LAYER_ALLOWED: Readonly<Record<LayerName, readonly LayerName[]>> = {
+  shared: [],
+  kernel: ["shared"],
+  core: ["kernel", "shared"],
+  engine: ["core", "kernel", "shared"],
+  capabilities: ["engine", "core", "kernel", "shared"],
+  features: ["capabilities", "engine", "core", "kernel", "shared"],
+  server: ["features", "capabilities", "engine", "core", "kernel", "shared"],
+  cli: ["server", "shared"],
+  "ui-kit": ["shared"],
+  "portal-sdk": ["ui-kit", "shared"],
+  "ui-features": ["portal-sdk", "ui-kit", "shared"],
+  "app-frame": ["ui-features", "portal-sdk", "ui-kit", "shared"],
+  portal: ["app-frame", "ui-features", "portal-sdk", "ui-kit", "shared"],
+};
+
+/** 前端侧层（不得触碰 drizzle / core 的 DB 层）。 */
+export const FRONTEND_LAYERS: ReadonlySet<string> = new Set([
+  "ui-kit",
+  "portal-sdk",
+  "ui-features",
+  "app-frame",
+  "portal",
+]);
+
+/** 当前布局（P4/P5 迁移前）的目录 → 层映射。 */
+function currentLayoutLayer(segments: readonly string[]): string | null {
+  if (segments[0] === "shared") return "shared";
+  if (segments[0] === "habitat") {
+    switch (segments[1]) {
+      case "kernel":
+        return "kernel";
+      case "core":
+        return "core";
+      case "engine":
+        return "engine";
+      case "capabilities":
+        return "capabilities";
+      case "features":
+        return "features";
+      default:
+        // platform/、portal/（CLI）等
+        return "server";
+    }
   }
-  if (rel.startsWith("packages/shared/")) return "shared";
-  if (rel.startsWith("packages/habitat/kernel/loop-mechanism/")) return "habitat";
-  if (rel.startsWith("packages/habitat/kernel/")) return "habitat-kernel";
-  if (rel.startsWith("packages/habitat/portal/cli/")) return "habitat";
-  if (rel.startsWith("packages/habitat/features/")) {
-    if (rel.includes("/ui/")) return "feature-ui";
-    return "feature-server";
+  if (segments[0] === "frontend") {
+    if (segments[1] === "ui-kit") return "ui-kit";
+    if (segments[1] === "features") return "ui-features";
+    if (segments[1] === "portal") return "portal";
+    if (segments[1] === "client") {
+      if (segments[2] === "portal-sdk") return "portal-sdk";
+      if (segments[2] === "app-frame") return "app-frame";
+    }
   }
-  if (rel.startsWith("packages/frontend/features/")) {
-    if (rel.includes("/ui/") || rel.includes("/lib/")) return "feature-ui";
-    return "client";
-  }
-  if (rel.startsWith("packages/habitat/")) return "habitat";
-  return "other";
+  return null;
 }
 
-export function targetLayer(spec: string): string | null {
+/** `packages/<x>/...` 的仓库相对路径 → 层名；非层路径返回 null。 */
+export function layerOfPath(rel: string): string | null {
+  const segments = rel.replaceAll("\\", "/").split("/");
+  if (segments[0] !== "packages") return null;
+  const pkg = segments[1];
+  if (!pkg) return null;
+  if (LAYER_SET.has(pkg)) return pkg;
+  if (pkg === "habitat" || pkg === "frontend") return currentLayoutLayer(segments.slice(1));
+  return null;
+}
+
+/** 词法解算相对说明符（不检查文件是否存在）。 */
+function resolveRelative(fromRel: string, spec: string): string | null {
+  const stack = fromRel.replaceAll("\\", "/").split("/").slice(0, -1);
+  for (const part of spec.split("/")) {
+    if (part === "" || part === ".") continue;
+    if (part === "..") {
+      if (stack.length === 0) return null;
+      stack.pop();
+      continue;
+    }
+    stack.push(part);
+  }
+  return stack.join("/");
+}
+
+/** 首次命中的候选目录（frontend 优先，与 tsconfig/Vite 一致）。 */
+function firstExisting(candidates: readonly string[]): string | null {
+  for (const base of candidates) {
+    for (const candidate of [
+      base,
+      `${base}.ts`,
+      `${base}.tsx`,
+      join(base, "index.ts"),
+      join(base, "index.tsx"),
+    ]) {
+      if (existsSync(join(REPO_ROOT, candidate))) return candidate;
+    }
+  }
+  return null;
+}
+
+/** 双树别名的存在性解算；非双树别名返回 null。 */
+function dualTreeLayer(rest: string): string | null {
+  const [head, ...tail] = rest.split("/");
+  let candidates: string[][] | null = null;
+  if (head === "features") {
+    candidates = [
+      ["packages/frontend/features", ...tail],
+      ["packages/habitat/features", ...tail],
+    ];
+  } else if (head === "portal") {
+    candidates = [
+      ["packages/frontend/portal", ...tail],
+      ["packages/habitat/portal", ...tail],
+    ];
+  }
+  if (!candidates) return null;
+  const hit = firstExisting(candidates.map((segments) => segments.join("/")));
+  return hit ? layerOfPath(hit) : null;
+}
+
+/** 说明符 → 层名；无法归层返回 null。 */
+export function targetLayer(fromRel: string, spec: string): string | null {
+  if (spec.startsWith(".")) {
+    const resolved = resolveRelative(fromRel, spec);
+    return resolved ? layerOfPath(resolved) : null;
+  }
   if (!spec.startsWith("@freeanima/")) return null;
   const rest = spec.slice("@freeanima/".length);
-  if (rest.startsWith("ui-kit") || rest.startsWith("frontend/ui-kit")) return "ui-kit";
-  if (rest.startsWith("client/") || rest.startsWith("frontend/")) return "client";
-  if (rest.startsWith("shared/")) return "shared";
-  if (rest.startsWith("habitat/kernel") || rest === "habitat/kernel") return "habitat-kernel";
-  if (rest.startsWith("habitat/")) return "habitat";
-  if (rest.startsWith("host/kernel") || rest === "host/kernel") return "habitat-kernel";
-  if (rest.startsWith("host/")) return "habitat";
-  if (rest.startsWith("kernel/") || rest === "kernel") return "habitat-kernel";
-  if (
-    rest.startsWith("core") ||
-    rest.startsWith("runtime") ||
-    rest.startsWith("capabilities") ||
-    rest.startsWith("platform")
-  ) {
-    return "habitat";
+  if (rest.startsWith("features/") || rest === "features" || rest.startsWith("portal/")) {
+    const resolved = dualTreeLayer(rest);
+    if (resolved) return resolved;
   }
-  if (rest.startsWith("features/")) {
-    if (rest.includes("/ui/") || /features\/[^/]+\/ui\b/.test(rest)) return "feature-ui";
-    if (rest.includes("/lib/") || /features\/[^/]+\/lib\b/.test(rest)) return "feature-ui";
-    return "feature-server";
+  const parts = rest.split("/");
+  const head = parts[0];
+  const second = parts[1];
+  if (!head) return null;
+  if (LAYER_SET.has(head)) return head;
+  // 当前布局：@freeanima/habitat/<layer>、@freeanima/frontend/<sub>、
+  // @freeanima/client/<sub>、@freeanima/{features,portal}（双树）
+  if (head === "habitat" && second) return currentLayoutLayer(["habitat", second]);
+  if (head === "frontend" && second) {
+    if (second === "features") return "ui-features";
+    if (second === "portal") return "portal";
+    if (second === "ui-kit") return "ui-kit";
+    if (second === "client") {
+      const third = parts[2];
+      if (third === "portal-sdk") return "portal-sdk";
+      if (third === "app-frame") return "app-frame";
+    }
+    return null;
   }
-  if (rest.startsWith("portal/")) {
-    if (rest.startsWith("portal/cli")) return "habitat";
-    return "client";
+  if (head === "client") {
+    if (second === "portal-sdk") return "portal-sdk";
+    if (second === "app-frame") return "app-frame";
+    return null;
   }
-  return "other";
+  if (head === "features") return "features";
+  if (head === "portal") return "portal";
+  if (head === "platform") return "server";
+  if (head === "ui-kit") return "ui-kit";
+  return null;
 }
 
-function isFrontendDbImport(spec: string): boolean {
+function isDbImport(spec: string): boolean {
   if (spec === "drizzle-orm" || spec.startsWith("drizzle-orm/")) return true;
   return (
+    /(?:^|\/)core\/db(?:\/|$)/.test(spec) ||
     spec.includes("@freeanima/habitat/core/db") ||
     spec.includes("@freeanima/host/core/db") ||
-    spec.startsWith("@freeanima/core/db") ||
-    spec.includes("/habitat/core/db/") ||
-    spec.includes("/host/core/db/")
+    spec.startsWith("@freeanima/core/db")
   );
+}
+
+function isLayer(value: string | null): value is LayerName {
+  return value !== null && LAYER_SET.has(value);
+}
+
+/** 层对判定本体（层名由调用方给出：词法或按文件存在性解算）。 */
+export function checkLayerEdge(
+  from: string | null,
+  to: string | null,
+  spec: string,
+): string | null {
+  if (from && FRONTEND_LAYERS.has(from) && isDbImport(spec)) {
+    return `${from} 不得 import drizzle-orm 或 core/db；请用 @freeanima/shared/pg-shapes`;
+  }
+
+  if (!from || !to || from === to) return null;
+  if (!isLayer(from) || !isLayer(to)) return null;
+
+  const allowed = LAYER_ALLOWED[from];
+  if (allowed.includes(to)) return null;
+
+  return `${from} 不得依赖 ${to}（允许：${allowed.length > 0 ? allowed.join(", ") : "无"}）`;
 }
 
 /** 层依赖违规原因；合法返回 null。 */
 export function checkLayerDeps(rel: string, spec: string): string | null {
-  const from = layerOf(rel);
-  const to = targetLayer(spec);
-
-  if ((from === "feature-ui" || from === "client") && isFrontendDbImport(spec)) {
-    return "feature-ui/client 不得 import habitat/core/db 或 drizzle-orm；请用 @freeanima/shared/pg-shapes";
-  }
-
-  if (!to) return null;
-
-  if (from === "habitat-kernel" && to !== "habitat-kernel" && to !== "shared") {
-    return "habitat/kernel 仅可依赖 kernel 与 shared（无产品 config 段 / 其它 habitat 层）";
-  }
-
-  if (from === "shared" && (to === "habitat" || to === "habitat-kernel")) {
-    return "shared 不得 import habitat（纯工具/Zod 须落在 shared）";
-  }
-
-  if ((from === "feature-ui" || (from === "client" && rel.includes("/spa/"))) && to === "habitat") {
-    if (
-      spec.includes("@freeanima/habitat/platform") ||
-      spec.includes("@freeanima/habitat/engine") ||
-      spec.includes("@freeanima/habitat/capabilities") ||
-      spec.includes("@freeanima/host/platform") ||
-      spec.includes("@freeanima/host/engine") ||
-      spec.includes("@freeanima/host/capabilities") ||
-      spec.includes("@freeanima/platform") ||
-      spec.includes("@freeanima/runtime") ||
-      spec.includes("@freeanima/capabilities")
-    ) {
-      return "feature-ui/client-spa 不得 import platform/engine/capabilities；请经 portal-sdk";
-    }
-    return null;
-  }
-
-  if ((from === "feature-ui" || from === "client") && to === "feature-server") {
-    // 仅禁止 domain；protocol / method-defs 仍可由 UI / portal-sdk 消费
-    if (spec.includes("/domain/") || /features\/[^/]+\/domain\b/.test(spec)) {
-      return "feature-ui 不得 import features/*/domain（同构逻辑请放 shared）";
-    }
-    return null;
-  }
-
-  if ((from === "habitat" || from === "habitat-kernel") && (to === "client" || to === "ui-kit")) {
-    if (
-      rel.endsWith("platform/habitat/client.ts") ||
-      rel.endsWith("platform/habitat/feature-method-defs.ts") ||
-      rel.endsWith("platform/habitat/install-client-method-registry.ts")
-    ) {
-      return null;
-    }
-    return "habitat 不得 import client/ui-kit";
-  }
-
-  if (from === "shared" && (to === "ui-kit" || to === "client")) {
-    return "shared 不得 import ui-kit/client（须无 React）";
-  }
-
-  if (
-    from === "ui-kit" &&
-    (to === "feature-ui" || to === "feature-server" || to === "habitat" || to === "habitat-kernel")
-  ) {
-    return "ui-kit 不得 import features/habitat";
-  }
-  if (
-    from === "ui-kit" &&
-    to === "client" &&
-    (spec.includes("app-ui") || spec.includes("app-frame"))
-  ) {
-    return "ui-kit 不得 import app-frame";
-  }
-
-  if (
-    (from === "feature-ui" || from === "feature-server") &&
-    to === "client" &&
-    (spec.includes("app-ui") || spec.includes("app-frame"))
-  ) {
-    return "features 不得 import app-frame";
-  }
-
-  return null;
+  return checkLayerEdge(layerOfPath(rel), targetLayer(rel, spec), spec);
 }

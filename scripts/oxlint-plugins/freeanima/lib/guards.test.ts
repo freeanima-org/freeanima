@@ -40,7 +40,7 @@ describe("import-depth", () => {
 });
 
 describe("layer-deps", () => {
-  test("feature-ui cannot import host capabilities", () => {
+  test("ui-features 只能依赖 portal-sdk / ui-kit / shared", () => {
     expect(
       checkLayerDeps("packages/frontend/features/task/ui/a.ts", "@freeanima/client/portal-sdk"),
     ).toBeNull();
@@ -49,20 +49,20 @@ describe("layer-deps", () => {
         "packages/frontend/features/task/ui/a.ts",
         "@freeanima/habitat/capabilities/tools",
       ),
-    ).toMatch(/不得 import platform\/engine\/capabilities/);
+    ).toMatch(/ui-features 不得依赖 capabilities/);
   });
 
-  test("shared cannot import host", () => {
+  test("shared 是叶层", () => {
     expect(
       checkLayerDeps("packages/shared/rpc-contract/x.ts", "@freeanima/habitat/core/util"),
-    ).toMatch(/shared 不得 import habitat/);
+    ).toMatch(/shared 不得依赖 core/);
     expect(
       checkLayerDeps("packages/shared/util/x.ts", "@freeanima/habitat/kernel/config-mechanism"),
-    ).toMatch(/shared 不得 import habitat/);
-    expect(checkLayerDeps("packages/shared/util/x.ts", "@freeanima/shared/db-shapes")).toBeNull();
+    ).toMatch(/shared 不得依赖 kernel/);
+    expect(checkLayerDeps("packages/shared/util/x.ts", "@freeanima/shared/pg-shapes")).toBeNull();
   });
 
-  test("host-kernel 仅可依赖 kernel 与 shared", () => {
+  test("kernel 仅可依赖 shared", () => {
     expect(
       checkLayerDeps(
         "packages/habitat/kernel/config-mechanism/config-store.ts",
@@ -74,7 +74,7 @@ describe("layer-deps", () => {
         "packages/habitat/kernel/config-mechanism/section-registry.ts",
         "@freeanima/habitat/core/config",
       ),
-    ).toMatch(/habitat\/kernel/);
+    ).toMatch(/kernel 不得依赖 core/);
     expect(
       checkLayerDeps(
         "packages/habitat/core/config/config-store.ts",
@@ -83,18 +83,59 @@ describe("layer-deps", () => {
     ).toBeNull();
   });
 
-  test("feature-ui/client cannot import host/core/db or drizzle-orm", () => {
+  test("core 不得依赖 engine/capabilities/server", () => {
+    expect(
+      checkLayerDeps("packages/habitat/core/llm/x.ts", "@freeanima/habitat/capabilities/memory"),
+    ).toMatch(/core 不得依赖 capabilities/);
+    expect(
+      checkLayerDeps("packages/habitat/core/llm/x.ts", "@freeanima/habitat/platform/service/x.ts"),
+    ).toMatch(/core 不得依赖 server/);
+    expect(
+      checkLayerDeps("packages/habitat/core/llm/x.ts", "@freeanima/habitat/engine/conversation"),
+    ).toMatch(/core 不得依赖 engine/);
+  });
+
+  test("相对路径同样受约束（旧实现的漏洞）", () => {
+    expect(
+      checkLayerDeps("packages/habitat/core/llm/x.ts", "../../platform/service/app-runtime.ts"),
+    ).toMatch(/core 不得依赖 server/);
+    expect(checkLayerDeps("packages/habitat/core/llm/x.ts", "../config/index.ts")).toBeNull();
+    expect(
+      checkLayerDeps("packages/habitat/capabilities/tools/x.ts", "../../features/task/domain/a.ts"),
+    ).toMatch(/capabilities 不得依赖 features/);
+  });
+
+  test("前端层不得 import drizzle-orm / core db", () => {
     expect(
       checkLayerDeps(
         "packages/frontend/features/task/ui/a.ts",
         "@freeanima/habitat/core/db/schema/entity",
       ),
-    ).toMatch(/不得 import habitat\/core\/db/);
+    ).toMatch(/不得 import drizzle-orm 或 core\/db/);
     expect(checkLayerDeps("packages/frontend/client/portal-sdk/a.ts", "drizzle-orm")).toMatch(
-      /不得 import habitat\/core\/db/,
+      /不得 import drizzle-orm 或 core\/db/,
     );
     expect(
-      checkLayerDeps("packages/frontend/features/task/ui/a.ts", "@freeanima/shared/entity-shapes"),
+      checkLayerDeps(
+        "packages/frontend/features/task/ui/a.ts",
+        "@freeanima/shared/pg-shapes/entity",
+      ),
+    ).toBeNull();
+  });
+
+  test("server 不得 import 前端层", () => {
+    expect(
+      checkLayerDeps("packages/habitat/platform/x.ts", "@freeanima/client/portal-sdk/a.ts"),
+    ).toMatch(/server 不得依赖 portal-sdk/);
+    expect(checkLayerDeps("packages/habitat/platform/x.ts", "@freeanima/ui-kit")).toMatch(
+      /server 不得依赖 ui-kit/,
+    );
+  });
+
+  test("非 packages 路径不参与判定", () => {
+    expect(checkLayerDeps("scripts/foo.ts", "@freeanima/habitat/core/util")).toBeNull();
+    expect(
+      checkLayerDeps("tests/integration/x.test.ts", "@freeanima/habitat/core/util"),
     ).toBeNull();
   });
 });

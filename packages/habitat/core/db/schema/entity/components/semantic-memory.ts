@@ -9,7 +9,7 @@ import {
   semanticMemoryTypeSchema,
   type SemanticMemoryStatus,
   type SemanticMemoryType,
-} from "@freeanima/shared/db-shapes";
+} from "@freeanima/shared/pg-shapes";
 
 export {
   semanticMemoryTypeSchema,

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { DIARY_ENTRY_COMPONENT } from "@freeanima/shared/entity-shapes/component-ids.ts";
+import { DIARY_ENTRY_COMPONENT } from "@freeanima/shared/pg-shapes/entity/component-ids.ts";
 
 export { DIARY_ENTRY_COMPONENT };
 

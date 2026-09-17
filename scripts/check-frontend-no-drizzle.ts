@@ -20,8 +20,8 @@ const PROBE_IMPORTS = [
   "@freeanima/features/vault/ui/spa/VaultApp.tsx",
   "@freeanima/features/diary/ui/spa/DiaryApp.tsx",
   "@freeanima/client/portal-sdk/pomodoro-active-store.ts",
-  "@freeanima/shared/entity-shapes",
-  "@freeanima/shared/db-shapes",
+  "@freeanima/shared/pg-shapes/entity",
+  "@freeanima/shared/pg-shapes/rows/memory-rows",
   "@freeanima/shared/pg-shapes",
 ];
 

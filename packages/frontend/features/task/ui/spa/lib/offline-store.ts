@@ -30,7 +30,7 @@ import {
   computeNextOccurrence,
   normalizeRecurrenceInput,
   shiftRemindAt,
-} from "@freeanima/shared/entity-shapes";
+} from "@freeanima/shared/pg-shapes/entity";
 import { nextPrependSortOrder } from "@freeanima/shared/task/sort-order.ts";
 import type {
   TaskItemRowPayload,

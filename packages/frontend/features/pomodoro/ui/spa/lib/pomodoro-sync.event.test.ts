@@ -8,7 +8,7 @@ import {
 } from "@freeanima/client/portal-sdk/pomodoro-sync-local.ts";
 import { clearPomodoroActiveStateForTest } from "@freeanima/client/portal-sdk/pomodoro-active.ts";
 import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
-import type { PomodoroActiveBody } from "@freeanima/shared/entity-shapes";
+import type { PomodoroActiveBody } from "@freeanima/shared/pg-shapes/entity";
 
 import { applyPomodoroActiveChangedEvent } from "./pomodoro-sync.ts";
 

@@ -24,6 +24,10 @@ declare module "cordis" {
     bootPersistence: PersistencePhaseResult;
     bootIdentity: IdentityPhaseResult;
     bootWorldSubjects: WorldSubjectsPhaseResult;
+    /** 顺序哨兵：config-secrets 阶段完成（无载荷）。 */
+    bootConfigSecrets: Record<string, never>;
+    /** 顺序哨兵：service-api-tokens 阶段完成（无载荷）。 */
+    bootServiceApiTokens: Record<string, never>;
     bootEngine: EnginePhaseResult;
     bootRuntime: RuntimePhaseResult;
   }

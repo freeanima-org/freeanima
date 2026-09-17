@@ -6,8 +6,8 @@ import {
   type RuntimeConfig,
 } from "@freeanima/habitat/core/config";
 import { asRecord } from "@freeanima/shared/util";
+import { PATHS } from "@freeanima/habitat/core/config/paths";
 import { stringifyYaml } from "./yaml.ts";
-import { PATHS } from "./paths.ts";
 import { loadConfigYamlRecord } from "./yaml-io.ts";
 
 function readConfigFromDisk(): RuntimeConfig {

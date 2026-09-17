@@ -19,10 +19,10 @@ export type RuntimeContext = {
 export type ServiceAppRuntime = AppRuntime & { kernel: Kernel };
 
 /**
- * Cordis service exposing the runtime as `ctx.runtime`.
+ * Cordis service exposing the runtime as `ctx.appRuntime`.
  *
  * Mounted on `kernel.ctx` at `initRuntimeContext`; Cordis-aware consumers can
- * `ctx.inject(['runtime'], ...)` instead of reaching for the global accessor.
+ * `ctx.inject(['appRuntime'], ...)` instead of reaching for the global accessor.
  */
 export class RuntimeService extends Service {
   deps: FullRuntimeDeps;

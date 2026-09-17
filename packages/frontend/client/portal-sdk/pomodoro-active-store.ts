@@ -1,5 +1,5 @@
 import type { PomodoroActiveState } from "@freeanima/client/portal-sdk/pomodoro-active-types.ts";
-import type { PomodoroActiveBody } from "@freeanima/shared/entity-shapes";
+import type { PomodoroActiveBody } from "@freeanima/shared/pg-shapes/entity";
 
 export type PomodoroActiveHabitatRow = PomodoroActiveBody & { id: number };
 

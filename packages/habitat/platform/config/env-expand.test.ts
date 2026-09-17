@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { expandConfigEnv } from "./env-expand.ts";
+import { expandConfigEnv } from "@freeanima/habitat/kernel/config-mechanism";
 
 describe("expandConfigEnv", () => {
   const prev: Record<string, string | undefined> = {};

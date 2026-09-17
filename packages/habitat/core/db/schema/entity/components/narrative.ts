@@ -10,7 +10,7 @@ import {
   narrativeStatusSchema,
   type NarrativeSignificance,
   type NarrativeStatus,
-} from "@freeanima/shared/db-shapes";
+} from "@freeanima/shared/pg-shapes";
 
 export {
   narrativeSignificanceSchema,

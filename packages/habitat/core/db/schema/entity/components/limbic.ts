@@ -3,7 +3,7 @@ export { LIMBIC_COMPONENT };
 
 import { z } from "zod";
 
-import { limbicKindSchema, type LimbicKind } from "@freeanima/shared/db-shapes";
+import { limbicKindSchema, type LimbicKind } from "@freeanima/shared/pg-shapes";
 
 export { limbicKindSchema, type LimbicKind };
 

@@ -1,0 +1,45 @@
+import { MODULE_GLOBALS_BASELINE } from "../lib/module-globals-baseline.ts";
+import { relToRepo } from "../lib/repo-path.ts";
+import type { RuleModule } from "../lib/types.ts";
+
+/** 与 `scripts/check-module-globals.ts` 同源的模式表（此处内联正则）。 */
+const PATTERNS: [string, RegExp][] = [
+  ["ensureProcessContext", /\bensureProcessContext\b/],
+  ["getProcessContext", /\bgetProcessContext\b/],
+  ["resetProcessContextForTests", /\bresetProcessContextForTests\b/],
+  ["globalThis-GlobalStore", /globalThis as GlobalStore/],
+  [
+    "Symbol.for-process-context",
+    /Symbol\.for\("@freeanima\/(?:process-context|runtime-context)"\)/,
+  ],
+  ["Symbol.for-appRuntime", /Symbol\.for\("freeanima\.appRuntime"\)/],
+];
+
+export const noModuleGlobals: RuleModule = {
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "禁止模块级进程上下文/服务定位桥（ensureProcessContext、globalThis[Symbol.for(...)]）；请用 Cordis ctx 服务",
+    },
+  },
+  create(context) {
+    const rel = relToRepo(context.filename).replaceAll("\\", "/");
+    if (!rel.startsWith("packages/")) return {};
+
+    return {
+      Program(node: unknown) {
+        const text = context.sourceCode.text;
+        for (const [name, pattern] of PATTERNS) {
+          if (!pattern.test(text)) continue;
+          const allowed = MODULE_GLOBALS_BASELINE[name] ?? [];
+          if (allowed.includes(rel)) continue;
+          context.report({
+            message: `禁止模块级全局桥（${name}）；请改为 Cordis ctx 服务或显式依赖参数`,
+            node,
+          });
+        }
+      },
+    };
+  },
+};

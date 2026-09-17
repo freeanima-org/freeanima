@@ -2,7 +2,7 @@ import { omitUndefined } from "../../lib/omit-undefined.ts";
 import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { RedirectToBedroom } from "@freeanima/features/habitat/ui/habitat/components/RedirectToBedroom.tsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { SemanticMemoryRow } from "@freeanima/shared/db-shapes";
+import type { SemanticMemoryRow } from "@freeanima/shared/pg-shapes";
 import {
   Badge,
   Button,

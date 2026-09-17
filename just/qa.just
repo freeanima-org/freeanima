@@ -13,6 +13,10 @@ check: _deps
   {{ bun }} scripts/check-frontend-no-drizzle.ts
   {{ bun }} scripts/check-shared-shapes.ts
   {{ bun }} scripts/check-package-deps.ts
+  {{ bun }} scripts/check-layer-deps.ts
+  {{ bun }} scripts/check-module-globals.ts
+  {{ bun }} scripts/check-boot-plugin-parity.ts
+  {{ bun }} scripts/codemod-freeanima-imports.ts --check
 
 # 抽样：Vite 解析 task/vault/diary UI + portal-sdk，断言模块图无 drizzle-orm
 [no-cd]
@@ -26,6 +30,26 @@ check-shared-shapes: _deps
 [no-cd]
 check-package-deps: _deps
   {{ bun }} scripts/check-package-deps.ts
+
+# 13 包 DAG 层依赖（含相对路径 / 测试文件）；存量基线棘轮
+[no-cd]
+check-layer-deps: _deps
+  {{ bun }} scripts/check-layer-deps.ts
+
+# 模块级进程上下文/服务定位桥存量棘轮（P3 目标 0）
+[no-cd]
+check-module-globals: _deps
+  {{ bun }} scripts/check-module-globals.ts
+
+# cordis.yml 与 TS 侧插件清单一致性
+[no-cd]
+check-boot-plugin-parity: _deps
+  {{ bun }} scripts/check-boot-plugin-parity.ts
+
+# 迁移用 import 前缀表已全部执行（无残留旧前缀）
+[no-cd]
+check-import-codemod: _deps
+  {{ bun }} scripts/codemod-freeanima-imports.ts --check
 
 # husky pre-commit（与钩子同集合，避免漂移）
 [no-cd]

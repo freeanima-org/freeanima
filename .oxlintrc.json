@@ -28,6 +28,7 @@
     "freeanima/layer-deps": "error",
     "freeanima/no-direct-offline-cache": "error",
     "freeanima/no-direct-chat": "error",
+    "freeanima/no-module-globals": "error",
     "freeanima/pg-sql-array-bind": "error",
     "import/extensions": [
       "error",

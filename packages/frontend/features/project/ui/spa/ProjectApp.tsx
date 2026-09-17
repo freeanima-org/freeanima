@@ -13,7 +13,7 @@ import {
   useShellQuickIdSet,
 } from "@freeanima/client/portal-sdk/react.tsx";
 import { toggleShellQuick } from "@freeanima/client/portal-sdk/shell-quick.ts";
-import { taskDeleteDetachesCarrier } from "@freeanima/shared/entity-shapes";
+import { taskDeleteDetachesCarrier } from "@freeanima/shared/pg-shapes/entity";
 import {
   Button,
   Dialog,
