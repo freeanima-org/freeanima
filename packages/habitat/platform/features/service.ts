@@ -1,7 +1,7 @@
 import { Service, type Context } from "cordis";
 
 import { toFeatureRpcHandlerMap } from "../habitat/route-handlers.ts";
-import { getProcessContext } from "../service/process-context.ts";
+import { getRootContextOrNull } from "@freeanima/kernel";
 import type { FeatureContribution, FeatureRpcHandler } from "./types.ts";
 
 declare module "cordis" {
@@ -85,7 +85,7 @@ function asFeatureService(value: unknown): FeatureService | undefined {
 
 /** The process-wide feature service, or `undefined` before it is mounted. */
 export function getFeatureService(): FeatureService | undefined {
-  const ctx = getProcessContext();
+  const ctx = getRootContextOrNull();
   if (!ctx) return undefined;
   return asFeatureService(ctx.reflect.get("features", false) as unknown);
 }

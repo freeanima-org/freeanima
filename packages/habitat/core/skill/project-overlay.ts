@@ -1,9 +1,6 @@
 /** 项目 skill 叠加解析（由 platform 注入 Coding cache；core 不依赖 features） */
 
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountProjectOverlayService } from "./project-overlay-service.ts";
 
@@ -20,14 +17,14 @@ export type ProjectSkillOverlayResolver = (
 ) => ProjectSkillOverlayHit | null | Promise<ProjectSkillOverlayHit | null>;
 
 export function registerProjectSkillOverlayResolver(fn: ProjectSkillOverlayResolver | null): void {
-  mountProjectOverlayService(ensureProcessContext()).setSkillResolver(fn);
+  mountProjectOverlayService(ensureRootContext()).setSkillResolver(fn);
 }
 
 export async function resolveProjectSkillOverlay(
   conversationId: string | null,
   name: string,
 ): Promise<ProjectSkillOverlayHit | null> {
-  const service = getProcessContext()?.projectOverlay;
+  const service = getRootContextOrNull()?.projectOverlay;
   if (!service) return null;
   return service.resolveSkill(conversationId, name);
 }
@@ -45,14 +42,14 @@ export type ProjectAgentOverlayResolver = (
 ) => ProjectAgentOverlayHit | null | Promise<ProjectAgentOverlayHit | null>;
 
 export function registerProjectAgentOverlayResolver(fn: ProjectAgentOverlayResolver | null): void {
-  mountProjectOverlayService(ensureProcessContext()).setAgentResolver(fn);
+  mountProjectOverlayService(ensureRootContext()).setAgentResolver(fn);
 }
 
 export async function resolveProjectAgentOverlay(
   conversationId: string | null,
   slug: string,
 ): Promise<ProjectAgentOverlayHit | null> {
-  const service = getProcessContext()?.projectOverlay;
+  const service = getRootContextOrNull()?.projectOverlay;
   if (!service) return null;
   return service.resolveAgent(conversationId, slug);
 }

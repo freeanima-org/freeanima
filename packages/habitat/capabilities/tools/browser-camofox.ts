@@ -4,10 +4,7 @@ import type { Config } from "@freeanima/habitat/core/config";
 import { homePath } from "@freeanima/habitat/core/config/paths";
 import { omitUndefined } from "@freeanima/habitat/core/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -40,16 +37,16 @@ let vncUrl: string | null = null;
 let vncUrlChecked = false;
 
 export function bindBrowserToolsConfig(config: Config): void {
-  mountBrowserToolsConfigService(ensureProcessContext()).set(config);
+  mountBrowserToolsConfigService(ensureRootContext()).set(config);
 }
 
 export function resetBrowserToolsConfigForTest(): void {
-  getProcessContext()?.browserToolsConfig?.reset();
+  getRootContextOrNull()?.browserToolsConfig?.reset();
 }
 
 function getCamofoxConfigBlock(): Record<string, unknown> {
   try {
-    const browserConfig = getProcessContext()?.browserToolsConfig?.get() ?? null;
+    const browserConfig = getRootContextOrNull()?.browserToolsConfig?.get() ?? null;
     if (!browserConfig) return {};
     const cfg = asRecord(browserConfig.data) ?? {};
     const browser = asRecord(cfg.browser);

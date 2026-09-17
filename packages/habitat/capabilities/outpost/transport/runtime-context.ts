@@ -1,19 +1,16 @@
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountRemoteToolsDepsService } from "./deps-service.ts";
 import type { RemoteToolsServerDeps } from "./ws-server.ts";
 
 export function bindRemoteToolsServerDeps(deps: RemoteToolsServerDeps): void {
-  mountRemoteToolsDepsService(ensureProcessContext()).set(deps);
+  mountRemoteToolsDepsService(ensureRootContext()).set(deps);
 }
 
 export function getRemoteToolsServerDeps(): RemoteToolsServerDeps | null {
-  return getProcessContext()?.remoteToolsDeps?.get() ?? null;
+  return getRootContextOrNull()?.remoteToolsDeps?.get() ?? null;
 }
 
 export function clearRemoteToolsServerDeps(): void {
-  getProcessContext()?.remoteToolsDeps?.clear();
+  getRootContextOrNull()?.remoteToolsDeps?.clear();
 }

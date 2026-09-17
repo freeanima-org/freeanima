@@ -10,7 +10,7 @@ import { Config } from "@freeanima/habitat/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/habitat/engine";
 import { initLlmRuntime, mountLlmStackService } from "@freeanima/habitat/core/llm";
 import { bindLlmStack } from "@freeanima/habitat/capabilities/llm-openai";
-import { ensureProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/habitat/platform/bootstrap";
 import { parseYaml } from "@freeanima/habitat/platform/config";
@@ -66,7 +66,7 @@ import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-mountLlmStackService(ensureProcessContext(), bindLlmStack);
+mountLlmStackService(ensureRootContext(), bindLlmStack);
 
 const testEngine = createEngine({
   catalog,

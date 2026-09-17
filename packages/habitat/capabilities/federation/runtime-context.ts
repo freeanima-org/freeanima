@@ -1,7 +1,4 @@
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountFederationManagerService } from "./runtime-context-service.ts";
 import type { FederationHubSessionRegistry } from "./hub-session-registry.ts";
@@ -15,9 +12,9 @@ export type FederationManager = {
 };
 
 export function bindFederationManager(next: FederationManager | null): void {
-  mountFederationManagerService(ensureProcessContext()).set(next);
+  mountFederationManagerService(ensureRootContext()).set(next);
 }
 
 export function getFederationManager(): FederationManager | null {
-  return getProcessContext()?.federationManager?.get() ?? null;
+  return getRootContextOrNull()?.federationManager?.get() ?? null;
 }

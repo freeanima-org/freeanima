@@ -1,6 +1,6 @@
 import type { Context } from "cordis";
 
-import { ensureProcessContext } from "../service/process-context.ts";
+import { ensureRootContext } from "@freeanima/kernel";
 import type { FeaturePluginModule } from "./plugin.ts";
 import { getFeatureService, mountFeatureService } from "./service.ts";
 import type { FeatureRpcHandler } from "./types.ts";
@@ -12,7 +12,7 @@ import type { FeatureRpcHandler } from "./types.ts";
  * loader mounts the same plugins through `cordis.yml` instead.
  */
 export function registerFeatures(plugins: readonly FeaturePluginModule[]): void {
-  const ctx: Context = ensureProcessContext();
+  const ctx: Context = ensureRootContext();
   const features = mountFeatureService(ctx);
   for (const plugin of plugins) {
     features.provide(plugin.feature);

@@ -26,8 +26,6 @@ export {
 } from "./conversation-stats.ts";
 export {
   getAppRuntime,
-  registerAppRuntime,
-  unregisterAppRuntime,
   isAppRuntimeReady,
   assertNotShuttingDown,
   type AppRuntimeContext,

@@ -1,8 +1,5 @@
 import { randomPublicId } from "@freeanima/shared/util";
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { encodeFederationFrame, parseFederationFrame } from "./handshake.ts";
 import { getFederationManager } from "./runtime-context.ts";
@@ -21,7 +18,7 @@ const pending = new Map<string, Pending>();
 const REQUEST_TIMEOUT_MS = 30_000;
 
 export function bindSatelliteFederationTransport(next: SatelliteTransport | null): void {
-  mountSatelliteFederationTransportService(ensureProcessContext()).bind(next);
+  mountSatelliteFederationTransportService(ensureRootContext()).bind(next);
 }
 
 export function handleSatelliteRpcResult(method: string, payload: unknown): boolean {
@@ -49,7 +46,7 @@ export async function requestFederationRpc<T>(method: string, payload: unknown):
   if (!mgr?.satelliteClient?.isHubTrusted()) {
     throw new Error("HUB_UNAVAILABLE");
   }
-  const transport = getProcessContext()?.satelliteFederationTransport?.get() ?? null;
+  const transport = getRootContextOrNull()?.satelliteFederationTransport?.get() ?? null;
   if (!transport) throw new Error("HUB_UNAVAILABLE");
 
   const request_id = randomPublicId();

@@ -1,7 +1,4 @@
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import {
   mountTokenizerResolveContextService,
@@ -13,7 +10,7 @@ export type ResolveContext = {
 };
 
 function service(): TokenizerResolveContextService {
-  return mountTokenizerResolveContextService(ensureProcessContext());
+  return mountTokenizerResolveContextService(ensureRootContext());
 }
 
 export function setResolveContext(ctx: ResolveContext): void {
@@ -21,9 +18,9 @@ export function setResolveContext(ctx: ResolveContext): void {
 }
 
 export function getResolveContext(): ResolveContext {
-  return getProcessContext()?.tokenizerResolveContext?.get() ?? {};
+  return getRootContextOrNull()?.tokenizerResolveContext?.get() ?? {};
 }
 
 export function resetResolveContextForTest(): void {
-  getProcessContext()?.tokenizerResolveContext?.reset();
+  getRootContextOrNull()?.tokenizerResolveContext?.reset();
 }

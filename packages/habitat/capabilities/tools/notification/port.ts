@@ -1,4 +1,4 @@
-import { getProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { getRootContextOrNull } from "@freeanima/kernel";
 import type {
   NotificationCreateInput,
   NotificationListOpts,
@@ -30,5 +30,5 @@ export type NotificationPort = {
  * is the contract existing deep and background consumers rely on.
  */
 export function getNotificationPort(): NotificationPort | null {
-  return getProcessContext()?.notifications?.port ?? null;
+  return getRootContextOrNull()?.notifications?.port ?? null;
 }

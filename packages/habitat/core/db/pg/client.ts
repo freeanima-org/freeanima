@@ -2,10 +2,7 @@ import { relations, type DbRelations } from "@freeanima/habitat/core/db/schema";
 import { drizzle, type BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
 
-import {
-  ensureProcessContext,
-  getProcessContext,
-} from "@freeanima/habitat/platform/service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountPgClientService, type PgClientService } from "./client-service.ts";
 import { startPgPoolHealer, stopPgPoolHealer } from "./pool-heal.ts";
@@ -28,7 +25,7 @@ export type DbSession = Db | DbTransaction;
 export type SqlClient = SQL;
 
 function pgClientService(): PgClientService {
-  return mountPgClientService(ensureProcessContext());
+  return mountPgClientService(ensureRootContext());
 }
 
 /** database.url resolver injected by service layer (called once at startup) */
@@ -37,7 +34,7 @@ export function initDatabase(opts: { getDatabaseUrl: DatabaseUrlResolver }): voi
 }
 
 export function getDatabaseConfig(): DatabaseConfig | null {
-  const url = getProcessContext()?.pgClient?.getResolver()?.() ?? null;
+  const url = getRootContextOrNull()?.pgClient?.getResolver()?.() ?? null;
   if (!url) return null;
   return { url };
 }
@@ -90,12 +87,12 @@ export function getDb(): Db {
 
 /** 底层 Bun SQL 池（毒连接回收 / 运维探测）；未 init 时为 null */
 export function getSqlClient(): SqlClient | null {
-  return getProcessContext()?.pgClient?.getSql() ?? null;
+  return getRootContextOrNull()?.pgClient?.getSql() ?? null;
 }
 
 /** 当前池选项（含 healInterval）；池未创建时现算 env */
 export function getActivePoolOptions(): PgPoolOptions {
-  return getProcessContext()?.pgClient?.getPoolOptions() ?? resolvePoolOptions();
+  return getRootContextOrNull()?.pgClient?.getPoolOptions() ?? resolvePoolOptions();
 }
 
 /** 启动毒连接回收（业务池已创建后调用） */
@@ -112,7 +109,7 @@ export function startDatabasePoolHealer(): void {
 
 export async function closeDb(): Promise<void> {
   await stopPgPoolHealer();
-  const service = getProcessContext()?.pgClient;
+  const service = getRootContextOrNull()?.pgClient;
   const client = service?.getSql() ?? null;
   if (!service) return;
   service.clearConnection();
@@ -131,6 +128,6 @@ export function setDbForTest(db: Db, client?: SqlClient): void {
 
 /** Test teardown: reset resolver and connection */
 export function resetDatabaseForTest(): void {
-  getProcessContext()?.pgClient?.reset();
+  getRootContextOrNull()?.pgClient?.reset();
   void stopPgPoolHealer();
 }

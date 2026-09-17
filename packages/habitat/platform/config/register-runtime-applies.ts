@@ -25,7 +25,7 @@ import {
   getRuntimeDeps,
   getAppRuntime,
 } from "../service/runtime-context.ts";
-import { ensureProcessContext, getProcessContext } from "../service/process-context.ts";
+import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 import { mountRuntimeConfigApplyDepsService } from "./runtime-config-apply-deps-service.ts";
 
 const log = logComponent("config-apply");
@@ -38,17 +38,17 @@ export type RuntimeConfigApplyDeps = {
 };
 
 function applyDeps(): RuntimeConfigApplyDeps {
-  return getProcessContext()?.runtimeConfigApplyDeps?.get() ?? {};
+  return getRootContextOrNull()?.runtimeConfigApplyDeps?.get() ?? {};
 }
 
 /** Composition root：在 engine / HTTP ready 后绑定热 apply 依赖 */
 export function bindRuntimeConfigApplyDeps(next: RuntimeConfigApplyDeps): void {
-  mountRuntimeConfigApplyDepsService(ensureProcessContext()).merge(next);
+  mountRuntimeConfigApplyDepsService(ensureRootContext()).merge(next);
 }
 
 /** 单测隔离（仅 deps；不清理 section 注册表） */
 export function resetRuntimeConfigApplyDepsForTest(): void {
-  getProcessContext()?.runtimeConfigApplyDeps?.reset();
+  getRootContextOrNull()?.runtimeConfigApplyDeps?.reset();
 }
 
 async function applyLlm(config: Config): Promise<void> {

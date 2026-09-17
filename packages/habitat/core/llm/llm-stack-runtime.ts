@@ -1,11 +1,11 @@
 import type { RuntimeConfig } from "@freeanima/habitat/core/config";
-import { getProcessContext } from "@freeanima/habitat/platform/service/process-context.ts";
+import { getRootContextOrNull } from "@freeanima/kernel";
 
 import type { LlmRuntime } from "./llm-stack.ts";
 import type { LlmStackService } from "./llm-stack-service.ts";
 
 function requireService(): LlmStackService {
-  const service = getProcessContext()?.llmStack;
+  const service = getRootContextOrNull()?.llmStack;
   if (!service) {
     throw new Error("LlmStackService not mounted: load @freeanima/platform first");
   }
@@ -23,5 +23,5 @@ export function getLlmRuntime(): LlmRuntime {
 }
 
 export function resetLlmRuntimeForTests(): void {
-  getProcessContext()?.llmStack?.reset();
+  getRootContextOrNull()?.llmStack?.reset();
 }
