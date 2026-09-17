@@ -1,15 +1,19 @@
+import {
+  ensureProcessContext,
+  getProcessContext,
+} from "@freeanima/habitat/platform/service/process-context.ts";
+
+import { mountRemoteToolsDepsService } from "./deps-service.ts";
 import type { RemoteToolsServerDeps } from "./ws-server.ts";
 
-let sapServerDeps: RemoteToolsServerDeps | null = null;
-
 export function bindRemoteToolsServerDeps(deps: RemoteToolsServerDeps): void {
-  sapServerDeps = deps;
+  mountRemoteToolsDepsService(ensureProcessContext()).set(deps);
 }
 
 export function getRemoteToolsServerDeps(): RemoteToolsServerDeps | null {
-  return sapServerDeps;
+  return getProcessContext()?.remoteToolsDeps?.get() ?? null;
 }
 
 export function clearRemoteToolsServerDeps(): void {
-  sapServerDeps = null;
+  getProcessContext()?.remoteToolsDeps?.clear();
 }
