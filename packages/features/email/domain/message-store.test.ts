@@ -102,7 +102,7 @@ mock.module("@freeanima/core/db/pg/entity", () => ({
 
 const emailWorldOriginal = await import("./email-world.ts");
 const threadStoreOriginal = await import("./thread-store.ts");
-const objectStorageOriginal = await import("@freeanima/features/object-storage/domain");
+const objectStorageOriginal = await import("@freeanima/capabilities/object-storage/domain");
 const realCreateObjectFile = objectStorageOriginal.createObjectFile;
 const realDeleteObjectFile = objectStorageOriginal.deleteObjectFile;
 const realDownloadObjectFileBytes = objectStorageOriginal.downloadObjectFileBytes;
@@ -120,7 +120,7 @@ mock.module("./thread-store.ts", () => ({
 
 // 阻断 object-storage 真依赖（attachment-store 顶层 import）；勿 mock.module attachment-store
 // （会污染并行的 attachment-store.test 命名导出）。
-mock.module("@freeanima/features/object-storage/domain", () => ({
+mock.module("@freeanima/capabilities/object-storage/domain", () => ({
   ...objectStorageOriginal,
   createObjectFile: async () => {
     throw new Error("createObjectFile not used in message-store unit tests");
@@ -135,7 +135,7 @@ afterAll(() => {
   mock.module("./email-world.ts", () => emailWorldOriginal);
   mock.module("./thread-store.ts", () => threadStoreOriginal);
   // Bun mock.module 会写穿原模块；还原时必须用 mock 前捕获的函数引用
-  mock.module("@freeanima/features/object-storage/domain", () => ({
+  mock.module("@freeanima/capabilities/object-storage/domain", () => ({
     ...objectStorageOriginal,
     createObjectFile: realCreateObjectFile,
     deleteObjectFile: realDeleteObjectFile,

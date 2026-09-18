@@ -18,9 +18,9 @@ const s3Write = mock(async () => undefined);
 const s3Bytes = mock(async () => new TextEncoder().encode("freeanima-object-storage-probe"));
 const s3Delete = mock(async () => undefined);
 
-const bunS3Original = await import("@freeanima/features/object-storage/domain/bun-s3.ts");
+const bunS3Original = await import("@freeanima/capabilities/object-storage/domain/bun-s3.ts");
 
-mock.module("@freeanima/features/object-storage/domain/bun-s3.ts", () => ({
+mock.module("@freeanima/capabilities/object-storage/domain/bun-s3.ts", () => ({
   ...bunS3Original,
   createBunS3Client: () => ({
     write: s3Write,
@@ -33,7 +33,7 @@ mock.module("@freeanima/features/object-storage/domain/bun-s3.ts", () => ({
 
 afterAll(() => {
   mock.module("./config-test-gateway-probes.ts", () => probesOriginal);
-  mock.module("@freeanima/features/object-storage/domain/bun-s3.ts", () => bunS3Original);
+  mock.module("@freeanima/capabilities/object-storage/domain/bun-s3.ts", () => bunS3Original);
 });
 
 import { Config } from "@freeanima/core/config";

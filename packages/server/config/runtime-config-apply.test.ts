@@ -34,7 +34,7 @@ describe("applyRuntimeConfigSection", () => {
 
   it("object_storage apply 会 rebind ObjectStore", async () => {
     const { bindObjectStore, createObjectStore, getObjectStore, resetObjectStoreForTest } =
-      await import("@freeanima/features/object-storage/domain");
+      await import("@freeanima/capabilities/object-storage/domain");
     resetObjectStoreForTest();
     const before = createObjectStore({});
     bindObjectStore(before);

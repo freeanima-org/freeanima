@@ -38,7 +38,7 @@ let createObjectFile: FileStoreApi["createObjectFile"];
 let updateObjectFile: FileStoreApi["updateObjectFile"];
 
 beforeAll(async () => {
-  const domain = await import("@freeanima/features/object-storage/domain");
+  const domain = await import("@freeanima/capabilities/object-storage/domain");
   createObjectFile = domain.createObjectFile;
   updateObjectFile = domain.updateObjectFile;
 });

@@ -10,7 +10,7 @@ import {
   resolveVaultToolWorld,
   SUBJECT_ID_TOOL_PROPERTY,
   WORLD_ID_TOOL_PROPERTY,
-} from "@freeanima/features/vault/domain/tool-world-resolve";
+} from "@freeanima/capabilities/connectors/vault/domain/tool-world-resolve";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { asRecord } from "@freeanima/shared/util";
 

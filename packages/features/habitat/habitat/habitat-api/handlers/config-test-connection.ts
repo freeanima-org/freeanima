@@ -21,7 +21,7 @@ import {
 } from "@freeanima/core/llm/presets";
 import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
 import { CONFIG_MASKED_SECRET } from "@freeanima/core/config";
-import { createBunS3Client } from "@freeanima/features/object-storage/domain/bun-s3.ts";
+import { createBunS3Client } from "@freeanima/capabilities/object-storage/domain/bun-s3.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { asRecord as sharedAsRecord } from "@freeanima/shared/util";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";

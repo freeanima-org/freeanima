@@ -5,7 +5,7 @@ import {
   createObjectFile as createObjectFileDefault,
   deleteObjectFile as deleteObjectFileDefault,
   downloadObjectFileBytes as downloadObjectFileBytesDefault,
-} from "@freeanima/features/object-storage/domain";
+} from "@freeanima/capabilities/object-storage/domain";
 
 import type { ParsedEmailAttachment } from "./mime-parse.ts";
 

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { TAG_COMPONENT, TASK_ITEM_COMPONENT } from "@freeanima/core/db/schema/entity";
 import * as entityPg from "@freeanima/core/db/pg/entity";
 
-import { setEntityTagIds } from "./tag-store.ts";
+import { setEntityTagIds } from "./store.ts";
 
 function entityRow(
   id: number,

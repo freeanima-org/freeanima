@@ -1,5 +1,5 @@
-import { getVaultItem } from "@freeanima/features/vault/domain/item-store";
-import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
+import { getVaultItem } from "@freeanima/capabilities/connectors/vault/domain/item-store";
+import { resolveVaultWorldId } from "@freeanima/capabilities/connectors/vault/domain/vault-world";
 import { getResolvedWorldContext } from "@freeanima/core/config";
 import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 import {

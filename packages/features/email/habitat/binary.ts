@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { resolvePrivateWorldId } from "@freeanima/core/config/world-context-pg";
-import { createObjectFile } from "@freeanima/features/object-storage/domain";
+import { createObjectFile } from "@freeanima/capabilities/object-storage/domain";
 
 import { ApiHandlerError } from "../../habitat/habitat/habitat-api/handlers/errors.ts";
 

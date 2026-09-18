@@ -13,8 +13,11 @@ import {
   downloadObjectFileBytes,
   getObjectFile,
   ObjectStorageNotConfiguredError,
-} from "../domain/index.ts";
-import { binaryResponseWithCache, notModifiedIfMatch } from "../domain/http-cache.ts";
+} from "@freeanima/capabilities/object-storage/domain/index.ts";
+import {
+  binaryResponseWithCache,
+  notModifiedIfMatch,
+} from "@freeanima/capabilities/object-storage/domain/http-cache.ts";
 
 export { isUserAgentPrivateWorldPassthrough };
 

@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { basename } from "node:path";
-import { createObjectFile } from "@freeanima/features/object-storage/domain";
+import { createObjectFile } from "@freeanima/capabilities/object-storage/domain";
 import { displayNameFromFilename } from "./asset-id.ts";
 import type { MotionLibraryEntry } from "./types.ts";
 import { companionMotionsDir } from "./paths.ts";

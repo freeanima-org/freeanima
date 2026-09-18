@@ -4,7 +4,7 @@ import {
   companionMotionCacheFileName,
   sortCompanionEntries,
 } from "@freeanima/core/config/schemas/companion.ts";
-import { getObjectFile } from "@freeanima/features/object-storage/domain";
+import { getObjectFile } from "@freeanima/capabilities/object-storage/domain";
 import { activeModelPath, habitatUrlFromEnv, loadCompanionConfig } from "./config.ts";
 
 export async function buildClientCompanionConfig(): Promise<CompanionClientConfigPayload> {

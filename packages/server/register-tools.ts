@@ -5,14 +5,14 @@ import { registerEmailTools } from "@freeanima/features/email/domain";
 import { registerTaskTools } from "@freeanima/features/task/domain";
 import { registerSubagentTools } from "@freeanima/features/subagent/domain";
 import { registerWorkflowTools } from "@freeanima/features/workflow/domain";
-import { registerVaultTools } from "@freeanima/features/vault/domain";
+import { registerVaultTools } from "@freeanima/capabilities/connectors/vault/domain";
 import { registerContactTools } from "@freeanima/features/contact/domain";
 import { registerHabitTools } from "@freeanima/features/habit/domain";
 import {
   bindObjectStore,
   createObjectStore,
   registerObjectStorageTools,
-} from "@freeanima/features/object-storage/domain";
+} from "@freeanima/capabilities/object-storage/domain";
 import { registerNotificationTools } from "@freeanima/capabilities/tools/notification";
 import { registerCoreTools, registerSupplementalTools } from "@freeanima/capabilities/tools";
 import { registerMediaTools } from "@freeanima/capabilities/tools/media/tools";

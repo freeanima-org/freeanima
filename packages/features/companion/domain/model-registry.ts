@@ -5,7 +5,7 @@ import {
   nextCompanionSort,
   sortCompanionEntries,
 } from "@freeanima/core/config/schemas/companion.ts";
-import { createObjectFile, deleteObjectFile } from "@freeanima/features/object-storage/domain";
+import { createObjectFile, deleteObjectFile } from "@freeanima/capabilities/object-storage/domain";
 import { displayNameFromFilename } from "./asset-id.ts";
 import type { ModelEntry } from "./types.ts";
 import { loadCompanionConfig, saveCompanionConfig } from "./config.ts";

@@ -1,5 +1,11 @@
-import { ensureVaultConfig, getVaultConfig } from "@freeanima/features/vault/domain/config-store";
-import { getVaultItem, updateVaultItem } from "@freeanima/features/vault/domain/item-store";
+import {
+  ensureVaultConfig,
+  getVaultConfig,
+} from "@freeanima/capabilities/connectors/vault/domain/config-store";
+import {
+  getVaultItem,
+  updateVaultItem,
+} from "@freeanima/capabilities/connectors/vault/domain/item-store";
 import {
   extractCustomFieldNames,
   openVaultSecrets,

@@ -10,7 +10,7 @@ import {
   getObjectStore,
   resetObjectStoreForTest,
   updateObjectFile,
-} from "@freeanima/features/object-storage/domain";
+} from "@freeanima/capabilities/object-storage/domain";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,

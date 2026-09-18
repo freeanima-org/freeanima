@@ -18,7 +18,7 @@ import {
   createObjectStore,
   getObjectFile,
   resetObjectStoreForTest,
-} from "@freeanima/features/object-storage/domain";
+} from "@freeanima/capabilities/object-storage/domain";
 import { describePg } from "../../helpers/pg-test-gate.ts";
 import {
   beginIntegrationCase,
