@@ -1,4 +1,4 @@
-import { describe, expect, it, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import type { ConversationMetaMessage } from "@freeanima/core/db/domain";
 import {
   filterToolSetsByAllowedTools,
@@ -6,8 +6,8 @@ import {
   resolveDefaultConversationToolSetsForMeta,
 } from "./default-conversation-toolsets.ts";
 import { applyConversationToolPolicyFilter } from "./policy-port.ts";
+import { createTestContext, type TestContext } from "@freeanima/kernel/testing";
 import { mountToolPolicyService } from "./policy-service.ts";
-import { ensureRootContext } from "@freeanima/kernel";
 import { ToolSetRegistry } from "./toolset.ts";
 
 function stubTool(name: string) {
@@ -44,8 +44,15 @@ describe("filterToolSetsByAllowedTools", () => {
 });
 
 describe("resolveDefaultConversationToolSetsForMeta", () => {
-  afterEach(() => {
-    mountToolPolicyService(ensureRootContext(), (names) => names);
+  let tc: TestContext;
+
+  beforeEach(async () => {
+    tc = await createTestContext();
+  });
+
+  afterEach(async () => {
+    await tc.dispose();
+    mountToolPolicyService(tc.ctx, (names) => names);
   });
 
   it("returns only default toolsets present in registry", () => {
@@ -62,9 +69,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
   });
 
   it("applies conversation tool policy filter when registered", () => {
-    mountToolPolicyService(ensureRootContext(), (names) =>
-      names.filter((n) => n.startsWith("memory_")),
-    );
+    mountToolPolicyService(tc.ctx, (names) => names.filter((n) => n.startsWith("memory_")));
     const registry = new ToolSetRegistry();
     registry.registerToolSet("toolset", "discovery", [
       stubTool("toolset_search"),
