@@ -1,3 +1,4 @@
+import { getSubjectKind } from "@freeanima/portal-sdk";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -311,11 +312,11 @@ export function ListSidebar({
   const { draggingTask, draggingList, overListRoot } = useTaskDndUi();
   const { setNodeRef: setListRootRef } = useDroppable({ id: LIST_ROOT_DND_ID });
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(() =>
-    readExpandedFolders(),
+    readExpandedFolders(getSubjectKind()),
   );
 
   useEffect(() => {
-    writeExpandedFolders(expandedFolderIds);
+    writeExpandedFolders(getSubjectKind(), expandedFolderIds);
   }, [expandedFolderIds]);
 
   const tree = useMemo(() => buildListTree(activeLists), [activeLists]);

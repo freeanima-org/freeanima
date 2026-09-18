@@ -26,7 +26,9 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/capabilities/outpost/transport/types.ts",
     "packages/capabilities/outpost/transport/ws-server.ts",
   ],
-  "features -> portal-sdk": ["packages/features/companion/server/config.ts"],
+  "features -> portal-sdk": [
+    "packages/features/companion/server/config.ts",
+  ],
   "features -> server": [
     "packages/features/calendar/domain/convert-task-event.ts",
     "packages/features/chat/habitat/routes/index.ts",
@@ -44,14 +46,12 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/features/workflow/domain/runner.ts",
     "packages/features/workflow/domain/workflow-tools.ts",
   ],
-  "portal-sdk -> portal": ["packages/portal-sdk/pomodoro-active.ts"],
+  "portal-sdk -> portal": [
+    "packages/portal-sdk/pomodoro-active.ts",
+  ],
   "ui-features -> portal": [
     "packages/ui-features/coding/ui/spa/main.tsx",
     "packages/ui-features/companion/ui/spa/main.tsx",
     "packages/ui-features/pomodoro/ui/float/main.tsx",
-  ],
-  "ui-kit -> portal-sdk": [
-    "packages/ui-kit/composite/EntityIdLabel.tsx",
-    "packages/ui-kit/lib/task-list-tree.ts",
   ],
 };

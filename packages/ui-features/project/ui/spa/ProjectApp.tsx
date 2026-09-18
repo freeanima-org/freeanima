@@ -1,4 +1,4 @@
-import { launchPomodoroForTask } from "@freeanima/portal-sdk";
+import { getSubjectKind, launchPomodoroForTask } from "@freeanima/portal-sdk";
 import {
   readModuleSelection,
   writeModuleSelection,
@@ -992,6 +992,7 @@ export function ProjectApp() {
       {sheetItems ? <ActionSheet items={sheetItems} onClose={() => setSheetItems(null)} /> : null}
 
       <MoveToListPicker
+        subjectKind={getSubjectKind()}
         open={moveToListItem != null}
         lists={taskListsForMove}
         currentListId={moveToListItem?.list_id ?? null}

@@ -13,6 +13,8 @@ import { ModalSheetPresent } from "./ModalSheetPresent.tsx";
 
 export type MoveToListPickerProps<T extends TaskListRowLike = TaskListRowLike> = {
   open: boolean;
+  /** 展开态持久化的主体键（由壳/特性注入；ui-kit 不读壳状态） */
+  subjectKind: string;
   lists: T[];
   currentListId: number | null;
   title?: string;
@@ -205,6 +207,7 @@ export function MoveToListPicker<T extends TaskListRowLike>({
   open,
   lists,
   currentListId,
+  subjectKind,
   title = "移动到清单",
   onSelect,
   onClose,
@@ -216,7 +219,7 @@ export function MoveToListPicker<T extends TaskListRowLike>({
   }, [open]);
 
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<number>>(() => {
-    const saved = readExpandedFolders();
+    const saved = readExpandedFolders(subjectKind);
     if (saved.size > 0) return saved;
     return new Set(lists.filter((l) => l.is_folder).map((l) => l.id));
   });

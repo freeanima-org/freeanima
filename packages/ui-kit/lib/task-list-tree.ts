@@ -1,5 +1,3 @@
-import { getSubjectKind } from "@freeanima/portal-sdk";
-
 const EXPANDED_KEY_PREFIX = "task:folder-expanded";
 
 export type TaskListRowLike = {
@@ -100,13 +98,14 @@ export function listPathLabel(lists: TaskListRowLike[], listId: number): string 
   return names.join(" / ");
 }
 
-function expandedFoldersKey(): string {
-  return `${EXPANDED_KEY_PREFIX}:${getSubjectKind()}`;
+function expandedFoldersKey(subjectKind: string): string {
+  return `${EXPANDED_KEY_PREFIX}:${subjectKind}`;
 }
 
-export function readExpandedFolders(): Set<number> {
+/** `subjectKind` 由调用方（壳/特性）注入，ui-kit 不读取壳状态。 */
+export function readExpandedFolders(subjectKind: string): Set<number> {
   try {
-    const raw = localStorage.getItem(expandedFoldersKey());
+    const raw = localStorage.getItem(expandedFoldersKey(subjectKind));
     if (!raw) return new Set();
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return new Set();
@@ -116,9 +115,9 @@ export function readExpandedFolders(): Set<number> {
   }
 }
 
-export function writeExpandedFolders(ids: Set<number>): void {
+export function writeExpandedFolders(subjectKind: string, ids: Set<number>): void {
   try {
-    localStorage.setItem(expandedFoldersKey(), JSON.stringify([...ids]));
+    localStorage.setItem(expandedFoldersKey(subjectKind), JSON.stringify([...ids]));
   } catch {
     // ignore quota errors
   }

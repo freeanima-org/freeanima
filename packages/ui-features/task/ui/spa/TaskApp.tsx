@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getSubjectKind,
   readModuleSelection,
   writeModuleSelection,
   launchPomodoroForTask,
@@ -1868,6 +1869,7 @@ export function TaskApp() {
       />
 
       <MoveToListPicker
+        subjectKind={getSubjectKind()}
         open={movePickerItemIds != null}
         lists={moveTargetLists}
         currentListId={selection?.kind === "list" ? selection.id : null}
