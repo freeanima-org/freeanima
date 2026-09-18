@@ -1,31 +1,29 @@
-import { existsSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { isRecord } from "@freeanima/shared/util";
 import type { Alias, Plugin } from "vite";
 
-/** 与 tsconfig.base.json paths 手动对齐（P5 改为同源生成 + 一致性测试） */
-export const MODULE_ALIAS_RULES = {
-  freeanima:
-    "@freeanima/* → packages/{shared,kernel,core,engine,capabilities,features,server,cli,frontend}/…",
-} as const;
+const MODULE_ALIASES_DIR = dirname(fileURLToPath(import.meta.url));
 
-export function tsconfigPathEntries(): Record<string, string[]> {
-  return {
-    "@freeanima/shared/*": ["./packages/shared/*"],
-    "@freeanima/kernel": ["./packages/kernel/index.ts"],
-    "@freeanima/kernel/*": ["./packages/kernel/*"],
-    "@freeanima/core/*": ["./packages/core/*"],
-    "@freeanima/engine": ["./packages/engine/index.ts"],
-    "@freeanima/engine/*": ["./packages/engine/*"],
-    "@freeanima/capabilities/*": ["./packages/capabilities/*"],
-    "@freeanima/features/*": ["./packages/frontend/features/*", "./packages/features/*"],
-    "@freeanima/server": ["./packages/server/index.ts"],
-    "@freeanima/server/*": ["./packages/server/*"],
-    "@freeanima/cli/*": ["./packages/cli/*"],
-    "@freeanima/client/*": ["./packages/frontend/client/*"],
-    "@freeanima/ui-kit": ["./packages/frontend/ui-kit/index.ts"],
-    "@freeanima/ui-kit/*": ["./packages/frontend/ui-kit/*"],
-    "@freeanima/portal/*": ["./packages/frontend/portal/*"],
-  };
+/** 仓库根（`packages/app-frame/vite/` → 上溯三级）。 */
+export const REPO_ROOT = resolve(MODULE_ALIASES_DIR, "../../..");
+
+/**
+ * `@freeanima/*` → 仓库相对路径，**同源**于 `tsconfig.base.json` 的 `paths`。
+ *
+ * 直接读文件而不是手抄一份：此前这里手抄的映射残留了 `./packages/frontend/*`
+ * 之类的退役路径并与 tsconfig 漂移。一致性（含「目标目录存在」）由
+ * `module-aliases.test.ts` 断言。
+ */
+export function tsconfigPathEntries(repoRoot: string = REPO_ROOT): Record<string, string[]> {
+  const raw = readFileSync(join(repoRoot, "tsconfig.base.json"), "utf8");
+  const parsed: unknown = JSON.parse(raw);
+  const compilerOptions = assertNarrow<{ paths?: Record<string, string[]> } | undefined>(
+    isRecord(parsed) ? parsed.compilerOptions : undefined,
+  );
+  return compilerOptions?.paths ?? {};
 }
 
 export type BuildViteAliasesOptions = {
@@ -54,24 +52,17 @@ function tryFile(base: string): string | null {
   return null;
 }
 
-/** 解析 `@freeanima/<subpath>` → 绝对路径（features/portal 双包） */
+/** 解析 `@freeanima/<subpath>` → 绝对路径（单规则，与 tsconfig.base.json 同源） */
 export function resolveFreeanimaId(repoRoot: string, id: string): string | null {
   if (!id.startsWith("@freeanima/")) return null;
   const subpath = id.slice("@freeanima/".length);
   const candidates: string[] = [];
   const at = (...segments: string[]): string => join(repoRoot, "packages", ...segments);
 
-  if (subpath === "shared" || subpath.startsWith("shared/")) {
-    candidates.push(at(subpath === "shared" ? "shared/index.ts" : subpath));
-  } else if (subpath === "ui-kit" || subpath.startsWith("ui-kit/")) {
-    candidates.push(at(subpath === "ui-kit" ? "ui-kit/index.ts" : subpath));
-  } else if (subpath === "portal-sdk" || subpath.startsWith("portal-sdk/")) {
-    candidates.push(at(subpath === "portal-sdk" ? "portal-sdk/index.ts" : subpath));
-  } else {
-    // 其余包一律按 `@freeanima/<pkg>/<sub>` → `packages/<pkg>/<sub>` 解析
-    // （含 kernel/core/engine/capabilities/features/server/cli/ui-features/app-frame/portal）
-    candidates.push(at(subpath));
-  }
+  // 单一规则：`@freeanima/<pkg>/<sub>` → `packages/<pkg>/<sub>`（目录 barrel 由 tryFile 兜底 index.ts）
+  candidates.push(
+    at(subpath === "shared" || subpath === "ui-kit" ? `${subpath}/index.ts` : subpath),
+  );
 
   for (const c of candidates) {
     const hit = tryFile(c);
@@ -91,7 +82,7 @@ export function freeanimaResolvePlugin(repoRoot: string): Plugin {
 }
 
 /**
- * Vite resolve.alias — 与历史调用兼容；双包解析走 {@link freeanimaResolvePlugin}。
+ * Vite resolve.alias — 与历史调用兼容；真实解析走 {@link freeanimaResolvePlugin}。
  * 仍提供简单 alias，便于仅用 alias 的调用方；推荐同时挂 plugin。
  */
 export function buildViteAliases(opts: BuildViteAliasesOptions): Alias[] {
