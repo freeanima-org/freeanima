@@ -66,7 +66,7 @@ portal → app-frame → ui-features → { portal-sdk, ui-kit } → shared
   `no-module-globals` + `scripts/check-module-globals.ts`）。
 - 服务：`class X extends Service` + `declare module "cordis"` 增强 + 幂等 `mountXService(ctx)`。
 - 特性：`createFeaturePlugin({ id, routes })`，`inject: ["features"]`，经 `ctx.effect` 注册/撤销。
-- 组合根→能力/特性的回调走 `ctx.platformPorts`（`packages/server/ports/service.ts`）。
+- 组合根→能力/特性的回调走 `ctx.platformPorts`（`packages/capabilities/ports/service.ts`）。
 
 ## CI
 

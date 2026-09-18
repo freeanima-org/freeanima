@@ -12,13 +12,14 @@
     "@freeanima/engine": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/shared": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@noble/hashes": "^2.3.0",
     "@opencode-ai/models": "^0.0.43",
     "cordis": "4.0.0-rc.10",
     "discord.js": "^14.27.0",
     "drizzle-orm": "^1.0.0-rc.5-169397b",
-    "imapflow": "^1.7.0",
-    "nodemailer": "^9.0.5",
     "openai": "^7.4.0",
+    "ws": "^8.21.1",
     "zod": "^4.4.3"
   }
 }

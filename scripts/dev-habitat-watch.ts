@@ -21,7 +21,7 @@ import { join } from "node:path";
 import { asRecord } from "@freeanima/shared/util";
 
 const root = join(import.meta.dir, "..");
-const habitatEntry = join(root, "packages/cli/cli/dev-habitat.ts");
+const habitatEntry = join(root, "packages/cli/anima/dev-habitat.ts");
 const watchRoots = [join(root, "packages"), join(root, "packages/shared")];
 const habitatArgs = process.argv.slice(2);
 

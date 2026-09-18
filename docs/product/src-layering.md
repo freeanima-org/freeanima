@@ -71,17 +71,19 @@ DDL 仅 `packages/core/db`；存储形状的纯 Zod 经 **codegen + package expo
 
 ## 护栏（`just qa check` 全跑）
 
-| 脚本                                           | 断言                                                               |
-| ---------------------------------------------- | ------------------------------------------------------------------ |
-| `scripts/check-package-deps.ts`                | 每个包 `package.json` 的 `@freeanima` 依赖 ⊆ DAG（无债务登记通道） |
-| `scripts/check-layer-deps.ts`                  | 全仓层依赖扫描（含相对路径与测试文件）；基线为空，任何违规即失败   |
-| `scripts/check-module-globals.ts`              | 模块级全局桥为 0（基线已空）                                       |
-| `scripts/check-boot-plugin-parity.ts`          | `cordis.yml` 与 TS 侧插件清单一致                                  |
-| `scripts/codemod-freeanima-imports.ts --check` | 无残留退役前缀                                                     |
-| oxlint `freeanima/layer-deps`                  | 单文件即时反馈（同一 DAG 实现）                                    |
-| oxlint `freeanima/no-module-globals`           | 禁止新增全局桥                                                     |
-| `scripts/check-frontend-no-drizzle.ts`         | Vite 模块图无 drizzle-orm                                          |
-| `scripts/check-shared-shapes.ts`               | `pg-shapes` codegen 无漂移                                         |
+| 脚本                                           | 断言                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------- |
+| `scripts/check-package-deps.ts`                | 每个包 `package.json` 的 `@freeanima` 依赖 ⊆ DAG（无债务登记通道）  |
+| `scripts/check-layer-deps.ts`                  | 全仓层依赖扫描（含相对路径与测试文件）；基线为空，任何违规即失败    |
+| `scripts/check-package-paths.ts`               | 代码里的 `packages/*` 路径字面量必须指向真实目录（防退役树复活）    |
+| `scripts/check-external-deps.ts`               | 包内第三方 import 已在该包 `package.json` 声明（拆包/搬迁不漏依赖） |
+| `scripts/check-module-globals.ts`              | 模块级全局桥为 0（基线已空）                                        |
+| `scripts/check-boot-plugin-parity.ts`          | `cordis.yml` 与 TS 侧插件清单一致                                   |
+| `scripts/codemod-freeanima-imports.ts --check` | 无残留退役前缀                                                      |
+| oxlint `freeanima/layer-deps`                  | 单文件即时反馈（同一 DAG 实现）                                     |
+| oxlint `freeanima/no-module-globals`           | 禁止新增全局桥                                                      |
+| `scripts/check-frontend-no-drizzle.ts`         | Vite 模块图无 drizzle-orm                                           |
+| `scripts/check-shared-shapes.ts`               | `pg-shapes` codegen 无漂移                                          |
 
 ## 已知债务（棘轮，只减不增）
 

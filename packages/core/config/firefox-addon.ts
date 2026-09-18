@@ -4,7 +4,7 @@
  */
 
 /**
- * 固定 gecko id（对齐 `packages/frontend/portal/extension`）。
+ * 固定 gecko id（对齐 `packages/portal/extension`）。
  * 变更即视为新扩展，已装旧 id 的用户须卸旧装新。
  */
 export const FIREFOX_ADDON_ID = "extension@freeanima.com";

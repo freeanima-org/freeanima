@@ -76,7 +76,7 @@ describe("ensure-web-dist", () => {
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 
-    const sourceRoot = join(root, "packages/frontend/portal/app/web");
+    const sourceRoot = join(root, "packages/portal/app/web");
     mkdirSync(sourceRoot, { recursive: true });
     touch(join(sourceRoot, "vite.config.ts"), distTime + 1000);
 
@@ -96,7 +96,7 @@ describe("ensure-web-dist", () => {
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 
-    const sourceRoot = join(root, "packages/frontend/portal/app/web");
+    const sourceRoot = join(root, "packages/portal/app/web");
     mkdirSync(sourceRoot, { recursive: true });
     touch(join(sourceRoot, "vite.config.ts"), distTime - 1000);
 
@@ -114,7 +114,7 @@ describe("ensure-web-dist", () => {
     touch(join(dist, "manifest.webmanifest"), distTime);
     touch(join(dist, "sw.js"), distTime);
 
-    const sourceRoot = join(root, "packages/frontend/ui-kit/composite");
+    const sourceRoot = join(root, "packages/ui-kit/composite");
     mkdirSync(sourceRoot, { recursive: true });
     touch(join(sourceRoot, "ContextMenu.tsx"), distTime + 1000);
 

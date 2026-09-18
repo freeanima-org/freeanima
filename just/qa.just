@@ -13,6 +13,8 @@ check: _deps
   {{ bun }} scripts/check-frontend-no-drizzle.ts
   {{ bun }} scripts/check-shared-shapes.ts
   {{ bun }} scripts/check-package-deps.ts
+  {{ bun }} scripts/check-package-paths.ts
+  {{ bun }} scripts/check-external-deps.ts
   {{ bun }} scripts/check-layer-deps.ts
   {{ bun }} scripts/check-module-globals.ts
   {{ bun }} scripts/check-boot-plugin-parity.ts
@@ -30,6 +32,16 @@ check-shared-shapes: _deps
 [no-cd]
 check-package-deps: _deps
   {{ bun }} scripts/check-package-deps.ts
+
+# packages/* 路径字面量必须指向真实目录（分包后脚本/CLI 字面量不得指向退役树）
+[no-cd]
+check-package-paths: _deps
+  {{ bun }} scripts/check-package-paths.ts
+
+# 包内第三方 import 必须写在该包 package.json（拆包/搬迁易漏）
+[no-cd]
+check-external-deps: _deps
+  {{ bun }} scripts/check-external-deps.ts
 
 # 13 包 DAG 层依赖（含相对路径 / 测试文件）；存量基线棘轮
 [no-cd]
@@ -57,6 +69,8 @@ pre-commit: _deps
   {{ bun }} x tsgo -p tsconfig.json
   {{ bun }} x oxlint .
   {{ bun }} x oxfmt --check .
+  {{ bun }} scripts/check-package-paths.ts
+  {{ bun }} scripts/check-external-deps.ts
   {{ bun }} test packages scripts/oxlint-plugins --pass-with-no-tests --changed
 
 # husky pre-push：仅 unit CORE（集成不跑）

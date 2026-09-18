@@ -29,8 +29,8 @@ import { emitPackArtifact } from "./emit-pack-artifact.ts";
 
 const ROOT = join(import.meta.dir, "..");
 const OUT_DIR = join(ROOT, "dist/anima-executable");
-const CLI_ENTRY = join(ROOT, "packages/cli/cli/cli.ts");
-const META_MODULE = realpathSync(join(ROOT, "packages/cli/cli/standalone-meta.ts"));
+const CLI_ENTRY = join(ROOT, "packages/cli/anima/cli.ts");
+const META_MODULE = realpathSync(join(ROOT, "packages/cli/anima/standalone-meta.ts"));
 const WEB_DIST_DIR = join(ROOT, "packages/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
 
