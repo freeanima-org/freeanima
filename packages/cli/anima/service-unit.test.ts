@@ -10,7 +10,7 @@ import {
   coalesceBindHosts,
   resolveProbeHost,
   DEFAULT_BIND_HOST,
-} from "@freeanima/server/bind-hosts.ts";
+} from "@freeanima/core/config/bind-hosts.ts";
 
 describe("bind hosts", () => {
   it("parseBindHosts splits comma-separated addresses", () => {

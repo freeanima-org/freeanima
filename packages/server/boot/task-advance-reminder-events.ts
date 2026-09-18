@@ -1,29 +1,7 @@
-export type TaskAdvanceReminderPayload = {
-  task_item_id: number;
-  title: string;
-  body: string;
-  at: string;
-  source_ref: string;
-};
-
-const watchers = new Set<(payload: TaskAdvanceReminderPayload) => void>();
-
-export function watchTaskAdvanceReminder(
-  cb: (payload: TaskAdvanceReminderPayload) => void,
-): () => void {
-  watchers.add(cb);
-  return () => {
-    watchers.delete(cb);
-  };
-}
-
-export function emitTaskAdvanceReminder(payload: TaskAdvanceReminderPayload): void {
-  for (const cb of watchers) {
-    cb(payload);
-  }
-}
-
-/** @internal */
-export function resetTaskAdvanceReminderWatchersForTest(): void {
-  watchers.clear();
-}
+/** 实现已下沉 @freeanima/capabilities/ports/task-advance-reminders（服务端 emit / 特性 watch 共用）。 */
+export {
+  emitTaskAdvanceReminder,
+  resetTaskAdvanceReminderWatchersForTest,
+  watchTaskAdvanceReminder,
+  type TaskAdvanceReminderPayload,
+} from "@freeanima/capabilities/ports/task-advance-reminders.ts";

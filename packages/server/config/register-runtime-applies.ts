@@ -15,7 +15,7 @@ import { logComponent } from "@freeanima/server/logging";
 import { updateFederationManagerConfig } from "@freeanima/capabilities/federation";
 import type { MessagingPort } from "@freeanima/capabilities/ports/messaging-port";
 import type { McpManagerPort } from "@freeanima/capabilities/ports/mcp-manager";
-import type { ServiceEnginePort } from "@freeanima/capabilities/ports/service-engine";
+import type { ServiceEnginePort } from "@freeanima/engine/service-engine";
 import { resolveLlmProviderApiKeys } from "./llm-resolve.ts";
 import { bindEmbeddingRuntime } from "../service/embedding-bind.ts";
 import { bindSearchRuntime } from "@freeanima/core/db/pg/search";

@@ -6,20 +6,21 @@ import {
   collectHttpAllowedHosts,
 } from "@freeanima/core/config";
 import { PATHS } from "@freeanima/core/config/paths";
-import { omitUndefined } from "@freeanima/core/util";
-import { resolveValue } from "@freeanima/server/config";
+import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
 
 import {
   defaultHabitatTlsCertPath,
   defaultHabitatTlsKeyPath,
   ensureHabitatTlsMaterial,
   type HabitatTlsMaterial,
-} from "./habitat-tls-material.ts";
+} from "@freeanima/core/tls/habitat-tls-material.ts";
 import {
   ensureAcmeMaterial,
   startAcmeChallengeServer,
   type AcmeChallengeServer,
-} from "./acme/index.ts";
+} from "@freeanima/core/tls/acme/index.ts";
+import type { HabitatTlsBunOptions } from "@freeanima/core/tls/bun-options.ts";
+import { toHabitatTlsBunOptions } from "@freeanima/core/tls/bun-options.ts";
 
 export type ResolvedHabitatTlsAcmeRuntime = {
   email: string;
@@ -109,18 +110,6 @@ export async function resolveHabitatTlsListenConfig(
   };
 }
 
-export type HabitatTlsBunOptions = {
-  key: ReturnType<typeof Bun.file>;
-  cert: ReturnType<typeof Bun.file>;
-  passphrase?: string;
-};
-
-export function toHabitatTlsBunOptions(material: HabitatTlsMaterial): HabitatTlsBunOptions {
-  return omitUndefined({
-    key: Bun.file(material.keyPath),
-    cert: Bun.file(material.certPath),
-    ...(material.passphrase ? { passphrase: material.passphrase } : {}),
-  });
-}
+export { type HabitatTlsBunOptions, toHabitatTlsBunOptions };
 
 export { PATHS };

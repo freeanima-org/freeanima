@@ -4,7 +4,7 @@ import type { FeatureRpcHandler } from "@freeanima/core/features";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { ApiHandlerError } from "./habitat-api/handlers/errors.ts";
-import type { HabitatDispatchContext } from "@freeanima/server/habitat/dispatch.ts";
+import type { HabitatDispatchContext } from "@freeanima/shared/habitat-contract/dispatch-context.ts";
 
 type AsrTranscribeQuery = {
   mime_type?: string;

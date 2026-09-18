@@ -16,9 +16,9 @@ import {
   insertRunningWorkflowRun,
 } from "@freeanima/core/db/pg/workflow-run";
 import { expandToolNames, validateToolArgs, type ToolSetRegistry } from "@freeanima/core/tool";
-import type { AutoLlmRunInput, AutoLlmRunResult } from "@freeanima/server/service/auto-llm-run.ts";
+import type { AutoLlmRunInput, AutoLlmRunResult } from "@freeanima/engine/auto-llm-run.ts";
 import { omitUndefined } from "@freeanima/core/util";
-import type { FullRuntimeDeps } from "@freeanima/server/service/runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 import { runTransformOp } from "./transform.ts";
 import type {

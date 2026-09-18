@@ -61,7 +61,7 @@ afterAll(() => {
   mock.module("@freeanima/core/db/pg/auto-llm-run", () => autoLlmRunOriginal);
 });
 
-import { lastSuccessfulAssistantText, runAutoLlm } from "./auto-llm-run.ts";
+import { lastSuccessfulAssistantText, runAutoLlm } from "@freeanima/engine/auto-llm-run.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 const catalog = createEngineCatalog();

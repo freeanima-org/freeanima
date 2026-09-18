@@ -4,7 +4,8 @@ import { isRecord } from "@freeanima/shared/util";
 import type { AppRuntimePort } from "./app-runtime-port.ts";
 import type { McpManagerPort } from "./mcp-manager.ts";
 import type { RemoteToolsManagerPort } from "./remote-tools-manager.ts";
-import type { ServiceEnginePort } from "./service-engine.ts";
+import type { ServiceEnginePort } from "@freeanima/engine/service-engine.ts";
+import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type AppRuntimeContext = {
   conversation: ConversationService;
@@ -22,11 +23,11 @@ export type AppRuntimeContext = {
  * `initRuntimeContext`). 这里按结构判定（不 import server 的 RuntimeService），
  * 使端口层不必反向依赖组合根包。
  */
-type RuntimeLike = { app: AppRuntimeContext };
+type RuntimeLike = { app: AppRuntimeContext; deps: FullRuntimeDeps };
 
 function isRuntimeLike(value: unknown): value is RuntimeLike {
   if (!isRecord(value)) return false;
-  return isRecord(value.app);
+  return isRecord(value.app) && isRecord(value.deps);
 }
 
 function runtimeService(): RuntimeLike | null {
@@ -40,6 +41,13 @@ export function getAppRuntime(): AppRuntimeContext {
   const service = runtimeService();
   if (!service) throw new Error("AppRuntime not initialized");
   return service.app;
+}
+
+/** 组合根注入的完整运行时依赖（特性/能力经端口取用，不 import server）。 */
+export function getRuntimeDeps(): FullRuntimeDeps {
+  const service = runtimeService();
+  if (!service) throw new Error("RuntimeContext not initialized; call serve() first");
+  return service.deps;
 }
 
 export function isAppRuntimeReady(): boolean {

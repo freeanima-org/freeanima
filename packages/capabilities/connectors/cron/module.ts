@@ -7,6 +7,10 @@ import {
   updateCronJob,
 } from "@freeanima/core/db/pg/cron";
 import { logComponent } from "@freeanima/kernel/logging/component.ts";
+import {
+  startTaskReminderScheduler,
+  stopTaskReminderScheduler,
+} from "@freeanima/capabilities/ports/task-reminder-schedule.ts";
 import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { mountCronHandleService, type CronHandleService } from "./cron-handle-service.ts";
@@ -46,15 +50,11 @@ export async function initCronModule(): Promise<void> {
   const jobs = await loadAllJobs();
   handles.syncAll(jobs);
   startInprocessBuiltins();
-  const { startTaskReminderScheduler } =
-    await import("@freeanima/server/boot/task-reminder-scheduler.ts");
   startTaskReminderScheduler();
 }
 
 export function stopCronModule(): void {
-  void import("@freeanima/server/boot/task-reminder-scheduler.ts").then((m) => {
-    m.stopTaskReminderScheduler();
-  });
+  stopTaskReminderScheduler();
   stopInprocessBuiltins();
   const service = getRootContextOrNull()?.cronHandleManager;
   service?.get()?.stopAll();

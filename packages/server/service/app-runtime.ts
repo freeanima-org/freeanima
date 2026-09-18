@@ -13,7 +13,7 @@ import type { Kernel } from "@freeanima/kernel";
 import type { AppRuntimePort } from "@freeanima/capabilities/ports/app-runtime-port";
 import type { McpManagerPort } from "@freeanima/capabilities/ports/mcp-manager";
 import type { RemoteToolsManagerPort } from "@freeanima/capabilities/ports/remote-tools-manager";
-import type { ServiceEnginePort } from "@freeanima/capabilities/ports/service-engine";
+import type { ServiceEnginePort } from "@freeanima/engine/service-engine";
 import {
   collectStreamReply,
   createConversationAfterMessagesPersisted,

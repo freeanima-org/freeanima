@@ -10,7 +10,7 @@ import { materializeFromFragments } from "../capability-policy-bind.ts";
 
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
 import { composeAutoLlmPrompt, formatCronAutoLlmTaskSpec } from "../build-auto-llm-prompt.ts";
-import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "../auto-llm-run.ts";
+import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "@freeanima/engine/auto-llm-run.ts";
 
 export type CronEngineJobInput = {
   id?: string;

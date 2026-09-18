@@ -1,4 +1,4 @@
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 
 import { readAcmeAccount, writeAcmeAccount, type AcmeAccountStore } from "./acme-account.ts";
 import { removeHttp01Challenge, setHttp01Challenge } from "./challenge-store.ts";

@@ -22,7 +22,7 @@ import {
   AUTO_LLM_DEFAULT_MAX_DURATION_MS,
   runAutoLlm,
   type AutoLlmRunResult,
-} from "./auto-llm-run.ts";
+} from "@freeanima/engine/auto-llm-run.ts";
 import type { FullRuntimeDeps } from "./runtime-deps.ts";
 
 export type RunSkillReviewInput = {
