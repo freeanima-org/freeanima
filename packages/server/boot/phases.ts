@@ -1,4 +1,4 @@
-import type { Context, Plugin } from "cordis";
+import type { Context, Fiber, Plugin } from "cordis";
 
 import { builtinFeaturePlugins } from "../features/builtin-feature-plugins.ts";
 import { mountFeatureService } from "../features/service.ts";
@@ -39,14 +39,24 @@ export const BOOT_PHASE_PLUGINS: readonly Plugin.Object[] = [
  */
 export const BOOT_FEATURE_PLUGINS: readonly Plugin.Object[] = builtinFeaturePlugins;
 
-/** 按依赖顺序把每个启动阶段与 feature 插件挂载为 Cordis 插件并等待完成。 */
-export async function runBootPipeline(ctx: Context, pipeline: BootPipelineConfig): Promise<void> {
+/**
+ * 按依赖顺序把每个启动阶段与 feature 插件挂载为 Cordis 插件并等待完成。
+ *
+ * 返回每个插件的 fiber（挂载顺序），嵌入场景（standalone 单文件产物）用它
+ * 释放整棵树；不需要处置的调用方可忽略返回值。
+ */
+export async function runBootPipeline(
+  ctx: Context,
+  pipeline: BootPipelineConfig,
+): Promise<Fiber[]> {
   ctx.provide("bootOptions", pipeline);
   mountFeatureService(ctx);
+  const fibers: Fiber[] = [];
   for (const plugin of [...BOOT_PHASE_PLUGINS, ...BOOT_FEATURE_PLUGINS]) {
     startupLog(`Boot plugin: ${plugin.name ?? "anonymous"}`);
-    await ctx.plugin(plugin);
+    fibers.push(await ctx.plugin(plugin));
   }
+  return fibers;
 }
 
 export type BootIntegrationsContext = Parameters<typeof startAsyncIntegrations>[0];

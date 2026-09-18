@@ -1,7 +1,7 @@
 import type { Config } from "@freeanima/core/config";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { asRecord, isRecord } from "@freeanima/shared/util";
-import { getActiveRuntimeConfig } from "@freeanima/core/config";
+import { asRecord } from "@freeanima/shared/util";
+import { getActiveRuntimeConfig, isPatchableRuntimeConfig } from "@freeanima/core/config";
 
 import { platformPorts } from "./service.ts";
 
@@ -42,15 +42,12 @@ export function getHomeChannel(platform: string): HomeChannel | null {
   return threadId ? { chat_id: chatId, thread_id: threadId } : { chat_id: chatId };
 }
 
-/** 结构判定：RuntimeConfigStore 自带 patchSection（不再依赖 server 的类型） */
-function hasPatchSection(config: unknown): boolean {
-  if (!isRecord(config)) return false;
-  return typeof config.patchSection === "function";
-}
-
 function mergePlatformSectionIntoActive(platform: string, patch: Record<string, unknown>): void {
   const config = getActiveRuntimeConfig();
-  if (hasPatchSection(config)) {
+  // 判定须与组合根 patchRuntimeConfigSection 内一致：只有完整可 patch 的
+  // RuntimeConfigStore 会在 patchSection 内更新内存快照；FileConfig 等只带
+  // patchSection 的存储实际走 PG 兜底，需在此显式合并回内存。
+  if (isPatchableRuntimeConfig(config)) {
     // RuntimeConfigStore.patchSection 已更新内存快照
     return;
   }

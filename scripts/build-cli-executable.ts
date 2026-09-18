@@ -33,6 +33,23 @@ const CLI_ENTRY = join(ROOT, "packages/cli/anima/cli.ts");
 const META_MODULE = realpathSync(join(ROOT, "packages/cli/anima/standalone-meta.ts"));
 const WEB_DIST_DIR = join(ROOT, "packages/portal/app/web/dist");
 const WEB_DIST_INDEX = join(WEB_DIST_DIR, "index.html");
+/** boot 插件树清单：随产物落盘供排查 / parity 对照；standalone 启动改用
+ * 编译期内联清单（packages/server/boot/phases.ts，由 loader.ts 按
+ * isStandaloneExecutable() 选择），不依赖磁盘上的 TS 插件路径 */
+const BOOT_CONFIG_SOURCE = join(ROOT, "cordis.yml");
+/** standalone 安装前缀靠 package.json name 判定（getRepoRoot 结构识别） */
+const ROOT_PACKAGE_JSON = join(ROOT, "package.json");
+
+/**
+ * standalone 运行期从可执行文件所在目录解析 REPO_ROOT（靠 package.json name
+ * 结构识别），因此 `package.json` 必须随产物落到 `dist/anima-executable/`。
+ * `cordis.yml` 一并落盘：启动已走编译期内联插件清单，但清单文件仍随安装包
+ * 提供，便于对照 / 后续按 config 挂载。
+ */
+function stageStandaloneRuntimeFiles(): void {
+  cpSync(BOOT_CONFIG_SOURCE, join(OUT_DIR, "cordis.yml"));
+  cpSync(ROOT_PACKAGE_JSON, join(OUT_DIR, "package.json"));
+}
 
 async function ensureWebDist(): Promise<void> {
   const force = process.env.FREEANIMA_FORCE_WEB_BUILD === "1";
@@ -74,6 +91,7 @@ export const standaloneRuntimeMeta: StandaloneRuntimeMetaInject = ${metaJson} as
 async function main(): Promise<void> {
   rmSync(OUT_DIR, { recursive: true, force: true });
   mkdirSync(OUT_DIR, { recursive: true });
+  stageStandaloneRuntimeFiles();
 
   await ensureWebDist();
 
