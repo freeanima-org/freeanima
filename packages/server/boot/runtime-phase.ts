@@ -2,12 +2,8 @@ import { initCronModule } from "@freeanima/capabilities/connectors/cron";
 import { invalidateSelfLayerPromptCache, loadSelfLayerPrompt } from "@freeanima/capabilities/self";
 import { listAllOutpostInstances } from "@freeanima/core/db/pg/outpost";
 
-import { bindHabitatPorts } from "@freeanima/capabilities/ports/bind-habitat-ports.ts";
-import { habitatDispatch } from "../habitat/dispatch.ts";
-import { handleHttpHabitatRestRequestWithAuth } from "../habitat/http-rpc.ts";
-import { isOptionalAuthHabitatHttpRequest } from "../habitat/http-rest-auth.ts";
-
 import { createAppRuntime, type AppRuntime } from "../service/app-runtime.ts";
+import { bindHabitatCompositionPorts } from "./composition-ports.ts";
 import { bindServicePorts } from "../bind-api.ts";
 import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
 import { mountSystemPromptService } from "@freeanima/core/hooks/prompt";
@@ -33,7 +29,6 @@ import { HabitatSessionRegistry } from "@freeanima/capabilities/outpost/transpor
 import { RemoteInstanceRegistry } from "@freeanima/capabilities/outpost/transport/instance-registry.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import { ANIMA_VERSION } from "../service/version.ts";
-import { initHabitatRouter } from "../habitat/init.ts";
 
 export type RuntimePhaseResult = {
   runtime: AppRuntime;
@@ -67,23 +62,7 @@ export async function bootRuntimePhase(
   bindServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
   // outpost transport 经端口调用 habitat dispatch / REST 入口（能力层不 import 组合根）
-  bindHabitatPorts({
-    dispatch: (deps, method, payload, ctx) =>
-      habitatDispatch(
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 端口以 unknown 声明 deps，实现按组合根契约收窄
-        deps as Parameters<typeof habitatDispatch>[0],
-        method,
-        payload,
-        ctx,
-      ),
-    restHandler: (req, deps) =>
-      handleHttpHabitatRestRequestWithAuth(
-        req,
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 同上
-        deps as Parameters<typeof handleHttpHabitatRestRequestWithAuth>[1],
-      ),
-    isOptionalAuthRequest: isOptionalAuthHabitatHttpRequest,
-  });
+  bindHabitatCompositionPorts();
 
   registerServiceStores(runtime.fullDeps(), engine.config);
   registerNotificationInject({ kernel });
@@ -132,7 +111,7 @@ export async function bootRuntimePhase(
   bindCodingProjectOverlays();
 
   // Feature plugins are mounted by the boot pipeline (cordis.yml / runBootPipeline).
-  initHabitatRouter();
+  // habitat REST 路由表已在 bindHabitatCompositionPorts() 中编译。
 
   outpost.loadSessionPlatformExtra = async (conversationId) => {
     const meta = await conversation.loadConversationMeta(conversationId);

@@ -24,6 +24,7 @@ import { isNotNull } from "drizzle-orm";
 
 import { bindHomeChannelConfig } from "@freeanima/capabilities/ports/home-channel";
 import { bindContextWindowLookup } from "@freeanima/server/bind-context-window.ts";
+import { bindCompositionPortsForIntegration } from "@freeanima/server/boot/composition-ports.ts";
 import { getDb } from "@freeanima/core/db/pg";
 import { beginLogIsolation, resetServiceLogger } from "./log-isolation.ts";
 import { pgTestUrl } from "./pg-test-gate.ts";
@@ -80,6 +81,8 @@ export async function bindIntegrationRuntimeContext(pg: PgTestContext): Promise<
   const runtime = createAppRuntime(fullDeps);
   bindServicePorts(fullDeps);
   initRuntimeContext(runtime);
+  // 组合根端口：habitat dispatch / REST 入口 / 运行时配置写入（与生产 boot 同一实现）
+  bindCompositionPortsForIntegration();
   resetRegisterServiceToolsForTest();
   registerServiceTools({
     toolSets: pg.engine.catalog.toolSets,
