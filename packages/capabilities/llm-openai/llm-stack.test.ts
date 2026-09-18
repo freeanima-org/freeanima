@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeAll } from "bun:test";
 import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
-import { createLlmRuntime } from "./llm-stack.ts";
-import { mountLlmStackService } from "./llm-stack-service.ts";
-import { getLlmRuntime, initLlmRuntime, resetLlmRuntimeForTests } from "./llm-stack-runtime.ts";
+import { createLlmRuntime } from "@freeanima/core/llm/llm-stack.ts";
+import { mountLlmStackService } from "@freeanima/core/llm/llm-stack-service.ts";
+import {
+  getLlmRuntime,
+  initLlmRuntime,
+  resetLlmRuntimeForTests,
+} from "@freeanima/core/llm/llm-stack-runtime.ts";
 import { ensureRootContext } from "@freeanima/kernel";
 import type { RuntimeConfig } from "@freeanima/core/config";
 import { minimalChatRuntime } from "@freeanima/core/config/test-helpers/minimal-llm-config";

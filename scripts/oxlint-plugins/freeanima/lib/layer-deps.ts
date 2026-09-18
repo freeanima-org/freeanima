@@ -94,8 +94,16 @@ function currentLayoutLayer(segments: readonly string[]): string | null {
   return null;
 }
 
-/** `packages/<x>/...` 的仓库相对路径 → 层名；非层路径返回 null。 */
+/**
+ * 构建工具链文件（vite/wxt 配置与 satellite build 入口）不属于运行时层：
+ * 它们只产出 bundle，不参与产物依赖图，因此不参与 DAG 判定。
+ */
+const BUILD_TOOLING_RE = /(^|\/)((vite|wxt)(\.[a-z0-9-]+)*\.config|build(-[a-z0-9-]+)?)\.tsx?$/;
+
+/** `packages/<x>/...` 的仓库相对路径 → 层名；非层路径/构建工具返回 null。 */
 export function layerOfPath(rel: string): string | null {
+  const normalizedToolingPath = rel.replaceAll("\\", "/");
+  if (BUILD_TOOLING_RE.test(normalizedToolingPath)) return null;
   const segments = rel.replaceAll("\\", "/").split("/");
   if (segments[0] !== "packages") return null;
   const pkg = segments[1];

@@ -36,16 +36,7 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/capabilities/outpost/transport/types.ts",
     "packages/capabilities/outpost/transport/ws-server.ts",
   ],
-  "core -> capabilities": [
-    "packages/core/llm/auto-llm-prompt.test.ts",
-    "packages/core/llm/llm-messages.test.ts",
-    "packages/core/llm/llm-stack.test.ts",
-    "packages/core/llm/tool-loop-integrity.test.ts",
-    "packages/core/schemas/cross-package-schemas.test.ts",
-  ],
-  "features -> portal-sdk": [
-    "packages/features/companion/server/config.ts",
-  ],
+  "features -> portal-sdk": ["packages/features/companion/server/config.ts"],
   "features -> server": [
     "packages/features/calendar/domain/convert-task-event.ts",
     "packages/features/chat/habitat/routes/index.ts",
@@ -65,20 +56,7 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/features/workflow/domain/runner.ts",
     "packages/features/workflow/domain/workflow-tools.ts",
   ],
-  "portal -> core": [
-    "packages/portal/vite-config-cross-pkg.ts",
-  ],
-  "portal-sdk -> portal": [
-    "packages/portal-sdk/pomodoro-active.ts",
-  ],
-  "ui-features -> app-frame": [
-    "packages/ui-features/coding/build.ts",
-    "packages/ui-features/coding/vite.config.ts",
-    "packages/ui-features/companion/build.ts",
-    "packages/ui-features/companion/vite.config.ts",
-    "packages/ui-features/pomodoro/build-float.ts",
-    "packages/ui-features/pomodoro/vite.float.config.ts",
-  ],
+  "portal-sdk -> portal": ["packages/portal-sdk/pomodoro-active.ts"],
   "ui-features -> portal": [
     "packages/ui-features/coding/ui/spa/main.tsx",
     "packages/ui-features/companion/ui/spa/main.tsx",
