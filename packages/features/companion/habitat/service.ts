@@ -12,7 +12,7 @@ import type {
   CompanionMotionRenameInput,
   CompanionMotionReorderInput,
   CompanionMotionSetSlotInput,
-} from "../protocol/index.ts";
+} from "@freeanima/shared/rpc-contract/frames/companion.ts";
 import { buildClientCompanionConfig, listSyncAssets } from "../domain/client-config.ts";
 import { loadCompanionConfig, saveCompanionConfig } from "../domain/config.ts";
 import { migrateFromLocalDir } from "../domain/migrate.ts";
