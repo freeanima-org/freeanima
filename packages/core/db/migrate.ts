@@ -8,7 +8,7 @@ import {
   materializeEmbeddedMigrations,
 } from "./migrations-embedded.ts";
 
-/** migrations 目录：相对本模块 → `packages/habitat/core/migrations` */
+/** migrations 目录：相对本模块 → `packages/core/migrations` */
 export const DEFAULT_MIGRATIONS_FOLDER = join(import.meta.dir, "../migrations");
 
 /** 旁路目录须真有 migration.sql，避免空 migrations/ 抢路导致 migrate 空跑 */
@@ -24,11 +24,11 @@ function hasMigrationSqlFiles(dir: string): boolean {
   return false;
 }
 
-/** 旁路 migrations/（含 SQL）；否则 Monorepo `packages/habitat/core/migrations`；standalone 优先走嵌入物化 */
+/** 旁路 migrations/（含 SQL）；否则 Monorepo `packages/core/migrations`；standalone 优先走嵌入物化 */
 export function resolveMigrationsFolder(repoRoot = getRepoRoot()): string {
   const repoMigrations = join(repoRoot, "migrations");
   if (hasMigrationSqlFiles(repoMigrations)) return repoMigrations;
-  const monorepo = join(repoRoot, "packages/habitat/core", "migrations");
+  const monorepo = join(repoRoot, "packages/core", "migrations");
   if (hasMigrationSqlFiles(monorepo) || existsSync(monorepo)) return monorepo;
   return DEFAULT_MIGRATIONS_FOLDER;
 }

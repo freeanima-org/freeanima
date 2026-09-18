@@ -152,7 +152,7 @@ function buildStartupMessage(
       return [
         `数据库 "${dbName}" 缺少必需扩展（pg_trgm / vector）。`,
         "下一步：",
-        `  1. 以超级用户执行：sudo -u postgres psql -d ${dbName} -f packages/habitat/core/scripts/ensure-pg-extensions.sql`,
+        `  1. 以超级用户执行：sudo -u postgres psql -d ${dbName} -f packages/core/scripts/ensure-pg-extensions.sql`,
         "  2. 详见 docs/ops/database.md",
       ].join("\n");
     default: {

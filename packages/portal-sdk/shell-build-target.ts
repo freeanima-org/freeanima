@@ -25,7 +25,7 @@ export function parseShellBuildTarget(raw: string | undefined | null): ShellBuil
   );
 }
 
-/** Vite outDir 目录名（相对 `packages/frontend/portal/app/web/`）。 */
+/** Vite outDir 目录名（相对 `packages/portal/app/web/`）。 */
 export function shellWebDistDirName(target: ShellBuildTarget): string {
   switch (target) {
     case "web":

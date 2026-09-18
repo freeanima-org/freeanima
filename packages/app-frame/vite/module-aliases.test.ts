@@ -30,8 +30,8 @@ describe("tsconfigPathEntries（与 tsconfig.base.json 同源）", () => {
       expect(key.startsWith("@freeanima/")).toBe(true);
       for (const target of targets) {
         expect(target.startsWith("./packages/")).toBe(true);
-        // 已退役目录（packages/frontend/* 等）必须不再出现
-        expect(target.startsWith("./packages/frontend/")).toBe(false);
+        // 已退役目录（旧前端树）必须不再出现
+        expect(target.startsWith("./packages/frontend/")).toBe(false); // check-package-paths:allow 退役前缀断言
         expect(existsSync(join(REPO_ROOT, target.replace(/\/\*$/, "")))).toBe(true);
       }
     }

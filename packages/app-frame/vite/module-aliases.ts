@@ -13,9 +13,8 @@ export const REPO_ROOT = resolve(MODULE_ALIASES_DIR, "../../..");
 /**
  * `@freeanima/*` → 仓库相对路径，**同源**于 `tsconfig.base.json` 的 `paths`。
  *
- * 直接读文件而不是手抄一份：此前这里手抄的映射残留了 `./packages/frontend/*`
- * 之类的退役路径并与 tsconfig 漂移。一致性（含「目标目录存在」）由
- * `module-aliases.test.ts` 断言。
+ * 直接读文件而不是手抄一份：此前这里手抄的映射残留了退役目录（旧前端树）
+ * 并与 tsconfig 漂移。一致性（含「目标目录存在」）由 `module-aliases.test.ts` 断言。
  */
 export function tsconfigPathEntries(repoRoot: string = REPO_ROOT): Record<string, string[]> {
   const raw = readFileSync(join(repoRoot, "tsconfig.base.json"), "utf8");

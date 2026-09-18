@@ -10,7 +10,7 @@ describe("resolveMigrationsFolder", () => {
     const root = createTempDir("freeanima-migrations-root-");
     try {
       const published = join(root, "migrations");
-      const monorepo = join(root, "packages/habitat/core", "migrations");
+      const monorepo = join(root, "packages/core", "migrations");
       mkdirSync(join(published, "20260101000000_pub"), { recursive: true });
       writeFileSync(join(published, "20260101000000_pub", "migration.sql"), "SELECT 1;\n");
       mkdirSync(join(monorepo, "20260101000000_core"), { recursive: true });
@@ -25,7 +25,7 @@ describe("resolveMigrationsFolder", () => {
     const root = createTempDir("freeanima-migrations-root-");
     try {
       const published = join(root, "migrations");
-      const monorepo = join(root, "packages/habitat/core", "migrations");
+      const monorepo = join(root, "packages/core", "migrations");
       mkdirSync(published, { recursive: true });
       mkdirSync(join(monorepo, "20260101000000_core"), { recursive: true });
       writeFileSync(join(monorepo, "20260101000000_core", "migration.sql"), "SELECT 1;\n");
@@ -35,10 +35,10 @@ describe("resolveMigrationsFolder", () => {
     }
   });
 
-  it("falls back to host/core/migrations in monorepo", () => {
+  it("falls back to packages/core/migrations in monorepo", () => {
     const root = createTempDir("freeanima-migrations-root-");
     try {
-      const monorepo = join(root, "packages/habitat/core", "migrations");
+      const monorepo = join(root, "packages/core", "migrations");
       mkdirSync(monorepo, { recursive: true });
       expect(resolveMigrationsFolder(root)).toBe(monorepo);
     } finally {

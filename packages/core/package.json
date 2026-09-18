@@ -10,6 +10,7 @@
     "@freeanima/kernel": "workspace:*",
     "@freeanima/shared": "workspace:*",
     "@node-rs/jieba": "^2.0.2",
+    "acme-client": "^5.4.0",
     "cordis": "4.0.0-rc.10",
     "drizzle-kit": "^1.0.0-rc.5-ab785fc",
     "drizzle-orm": "^1.0.0-rc.5-169397b",

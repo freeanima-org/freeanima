@@ -19,19 +19,13 @@ const SKIP_DIR_NAMES = new Set([".git", ".vite-app-web", "dist", "node_modules"]
 
 /** 影响 Web 静态产物的源码目录（相对 monorepo 根） */
 export const WEB_SOURCE_WATCH_DIRS = [
-  "packages/frontend/portal/app/web",
-  "packages/frontend/client/portal-sdk",
-  "packages/frontend/client/app-frame",
-  "packages/frontend/ui-kit",
+  "packages/portal/app/web",
+  "packages/portal-sdk",
+  "packages/app-frame",
+  "packages/ui-kit",
+  "packages/ui-features",
   "packages/shared",
   "packages/shared/rpc-contract",
-  "packages/frontend/features/habitat/ui/habitat",
-  "packages/frontend/features/chat/ui/spa",
-  "packages/frontend/features/task/ui/spa",
-  "packages/frontend/features/vault/ui/spa",
-  "packages/frontend/features/companion/ui/spa",
-  "messages/en.json",
-  "messages/zh-cn.json",
 ] as const;
 
 export type WebDistBuildAssessment = {

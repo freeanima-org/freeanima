@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@freeanima/shared": "workspace:*",
+    "@tauri-apps/api": "^2.11.1",
     "react": "19.2.8",
     "zod": "^4.4.3"
   }
