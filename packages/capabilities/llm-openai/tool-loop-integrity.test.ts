@@ -8,7 +8,7 @@ import {
   syntheticToolContent,
   storedMessagesToInvokeInput,
   normalizeAssistantTurn,
-} from "./index.ts";
+} from "@freeanima/core/llm/index.ts";
 import { messagesForApi } from "@freeanima/capabilities/llm-openai/messages.ts";
 import type { StoredMessage } from "@freeanima/core/db/domain";
 describe("tool-loop-integrity", () => {

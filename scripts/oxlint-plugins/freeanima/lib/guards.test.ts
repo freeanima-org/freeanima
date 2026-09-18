@@ -118,6 +118,31 @@ describe("layer-deps", () => {
     );
   });
 
+  test("构建工具链文件不参与 DAG 判定", () => {
+    expect(
+      checkLayerDeps(
+        "packages/ui-features/coding/vite.config.ts",
+        "@freeanima/app-frame/vite/satellite-vite.ts",
+      ),
+    ).toBeNull();
+    expect(
+      checkLayerDeps(
+        "packages/ui-features/companion/build.ts",
+        "@freeanima/app-frame/vite/satellite-vite.ts",
+      ),
+    ).toBeNull();
+    expect(
+      checkLayerDeps("packages/app-frame/vite.config.ts", "@freeanima/portal/app/web/x.ts"),
+    ).toBeNull();
+    // 同目录的非构建文件仍受约束
+    expect(
+      checkLayerDeps(
+        "packages/ui-features/coding/domain/x.ts",
+        "@freeanima/app-frame/vite/run-build.ts",
+      ),
+    ).toMatch(/ui-features 不得依赖 app-frame/);
+  });
+
   test("非 packages 路径不参与判定", () => {
     expect(checkLayerDeps("scripts/foo.ts", "@freeanima/core/util")).toBeNull();
     expect(checkLayerDeps("tests/integration/x.test.ts", "@freeanima/core/util")).toBeNull();

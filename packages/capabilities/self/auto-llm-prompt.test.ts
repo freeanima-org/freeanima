@@ -7,7 +7,7 @@ import {
   AUTO_LLM_PROTOCOL_BODY,
   composeAutoLlmPrompt,
   formatCronAutoLlmTaskSpec,
-} from "./auto-llm-prompt.ts";
+} from "@freeanima/core/llm/auto-llm-prompt.ts";
 
 describe("composeAutoLlmPrompt", () => {
   it("四层：system 含 protocol+task_spec；skills/data 分 user；无对话记忆策略", () => {
