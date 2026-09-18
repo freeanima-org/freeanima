@@ -1,3 +1,4 @@
+import { federationRoomHandlers } from "./room-handlers-port.ts";
 import {
   federationHandshakeAckSchema,
   federationHandshakeHelloSchema,
@@ -150,29 +151,17 @@ export function attachFederationHubWebSocket(
           await import("./satellite-rpc.ts");
         const requestId = extractRequestId(frame.payload);
         try {
-          const {
-            hubHandleRoomAppend,
-            hubHandleRoomCatchUp,
-            hubHandleRoomSnapshot,
-            hubHandleRoomCreate,
-          } = await import("@freeanima/features/room/domain/room-federation-handlers.ts");
+          const room = federationRoomHandlers();
+          if (!room) throw new Error("federation room handlers not registered");
           let result: unknown;
           if (frame.method === "room.federation.append") {
-            result = await hubHandleRoomAppend(frame.payload);
+            result = await room.hubHandleRoomAppend(frame.payload);
           } else if (frame.method === "room.federation.catch_up") {
-            result = await hubHandleRoomCatchUp(frame.payload);
+            result = await room.hubHandleRoomCatchUp(frame.payload);
           } else if (frame.method === "room.federation.snapshot") {
-            result = await hubHandleRoomSnapshot(frame.payload);
+            result = await room.hubHandleRoomSnapshot(frame.payload);
           } else {
-            const { habitatCtx } =
-              await import("@freeanima/features/habitat/habitat/habitat-api/handlers/runtime.ts");
-            const conversation = habitatCtx().conversation;
-            result = await hubHandleRoomCreate(
-              {
-                newConversation: (...args) => conversation.newConversation(...args),
-              },
-              frame.payload,
-            );
+            result = await room.hubHandleRoomCreate(frame.payload);
           }
           if (requestId) {
             ws.send(encodeFederationResult(frame.method, requestId, result));

@@ -1,4 +1,5 @@
 import type { FederationHubConfig } from "@freeanima/core/config/schemas/federation.ts";
+import { federationRoomHandlers } from "./room-handlers-port.ts";
 import {
   federationHandshakeAckSchema,
   federationPingInputSchema,
@@ -293,16 +294,12 @@ export class FederationSatelliteClient {
       return;
     }
     if (!this.hubTrusted) return;
-    void import("@freeanima/features/room/domain/room-federation-handlers.ts").then((m) =>
-      m.satelliteHandleFederationFrame(frame.method, frame.payload),
-    );
+    void federationRoomHandlers()?.satelliteHandleFederationFrame(frame.method, frame.payload);
   };
 
   private async afterConnectedCatchUp(): Promise<void> {
     try {
       const { listRooms, getRoomFederationState } = await import("@freeanima/core/db/pg/room");
-      const { applyFederatedMessageReplica } =
-        await import("@freeanima/features/room/domain/room-federation.ts");
       const { rows } = await listRooms({ limit: 200 });
       for (const row of rows) {
         if (row.federation_mode !== "federated") continue;
@@ -324,7 +321,7 @@ export class FederationSatelliteClient {
           from_seq: state?.last_synced_seq ?? 0,
         });
         for (const message of result.messages) {
-          await applyFederatedMessageReplica({ message });
+          await federationRoomHandlers()?.applyFederatedMessageReplica({ message });
         }
       }
     } catch {
