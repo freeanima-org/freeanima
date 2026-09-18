@@ -85,17 +85,17 @@ DDL 仅 `packages/core/db`；存储形状的纯 Zod 经 **codegen + package expo
 
 包级登记见 `scripts/check-package-deps.ts` 的 `REVERSE_EDGE_DEBT`，文件级见
 `scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`。
-当前 **7 个层对 / 34 文件**（重构起点 178 文件）。
+当前 **7 个层对 / 16 文件**（重构起点 178 文件）。
 
 **构建工具链车道：** `vite*.config.ts` / `build*.ts`（satellite 构建入口）不参与 DAG——
 它们只产出 bundle，不进入运行时依赖图。
 
-| 反向边                     | 文件数 | 收尾方向                                                                                             |
-| -------------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
-| `features -> server`       | 15     | habitat 运维面的 HTTP/TLS/dispatch；AutoLlm 用例下沉 engine；tls 下沉 core                           |
-| `capabilities -> features` | 7      | vault item store 归能力层；room/federation handler 端口化；media→objectStore / subprocess→vault 端口 |
-| `capabilities -> server`   | 5      | outpost transport 的 app-runtime / feature registry 依赖改 ctx                                       |
-| `ui-features -> portal`    | 3      | 卫星 bundle 的 tauri bootstrap 动态 import（跨 bundle，需 portal 注入壳桥）                          |
-| `app-frame -> core`        | 2      | LLM 连接 schema / 预设 / 语音目录等契约下沉 shared                                                   |
-| `features -> portal-sdk`   | 1      | companion 服务端的 shell 配置读盘器归 server 或 shared                                               |
-| `portal-sdk -> portal`     | 1      | pomodoro-active 的 mobile bootstrap 动态 import                                                      |
+| 反向边                     | 文件数 | 收尾方向                                                                               |
+| -------------------------- | ------ | -------------------------------------------------------------------------------------- |
+| `features -> server`       | 4      | habitat 运维面（HTTP/TLS/dispatch/auth）与 chat 的 display/status 用例                 |
+| `capabilities -> server`   | 3      | outpost transport 的 AppRuntime 类型、bun-route 的 REST handler、ws-server 的 dispatch |
+| `ui-features -> portal`    | 3      | 卫星 bundle 的 tauri bootstrap（跨 bundle；需 portal-sdk 拥有壳桥）                    |
+| `app-frame -> core`        | 2      | LLM 连接 schema / 预设 / 语音目录契约待下沉 shared                                     |
+| `capabilities -> features` | 2      | federation 依赖 room 的联邦 handler（待端口化或随能力归位）                            |
+| `features -> portal-sdk`   | 1      | companion 服务端的 shell 配置读盘器待归 server/shared                                  |
+| `portal-sdk -> portal`     | 1      | pomodoro-active 的 mobile bootstrap 动态 import                                        |
