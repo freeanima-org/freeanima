@@ -7,7 +7,7 @@ import {
   unloadToolSetsFromConversation,
 } from "./conversation-tools.ts";
 import { mountToolPolicyService } from "./policy-service.ts";
-import { ensureRootContext } from "@freeanima/kernel";
+import { createTestContext, type TestContext } from "@freeanima/kernel/testing";
 import { filterHabitatLocalHandsForCoding } from "./coding-local-hands.ts";
 
 const patchConversationMetaMock = mock(async () => {});
@@ -132,14 +132,19 @@ describe("unloadToolSetsFromConversation", () => {
 });
 
 describe("loadToolSetsIntoConversation coding policy", () => {
-  afterEach(() => {
-    mountToolPolicyService(ensureRootContext(), (names) => names);
+  let tc: TestContext;
+
+  beforeEach(async () => {
+    tc = await createTestContext();
+  });
+
+  afterEach(async () => {
+    await tc.dispose();
+    mountToolPolicyService(tc.ctx, (names) => names);
   });
 
   it("denies habitat file/shell for coding_agent", async () => {
-    mountToolPolicyService(ensureRootContext(), (names, meta) =>
-      filterHabitatLocalHandsForCoding(names, meta),
-    );
+    mountToolPolicyService(tc.ctx, (names, meta) => filterHabitatLocalHandsForCoding(names, meta));
     const meta = {
       model: "m",
       cached_toolsets: ["toolset"],
@@ -162,9 +167,7 @@ describe("loadToolSetsIntoConversation coding policy", () => {
   });
 
   it("still loads file/shell for digital_human chat", async () => {
-    mountToolPolicyService(ensureRootContext(), (names, meta) =>
-      filterHabitatLocalHandsForCoding(names, meta),
-    );
+    mountToolPolicyService(tc.ctx, (names, meta) => filterHabitatLocalHandsForCoding(names, meta));
     const meta = {
       model: "m",
       cached_toolsets: ["toolset"],
