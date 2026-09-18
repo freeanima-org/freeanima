@@ -26,8 +26,9 @@ export type FeatureContribution = {
   rpc?: Record<string, FeatureRpcHandler>;
 };
 
-/** Minimal view of the `features` service that feature plugins need. */
+/** Minimal view of the `features` service that feature plugins / dispatch need. */
 export type FeatureRegistryPort = {
   provide(contribution: FeatureContribution): void;
   revoke(id: string): void;
+  getHandler(method: string): FeatureRpcHandler | undefined;
 };

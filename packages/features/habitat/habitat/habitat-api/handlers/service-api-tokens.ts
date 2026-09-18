@@ -11,7 +11,7 @@ import {
   FULL_TOKEN_AUTHORIZATION,
   parseServiceApiTokenAuthorization,
 } from "@freeanima/shared/service-api-auth";
-import type { FeatureRpcHandler } from "@freeanima/server/features";
+import type { FeatureRpcHandler } from "@freeanima/core/features";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 

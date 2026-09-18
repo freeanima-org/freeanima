@@ -2,7 +2,7 @@ import { synthesizeVoiceFromScene } from "@freeanima/capabilities/llm-openai/voi
 import { getResolvedSpeechConfig } from "@freeanima/core/config/tts-helpers";
 import { getActiveRuntimeConfig } from "@freeanima/core/config";
 import { assertNotShuttingDown } from "@freeanima/capabilities/ports";
-import type { FeatureRpcHandler } from "@freeanima/server/features";
+import type { FeatureRpcHandler } from "@freeanima/core/features";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { ApiHandlerError } from "./habitat-api/handlers/errors.ts";

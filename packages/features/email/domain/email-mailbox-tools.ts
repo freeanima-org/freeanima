@@ -281,7 +281,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           const messageId = parseMessageId(args.message_id);
           if (messageId == null) return toolError("message_id is required");
           try {
-            const { markAsFlagged } = await import("@freeanima/capabilities/connectors/email");
+            const { markAsFlagged } = await import("@freeanima/features/email/habitat/connectors");
             return toolResult(await markAsFlagged(messageId));
           } catch (err) {
             return toolError(errMsg(err));
@@ -300,7 +300,8 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           const messageId = parseMessageId(args.message_id);
           if (messageId == null) return toolError("message_id is required");
           try {
-            const { markAsUnflagged } = await import("@freeanima/capabilities/connectors/email");
+            const { markAsUnflagged } =
+              await import("@freeanima/features/email/habitat/connectors");
             return toolResult(await markAsUnflagged(messageId));
           } catch (err) {
             return toolError(errMsg(err));
@@ -324,7 +325,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           const targetMailbox = coerceString(args.target_mailbox ?? "").trim();
           if (!targetMailbox) return toolError("target_mailbox is required");
           try {
-            const { moveMessage } = await import("@freeanima/capabilities/connectors/email");
+            const { moveMessage } = await import("@freeanima/features/email/habitat/connectors");
             return toolResult(await moveMessage(messageId, targetMailbox));
           } catch (err) {
             return toolError(errMsg(err));
@@ -436,7 +437,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
               ? args.subject_id
               : undefined;
           try {
-            const { saveDraft } = await import("@freeanima/capabilities/connectors/email");
+            const { saveDraft } = await import("@freeanima/features/email/habitat/connectors");
             return toolResult(
               await saveDraft(
                 omitUndefined({
@@ -467,7 +468,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           const messageId = parseMessageId(args.message_id);
           if (messageId == null) return toolError("message_id is required");
           try {
-            const { sendDraft } = await import("@freeanima/capabilities/connectors/email");
+            const { sendDraft } = await import("@freeanima/features/email/habitat/connectors");
             return toolResult(await sendDraft(messageId));
           } catch (err) {
             return toolError(errMsg(err));
@@ -489,7 +490,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           if (accountId == null) return toolError("account_id is required");
           try {
             const { listMailboxesForAccount } =
-              await import("@freeanima/capabilities/connectors/email");
+              await import("@freeanima/features/email/habitat/connectors");
             const mailboxes = await listMailboxesForAccount(accountId);
             return toolResult({ mailboxes, count: mailboxes.length });
           } catch (err) {
@@ -514,7 +515,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           const path = coerceString(args.path ?? "").trim();
           if (!path) return toolError("path is required");
           try {
-            const { createMailbox } = await import("@freeanima/capabilities/connectors/email");
+            const { createMailbox } = await import("@freeanima/features/email/habitat/connectors");
             return toolResult(await createMailbox(accountId, path));
           } catch (err) {
             return toolError(errMsg(err));
@@ -540,7 +541,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           const to = coerceString(args.to ?? "").trim();
           if (!from || !to) return toolError("from and to are required");
           try {
-            const { renameMailbox } = await import("@freeanima/capabilities/connectors/email");
+            const { renameMailbox } = await import("@freeanima/features/email/habitat/connectors");
             return toolResult(await renameMailbox(accountId, from, to));
           } catch (err) {
             return toolError(errMsg(err));
@@ -564,7 +565,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
           const path = coerceString(args.path ?? "").trim();
           if (!path) return toolError("path is required");
           try {
-            const { deleteMailbox } = await import("@freeanima/capabilities/connectors/email");
+            const { deleteMailbox } = await import("@freeanima/features/email/habitat/connectors");
             return toolResult(await deleteMailbox(accountId, path));
           } catch (err) {
             return toolError(errMsg(err));

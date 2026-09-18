@@ -1,6 +1,6 @@
 import { registerEmailSyncPort } from "@freeanima/features/email/domain";
 import { mountNotificationService } from "@freeanima/capabilities/tools/notification";
-import { emailSyncPortImpl } from "@freeanima/capabilities/connectors/email";
+import { emailSyncPortImpl } from "@freeanima/features/email/habitat/connectors";
 
 import { createNotificationPort } from "./service/notification-helpers.ts";
 import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
