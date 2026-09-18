@@ -84,9 +84,13 @@ function toModelInfo(model: OpenAI.Models.Model): ModelInfo {
   };
 }
 
-export async function fetchModelCatalog(client: OpenAI): Promise<ModelInfo[]> {
+export async function fetchModelCatalog(
+  client: OpenAI,
+  signal?: AbortSignal,
+): Promise<ModelInfo[]> {
   const models: ModelInfo[] = [];
-  for await (const model of client.models.list()) {
+  const stream = signal ? client.models.list({ signal }) : client.models.list();
+  for await (const model of stream) {
     if (!model.id) continue;
     models.push(toModelInfo(model));
   }
