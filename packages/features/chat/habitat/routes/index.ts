@@ -17,7 +17,7 @@ import {
   asRouteDeps,
   asRouteCtx,
 } from "@freeanima/shared/habitat-contract/route.ts";
-import { type RemoteToolsRequestContext } from "../../protocol/index.ts";
+import { type RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { loadLlmDebugCache } from "../llm-debug-cache.ts";
 import { chatMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/chat.ts";
 import { handleChatAttachmentUpload } from "../binary.ts";
