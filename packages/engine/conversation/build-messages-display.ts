@@ -1,6 +1,9 @@
 import type { MessageAttachmentMeta, StoredMessage } from "@freeanima/core/db/domain";
 import { TOOL_CALL_TITLE_KEY } from "@freeanima/core/tool";
-import type { DisplayItem, DisplayToolBlockItem } from "@freeanima/server/schemas/display";
+import type {
+  DisplayItem,
+  DisplayToolBlockItem,
+} from "@freeanima/capabilities/ports/schemas/display.ts";
 import type { DisplayAttachment } from "@freeanima/shared/rpc-contract/frames/display";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { omitUndefined } from "@freeanima/core/util";

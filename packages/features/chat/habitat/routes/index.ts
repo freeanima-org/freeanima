@@ -43,7 +43,7 @@ import {
   putConversationShare,
   ttlSecondsFor,
 } from "../../domain/conversation-share.ts";
-import { buildMessagesDisplay } from "@freeanima/server/service/build-messages-display.ts";
+import { buildMessagesDisplay } from "@freeanima/engine/conversation/build-messages-display.ts";
 
 sweepExpiredChatAttachmentTemps();
 
@@ -68,14 +68,6 @@ function readConfiguredPublicOrigin(deps: ChatHubDeps): string | undefined {
 
 function resolveUserSubjectId(deps: ChatHubDeps): number {
   return resolveNotificationRecipients(deps.runtime.runtimeDeps().engine.config.data).user.id;
-}
-
-async function loadServiceSessions() {
-  return import("@freeanima/server/service/service-conversations");
-}
-
-async function loadServiceStatus() {
-  return import("@freeanima/server/service/service-status");
 }
 
 export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
@@ -122,16 +114,12 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
   },
   "conversation.list": async (deps, input, _ctx) => {
     const platform = input.platform?.trim() || undefined;
-    const serviceSessions = await loadServiceSessions();
-    const user_subject_id = resolveUserSubjectId(depsOf(deps));
-    const result = await serviceSessions.listConversations(
-      depsOf(deps).runtime.runtimeDeps(),
+    const result = await depsOf(deps).runtime.listConversations(
       platform ?? null,
       omitUndefined({
         includeArchived: input.include_archived,
         offset: input.offset,
         limit: input.limit,
-        user_subject_id,
         scenario: input.scenario,
       }),
     );
@@ -270,10 +258,9 @@ export const chatHabitatRoutes = bindHabitatRouteHandlers(chatMethodDefs, {
     }
     return { ok: true as const };
   },
-  "conversation.commands": async (_deps, input, _ctx) => {
+  "conversation.commands": async (deps, input, _ctx) => {
     const platform = input.platform?.trim() || undefined;
-    const serviceStatus = await loadServiceStatus();
-    return serviceStatus.listCommands(
+    return depsOf(deps).runtime.listCommands(
       omitUndefined({
         platform: input.all ? undefined : platform,
         all: input.all,

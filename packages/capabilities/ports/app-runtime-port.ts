@@ -9,13 +9,17 @@ import type {
 
 export type { MessagingPort } from "./messaging-port.ts";
 
-/** Slash / platform 命令元数据 */
+/**
+ * Slash / platform 命令元数据。
+ *
+ * 与 RPC 契约 `conversationCommandItemSchema` 对齐（scope/platforms 必填），
+ * 避免路由侧再收窄一次。
+ */
 export type ServiceCommandInfo = {
   name: string;
   description: string;
-  scope?: string;
-  hidden?: boolean;
-  platforms?: string[] | null;
+  scope: string;
+  platforms: string[] | null;
   subcommands?: { name: string; description: string }[];
 };
 
@@ -97,6 +101,7 @@ export type AppRuntimeConversationPort = {
     opts?: {
       offset?: number;
       limit?: number;
+      includeArchived?: boolean;
       scenario?: "digital_human" | "coding_agent" | "room_inner";
     },
   ): Promise<{ conversations: ConversationSummary[]; total: number }>;
