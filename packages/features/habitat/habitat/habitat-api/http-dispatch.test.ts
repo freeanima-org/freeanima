@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
 import {
   applyHttpAuth,
   handleHabitatCorsPreflight,
@@ -6,6 +6,22 @@ import {
   trySapWebSocketUpgrade,
 } from "./http-dispatch.ts";
 import { createServiceAuthVerifier } from "./service-auth.ts";
+import { registerIsOptionalAuthRequest } from "@freeanima/capabilities/ports/habitat-dispatch.ts";
+
+/**
+ * 这些用例验证 applyHttpAuth 的判定顺序；「哪些路径 auth optional」的路径表
+ * 由组合根绑定（其自身测试在 server/habitat），此处注入最小 stub。
+ */
+registerIsOptionalAuthRequest((req) => {
+  const url = new URL(req.url);
+  return req.method === "GET" && url.pathname.startsWith("/rpc/v1/health/probe");
+});
+const PLAIN_HTTP_DISPATCH_TEST = true;
+void PLAIN_HTTP_DISPATCH_TEST;
+
+afterAll(() => {
+  registerIsOptionalAuthRequest(() => false);
+});
 
 describe("http-dispatch", () => {
   test("isHabitatRpcPath matches REST subpaths", () => {

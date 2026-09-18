@@ -1,4 +1,7 @@
-import { buildMessagesDisplay, paginateMessagesDisplay } from "./build-messages-display.ts";
+import {
+  buildMessagesDisplay,
+  paginateMessagesDisplay,
+} from "@freeanima/engine/conversation/build-messages-display.ts";
 import { describe, expect, it } from "bun:test";
 
 import type { StoredMessage } from "@freeanima/core/db/domain";

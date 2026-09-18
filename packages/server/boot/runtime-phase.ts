@@ -5,6 +5,7 @@ import { listAllOutpostInstances } from "@freeanima/core/db/pg/outpost";
 import { bindHabitatPorts } from "@freeanima/capabilities/ports/bind-habitat-ports.ts";
 import { habitatDispatch } from "../habitat/dispatch.ts";
 import { handleHttpHabitatRestRequestWithAuth } from "../habitat/http-rpc.ts";
+import { isOptionalAuthHabitatHttpRequest } from "../habitat/http-rest-auth.ts";
 
 import { createAppRuntime, type AppRuntime } from "../service/app-runtime.ts";
 import { bindServicePorts } from "../bind-api.ts";
@@ -81,6 +82,7 @@ export async function bootRuntimePhase(
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 同上
         deps as Parameters<typeof handleHttpHabitatRestRequestWithAuth>[1],
       ),
+    isOptionalAuthRequest: isOptionalAuthHabitatHttpRequest,
   });
 
   registerServiceStores(runtime.fullDeps(), engine.config);

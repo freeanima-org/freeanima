@@ -6,7 +6,7 @@ import {
 } from "./web-static.ts";
 import { createMcpBunHandler, isMcpPath } from "@freeanima/capabilities/mcp-server";
 import { HABITAT_BASE_PATH } from "@freeanima/capabilities/ports/constants";
-import type { HabitatTlsBunOptions } from "@freeanima/server/tls/resolve-habitat-tls";
+import type { HabitatTlsBunOptions } from "@freeanima/core/tls/bun-options.ts";
 import { bindHabitatApiLogging } from "./api-logging.ts";
 import { bindHabitatRuntimeContext, habitatCtx } from "./handlers/runtime.ts";
 import { applyCorsToResponse } from "./cors.ts";

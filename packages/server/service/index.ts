@@ -1,4 +1,4 @@
-export * from "./build-messages-display.ts";
+export * from "@freeanima/engine/conversation/build-messages-display.ts";
 export { ConversationManager } from "./conversation-manager.ts";
 export * from "./app-runtime.ts";
 export type { RuntimeDeps, FullRuntimeDeps } from "./runtime-deps.ts";

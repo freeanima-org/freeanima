@@ -9,12 +9,6 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
   "features -> portal-sdk": [
     "packages/features/companion/server/config.ts",
   ],
-  "features -> server": [
-    "packages/features/chat/habitat/routes/index.ts",
-    "packages/features/habitat/habitat/habitat-api/server.ts",
-    "packages/features/habitat/habitat/habitat-api/service-auth.ts",
-    "packages/features/habitat/habitat/habitat-api/tls-ca-auth.test.ts",
-  ],
   "portal-sdk -> portal": [
     "packages/portal-sdk/pomodoro-active.ts",
   ],

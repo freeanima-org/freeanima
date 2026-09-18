@@ -10,7 +10,7 @@ import type { MessagesDisplay } from "@freeanima/server/schemas/display";
 import type { ConversationSummary } from "@freeanima/server/schemas/snapshot";
 import { asRecord } from "@freeanima/shared/util";
 import type { RuntimeDeps } from "./runtime-deps.ts";
-import { buildMessagesDisplay } from "./build-messages-display.ts";
+import { buildMessagesDisplay } from "@freeanima/engine/conversation/build-messages-display.ts";
 import { statsReport, billedUsageFromStats, computeStats } from "./conversation-stats.ts";
 import { computeConversationContextUsage } from "./runtime-context-stats.ts";
 import { sumConversationUsage } from "@freeanima/core/db/pg/conversation";

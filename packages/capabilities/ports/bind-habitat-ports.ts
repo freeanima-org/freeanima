@@ -1,4 +1,8 @@
-import { registerHabitatDispatch, registerHabitatRestHandler } from "./habitat-dispatch.ts";
+import {
+  registerHabitatDispatch,
+  registerHabitatRestHandler,
+  registerIsOptionalAuthRequest,
+} from "./habitat-dispatch.ts";
 
 /**
  * 组合根在 boot 时把 habitat dispatch / REST 入口绑到端口
@@ -7,7 +11,9 @@ import { registerHabitatDispatch, registerHabitatRestHandler } from "./habitat-d
 export function bindHabitatPorts(input: {
   dispatch: Parameters<typeof registerHabitatDispatch>[0];
   restHandler: Parameters<typeof registerHabitatRestHandler>[0];
+  isOptionalAuthRequest: Parameters<typeof registerIsOptionalAuthRequest>[0];
 }): void {
   registerHabitatDispatch(input.dispatch);
   registerHabitatRestHandler(input.restHandler);
+  registerIsOptionalAuthRequest(input.isOptionalAuthRequest);
 }
