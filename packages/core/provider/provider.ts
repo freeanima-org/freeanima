@@ -2,18 +2,9 @@ import type { BackendContext, BackendRegistry, LlmBackend } from "./backend.ts";
 import { clampCallParams, mergeCallParams, type LlmCallParams, type ModelInfo } from "./model.ts";
 import { isProviderError, type ProviderError } from "./errors.ts";
 
-export type ProviderSpec = {
-  id: string;
-  /**
-   * Default Format id (`LlmBackend.id`).
-   * Single-format connections use this always; gateway presets use it for
-   * catalog/listModels and as fallback when `resolveFormat` is absent.
-   */
-  backendId: string;
-  context: BackendContext;
-  /** Gateway presets: choose Format by model id */
-  resolveFormat?: (model: string) => string;
-};
+/** Provider 规格契约 SSOT：@freeanima/shared/llm-config/provider-spec.ts */
+export type { ProviderSpec } from "@freeanima/shared/llm-config/provider-spec.ts";
+import type { ProviderSpec } from "@freeanima/shared/llm-config/provider-spec.ts";
 
 export type ProviderHealth = {
   healthy: boolean;
