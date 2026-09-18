@@ -6,10 +6,6 @@
  * `scripts/check-layer-deps.ts` 共用本表）。
  */
 export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = {
-  "app-frame -> core": [
-    "packages/app-frame/spa/settings/habitat-config/llm-settings-draft.ts",
-    "packages/app-frame/spa/settings/habitat-config/llm-settings-forms.tsx",
-  ],
   "capabilities -> features": [
     "packages/capabilities/federation/hub-ws-server.ts",
     "packages/capabilities/federation/satellite-client.ts",
@@ -19,14 +15,18 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/capabilities/outpost/transport/types.ts",
     "packages/capabilities/outpost/transport/ws-server.ts",
   ],
-  "features -> portal-sdk": ["packages/features/companion/server/config.ts"],
+  "features -> portal-sdk": [
+    "packages/features/companion/server/config.ts",
+  ],
   "features -> server": [
     "packages/features/chat/habitat/routes/index.ts",
     "packages/features/habitat/habitat/habitat-api/server.ts",
     "packages/features/habitat/habitat/habitat-api/service-auth.ts",
     "packages/features/habitat/habitat/habitat-api/tls-ca-auth.test.ts",
   ],
-  "portal-sdk -> portal": ["packages/portal-sdk/pomodoro-active.ts"],
+  "portal-sdk -> portal": [
+    "packages/portal-sdk/pomodoro-active.ts",
+  ],
   "ui-features -> portal": [
     "packages/ui-features/coding/ui/spa/main.tsx",
     "packages/ui-features/companion/ui/spa/main.tsx",
