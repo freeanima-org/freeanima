@@ -23,7 +23,7 @@ import {
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import { isHabitatMethod } from "@freeanima/shared/habitat-contract";
 import { getFeatureRpcHandler } from "@freeanima/core/features/registry.ts";
-import { habitatDispatch } from "@freeanima/server/habitat/dispatch.ts";
+import { habitatDispatchPort } from "@freeanima/capabilities/ports/habitat-dispatch.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;
 const SATELLITE_REQUEST_TIMEOUT_MS = 30_000;
@@ -71,8 +71,10 @@ export function createRemoteToolsServerHandlers(
       if (isHabitatMethod(method)) {
         const featureHandler = getFeatureRpcHandler(method);
         if (featureHandler) {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- habitatDispatch 输出与 RpcRouterOutputs 对齐边界
-          return habitatDispatch(deps, method, payload, ctx) as Promise<
+          const dispatch = habitatDispatchPort();
+          if (!dispatch) throw new Error("habitat dispatch not registered");
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dispatch 输出与 RpcRouterOutputs 对齐边界
+          return dispatch(deps, method, payload, ctx) as Promise<
             import("@freeanima/shared/rpc-contract").RpcRouterOutputs[typeof method]
           >;
         }

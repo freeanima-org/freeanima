@@ -2,6 +2,10 @@ import { initCronModule } from "@freeanima/capabilities/connectors/cron";
 import { invalidateSelfLayerPromptCache, loadSelfLayerPrompt } from "@freeanima/capabilities/self";
 import { listAllOutpostInstances } from "@freeanima/core/db/pg/outpost";
 
+import { bindHabitatPorts } from "@freeanima/capabilities/ports/bind-habitat-ports.ts";
+import { habitatDispatch } from "../habitat/dispatch.ts";
+import { handleHttpHabitatRestRequestWithAuth } from "../habitat/http-rpc.ts";
+
 import { createAppRuntime, type AppRuntime } from "../service/app-runtime.ts";
 import { bindServicePorts } from "../bind-api.ts";
 import { registerSystemPromptHooks } from "../register-prompt-hooks.ts";
@@ -61,6 +65,23 @@ export async function bootRuntimePhase(
 
   bindServicePorts(runtime.fullDeps());
   initRuntimeContext(runtime);
+  // outpost transport 经端口调用 habitat dispatch / REST 入口（能力层不 import 组合根）
+  bindHabitatPorts({
+    dispatch: (deps, method, payload, ctx) =>
+      habitatDispatch(
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 端口以 unknown 声明 deps，实现按组合根契约收窄
+        deps as Parameters<typeof habitatDispatch>[0],
+        method,
+        payload,
+        ctx,
+      ),
+    restHandler: (req, deps) =>
+      handleHttpHabitatRestRequestWithAuth(
+        req,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 同上
+        deps as Parameters<typeof handleHttpHabitatRestRequestWithAuth>[1],
+      ),
+  });
 
   registerServiceStores(runtime.fullDeps(), engine.config);
   registerNotificationInject({ kernel });
