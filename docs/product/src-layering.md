@@ -56,6 +56,10 @@ server 链： shared → kernel → core → engine → capabilities → feature
   模块级全局桥（`globalThis[Symbol.for]` / 服务定位注册表）为 0 条，由
   `scripts/check-module-globals.ts` + oxlint `freeanima/no-module-globals` 守护。
 - `packages/server/ports/` 的 `ctx.platformPorts` 是能力/特性回调组合根的**唯一**通道。
+- **统一测试 harness**：`@freeanima/kernel/testing` 的 `createTestContext({ logger?, mount? })`
+  —— 装配全新根 context/logger（与 `createServiceKernel` 同一条路径），`mount()`
+  按生产 mount 助手挂服务，`dispose()` 逆序卸载并清空根句柄。放在 kernel 是为了每一层
+  都能 import（自身只依赖 Context + logger）。
 
 ## PG → 前端
 
@@ -86,13 +90,13 @@ DDL 仅 `packages/core/db`；存储形状的纯 Zod 经 **codegen + package expo
 **构建工具链车道：** `vite*.config.ts` / `build*.ts`（satellite 构建入口）不参与 DAG——
 它们只产出 bundle，不进入运行时依赖图。
 
-| 反向边                    | 文件数 | 收尾方向                                                                     |
-| ------------------------- | ------ | ---------------------------------------------------------------------------- |
-| `features → server`       | 15     | habitat 运维面的 HTTP/TLS/dispatch 依赖；AutoLlm 用例下沉 engine；tls 下沉 core |
+| 反向边                    | 文件数 | 收尾方向                                                                                                 |
+| ------------------------- | ------ | -------------------------------------------------------------------------------------------------------- |
+| `features → server`       | 15     | habitat 运维面的 HTTP/TLS/dispatch 依赖；AutoLlm 用例下沉 engine；tls 下沉 core                          |
 | `capabilities → features` | 7      | vault item store 归能力层；room/federation handler 端口化；media→objectStore 端口；subprocess→vault 端口 |
-| `capabilities → server`   | 5      | outpost transport 的 app-runtime / feature registry 依赖改 `ctx`             |
-| `ui-features → portal`    | 3      | 卫星 bundle 的 tauri bootstrap 动态 import（跨 bundle，需 portal 注入壳桥）   |
-| `app-frame → core`        | 2      | LLM 连接 schema / 预设 / 语音目录等契约下沉 shared                           |
-| `ui-kit → portal-sdk`     | 2      | `EntityIdLabel` / `task-list-tree` 改参数注入或移入 ui-features              |
-| `features → portal-sdk`   | 1      | companion 服务端的 shell 配置读盘器归 server 或 shared                       |
-| `portal-sdk → portal`     | 1      | pomodoro-active 的 mobile bootstrap 动态 import                              |
+| `capabilities → server`   | 5      | outpost transport 的 app-runtime / feature registry 依赖改 `ctx`                                         |
+| `ui-features → portal`    | 3      | 卫星 bundle 的 tauri bootstrap 动态 import（跨 bundle，需 portal 注入壳桥）                              |
+| `app-frame → core`        | 2      | LLM 连接 schema / 预设 / 语音目录等契约下沉 shared                                                       |
+| `ui-kit → portal-sdk`     | 2      | `EntityIdLabel` / `task-list-tree` 改参数注入或移入 ui-features                                          |
+| `features → portal-sdk`   | 1      | companion 服务端的 shell 配置读盘器归 server 或 shared                                                   |
+| `portal-sdk → portal`     | 1      | pomodoro-active 的 mobile bootstrap 动态 import                                                          |

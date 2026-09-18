@@ -1,5 +1,10 @@
 import { Context } from "cordis";
-import type { Logger } from "@freeanima/kernel/logging";
+import {
+  createHookContext,
+  logHookError,
+  setHookLogger,
+  type HookLogger,
+} from "@freeanima/kernel/hooks/host.ts";
 import type { MessageIncomingContext, TurnAfterCompleteContext } from "../conversation/hooks.ts";
 import type { BeforeLlmCallContext, ToolAfterCallContext } from "../loop/hooks.ts";
 import type { SystemPromptBuildContext, SystemPromptBuildEffect } from "../prompt/hooks.ts";
@@ -11,7 +16,7 @@ import {
   type TurnAfterCompleteOutcome,
 } from "./events.ts";
 
-export type HookLogger = Pick<Logger, "error">;
+export { createHookContext, setHookLogger, type HookLogger };
 
 export type SystemPromptBuildHandler = (
   ctx: SystemPromptBuildContext,
@@ -33,23 +38,8 @@ export type TurnAfterCompleteHandler = (
 
 export type ConversationUpdatedHandler = (payload: ConversationUpdatedPayload) => void;
 
-const loggers = new WeakMap<Context, HookLogger>();
-
-/** Create the root Cordis context that owns all harness hook listeners. */
-export function createHookContext(logger?: HookLogger): Context {
-  const ctx = new Context();
-  if (logger) loggers.set(ctx, logger);
-  return ctx;
-}
-
-/** Attach the runtime logger used to contain listener failures. */
-export function setHookLogger(ctx: Context, logger: HookLogger): void {
-  loggers.set(ctx, logger);
-}
-
 function logError(ctx: Context, event: string, err: unknown): void {
-  const logger = loggers.get(ctx);
-  logger?.error("hook listener failed", { event, err });
+  logHookError(ctx, event, err);
 }
 
 function definedOnly<T extends object>(value: T): T {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
 import { createLlmRuntime } from "@freeanima/core/llm/llm-stack.ts";
 import { mountLlmStackService } from "@freeanima/core/llm/llm-stack-service.ts";
@@ -7,7 +7,7 @@ import {
   initLlmRuntime,
   resetLlmRuntimeForTests,
 } from "@freeanima/core/llm/llm-stack-runtime.ts";
-import { ensureRootContext } from "@freeanima/kernel";
+import { createTestContext, type TestContext } from "@freeanima/kernel/testing";
 import type { RuntimeConfig } from "@freeanima/core/config";
 import { minimalChatRuntime } from "@freeanima/core/config/test-helpers/minimal-llm-config";
 
@@ -15,8 +15,20 @@ const testCfg = {
   ...minimalChatRuntime({ apiKey: "test", model: "test-model" }),
 } as RuntimeConfig;
 
-beforeAll(() => {
-  mountLlmStackService(ensureRootContext(), bindLlmStack);
+let tc: TestContext;
+
+beforeAll(async () => {
+  // 统一 harness：根 context/logger 由 createTestContext 装配
+  tc = await createTestContext({
+    mount: (ctx) => {
+      mountLlmStackService(ctx, bindLlmStack);
+    },
+  });
+});
+
+afterAll(async () => {
+  resetLlmRuntimeForTests();
+  await tc.dispose();
 });
 
 describe("createLlmRuntime", () => {
