@@ -1,5 +1,9 @@
-export type { TagRow, TagCreateInput, TagUpdateInput, TagSearchOpts } from "./types.ts";
-
+export type {
+  TagRow,
+  TagCreateInput,
+  TagUpdateInput,
+  TagSearchOpts,
+} from "@freeanima/capabilities/tags/index.ts";
 export {
   listTags,
   searchTags,
@@ -10,6 +14,6 @@ export {
   deleteTag,
   setEntityTagIds,
   suggestTags,
-} from "./tag-store.ts";
+} from "@freeanima/capabilities/tags/index.ts";
 
 export { registerTagTools } from "./tools.ts";

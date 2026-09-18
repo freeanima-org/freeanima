@@ -5,7 +5,7 @@ import {
   nextCompanionSort,
   sortCompanionEntries,
 } from "@freeanima/core/config/schemas/companion.ts";
-import { deleteObjectFile } from "@freeanima/features/object-storage/domain";
+import { deleteObjectFile } from "@freeanima/capabilities/object-storage/domain";
 import type { MotionLibraryEntry, MotionSlotId } from "./types.ts";
 import { MOTION_SLOT_IDS } from "./types.ts";
 import { loadCompanionConfig, saveCompanionConfig } from "./config.ts";

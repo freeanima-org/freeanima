@@ -9,7 +9,7 @@ import {
   searchTags,
   setEntityTagIds,
   updateTag,
-} from "./tag-store.ts";
+} from "@freeanima/capabilities/tags/index.ts";
 import { TAG_TOOL_RETURNS } from "./return-schemas.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 

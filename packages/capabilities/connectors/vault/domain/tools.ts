@@ -12,7 +12,7 @@ import { normalizeTotpSecret } from "@freeanima/shared/vault-crypto";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import { asRecord } from "@freeanima/shared/util";
 
-import { ensureTagsByTitles } from "@freeanima/features/tag/domain";
+import { ensureTagsByTitles } from "@freeanima/capabilities/tags/index.ts";
 import {
   createVaultItem,
   deleteVaultItem,

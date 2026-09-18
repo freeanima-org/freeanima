@@ -16,7 +16,7 @@ import {
   z,
 } from "@freeanima/core/tool";
 import type { ToolSetRegistry } from "@freeanima/core/tool";
-import { createObjectFile } from "@freeanima/features/object-storage/domain";
+import { createObjectFile } from "@freeanima/capabilities/object-storage/domain";
 import { generateOpenAiImage } from "@freeanima/capabilities/llm-openai/images";
 import { generateAlibabaMultimodalImage } from "@freeanima/capabilities/llm-openai/images-alibaba-multimodal";
 import { synthesizeVoiceFromScene } from "@freeanima/capabilities/llm-openai/voice-synthesize";

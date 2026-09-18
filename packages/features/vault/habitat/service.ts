@@ -15,9 +15,13 @@ import {
   updateVaultItem,
   type VaultItemMetaRow,
   type VaultItemRow,
-} from "../domain/item-store.ts";
-import { ensureVaultConfig, getVaultConfig, updateVaultConfig } from "../domain/config-store.ts";
-import { resolveVaultWorldId } from "../domain/vault-world.ts";
+} from "@freeanima/capabilities/connectors/vault/domain/item-store.ts";
+import {
+  ensureVaultConfig,
+  getVaultConfig,
+  updateVaultConfig,
+} from "@freeanima/capabilities/connectors/vault/domain/config-store.ts";
+import { resolveVaultWorldId } from "@freeanima/capabilities/connectors/vault/domain/vault-world.ts";
 import type { RpcRequestAuthContext } from "@freeanima/shared/rpc-contract";
 import type { VaultSecretsPayload } from "@freeanima/shared/vault-crypto";
 import { omitUndefined } from "@freeanima/core/util";

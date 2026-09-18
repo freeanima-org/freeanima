@@ -11,13 +11,9 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
     "packages/app-frame/spa/settings/habitat-config/llm-settings-forms.tsx",
   ],
   "capabilities -> features": [
-    "packages/capabilities/connectors/vault/agent-secrets.ts",
-    "packages/capabilities/connectors/vault/user-secrets.ts",
     "packages/capabilities/federation/hub-ws-server.ts",
     "packages/capabilities/federation/satellite-client.ts",
     "packages/capabilities/outpost/transport/ws-server.ts",
-    "packages/capabilities/tools/media/tools.ts",
-    "packages/capabilities/tools/subprocess-secrets.ts",
   ],
   "capabilities -> server": [
     "packages/capabilities/outpost/transport/bun-route.ts",

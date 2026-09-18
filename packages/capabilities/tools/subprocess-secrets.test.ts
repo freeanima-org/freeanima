@@ -17,7 +17,7 @@ mock.module("@freeanima/capabilities/connectors/vault", () => ({
   resolveUserVaultSecret: resolveUserVaultSecretMock,
 }));
 
-mock.module("@freeanima/features/vault/domain/tool-world-resolve", () => ({
+mock.module("@freeanima/capabilities/connectors/vault/domain/tool-world-resolve", () => ({
   resolveVaultToolWorld: resolveVaultToolWorldMock,
   SUBJECT_ID_TOOL_PROPERTY: {
     type: "integer",

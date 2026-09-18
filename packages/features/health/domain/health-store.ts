@@ -5,7 +5,7 @@ import {
   type HealthRecordBody,
 } from "@freeanima/core/db/schema/entity";
 import { omitUndefined } from "@freeanima/core/util";
-import { createObjectFile } from "@freeanima/features/object-storage/domain";
+import { createObjectFile } from "@freeanima/capabilities/object-storage/domain";
 import {
   createEntity,
   deleteEntity,

@@ -9,7 +9,7 @@ import {
   stopPlatforms,
   type PlatformAdapter,
 } from "@freeanima/capabilities/connectors/gateway";
-import { bindObjectStore, createObjectStore } from "@freeanima/features/object-storage/domain";
+import { bindObjectStore, createObjectStore } from "@freeanima/capabilities/object-storage/domain";
 import { registerSection } from "@freeanima/kernel/config-mechanism";
 import { logComponent } from "@freeanima/server/logging";
 import { updateFederationManagerConfig } from "@freeanima/capabilities/federation";
