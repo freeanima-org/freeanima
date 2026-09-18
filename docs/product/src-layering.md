@@ -17,7 +17,7 @@ title: 分包与依赖约束
 | `@freeanima/core`         | `packages/core/`                           | drizzle schema/migrations、PG、Redis、config 段与 runtime store、llm/tool/tokenizer/tts/compress | kernel, shared                                       |
 | `@freeanima/engine`       | `packages/engine/`                         | conversation / turn / goal / pipeline / loop-mechanism                                           | core, kernel, shared                                 |
 | `@freeanima/capabilities` | `packages/capabilities/`                   | memory / tools / connectors / self / outpost / mcp-* / federation / llm-openai                   | engine, core, kernel, shared                         |
-| `@freeanima/features`     | `packages/features/<slug>/`                | 27 个服务端特性：`cordis-plugin.ts` + `domain/` + `habitat/` + `protocol/`                       | capabilities, engine, core, kernel, shared           |
+| `@freeanima/features`     | `packages/features/<slug>/`                | 28 个服务端特性（26 个带 `cordis-plugin.ts`；见「特性两态」）                                    | capabilities, engine, core, kernel, shared           |
 | `@freeanima/server`       | `packages/server/`                         | 组合根：boot、habitat-api（HTTP/RPC 面）、ports、config 真实现、tls                              | features, capabilities, engine, core, kernel, shared |
 | `@freeanima/cli`          | `packages/cli/`                            | `anima` / `anima-client` / `anima-probe`（`{anima,client,probe}/`）                              | server, features, capabilities, core, kernel, shared |
 | `@freeanima/ui-kit`       | `packages/ui-kit/`                         | 设计系统（无业务逻辑）                                                                           | shared                                               |
@@ -55,7 +55,9 @@ server 链： shared → kernel → core → engine → capabilities → feature
 - 进程只有**一个**根 `Context`，由 `createKernel()` 安装（`packages/kernel/context.ts`）。
   模块级全局桥（`globalThis[Symbol.for]` / 服务定位注册表）为 0 条，由
   `scripts/check-module-globals.ts` + oxlint `freeanima/no-module-globals` 守护。
-- `packages/server/ports/` 的 `ctx.platformPorts` 是能力/特性回调组合根的**唯一**通道。
+- `@freeanima/capabilities/ports/` 的 `ctx.platformPorts` 与各 `*-port.ts` 是能力/特性
+  回调组合根的**唯一**通道（`habitat-dispatch`、`session-pumps`、`task-reminder-schedule`、
+  `runtime-deps`、`app-runtime-context` 等）。
 - **统一测试 harness**：`@freeanima/kernel/testing` 的 `createTestContext({ logger?, mount? })`
   —— 装配全新根 context/logger（与 `createServiceKernel` 同一条路径），`mount()`
   按生产 mount 助手挂服务，`dispose()` 逆序卸载并清空根句柄。放在 kernel 是为了每一层
@@ -69,31 +71,40 @@ DDL 仅 `packages/core/db`；存储形状的纯 Zod 经 **codegen + package expo
 
 ## 护栏（`just qa check` 全跑）
 
-| 脚本                                           | 断言                                                                   |
-| ---------------------------------------------- | ---------------------------------------------------------------------- |
-| `scripts/check-package-deps.ts`                | 每个包 `package.json` 的 `@freeanima` 依赖 ⊆ DAG（反向边债务显式登记） |
-| `scripts/check-layer-deps.ts`                  | 全仓层依赖扫描（含相对路径与测试文件）+ 存量基线棘轮                   |
-| `scripts/check-module-globals.ts`              | 模块级全局桥为 0（基线已空）                                           |
-| `scripts/check-boot-plugin-parity.ts`          | `cordis.yml` 与 TS 侧插件清单一致                                      |
-| `scripts/codemod-freeanima-imports.ts --check` | 无残留退役前缀                                                         |
-| oxlint `freeanima/layer-deps`                  | 单文件即时反馈（同一 DAG 实现）                                        |
-| oxlint `freeanima/no-module-globals`           | 禁止新增全局桥                                                         |
-| `scripts/check-frontend-no-drizzle.ts`         | Vite 模块图无 drizzle-orm                                              |
-| `scripts/check-shared-shapes.ts`               | `pg-shapes` codegen 无漂移                                             |
+| 脚本                                           | 断言                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------ |
+| `scripts/check-package-deps.ts`                | 每个包 `package.json` 的 `@freeanima` 依赖 ⊆ DAG（无债务登记通道） |
+| `scripts/check-layer-deps.ts`                  | 全仓层依赖扫描（含相对路径与测试文件）；基线为空，任何违规即失败   |
+| `scripts/check-module-globals.ts`              | 模块级全局桥为 0（基线已空）                                       |
+| `scripts/check-boot-plugin-parity.ts`          | `cordis.yml` 与 TS 侧插件清单一致                                  |
+| `scripts/codemod-freeanima-imports.ts --check` | 无残留退役前缀                                                     |
+| oxlint `freeanima/layer-deps`                  | 单文件即时反馈（同一 DAG 实现）                                    |
+| oxlint `freeanima/no-module-globals`           | 禁止新增全局桥                                                     |
+| `scripts/check-frontend-no-drizzle.ts`         | Vite 模块图无 drizzle-orm                                          |
+| `scripts/check-shared-shapes.ts`               | `pg-shapes` codegen 无漂移                                         |
 
 ## 已知债务（棘轮，只减不增）
 
-包级登记见 `scripts/check-package-deps.ts` 的 `REVERSE_EDGE_DEBT`，文件级见
-`scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`。
-当前 **5 个层对 / 12 文件**（重构起点 178 文件）。
+**当前状态：文件级 0 个层对 / 0 文件（重构起点 178 文件），包级反向边 0 条。**
+`scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts` 为空表；
+`scripts/check-package-deps.ts` 的 `REVERSE_EDGE_DEBT` 机制已随债务还清一并删除——
+新出现的反向依赖（文件级或 `package.json` 级）一律直接失败，不再有登记通道。
 
 **构建工具链车道：** `vite*.config.ts` / `build*.ts`（satellite 构建入口）不参与 DAG——
 它们只产出 bundle，不进入运行时依赖图。
 
-| 反向边                   | 文件数 | 收尾方向                                                                                                                      |
-| ------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `features -> server`     | 4      | habitat 运维面（HTTP/TLS/dispatch/auth）随 habitat-api 归 server；chat 的 display/status 用例下沉 engine/capabilities         |
-| `capabilities -> server` | 3      | outpost transport：需完整 AppRuntime façade 端口；bun-route 的 REST handler 与 ws-server 的 dispatch 改端口注入               |
-| `ui-features -> portal`  | 3      | 卫星 bundle 的 tauri bootstrap——需先把桥与其 lib 依赖移入 portal-sdk（并把 app-frame 的 debug-config-events 移入 portal-sdk） |
-| `features -> portal-sdk` | 1      | companion 服务端的 node 版 shell 配置读盘器（shell-client-config* + desktop-settings-paths + shell-settings-node）移入 shared |
-| `portal-sdk -> portal`   | 1      | pomodoro-active 的 mobile bootstrap 与上条同源（桥移入 portal-sdk 后清零）                                                    |
+**跨 bundle 壳桥：** 卫星窗（`ui/float` 等）与 `portal-sdk/pomodoro-active` 只能依赖
+`portal-sdk`，因此 Tauri 壳桥（`portal-sdk/shell-bridge/`）与壳配置读盘器
+（`shared/shell-config/`）放在下两层；`portal/app/tauri/*` 留垫片再导出，native 侧只保留
+Rust/IPC 与宿主装配。
+
+## 特性两态
+
+`packages/features/<slug>/` 有两种形态，由 `cordis-plugin.ts` 是否存在区分：
+
+- **路由特性**（26 个）：`cordis-plugin.ts` + `domain/` + `habitat/`（Habitat RPC 路由与
+  handler）+ 视需要 `protocol/`（method-defs 与帧类型）。经 `builtinFeaturePlugins`
+  挂到 `ctx.features`。
+- **工具特性**（`content-block`、`workflow`）：只有 `domain/`，通过
+  `server/register-tools.ts` 贡献工具，不占 Habitat 方法面——因此没有 `cordis-plugin.ts`，
+  也不在 `cordis.yml` 特性清单内。
