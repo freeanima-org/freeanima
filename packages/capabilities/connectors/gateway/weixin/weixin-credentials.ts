@@ -1,4 +1,4 @@
-import { getActiveRuntimeConfig } from "@freeanima/server/config";
+import { getActiveRuntimeConfig } from "@freeanima/core/config";
 import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { asRecord } from "@freeanima/shared/util";
 

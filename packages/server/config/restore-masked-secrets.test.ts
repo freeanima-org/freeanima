@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
-import { CONFIG_MASKED_SECRET } from "./config-sanitize.ts";
-import { restoreMaskedSecrets } from "./restore-masked-secrets.ts";
+import { CONFIG_MASKED_SECRET } from "@freeanima/core/config/config-sanitize.ts";
+import { restoreMaskedSecrets } from "@freeanima/core/config/restore-masked-secrets.ts";
 
 describe("restoreMaskedSecrets", () => {
   it("keeps real api_key when patch sends masked placeholder", () => {

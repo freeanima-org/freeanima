@@ -1,9 +1,9 @@
 import { describe, it, expect } from "bun:test";
-import { Config } from "@freeanima/server/config";
+import { Config } from "@freeanima/core/config";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { parseYaml } from "@freeanima/server/config";
+import { parseYaml } from "@freeanima/core/config";
 import { runtimeConfigSchema } from "@freeanima/core/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/server/config/test-helpers/minimal-llm-config";
+import { MINIMAL_LLM_YAML } from "@freeanima/core/config/test-helpers/minimal-llm-config";
 import { parseRuntime, clampTimeout, runExecuteCode } from "./execute-code-runtimes.ts";
 import { registerCoreTools } from "@freeanima/capabilities/tools";
 

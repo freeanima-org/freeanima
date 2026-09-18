@@ -33,3 +33,7 @@ export * from "./schemas/companion.ts";
 export * from "./schemas/identity.ts";
 export * from "./schemas/public.ts";
 export * from "./world-context.ts";
+export * from "./config-sanitize.ts";
+export { restoreMaskedSecrets } from "./restore-masked-secrets.ts";
+export * from "./patchable.ts";
+export { parseYaml, stringifyYaml } from "./yaml.ts";

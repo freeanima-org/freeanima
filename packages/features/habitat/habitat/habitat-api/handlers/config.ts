@@ -3,7 +3,7 @@ import {
   sanitizeConfigForApi,
   isPatchableRuntimeConfig,
   restoreMaskedSecrets,
-} from "@freeanima/server/config";
+} from "@freeanima/core/config";
 import { ApiHandlerError } from "./errors.ts";
 import { habitatCtx } from "./runtime.ts";
 

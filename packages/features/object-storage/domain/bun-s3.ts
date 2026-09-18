@@ -1,7 +1,7 @@
 import { S3Client, type S3Options } from "bun";
 
 import type { ObjectStorageConfigInput } from "@freeanima/core/config";
-import { resolveValue } from "@freeanima/server/config";
+import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
 
 export type ResolvedObjectStorageCreds = {
   endpoint: string;

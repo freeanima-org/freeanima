@@ -1,5 +1,5 @@
-import type { Config } from "@freeanima/server/config";
-import { resolveValue } from "@freeanima/server/config";
+import type { Config } from "@freeanima/core/config";
+import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
 import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import type { MessagingPort } from "@freeanima/capabilities/ports/messaging-port";
 import { asRecord } from "@freeanima/shared/util";

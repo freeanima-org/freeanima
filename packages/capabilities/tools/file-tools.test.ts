@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
-import { Config } from "@freeanima/server/config";
+import { Config } from "@freeanima/core/config";
 import { registerCoreTools } from "@freeanima/capabilities/tools";
 import { ToolSetRegistry } from "@freeanima/core/tool";
-import { parseYaml } from "@freeanima/server/config";
+import { parseYaml } from "@freeanima/core/config";
 import { runtimeConfigSchema } from "@freeanima/core/config";
-import { MINIMAL_LLM_YAML } from "@freeanima/server/config/test-helpers/minimal-llm-config";
+import { MINIMAL_LLM_YAML } from "@freeanima/core/config/test-helpers/minimal-llm-config";
 
 function testConfig() {
   const parsed = runtimeConfigSchema.safeParse(parseYaml(MINIMAL_LLM_YAML));

@@ -1,5 +1,5 @@
 import type { RuntimeConfig } from "@freeanima/core/config";
-import { resolveValue } from "./resolve.ts";
+import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
 
 /** Expand env/vault references in connections.*.api_key */
 export async function resolveLlmProviderApiKeys(cfg: RuntimeConfig): Promise<RuntimeConfig> {
