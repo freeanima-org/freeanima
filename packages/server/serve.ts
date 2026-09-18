@@ -8,7 +8,11 @@ import {
   markStartupPhase,
 } from "@freeanima/server/logging";
 import { REPO_ROOT } from "./service/index.ts";
-import { DEFAULT_BIND_HOST, coalesceBindHosts, parseBindHosts } from "./bind-hosts.ts";
+import {
+  DEFAULT_BIND_HOST,
+  coalesceBindHosts,
+  parseBindHosts,
+} from "@freeanima/core/config/bind-hosts.ts";
 import { getAppRuntime } from "./service/runtime-context.ts";
 import { ensureRootContext } from "@freeanima/kernel";
 import { runBootPipelineViaLoader } from "./boot/loader.ts";

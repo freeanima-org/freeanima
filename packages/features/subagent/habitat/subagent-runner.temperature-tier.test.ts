@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import type { ResolvedSubagentProfile } from "@freeanima/features/subagent/domain/types.ts";
 
 import { resolveTemperatureTier, SUBAGENT_TASK_SPEC } from "./subagent-runner.ts";
-import type { FullRuntimeDeps } from "../runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 function profile(partial: Partial<ResolvedSubagentProfile> = {}): ResolvedSubagentProfile {
   return {

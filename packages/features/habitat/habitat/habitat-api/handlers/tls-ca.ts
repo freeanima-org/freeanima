@@ -2,13 +2,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { X509Certificate } from "node:crypto";
 
 import { DEFAULT_HABITAT_HTTP_PORT } from "@freeanima/core/config";
-import { defaultHabitatTlsCertPath } from "@freeanima/server/tls/habitat-tls-material";
+import { defaultHabitatTlsCertPath } from "@freeanima/core/tls/habitat-tls-material";
 import {
   detectHabitatTlsIssuerKind,
   readMkcertRootCaPem,
   type HabitatTlsIssuerKind,
-} from "@freeanima/server/tls/mkcert-root-ca";
-import { expandConfigPath } from "@freeanima/server/tls/tls-paths";
+} from "@freeanima/core/tls/mkcert-root-ca";
+import { expandConfigPath } from "@freeanima/core/tls/tls-paths";
 
 export type TlsCaInfoResponse = {
   available: boolean;

@@ -12,7 +12,7 @@ export { prettyDuration, writeStatusLine };
 
 export const LOG_FILE = join(PATHS.home, "error.log");
 
-export { resolveProbeHost } from "@freeanima/server/bind-hosts.ts";
+export { resolveProbeHost } from "@freeanima/core/config/bind-hosts.ts";
 
 export function readRecentErrorLogTail(maxLines = 10): string[] {
   if (!existsSync(LOG_FILE)) return [];

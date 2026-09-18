@@ -19,8 +19,8 @@ import {
   runAutoLlm,
   type AutoLlmRunResult,
   type AutoLlmToolStep,
-} from "../auto-llm-run.ts";
-import type { FullRuntimeDeps } from "../runtime-deps.ts";
+} from "@freeanima/engine/auto-llm-run.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import {
   getSubagent,
   getSubagentBySlug,

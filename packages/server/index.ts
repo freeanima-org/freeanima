@@ -26,6 +26,6 @@ export {
   coalesceBindHosts,
   parseBindHosts,
   resolveProbeHost,
-} from "./bind-hosts.ts";
+} from "@freeanima/core/config/bind-hosts.ts";
 export { serve, type ServeOptions, type HttpHooks, type HttpServerHandle } from "./serve.ts";
 export * from "./service/index.ts";

@@ -2,7 +2,7 @@ import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import {
   watchTaskAdvanceReminder,
   type TaskAdvanceReminderPayload,
-} from "@freeanima/server/boot/task-advance-reminder-events.ts";
+} from "@freeanima/capabilities/ports/task-advance-reminders.ts";
 
 async function* bridgeTaskAdvanceReminder(
   signal: AbortSignal,

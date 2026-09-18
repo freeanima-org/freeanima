@@ -2,7 +2,7 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSy
 import { X509Certificate } from "node:crypto";
 
 import { PATHS } from "@freeanima/core/config/paths";
-import { logComponent } from "@freeanima/server/logging";
+import { logComponent } from "@freeanima/kernel/logging/component.ts";
 
 import { certSanCoversRequired, normalizeSanName, readCertSanNames } from "../cert-san.ts";
 import { expandConfigPath } from "../tls-paths.ts";

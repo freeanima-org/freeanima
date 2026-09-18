@@ -10,6 +10,11 @@ import {
 } from "@freeanima/server/config";
 import { bindHomeChannelConfig } from "@freeanima/capabilities/ports/home-channel";
 import { platformPorts } from "@freeanima/capabilities/ports/service.ts";
+import {
+  rescheduleTaskReminderScheduler,
+  startTaskReminderScheduler,
+  stopTaskReminderScheduler,
+} from "./task-reminder-scheduler.ts";
 import { patchRuntimeConfigSection } from "@freeanima/server/config";
 import { bindActiveRuntimeConfig } from "@freeanima/core/config";
 
@@ -37,6 +42,10 @@ export function bindRuntimeConfig(config: RuntimeConfigStore): void {
   // 端口层不 import 组合根：运行时配置写入由此处注入
   platformPorts().patchRuntimeConfigSection = (section, patch) =>
     patchRuntimeConfigSection(section, patch);
+  // 任务提醒调度：能力/特性只表达意图，实现留在组合根
+  platformPorts().startTaskReminders = startTaskReminderScheduler;
+  platformPorts().stopTaskReminders = stopTaskReminderScheduler;
+  platformPorts().rescheduleTaskReminders = rescheduleTaskReminderScheduler;
   validateRuntimeConfigOnStartup(config.data);
 }
 

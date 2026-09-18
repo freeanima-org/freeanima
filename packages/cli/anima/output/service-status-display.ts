@@ -1,4 +1,4 @@
-import { parseBindHosts } from "@freeanima/server/bind-hosts.ts";
+import { parseBindHosts } from "@freeanima/core/config/bind-hosts.ts";
 import { formatBuildMetaLines, parseComponentBuildMeta } from "@freeanima/core/config/build-meta";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { asRecord, omitUndefined } from "@freeanima/shared/util";

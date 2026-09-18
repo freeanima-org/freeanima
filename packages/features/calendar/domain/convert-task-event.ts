@@ -14,7 +14,7 @@ import {
   getEntity,
   replacePrimaryComponent,
 } from "@freeanima/core/db/pg/entity";
-import { rescheduleTaskReminderScheduler } from "@freeanima/server/boot/task-reminder-scheduler.ts";
+import { rescheduleTaskReminderScheduler } from "@freeanima/capabilities/ports/task-reminder-schedule.ts";
 
 import { ensureDefaultTaskListForWorld } from "@freeanima/features/task/domain/list-store.ts";
 import { deleteOccurrencesForSeries } from "@freeanima/features/task/domain/occurrence-store.ts";

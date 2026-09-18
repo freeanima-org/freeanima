@@ -30,7 +30,7 @@ import {
   searchEntities,
   updateEntity,
 } from "@freeanima/core/db/pg/entity";
-import { rescheduleTaskReminderScheduler } from "@freeanima/server/boot/task-reminder-scheduler.ts";
+import { rescheduleTaskReminderScheduler } from "@freeanima/capabilities/ports/task-reminder-schedule.ts";
 
 import { assertListAcceptsTasks, assertTaskListNotArchived } from "./list-store.ts";
 import { createTaskOccurrence, deleteOccurrencesForSeries } from "./occurrence-store.ts";

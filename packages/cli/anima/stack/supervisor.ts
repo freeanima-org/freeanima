@@ -5,7 +5,7 @@ import {
   resolveHabitatTlsListenConfig,
   toHabitatTlsBunOptions,
 } from "@freeanima/server/tls/resolve-habitat-tls";
-import { startAcmeRenewalScheduler } from "@freeanima/server/tls/acme";
+import { startAcmeRenewalScheduler } from "@freeanima/core/tls/acme";
 
 import { tryResolveWebDistDir } from "../web/dist-path.ts";
 

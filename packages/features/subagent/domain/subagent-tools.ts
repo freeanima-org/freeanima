@@ -7,8 +7,8 @@ import {
 } from "@freeanima/core/tool";
 import { resolveToolWorld, ToolWorldAccessError } from "@freeanima/core/db/pg/entity";
 import { omitUndefined } from "@freeanima/core/util";
-import { getRuntimeDeps } from "@freeanima/server/service/runtime-context.ts";
-import { runSubagentTasks } from "@freeanima/server/service/use-cases/subagent-runner.ts";
+import { getRuntimeDeps } from "@freeanima/capabilities/ports/app-runtime-context.ts";
+import { runSubagentTasks } from "@freeanima/features/subagent/habitat/subagent-runner.ts";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 import { asRecord } from "@freeanima/shared/util";
 

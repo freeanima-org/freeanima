@@ -24,7 +24,7 @@ import {
 } from "@freeanima/core/db/pg/entity";
 import { appendPipelineStepRun } from "@freeanima/core/db/pg/pipeline";
 import { cleanupStaleConversations } from "@freeanima/engine/conversation";
-import type { ServiceEnginePort } from "@freeanima/capabilities/ports/service-engine";
+import type { ServiceEnginePort } from "@freeanima/engine/service-engine";
 import { gcObjectBlobsAfterEntityPurge } from "@freeanima/features/object-storage/domain";
 import { purgeCronConversations } from "@freeanima/core/db/pg/conversation";
 import { formatCstIso } from "@freeanima/core/util";

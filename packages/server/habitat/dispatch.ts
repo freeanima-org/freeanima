@@ -1,4 +1,3 @@
-import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import {
   getHabitatMethodDef,
   isHabitatMethod,
@@ -9,12 +8,9 @@ import type { RemoteToolsServerDeps } from "@freeanima/capabilities/outpost/tran
 import { runWithServiceApiAuth } from "@freeanima/core/db/pg/service-api-token/service-auth-als.ts";
 import { assertTokenRpcAccess, TokenAuthorizationError } from "./token-rpc-access.ts";
 
-export type HabitatDispatchContext = RemoteToolsRequestContext & {
-  app_id: string;
-  instance_id: string;
-  /** HTTP REST 适配器注入；WS 无此字段 */
-  httpRequest?: Request;
-};
+import type { HabitatDispatchContext } from "@freeanima/shared/habitat-contract/dispatch-context.ts";
+
+export type { HabitatDispatchContext };
 
 function accessFromMethodMeta(method: HabitatMethod): "read" | "write" {
   const def = getHabitatMethodDef(method);

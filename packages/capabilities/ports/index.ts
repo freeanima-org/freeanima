@@ -36,7 +36,7 @@ export type {
   RemoteToolsManagerPort,
   OutpostsStatusResponse,
 } from "./remote-tools-manager.ts";
-export type { ServiceEnginePort } from "./service-engine.ts";
+export type { ServiceEnginePort } from "@freeanima/engine/service-engine.ts";
 export {
   onConversationCloseBeforeNew,
   registerOnConversationCloseBeforeNew,

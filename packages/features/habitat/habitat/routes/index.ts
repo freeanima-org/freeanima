@@ -9,7 +9,7 @@ import {
   updateServiceApiTokenName,
 } from "@freeanima/core/db/pg/service-api-token";
 import { omitUndefined } from "@freeanima/core/util";
-import type { HabitatDispatchContext } from "@freeanima/server/habitat/dispatch.ts";
+import type { HabitatDispatchContext } from "@freeanima/shared/habitat-contract/dispatch-context.ts";
 import type { RemoteToolsServerDeps } from "@freeanima/capabilities/outpost/transport/types.ts";
 import { habitatMethodDefs } from "@freeanima/shared/habitat-contract/registry/habitat.ts";
 import {

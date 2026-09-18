@@ -35,6 +35,10 @@ export class PlatformPortsService extends Service {
   patchRuntimeConfigSection:
     | ((section: string, patch: Record<string, unknown>) => Promise<void>)
     | null = null;
+  /** 任务提醒 sleep-until-next 调度（由 server 组合根注入实现） */
+  startTaskReminders: (() => void) | null = null;
+  stopTaskReminders: (() => void) | null = null;
+  rescheduleTaskReminders: (() => void) | null = null;
 
   constructor(ctx: Context) {
     super(ctx, "platformPorts");

@@ -21,9 +21,9 @@ import {
   insertRunningAutoLlmRun,
 } from "@freeanima/core/db/pg/auto-llm-run";
 
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/engine/runtime-deps.ts";
 import type { ResolvedCapabilityPolicy } from "@freeanima/core/capability-policy";
-import { runtimeToolPolicyFromResolved } from "./capability-policy-bind.ts";
+import { runtimeToolPolicyFromResolved } from "@freeanima/core/capability-policy";
 
 export { AUTO_LLM_CHAT_DEFAULT_MAX_DURATION_MS, AUTO_LLM_DEFAULT_MAX_DURATION_MS };
 
@@ -117,7 +117,7 @@ function buildRecentContext(msgs: StoredMessage[], limit = 4): string {
 }
 
 async function evaluateGoalForAutoLlm(
-  deps: FullRuntimeDeps,
+  deps: RuntimeDeps,
   goal: ConversationGoal,
   msgs: StoredMessage[],
   parentConversationId?: string,
@@ -206,7 +206,7 @@ async function evaluateGoalForAutoLlm(
 }
 
 async function runEngineOnce(
-  deps: FullRuntimeDeps,
+  deps: RuntimeDeps,
   runId: string,
   input: AutoLlmRunInput,
   messages: StoredMessage[],
@@ -360,14 +360,14 @@ type AutoLlmAudit = {
   nextPos: number;
 };
 
-function warnAutoLlmPersist(deps: FullRuntimeDeps, err: unknown): void {
+function warnAutoLlmPersist(deps: RuntimeDeps, err: unknown): void {
   deps.engine.logger.with({ component: "auto-llm" }).warn("auto_llm persist failed", {
     error: err instanceof Error ? err.message : String(err),
   });
 }
 
 async function persistRunningStart(
-  deps: FullRuntimeDeps,
+  deps: RuntimeDeps,
   audit: AutoLlmAudit,
   row: {
     id: string;
@@ -402,7 +402,7 @@ async function persistRunningStart(
 }
 
 async function persistMessageBatch(
-  deps: FullRuntimeDeps,
+  deps: RuntimeDeps,
   audit: AutoLlmAudit,
   runId: string,
   subjectId: number,
@@ -424,7 +424,7 @@ async function persistMessageBatch(
 }
 
 async function persistRunFinish(
-  deps: FullRuntimeDeps,
+  deps: RuntimeDeps,
   row: {
     id: string;
     output: string;
@@ -467,7 +467,7 @@ function withWallClockSignal<T>(
 
 /** 无用户回合 LLM：不写 conversations/messages；过程写入 auto_llm_runs + auto_llm_messages */
 export async function runAutoLlm(
-  deps: FullRuntimeDeps,
+  deps: RuntimeDeps,
   input: AutoLlmRunInput,
 ): Promise<AutoLlmRunResult> {
   const runId = generateAutoLlmRunId();

@@ -213,7 +213,7 @@ export async function startApiHttpServers(
   port: number,
   options: ApiServerOptions = {},
 ): Promise<ApiServerStartResult> {
-  const { coalesceBindHosts } = await import("@freeanima/server/bind-hosts.ts");
+  const { coalesceBindHosts } = await import("@freeanima/core/config/bind-hosts.ts");
   const bindHosts = coalesceBindHosts(hosts);
   const runtime = prepareApiServerRuntime(options);
   const handles: ApiServerHandle[] = [];

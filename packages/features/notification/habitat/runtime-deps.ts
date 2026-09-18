@@ -1,1 +1,1 @@
-export type { RuntimeDeps } from "@freeanima/server/service/runtime-deps";
+export type { RuntimeDeps } from "@freeanima/engine/runtime-deps.ts";

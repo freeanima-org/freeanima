@@ -14,8 +14,8 @@ import {
   type WorkflowStep,
 } from "@freeanima/core/db/schema/entity/components/workflow.ts";
 import { z } from "zod";
-import { getRuntimeDeps } from "@freeanima/server/service/runtime-context.ts";
-import { runAutoLlm } from "@freeanima/server/service/auto-llm-run.ts";
+import { getRuntimeDeps } from "@freeanima/capabilities/ports/app-runtime-context.ts";
+import { runAutoLlm } from "@freeanima/engine/auto-llm-run.ts";
 
 import {
   createWorkflow,
