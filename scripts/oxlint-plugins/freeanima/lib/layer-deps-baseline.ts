@@ -13,11 +13,9 @@ export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = 
   "capabilities -> features": [
     "packages/capabilities/federation/hub-ws-server.ts",
     "packages/capabilities/federation/satellite-client.ts",
-    "packages/capabilities/outpost/transport/ws-server.ts",
   ],
   "capabilities -> server": [
     "packages/capabilities/outpost/transport/bun-route.ts",
-    "packages/capabilities/outpost/transport/stream-bridge.ts",
     "packages/capabilities/outpost/transport/types.ts",
     "packages/capabilities/outpost/transport/ws-server.ts",
   ],
