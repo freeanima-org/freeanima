@@ -1,13 +1,17 @@
-let sessionPumps: Map<string, AbortController> | null = null;
-
-/** Called once from platform ws-server when Habitat RPC session handlers are created. */
-export function bindChatSessionPumps(pumps: Map<string, AbortController>): void {
-  sessionPumps = pumps;
-}
+import {
+  getSessionPumps,
+  setSessionPumpsForTest,
+} from "@freeanima/capabilities/ports/session-pumps.ts";
 
 export function chatSessionPumps(): Map<string, AbortController> {
-  if (!sessionPumps) {
+  try {
+    return getSessionPumps();
+  } catch {
     throw new Error("Chat session pumps not initialized");
   }
-  return sessionPumps;
+}
+
+/** @internal 测试隔离 */
+export function setChatSessionPumpsForTest(pumps: Map<string, AbortController> | null): void {
+  setSessionPumpsForTest(pumps);
 }

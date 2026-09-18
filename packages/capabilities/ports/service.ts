@@ -35,6 +35,8 @@ export class PlatformPortsService extends Service {
   patchRuntimeConfigSection:
     | ((section: string, patch: Record<string, unknown>) => Promise<void>)
     | null = null;
+  /** RPC 会话 pump 控制器（ws-server 创建，特性路由取用） */
+  sessionPumps: Map<string, AbortController> | null = null;
   /** 任务提醒 sleep-until-next 调度（由 server 组合根注入实现） */
   startTaskReminders: (() => void) | null = null;
   stopTaskReminders: (() => void) | null = null;

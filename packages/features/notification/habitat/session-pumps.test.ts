@@ -1,10 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
 
-import {
-  bindNotificationSessionPumps,
-  notificationSessionPumps,
-  setNotificationSessionPumpsForTest,
-} from "./session-pumps.ts";
+import { notificationSessionPumps, setNotificationSessionPumpsForTest } from "./session-pumps.ts";
 import { pumpUserNotificationInbox } from "./stream.ts";
 import {
   emitUserNotificationCreated,
@@ -26,7 +22,7 @@ describe("notification session-pumps", () => {
     const events2: Array<{ method: string; id: string }> = [];
 
     const map1 = new Map<string, AbortController>();
-    bindNotificationSessionPumps(map1);
+    setNotificationSessionPumpsForTest(map1);
     const c1 = new AbortController();
     map1.set("portal:main:notification-inbox", c1);
     const pump1 = pumpUserNotificationInbox(
@@ -64,7 +60,7 @@ describe("notification session-pumps", () => {
     ]);
 
     const map2 = new Map<string, AbortController>();
-    bindNotificationSessionPumps(map2);
+    setNotificationSessionPumpsForTest(map2);
     const c2 = new AbortController();
     map2.set("portal:main:notification-inbox", c2);
     const pump2 = pumpUserNotificationInbox(
@@ -103,7 +99,7 @@ describe("notification session-pumps", () => {
 
   test("旧模块级 Map 在 abort 后若不 clear 会挡住同 key 重建（回归原 bug）", async () => {
     const stale = new Map<string, AbortController>();
-    bindNotificationSessionPumps(stale);
+    setNotificationSessionPumpsForTest(stale);
     const key = "portal:main:notification-inbox";
     const dead = new AbortController();
     stale.set(key, dead);
@@ -116,7 +112,7 @@ describe("notification session-pumps", () => {
     for (const c of stale.values()) c.abort();
     stale.clear();
     const fresh = new Map<string, AbortController>();
-    bindNotificationSessionPumps(fresh);
+    setNotificationSessionPumpsForTest(fresh);
     expect(notificationSessionPumps().has(key)).toBe(false);
   });
 });

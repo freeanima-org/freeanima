@@ -5,7 +5,7 @@ import {
   initialStreamReplyState,
   type StreamReplyEffect,
 } from "@freeanima/engine/loop-mechanism/stream-reply";
-import type { DisplayItem } from "@freeanima/server/schemas/display";
+import type { DisplayItem } from "@freeanima/capabilities/ports/schemas/display.ts";
 import { omitUndefined } from "@freeanima/core/util";
 import { mapRuntimeStreamEventToSap } from "@freeanima/shared/rpc-contract";
 import { asRecord } from "@freeanima/shared/util";
