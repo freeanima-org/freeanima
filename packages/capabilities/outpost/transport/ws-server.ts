@@ -24,7 +24,7 @@ import {
 } from "@freeanima/shared/habitat-rpc";
 import { verifyServiceApiToken } from "@freeanima/core/db/pg/service-api-token";
 import { isHabitatMethod } from "@freeanima/shared/habitat-contract";
-import { getFeatureRpcHandler } from "@freeanima/server/features/registry.ts";
+import { getFeatureRpcHandler } from "@freeanima/core/features/registry.ts";
 import { habitatDispatch } from "@freeanima/server/habitat/dispatch.ts";
 
 const HEARTBEAT_INTERVAL_SEC = 30;

@@ -303,7 +303,7 @@ export async function ensureBuiltinCronJobsRegistered(): Promise<void> {
   await ensureBuiltinCronJobs();
   try {
     const { startEmailIdleForAllEnabledAccounts } =
-      await import("@freeanima/capabilities/connectors/email");
+      await import("@freeanima/features/email/habitat/connectors");
     void startEmailIdleForAllEnabledAccounts();
   } catch {
     // IDLE 非关键路径；账号未就绪时忽略

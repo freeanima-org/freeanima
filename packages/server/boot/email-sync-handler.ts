@@ -1,7 +1,7 @@
 /** 内置 cron：跨 world 同步全部已启用账户，仅自动同步发通知 */
 export async function runEmailSyncAllScheduled(): Promise<string> {
   const { syncAllEmailAccounts, collectNewMails, notifyNewMailFromSyncResults } =
-    await import("@freeanima/capabilities/connectors/email");
+    await import("@freeanima/features/email/habitat/connectors");
   const results = await syncAllEmailAccounts({ limit: 100 });
   const mails = collectNewMails(results);
   const notified = await notifyNewMailFromSyncResults(results);

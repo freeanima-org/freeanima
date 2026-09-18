@@ -80,15 +80,19 @@ DDL 仅 `packages/core/db`；存储形状的纯 Zod 经 **codegen + package expo
 ## 已知债务（棘轮，只减不增）
 
 包级登记见 `scripts/check-package-deps.ts` 的 `REVERSE_EDGE_DEBT`，文件级见
-`scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`：
+`scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`。
+当前 **8 个层对 / 36 文件**（重构起点 178 文件）。
 
-| 反向边                            | 现状                                                               | 收尾方向                                               |
-| --------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------ |
-| `features → server`               | 57 文件（ports/config/service/use-cases）                          | 特性插件经 `ctx` 取服务，删模块级 import               |
-| `capabilities → server`           | 27 文件（logging/config/ports）                                    | `logComponent` 走 kernel；runtime-config 机制下沉 core |
-| `capabilities → features`         | 17 文件（email/vault 连接器、room handlers、session pumps、media） | 连接器随特性归位；跨特性改端口注入                     |
-| `core → capabilities`             | 5 个跨包单测                                                       | 测试迁到上层包或改用 shared 契约                       |
-| `ui-features → app-frame`         | 6 个卫星窗构建配置                                                 | 卫星构建脚本迁到 `packages/portal/satellites/`         |
-| `ui-features/portal-sdk → portal` | 4 处 tauri bootstrap 动态 import                                   | portal 注册壳桥，卫星经 portal-sdk 取用                |
-| `ui-kit → portal-sdk`             | 2 文件（anima-uri / subject-scope）                                | 纯函数下沉 shared；实体标签移入 ui-features            |
-| `app-frame → core`                | 3 文件（LLM 预设/连接 schema/语音目录）                            | 契约下沉 shared                                        |
+**构建工具链车道：** `vite*.config.ts` / `build*.ts`（satellite 构建入口）不参与 DAG——
+它们只产出 bundle，不进入运行时依赖图。
+
+| 反向边                    | 文件数 | 收尾方向                                                                     |
+| ------------------------- | ------ | ---------------------------------------------------------------------------- |
+| `features → server`       | 15     | habitat 运维面的 HTTP/TLS/dispatch 依赖；AutoLlm 用例下沉 engine；tls 下沉 core |
+| `capabilities → features` | 7      | vault item store 归能力层；room/federation handler 端口化；media→objectStore 端口；subprocess→vault 端口 |
+| `capabilities → server`   | 5      | outpost transport 的 app-runtime / feature registry 依赖改 `ctx`             |
+| `ui-features → portal`    | 3      | 卫星 bundle 的 tauri bootstrap 动态 import（跨 bundle，需 portal 注入壳桥）   |
+| `app-frame → core`        | 2      | LLM 连接 schema / 预设 / 语音目录等契约下沉 shared                           |
+| `ui-kit → portal-sdk`     | 2      | `EntityIdLabel` / `task-list-tree` 改参数注入或移入 ui-features              |
+| `features → portal-sdk`   | 1      | companion 服务端的 shell 配置读盘器归 server 或 shared                       |
+| `portal-sdk → portal`     | 1      | pomodoro-active 的 mobile bootstrap 动态 import                              |

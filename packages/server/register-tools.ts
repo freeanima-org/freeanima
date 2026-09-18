@@ -23,7 +23,7 @@ import {
   deleteEmail,
   markAsRead,
   sendEmail,
-} from "@freeanima/capabilities/connectors/email";
+} from "@freeanima/features/email/habitat/connectors";
 import type { Config } from "@freeanima/core/config";
 import type { SkillRegistry } from "@freeanima/core/skill";
 import type { ToolSetRegistry } from "@freeanima/core/tool";

@@ -111,7 +111,7 @@ export async function serviceEmailAccountCreate(
   const withPreset = applyProviderPreset(raw);
   const hosts = requireCompleteEmailHosts(withPreset);
   const { assertEmailPasswordResolvable } =
-    await import("@freeanima/capabilities/connectors/email");
+    await import("@freeanima/features/email/habitat/connectors");
   await assertEmailPasswordResolvable({ password: withPreset.password });
   const account = await createEmailAccount(
     await emailWorldId(subject_id),
@@ -163,7 +163,7 @@ export async function serviceEmailAccountPatch(
   const hosts = touchesHosts ? requireCompleteEmailHosts(withPreset) : null;
   if (withPreset.password) {
     const { assertEmailPasswordResolvable } =
-      await import("@freeanima/capabilities/connectors/email");
+      await import("@freeanima/features/email/habitat/connectors");
     await assertEmailPasswordResolvable({ password: withPreset.password });
   }
   const account = await updateEmailAccount(
@@ -291,7 +291,7 @@ export async function serviceEmailMessageMarkRead(
   input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
-  const { markAsRead } = await import("@freeanima/capabilities/connectors/email");
+  const { markAsRead } = await import("@freeanima/features/email/habitat/connectors");
   await markAsRead(input.id);
   return { ok: true as const };
 }
@@ -301,7 +301,7 @@ export async function serviceEmailMessageMarkUnread(
   input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
-  const { markAsUnread } = await import("@freeanima/capabilities/connectors/email");
+  const { markAsUnread } = await import("@freeanima/features/email/habitat/connectors");
   await markAsUnread(input.id);
   return { ok: true as const };
 }
@@ -311,7 +311,7 @@ export async function serviceEmailMessageDelete(
   input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
-  const { deleteEmail } = await import("@freeanima/capabilities/connectors/email");
+  const { deleteEmail } = await import("@freeanima/features/email/habitat/connectors");
   await deleteEmail(input.id);
   return { ok: true as const };
 }
@@ -330,7 +330,7 @@ export async function serviceEmailSend(
   },
 ) {
   assertPg(deps);
-  const { sendEmail } = await import("@freeanima/capabilities/connectors/email");
+  const { sendEmail } = await import("@freeanima/features/email/habitat/connectors");
   return sendEmail(omitUndefined(input));
 }
 
@@ -340,7 +340,7 @@ export async function serviceEmailSync(
 ) {
   assertPg(deps);
   const { syncEmailAccount, syncAllEmailAccounts } =
-    await import("@freeanima/capabilities/connectors/email");
+    await import("@freeanima/features/email/habitat/connectors");
   if (input.account_id != null) {
     return {
       results: [await syncEmailAccount(input.account_id, omitUndefined({ limit: input.limit }))],
@@ -400,7 +400,7 @@ export async function serviceEmailMailboxList(
   input: { subject_id?: number; account_id: number },
 ) {
   assertPg(deps);
-  const { listMailboxesForAccount } = await import("@freeanima/capabilities/connectors/email");
+  const { listMailboxesForAccount } = await import("@freeanima/features/email/habitat/connectors");
   const mailboxes = await listMailboxesForAccount(input.account_id);
   return { mailboxes };
 }
@@ -410,7 +410,7 @@ export async function serviceEmailMailboxCreate(
   input: { subject_id?: number; account_id: number; path: string },
 ) {
   assertPg(deps);
-  const { createMailbox } = await import("@freeanima/capabilities/connectors/email");
+  const { createMailbox } = await import("@freeanima/features/email/habitat/connectors");
   const result = await createMailbox(input.account_id, input.path);
   return { ok: true as const, path: result.path, mailboxes: result.mailboxes };
 }
@@ -420,7 +420,7 @@ export async function serviceEmailMailboxRename(
   input: { subject_id?: number; account_id: number; from: string; to: string },
 ) {
   assertPg(deps);
-  const { renameMailbox } = await import("@freeanima/capabilities/connectors/email");
+  const { renameMailbox } = await import("@freeanima/features/email/habitat/connectors");
   const result = await renameMailbox(input.account_id, input.from, input.to);
   return { ok: true as const, from: result.from, to: result.to, mailboxes: result.mailboxes };
 }
@@ -430,7 +430,7 @@ export async function serviceEmailMailboxDelete(
   input: { subject_id?: number; account_id: number; path: string },
 ) {
   assertPg(deps);
-  const { deleteMailbox } = await import("@freeanima/capabilities/connectors/email");
+  const { deleteMailbox } = await import("@freeanima/features/email/habitat/connectors");
   const result = await deleteMailbox(input.account_id, input.path);
   return { ok: true as const, path: result.path, mailboxes: result.mailboxes };
 }
@@ -440,7 +440,7 @@ export async function serviceEmailMessageMove(
   input: { subject_id?: number; id: number; target_mailbox: string },
 ) {
   assertPg(deps);
-  const { moveMessage } = await import("@freeanima/capabilities/connectors/email");
+  const { moveMessage } = await import("@freeanima/features/email/habitat/connectors");
   return moveMessage(input.id, input.target_mailbox);
 }
 
@@ -449,7 +449,7 @@ export async function serviceEmailMessageMarkFlagged(
   input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
-  const { markAsFlagged } = await import("@freeanima/capabilities/connectors/email");
+  const { markAsFlagged } = await import("@freeanima/features/email/habitat/connectors");
   await markAsFlagged(input.id);
   return { ok: true as const };
 }
@@ -459,7 +459,7 @@ export async function serviceEmailMessageMarkUnflagged(
   input: { subject_id?: number; id: number },
 ) {
   assertPg(deps);
-  const { markAsUnflagged } = await import("@freeanima/capabilities/connectors/email");
+  const { markAsUnflagged } = await import("@freeanima/features/email/habitat/connectors");
   await markAsUnflagged(input.id);
   return { ok: true as const };
 }
@@ -476,7 +476,7 @@ export async function serviceEmailDraftSave(
   },
 ) {
   assertPg(deps);
-  const { saveDraft } = await import("@freeanima/capabilities/connectors/email");
+  const { saveDraft } = await import("@freeanima/features/email/habitat/connectors");
   return saveDraft(omitUndefined(input));
 }
 
@@ -485,6 +485,6 @@ export async function serviceEmailDraftSend(
   input: { subject_id?: number; message_id: number },
 ) {
   assertPg(deps);
-  const { sendDraft } = await import("@freeanima/capabilities/connectors/email");
+  const { sendDraft } = await import("@freeanima/features/email/habitat/connectors");
   return sendDraft(input.message_id);
 }

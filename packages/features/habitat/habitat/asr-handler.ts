@@ -1,6 +1,6 @@
 import { transcribeAsrFromScene } from "@freeanima/capabilities/llm-openai/asr-transcribe";
 import { assertNotShuttingDown } from "@freeanima/capabilities/ports";
-import type { FeatureRpcHandler } from "@freeanima/server/features";
+import type { FeatureRpcHandler } from "@freeanima/core/features";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
 
 import { ApiHandlerError } from "./habitat-api/handlers/errors.ts";
