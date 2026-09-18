@@ -11,6 +11,7 @@ import type { ConversationService } from "@freeanima/engine/conversation";
 import type { CronJobData } from "@freeanima/capabilities/connectors/cron";
 import type { Kernel } from "@freeanima/kernel";
 import type { AppRuntimePort } from "@freeanima/capabilities/ports/app-runtime-port";
+import type { RemoteToolsServerRuntime } from "@freeanima/capabilities/outpost/transport/types.ts";
 import type { McpManagerPort } from "@freeanima/capabilities/ports/mcp-manager";
 import type { RemoteToolsManagerPort } from "@freeanima/capabilities/ports/remote-tools-manager";
 import type { ServiceEnginePort } from "@freeanima/engine/service-engine";
@@ -596,3 +597,11 @@ export async function appendConversationMetaForEngine(
 ): Promise<void> {
   return conversations.appendConversationMetaForEngine(deps, conversationId);
 }
+
+/**
+ * 编译期断言：`AppRuntime` 满足能力/特性层看到的运行时门面
+ * （`RemoteToolsServerDeps.runtime`）。门面定义在 capabilities，
+ * 组合根不得反向 import，因此用类型断言把两者钉在一起。
+ */
+type AppRuntimeSatisfiesFacade = AppRuntime extends RemoteToolsServerRuntime ? true : never;
+export const APP_RUNTIME_SATISFIES_FACADE: AppRuntimeSatisfiesFacade = true;

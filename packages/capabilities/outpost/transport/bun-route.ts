@@ -2,7 +2,7 @@ import type { ServerWebSocket } from "bun";
 import { HABITAT_RPC_REST_PREFIX } from "@freeanima/shared/habitat-rpc/urls.ts";
 import type { RemoteToolsServerDeps } from "./ws-server.ts";
 import { attachSapWebSocket } from "./ws-server.ts";
-import { handleHttpHabitatRestRequestWithAuth } from "@freeanima/server/habitat/http-rpc.ts";
+import { habitatRestHandlerPort } from "@freeanima/capabilities/ports/habitat-dispatch.ts";
 import {
   attachFederationHubWebSocket,
   FEDERATION_WS_PATH,
@@ -84,7 +84,9 @@ export function createSapBunHandlers(deps: RemoteToolsServerDeps): {
       }
 
       if (req.method === "GET" || req.method === "POST") {
-        return handleHttpHabitatRestRequestWithAuth(req, deps);
+        const restHandler = habitatRestHandlerPort();
+        if (!restHandler) throw new Error("habitat REST handler not registered");
+        return restHandler(req, deps);
       }
 
       return new Response("Method Not Allowed", { status: 405 });

@@ -109,8 +109,12 @@ export type AppRuntimeConversationPort = {
     conversationId: string,
     platform?: string,
     opts?: { offset?: number; limit?: number | null; before_pos?: number },
-  ): Promise<unknown>;
-  setConversationTitle(conversationId: string, title: string, platform: string): Promise<unknown>;
+  ): Promise<Record<string, unknown>>;
+  setConversationTitle(
+    conversationId: string,
+    title: string,
+    platform: string,
+  ): Promise<{ ok: boolean }>;
 };
 
 /** 语义记忆 / 时间摘要 / FTS / 自我层 */

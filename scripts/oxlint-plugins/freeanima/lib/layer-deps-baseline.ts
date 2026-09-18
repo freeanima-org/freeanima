@@ -6,19 +6,18 @@
  * `scripts/check-layer-deps.ts` 共用本表）。
  */
 export const LAYER_DEPS_BASELINE: Readonly<Record<string, readonly string[]>> = {
-  "capabilities -> server": [
-    "packages/capabilities/outpost/transport/bun-route.ts",
-    "packages/capabilities/outpost/transport/types.ts",
-    "packages/capabilities/outpost/transport/ws-server.ts",
+  "features -> portal-sdk": [
+    "packages/features/companion/server/config.ts",
   ],
-  "features -> portal-sdk": ["packages/features/companion/server/config.ts"],
   "features -> server": [
     "packages/features/chat/habitat/routes/index.ts",
     "packages/features/habitat/habitat/habitat-api/server.ts",
     "packages/features/habitat/habitat/habitat-api/service-auth.ts",
     "packages/features/habitat/habitat/habitat-api/tls-ca-auth.test.ts",
   ],
-  "portal-sdk -> portal": ["packages/portal-sdk/pomodoro-active.ts"],
+  "portal-sdk -> portal": [
+    "packages/portal-sdk/pomodoro-active.ts",
+  ],
   "ui-features -> portal": [
     "packages/ui-features/coding/ui/spa/main.tsx",
     "packages/ui-features/companion/ui/spa/main.tsx",
