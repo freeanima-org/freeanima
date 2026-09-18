@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { isAbsolute, join, relative } from "node:path";
-import { PATHS } from "@freeanima/server/config";
+import { PATHS } from "@freeanima/core/config/paths";
 
 export const SCRIPTS_DIR = () => join(PATHS.cronDir, "scripts");
 export const OUTPUT_DIR = () => join(PATHS.cronDir, "output");

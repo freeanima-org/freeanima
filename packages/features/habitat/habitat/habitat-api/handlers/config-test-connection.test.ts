@@ -38,7 +38,7 @@ afterAll(() => {
 
 import { Config } from "@freeanima/core/config";
 import type { AppRuntimeContext } from "@freeanima/capabilities/ports/app-runtime-context";
-import { sanitizeConfigForApi } from "@freeanima/server/config";
+import { sanitizeConfigForApi } from "@freeanima/core/config";
 
 import { bindHabitatRuntimeContext } from "./runtime.ts";
 import { pickConfigString, testConfigConnection } from "./config-test-connection.ts";

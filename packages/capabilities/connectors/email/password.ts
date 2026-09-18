@@ -1,4 +1,4 @@
-import { resolveValue } from "@freeanima/server/config";
+import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
 import type { EmailAccountRow } from "@freeanima/features/email/domain";
 
 export async function resolveEmailAccountPassword(

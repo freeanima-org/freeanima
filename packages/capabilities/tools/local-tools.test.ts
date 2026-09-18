@@ -10,10 +10,10 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { createTempDir, removeTempDir } from "@freeanima/core/util/temp-dir";
 
-import { Config } from "@freeanima/server/config";
+import { Config } from "@freeanima/core/config";
 import { registerCoreTools } from "@freeanima/capabilities/tools";
 import { registerMediaTools } from "@freeanima/capabilities/tools/media/tools";
-import { parseYaml } from "@freeanima/server/config";
+import { parseYaml } from "@freeanima/core/config";
 
 const MIN_CONFIG = `
 connections:

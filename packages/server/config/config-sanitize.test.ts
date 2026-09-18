@@ -4,7 +4,7 @@ import {
   findForbiddenLlmConfigPatchPath,
   maskConfigSecretsForLlm,
   sanitizeConfigForApi,
-} from "./config-sanitize.ts";
+} from "@freeanima/core/config/config-sanitize.ts";
 
 describe("sanitizeConfigForApi", () => {
   it("connections.*.api_key 原样返回", () => {

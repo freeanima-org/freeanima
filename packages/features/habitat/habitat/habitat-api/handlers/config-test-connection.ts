@@ -19,8 +19,8 @@ import {
   connectionEndpointUrl,
   connectionHasTextCapability,
 } from "@freeanima/core/llm/presets";
-import { resolveValue } from "@freeanima/server/config/resolve.ts";
-import { CONFIG_MASKED_SECRET } from "@freeanima/server/config";
+import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
+import { CONFIG_MASKED_SECRET } from "@freeanima/core/config";
 import { createBunS3Client } from "@freeanima/features/object-storage/domain/bun-s3.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 import { asRecord as sharedAsRecord } from "@freeanima/shared/util";

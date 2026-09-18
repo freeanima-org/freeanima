@@ -1,5 +1,5 @@
 import { resolveAgentVaultSecret } from "@freeanima/capabilities/connectors/vault";
-import { resolveVaultWorldId } from "@freeanima/features/vault/domain/vault-world";
+import { resolveVaultWorldId } from "@freeanima/capabilities/connectors/vault/world.ts";
 import { getResolvedWorldContext } from "@freeanima/core/config";
 
 const cache = new Map<string, string | Error>();

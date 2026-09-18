@@ -1,6 +1,6 @@
 import { SteppedBackoff } from "@freeanima/core/util/backoff";
 import { safeParseOrNull } from "@freeanima/core/util";
-import { PATHS } from "@freeanima/server/config";
+import { PATHS } from "@freeanima/core/config/paths";
 import { logComponent } from "@freeanima/kernel/logging/component.ts";
 import { getAppRuntime } from "@freeanima/capabilities/ports";
 import { resolveCommand } from "@freeanima/capabilities/tools/slash-commands";

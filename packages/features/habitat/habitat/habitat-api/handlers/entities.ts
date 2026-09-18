@@ -357,7 +357,7 @@ export async function createSubjectEntity(input: {
   // 即时 crypto（依赖 identity 段已存在）
   try {
     const { getActiveRuntimeConfig } = await import("@freeanima/core/config");
-    const { isPatchableRuntimeConfig } = await import("@freeanima/server/config");
+    const { isPatchableRuntimeConfig } = await import("@freeanima/core/config");
     const { ensureSubjectCryptoMaterial } = await import("@freeanima/core/identity");
     const config = getActiveRuntimeConfig();
     const identity = config.data.identity;

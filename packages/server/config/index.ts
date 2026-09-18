@@ -8,7 +8,10 @@ export {
   type PatchableRuntimeConfig,
 } from "./runtime-config-store.ts";
 export { withPlatformDb } from "./cli-db.ts";
-export { clearVaultFieldCache, resolveVaultField } from "./vault-io.ts";
+export {
+  clearVaultFieldCache,
+  resolveVaultField,
+} from "@freeanima/capabilities/config-refs/vault-io.ts";
 export {
   Config,
   bindActiveRuntimeConfig,
@@ -19,8 +22,8 @@ export * from "./database.ts";
 export * from "./redis.ts";
 export * from "@freeanima/core/config/repo-root";
 export * from "./version.ts";
-export * from "./config-sanitize.ts";
-export { restoreMaskedSecrets } from "./restore-masked-secrets.ts";
+export * from "@freeanima/core/config/config-sanitize.ts";
+export { restoreMaskedSecrets } from "@freeanima/core/config/restore-masked-secrets.ts";
 export * from "@freeanima/core/config/cjk-config";
 export * from "@freeanima/core/config/fts";
 export * from "@freeanima/core/config/embedding-helpers";
@@ -33,7 +36,7 @@ export {
   getProviderBaseUrl,
   getDefaultProviderBaseUrl,
 } from "@freeanima/core/config";
-export { resolveValue, resolveCredentialRef } from "./resolve.ts";
+export { resolveValue, resolveCredentialRef } from "@freeanima/capabilities/config-refs/resolve.ts";
 export { loadConfigYamlRecord } from "./yaml-io.ts";
 export { patchRuntimeConfigSection, loadRuntimeConfigSection } from "./runtime-config-patch.ts";
 export { validateBootstrapOnStartup, validateRuntimeConfigOnStartup } from "./validate.ts";

@@ -1,5 +1,5 @@
 import type { BootstrapConfig } from "@freeanima/core/config";
-import { resolveValue } from "./resolve.ts";
+import { resolveValue } from "@freeanima/capabilities/config-refs/resolve.ts";
 
 /** Expand env/vault references in database.url */
 export async function resolveDatabaseUrl(raw: string): Promise<string> {

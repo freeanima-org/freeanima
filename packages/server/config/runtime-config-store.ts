@@ -11,22 +11,12 @@ import {
 } from "@freeanima/core/db/pg";
 import { applyRuntimeConfigSection } from "./runtime-config-apply.ts";
 
-export type PatchableRuntimeConfig = Config & {
-  patchSection(section: string, patch: Record<string, unknown>): Promise<RuntimeConfig>;
-  replaceSection(section: string, value: Record<string, unknown>): Promise<RuntimeConfig>;
-  reload(): Promise<RuntimeConfig>;
-};
+import type { PatchableRuntimeConfig } from "@freeanima/core/config/patchable.ts";
 
-export function isPatchableRuntimeConfig(config: Config): config is PatchableRuntimeConfig {
-  return (
-    "patchSection" in config &&
-    typeof config.patchSection === "function" &&
-    "replaceSection" in config &&
-    typeof config.replaceSection === "function" &&
-    "reload" in config &&
-    typeof config.reload === "function"
-  );
-}
+export {
+  isPatchableRuntimeConfig,
+  type PatchableRuntimeConfig,
+} from "@freeanima/core/config/patchable.ts";
 
 /** PG habitat_runtime_config 运行时配置存储 */
 export class RuntimeConfigStore extends Config implements PatchableRuntimeConfig {

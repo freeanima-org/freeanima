@@ -4,4 +4,4 @@ export {
   findForbiddenLlmConfigPatchPath,
   CONFIG_MASKED_SECRET,
   isConfigSecretKey,
-} from "./config-sanitize.ts";
+} from "@freeanima/core/config/config-sanitize.ts";
