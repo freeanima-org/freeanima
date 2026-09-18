@@ -1,0 +1,36 @@
+import { isRecord } from "@freeanima/shared/util";
+
+import type { ShellClientConfig } from "./client-config.ts";
+import { parseShellClientConfig } from "./client-config.ts";
+import {
+  DEFAULT_SHELL_DEBUG,
+  parseShellDebugConfig,
+  type ShellDebugConfig,
+} from "./debug-config.ts";
+
+export type ShellSettings = {
+  habitat: ShellClientConfig | null;
+  debug: ShellDebugConfig;
+};
+
+export const DEFAULT_SHELL_SETTINGS: ShellSettings = {
+  habitat: null,
+  debug: { ...DEFAULT_SHELL_DEBUG },
+};
+
+export function parseShellSettings(raw: unknown): ShellSettings {
+  if (!isRecord(raw)) return { ...DEFAULT_SHELL_SETTINGS };
+  const habitat = parseShellClientConfig(raw.habitat);
+  const debug = parseShellDebugConfig(raw.debug);
+  return { habitat, debug };
+}
+
+export function mergeShellSettings(
+  current: ShellSettings,
+  patch: Partial<ShellSettings>,
+): ShellSettings {
+  return {
+    habitat: patch.habitat !== undefined ? patch.habitat : current.habitat,
+    debug: patch.debug !== undefined ? patch.debug : current.debug,
+  };
+}

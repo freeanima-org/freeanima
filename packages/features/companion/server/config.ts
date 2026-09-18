@@ -7,7 +7,7 @@ import {
 } from "@freeanima/shared/companion-app/companion-schema.ts";
 import { companionConfigSchema } from "@freeanima/core/config/schemas/companion.ts";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { loadShellClientConfig } from "@freeanima/portal-sdk/shell-client-config-node";
+import { loadShellClientConfig } from "@freeanima/shared/shell-config/node.ts";
 import { asRecord } from "@freeanima/shared/util";
 
 export type CompanionConfig = CompanionConfigV2;

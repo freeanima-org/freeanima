@@ -122,7 +122,7 @@ export function writePomodoroActiveState(
           state.phaseEndsAt != null
             ? Math.max(0, state.phaseEndsAt - Date.now())
             : (state.pausedRemainingMs ?? 0);
-        void import("@freeanima/portal/app/tauri/bridge/bootstrap-tauri-mobile.ts")
+        void import("@freeanima/portal-sdk/shell-bridge/bootstrap-tauri-mobile.ts")
           .then(({ syncPomodoroWidgetState }) =>
             syncPomodoroWidgetState({
               phase: state.phase,
