@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import { resolveFreeanimaId } from "./module-aliases.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { resolveFreeanimaId, tsconfigPathEntries } from "./module-aliases.ts";
 
 const REPO_ROOT = new URL("../../../", import.meta.url).pathname.replace(/\/$/, "");
 
@@ -12,5 +15,25 @@ describe("resolveFreeanimaId", () => {
     expect(resolveFreeanimaId(REPO_ROOT, "@freeanima/ui-kit/composite")).toBe(
       `${REPO_ROOT}/packages/ui-kit/composite/index.ts`,
     );
+  });
+});
+
+describe("tsconfigPathEntries（与 tsconfig.base.json 同源）", () => {
+  test("逐条等于 tsconfig.base.json 的 paths，且目标都在 packages/<pkg> 且存在", () => {
+    const entries = tsconfigPathEntries(REPO_ROOT);
+    const raw = JSON.parse(readFileSync(join(REPO_ROOT, "tsconfig.base.json"), "utf8")) as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+    expect(entries).toEqual(raw.compilerOptions.paths);
+
+    for (const [key, targets] of Object.entries(entries)) {
+      expect(key.startsWith("@freeanima/")).toBe(true);
+      for (const target of targets) {
+        expect(target.startsWith("./packages/")).toBe(true);
+        // 已退役目录（packages/frontend/* 等）必须不再出现
+        expect(target.startsWith("./packages/frontend/")).toBe(false);
+        expect(existsSync(join(REPO_ROOT, target.replace(/\/\*$/, "")))).toBe(true);
+      }
+    }
   });
 });
