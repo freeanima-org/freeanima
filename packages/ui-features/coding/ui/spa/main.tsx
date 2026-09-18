@@ -15,7 +15,7 @@ async function bootstrapCodingShell(): Promise<void> {
   }
   if (isTauriMobileUserAgent()) return;
   const { bootstrapTauriBridge } =
-    await import("@freeanima/portal/app/tauri/bridge/bootstrap-tauri-desktop.ts");
+    await import("@freeanima/portal-sdk/shell-bridge/bootstrap-tauri-desktop.ts");
   await bootstrapTauriBridge();
 }
 

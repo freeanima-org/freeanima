@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 
 import { resolveHabitatApiFetch } from "./habitat-api-fetch.ts";
-import { REMOTE_AUTH_TOKEN_KEY } from "./settings/prefs-keys.ts";
+import { REMOTE_AUTH_TOKEN_KEY } from "@freeanima/shared/shell-config/prefs-keys.ts";
 
 type ShellStub = {
   habitatUrl?: string;

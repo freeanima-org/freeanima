@@ -8,7 +8,6 @@
     "./*": "./*"
   },
   "dependencies": {
-    "@freeanima/portal-sdk": "workspace:*",
     "@freeanima/shared": "workspace:*",
     "@internationalized/date": "^3.12.3",
     "class-variance-authority": "^0.7.1",

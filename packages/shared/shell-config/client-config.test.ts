@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { desktopSettingsPath, legacyShellClientConfigPath } from "./desktop-settings-paths.ts";
-import { normalizeShellDebugConfig, parseShellDebugConfig } from "./shell-debug-config.ts";
+import { normalizeShellDebugConfig, parseShellDebugConfig } from "./debug-config.ts";
 import {
   loadShellClientConfig,
   loadShellDebugConfig,
@@ -12,12 +12,12 @@ import {
   saveShellClientConfig,
   saveShellDebugConfig,
   saveShellSettings,
-} from "./shell-settings-node.ts";
+} from "./node-store.ts";
 import {
   normalizeShellClientConfig,
   parseShellClientConfig,
   shellClientNeedsHabitatSetup,
-} from "./shell-client-config.ts";
+} from "./client-config.ts";
 
 describe("shell-client-config", () => {
   test("parseShellClientConfig validates fields", () => {

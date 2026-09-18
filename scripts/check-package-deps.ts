@@ -50,22 +50,6 @@ const ALLOWED_FREEANIMA_DEPS: Record<string, readonly string[]> = {
  * 目标是把本表清空；`just qa check` 会在新增未登记反向边时失败。
  * 文件级明细见 `scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`。
  */
-const REVERSE_EDGE_DEBT: Record<string, readonly string[]> = {
-  // features/* 仍直接 import server 的 ports/config/service（P4b 收尾）
-  "@freeanima/features": ["server", "portal-sdk"],
-  // capabilities 仍直接 import server 的 logging/config/ports + features 的连接器（P4b 收尾）
-  "@freeanima/capabilities": ["server", "features"],
-  // core 的跨包 schema/llm 单测仍用 capabilities 的类型（P4b 收尾）
-  "@freeanima/core": ["capabilities"],
-  // ui-kit 的 EntityIdLabel/task-list-tree 仍读 portal-sdk 的 anima-uri / subject-scope（P6 收尾）
-  "@freeanima/ui-kit": ["portal-sdk"],
-  // 前端设置表单仍读 core 的 LLM 预设/连接 schema（契约应下沉 shared；P6 收尾）
-  "@freeanima/app-frame": ["core"],
-  "@freeanima/portal-sdk": ["portal"],
-  // 卫星窗经 portal 的 tauri bootstrap 动态 import（应改为 portal 注册壳桥；P6 收尾）
-  "@freeanima/ui-features": ["portal"],
-};
-
 const LLM_AND_MAIL = ["@anthropic-ai/sdk", "openai", "nodemailer", "mailparser", "imapflow"];
 
 /** 包名 → 禁止的外部依赖前缀。 */
@@ -134,23 +118,15 @@ function checkPackage(pkg: Pkg, where: string): void {
     .map((dep) => dep.slice("@freeanima/".length))
     .toSorted();
   const expected = [...allowed].toSorted();
-  const debt = REVERSE_EDGE_DEBT[name] ?? [];
   // 只校验「不得多」：包不必依赖其允许集合里的每一个（下层能力可不用）。
   const missing: string[] = [];
-  const extra = internal.filter((dep) => !expected.includes(dep) && !debt.includes(dep));
+  const extra = internal.filter((dep) => !expected.includes(dep));
   if (missing.length > 0 || extra.length > 0) {
     const parts: string[] = [];
     if (extra.length > 0) parts.push(`多: ${extra.join(", ")}`);
     if (missing.length > 0) parts.push(`少: ${missing.join(", ")}`);
     failures.push(`${name} 的 @freeanima 依赖与 DAG 不符（${parts.join("；")}）`);
   }
-  // 债务项必须在 package.json 中真实存在（还清后须同步删除登记）
-  for (const dep of debt) {
-    if (!internal.includes(dep)) {
-      failures.push(`${name}: 反向边债务 "${dep}" 已不在依赖中，请从 REVERSE_EDGE_DEBT 删除`);
-    }
-  }
-
   assertNone(name, deps, BANNED_EXTERNAL[name] ?? []);
 }
 

@@ -16,11 +16,11 @@ async function bootstrapShellBridge(): Promise<void> {
       }
       if (isTauriMobileUserAgent()) {
         const { bootstrapTauriMobileBridge } =
-          await import("@freeanima/portal/app/tauri/bridge/bootstrap-tauri-mobile.ts");
+          await import("@freeanima/portal-sdk/shell-bridge/bootstrap-tauri-mobile.ts");
         await bootstrapTauriMobileBridge();
       } else {
         const { bootstrapTauriBridge } =
-          await import("@freeanima/portal/app/tauri/bridge/bootstrap-tauri-desktop.ts");
+          await import("@freeanima/portal-sdk/shell-bridge/bootstrap-tauri-desktop.ts");
         await bootstrapTauriBridge();
       }
       registerVaultRpcHandlers();

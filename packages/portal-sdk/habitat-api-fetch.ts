@@ -1,5 +1,8 @@
 import { createBearerFetch, type HabitatFetch } from "./remote-auth.ts";
-import { HABITAT_URL_KEY, REMOTE_AUTH_TOKEN_KEY } from "./settings/prefs-keys.ts";
+import {
+  HABITAT_URL_KEY,
+  REMOTE_AUTH_TOKEN_KEY,
+} from "@freeanima/shared/shell-config/prefs-keys.ts";
 import { resolveHabitatApiOrigin } from "./habitat-api-origin.ts";
 
 type PortalShellBridge = {

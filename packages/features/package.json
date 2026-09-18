@@ -11,8 +11,6 @@
     "@freeanima/core": "workspace:*",
     "@freeanima/engine": "workspace:*",
     "@freeanima/kernel": "workspace:*",
-    "@freeanima/portal-sdk": "workspace:*",
-    "@freeanima/server": "workspace:*",
     "@freeanima/shared": "workspace:*",
     "cordis": "4.0.0-rc.10",
     "discord.js": "^14.27.0",

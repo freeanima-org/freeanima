@@ -1,5 +1,2 @@
-export const DEBUG_CONFIG_CHANGED_EVENT = "freeanima:debug-config-changed";
-
-export function notifyDebugConfigChanged(): void {
-  window.dispatchEvent(new CustomEvent(DEBUG_CONFIG_CHANGED_EVENT));
-}
+/** SSOT 已下沉 @freeanima/portal-sdk/debug-config-events.ts */
+export * from "@freeanima/portal-sdk/debug-config-events.ts";

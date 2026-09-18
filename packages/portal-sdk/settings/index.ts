@@ -15,7 +15,7 @@ export {
   NATIVE_BUILD_META_KEY,
   REMOTE_AUTH_TOKEN_KEY,
   sapInstanceKey,
-} from "./prefs-keys.ts";
+} from "@freeanima/shared/shell-config/prefs-keys.ts";
 export type { ScopedSettingsBackend, SettingsStore } from "./settings-store.ts";
 export { createScopedSettingsStore } from "./settings-store.ts";
 export {

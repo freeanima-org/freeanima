@@ -3,7 +3,7 @@ import {
   loadTauriNativeBuildMetaFromAssets,
   readNativeBuildMetaFromDefine,
 } from "./native-build-meta.read.ts";
-import { NATIVE_BUILD_META_KEY } from "./settings/prefs-keys.ts";
+import { NATIVE_BUILD_META_KEY } from "@freeanima/shared/shell-config/prefs-keys.ts";
 import { isTauriRuntime } from "./tauri-runtime.ts";
 
 export const NATIVE_BUILD_META_CHANGED_EVENT = "freeanima:native-build-meta";

@@ -7,7 +7,6 @@
     "./*": "./*"
   },
   "dependencies": {
-    "@freeanima/capabilities": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/shared": "workspace:*",
     "@node-rs/jieba": "^2.0.2",
