@@ -15,5 +15,3 @@ export {
   setEntityTagIds,
   suggestTags,
 } from "@freeanima/capabilities/tags/index.ts";
-
-export { registerTagTools } from "./tools.ts";

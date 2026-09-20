@@ -3,7 +3,6 @@ import type { SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
 
 import {
   buildSelfLayerRefreshDataMessage,
-  buildSelfLayerRefreshUserMessage,
   formatProposalNotificationBody,
   parseSelfLayerRefreshResponse,
   SELF_LAYER_REFRESH_INSTRUCTION,
@@ -98,33 +97,6 @@ describe("buildSelfLayerRefreshDataMessage", () => {
     expect(msg).not.toContain("[[anima:9]]");
     expect(msg).toContain("I am a helper.");
     expect(msg).not.toContain(SELF_LAYER_REFRESH_INSTRUCTION);
-  });
-});
-
-describe("buildSelfLayerRefreshUserMessage", () => {
-  it("includes evidence markers and instruction", () => {
-    const msg = buildSelfLayerRefreshUserMessage(
-      [
-        fact({
-          id: 9,
-          content: "Partner prefers direct answers",
-          pinned: true,
-          reference_count: 5,
-        }),
-      ],
-      [
-        {
-          block_key: "self_model",
-          heading: "Self model",
-          content: "I am a helper.",
-          locked: false,
-          version: 1,
-        },
-      ],
-    );
-    expect(msg).toContain('<memory id="9"');
-    expect(msg).not.toContain("[[anima:9]]");
-    expect(msg).toContain(SELF_LAYER_REFRESH_INSTRUCTION);
   });
 });
 

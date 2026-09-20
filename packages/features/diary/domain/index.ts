@@ -34,4 +34,3 @@ export {
   listDiaryBlockTemplates,
   updateDiaryBlockTemplate,
 } from "./block-template-store.ts";
-export { registerDiaryTools } from "./tools.ts";

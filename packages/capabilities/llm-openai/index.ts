@@ -1,7 +1,4 @@
-export {
-  openAiCompatibleProviderConfigSchema,
-  parseOpenAiCompatibleProviderSpec,
-} from "./config.ts";
+export { parseOpenAiCompatibleProviderSpec } from "./config.ts";
 export type { OpenAiCompatibleProviderConfig } from "./config.ts";
 export { OpenAiCompatibleBackend } from "./backend.ts";
 export { OpenAiResponsesBackend, OPENAI_RESPONSES_FORMAT_ID } from "./openai-responses/backend.ts";

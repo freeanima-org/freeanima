@@ -115,11 +115,6 @@ export function createBaselineStore(filePath: string = baselineFilePath()): EnvH
   };
 }
 
-/** @deprecated 名称保留；实现已改为 Redis KV + 文件回退 */
-export function createFileBaselineStore(path: string = baselineFilePath()): EnvHealthBaselineStore {
-  return createBaselineStore(path);
-}
-
 /** 测试用：清空进程内缓存 */
 export function resetBaselineMemoryCacheForTests(): void {
   memoryCache = undefined;

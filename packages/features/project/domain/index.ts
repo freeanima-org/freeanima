@@ -26,5 +26,3 @@ export {
 } from "./project-store.ts";
 
 export { listProjectTaskStats } from "./stats-store.ts";
-
-export { registerProjectTools } from "./tools.ts";

@@ -22,7 +22,7 @@ import {
   saveCryptoCache,
 } from "../features/vault/crypto-cache.ts";
 import { findExistingLogin, needsPasswordUpdate } from "../features/vault/login-match.ts";
-import { generatePassword } from "../features/vault/password-gen.ts";
+import { generatePassword } from "@freeanima/shared/vault-crypto/password-gen.ts";
 import {
   EXT_SCOPE,
   clearPersistedExtVaultSession,

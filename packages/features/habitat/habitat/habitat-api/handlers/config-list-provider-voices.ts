@@ -1,6 +1,6 @@
 import {
-  llmProviderSchema,
-  type VoiceProtocolId,
+  connectionSchema,
+  type AudioProtocolId,
 } from "@freeanima/core/config/schemas/llm-config.ts";
 import { effectiveProviderModalities } from "@freeanima/core/llm";
 import { listVoiceCatalog, type VoiceCatalogEntry } from "@freeanima/core/tts/voice-catalog.ts";
@@ -19,7 +19,7 @@ export type ListProviderVoicesInput = {
 
 export type ListProviderVoicesResult = {
   voices: VoiceCatalogEntry[];
-  protocol: VoiceProtocolId;
+  protocol: AudioProtocolId;
   source: "builtin";
 };
 
@@ -47,7 +47,7 @@ export async function listProviderVoices(
 
   let providerCfg;
   try {
-    providerCfg = llmProviderSchema.parse(raw);
+    providerCfg = connectionSchema.parse(raw);
   } catch (err) {
     throw new ApiHandlerError(400, err instanceof Error ? err.message : String(err), {
       code: "invalid_provider_config",

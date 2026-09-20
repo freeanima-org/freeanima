@@ -4,10 +4,10 @@
  */
 
 import {
-  VOICE_PROTOCOL_ALIBABA_AUDIO,
-  VOICE_PROTOCOL_EDGE_TTS,
-  VOICE_PROTOCOL_OPENAI_AUDIO,
-  type VoiceProtocolId,
+  AUDIO_PROTOCOL_ALIBABA_AUDIO,
+  AUDIO_PROTOCOL_EDGE_TTS,
+  AUDIO_PROTOCOL_OPENAI_AUDIO,
+  type AudioProtocolId,
 } from "./schema.ts";
 import { EDGE_TTS_VOICE_OPTIONS } from "@freeanima/shared/tts/edge-voices.ts";
 
@@ -93,7 +93,7 @@ function modelMatchesFilter(entry: VoiceCatalogEntry, model: string | undefined)
 }
 
 export type ListVoiceCatalogInput = {
-  protocol: VoiceProtocolId;
+  protocol: AudioProtocolId;
   /** 合成模型；阿里用于过滤音色 */
   model?: string;
   query?: string;
@@ -106,13 +106,13 @@ export function listVoiceCatalog(input: ListVoiceCatalogInput): VoiceCatalogEntr
   const q = input.query?.trim().toLowerCase() ?? "";
   let rows: VoiceCatalogEntry[];
   switch (input.protocol) {
-    case VOICE_PROTOCOL_EDGE_TTS:
+    case AUDIO_PROTOCOL_EDGE_TTS:
       rows = edgeCatalog();
       break;
-    case VOICE_PROTOCOL_OPENAI_AUDIO:
+    case AUDIO_PROTOCOL_OPENAI_AUDIO:
       rows = [...OPENAI_AUDIO_VOICE_OPTIONS];
       break;
-    case VOICE_PROTOCOL_ALIBABA_AUDIO:
+    case AUDIO_PROTOCOL_ALIBABA_AUDIO:
       rows = ALIBABA_AUDIO_VOICE_OPTIONS.filter((e) => modelMatchesFilter(e, input.model));
       break;
     default:
@@ -132,7 +132,7 @@ export function listVoiceCatalog(input: ListVoiceCatalogInput): VoiceCatalogEntr
 
 /** 协议+模型下的推荐默认音色（无则 undefined） */
 export function defaultVoiceIdForProtocol(
-  protocol: VoiceProtocolId,
+  protocol: AudioProtocolId,
   model?: string,
 ): string | undefined {
   const rows = listVoiceCatalog({ protocol, ...(model ? { model } : {}), limit: 1 });
@@ -140,7 +140,7 @@ export function defaultVoiceIdForProtocol(
 }
 
 /** 供 tool schema description：列出常用 id */
-export function formatVoiceIdsForToolHint(protocol: VoiceProtocolId, model?: string): string {
+export function formatVoiceIdsForToolHint(protocol: AudioProtocolId, model?: string): string {
   const rows = listVoiceCatalog({ protocol, ...(model ? { model } : {}), limit: 16 });
   if (rows.length === 0) return "";
   return rows.map((r) => r.id).join(", ");
@@ -148,5 +148,5 @@ export function formatVoiceIdsForToolHint(protocol: VoiceProtocolId, model?: str
 
 /** voice_protocol 是否将音色与合成模型分栏（非 Edge） */
 export function voiceProtocolSeparatesModelAndVoice(protocol: string | null | undefined): boolean {
-  return protocol === VOICE_PROTOCOL_OPENAI_AUDIO || protocol === VOICE_PROTOCOL_ALIBABA_AUDIO;
+  return protocol === AUDIO_PROTOCOL_OPENAI_AUDIO || protocol === AUDIO_PROTOCOL_ALIBABA_AUDIO;
 }

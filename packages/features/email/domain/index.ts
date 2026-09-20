@@ -59,7 +59,6 @@ export {
 export { registerEmailTools } from "./tools.ts";
 export {
   applyProviderPreset,
-  assertCompleteEmailHosts,
   requireCompleteEmailHosts,
   EMAIL_PROVIDER_IDS,
   EMAIL_PROVIDER_PRESETS,
@@ -75,7 +74,6 @@ export {
   getMailboxCursor,
   inferSpecialUseFromPath,
   isMessageFlagged,
-  mailboxesToSync,
   normalizeAccountSync,
   resolveSpecialMailboxes,
   setMailboxCursor,

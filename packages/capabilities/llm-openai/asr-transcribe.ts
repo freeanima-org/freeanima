@@ -1,6 +1,6 @@
 import { getActiveRuntimeConfig, resolveScene, type ResolvedScene } from "@freeanima/core/config";
 import { connectionEndpointUrl } from "@freeanima/core/llm/presets";
-import { VOICE_PROTOCOL_EDGE_TTS } from "@freeanima/core/config";
+import { AUDIO_PROTOCOL_EDGE_TTS } from "@freeanima/core/config";
 import { transcribeOpenAiSpeech } from "@freeanima/capabilities/llm-openai/asr-transcribe-openai.ts";
 
 export type TranscribeAsrResult = {
@@ -16,7 +16,7 @@ export type TranscribeAsrInput = {
 
 function requireApiKey(scene: ResolvedScene, label: string): string | { error: string } {
   const apiKey = scene.provider.api_key?.trim();
-  if (!apiKey && scene.voiceProtocol !== VOICE_PROTOCOL_EDGE_TTS) {
+  if (!apiKey && scene.voiceProtocol !== AUDIO_PROTOCOL_EDGE_TTS) {
     return { error: `${label}连接缺少 api_key` };
   }
   return apiKey ?? "";
@@ -47,7 +47,7 @@ export async function transcribeAsrFromScene(
   }
 
   const protocol = scene.voiceProtocol ?? scene.audioProtocol;
-  if (protocol === VOICE_PROTOCOL_EDGE_TTS) {
+  if (protocol === AUDIO_PROTOCOL_EDGE_TTS) {
     return { error: "Edge TTS 连接不支持语音识别，请配置百炼/OpenAI 兼容 ASR 模型" };
   }
 

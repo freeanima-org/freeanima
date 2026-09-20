@@ -67,18 +67,6 @@ export function buildSelfLayerRefreshDataMessage(
   ].join("\n");
 }
 
-/** @deprecated 使用 SELF_LAYER_REFRESH_INSTRUCTION + buildSelfLayerRefreshDataMessage */
-export function buildSelfLayerRefreshUserMessage(
-  evidence: SemanticMemoryRow[],
-  blocks: SelfBlockView[],
-): string {
-  return [
-    buildSelfLayerRefreshDataMessage(evidence, blocks),
-    "",
-    SELF_LAYER_REFRESH_INSTRUCTION,
-  ].join("\n");
-}
-
 export type SelfLayerProposalBlocks = Partial<Record<SelfBlockMaintainableKey, string>>;
 
 export type SelfLayerProposalParsed =

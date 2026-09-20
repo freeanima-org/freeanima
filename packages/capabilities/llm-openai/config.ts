@@ -5,9 +5,6 @@ import {
 } from "@freeanima/core/config/schemas/llm-config.ts";
 import { providerConfigToSpec } from "@freeanima/core/llm/presets";
 
-/** @deprecated Prefer {@link connectionSchema} + {@link providerConfigToSpec} */
-export const openAiCompatibleProviderConfigSchema = connectionSchema;
-
 export type OpenAiCompatibleProviderConfig = ConnectionConfig;
 
 /** Parse as ProviderSpec (id from yaml key); requires api_key. */

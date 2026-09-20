@@ -1,16 +1,6 @@
 import { z } from "zod";
 
 import type { SemanticFtsHit, SemanticMemoryRow } from "@freeanima/core/db/schema/rows";
-import {
-  DEFAULT_RESIDENT_PINNED_MAX,
-  DEFAULT_RESIDENT_TOP_N,
-} from "@freeanima/core/config/schemas/memory-config";
-
-/** @deprecated 使用 resolveMemoryResidentConfig().top_n；常量保留兼容默认值 */
-export const RESIDENT_TOP_N = DEFAULT_RESIDENT_TOP_N;
-
-/** @deprecated 使用 resolveMemoryResidentConfig().pinned_max */
-export const RESIDENT_PINNED_MAX = DEFAULT_RESIDENT_PINNED_MAX;
 
 export type { SemanticFtsHit, SemanticMemoryRow };
 

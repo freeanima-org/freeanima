@@ -10,11 +10,3 @@ export function registerShellTools(toolSets: ToolSetRegistry): void {
     [...buildTerminalToolDefs(), ...buildExecuteCodeToolDefs()],
   );
 }
-
-/** @deprecated Use registerShellTools. */
-export function registerTerminalTools(toolSets: ToolSetRegistry): void {
-  registerShellTools(toolSets);
-}
-
-/** @deprecated Folded into registerShellTools (`shell` ToolSet). */
-export function registerExecuteCodeTool(_toolSets: ToolSetRegistry): void {}

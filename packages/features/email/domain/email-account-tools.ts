@@ -17,7 +17,7 @@ import {
   parseMessageId,
 } from "./email-tool-helpers.ts";
 import { EMAIL_TOOL_RETURNS } from "./return-schemas.ts";
-import { resolveEmailToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
+import { resolveEmailToolWorld, SUBJECT_WORLD_OPTIONAL } from "./tool-world-resolve.ts";
 
 const ACCOUNT_TOOL_NAMES = [
   "email_register_account",
@@ -36,7 +36,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             password: { type: "string" },
             address: { type: "string" },
             display_name: { type: "string" },
@@ -83,7 +83,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             id: { type: "number" },
             password: { type: "string" },
             address: { type: "string" },
@@ -139,7 +139,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
         description: "List email account entities.",
         parameters: {
           type: "object",
-          properties: { ...WORLD_ID_OPTIONAL },
+          properties: { ...SUBJECT_WORLD_OPTIONAL },
           required: ["subject_id"],
         },
         handler: async (args) => {
@@ -161,7 +161,7 @@ export function buildEmailAccountToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             id: { type: "number" },
           },
           required: ["subject_id", "id"],

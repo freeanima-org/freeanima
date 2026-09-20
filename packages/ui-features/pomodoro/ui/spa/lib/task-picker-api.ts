@@ -37,9 +37,6 @@ export type PomodoroLinkPickRow =
       title: string;
     };
 
-/** @deprecated 使用 PomodoroLinkPickRow */
-export type PomodoroTaskPickRow = Extract<PomodoroLinkPickRow, { kind: "task" }>;
-
 const PICK_LIMIT = 40;
 
 function habitat() {
@@ -290,16 +287,6 @@ export async function searchPendingLinksForPicker(query: string): Promise<Pomodo
   );
 }
 
-/** @deprecated */
-export async function searchPendingTasksForPicker(query: string): Promise<PomodoroLinkPickRow[]> {
-  return searchPendingLinksForPicker(query);
-}
-
-/** @deprecated */
-export async function fetchRecentPendingTasksForPicker(): Promise<PomodoroLinkPickRow[]> {
-  return searchPendingLinksForPicker("");
-}
-
 export async function resolvePomodoroLinkLabel(opts: {
   taskItemId?: number | null;
   calendarEventId?: number | null;
@@ -359,9 +346,4 @@ export async function resolvePomodoroLinkLabel(opts: {
     /* ignore */
   }
   return `事件 #${eventId}`;
-}
-
-/** @deprecated */
-export async function resolveTaskTitleForPicker(taskId: number): Promise<string | null> {
-  return resolvePomodoroLinkLabel({ taskItemId: taskId });
 }

@@ -101,11 +101,6 @@ export function buildAutobiographySummary(rows: AutobiographicalMemoryRow[]): st
   return sections.length > 0 ? sections.join("\n\n") : "(No autobiography summary yet)";
 }
 
-/** @deprecated Self-layer autobiography_summary retired; always returns false */
-export async function refreshAutobiographySummaryBlock(): Promise<boolean> {
-  return false;
-}
-
 /**
  * Manual / diagnostic autobiography extraction. Sleep cycle no longer calls this;
  * narrative write tools removed — always skip (park / deleted tools).

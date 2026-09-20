@@ -138,20 +138,3 @@ export function formatCronAutoLlmTaskSpec(): string {
 在有限工具环内完成工作；需要记忆时调用可用的记忆工具检索。
 完成后停止，不要闲聊。`;
 }
-
-/** @deprecated 使用 formatCronAutoLlmTaskSpec */
-export function formatCronAutoLlmTaskSection(_runName: string): string {
-  return formatCronAutoLlmTaskSpec();
-}
-
-/** @deprecated 使用 composeAutoLlmPrompt */
-export async function buildAutoLlmSystemPrompt(opts?: {
-  cwd?: string | null;
-  taskSection?: string;
-}): Promise<string> {
-  const { systemPrompt } = composeAutoLlmPrompt({
-    kind: "cron",
-    taskSpec: opts?.taskSection?.trim() || formatCronAutoLlmTaskSpec(),
-  });
-  return systemPrompt;
-}

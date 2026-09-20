@@ -95,15 +95,6 @@ export function openWorkFocusSegment(
   };
 }
 
-/** @deprecated 使用 switchWorkFocusLink */
-export function switchWorkFocusTask(
-  state: PomodoroActiveState,
-  taskItemId: number | null,
-  nowMs: number = Date.now(),
-): PomodoroActiveState {
-  return switchWorkFocusLink(state, { taskItemId, calendarEventId: null, habitId: null }, nowMs);
-}
-
 export function switchWorkFocusLink(
   state: PomodoroActiveState,
   link: PomodoroFocusLink,

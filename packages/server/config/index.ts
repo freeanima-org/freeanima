@@ -53,6 +53,4 @@ export {
   type RuntimeConfig,
   type ConnectionConfig,
   connectionSchema,
-  llmProviderSchema,
-  type LlmProviderConfig,
 } from "@freeanima/core/config";

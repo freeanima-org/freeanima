@@ -903,22 +903,3 @@ export async function writebackAgentPublicReply(input: {
   await turnCompleteSpeaker(input.room_id, input.agent_public_id);
   return message;
 }
-
-/** @deprecated 同步占位路径已移除；请用 prepareAgentTurn + 流式泵 */
-export async function runAgentTurn(
-  deps: RoomDomainDeps,
-  input: { room_id: string; agent_public_id: string },
-): Promise<{
-  ok: boolean;
-  conversation_id?: string;
-  reason?: string;
-}> {
-  const prepared = await prepareAgentTurn(deps, input);
-  if (!prepared.ok) {
-    return { ok: false, ...(prepared.reason ? { reason: prepared.reason } : {}) };
-  }
-  return {
-    ok: true,
-    ...(prepared.conversation_id ? { conversation_id: prepared.conversation_id } : {}),
-  };
-}

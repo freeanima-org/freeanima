@@ -91,11 +91,6 @@ export function parseMediaGenerateObjectFileId(result: string | undefined): numb
   }
 }
 
-/** @deprecated 使用 parseMediaGenerateObjectFileId */
-export function parseImageGenerateObjectFileId(result: string | undefined): number | null {
-  return parseMediaGenerateObjectFileId(result);
-}
-
 const MEDIA_GENERATE_TOOL_NAMES = new Set(["image_generate", "voice_generate"]);
 
 /** Project conversation message sequence to Habitat display list (with tool_block aggregation) */

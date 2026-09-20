@@ -11,8 +11,8 @@ import {
   LLM_FORMAT_ANTHROPIC_MESSAGES,
   LLM_FORMAT_OPENAI_COMPATIBLE,
   LLM_FORMAT_OPENAI_RESPONSES,
-  llmProviderSchema,
-  type LlmProviderConfig,
+  connectionSchema,
+  type ConnectionConfig,
 } from "@freeanima/core/config/schemas/llm-config.ts";
 import {
   materializeConnection,
@@ -254,9 +254,9 @@ async function testLlmProvider(
     api_key: draft.api_key ?? saved.api_key,
   };
 
-  let providerCfg: LlmProviderConfig;
+  let providerCfg: ConnectionConfig;
   try {
-    providerCfg = llmProviderSchema.parse(merged);
+    providerCfg = connectionSchema.parse(merged);
   } catch (err) {
     return failure(err instanceof Error ? err.message : String(err));
   }

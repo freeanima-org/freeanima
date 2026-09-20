@@ -18,6 +18,7 @@ import {
   listResidentSemanticMemory,
 } from "@freeanima/core/db/pg/semantic-memory";
 import { appendTestMessage, upsertTestConversationMeta } from "../../helpers/pg-test.ts";
+import { resolveMemoryResidentConfig } from "@freeanima/core/config";
 
 async function seedSessionMeta(conversationId: string): Promise<void> {
   await upsertTestConversationMeta(conversationId, {
@@ -95,18 +96,18 @@ describePg("memory_references PG", () => {
     expect((await getSemanticMemory(hotId))?.reference_count).toBe(2);
   });
 
-  it("listResident caps pinned at RESIDENT_PINNED_MAX", async () => {
-    const { RESIDENT_PINNED_MAX } = await import("@freeanima/core/db/pg/semantic-memory/types");
+  it("listResident caps pinned at resident pinned_max", async () => {
+    const { pinned_max: residentPinnedMax } = resolveMemoryResidentConfig(null);
 
-    for (let i = 0; i < RESIDENT_PINNED_MAX + 2; i++) {
+    for (let i = 0; i < residentPinnedMax + 2; i++) {
       await createSemanticMemory({
         content: `pinned cap probe ${i}`,
         pinned: true,
       });
     }
 
-    const resident = await listResidentSemanticMemory(RESIDENT_PINNED_MAX);
-    expect(resident.length).toBe(RESIDENT_PINNED_MAX);
+    const resident = await listResidentSemanticMemory(residentPinnedMax);
+    expect(resident.length).toBe(residentPinnedMax);
     expect(resident.every((r) => r.pinned)).toBe(true);
   });
 

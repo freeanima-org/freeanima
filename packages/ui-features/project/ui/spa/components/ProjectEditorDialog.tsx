@@ -10,9 +10,9 @@ import {
   Textarea,
 } from "@freeanima/ui-kit";
 import { DatePickerInput } from "@freeanima/ui-kit/form/DatePickerInput.tsx";
+import { dateLocalToIso, isoToDateLocalValue } from "@freeanima/ui-kit/lib/datetime-local.ts";
 
 import type { ProjectFolderRow, ProjectRow } from "../lib/api.ts";
-import { dateLocalToIso, isoToDateLocalValue } from "../lib/format-task.ts";
 import { isFolderDescendant } from "../lib/project-tree.ts";
 
 export type ProjectEditorTarget =

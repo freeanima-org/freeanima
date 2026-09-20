@@ -34,11 +34,8 @@ export {
   memoryScopedSearch,
   type SearchResult,
   type MemoryScopedHit,
-  type MemoryRecallHit,
   type MemoryScopedHitType,
-  type MemoryRecallHitType,
   type MemoryScopedSearchResult,
-  type MemoryRecallResult,
   type SemanticRecallHit,
   type ConversationRecallHit,
   type LimbicRecallHit,
@@ -72,17 +69,10 @@ export {
   runSelfAutobiography,
   runSelfAutobiographyWithLog,
   buildAutobiographySummary,
-  refreshAutobiographySummaryBlock,
   type RunSelfAutobiographyOpts,
   type SelfAutobiographyResult,
 } from "./autobiography/run.ts";
-export {
-  cstDayRange,
-  LIGHT_SLEEP_INSTRUCTION_MESSAGE,
-  RETAIN_INSTRUCTION_MESSAGE,
-  type LightSleepDayRange,
-  type DayWindowRange,
-} from "./day-window/build-messages.ts";
+export { cstDayRange, type DayWindowRange } from "./day-window/build-messages.ts";
 export { readDeepSleepState, writeDeepSleepState, recordDeepSleepRun } from "./reflect/state.ts";
 export { applyDeepSleepToolResult } from "./reflect/apply-tool-result.ts";
 export type { DeepSleepResult } from "./reflect/types.ts";

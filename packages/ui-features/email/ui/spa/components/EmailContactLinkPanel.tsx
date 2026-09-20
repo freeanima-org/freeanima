@@ -268,6 +268,3 @@ export function EmailContactMailbox({
     </div>
   );
 }
-
-/** @deprecated 使用 EmailContactMailbox */
-export const EmailContactLinkPanel = EmailContactMailbox;

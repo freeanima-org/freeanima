@@ -9,7 +9,6 @@ export * from "./conversation-read-state.ts";
 export * from "./messages.ts";
 export * from "./rooms.ts";
 export * from "./search-documents.ts";
-export * from "./semantic-memory.ts";
 export * from "./memory-reference.ts";
 export * from "./self-layer.ts";
 export * from "./notifications.ts";

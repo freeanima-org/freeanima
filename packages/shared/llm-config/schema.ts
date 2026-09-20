@@ -69,13 +69,6 @@ export const AUDIO_PROTOCOL_IDS = [
 ] as const;
 export type AudioProtocolId = (typeof AUDIO_PROTOCOL_IDS)[number];
 
-/** @deprecated 用 AUDIO_PROTOCOL_* */
-export const VOICE_PROTOCOL_OPENAI_AUDIO = AUDIO_PROTOCOL_OPENAI_AUDIO;
-export const VOICE_PROTOCOL_EDGE_TTS = AUDIO_PROTOCOL_EDGE_TTS;
-export const VOICE_PROTOCOL_ALIBABA_AUDIO = AUDIO_PROTOCOL_ALIBABA_AUDIO;
-export const VOICE_PROTOCOL_IDS = AUDIO_PROTOCOL_IDS;
-export type VoiceProtocolId = AudioProtocolId;
-
 /** Edge TTS 默认服务根（密钥可空） */
 export const DEFAULT_EDGE_TTS_BASE_URL = "https://api.msedgeservices.com/tts";
 
@@ -205,9 +198,6 @@ export function normalizeConnectionRaw(raw: unknown): unknown {
   else out.title = title;
   return out;
 }
-
-/** @deprecated 用 {@link normalizeConnectionRaw} */
-export const normalizeLlmProviderRaw = normalizeConnectionRaw;
 
 const connectionObjectSchema = z
   .object({
@@ -381,9 +371,6 @@ export const connectionSchema = z.preprocess(
   connectionObjectSchema.superRefine(refineConnection),
 );
 
-/** @deprecated 用 {@link connectionSchema} */
-export const llmProviderSchema = connectionSchema;
-
 export const connectionLooseSchema = z.preprocess(
   normalizeConnectionRaw,
   z
@@ -402,9 +389,6 @@ export const connectionLooseSchema = z.preprocess(
     })
     .passthrough(),
 );
-
-/** @deprecated 用 {@link connectionLooseSchema} */
-export const llmProviderLooseSchema = connectionLooseSchema;
 
 export const connectionsConfigSchema = z.record(z.string(), connectionLooseSchema).default({});
 
@@ -425,9 +409,6 @@ export type ConnectionConfig = {
   idle_timeout_ms?: number | undefined;
 };
 
-/** @deprecated 用 {@link ConnectionConfig} */
-export type LlmProviderConfig = ConnectionConfig;
-
 export function connectionConfigToContext(
   cfg: ConnectionConfig,
   baseUrl: string,
@@ -442,12 +423,6 @@ export function connectionConfigToContext(
   });
 }
 
-/** @deprecated 用 {@link connectionConfigToContext} */
-export const llmProviderConfigToContext = connectionConfigToContext;
-
 export function getConnectionTextProtocol(cfg: ConnectionConfig): TextProtocolId | undefined {
   return cfg.text_protocol;
 }
-
-/** @deprecated 用 {@link getConnectionTextProtocol} */
-export const getProviderTextProtocol = getConnectionTextProtocol;

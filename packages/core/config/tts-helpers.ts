@@ -7,7 +7,7 @@ import {
   type ResolvedSpeechConfig,
   type TtsProvider,
 } from "./schemas/tts.ts";
-import { DEFAULT_EDGE_TTS_BASE_URL, VOICE_PROTOCOL_EDGE_TTS } from "./schemas/llm-config.ts";
+import { DEFAULT_EDGE_TTS_BASE_URL, AUDIO_PROTOCOL_EDGE_TTS } from "./schemas/llm-config.ts";
 import type { RuntimeConfig } from "./schemas/runtime-config.ts";
 import { resolveScene } from "./llm-config.ts";
 import { effectiveProviderModalities } from "../llm/presets.ts";
@@ -51,7 +51,7 @@ export function resolveEdgeTtsConnection(cfg: RuntimeConfig): ResolvedEdgeTtsCon
     return null;
   }
   const voiceProtocol = effectiveProviderModalities(scene.provider).audio_protocol;
-  if (voiceProtocol != null && voiceProtocol !== VOICE_PROTOCOL_EDGE_TTS) {
+  if (voiceProtocol != null && voiceProtocol !== AUDIO_PROTOCOL_EDGE_TTS) {
     return null;
   }
   const baseUrl = (scene.provider.base_url?.trim() || DEFAULT_EDGE_TTS_BASE_URL).replace(/\/$/, "");

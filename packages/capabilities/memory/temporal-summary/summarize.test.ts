@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import {
   stripTemporalSummaryPreamble,
   temporalSummaryHardCap,
-  temporalSummaryOutputConstraints,
+  TEMPORAL_SUMMARY_OUTPUT_CONSTRAINTS,
 } from "./summarize.ts";
 
 describe("stripTemporalSummaryPreamble", () => {
@@ -42,9 +42,9 @@ describe("stripTemporalSummaryPreamble", () => {
   });
 });
 
-describe("temporalSummaryOutputConstraints", () => {
+describe("TEMPORAL_SUMMARY_OUTPUT_CONSTRAINTS", () => {
   it("mentions char cap and bans preamble", () => {
-    const text = temporalSummaryOutputConstraints(500);
+    const text = TEMPORAL_SUMMARY_OUTPUT_CONSTRAINTS.replaceAll("{{max_chars}}", "500");
     expect(text).toContain("500");
     expect(text).toContain("收到");
     expect(text).toContain("高度压缩");

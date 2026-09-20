@@ -14,14 +14,11 @@ import {
 } from "@freeanima/core/hooks/prompt";
 import { filterRecallableMessages } from "../message-filter.ts";
 
-/** @deprecated 历史名；语义为 CST 日窗 */
-export type LightSleepDayRange = {
+export type DayWindowRange = {
   day: string;
   fromIso: string;
   toIso: string;
 };
-
-export type DayWindowRange = LightSleepDayRange;
 
 /** CST calendar-day boundary [fromIso, toIso) */
 export function cstDayRange(day?: string): DayWindowRange {
@@ -69,7 +66,7 @@ function roleLabel(role: string): string {
 /** Keep messages whose timestamp falls in [fromIso, toIso). Invalid timestamps are dropped. */
 export function filterMessagesInDayRange<T extends { t: string }>(
   messages: T[],
-  range: LightSleepDayRange,
+  range: DayWindowRange,
 ): T[] {
   const fromMs = Date.parse(range.fromIso);
   const toMs = Date.parse(range.toIso);
@@ -82,7 +79,7 @@ export function filterMessagesInDayRange<T extends { t: string }>(
 
 export async function collectConversationBlocks(
   conversationIds: string[],
-  range: LightSleepDayRange,
+  range: DayWindowRange,
 ): Promise<LightSleepConversationBlock[]> {
   const blocks: LightSleepConversationBlock[] = [];
   for (const conversationId of conversationIds) {
@@ -170,12 +167,6 @@ export const RETAIN_TASK_SPEC = `从给定会话原文抽取值得长期保留�
 observed_at = 事实首次被提及的消息时间（可参考 t）；occurred_at = 内容描述的事件时间（可模糊）。
 既有记忆以 <memory> 属性为准（id / type / sources / observed / occurred）。
 写完后输出约 20 字总结收尾，勿再调工具。`;
-
-/** @deprecated 使用 RETAIN_TASK_SPEC + composeAutoLlmPrompt */
-export const RETAIN_INSTRUCTION_MESSAGE = RETAIN_TASK_SPEC;
-
-/** @deprecated 使用 RETAIN_INSTRUCTION_MESSAGE */
-export const LIGHT_SLEEP_INSTRUCTION_MESSAGE = RETAIN_INSTRUCTION_MESSAGE;
 
 export async function collectLimbicMemoriesForSessions(
   conversationIds: string[],

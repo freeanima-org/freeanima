@@ -19,7 +19,7 @@ import { attachTaskToEmailMessage, detachTaskFromEmailMessage } from "./attach-t
 import { EMAIL_TOOL_RETURNS } from "./return-schemas.ts";
 import { listEmailThreads, tagEmailThread } from "./thread-store.ts";
 import { getEmailSyncPort } from "./sync-port.ts";
-import { resolveEmailToolWorld, WORLD_ID_OPTIONAL } from "./tool-world-resolve.ts";
+import { resolveEmailToolWorld, SUBJECT_WORLD_OPTIONAL } from "./tool-world-resolve.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 const MAILBOX_TOOL_NAMES = [
@@ -54,7 +54,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             account_id: { type: "number" },
             limit: { type: "number" },
           },
@@ -94,7 +94,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             account_id: { type: "number" },
             thread_id: { type: "number" },
             mailbox: { type: "string" },
@@ -139,7 +139,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             query: { type: "string" },
             account_id: { type: "number" },
             thread_id: { type: "number" },
@@ -356,7 +356,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             account_id: { type: "number" },
             to: { type: "string" },
             subject: { type: "string" },
@@ -415,7 +415,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             account_id: { type: "number" },
             message_id: { type: "number" },
             to: { type: "string" },
@@ -578,7 +578,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             account_id: { type: "number" },
             has_unread: { type: "boolean" },
             limit: { type: "number" },
@@ -666,7 +666,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             id: { type: "integer", description: "email_message entity id" },
             due_at: { type: "string", description: "Due time ISO8601" },
             remind_at: { type: "string", description: "Reminder ISO8601 (requires due_at)" },
@@ -721,7 +721,7 @@ export function buildEmailMailboxToolDefs(io: EmailToolIo) {
         parameters: {
           type: "object",
           properties: {
-            ...WORLD_ID_OPTIONAL,
+            ...SUBJECT_WORLD_OPTIONAL,
             id: { type: "integer", description: "email_message entity id" },
           },
           required: ["subject_id", "id"],

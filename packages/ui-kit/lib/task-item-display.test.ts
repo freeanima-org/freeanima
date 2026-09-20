@@ -5,7 +5,6 @@ import {
   hasTaskScheduleTime,
   isTaskItemDisplayEqual,
   PRIORITY_LABEL,
-  priorityDot,
   priorityToneBg,
   priorityToneText,
   resolveTaskTagTitles,
@@ -32,11 +31,6 @@ describe("priority tones", () => {
     expect(priorityToneBg("medium")).toContain("amber");
     expect(priorityToneBg("low")).toContain("sky");
     expect(priorityToneBg("none")).toContain("muted");
-  });
-
-  test("priorityDot aliases priorityToneText", () => {
-    expect(priorityDot("high")).toBe(priorityToneText("high"));
-    expect(priorityDot("none")).toBe(priorityToneText("none"));
   });
 });
 

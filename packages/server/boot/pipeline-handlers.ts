@@ -483,9 +483,6 @@ export function resolveMemoryMaintenanceDay(day?: string): string {
   return cstDayRange(day).day;
 }
 
-/** @deprecated 使用 resolveMemoryMaintenanceDay */
-export const resolveSleepCycleDay = resolveMemoryMaintenanceDay;
-
 /**
  * 执行单步维护（不经 PipelineRunner）。
  * retain / temporal 成功或跳过时写 watermark，供补跑计划跳过已完成日。
@@ -561,9 +558,6 @@ export async function runMemoryMaintenanceStep(
   await recordStepWatermark(mapped, day, ctx.trigger, result, ctx.agent_subject_id);
   return result;
 }
-
-/** @deprecated 使用 runMemoryMaintenanceStep */
-export const runSleepStep = runMemoryMaintenanceStep;
 
 /** Retain 缺口检查：有缺口则 Inbox 通知，不自动补跑 */
 export async function checkRetainGapsAndNotify(): Promise<{
@@ -706,17 +700,6 @@ export async function runMemoryMaintenance(
   });
 }
 
-/** @deprecated 使用 runMemoryMaintenance */
-export const runSleepCycle = runMemoryMaintenance;
-
-/** 兼容旧调用：不再注册 PipelineRunner */
-export function registerSleepPipeline(_engine: ServiceEnginePort): void {
-  // no-op：记忆维护已脱离 DAG
-}
-
 export function getMemoryMaintenanceStatus(): null {
   return null;
 }
-
-/** @deprecated 使用 getMemoryMaintenanceStatus */
-export const getSleepPipelineStatus = getMemoryMaintenanceStatus;
