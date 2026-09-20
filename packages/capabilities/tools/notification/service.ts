@@ -1,5 +1,5 @@
 import { Service, type Context } from "cordis";
-import type { NotificationPort } from "./port.ts";
+import { setNotificationPort, type NotificationPort } from "./port.ts";
 
 declare module "cordis" {
   interface Context {
@@ -14,9 +14,8 @@ export type NotificationServiceConfig = {
 /**
  * Cordis service exposing the notification port as `ctx.notifications`.
  *
- * Mounted by the composition root; consumers that need ordering can depend on
- * it via `ctx.inject(['notifications'], ...)` instead of the module-global
- * `getNotificationPort()` accessor.
+ * Mounted by the composition root; 端口同时登记到 `port.ts`，供没有 ctx 的深层
+ * 消费者（`getNotificationPort()`）取用。
  */
 export class NotificationService extends Service {
   port: NotificationPort;
@@ -24,10 +23,15 @@ export class NotificationService extends Service {
   constructor(ctx: Context, config: NotificationServiceConfig) {
     super(ctx, "notifications");
     this.port = config.port;
+    setNotificationPort(this.port);
+    ctx.effect(() => () => {
+      if (this.port === config.port) setNotificationPort(null);
+    });
   }
 
   setPort(port: NotificationPort): void {
     this.port = port;
+    setNotificationPort(port);
   }
 }
 

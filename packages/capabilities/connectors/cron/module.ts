@@ -11,9 +11,12 @@ import {
   startTaskReminderScheduler,
   stopTaskReminderScheduler,
 } from "@freeanima/capabilities/ports/task-reminder-schedule.ts";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
-import { mountCronHandleService, type CronHandleService } from "./cron-handle-service.ts";
+import {
+  currentCronHandleService,
+  ensureCronHandleService,
+  type CronHandleService,
+} from "./cron-handle-service.ts";
 import { CronHandleManager } from "./handle-manager.ts";
 import {
   purgeInprocessBuiltinRowsFromPg,
@@ -24,17 +27,17 @@ import { CronJob } from "./models.ts";
 import { runJobById } from "./runner.ts";
 
 function cronHandleService(): CronHandleService {
-  return mountCronHandleService(ensureRootContext());
+  return ensureCronHandleService();
 }
 
 export function getCronHandleManager(): CronHandleManager {
-  const handles = getRootContextOrNull()?.cronHandleManager?.get() ?? null;
+  const handles = currentCronHandleService()?.get() ?? null;
   if (!handles) throw new Error("Cron module not initialized");
   return handles;
 }
 
 export function isCronModuleInitialized(): boolean {
-  return getRootContextOrNull()?.cronHandleManager?.get() != null;
+  return currentCronHandleService()?.get() != null;
 }
 
 export async function initCronModule(): Promise<void> {
@@ -56,7 +59,7 @@ export async function initCronModule(): Promise<void> {
 export function stopCronModule(): void {
   stopTaskReminderScheduler();
   stopInprocessBuiltins();
-  const service = getRootContextOrNull()?.cronHandleManager;
+  const service = currentCronHandleService();
   service?.get()?.stopAll();
   service?.reset();
 }
@@ -73,7 +76,7 @@ export {
 } from "./inprocess-builtins.ts";
 
 export async function loadAllJobs(): Promise<CronJob[]> {
-  if (!getRootContextOrNull()?.cronHandleManager?.get()) return [];
+  if (!currentCronHandleService()?.get()) return [];
   const rows = await listAllCronJobs();
   return rows.map((row: CronJobRow) => CronJob.fromRow(row));
 }

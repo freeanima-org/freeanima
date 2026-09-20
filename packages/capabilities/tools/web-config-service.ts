@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { Config } from "@freeanima/core/config";
 
 declare module "cordis" {
@@ -31,9 +31,24 @@ export class WebToolsConfigService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountWebToolsConfigService(ctx: Context): WebToolsConfigService {
-  const existing = ctx.webToolsConfig as WebToolsConfigService | undefined;
-  if (existing) return existing;
-  return new WebToolsConfigService(ctx);
+let current: WebToolsConfigService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureWebToolsConfigService(): WebToolsConfigService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new WebToolsConfigService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentWebToolsConfigService(): WebToolsConfigService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetWebToolsConfigServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

@@ -1,8 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Service, type Context } from "cordis";
 
-import { getRootContext, getRootLogger } from "../index.ts";
-import { resetRootContextForTest } from "../context.ts";
+import { getRootLogger } from "../index.ts";
 import { createLogger } from "../logging/index.ts";
 import { createMemorySink } from "../logging/sinks/memory.ts";
 import { assertTestContextWired, createTestContext } from "./create-test-context.ts";
@@ -17,11 +16,10 @@ class DemoService extends Service {
 }
 
 describe("createTestContext（kernel 统一 harness）", () => {
-  test("装配根 context/logger，并可按生产路径挂载服务", async () => {
+  test("装配隔离 context/logger，并可按生产路径挂载服务", async () => {
     const tc = await createTestContext();
     try {
       assertTestContextWired(tc);
-      expect(getRootContext()).toBe(tc.ctx);
       expect(getRootLogger()).toBe(tc.logger);
 
       await tc.mount(DemoService);
@@ -31,14 +29,13 @@ describe("createTestContext（kernel 统一 harness）", () => {
     }
   });
 
-  test("dispose 卸载 fiber 且清空根句柄", async () => {
+  test("dispose 卸载 fiber 且释放 logger 句柄", async () => {
     const first = await createTestContext();
     const firstCtx = first.ctx;
     await first.mount(DemoService);
     await first.dispose();
 
     expect(firstCtx.reflect.get("demo", false)).toBeUndefined();
-    expect(() => getRootContext()).toThrow(/root context not initialized/);
 
     const second = await createTestContext();
     try {
@@ -46,7 +43,6 @@ describe("createTestContext（kernel 统一 harness）", () => {
       assertTestContextWired(second);
     } finally {
       await second.dispose();
-      resetRootContextForTest();
     }
   });
 

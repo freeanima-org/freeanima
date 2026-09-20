@@ -1,7 +1,6 @@
 import { Context, type Fiber } from "cordis";
 
 import { createHookContext, setHookLogger } from "../hooks/host.ts";
-import { getRootContext, resetRootContextForTest, setRootContext } from "../context.ts";
 import { getRootLogger, resetRootLoggerForTest, setRootLogger } from "../logging/root-logger.ts";
 import { createTestLogger } from "../logging/testing.ts";
 import { createKernel, type Kernel } from "../index.ts";
@@ -10,10 +9,9 @@ import type { Logger } from "../logging/index.ts";
 /**
  * 统一测试上下文（单一 harness）。
  *
- * 生产只有一条组合路径：`createServiceKernel` → `createKernel({ ctx, logger })`
- * 安装进程根 context/logger，各服务经 `ctx.plugin(...)` 或幂等 `mountXService(ctx)`
- * 挂载。测试此前各写各的（裸 `new Context()` / 直接调 mount 助手 + 手工 reset），
- * 本 harness 把同一路径固定下来：
+ * 生产只有一条组合路径：`createServiceKernel` → `createKernel({ ctx, logger })`；
+ * 组合根 context 由 server 持有。测试此前各写各的（裸 `new Context()` / 直接调
+ * mount 助手），本 harness 把同一路径固定下来：
  *
  * ```ts
  * const tc = await createTestContext();
@@ -44,13 +42,11 @@ export type TestContext = {
 };
 
 export async function createTestContext(options: TestContextOptions = {}): Promise<TestContext> {
-  resetRootContextForTest();
   resetRootLoggerForTest();
 
   const logger = options.logger ?? createTestLogger();
   const ctx = createHookContext(logger);
   setHookLogger(ctx, logger);
-  setRootContext(ctx);
   setRootLogger(logger);
   const kernel = createKernel({ ctx, logger });
 
@@ -72,7 +68,6 @@ export async function createTestContext(options: TestContextOptions = {}): Promi
       for (const fiber of fibers.toReversed()) {
         await fiber.dispose();
       }
-      resetRootContextForTest();
       resetRootLoggerForTest();
     },
   };
@@ -80,9 +75,6 @@ export async function createTestContext(options: TestContextOptions = {}): Promi
 
 /** 断言 harness 装配正确（自身测试与冒烟复用）。 */
 export function assertTestContextWired(tc: TestContext): void {
-  if (getRootContext() !== tc.ctx) {
-    throw new Error("createTestContext: root context is not the harness context");
-  }
   if (getRootLogger() !== tc.logger) {
     throw new Error("createTestContext: root logger is not the harness logger");
   }

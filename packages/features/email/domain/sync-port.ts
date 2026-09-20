@@ -1,6 +1,4 @@
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
-
-import { mountEmailSyncPortService } from "./sync-port-service.ts";
+import { currentEmailSyncPortService, ensureEmailSyncPortService } from "./sync-port-service.ts";
 import type { EmailSyncResult } from "./types.ts";
 
 export type EmailSyncPort = {
@@ -9,15 +7,15 @@ export type EmailSyncPort = {
 };
 
 export function registerEmailSyncPort(port: EmailSyncPort): void {
-  mountEmailSyncPortService(ensureRootContext()).register(port);
+  ensureEmailSyncPortService().register(port);
 }
 
 export function getEmailSyncPort(): EmailSyncPort {
-  const service = getRootContextOrNull()?.emailSyncPort;
+  const service = currentEmailSyncPortService();
   if (!service) throw new Error("email sync port not registered");
   return service.get();
 }
 
 export function resetEmailSyncPortForTests(): void {
-  getRootContextOrNull()?.emailSyncPort?.reset();
+  currentEmailSyncPortService()?.reset();
 }

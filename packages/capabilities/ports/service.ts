@@ -1,6 +1,5 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 
-import { ensureRootContext } from "@freeanima/kernel";
 import type { Config } from "@freeanima/core/config";
 
 import type { OnConversationCloseBeforeNewFn } from "./conversation-close.ts";
@@ -20,9 +19,8 @@ declare module "cordis" {
  * capabilities and features call back into (turn runner, stats, cron hooks,
  * home channel).
  *
- * Replaces the seven module-level register/unregister registries with one
- * service on the root context: the ports are torn down with the context and no
- * longer leak across tests.
+ * 端口状态由本模块持有：内部消费者经 {@link platformPorts} 取用，不再查进程根
+ * context；需要 ctx 的消费方仍可用 `ctx.platformPorts`。
  */
 export class PlatformPortsService extends Service {
   runSimpleTurn: RunSimpleTurnFn | null = null;
@@ -47,14 +45,20 @@ export class PlatformPortsService extends Service {
   }
 }
 
-function asService(value: unknown): PlatformPortsService | null {
-  return value instanceof PlatformPortsService ? value : null;
+let current: PlatformPortsService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function platformPorts(): PlatformPortsService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new PlatformPortsService(ownedCtx);
+  }
+  return current;
 }
 
-/** The root-context platform ports service (mounted on first use, idempotent). */
-export function platformPorts(): PlatformPortsService {
-  const ctx = ensureRootContext();
-  const existing = asService(ctx.reflect.get("platformPorts", false));
-  if (existing) return existing;
-  return new PlatformPortsService(ctx);
+/** Test teardown。 */
+export function resetPlatformPortsForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

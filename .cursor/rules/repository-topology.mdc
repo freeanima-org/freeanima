@@ -15,7 +15,7 @@ alwaysApply: false
 | ------- | ---- | ---- |
 | `freeanima` | 仓库根 | 编排（just / scripts / tests / docs）；workspace 根 |
 | `@freeanima/shared` | `packages/shared/` | 契约（Zod）/ pg-shapes / rpc-contract / habitat-contract / vault-crypto / 同构工具 |
-| `@freeanima/kernel` | `packages/kernel/` | Cordis 组合根句柄、logger、config-mechanism、logging |
+| `@freeanima/kernel` | `packages/kernel/` | Cordis `Kernel` 视图、logger、config-mechanism、logging |
 | `@freeanima/core` | `packages/core/` | drizzle schema+migrations、PG、Redis、config 段、llm/tool/tokenizer/tts/compress |
 | `@freeanima/engine` | `packages/engine/` | conversation / turn / goal / pipeline / loop-mechanism |
 | `@freeanima/capabilities` | `packages/capabilities/` | memory / tools / connectors / self / outpost / mcp-* / federation / llm-openai |

@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 
 import type { DocsCorpus } from "./docs-corpus.ts";
 
@@ -38,9 +38,24 @@ export class DocsCorpusService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountDocsCorpusService(ctx: Context): DocsCorpusService {
-  const existing = ctx.docsCorpus as DocsCorpusService | undefined;
-  if (existing) return existing;
-  return new DocsCorpusService(ctx);
+let current: DocsCorpusService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureDocsCorpusService(): DocsCorpusService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new DocsCorpusService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentDocsCorpusService(): DocsCorpusService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetDocsCorpusServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

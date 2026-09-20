@@ -1,9 +1,11 @@
 import type { ReflectInput, ReflectResult } from "./types.ts";
 import { runBuiltinReflect } from "./builtin-reflect.ts";
 import { omitUndefined } from "@freeanima/core/util";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
-import { mountReflectEngineService } from "./reflect-engine-service.ts";
+import {
+  currentReflectEngineService,
+  ensureReflectEngineService,
+} from "./reflect-engine-service.ts";
 
 /**
  * reflect 巩固作业（#16102 / #18010）。
@@ -24,17 +26,17 @@ export type ReflectEngineResult = ReflectResult & {
 export type ReflectEngineFn = (input: ReflectEngineInput) => Promise<ReflectEngineResult>;
 
 export function registerReflectEngine(fn: ReflectEngineFn): void {
-  mountReflectEngineService(ensureRootContext()).register(fn);
+  ensureReflectEngineService().register(fn);
 }
 
 export function resetReflectEngineForTests(): void {
-  getRootContextOrNull()?.reflectEngine?.reset();
+  currentReflectEngineService()?.reset();
 }
 
 export async function runReflectEngine(
   input: ReflectEngineInput = {},
 ): Promise<ReflectEngineResult> {
-  const engine = getRootContextOrNull()?.reflectEngine?.get() ?? null;
+  const engine = currentReflectEngineService()?.get() ?? null;
   if (engine) return engine(input);
   return runBuiltinReflect(input);
 }

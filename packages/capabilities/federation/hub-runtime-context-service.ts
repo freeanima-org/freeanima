@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 
 import type { FederationHubWsDeps } from "./hub-ws-server.ts";
 
@@ -28,9 +28,24 @@ export class FederationHubWsService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountFederationHubWsService(ctx: Context): FederationHubWsService {
-  const existing = ctx.federationHubWs as FederationHubWsService | undefined;
-  if (existing) return existing;
-  return new FederationHubWsService(ctx);
+let current: FederationHubWsService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureFederationHubWsService(): FederationHubWsService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new FederationHubWsService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentFederationHubWsService(): FederationHubWsService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetFederationHubWsServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

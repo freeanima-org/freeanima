@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { EnvHealthBaselineStore } from "./baseline.ts";
 
 declare module "cordis" {
@@ -32,9 +32,24 @@ export class EnvHealthBaselineStoreService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountEnvHealthBaselineStoreService(ctx: Context): EnvHealthBaselineStoreService {
-  const existing = ctx.envHealthBaselineStore as EnvHealthBaselineStoreService | undefined;
-  if (existing) return existing;
-  return new EnvHealthBaselineStoreService(ctx);
+let current: EnvHealthBaselineStoreService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureEnvHealthBaselineStoreService(): EnvHealthBaselineStoreService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new EnvHealthBaselineStoreService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentEnvHealthBaselineStoreService(): EnvHealthBaselineStoreService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetEnvHealthBaselineStoreServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

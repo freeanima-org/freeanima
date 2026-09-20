@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { RuntimeConfigApplyDeps } from "./register-runtime-applies.ts";
 
 declare module "cordis" {
@@ -32,9 +32,24 @@ export class RuntimeConfigApplyDepsService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountRuntimeConfigApplyDepsService(ctx: Context): RuntimeConfigApplyDepsService {
-  const existing = ctx.runtimeConfigApplyDeps as RuntimeConfigApplyDepsService | undefined;
-  if (existing) return existing;
-  return new RuntimeConfigApplyDepsService(ctx);
+let current: RuntimeConfigApplyDepsService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureRuntimeConfigApplyDepsService(): RuntimeConfigApplyDepsService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new RuntimeConfigApplyDepsService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentRuntimeConfigApplyDepsService(): RuntimeConfigApplyDepsService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetRuntimeConfigApplyDepsServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

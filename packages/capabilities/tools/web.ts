@@ -13,9 +13,8 @@ import {
   readAppVersionForCapability as readAppVersion,
   vaultForCapability,
 } from "@freeanima/core/config/capability-injection";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
-import { mountWebToolsConfigService } from "./web-config-service.ts";
+import { currentWebToolsConfigService, ensureWebToolsConfigService } from "./web-config-service.ts";
 
 function userAgent(): string {
   return `anima/${readAppVersion()}`;
@@ -27,15 +26,15 @@ const MAX_SEARCH_LIMIT = 20;
 type FirecrawlConfig = { apiUrl: string; apiKey: string };
 
 function getWebToolsConfig(): Config | null {
-  return getRootContextOrNull()?.webToolsConfig?.get() ?? null;
+  return currentWebToolsConfigService()?.get() ?? null;
 }
 
 export function bindWebToolsConfig(config: Config): void {
-  mountWebToolsConfigService(ensureRootContext()).set(config);
+  ensureWebToolsConfigService().set(config);
 }
 
 export function resetWebToolsConfigForTest(): void {
-  getRootContextOrNull()?.webToolsConfig?.reset();
+  currentWebToolsConfigService()?.reset();
 }
 
 async function resolveConfigSecret(raw: string): Promise<string> {

@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { ObjectStore } from "./object-store.ts";
 
 declare module "cordis" {
@@ -32,9 +32,24 @@ export class ObjectStoreService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountObjectStoreService(ctx: Context): ObjectStoreService {
-  const existing = ctx.objectStore as ObjectStoreService | undefined;
-  if (existing) return existing;
-  return new ObjectStoreService(ctx);
+let current: ObjectStoreService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureObjectStoreService(): ObjectStoreService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new ObjectStoreService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentObjectStoreService(): ObjectStoreService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetObjectStoreServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

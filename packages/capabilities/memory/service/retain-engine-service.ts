@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { RetainEngineFn } from "./retain-engine-port.ts";
 
 declare module "cordis" {
@@ -31,9 +31,24 @@ export class RetainEngineService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountRetainEngineService(ctx: Context): RetainEngineService {
-  const existing = ctx.retainEngine as RetainEngineService | undefined;
-  if (existing) return existing;
-  return new RetainEngineService(ctx);
+let current: RetainEngineService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureRetainEngineService(): RetainEngineService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new RetainEngineService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentRetainEngineService(): RetainEngineService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetRetainEngineServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

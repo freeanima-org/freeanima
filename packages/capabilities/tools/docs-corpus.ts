@@ -3,9 +3,12 @@ import { basename, join } from "node:path";
 import { Glob } from "bun";
 
 import { getRepoRoot } from "@freeanima/core/config/repo-root";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
-import { mountDocsCorpusService, type DocsCorpusService } from "./docs-corpus-service.ts";
+import {
+  currentDocsCorpusService,
+  ensureDocsCorpusService,
+  type DocsCorpusService,
+} from "./docs-corpus-service.ts";
 import { getRegisteredEmbeddedDocs, type EmbeddedDocsFile } from "./docs-embedded.ts";
 
 export type DocsDoc = {
@@ -34,7 +37,7 @@ const DEFAULT_SEARCH_LIMIT = 20;
 const SNIPPET_RADIUS = 80;
 
 function docsCorpusService(): DocsCorpusService {
-  return mountDocsCorpusService(ensureRootContext());
+  return ensureDocsCorpusService();
 }
 
 /** 测试注入内存 corpus；传 null 清除 */
@@ -43,7 +46,7 @@ export function setDocsCorpusForTest(corpus: DocsCorpus | null): void {
 }
 
 export function resetDocsCorpusCacheForTest(): void {
-  getRootContextOrNull()?.docsCorpus?.setCached(null);
+  currentDocsCorpusService()?.setCached(null);
 }
 
 /** 从 Markdown 解析展示标题：frontmatter title → 首个 # 标题 → 文件名 */

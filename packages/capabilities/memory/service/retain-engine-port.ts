@@ -1,6 +1,4 @@
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
-
-import { mountRetainEngineService } from "./retain-engine-service.ts";
+import { currentRetainEngineService, ensureRetainEngineService } from "./retain-engine-service.ts";
 
 /**
  * retain 引擎端口（#16102 PR2）。
@@ -28,15 +26,15 @@ export type RetainEngineResult = {
 export type RetainEngineFn = (input: RetainEngineInput) => Promise<RetainEngineResult>;
 
 export function registerRetainEngine(fn: RetainEngineFn): void {
-  mountRetainEngineService(ensureRootContext()).register(fn);
+  ensureRetainEngineService().register(fn);
 }
 
 export function resetRetainEngineForTests(): void {
-  getRootContextOrNull()?.retainEngine?.reset();
+  currentRetainEngineService()?.reset();
 }
 
 export function tryGetRetainEngine(): RetainEngineFn | null {
-  return getRootContextOrNull()?.retainEngine?.get() ?? null;
+  return currentRetainEngineService()?.get() ?? null;
 }
 
 export async function runRetainEngine(input: RetainEngineInput): Promise<RetainEngineResult> {

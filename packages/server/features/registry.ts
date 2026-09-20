@@ -1,17 +1,19 @@
 import type { Context } from "cordis";
 
-import { ensureRootContext } from "@freeanima/kernel";
 import type { FeaturePluginModule } from "@freeanima/core/features/plugin.ts";
+import { serviceRootContext } from "../bootstrap/kernel.ts";
 import { getFeatureService, mountFeatureService } from "./service.ts";
 
 /**
- * Register feature plugins onto the process context.
+ * Register feature plugins onto the composition-root context.
  *
  * Imperative entry point used by boot / integration tests; the production
  * loader mounts the same plugins through `cordis.yml` instead.
  */
-export function registerFeatures(plugins: readonly FeaturePluginModule[]): void {
-  const ctx: Context = ensureRootContext();
+export function registerFeatures(
+  plugins: readonly FeaturePluginModule[],
+  ctx: Context = serviceRootContext(),
+): void {
   const features = mountFeatureService(ctx);
   for (const plugin of plugins) {
     features.provide(plugin.feature);

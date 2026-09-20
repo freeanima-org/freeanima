@@ -14,7 +14,7 @@ import {
   parseBindHosts,
 } from "@freeanima/core/config/bind-hosts.ts";
 import { getAppRuntime } from "./service/runtime-context.ts";
-import { ensureRootContext } from "@freeanima/kernel";
+import { serviceRootContext } from "./bootstrap/kernel.ts";
 import { runBootPipelineViaLoader } from "./boot/loader.ts";
 import { startAsyncIntegrations } from "./boot/phases.ts";
 import { gracefulShutdown } from "./boot/shutdown.ts";
@@ -89,7 +89,7 @@ export async function serve(
   } = { list: [] };
 
   try {
-    const root = ensureRootContext();
+    const root = serviceRootContext();
     const acpSessionUpdatedRef: { handler: ((sid: string) => void) | null } = { handler: null };
     const runtimeRef: { current: AppRuntime | null } = { current: null };
 

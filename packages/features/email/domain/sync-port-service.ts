@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { EmailSyncPort } from "./sync-port.ts";
 
 declare module "cordis" {
@@ -33,9 +33,24 @@ export class EmailSyncPortService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountEmailSyncPortService(ctx: Context): EmailSyncPortService {
-  const existing = ctx.emailSyncPort as EmailSyncPortService | undefined;
-  if (existing) return existing;
-  return new EmailSyncPortService(ctx);
+let current: EmailSyncPortService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureEmailSyncPortService(): EmailSyncPortService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new EmailSyncPortService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentEmailSyncPortService(): EmailSyncPortService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetEmailSyncPortServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

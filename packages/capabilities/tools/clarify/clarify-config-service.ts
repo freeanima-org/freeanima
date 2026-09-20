@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { Config } from "@freeanima/core/config";
 
 declare module "cordis" {
@@ -35,9 +35,24 @@ export class ClarifyConfigService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountClarifyConfigService(ctx: Context): ClarifyConfigService {
-  const existing = ctx.clarifyConfig as ClarifyConfigService | undefined;
-  if (existing) return existing;
-  return new ClarifyConfigService(ctx);
+let current: ClarifyConfigService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureClarifyConfigService(): ClarifyConfigService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new ClarifyConfigService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentClarifyConfigService(): ClarifyConfigService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetClarifyConfigServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }
