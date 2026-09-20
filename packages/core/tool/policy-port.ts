@@ -1,5 +1,4 @@
 import type { ConversationMetaMessage } from "@freeanima/core/db/domain";
-import { getRootContextOrNull } from "@freeanima/kernel";
 
 /**
  * 对话级工具策略过滤器。
@@ -10,12 +9,18 @@ export type ConversationToolPolicyFilter = (
   meta: ConversationMetaMessage,
 ) => string[];
 
-/** 由 `ctx.toolPolicy` Cordis 服务提供；未挂载时不收窄。 */
+let filter: ConversationToolPolicyFilter | null = null;
+
+/** 注册过滤器（组合根 / 测试）；传 null 清除。 */
+export function setConversationToolPolicyFilter(next: ConversationToolPolicyFilter | null): void {
+  filter = next;
+}
+
+/** 未注册时不收窄。 */
 export function applyConversationToolPolicyFilter(
   toolNames: string[],
   meta: ConversationMetaMessage,
 ): string[] {
-  const service = getRootContextOrNull()?.toolPolicy;
-  if (!service) return toolNames;
-  return service.apply(toolNames, meta);
+  if (!filter) return toolNames;
+  return filter(toolNames, meta);
 }

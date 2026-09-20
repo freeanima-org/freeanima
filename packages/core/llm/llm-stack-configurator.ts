@@ -1,18 +1,31 @@
 import type { RuntimeConfig } from "@freeanima/core/config";
 import type { BackendRegistry, ProviderRegistry } from "@freeanima/core/provider";
-import { getRootContextOrNull } from "@freeanima/kernel";
 
-export type { LlmStackConfigurator } from "./llm-stack-service.ts";
+export type LlmStackConfigurator = (
+  cfg: RuntimeConfig,
+  backends: BackendRegistry,
+  providers: ProviderRegistry,
+) => void;
 
-/** Resolve the configurator from `ctx.llmStack`; throws when never mounted. */
+let configurator: LlmStackConfigurator | null = null;
+
+/** 组合根在 boot 时注入（替代 ctx.llmStack 服务）。 */
+export function setLlmStackConfigurator(fn: LlmStackConfigurator): void {
+  configurator = fn;
+}
+
+export function resetLlmStackConfiguratorForTest(): void {
+  configurator = null;
+}
+
+/** 用已注入的 configurator 填充 backends/providers；未注入即失败。 */
 export function applyLlmStackConfigurator(
   cfg: RuntimeConfig,
   backends: BackendRegistry,
   providers: ProviderRegistry,
 ): void {
-  const service = getRootContextOrNull()?.llmStack;
-  if (!service) {
-    throw new Error("LlmStackService not mounted: load @freeanima/platform first");
+  if (!configurator) {
+    throw new Error("LlmStack configurator not set: call setLlmStackConfigurator first");
   }
-  service.configure(cfg, backends, providers);
+  configurator(cfg, backends, providers);
 }

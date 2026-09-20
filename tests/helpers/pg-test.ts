@@ -10,9 +10,12 @@ import {
 } from "@freeanima/core/db/pg";
 import { bindSearchRuntime } from "@freeanima/core/db/pg/search";
 import { createEngine } from "@freeanima/engine";
-import { initLlmRuntime, mountLlmStackService, resetLlmRuntimeForTests } from "@freeanima/core/llm";
+import {
+  initLlmRuntime,
+  setLlmStackConfigurator,
+  resetLlmRuntimeForTests,
+} from "@freeanima/core/llm";
 import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
-import { ensureRootContext } from "@freeanima/kernel";
 import {
   createConversationService,
   type ConversationService,
@@ -52,7 +55,7 @@ async function ensureIntegrationWorldContext(config: Config): Promise<void> {
 }
 
 function createTestEngine(config: Config): Engine {
-  mountLlmStackService(ensureRootContext(), bindLlmStack);
+  setLlmStackConfigurator(bindLlmStack);
   const llm = initLlmRuntime(config.data);
   return createEngine({ llm, config, logger: createTestLogger() });
 }

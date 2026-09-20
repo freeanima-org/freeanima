@@ -1,16 +1,11 @@
-import { afterAll, expect, it } from "bun:test";
-
-import { resetRootContextForTest, setRootContext } from "@freeanima/kernel";
+import { afterEach, expect, it } from "bun:test";
 
 import { createHookContext, onSystemPromptBuild } from "../cordis/index.ts";
 import { buildSystemPrompt } from "./runner.ts";
-import { SystemPromptService } from "./service.ts";
+import { resetSystemPromptServiceForTest, SystemPromptService } from "./service.ts";
 
-let activeCtx = createHookContext();
-setRootContext(activeCtx);
-
-afterAll(() => {
-  resetRootContextForTest();
+afterEach(() => {
+  resetSystemPromptServiceForTest();
 });
 
 const tick = async (): Promise<void> => {
@@ -20,18 +15,15 @@ const tick = async (): Promise<void> => {
 };
 
 it("builds via the Cordis SystemPromptService and fold", async () => {
-  activeCtx = createHookContext();
-  setRootContext(activeCtx);
-  onSystemPromptBuild(activeCtx, () => ({
+  const ctx = createHookContext();
+  onSystemPromptBuild(ctx, () => ({
     sections: [{ id: "a", content: "A", order: 0 }],
   }));
-  await activeCtx.plugin(SystemPromptService, {});
+  await ctx.plugin(SystemPromptService, {});
   await tick();
   await expect(buildSystemPrompt(["tool_a"])).resolves.toBe("A");
 });
 
 it("throws when the service is not mounted", async () => {
-  activeCtx = createHookContext();
-  setRootContext(activeCtx);
   await expect(buildSystemPrompt(["tool_a"])).rejects.toThrow("SystemPromptService not mounted");
 });

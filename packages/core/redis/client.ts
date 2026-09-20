@@ -1,43 +1,71 @@
-import type { RedisClient } from "bun";
+import { RedisClient } from "bun";
 
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
+export type RedisUrlResolver = () => string | null;
 
-import { mountRedisService } from "./service.ts";
-import type { RedisConnectionConfig, RedisUrlResolver } from "./service.ts";
+export type RedisConnectionConfig = {
+  url: string;
+};
 
-export type { RedisConnectionConfig, RedisUrlResolver };
+type RedisState = {
+  urlResolver: RedisUrlResolver | null;
+  client: RedisClient | null;
+};
+
+let state: RedisState = { urlResolver: null, client: null };
+
+function isRedisConnectionClosedError(err: unknown): boolean {
+  return (
+    err instanceof Error &&
+    "code" in err &&
+    (err as { code: unknown }).code === "ERR_REDIS_CONNECTION_CLOSED"
+  );
+}
+
+function getConfig(): RedisConnectionConfig | null {
+  const url = state.urlResolver?.() ?? null;
+  return url ? { url } : null;
+}
 
 /** Redis URL resolver injected by service composition root (called once at startup) */
 export function initRedis(opts: { getRedisUrl: RedisUrlResolver }): void {
-  mountRedisService(ensureRootContext(), opts.getRedisUrl);
+  state = { urlResolver: opts.getRedisUrl, client: null };
 }
 
 export function getRedisConfig(): RedisConnectionConfig | null {
-  return getRootContextOrNull()?.redis?.getConfig() ?? null;
+  return getConfig();
 }
 
 export function isRedisConfigured(): boolean {
-  return getRootContextOrNull()?.redis?.isConfigured() ?? false;
+  return getConfig() != null;
 }
 
 export function getRedis(): RedisClient {
-  const service = getRootContextOrNull()?.redis;
-  if (!service) {
+  if (state.client) return state.client;
+  const cfg = getConfig();
+  if (!cfg?.url) {
     throw new Error("Redis not configured");
   }
-  return service.getClient();
+  state.client = new RedisClient(cfg.url);
+  return state.client;
 }
 
 export async function closeRedis(): Promise<void> {
-  await getRootContextOrNull()?.redis?.close();
+  const client = state.client;
+  if (!client) return;
+  try {
+    client.close();
+  } catch (err) {
+    if (!isRedisConnectionClosedError(err)) throw err;
+  }
+  state.client = null;
 }
 
 /** Inject mock client for tests */
 export function setRedisForTest(mock: RedisClient): void {
-  mountRedisService(ensureRootContext()).setClient(mock);
+  state.client = mock;
 }
 
 /** Test teardown: reset resolver and connection */
 export function resetRedisForTest(): void {
-  getRootContextOrNull()?.redis?.reset();
+  state = { urlResolver: null, client: null };
 }

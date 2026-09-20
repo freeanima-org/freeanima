@@ -7,7 +7,7 @@ import {
 } from "./default-conversation-toolsets.ts";
 import { applyConversationToolPolicyFilter } from "./policy-port.ts";
 import { createTestContext, type TestContext } from "@freeanima/kernel/testing";
-import { mountToolPolicyService } from "./policy-service.ts";
+import { setConversationToolPolicyFilter } from "./policy-port.ts";
 import { ToolSetRegistry } from "./toolset.ts";
 
 function stubTool(name: string) {
@@ -52,7 +52,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
 
   afterEach(async () => {
     await tc.dispose();
-    mountToolPolicyService(tc.ctx, (names) => names);
+    setConversationToolPolicyFilter((names) => names);
   });
 
   it("returns only default toolsets present in registry", () => {
@@ -69,7 +69,7 @@ describe("resolveDefaultConversationToolSetsForMeta", () => {
   });
 
   it("applies conversation tool policy filter when registered", () => {
-    mountToolPolicyService(tc.ctx, (names) => names.filter((n) => n.startsWith("memory_")));
+    setConversationToolPolicyFilter((names) => names.filter((n) => n.startsWith("memory_")));
     const registry = new ToolSetRegistry();
     registry.registerToolSet("toolset", "discovery", [
       stubTool("toolset_search"),

@@ -1,44 +1,48 @@
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
+import type { EmbeddingJobKind, EmbedTextFn, EmbedTextsFn } from "./types.ts";
 
-import { mountEmbeddingRuntimeService } from "./runtime-service.ts";
-import type { AfterEmbeddingStoredFn } from "./runtime-service.ts";
-import type { EmbedTextFn, EmbedTextsFn } from "./types.ts";
+export type AfterEmbeddingStoredFn = (info: {
+  kind: EmbeddingJobKind;
+  id: string;
+  embedding: number[];
+}) => void | Promise<void>;
 
-export type { AfterEmbeddingStoredFn };
+let embedTextFn: EmbedTextFn | null = null;
+let embedTextsFn: EmbedTextsFn | null = null;
+let afterEmbeddingStoredFn: AfterEmbeddingStoredFn | null = null;
 
 export function registerEmbedTextFn(fn: EmbedTextFn | null): void {
-  mountEmbeddingRuntimeService(ensureRootContext()).setEmbedTextFn(fn);
+  embedTextFn = fn;
 }
 
 export function getEmbedTextFn(): EmbedTextFn | null {
-  return getRootContextOrNull()?.embeddingRuntime?.getEmbedTextFn() ?? null;
+  return embedTextFn;
 }
 
 export function registerEmbedTextsFn(fn: EmbedTextsFn | null): void {
-  mountEmbeddingRuntimeService(ensureRootContext()).setEmbedTextsFn(fn);
+  embedTextsFn = fn;
 }
 
 export function getEmbedTextsFn(): EmbedTextsFn | null {
-  return getRootContextOrNull()?.embeddingRuntime?.getEmbedTextsFn() ?? null;
+  return embedTextsFn;
 }
 
 export function registerAfterEmbeddingStored(fn: AfterEmbeddingStoredFn | null): void {
-  mountEmbeddingRuntimeService(ensureRootContext()).setAfterEmbeddingStored(fn);
+  afterEmbeddingStoredFn = fn;
 }
 
 export function getAfterEmbeddingStored(): AfterEmbeddingStoredFn | null {
-  return getRootContextOrNull()?.embeddingRuntime?.getAfterEmbeddingStored() ?? null;
+  return afterEmbeddingStoredFn;
 }
 
 /** Test teardown */
 export function resetEmbedTextFnForTest(): void {
-  getRootContextOrNull()?.embeddingRuntime?.setEmbedTextFn(null);
+  embedTextFn = null;
 }
 
 export function resetEmbedTextsFnForTest(): void {
-  getRootContextOrNull()?.embeddingRuntime?.setEmbedTextsFn(null);
+  embedTextsFn = null;
 }
 
 export function resetAfterEmbeddingStoredForTest(): void {
-  getRootContextOrNull()?.embeddingRuntime?.setAfterEmbeddingStored(null);
+  afterEmbeddingStoredFn = null;
 }

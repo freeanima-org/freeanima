@@ -1,7 +1,7 @@
 import { Service, type Context } from "cordis";
 
 import { toFeatureRpcHandlerMap } from "../habitat/route-handlers.ts";
-import { getRootContextOrNull } from "@freeanima/kernel";
+import { setFeatureRegistryPort } from "@freeanima/core/features/registry.ts";
 import type {
   FeatureContribution,
   FeatureRegistryPort,
@@ -20,6 +20,11 @@ export class FeatureService extends Service implements FeatureRegistryPort {
 
   constructor(ctx: Context) {
     super(ctx, "features");
+    registerCurrent(this);
+    setFeatureRegistryPort(this);
+    ctx.effect(() => () => {
+      unregisterCurrent(this);
+    });
   }
 
   provide(contribution: FeatureContribution): void {
@@ -81,11 +86,26 @@ function asFeatureService(value: unknown): FeatureService | undefined {
   return value instanceof FeatureService ? value : undefined;
 }
 
-/** The process-wide feature service, or `undefined` before it is mounted. */
+let current: FeatureService | null = null;
+
+function registerCurrent(service: FeatureService): void {
+  current = service;
+}
+
+function unregisterCurrent(service: FeatureService): void {
+  if (current === service) current = null;
+  setFeatureRegistryPort(null);
+}
+
+/** The mounted feature service, or `undefined` before it is mounted. */
 export function getFeatureService(): FeatureService | undefined {
-  const ctx = getRootContextOrNull();
-  if (!ctx) return undefined;
-  return asFeatureService(ctx.reflect.get("features", false) as unknown);
+  return current ?? undefined;
+}
+
+/** Test teardown. */
+export function resetFeatureServiceForTest(): void {
+  current = null;
+  setFeatureRegistryPort(null);
 }
 
 /** Mount synchronously (idempotent: re-mounting reuses the instance). */
