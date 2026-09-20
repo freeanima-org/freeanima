@@ -9,7 +9,7 @@ import {
   getTerminalLogs,
   setCodingWorkspace,
 } from "./tools-executor.ts";
-import { createNodeWorkspaceBackend } from "./workspace-fs.node-backend.ts";
+import { createNodeWorkspaceBackend } from "@freeanima/shared/coding/outpost/node-backend.ts";
 import {
   normalizeLexicalPath,
   resolveUnderWorkspace,

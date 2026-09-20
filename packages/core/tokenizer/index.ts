@@ -16,13 +16,10 @@ export {
   isUsingFallbackTokenizer,
   listTokenizerBindings,
   listLoadedTokenizerRepos,
-  reconcileTokenizer,
   releaseTokenizerRepo,
   resetTokenizerForTest,
   setTokenizerEncodeForTest,
   splitTextByTokenLimit,
-  startTokenizerReconcile,
-  stopTokenizerReconcileForTest,
   type TokenizerBindingSnapshot,
 } from "./store.ts";
 export {

@@ -4,7 +4,7 @@ import { isRecord } from "@freeanima/shared/util";
 import { getCachedUserSubjectId } from "./world-context.ts";
 
 import type { PomodoroActiveState } from "./pomodoro-active-types.ts";
-import { normalizeRestoredActiveState, switchWorkFocusTask } from "./pomodoro-focus-segments.ts";
+import { normalizeRestoredActiveState, switchWorkFocusLink } from "./pomodoro-focus-segments.ts";
 
 const STORAGE_PREFIX = "freeanima.pomodoro.active";
 
@@ -144,7 +144,11 @@ export function switchPomodoroActiveTask(
 ): boolean {
   const active = readPomodoroActiveState(undefined, subjectId);
   if (!active) return false;
-  writePomodoroActiveState(switchWorkFocusTask(active, taskItemId), undefined, subjectId);
+  writePomodoroActiveState(
+    switchWorkFocusLink(active, { taskItemId, calendarEventId: null, habitId: null }),
+    undefined,
+    subjectId,
+  );
   return true;
 }
 

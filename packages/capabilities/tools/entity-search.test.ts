@@ -2,14 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import * as entityPg from "@freeanima/core/db/pg/entity";
 import { ToolSetRegistry, runWithToolContext } from "@freeanima/core/tool";
 
-import { ANIMA_URI_PROTOCOL_RULE } from "./anima-uri-prompt.ts";
+import { ANIMA_URI_PROTOCOL_BODY } from "./anima-uri-prompt.ts";
 import { handleEntityGet, registerEntitySearchTools } from "./entity-search.ts";
 
-describe("ANIMA_URI_PROTOCOL_RULE", () => {
+describe("ANIMA_URI_PROTOCOL_BODY", () => {
   it("is compact and names entity_get", () => {
-    expect(ANIMA_URI_PROTOCOL_RULE.length).toBeLessThanOrEqual(400);
-    expect(ANIMA_URI_PROTOCOL_RULE).toContain("entity_get");
-    expect(ANIMA_URI_PROTOCOL_RULE).toContain("[[anima:{id}]]");
+    expect(ANIMA_URI_PROTOCOL_BODY.length).toBeLessThanOrEqual(400);
+    expect(ANIMA_URI_PROTOCOL_BODY).toContain("entity_get");
+    expect(ANIMA_URI_PROTOCOL_BODY).toContain("[[anima:{id}]]");
   });
 });
 

@@ -276,29 +276,6 @@ export async function buildSubagentRoleData(
   return [role, ...optIn].filter(Boolean).join("\n\n");
 }
 
-/** @deprecated 使用 SUBAGENT_TASK_SPEC + buildSubagentRoleData */
-export async function buildSubagentTaskSpec(
-  profile: ResolvedSubagentProfile,
-  agent: { agent_subject_id: number; agent_world_id: number },
-): Promise<string> {
-  const roleData = await buildSubagentRoleData(profile, agent);
-  return [SUBAGENT_TASK_SPEC, roleData].filter(Boolean).join("\n\n");
-}
-
-/** @deprecated 使用 composeAutoLlmPrompt + SUBAGENT_TASK_SPEC */
-export async function buildSubagentSystemPrompt(
-  _deps: FullRuntimeDeps,
-  profile: ResolvedSubagentProfile,
-  _functionNames: string[],
-): Promise<string> {
-  const { systemPrompt } = composeAutoLlmPrompt({
-    kind: "subagent",
-    taskSpec: SUBAGENT_TASK_SPEC,
-    taskParams: { slug: profile.slug },
-  });
-  return systemPrompt;
-}
-
 async function runOneTask(
   deps: FullRuntimeDeps,
   worldId: number,

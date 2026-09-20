@@ -54,24 +54,6 @@ export type AutoLlmRunFinishInput = {
   finished_at?: string;
 };
 
-/** @deprecated 一次插完；新路径用 insertRunning + appendMessages + finish */
-export type AutoLlmRunAppendInput = {
-  id: string;
-  run_name: string;
-  run_kind: string;
-  subject_id?: number | null;
-  output: string;
-  status: "ok" | "error";
-  duration_ms: number;
-  max_loop_iterations: number;
-  max_duration_ms?: number | null;
-  error?: string | null;
-  metadata?: Record<string, unknown> | null;
-  created_at?: string;
-  finished_at?: string;
-  messages?: AutoLlmMessageAppendInput[];
-};
-
 export type PurgeStaleAutoLlmRunsOpts = {
   olderThan: Date;
   perRunKindKeep?: number;

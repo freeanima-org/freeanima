@@ -114,11 +114,6 @@ export function priorityToneBg(priority: TaskItemPriority): string {
   }
 }
 
-/** @deprecated 兼容 re-export；新代码用 priorityToneText / priorityToneBg */
-export function priorityDot(priority: TaskItemPriority): string {
-  return priorityToneText(priority);
-}
-
 function normalizeRemindersForEqual(item: TaskItemDisplay): {
   remind_at: string | null;
   reminders: TaskItemReminderDisplay[];

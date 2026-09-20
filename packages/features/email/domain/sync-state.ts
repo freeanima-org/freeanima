@@ -172,9 +172,6 @@ export function defaultSyncMailboxPaths(
   return [...set];
 }
 
-/** @deprecated alias */
-export const mailboxesToSync = defaultSyncMailboxPaths;
-
 /** FLAGS 刷新 UID 集合：本地已有 UID ∪ recent window。 */
 export function collectFlagRefreshUids(
   localUids: number[],

@@ -6,4 +6,4 @@ export {
   titleFromDiaryDay,
   type EnsuredDiaryEntry,
 } from "./ensure.ts";
-export { suggestDiaryEntryTags, type DiaryEntryTagSuggestion } from "./suggest-tags.ts";
+export { suggestDiaryEntryTags } from "./suggest-tags.ts";

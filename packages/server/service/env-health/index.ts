@@ -16,7 +16,6 @@ export {
   ENV_HEALTH_BASELINE_KV_KEY,
   baselineFilePath,
   createBaselineStore,
-  createFileBaselineStore,
   getBaselineStore,
   resetBaselineMemoryCacheForTests,
   setBaselineStoreForTests,

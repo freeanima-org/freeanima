@@ -48,7 +48,6 @@ mock.module("@freeanima/core/db/pg/auto-llm-run", () => ({
     persistLog.push("finish");
     finishCalls.push(row);
   }),
-  appendAutoLlmRun: mock(async () => {}),
   purgeStaleAutoLlmRuns: mock(async () => ({ deleted: 0 })),
   listAutoLlmRuns: mock(async () => []),
   countAutoLlmRuns: mock(async () => 0),

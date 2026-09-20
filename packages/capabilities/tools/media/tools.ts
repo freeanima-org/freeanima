@@ -26,15 +26,15 @@ import {
   OPENAI_AUDIO_VOICE_OPTIONS,
 } from "@freeanima/core/tts/voice-catalog";
 import {
-  VOICE_PROTOCOL_ALIBABA_AUDIO,
-  VOICE_PROTOCOL_EDGE_TTS,
+  AUDIO_PROTOCOL_ALIBABA_AUDIO,
+  AUDIO_PROTOCOL_EDGE_TTS,
 } from "@freeanima/core/config/schemas/llm-config";
 import { coerceString } from "@freeanima/shared/coerce-string";
 
 function voiceGenerateToolVoiceDescription(): string {
-  const edge = formatVoiceIdsForToolHint(VOICE_PROTOCOL_EDGE_TTS);
+  const edge = formatVoiceIdsForToolHint(AUDIO_PROTOCOL_EDGE_TTS);
   const oai = OPENAI_AUDIO_VOICE_OPTIONS.map((v) => v.id).join(", ");
-  const ali = formatVoiceIdsForToolHint(VOICE_PROTOCOL_ALIBABA_AUDIO, "qwen-audio-3.0-tts-plus");
+  const ali = formatVoiceIdsForToolHint(AUDIO_PROTOCOL_ALIBABA_AUDIO, "qwen-audio-3.0-tts-plus");
   return [
     "Voice / timbre id. Edge: often same as scene model (e.g. zh-CN-XiaoxiaoNeural).",
     `OpenAI examples: ${oai}.`,

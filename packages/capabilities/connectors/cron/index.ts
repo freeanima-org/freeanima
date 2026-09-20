@@ -105,7 +105,6 @@ export {
   INPROCESS_BUILTIN_DEFS,
   MEMORY_MAINTENANCE_LOCK_KEY,
   MEMORY_MAINTENANCE_LOCK_TTL_MS,
-  SLEEP_PIPELINE_LOCK_KEY,
   type InprocessBuiltinDef,
   type InprocessBuiltinRuntime,
 } from "./inprocess-builtins.ts";

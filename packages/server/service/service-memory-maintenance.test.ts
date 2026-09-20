@@ -41,7 +41,6 @@ mock.module("../boot/pipeline-handlers.ts", () => ({
   runMemoryMaintenance: runCycleMock,
   runMemoryMaintenanceStep: runStepMock,
   getMemoryMaintenanceStatus: () => null,
-  registerSleepPipeline: () => {},
 }));
 
 afterAll(() => {

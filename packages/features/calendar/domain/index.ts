@@ -16,4 +16,3 @@ export {
   mapCalendarEventBodyToTaskItemFields,
   mapTaskItemBodyToCalendarEvent,
 } from "./convert-task-event.ts";
-export { registerCalendarTools } from "./tools.ts";

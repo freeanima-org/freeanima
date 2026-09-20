@@ -1,11 +1,9 @@
 import { and, asc, count, desc, eq, inArray, lt, ne, sql } from "drizzle-orm";
 import { randomPublicId } from "@freeanima/shared/util";
 import { autoLlmMessages, autoLlmRuns } from "@freeanima/core/db/schema";
-import { omitUndefined } from "@freeanima/core/util";
 import type {
   AutoLlmMessageAppendInput,
   AutoLlmMessageRow,
-  AutoLlmRunAppendInput,
   AutoLlmRunCountOpts,
   AutoLlmRunFinishInput,
   AutoLlmRunInsertRunningInput,
@@ -180,33 +178,6 @@ export async function finishAutoLlmRun(row: AutoLlmRunFinishInput): Promise<void
       finished_at,
     })
     .where(eq(autoLlmRuns.id, row.id));
-}
-
-/** 一次插完（测试 / 兼容）；新路径用 insertRunning + append + finish */
-export async function appendAutoLlmRun(row: AutoLlmRunAppendInput): Promise<void> {
-  await insertRunningAutoLlmRun(
-    omitUndefined({
-      id: row.id,
-      run_name: row.run_name,
-      run_kind: row.run_kind,
-      subject_id: row.subject_id,
-      max_loop_iterations: row.max_loop_iterations,
-      max_duration_ms: row.max_duration_ms,
-      metadata: row.metadata,
-      created_at: row.created_at,
-      messages: row.messages,
-    }),
-  );
-  await finishAutoLlmRun(
-    omitUndefined({
-      id: row.id,
-      status: row.status,
-      output: row.output,
-      duration_ms: row.duration_ms,
-      error: row.error,
-      finished_at: row.finished_at,
-    }),
-  );
 }
 
 export async function abortOrphanAutoLlmRuns(): Promise<{ aborted: number }> {

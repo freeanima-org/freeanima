@@ -19,8 +19,6 @@ export type InprocessBuiltinDef = {
 export const MEMORY_MAINTENANCE_LOCK_KEY = "memory-maintenance";
 /** 记忆维护租约；杀进程后卡死上限 ≈ 此时效（活任务靠 renew 续期） */
 export const MEMORY_MAINTENANCE_LOCK_TTL_MS = 30 * 60 * 1000;
-/** @deprecated 使用 MEMORY_MAINTENANCE_LOCK_KEY */
-export const SLEEP_PIPELINE_LOCK_KEY = MEMORY_MAINTENANCE_LOCK_KEY;
 
 const MIN_MS = 60 * 1000;
 

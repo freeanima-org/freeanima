@@ -1,5 +1,5 @@
 import {
-  llmProviderSchema,
+  connectionSchema,
   LLM_PRESET_ALIBABA_TOKEN_PLAN,
 } from "@freeanima/core/config/schemas/llm-config.ts";
 import { effectiveProviderModalities, getLlmRuntime } from "@freeanima/core/llm";
@@ -176,7 +176,7 @@ export async function listProviderModels(
 
   let providerCfg;
   try {
-    providerCfg = llmProviderSchema.parse(raw);
+    providerCfg = connectionSchema.parse(raw);
   } catch (err) {
     throw new ApiHandlerError(400, err instanceof Error ? err.message : String(err), {
       code: "invalid_provider_config",

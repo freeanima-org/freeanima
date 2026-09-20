@@ -2,7 +2,6 @@ import { describe, expect, test } from "bun:test";
 
 import {
   applyProviderPreset,
-  assertCompleteEmailHosts,
   EMAIL_PROVIDER_PRESETS,
   listEmailProviderPresets,
   requireCompleteEmailHosts,
@@ -53,7 +52,7 @@ describe("applyProviderPreset", () => {
   });
 });
 
-describe("assertCompleteEmailHosts", () => {
+describe("requireCompleteEmailHosts", () => {
   test("accepts complete hosts", () => {
     expect(
       requireCompleteEmailHosts({
@@ -72,7 +71,6 @@ describe("assertCompleteEmailHosts", () => {
 
   test("rejects missing fields without provider fill", () => {
     expect(() => requireCompleteEmailHosts({})).toThrow(/Missing IMAP\/SMTP/);
-    expect(() => assertCompleteEmailHosts({})).toThrow(/Missing IMAP\/SMTP/);
   });
 });
 

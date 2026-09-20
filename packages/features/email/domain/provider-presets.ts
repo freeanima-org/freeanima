@@ -114,13 +114,3 @@ export function requireCompleteEmailHosts(fields: {
     imap_port: fields.imap_port,
   };
 }
-
-/** @deprecated Prefer requireCompleteEmailHosts */
-export function assertCompleteEmailHosts(fields: {
-  smtp_host?: string | undefined;
-  smtp_port?: number | undefined;
-  imap_host?: string | undefined;
-  imap_port?: number | undefined;
-}): asserts fields is EmailHostFields {
-  requireCompleteEmailHosts(fields);
-}

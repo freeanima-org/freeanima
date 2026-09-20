@@ -17,4 +17,3 @@ export {
   reorderNoteTextBlocks,
   updateNoteTextBlock,
 } from "./text-blocks.ts";
-export { registerNoteTools } from "./tools.ts";

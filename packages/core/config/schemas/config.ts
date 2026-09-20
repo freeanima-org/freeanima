@@ -30,18 +30,14 @@ export { weixinConfigSchema, type WeixinConfigInput } from "./weixin.ts";
 export { autoLlmConfigSchema, type AutoLlmConfigInput } from "./auto-llm.ts";
 export { i18nConfigSchema, type I18nConfigInput } from "./i18n.ts";
 
-export type { ConnectionConfig, LlmProviderConfig } from "./llm-config.ts";
+export type { ConnectionConfig } from "./llm-config.ts";
 export type { CapabilityBinding as LlmSceneBinding } from "./capability.ts";
 export {
   connectionSchema,
   connectionsConfigSchema,
-  llmProviderSchema,
-  llmProviderLooseSchema,
   connectionLooseSchema,
   normalizeConnectionRaw,
-  normalizeLlmProviderRaw,
   getConnectionTextProtocol,
-  getProviderTextProtocol,
   LLM_FORMAT_IDS,
   LLM_FORMAT_OPENAI_COMPATIBLE,
   LLM_FORMAT_OPENAI_RESPONSES,
@@ -62,9 +58,6 @@ export {
   AUDIO_PROTOCOL_ALIBABA_AUDIO,
   AUDIO_PROTOCOL_IDS,
   GENERIC_AUDIO_PROTOCOL_IDS,
-  VOICE_PROTOCOL_OPENAI_AUDIO,
-  VOICE_PROTOCOL_EDGE_TTS,
-  VOICE_PROTOCOL_IDS,
   DEFAULT_EDGE_TTS_BASE_URL,
   LLM_SCENE_PURPOSE_IDS,
   CUSTOM_KIND_IDS,
@@ -77,7 +70,6 @@ export type {
   ImageProtocolId,
   EmbeddingsProtocolId,
   AudioProtocolId,
-  VoiceProtocolId,
   LlmScenePurposeId,
   CustomKindId,
 } from "./llm-config.ts";

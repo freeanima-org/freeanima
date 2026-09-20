@@ -22,9 +22,6 @@ export const GOAL_JUDGE_TASK_SPEC = `严格判定 AI agent 会话目标是否完
 只输出合法 JSON（无 markdown 围栏）：
 {"done": true|false, "reason": "与目标相同语言的简短说明"}`;
 
-/** @deprecated 使用 GOAL_JUDGE_TASK_SPEC + composeAutoLlmPrompt */
-export const GOAL_JUDGE_SYSTEM_PROMPT = GOAL_JUDGE_TASK_SPEC;
-
 export type GoalJudgeInput = {
   goal: string;
   subgoals: string[];

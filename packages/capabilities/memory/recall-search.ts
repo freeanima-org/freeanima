@@ -38,19 +38,11 @@ export const MEMORY_SCOPED_HIT_TYPES: readonly MemoryScopedHitType[] = [
   "autobiographical",
 ] as const;
 
-/** @deprecated Use MemoryScopedHitType */
-export type MemoryRecallHitType = MemoryScopedHitType;
-/** @deprecated Use MEMORY_SCOPED_HIT_TYPES */
-export const MEMORY_RECALL_HIT_TYPES = MEMORY_SCOPED_HIT_TYPES;
-
 const MEMORY_SCOPED_HIT_TYPE_SET = new Set<string>(MEMORY_SCOPED_HIT_TYPES);
 
 export function isMemoryScopedHitType(value: string): value is MemoryScopedHitType {
   return MEMORY_SCOPED_HIT_TYPE_SET.has(value);
 }
-
-/** @deprecated Use isMemoryScopedHitType */
-export const isMemoryRecallHitType = isMemoryScopedHitType;
 
 function resolveScopedTypes(types?: readonly MemoryScopedHitType[]): Set<MemoryScopedHitType> {
   if (!types || types.length === 0) return new Set(MEMORY_SCOPED_HIT_TYPES);
@@ -107,9 +99,6 @@ export type MemoryScopedHit =
   | LimbicRecallHit
   | AutobiographicalRecallHit;
 
-/** @deprecated Use MemoryScopedHit */
-export type MemoryRecallHit = MemoryScopedHit;
-
 export type MemoryScopedSearchResult = {
   query: string;
   limit: number;
@@ -118,9 +107,6 @@ export type MemoryScopedSearchResult = {
   truncated: boolean;
   next_hint?: string;
 };
-
-/** @deprecated Use MemoryScopedSearchResult */
-export type MemoryRecallResult = MemoryScopedSearchResult;
 
 function pgRankToScore(rank: number): number {
   return Math.min(1.0, Math.max(0.1, rank * 5.0));

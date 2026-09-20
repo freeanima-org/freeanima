@@ -1,13 +1,7 @@
 import { estimateTokenCount, splitByTokens } from "tokenx";
 
-import { getRuntimeLogger } from "@freeanima/core/config";
-
 import { FALLBACK_TOKENIZER_REPO, TOKENX_ESTIMATE_REPO } from "./constants.ts";
 import { createTokenizerFromEncode, type TokenizerInstance } from "./instance.ts";
-
-function tokenizerLog() {
-  return getRuntimeLogger().with({ component: "tokenizer" });
-}
 
 type ModelBinding = {
   model: string;
@@ -37,12 +31,6 @@ export function resetTokenizerForTest(): void {
   testEncodeByRepo = null;
   repoInstances.clear();
   modelBindings.clear();
-  stopTokenizerReconcileForTest();
-}
-
-/** @deprecated No-op: HF reconcile removed; kept for testing teardown compatibility. */
-export function stopTokenizerReconcileForTest(): void {
-  /* no timer after tokenx switch */
 }
 
 function bindModel(model: string, primaryRepo: string | null, activeRepo: string): void {
@@ -113,19 +101,6 @@ export async function ensureTokenizer(model: string): Promise<void> {
   ensureTokenxInstance();
   if (!trimmed) return;
   bindModel(trimmed, TOKENX_ESTIMATE_REPO, TOKENX_ESTIMATE_REPO);
-}
-
-/** @deprecated No-op: primary path is always tokenx; kept for protocol/API compatibility. */
-export async function reconcileTokenizer(model: string): Promise<boolean> {
-  const trimmed = model.trim();
-  if (!trimmed) return false;
-  await ensureTokenizer(trimmed);
-  return false;
-}
-
-/** @deprecated No-op after tokenx switch. */
-export function startTokenizerReconcile(_intervalMs?: number): void {
-  tokenizerLog().debug("tokenizer reconcile skipped (tokenx estimate)");
 }
 
 function getActiveRepo(model: string): string {

@@ -19,11 +19,6 @@ export const TEMPORAL_SUMMARY_OUTPUT_CONSTRAINTS = [
   "「无差别」= 不因「是否重要」故意漏主题，≠ 复述细节；宁短勿长。",
 ].join("");
 
-/** @deprecated 使用 TEMPORAL_SUMMARY_OUTPUT_CONSTRAINTS + task_params.max_chars */
-export function temporalSummaryOutputConstraints(maxChars: number): string {
-  return TEMPORAL_SUMMARY_OUTPUT_CONSTRAINTS.replaceAll("{{max_chars}}", String(maxChars));
-}
-
 /** 稳定本轮指令模板（日期等用 {{}}；值进 task_params） */
 export const TEMPORAL_SUMMARY_INSTRUCTIONS = {
   globalDay:

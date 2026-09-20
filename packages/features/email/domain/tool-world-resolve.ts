@@ -69,9 +69,3 @@ export async function resolveEmailToolWorld(opts: {
     return toolError(msg);
   }
 }
-
-/** @deprecated use SUBJECT_WORLD_OPTIONAL */
-export const WORLD_ID_OPTIONAL = {
-  world_id: SUBJECT_WORLD_OPTIONAL.world_id,
-  subject_id: SUBJECT_ID_TOOL_PROPERTY,
-} as const;

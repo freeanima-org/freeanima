@@ -98,9 +98,6 @@ export function setCharacterScreenPosition(x: number, y: number): void {
   getBackend()?.setScreenPosition?.(cx, cy);
 }
 
-/** @deprecated 使用 setCharacterScreenPosition */
-export const moveCompanionStage = setCharacterScreenPosition;
-
 async function readPatrolScreenAndWindow(): Promise<{
   screen: ScreenRect;
   window: { width: number; height: number };

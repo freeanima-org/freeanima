@@ -8,7 +8,7 @@ import {
   LLM_PRESET_DEEPSEEK,
   LLM_PRESET_OLLAMA,
   LLM_PRESET_OPENCODE_GO,
-  llmProviderSchema,
+  connectionSchema,
 } from "@freeanima/core/config";
 import {
   effectiveProviderModalities,
@@ -31,7 +31,7 @@ describe("resolveOpencodeGoFormat", () => {
 
 describe("materializeConnection", () => {
   it("applies deepseek defaults", () => {
-    const cfg = llmProviderSchema.parse({
+    const cfg = connectionSchema.parse({
       preset: LLM_PRESET_DEEPSEEK,
       api_key: "k",
     });
@@ -42,7 +42,7 @@ describe("materializeConnection", () => {
   });
 
   it("ignores base_url override on cloud presets", () => {
-    const cfg = llmProviderSchema.parse({
+    const cfg = connectionSchema.parse({
       preset: LLM_PRESET_DEEPSEEK,
       api_key: "k",
       base_url: "http://127.0.0.1:9999/v1",
@@ -54,7 +54,7 @@ describe("materializeConnection", () => {
 
   it("ollama defaults and allows base_url override", () => {
     expect(presetAllowsBaseUrlOverride(LLM_PRESET_OLLAMA)).toBe(true);
-    const def = llmProviderSchema.parse({
+    const def = connectionSchema.parse({
       preset: LLM_PRESET_OLLAMA,
       api_key: "ollama",
     });
@@ -62,7 +62,7 @@ describe("materializeConnection", () => {
     expect(effectiveProviderModalities(def).embeddings_protocol).toBe("openai_embeddings");
     expect(effectiveProviderModalities(def).image_protocol).toBeNull();
 
-    const overridden = llmProviderSchema.parse({
+    const overridden = connectionSchema.parse({
       preset: LLM_PRESET_OLLAMA,
       api_key: "ollama",
       base_url: "http://192.168.1.10:11434/v1",
@@ -72,7 +72,7 @@ describe("materializeConnection", () => {
   });
 
   it("opencode_go is a gateway", () => {
-    const cfg = llmProviderSchema.parse({
+    const cfg = connectionSchema.parse({
       preset: LLM_PRESET_OPENCODE_GO,
       api_key: "k",
     });
@@ -82,7 +82,7 @@ describe("materializeConnection", () => {
   });
 
   it("custom requires text_protocol + base_url", () => {
-    const cfg = llmProviderSchema.parse({
+    const cfg = connectionSchema.parse({
       preset: LLM_PRESET_CUSTOM,
       custom_kind: "text",
       text_protocol: LLM_FORMAT_OPENAI_RESPONSES,
@@ -95,7 +95,7 @@ describe("materializeConnection", () => {
 
 describe("providerConfigToSpec", () => {
   it("attaches resolveFormat for gateway", () => {
-    const cfg = llmProviderSchema.parse({
+    const cfg = connectionSchema.parse({
       preset: LLM_PRESET_OPENCODE_GO,
       api_key: "sk",
     });
@@ -109,7 +109,7 @@ describe("providerConfigToSpec", () => {
 describe("effectiveProviderModalities", () => {
   it("custom cannot use builtin-only audio protocol", () => {
     expect(() =>
-      llmProviderSchema.parse({
+      connectionSchema.parse({
         preset: LLM_PRESET_CUSTOM,
         custom_kind: "audio",
         audio_protocol: "alibaba_audio",
@@ -120,7 +120,7 @@ describe("effectiveProviderModalities", () => {
   });
 
   it("connectionEndpointUrl works for custom audio", () => {
-    const cfg = llmProviderSchema.parse({
+    const cfg = connectionSchema.parse({
       preset: LLM_PRESET_CUSTOM,
       custom_kind: "audio",
       audio_protocol: "openai_audio_speech",

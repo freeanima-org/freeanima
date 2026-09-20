@@ -5,9 +5,6 @@ import { getTypedHabitatClient } from "@freeanima/portal-sdk/habitat-typed-clien
 
 import { registerPomodoroOfflineModule } from "./pomodoro-offline-adapter.ts";
 
-/** @deprecated 历史别名；现为 subject 实体 id（number） */
-export type PomodoroSubjectKind = number;
-
 export type PomodoroConfigRow = {
   work_minutes: number;
   short_break_minutes: number;

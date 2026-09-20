@@ -165,7 +165,7 @@ export {
   normalizeRestoredActiveState,
   openWorkFocusSegment,
   primaryTaskItemIdFromSegments,
-  switchWorkFocusTask,
+  switchWorkFocusLink,
 } from "./pomodoro-focus-segments.ts";
 export type { PomodoroTaskFocusSegmentPayload } from "./pomodoro-focus-segments.ts";
 export {

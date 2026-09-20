@@ -1,8 +1,8 @@
 import {
   getActiveRuntimeConfig,
-  VOICE_PROTOCOL_ALIBABA_AUDIO,
-  VOICE_PROTOCOL_EDGE_TTS,
-  VOICE_PROTOCOL_OPENAI_AUDIO,
+  AUDIO_PROTOCOL_ALIBABA_AUDIO,
+  AUDIO_PROTOCOL_EDGE_TTS,
+  AUDIO_PROTOCOL_OPENAI_AUDIO,
   resolveScene,
   edgeTtsProxyFromBaseUrl,
   DEFAULT_EDGE_TTS_BASE_URL,
@@ -44,7 +44,7 @@ export type SynthesizeVoiceInput = {
 
 function requireApiKey(scene: ResolvedScene, label: string): string | { error: string } {
   const apiKey = scene.provider.api_key?.trim();
-  if (!apiKey && scene.voiceProtocol !== VOICE_PROTOCOL_EDGE_TTS) {
+  if (!apiKey && scene.voiceProtocol !== AUDIO_PROTOCOL_EDGE_TTS) {
     return { error: `${label}连接缺少 api_key` };
   }
   return apiKey ?? "";
@@ -86,7 +86,7 @@ export async function synthesizeVoiceFromScene(
 
   let baseUrl: string;
   try {
-    if (protocol === VOICE_PROTOCOL_EDGE_TTS) {
+    if (protocol === AUDIO_PROTOCOL_EDGE_TTS) {
       baseUrl = (scene.provider.base_url?.trim() || DEFAULT_EDGE_TTS_BASE_URL).replace(/\/$/, "");
     } else {
       baseUrl = connectionEndpointUrl(scene.provider);
@@ -99,7 +99,7 @@ export async function synthesizeVoiceFromScene(
   if (!text) return { error: "合成文本不能为空" };
 
   try {
-    if (protocol === VOICE_PROTOCOL_EDGE_TTS) {
+    if (protocol === AUDIO_PROTOCOL_EDGE_TTS) {
       const mapped = mapVoiceProsodyToEdge(prosody);
       const proxy = edgeTtsProxyFromBaseUrl(baseUrl);
       const buf = await synthesizeEdgeTts({
@@ -113,13 +113,13 @@ export async function synthesizeVoiceFromScene(
       return { bytes: new Uint8Array(buf), mimeType: "audio/mpeg" };
     }
 
-    if (protocol === VOICE_PROTOCOL_OPENAI_AUDIO) {
+    if (protocol === AUDIO_PROTOCOL_OPENAI_AUDIO) {
       const key = requireApiKey(scene, "文生声");
       if (typeof key === "object") return key;
       const mapped = mapVoiceProsodyToOpenAiSpeech(prosody);
       const voice =
         mapped.voice ??
-        defaultVoiceIdForProtocol(VOICE_PROTOCOL_OPENAI_AUDIO, scene.model) ??
+        defaultVoiceIdForProtocol(AUDIO_PROTOCOL_OPENAI_AUDIO, scene.model) ??
         "alloy";
       return await generateOpenAiSpeech({
         apiKey: key,
@@ -133,16 +133,16 @@ export async function synthesizeVoiceFromScene(
       });
     }
 
-    if (protocol === VOICE_PROTOCOL_ALIBABA_AUDIO) {
+    if (protocol === AUDIO_PROTOCOL_ALIBABA_AUDIO) {
       const key = requireApiKey(scene, "文生声");
       if (typeof key === "object") return key;
       const mapped = mapVoiceProsodyToAlibabaTts(prosody);
       const voice =
-        mapped.voice ?? defaultVoiceIdForProtocol(VOICE_PROTOCOL_ALIBABA_AUDIO, scene.model);
+        mapped.voice ?? defaultVoiceIdForProtocol(AUDIO_PROTOCOL_ALIBABA_AUDIO, scene.model);
       if (!voice) {
         const hint =
-          formatVoiceIdsForToolHint(VOICE_PROTOCOL_ALIBABA_AUDIO, scene.model) ||
-          formatVoiceIdsForToolHint(VOICE_PROTOCOL_ALIBABA_AUDIO);
+          formatVoiceIdsForToolHint(AUDIO_PROTOCOL_ALIBABA_AUDIO, scene.model) ||
+          formatVoiceIdsForToolHint(AUDIO_PROTOCOL_ALIBABA_AUDIO);
         return {
           error: hint
             ? `阿里云文生声需要音色（scenes.params.voice 或 tool.voice）。常用：${hint}`

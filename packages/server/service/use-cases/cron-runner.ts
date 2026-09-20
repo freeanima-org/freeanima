@@ -6,10 +6,14 @@ import {
   filterToolNamesByPolicy,
   type ResolvedCapabilityPolicy,
 } from "@freeanima/core/capability-policy";
+import {
+  composeAutoLlmPrompt,
+  formatCronAutoLlmTaskSpec,
+} from "@freeanima/core/llm/auto-llm-prompt";
+
 import { materializeFromFragments } from "../capability-policy-bind.ts";
 
 import type { FullRuntimeDeps } from "../runtime-deps.ts";
-import { composeAutoLlmPrompt, formatCronAutoLlmTaskSpec } from "../build-auto-llm-prompt.ts";
 import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "@freeanima/engine/auto-llm-run.ts";
 
 export type CronEngineJobInput = {

@@ -152,9 +152,6 @@ ${BATCH_EXECUTION_NOTE}
 
 Call tools directly to persist.`;
 
-/** @deprecated 使用 REFLECT_CONSOLIDATE_TASK_SPEC */
-export const REFLECT_TASK_SPEC = REFLECT_CONSOLIDATE_TASK_SPEC;
-
 /** Fetch all active memories needed for reflect */
 export async function fetchAllActiveMemories(opts?: {
   world_id?: number;

@@ -209,15 +209,6 @@ export function shiftSchedulablePlannedRange(
   };
 }
 
-/** @deprecated 使用 {@link shiftSchedulablePlannedRange} */
-export function shiftSchedulableStartAt(
-  prevClock: string | null | undefined,
-  nextClock: string,
-  startAt: string | null | undefined,
-): string | null {
-  return shiftSchedulablePlannedRange(prevClock, nextClock, startAt, null).start_at;
-}
-
 /** 滚期：保持每条提醒相对时钟的偏移（整组同 delta） */
 export function shiftSchedulableReminders(
   prevClock: string | null | undefined,

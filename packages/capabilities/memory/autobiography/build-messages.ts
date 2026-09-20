@@ -15,7 +15,7 @@ import {
   formatDialogueMessage,
   formatLimbicMemoriesMessage,
   type LightSleepConversationBlock,
-  type LightSleepDayRange,
+  type DayWindowRange,
 } from "../day-window/build-messages.ts";
 
 const AUTOBIOGRAPHY_SEMANTIC_TYPES = new Set(["experience", "imprint"]);
@@ -167,7 +167,7 @@ export async function buildLightSleepAutobiographyUserMessages(
   stageSemanticIds: number[],
   stageLimbicIds: string[],
   precomputedBlocks?: LightSleepConversationBlock[],
-  range?: LightSleepDayRange,
+  range?: DayWindowRange,
 ): Promise<string[]> {
   let blocks = precomputedBlocks;
   if (!blocks) {
