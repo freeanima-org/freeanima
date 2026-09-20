@@ -32,13 +32,13 @@ export type {
 } from "./profile.ts";
 
 export { UnsupportedMobileError } from "./mobile-errors.ts";
-export type { ShellClientConfig } from "./shell-client-config.ts";
+export type { ShellClientConfig } from "@freeanima/shared/shell-config/client-config.ts";
 export {
   normalizeShellClientConfig,
   parseShellClientConfig,
   shellClientNeedsHabitatSetup,
-} from "./shell-client-config.ts";
-export type { ShellDebugConfig } from "./shell-debug-config.ts";
+} from "@freeanima/shared/shell-config/client-config.ts";
+export type { ShellDebugConfig } from "@freeanima/shared/shell-config/debug-config.ts";
 export {
   DEFAULT_SHELL_DEBUG,
   isOfflineOutboxDevtoolsEnabled,
@@ -46,13 +46,13 @@ export {
   parseShellDebugConfig,
   readOfflineOutboxDevtoolsFlag,
   DEBUG_OFFLINE_OUTBOX_DEVTOOLS_KEY,
-} from "./shell-debug-config.ts";
-export type { ShellSettings } from "./shell-settings.ts";
+} from "@freeanima/shared/shell-config/debug-config.ts";
+export type { ShellSettings } from "@freeanima/shared/shell-config/settings.ts";
 export {
   DEFAULT_SHELL_SETTINGS,
   mergeShellSettings,
   parseShellSettings,
-} from "./shell-settings.ts";
+} from "@freeanima/shared/shell-config/settings.ts";
 export type { RemoteAuthCredentials } from "./remote-auth.ts";
 export {
   buildBearerHeaders,

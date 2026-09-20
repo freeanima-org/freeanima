@@ -1,7 +1,7 @@
 import type { Context } from "cordis";
 
 import { ensureRootContext } from "@freeanima/kernel";
-import type { FeaturePluginModule } from "./plugin.ts";
+import type { FeaturePluginModule } from "@freeanima/core/features/plugin.ts";
 import { getFeatureService, mountFeatureService } from "./service.ts";
 
 /**

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import type { SettingsPanelProps } from "@freeanima/portal-sdk/settings";
 import { habitatFields } from "@freeanima/portal-sdk/settings";
-import { parseShellClientConfig } from "@freeanima/portal-sdk/shell-client-config";
+import { parseShellClientConfig } from "@freeanima/shared/shell-config/client-config.ts";
 
 import { FormRenderer } from "../../form/FormRenderer.tsx";
 import { needsHabitatSetup } from "../../setup/habitat-setup.ts";

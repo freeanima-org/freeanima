@@ -57,7 +57,7 @@ import { ProjectSidebar } from "./components/ProjectSidebar.tsx";
 import { ProjectTaskDetailPanel } from "./components/ProjectTaskDetailPanel.tsx";
 import { ProjectTaskList } from "./components/ProjectTaskList.tsx";
 import type { ProjectDragEndAction } from "./lib/resolve-project-drag-end.ts";
-import { applySortOrderUpdates, sortOrderUpdates } from "./lib/reorder.ts";
+import { applySortOrderUpdates, sortOrderUpdates } from "@freeanima/shared/task/sort-order.ts";
 import {
   completeProjectTask,
   createProjectApi,
@@ -102,7 +102,11 @@ import {
   findUnresolvedTaskTagIds,
   matchTaskItemByTag,
 } from "@freeanima/ui-features/task/ui/spa/lib/task-tag-filter.ts";
-import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
+import {
+  cloneTaskItemDisplay,
+  isTaskItemDisplayDirty,
+  isTaskItemDisplayEqual,
+} from "@freeanima/ui-kit/lib/task-item-display.ts";
 import { fetchTags } from "@freeanima/ui-features/tag/ui/spa/lib/api.ts";
 import { readProjectFromUrl, writeProjectToUrl } from "./lib/project-url.ts";
 
@@ -233,9 +237,9 @@ export function ProjectApp() {
     applySavedItem,
   } = useDetailPanelState<TaskItemRow>({
     layoutMode,
-    cloneItem: cloneTaskItem,
-    isDirty: isTaskItemDirty,
-    isEqual: isTaskItemEqual,
+    cloneItem: cloneTaskItemDisplay,
+    isDirty: isTaskItemDisplayDirty,
+    isEqual: isTaskItemDisplayEqual,
     setCompactImmersive,
     persistItem: (snapshot) =>
       updateProjectTask(subjectId, snapshot.id, {

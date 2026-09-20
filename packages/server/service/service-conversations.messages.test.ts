@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it, mock } from "bun:test";
 
 import type { StoredMessage } from "@freeanima/core/db/domain";
 import { emptyLlmUsageTotals } from "@freeanima/shared/llm-usage";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 const realConversation = await import("@freeanima/core/db/pg/conversation");
 const conversationOriginal = { ...realConversation };

@@ -33,7 +33,7 @@ import { collectStreamReply, type StreamEvent } from "@freeanima/engine/loop-mec
 import { scheduleGracefulRestart, runAnimaCliUpgrade } from "./process-restart.ts";
 import { omitUndefined } from "@freeanima/core/util";
 import { asRecord } from "@freeanima/shared/util";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { runSkillReview } from "./skill-review-run.ts";
 import {
   attachContentMediaToLastUser,

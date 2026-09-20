@@ -3,7 +3,7 @@ import {
   normalizeShellDebugConfig,
   parseShellDebugConfig,
   type ShellDebugConfig,
-} from "./shell-debug-config.ts";
+} from "@freeanima/shared/shell-config/debug-config.ts";
 import { notifyDebugConfigChanged } from "./debug-config-events.ts";
 
 /** WebView localStorage：调试 prefs（vConsole / Outbox Devtools） */

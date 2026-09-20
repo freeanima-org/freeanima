@@ -3,7 +3,7 @@ import { getBaselineStore } from "./baseline.ts";
 import { buildEnvHealthSourceRef, diffMarkers, fingerprintMarkers } from "./diff.ts";
 import { formatChangeNotificationBody, formatChangeNotificationTitle } from "./format.ts";
 import { stableMarkersJson, type EnvHealthMarkers } from "./types.ts";
-import type { FullRuntimeDeps } from "../runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type EnvHealthTickResult = {
   ok: boolean;

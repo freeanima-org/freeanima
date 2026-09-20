@@ -2,7 +2,7 @@
 import { isRecord } from "@freeanima/shared/util";
 
 import type { ShellApi } from "./shell-api.ts";
-import { resolveHabitatRpcWsUrl } from "./habitat-ws-url.ts";
+import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { getSubjectKind } from "./subject-scope-store.ts";
 import {
   OFFLINE_KV_STORE,

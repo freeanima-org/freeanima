@@ -1,13 +1,13 @@
 export * from "@freeanima/engine/conversation/build-messages-display.ts";
 export { ConversationManager } from "./conversation-manager.ts";
 export * from "./app-runtime.ts";
-export type { RuntimeDeps, FullRuntimeDeps } from "./runtime-deps.ts";
-export * from "./home-channel.ts";
-export * from "./platforms.ts";
+export type { RuntimeDeps, FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
+export * from "@freeanima/capabilities/ports/home-channel";
+export * from "@freeanima/capabilities/ports/constants";
 export { REPO_ROOT, HABITAT_BASE_PATH } from "./repo-paths.ts";
 export * from "./conversation-stats.ts";
 export * from "./runtime-context-stats.ts";
 export * from "./service-prompt-debug.ts";
 export * from "./service-llm-usage.ts";
 export { ANIMA_VERSION } from "./version.ts";
-export { getRepoRoot, readAppVersion, writeRootVersion } from "./root-version.ts";
+export { getRepoRoot, readAppVersion, writeRootVersion } from "@freeanima/server/config";

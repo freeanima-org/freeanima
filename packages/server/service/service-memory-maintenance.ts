@@ -28,7 +28,7 @@ import {
   MAINTENANCE_STEP_LIST,
   isKnownMaintenanceStep,
 } from "../boot/memory-maintenance.ts";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { listCronJobs } from "./service-status.ts";
 
 async function acquireMemoryMaintenanceLock() {

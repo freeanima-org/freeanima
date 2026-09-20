@@ -30,7 +30,7 @@ import { omitUndefined } from "@freeanima/core/util";
 import { composeAutoLlmPrompt } from "@freeanima/core/llm/auto-llm-prompt";
 import { PROMPT_XML_TAGS } from "@freeanima/core/hooks/prompt";
 
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { filterToolNamesByPolicy, resolveSleepCapabilityPolicy } from "./capability-policy-bind.ts";
 import { AUTO_LLM_DEFAULT_MAX_DURATION_MS, runAutoLlm } from "@freeanima/engine/auto-llm-run.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";

@@ -6,7 +6,7 @@ import {
   type RuntimeContext,
   type ServiceAppRuntime,
 } from "./runtime-service.ts";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type { RuntimeContext, ServiceAppRuntime } from "./runtime-service.ts";
 

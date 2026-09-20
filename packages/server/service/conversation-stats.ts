@@ -1,4 +1,4 @@
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { isConversationMeta } from "@freeanima/core/db/domain";
 import type { StoredMessage } from "@freeanima/core/db/domain";
 import {

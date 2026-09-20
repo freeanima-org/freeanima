@@ -6,7 +6,7 @@ import {
   listNotifications,
   markNotificationRead,
 } from "@freeanima/features/notification/habitat/service";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import {
   markNotificationsReadBySourceRef,
   notificationExistsBySourceRef,

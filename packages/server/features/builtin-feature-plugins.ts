@@ -26,7 +26,7 @@ import taskPlugin from "@freeanima/features/task/cordis-plugin.ts";
 import vaultPlugin from "@freeanima/features/vault/cordis-plugin.ts";
 
 import wsOnlyPlugin from "./providers/ws-only.ts";
-import type { FeaturePluginModule } from "./plugin.ts";
+import type { FeaturePluginModule } from "@freeanima/core/features/plugin.ts";
 
 /**
  * Feature plugins mounted at boot: one per Habitat route bundle, plus the

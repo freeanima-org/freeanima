@@ -1,7 +1,7 @@
 export * from "@freeanima/core/config/paths";
 export { expandConfigEnv } from "@freeanima/kernel/config-mechanism";
 export { parseYaml, stringifyYaml } from "@freeanima/core/config/yaml.ts";
-export * from "./config.ts";
+export * from "@freeanima/core/config/config-sanitize.ts";
 export {
   RuntimeConfigStore,
   isPatchableRuntimeConfig,

@@ -3,7 +3,7 @@ import { mountNotificationService } from "@freeanima/capabilities/tools/notifica
 import { emailSyncPortImpl } from "@freeanima/features/email/habitat/connectors";
 
 import { createNotificationPort } from "./service/notification-helpers.ts";
-import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import type { Config } from "@freeanima/core/config";
 
 /** Composition root one-shot capability binding (email sync / notification) */

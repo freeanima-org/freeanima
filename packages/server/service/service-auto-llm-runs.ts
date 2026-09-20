@@ -10,7 +10,7 @@ import {
   sumAutoLlmUsageFiltered,
 } from "@freeanima/core/db/pg/auto-llm-run";
 import { emptyLlmUsageTotals, type LlmUsageTotals } from "@freeanima/shared/llm-usage";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type AutoLlmRunWithUsage = AutoLlmRunRow & { usage: LlmUsageTotals };
 

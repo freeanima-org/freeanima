@@ -20,7 +20,7 @@ import {
   type ListTreeNode,
 } from "@freeanima/ui-kit/lib/task-list-tree.ts";
 import { useTaskDndUi } from "./TaskDndRoot.tsx";
-import { EntityIdLabel } from "./EntityIdLabel.tsx";
+import { EntityIdLabel } from "@freeanima/ui-kit/composite";
 
 type ListSidebarProps = {
   builtinSmartListSection?: ReactNode;

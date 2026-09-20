@@ -91,7 +91,7 @@ import {
   taskSmartItemsQueryKey,
   taskSmartListsQueryKey,
 } from "./lib/task-query-keys.ts";
-import { useTaskLayoutMode } from "./lib/layout-mode.ts";
+import { useThreeColumnLayoutMode } from "@freeanima/ui-kit/layout";
 import {
   isWebShell,
   useContextMenuCapability,
@@ -127,7 +127,11 @@ import {
   buildListMenuItems,
   buildSmartListMenuItems,
 } from "./lib/task-menus.ts";
-import { cloneTaskItem, isTaskItemDirty, isTaskItemEqual } from "./lib/task-detail-dirty.ts";
+import {
+  cloneTaskItemDisplay,
+  isTaskItemDisplayDirty,
+  isTaskItemDisplayEqual,
+} from "@freeanima/ui-kit/lib/task-item-display.ts";
 
 type SheetMenuState = { title?: string; items: ActionSheetItem[] };
 type ChildNamePromptState = { kind: "list" | "folder"; parentId: number };
@@ -138,7 +142,7 @@ export function TaskApp() {
   const contextMenuEnabled = useContextMenuCapability();
   const useActionSheet = useTaskActionSheet();
   const useDrawer = useDrawerNav();
-  const layoutMode = useTaskLayoutMode();
+  const layoutMode = useThreeColumnLayoutMode();
   const webShell = isWebShell();
   const quickIds = useShellQuickIdSet();
   const selectionAnchorRef = useRef<number | null>(null);
@@ -199,9 +203,9 @@ export function TaskApp() {
     resetDetail,
   } = useDetailPanelState<TaskItemRow>({
     layoutMode,
-    cloneItem: cloneTaskItem,
-    isDirty: isTaskItemDirty,
-    isEqual: isTaskItemEqual,
+    cloneItem: cloneTaskItemDisplay,
+    isDirty: isTaskItemDisplayDirty,
+    isEqual: isTaskItemDisplayEqual,
     compactSheetEnabled: movePickerItemIds == null && moveProjectItemIds == null,
     setCompactImmersive,
     persistItem: (snapshot) =>

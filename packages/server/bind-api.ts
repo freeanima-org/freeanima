@@ -17,7 +17,7 @@ import { runCronEngineTurn } from "./service/use-cases/cron-runner.ts";
 import { registerSoftFailureNotify } from "@freeanima/core/soft-failure";
 import { notifyBothRecipients } from "./service/notification-helpers.ts";
 import { deliverSoftFailureNotify } from "./service/soft-failure-notify.ts";
-import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import type { CronJob } from "@freeanima/capabilities/connectors/cron/models";
 
 /** Register platform API ports after AppRuntime deps are available */

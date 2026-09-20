@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { SORT_ORDER_STEP, sortOrderUpdates } from "./reorder.ts";
+import { SORT_ORDER_STEP, sortOrderUpdates } from "@freeanima/shared/task/sort-order.ts";
 
 describe("sortOrderUpdates", () => {
   it("交换两项：只 patch 搬移项", () => {

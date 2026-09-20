@@ -11,7 +11,7 @@ import { isRecord } from "@freeanima/shared/util";
 import {
   loadDebugKvFromLocalStorage,
   saveDebugKvToLocalStorage,
-} from "../../shared/debug-kv-local-storage.ts";
+} from "@freeanima/portal-sdk/debug-kv-local-storage.ts";
 
 function loadKvScope(scope: SettingsStorageScope): unknown {
   if (scope.kind !== "kv") throw new Error("web 仅支持 kv scope");

@@ -4,7 +4,7 @@ import { resetHabitatMethodRegistryForTests } from "@freeanima/shared/habitat-co
 
 import type { RemoteToolsServerDeps } from "@freeanima/capabilities/outpost/transport/types.ts";
 import { builtinFeaturePlugins } from "./builtin-feature-plugins.ts";
-import { createFeaturePlugin } from "./plugin.ts";
+import { createFeaturePlugin } from "@freeanima/core/features/plugin.ts";
 import { getFeatureService } from "./service.ts";
 import { resetHabitatRouterForTests } from "../habitat/init.ts";
 import { habitatRouter } from "../habitat/habitat-router.ts";

@@ -1,4 +1,4 @@
-import type { FullRuntimeDeps } from "./service/runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { rebuildConversationCache } from "@freeanima/engine/conversation";
 import { registerCompressionSummaryPostCut } from "@freeanima/core/compress";
 import { getAppRuntime } from "./context.ts";

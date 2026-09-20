@@ -29,7 +29,7 @@ import { mountSystemPromptService } from "@freeanima/core/hooks/prompt";
 import { registerServiceTools, resetRegisterServiceToolsForTest } from "./register.ts";
 import { initRuntimeContext } from "./context.ts";
 import { createAppRuntime } from "./service/app-runtime.ts";
-import type { RuntimeDeps } from "./service/runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { computeGlobalBreakdown, getPromptDebug } from "./service/service-prompt-debug.ts";
 
 const mockParts = {

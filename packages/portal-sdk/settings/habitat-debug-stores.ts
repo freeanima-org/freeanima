@@ -2,13 +2,13 @@ import {
   normalizeShellClientConfig,
   parseShellClientConfig,
   type ShellClientConfig,
-} from "../shell-client-config.ts";
+} from "@freeanima/shared/shell-config/client-config.ts";
 import {
   DEFAULT_SHELL_DEBUG,
   normalizeShellDebugConfig,
   parseShellDebugConfig,
   type ShellDebugConfig,
-} from "../shell-debug-config.ts";
+} from "@freeanima/shared/shell-config/debug-config.ts";
 import { DEBUG_SETTINGS_SCOPE, HABITAT_SETTINGS_SCOPE } from "./scopes.ts";
 import {
   createScopedSettingsStore,

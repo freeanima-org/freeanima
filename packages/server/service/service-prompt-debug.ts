@@ -20,7 +20,7 @@ import {
   type SystemPromptParts,
 } from "@freeanima/capabilities/memory/system-prompt";
 import { omitUndefined } from "@freeanima/core/util";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import {
   computeRuntimeContextBreakdown,
   type RuntimeContextBreakdown,
