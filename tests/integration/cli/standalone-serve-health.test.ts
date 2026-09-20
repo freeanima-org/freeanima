@@ -4,7 +4,10 @@ import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { closeDb, initDatabase, upsertHabitatRuntimeConfigDocument } from "@freeanima/core/db/pg";
+import { closeDb, setDbForTest, upsertHabitatRuntimeConfigDocument } from "@freeanima/core/db/pg";
+import { relations } from "@freeanima/core/db/schema";
+import { SQL } from "bun";
+import { drizzle } from "drizzle-orm/bun-sql/postgres";
 import { describePg, pgTestUrl } from "../../helpers/pg-test-gate.ts";
 import { beginLogIsolation } from "../../helpers/log-isolation.ts";
 import { restoreIntegrationHome } from "../../helpers/integration-case.ts";
@@ -31,9 +34,16 @@ const STANDALONE_RUNTIME_CONFIG = {
 };
 
 async function seedRuntimeConfig(url: string): Promise<void> {
-  initDatabase({ getDatabaseUrl: () => url });
-  await upsertHabitatRuntimeConfigDocument(STANDALONE_RUNTIME_CONFIG);
-  await closeDb();
+  // 独立连接播种：勿用 initDatabase + 全局 getDb()——同进程覆写场景下
+  // 会命中上一个用例遗留的库（其可能已被 DROP），导致 "database does not exist"。
+  const sql = new SQL(url);
+  const db = drizzle({ client: sql, relations });
+  setDbForTest(db, sql);
+  try {
+    await upsertHabitatRuntimeConfigDocument(STANDALONE_RUNTIME_CONFIG);
+  } finally {
+    await closeDb();
+  }
 }
 
 function assertStandaloneBuilt(): void {

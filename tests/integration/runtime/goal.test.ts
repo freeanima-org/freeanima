@@ -1,6 +1,10 @@
-import { it, expect, beforeEach, afterEach, spyOn } from "bun:test";
+import { it, expect, beforeEach, afterEach, afterAll, spyOn } from "bun:test";
 import { describePg } from "../../helpers/pg-test-gate.ts";
-import { beginIntegrationCase, restoreIntegrationHome } from "../../helpers/integration-case.ts";
+import {
+  beginIntegrationCase,
+  endIntegrationCase,
+  restoreIntegrationHome,
+} from "../../helpers/integration-case.ts";
 
 import * as goalJudge from "@freeanima/core/llm/goal-judge";
 import {
@@ -32,6 +36,10 @@ describePg("goal commands", () => {
   afterEach(async () => {
     judgeSpy.mockRestore();
     await restoreIntegrationHome(prev);
+  });
+
+  afterAll(async () => {
+    await endIntegrationCase();
   });
 
   it("registers /goal and /subgoal", async () => {
