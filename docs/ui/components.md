@@ -42,7 +42,7 @@ title: UI 组件
 4. 布局结构组件可以使用 **layout** API（`useCompactLayout`、`useDrawerNav`，…）。
 5. 仅壳关心的事留在 portal-sdk / 壳宿主；ui-kit 不导出壳探测器。
 
-**待对齐：** 新列表模块优先用 `ListRow`（以及领域包装如 `TaskItemRowView` / `EmailMessageRowView`）。已对齐：任务 / 项目侧栏、智能清单、邮件消息与账户行、聊天会话。剩余 P2/P3：MoveTo\*Picker、Vault/日记选择器、栖息地管理台、扩展 popup — 勿分叉行行为。
+**待对齐：** 新列表模块优先用 `ListRow`（以及领域包装如 `TaskItemRowView` / `EmailMessageRowView`）。已对齐：任务 / 项目侧栏、智能清单、邮件消息与账户行、聊天会话。仍未对齐：MoveTo\*Picker、Vault/日记选择器、栖息地管理台、扩展 popup — 勿分叉行行为。
 
 ## 哪一层可读哪些维度
 

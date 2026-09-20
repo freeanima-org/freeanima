@@ -19,7 +19,7 @@ alwaysApply: false
 | `@freeanima/core` | `packages/core/` | drizzle schema+migrations、PG、Redis、config 段、llm/tool/tokenizer/tts/compress |
 | `@freeanima/engine` | `packages/engine/` | conversation / turn / goal / pipeline / loop-mechanism |
 | `@freeanima/capabilities` | `packages/capabilities/` | memory / tools / connectors / self / outpost / mcp-* / federation / llm-openai |
-| `@freeanima/features` | `packages/features/` | 27 个**服务端**特性（domain/habitat/protocol + cordis-plugin.ts） |
+| `@freeanima/features` | `packages/features/` | 28 个**服务端**特性（26 个路由特性带 `cordis-plugin.ts`；见「特性两态」） |
 | `@freeanima/server` | `packages/server/` | 组合根：boot、habitat-api、ports、config 真实现、tls |
 | `@freeanima/cli` | `packages/cli/` | `anima` / `anima-client` / `anima-probe` |
 | `@freeanima/ui-kit` | `packages/ui-kit/` | 设计系统 |
@@ -44,7 +44,7 @@ alwaysApply: false
 | UI feature | `@freeanima/ui-features/{slug}/ui/{bundle}` | `ui-features/task/ui/spa` |
 | App frame / entry | `@freeanima/app-frame/*`、`@freeanima/portal/*` | 布局 / `portal/app/web` |
 
-**Deprecated（`codemod-freeanima-imports.ts --check` 会失败）**：`@freeanima/habitat/*`、
+**Deprecated（`check-retired-imports.ts` 会失败）**：`@freeanima/habitat/*`、
 `@freeanima/frontend/*`、`@freeanima/client/*`、`@freeanima/platform/*`、`@freeanima/host/*`、
 `@freeanima/runtime`、裸 `@freeanima/core`（指包时用 `@freeanima/core/*`）。
 
@@ -87,8 +87,8 @@ MCP 形态实现在 `capabilities/mcp-server`。
 - 根 `.oxlintrc.json` SSOT + `overrides`；跨层靠 `freeanima/layer-deps`
 - oxlint `freeanima/import-depth` / `layer-deps` / `no-module-globals`；
   `dir-import/dir-import-exists`（`bun-plugin-dir-import`）
-- `scripts/check-package-deps.ts`（DAG + 反向边债务登记）
-- `scripts/check-layer-deps.ts`（全仓 + 相对路径 + 基线棘轮）
+- `scripts/check-package-deps.ts`（13 包 DAG + 外部依赖禁令）
+- `scripts/check-layer-deps.ts`（全仓 + 相对路径）
 - `scripts/check-module-globals.ts`、`scripts/check-boot-plugin-parity.ts`
-- `scripts/codemod-freeanima-imports.ts --check`
+- `scripts/check-retired-imports.ts`
 - 文档站：`cd site && bun run build`（先根 `bun install`）

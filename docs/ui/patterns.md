@@ -62,7 +62,7 @@ title: 交互模式
 
 **实现：** 底盘 — [`ListRow.tsx`](../../packages/ui-kit/composite/ListRow.tsx)。任务领域 — [`TaskItemRowView.tsx`](../../packages/ui-kit/composite/TaskItemRowView.tsx)（+ 列表包装 `TaskItemListView`）。消费者：项目侧栏、任务列表侧栏、智能清单侧栏、邮件消息/账户行、聊天室对话列表。能力开关：`useActionSheet`、`contextMenuEnabled`、来自父级的拖拽 attrs/listeners。聊天室 touch 常驻主操作为**归档**（无 ⋯），溢出仍靠长按 ActionSheet。
 
-**合规：** 参考（底盘已抽取）。**待对齐（P2/P3）：** MoveTo*Picker 树行；Vault/日记/番茄选择器；栖息地管理台；扩展弹窗。
+**合规：** 参考（底盘已抽取）。**待对齐：** MoveTo*Picker 树行；Vault/日记/番茄选择器；栖息地管理台；扩展弹窗。
 
 ---
 

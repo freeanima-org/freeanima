@@ -2,10 +2,10 @@
 /**
  * 外部依赖声明守卫：**包内 import 的第三方包必须写在该包 `package.json`**。
  *
- * 背景：P4/P5 拆包时按「实际 import 扫描」生成各包 package.json，但漏掉了
+ * 背景：拆包时按「实际 import 扫描」生成各包 package.json，但漏掉了
  * 若干外部依赖（`@noble/hashes`、`acme-client`、`imapflow`、`@tauri-apps/api` 等）。
  * 漏声明不会立刻报错——旧 `node_modules` 里还留着 hoisted 副本；一旦按 lockfile
- * 干净安装或换机器，就会直接模块找不到（本次 `just dev` 事故的同类根因）。
+ * 干净安装或换机器，就会直接模块找不到（`just dev` 事故的同类根因）。
  * 后续代码搬迁（如 email 连接器 capabilities → features）也必须连外部依赖一起搬。
  *
  * 规则：对每个 `packages/<pkg>`，扫描其 `*.ts/tsx/mjs/js` 的裸 import：
