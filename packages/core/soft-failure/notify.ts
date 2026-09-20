@@ -1,7 +1,4 @@
 import { CST_OFFSET_MS } from "@freeanima/core/util";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
-
-import { mountSoftFailureService } from "./service.ts";
 
 /** Result of a bypassable soft-failure Inbox attempt. */
 export type SoftFailureNotifyResult = "notified" | "deduped" | "skipped";
@@ -24,13 +21,15 @@ export type SoftFailureNotifyFn = (
   input: SoftFailureNotifyInput,
 ) => Promise<SoftFailureNotifyResult>;
 
-/** Bind the delivery impl onto `ctx.softFailure` (mounting the service if needed). */
+let notifyImpl: SoftFailureNotifyFn | null = null;
+
+/** Bind the delivery impl (platform composition root / tests). */
 export function registerSoftFailureNotify(fn: SoftFailureNotifyFn): void {
-  mountSoftFailureService(ensureRootContext(), fn);
+  notifyImpl = fn;
 }
 
 export function unregisterSoftFailureNotify(): void {
-  getRootContextOrNull()?.softFailure?.setNotify(null);
+  notifyImpl = null;
 }
 
 /** CST calendar date YYYY-MM-DD for instant (same calendar as temporal-summary buckets). */
@@ -54,10 +53,9 @@ export function cstDaySourceRef(prefix: string, nowMs: number = Date.now()): str
 export async function notifySoftFailure(
   input: SoftFailureNotifyInput,
 ): Promise<SoftFailureNotifyResult> {
-  const service = getRootContextOrNull()?.softFailure;
-  if (!service) return "skipped";
+  if (!notifyImpl) return "skipped";
   try {
-    return await service.deliver(input);
+    return await notifyImpl(input);
   } catch {
     return "skipped";
   }

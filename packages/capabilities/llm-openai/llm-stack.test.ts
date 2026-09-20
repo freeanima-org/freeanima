@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
 import { createLlmRuntime } from "@freeanima/core/llm/llm-stack.ts";
-import { mountLlmStackService } from "@freeanima/core/llm/llm-stack-service.ts";
+import { setLlmStackConfigurator } from "@freeanima/core/llm/llm-stack-configurator.ts";
 import {
   getLlmRuntime,
   initLlmRuntime,
@@ -19,11 +19,8 @@ let tc: TestContext;
 
 beforeAll(async () => {
   // 统一 harness：根 context/logger 由 createTestContext 装配
-  tc = await createTestContext({
-    mount: (ctx) => {
-      mountLlmStackService(ctx, bindLlmStack);
-    },
-  });
+  tc = await createTestContext();
+  setLlmStackConfigurator(bindLlmStack);
 });
 
 afterAll(async () => {

@@ -3,10 +3,8 @@ import { formatCstIso, omitUndefined } from "@freeanima/core/util";
 import type { CompressionState } from "@freeanima/core/db/domain";
 import { getRuntimeLogger } from "@freeanima/core/config";
 import { cstDaySourceRef, notifySoftFailure } from "@freeanima/core/soft-failure";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { generateConversationSummary } from "./compression-summary.ts";
-import { mountCompressionSummaryPostCutService } from "./compression-summary-post-cut-service.ts";
 
 export type CompressionSummaryPostCut = (conversationId: string) => Promise<void>;
 
@@ -17,16 +15,18 @@ export type CompressionSummaryJobResult = {
   runId?: string;
 };
 
+let postCutRebuildFn: CompressionSummaryPostCut | null = null;
+
 function postCutRebuild(): CompressionSummaryPostCut | null {
-  return getRootContextOrNull()?.compressionSummaryPostCut?.get() ?? null;
+  return postCutRebuildFn;
 }
 
 export function registerCompressionSummaryPostCut(fn: CompressionSummaryPostCut): void {
-  mountCompressionSummaryPostCutService(ensureRootContext()).bind(fn);
+  postCutRebuildFn = fn;
 }
 
 export function resetCompressionSummaryPostCutForTests(): void {
-  getRootContextOrNull()?.compressionSummaryPostCut?.reset();
+  postCutRebuildFn = null;
 }
 
 const pendingCompressionSummaries = new Map<string, Promise<CompressionSummaryJobResult>>();

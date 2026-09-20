@@ -2,9 +2,6 @@ import { relations, type DbRelations } from "@freeanima/core/db/schema";
 import { drizzle, type BunSQLDatabase } from "drizzle-orm/bun-sql/postgres";
 import { SQL } from "bun";
 
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
-
-import { mountPgClientService, type PgClientService } from "./client-service.ts";
 import { startPgPoolHealer, stopPgPoolHealer } from "./pool-heal.ts";
 import { PG_POOL_APP_NAME, resolvePoolOptions, type PgPoolOptions } from "./pool-options.ts";
 
@@ -24,17 +21,22 @@ export type DbSession = Db | DbTransaction;
 
 export type SqlClient = SQL;
 
-function pgClientService(): PgClientService {
-  return mountPgClientService(ensureRootContext());
-}
+type PgClientState = {
+  resolver: DatabaseUrlResolver | null;
+  sql: SqlClient | null;
+  db: Db | null;
+  pool: PgPoolOptions | null;
+};
+
+let state: PgClientState = { resolver: null, sql: null, db: null, pool: null };
 
 /** database.url resolver injected by service layer (called once at startup) */
 export function initDatabase(opts: { getDatabaseUrl: DatabaseUrlResolver }): void {
-  pgClientService().setResolver(opts.getDatabaseUrl);
+  state = { ...state, resolver: opts.getDatabaseUrl };
 }
 
 export function getDatabaseConfig(): DatabaseConfig | null {
-  const url = getRootContextOrNull()?.pgClient?.getResolver()?.() ?? null;
+  const url = state.resolver?.() ?? null;
   if (!url) return null;
   return { url };
 }
@@ -70,14 +72,12 @@ function createDb(url: string): Db {
     connection: { application_name: PG_POOL_APP_NAME },
   });
   const db = drizzle({ client, relations });
-  pgClientService().setConnection(db, client, pool);
+  state = { ...state, db, sql: client, pool };
   return db;
 }
 
 export function getDb(): Db {
-  const service = pgClientService();
-  const existing = service.getDb();
-  if (existing) return existing;
+  if (state.db) return state.db;
   const dbCfg = getDatabaseConfig();
   if (!dbCfg?.url) {
     throw new Error("database.url not configured");
@@ -87,12 +87,12 @@ export function getDb(): Db {
 
 /** 底层 Bun SQL 池（毒连接回收 / 运维探测）；未 init 时为 null */
 export function getSqlClient(): SqlClient | null {
-  return getRootContextOrNull()?.pgClient?.getSql() ?? null;
+  return state.sql;
 }
 
 /** 当前池选项（含 healInterval）；池未创建时现算 env */
 export function getActivePoolOptions(): PgPoolOptions {
-  return getRootContextOrNull()?.pgClient?.getPoolOptions() ?? resolvePoolOptions();
+  return state.pool ?? resolvePoolOptions();
 }
 
 /** 启动毒连接回收（业务池已创建后调用） */
@@ -109,10 +109,8 @@ export function startDatabasePoolHealer(): void {
 
 export async function closeDb(): Promise<void> {
   await stopPgPoolHealer();
-  const service = getRootContextOrNull()?.pgClient;
-  const client = service?.getSql() ?? null;
-  if (!service) return;
-  service.clearConnection();
+  const client = state.sql;
+  state = { ...state, sql: null, db: null, pool: null };
   if (!client) return;
   try {
     await client.close({ timeout: 5 });
@@ -123,11 +121,11 @@ export async function closeDb(): Promise<void> {
 
 /** Inject connection for tests / migration scripts */
 export function setDbForTest(db: Db, client?: SqlClient): void {
-  pgClientService().setDb(db, client);
+  state = { ...state, db, ...(client ? { sql: client } : {}) };
 }
 
 /** Test teardown: reset resolver and connection */
 export function resetDatabaseForTest(): void {
-  getRootContextOrNull()?.pgClient?.reset();
+  state = { resolver: null, sql: null, db: null, pool: null };
   void stopPgPoolHealer();
 }

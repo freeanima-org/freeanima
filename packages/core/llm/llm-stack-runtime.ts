@@ -1,27 +1,23 @@
 import type { RuntimeConfig } from "@freeanima/core/config";
-import { getRootContextOrNull } from "@freeanima/kernel";
 
-import type { LlmRuntime } from "./llm-stack.ts";
-import type { LlmStackService } from "./llm-stack-service.ts";
+import { createLlmRuntime, type LlmRuntime } from "./llm-stack.ts";
 
-function requireService(): LlmStackService {
-  const service = getRootContextOrNull()?.llmStack;
-  if (!service) {
-    throw new Error("LlmStackService not mounted: load @freeanima/platform first");
-  }
-  return service;
-}
+let runtime: LlmRuntime | null = null;
 
-/** Build the LLM runtime from config and store it on `ctx.llmStack`. */
+/** Build the LLM runtime from config (boot + runtime config apply). */
 export function initLlmRuntime(cfg: RuntimeConfig): LlmRuntime {
-  return requireService().initRuntime(cfg);
+  runtime = createLlmRuntime(cfg);
+  return runtime;
 }
 
 /** The active LLM runtime, or throw when `initLlmRuntime` has not run. */
 export function getLlmRuntime(): LlmRuntime {
-  return requireService().getRuntime();
+  if (!runtime) {
+    throw new Error("LLM runtime not initialized: call initLlmRuntime() first");
+  }
+  return runtime;
 }
 
 export function resetLlmRuntimeForTests(): void {
-  getRootContextOrNull()?.llmStack?.reset();
+  runtime = null;
 }

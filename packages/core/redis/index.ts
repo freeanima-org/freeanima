@@ -9,7 +9,6 @@ export {
   type RedisConnectionConfig,
   type RedisUrlResolver,
 } from "./client.ts";
-export { RedisService, mountRedisService, type RedisServiceConfig } from "./service.ts";
 export {
   REDIS_KV_KEY_PREFIX,
   redisDel,

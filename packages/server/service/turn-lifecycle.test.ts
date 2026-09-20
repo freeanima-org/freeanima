@@ -3,9 +3,8 @@ import * as engine from "@freeanima/engine/loop-mechanism";
 import { createConversationService } from "@freeanima/engine/conversation";
 import { Config } from "@freeanima/core/config";
 import { createEngine, createEngineCatalog } from "@freeanima/engine";
-import { initLlmRuntime, mountLlmStackService } from "@freeanima/core/llm";
+import { initLlmRuntime, setLlmStackConfigurator } from "@freeanima/core/llm";
 import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
-import { ensureRootContext } from "@freeanima/kernel";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { createServiceKernel } from "@freeanima/server/bootstrap";
 import { parseYaml } from "@freeanima/server/config";
@@ -17,7 +16,7 @@ import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));
-mountLlmStackService(ensureRootContext(), bindLlmStack);
+setLlmStackConfigurator(bindLlmStack);
 const testEngine = createEngine({
   catalog,
   config: testConfig,

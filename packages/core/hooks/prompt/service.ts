@@ -19,6 +19,30 @@ export type SystemPromptServiceConfig = {
 };
 
 /**
+ * 当前挂载的 SystemPromptService（`ctx.systemPrompt`）。
+ *
+ * 深层代码（engine 重建 system_prompt）没有 ctx，经该模块内句柄取用；
+ * 服务构造时登记、ctx 释放时清除，不再查进程根 context。
+ */
+let current: SystemPromptService | null = null;
+
+function registerCurrent(service: SystemPromptService): void {
+  current = service;
+}
+
+function unregisterCurrent(service: SystemPromptService): void {
+  if (current === service) current = null;
+}
+
+export function getSystemPromptService(): SystemPromptService | null {
+  return current;
+}
+
+export function resetSystemPromptServiceForTest(): void {
+  current = null;
+}
+
+/**
  * Cordis service owning system-prompt assembly as `ctx.systemPrompt`.
  *
  * Replaces the old module-global `SystemPromptHookRunner`: it runs the
@@ -30,6 +54,10 @@ export class SystemPromptService extends Service {
   constructor(ctx: Context, config: SystemPromptServiceConfig = {}) {
     super(ctx, "systemPrompt");
     this.onFold = config.onFold;
+    registerCurrent(this);
+    ctx.effect(() => () => {
+      unregisterCurrent(this);
+    });
   }
 
   setOnFold(onFold: SystemPromptServiceConfig["onFold"]): void {

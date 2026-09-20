@@ -45,13 +45,9 @@ export {
 export { handleConversationTodo } from "./conversation-todos.ts";
 export {
   applyConversationToolPolicyFilter,
+  setConversationToolPolicyFilter,
   type ConversationToolPolicyFilter,
 } from "./policy-port.ts";
-export {
-  mountToolPolicyService,
-  ToolPolicyService,
-  type ToolPolicyServiceConfig,
-} from "./policy-service.ts";
 export {
   filterHabitatLocalHandsForCoding,
   isCodingConversationMeta,

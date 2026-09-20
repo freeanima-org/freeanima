@@ -14,9 +14,12 @@ import { relations } from "@freeanima/core/db/schema";
 import { bindActiveRuntimeConfig } from "@freeanima/core/config";
 import { bindResolvedWorldContext } from "@freeanima/core/config/resolved-world-context";
 import { ensureWorldSubjects } from "@freeanima/core/db/pg/entity/subject-world";
-import { initLlmRuntime, mountLlmStackService, resetLlmRuntimeForTests } from "@freeanima/core/llm";
+import {
+  initLlmRuntime,
+  setLlmStackConfigurator,
+  resetLlmRuntimeForTests,
+} from "@freeanima/core/llm";
 import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
-import { ensureRootContext } from "@freeanima/kernel";
 import { createEngine } from "@freeanima/engine";
 import { createTestLogger } from "@freeanima/kernel/logging/testing";
 import { FileConfig } from "@freeanima/server/config/file-config.ts";
@@ -153,7 +156,7 @@ export async function beginLocomoPgRuntime(opts: {
   const world = await ensureWorldSubjects(config.data);
   bindResolvedWorldContext(world);
 
-  mountLlmStackService(ensureRootContext(), bindLlmStack);
+  setLlmStackConfigurator(bindLlmStack);
   const llm = initLlmRuntime(config.data);
   createEngine({ llm, config, logger: createTestLogger() });
 

@@ -1,25 +1,24 @@
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
-
-import { mountSearchBackendService } from "./runtime-service.ts";
 import type { SearchBackend } from "./types.ts";
 
+let backend: SearchBackend | null = null;
+
+/** 绑定搜索后端（组合根 / 测试）。 */
 export function registerSearchBackend(next: SearchBackend | null): void {
-  mountSearchBackendService(ensureRootContext()).set(next);
+  backend = next;
 }
 
 export function getSearchBackend(): SearchBackend {
-  const service = getRootContextOrNull()?.searchBackend;
-  if (!service) {
+  if (!backend) {
     throw new Error("SearchBackend is not registered (bindSearchRuntime not called)");
   }
-  return service.get();
+  return backend;
 }
 
 export function tryGetSearchBackend(): SearchBackend | null {
-  return getRootContextOrNull()?.searchBackend?.tryGet() ?? null;
+  return backend;
 }
 
 /** Test teardown */
 export function resetSearchBackendForTest(): void {
-  getRootContextOrNull()?.searchBackend?.reset();
+  backend = null;
 }

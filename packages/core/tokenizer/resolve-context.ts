@@ -1,26 +1,17 @@
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
-
-import {
-  mountTokenizerResolveContextService,
-  type TokenizerResolveContextService,
-} from "./resolve-context-service.ts";
-
 export type ResolveContext = {
   ollamaBaseUrls?: string[];
 };
 
-function service(): TokenizerResolveContextService {
-  return mountTokenizerResolveContextService(ensureRootContext());
-}
+let context: ResolveContext = {};
 
-export function setResolveContext(ctx: ResolveContext): void {
-  service().set(ctx);
+export function setResolveContext(next: ResolveContext): void {
+  context = { ...next };
 }
 
 export function getResolveContext(): ResolveContext {
-  return getRootContextOrNull()?.tokenizerResolveContext?.get() ?? {};
+  return context;
 }
 
 export function resetResolveContextForTest(): void {
-  getRootContextOrNull()?.tokenizerResolveContext?.reset();
+  context = {};
 }

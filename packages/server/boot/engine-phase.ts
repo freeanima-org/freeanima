@@ -4,10 +4,13 @@ import {
   type Engine,
   type EngineCatalog,
 } from "@freeanima/engine";
-import { getLlmRuntime, initLlmRuntime, LlmStackService } from "@freeanima/core/llm";
+import { getLlmRuntime, initLlmRuntime, setLlmStackConfigurator } from "@freeanima/core/llm";
 import { isLlmConfigured } from "@freeanima/core/config";
 import { createServiceKernel } from "@freeanima/server/bootstrap";
-import { filterHabitatLocalHandsForCoding, ToolPolicyService } from "@freeanima/core/tool";
+import {
+  filterHabitatLocalHandsForCoding,
+  setConversationToolPolicyFilter,
+} from "@freeanima/core/tool";
 import { bindLlmStack } from "@freeanima/capabilities/llm-openai";
 import {
   createConversationService,
@@ -42,10 +45,10 @@ export async function bootEnginePhase(
   const catalog = createEngineCatalog();
   const kernel = createServiceKernel(config);
 
-  await kernel.ctx.plugin(LlmStackService, { configurator: bindLlmStack });
-  await kernel.ctx.plugin(ToolPolicyService, {
-    filter: (toolNames, meta) => filterHabitatLocalHandsForCoding(toolNames, meta),
-  });
+  setLlmStackConfigurator(bindLlmStack);
+  setConversationToolPolicyFilter((toolNames, meta) =>
+    filterHabitatLocalHandsForCoding(toolNames, meta),
+  );
 
   registerServiceTools({ toolSets: catalog.toolSets, skills: catalog.skills, config });
 

@@ -9,12 +9,12 @@ export * from "./tool-loop-integrity.ts";
 export { repairAndPersistToolLoop as persistToolLoopRepair } from "./tool-loop-persist.ts";
 export { createLlmRuntime, type LlmRuntime } from "./llm-stack.ts";
 export { getLlmRuntime, initLlmRuntime, resetLlmRuntimeForTests } from "./llm-stack-runtime.ts";
-export { applyLlmStackConfigurator, type LlmStackConfigurator } from "./llm-stack-configurator.ts";
 export {
-  LlmStackService,
-  mountLlmStackService,
-  type LlmStackServiceConfig,
-} from "./llm-stack-service.ts";
+  applyLlmStackConfigurator,
+  resetLlmStackConfiguratorForTest,
+  setLlmStackConfigurator,
+  type LlmStackConfigurator,
+} from "./llm-stack-configurator.ts";
 export {
   getLlmPreset,
   LLM_PRESETS,
