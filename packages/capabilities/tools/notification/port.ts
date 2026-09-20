@@ -1,4 +1,3 @@
-import { getRootContextOrNull } from "@freeanima/kernel";
 import type {
   NotificationCreateInput,
   NotificationListOpts,
@@ -22,13 +21,18 @@ export type NotificationPort = {
 };
 
 /**
- * Resolve the notification port from the Cordis service (`ctx.notifications`
- * on the process context).
+ * 当前通知端口（由 `NotificationService` 挂载时登记）。
  *
- * No module-level singleton state: `NotificationService` is the single
- * provider. Returns null before boot / when the service is not mounted, which
- * is the contract existing deep and background consumers rely on.
+ * 深层与后台消费者没有 ctx：直接读该模块内句柄，不再查进程根 context。
+ * 未挂载返回 null——既有深/后台消费者依赖该契约。
  */
+let current: NotificationPort | null = null;
+
+/** 由 NotificationService 登记；传 null 清除。 */
+export function setNotificationPort(port: NotificationPort | null): void {
+  current = port;
+}
+
 export function getNotificationPort(): NotificationPort | null {
-  return getRootContextOrNull()?.notifications?.port ?? null;
+  return current;
 }

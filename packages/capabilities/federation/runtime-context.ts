@@ -1,6 +1,7 @@
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
-
-import { mountFederationManagerService } from "./runtime-context-service.ts";
+import {
+  currentFederationManagerService,
+  ensureFederationManagerService,
+} from "./runtime-context-service.ts";
 import type { FederationHubSessionRegistry } from "./hub-session-registry.ts";
 import type { FederationSatelliteClient } from "./satellite-client.ts";
 
@@ -12,9 +13,9 @@ export type FederationManager = {
 };
 
 export function bindFederationManager(next: FederationManager | null): void {
-  mountFederationManagerService(ensureRootContext()).set(next);
+  ensureFederationManagerService().set(next);
 }
 
 export function getFederationManager(): FederationManager | null {
-  return getRootContextOrNull()?.federationManager?.get() ?? null;
+  return currentFederationManagerService()?.get() ?? null;
 }

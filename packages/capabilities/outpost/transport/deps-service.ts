@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 
 import type { RemoteToolsServerDeps } from "./ws-server.ts";
 
@@ -33,9 +33,24 @@ export class RemoteToolsDepsService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountRemoteToolsDepsService(ctx: Context): RemoteToolsDepsService {
-  const existing = ctx.remoteToolsDeps as RemoteToolsDepsService | undefined;
-  if (existing) return existing;
-  return new RemoteToolsDepsService(ctx);
+let current: RemoteToolsDepsService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureRemoteToolsDepsService(): RemoteToolsDepsService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new RemoteToolsDepsService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentRemoteToolsDepsService(): RemoteToolsDepsService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetRemoteToolsDepsServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

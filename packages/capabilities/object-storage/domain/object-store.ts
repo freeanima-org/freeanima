@@ -6,9 +6,8 @@ import type { S3Client } from "bun";
 
 import type { ObjectStorageConfigInput } from "@freeanima/core/config";
 import { homePath } from "@freeanima/core/config/paths";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
-import { mountObjectStoreService } from "./object-store-service.ts";
+import { currentObjectStoreService, ensureObjectStoreService } from "./object-store-service.ts";
 
 import { cidFromBytes, objectStorageKey } from "./cid.ts";
 import { createBunS3Client, resolveObjectStorageCreds } from "./bun-s3.ts";
@@ -239,11 +238,11 @@ export function createObjectStore(cfg: ObjectStorageConfigInput = {}): ObjectSto
 }
 
 export function bindObjectStore(store: ObjectStore): void {
-  mountObjectStoreService(ensureRootContext()).bind(store);
+  ensureObjectStoreService().bind(store);
 }
 
 export function getObjectStore(): ObjectStore {
-  const service = mountObjectStoreService(ensureRootContext());
+  const service = ensureObjectStoreService();
   const existing = service.get();
   if (existing) return existing;
   const created = createObjectStore({});
@@ -252,7 +251,7 @@ export function getObjectStore(): ObjectStore {
 }
 
 export function resetObjectStoreForTest(): void {
-  getRootContextOrNull()?.objectStore?.reset();
+  currentObjectStoreService()?.reset();
 }
 
 export { NOT_CONFIGURED as OBJECT_STORAGE_NOT_CONFIGURED };

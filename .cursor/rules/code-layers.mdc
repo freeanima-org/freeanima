@@ -17,7 +17,7 @@ cli / server → features → capabilities → engine → core → kernel → sh
 
 | Layer | Directory | Responsibility |
 | ----- | --------- | -------------- |
-| kernel | `packages/kernel/` | Cordis 组合根句柄（`createKernel` / `getRootContext`）、logger、**config-mechanism**、logging |
+| kernel | `packages/kernel/` | Cordis `Kernel` 视图（`createKernel`）、logger、**config-mechanism**、logging |
 | core | `packages/core/` | drizzle schema/migrations、PG、Redis、产品 config 段 + runtime store、tool/LLM 原语、tokenizer/tts/compress |
 | engine | `packages/engine/` | conversation、turn、goal、pipeline、**loop-mechanism**（依赖 core，故不在 kernel） |
 | capabilities | `packages/capabilities/` | memory、tools、connectors、self、outpost、mcp-*、federation、llm-openai |
@@ -62,11 +62,14 @@ portal → app-frame → ui-features → { portal-sdk, ui-kit } → shared
 
 ## Cordis 约定
 
-- 进程唯一根 `Context` 由 `createKernel()` 安装；模块级全局桥为 0（oxlint
-  `no-module-globals` + `scripts/check-module-globals.ts`）。
-- 服务：`class X extends Service` + `declare module "cordis"` 增强 + 幂等 `mountXService(ctx)`。
+- 组合根 `Context` 由 `server/bootstrap/kernel.ts` 的 `serviceRootContext()` 持有并显式传递；
+  仓库内没有进程根句柄、也没有模块级全局桥（oxlint `no-module-globals` +
+  `scripts/check-module-globals.ts` 纯禁令）。
+- 服务：`class X extends Service` + `declare module "cordis"` 增强 + 幂等 `mountXService(ctx)`；
+  没有 ctx 的深层消费者改由**所属模块持有状态**或显式依赖参数（不再查进程根 context）。
 - 特性：`createFeaturePlugin({ id, routes })`，`inject: ["features"]`，经 `ctx.effect` 注册/撤销。
-- 组合根→能力/特性的回调走 `ctx.platformPorts`（`packages/capabilities/ports/service.ts`）。
+- 组合根→能力/特性的回调走 `packages/capabilities/ports/`（`platformPorts` 与各 `*-port.ts`，
+  见 `ports/service.ts`）。
 
 ## CI
 

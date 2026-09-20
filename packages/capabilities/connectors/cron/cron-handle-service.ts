@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { CronHandleManager } from "./handle-manager.ts";
 
 declare module "cordis" {
@@ -31,9 +31,24 @@ export class CronHandleService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountCronHandleService(ctx: Context): CronHandleService {
-  const existing = ctx.cronHandleManager as CronHandleService | undefined;
-  if (existing) return existing;
-  return new CronHandleService(ctx);
+let current: CronHandleService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureCronHandleService(): CronHandleService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new CronHandleService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentCronHandleService(): CronHandleService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetCronHandleServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

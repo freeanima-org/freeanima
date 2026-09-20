@@ -13,7 +13,7 @@ title: 分包与依赖约束
 | 包                        | 路径                                       | 装什么                                                                                           | 允许依赖的 `@freeanima` 包                           |
 | ------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
 | `@freeanima/shared`       | `packages/shared/`                         | 契约（Zod）、`pg-shapes`、`rpc-contract`、`habitat-contract`、vault-crypto、同构工具             | ——（叶层）                                           |
-| `@freeanima/kernel`       | `packages/kernel/`                         | Cordis 组合根句柄、logger、`config-mechanism`、logging、random                                   | shared                                               |
+| `@freeanima/kernel`       | `packages/kernel/`                         | Cordis Kernel 视图、logger、`config-mechanism`、logging、random                                  | shared                                               |
 | `@freeanima/core`         | `packages/core/`                           | drizzle schema/migrations、PG、Redis、config 段与 runtime store、llm/tool/tokenizer/tts/compress | kernel, shared                                       |
 | `@freeanima/engine`       | `packages/engine/`                         | conversation / turn / goal / pipeline / loop-mechanism                                           | core, kernel, shared                                 |
 | `@freeanima/capabilities` | `packages/capabilities/`                   | memory / tools / connectors / self / outpost / mcp-* / federation / llm-openai                   | engine, core, kernel, shared                         |
@@ -52,15 +52,22 @@ server 链： shared → kernel → core → engine → capabilities → feature
 
 - 每层 = 一组 Cordis 插件/服务；特性 = `packages/features/<slug>/cordis-plugin.ts`
   经 `createFeaturePlugin` 挂到 `ctx.features`。
-- 进程只有**一个**根 `Context`，由 `createKernel()` 安装（`packages/kernel/context.ts`）。
-  模块级全局桥（`globalThis[Symbol.for]` / 服务定位注册表）为 0 条，由
-  `scripts/check-module-globals.ts` + oxlint `freeanima/no-module-globals` 守护。
-- `@freeanima/capabilities/ports/` 的 `ctx.platformPorts` 与各 `*-port.ts` 是能力/特性
-  回调组合根的**唯一**通道（`habitat-dispatch`、`session-pumps`、`task-reminder-schedule`、
-  `runtime-deps`、`app-runtime-context` 等）。
+- **组合根 context 由 server 持有**：`server/bootstrap/kernel.ts` 的
+  `serviceRootContext()` 为 `serve()` 与 `createServiceKernel()` 提供同一份
+  `Context`；`createKernel({ ctx, logger })` 只做视图与 root logger 登记。
+  仓库内没有进程级 context 句柄，也没有模块级全局桥
+  （`globalThis[Symbol.for]` / `getRootContextOrNull` / 服务定位注册表），由
+  `scripts/check-module-globals.ts` + oxlint `freeanima/no-module-globals` 纯禁令守护。
+- **依赖来源**：调用方持有 `ctx` 时直接用 `ctx.<service>`；没有 `ctx` 的深层代码
+  把依赖作为显式参数传入，或由**所属模块持有**该状态（连接池、配置缓存、函数钩子等
+  归其 owner 包，挂载/注销时登记，例如 `platformPorts()`、`getNotificationPort()`、
+  `getAppRuntime()`、`initLlmRuntime()`）。
+- `@freeanima/capabilities/ports/` 是能力/特性回调组合根的**唯一**通道
+  （`platformPorts` / `*-port.ts`：`habitat-dispatch`、`session-pumps`、
+  `task-reminder-schedule`、`runtime-deps`、`app-runtime-context` 等）。
 - **统一测试 harness**：`@freeanima/kernel/testing` 的 `createTestContext({ logger?, mount? })`
-  —— 装配全新根 context/logger（与 `createServiceKernel` 同一条路径），`mount()`
-  按生产 mount 助手挂服务，`dispose()` 逆序卸载并清空根句柄。放在 kernel 是为了每一层
+  —— 装配隔离的 context/logger（与 `createServiceKernel` 同一条 `createKernel` 路径），
+  `mount()` 按生产 mount 助手挂服务，`dispose()` 逆序卸载。放在 kernel 是为了每一层
   都能 import（自身只依赖 Context + logger）。
 
 ## PG → 前端
@@ -77,7 +84,7 @@ DDL 仅 `packages/core/db`；存储形状的纯 Zod 经 **codegen + package expo
 | `scripts/check-layer-deps.ts`          | 全仓层依赖扫描（含相对路径与测试文件）；基线为空，任何违规即失败    |
 | `scripts/check-package-paths.ts`       | 代码里的 `packages/*` 路径字面量必须指向真实目录（防退役树复活）    |
 | `scripts/check-external-deps.ts`       | 包内第三方 import 已在该包 `package.json` 声明（拆包/搬迁不漏依赖） |
-| `scripts/check-module-globals.ts`      | 模块级全局桥/进程根句柄存量棘轮（收尾目标为 0）                     |
+| `scripts/check-module-globals.ts`      | 模块级全局桥/进程根句柄纯禁令（0 命中）                             |
 | `scripts/check-boot-plugin-parity.ts`  | `cordis.yml` 与 TS 侧插件清单一致                                   |
 | `scripts/check-retired-imports.ts`     | 无残留退役前缀                                                      |
 | oxlint `freeanima/layer-deps`          | 单文件即时反馈（同一 DAG 实现）                                     |

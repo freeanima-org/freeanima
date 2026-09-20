@@ -9,8 +9,10 @@ import {
 } from "@freeanima/core/redis";
 import type { EnvHealthMarkers } from "./types.ts";
 import { asRecord } from "@freeanima/shared/util";
-import { ensureRootContext } from "@freeanima/kernel";
-import { mountEnvHealthBaselineStoreService } from "./baseline-store-service.ts";
+import {
+  currentEnvHealthBaselineStoreService,
+  ensureEnvHealthBaselineStoreService,
+} from "./baseline-store-service.ts";
 
 export const ENV_HEALTH_BASELINE_FILENAME = "env-health-baseline.json";
 export const ENV_HEALTH_BASELINE_KV_KEY = `${REDIS_KV_KEY_PREFIX}env-health-baseline`;
@@ -118,10 +120,11 @@ export function createBaselineStore(filePath: string = baselineFilePath()): EnvH
 /** 测试用：清空进程内缓存 */
 export function resetBaselineMemoryCacheForTests(): void {
   memoryCache = undefined;
+  currentEnvHealthBaselineStoreService()?.reset();
 }
 
 export function getBaselineStore(): EnvHealthBaselineStore {
-  const service = mountEnvHealthBaselineStoreService(ensureRootContext());
+  const service = ensureEnvHealthBaselineStoreService();
   const existing = service.get();
   if (existing) return existing;
   const created = createBaselineStore();
@@ -131,6 +134,6 @@ export function getBaselineStore(): EnvHealthBaselineStore {
 
 /** 测试注入 */
 export function setBaselineStoreForTests(store: EnvHealthBaselineStore | null): void {
-  mountEnvHealthBaselineStoreService(ensureRootContext()).bind(store);
+  ensureEnvHealthBaselineStoreService().bind(store);
   memoryCache = undefined;
 }

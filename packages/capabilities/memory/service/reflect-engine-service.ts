@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 import type { ReflectEngineFn } from "./reflect.ts";
 
 declare module "cordis" {
@@ -31,9 +31,24 @@ export class ReflectEngineService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountReflectEngineService(ctx: Context): ReflectEngineService {
-  const existing = ctx.reflectEngine as ReflectEngineService | undefined;
-  if (existing) return existing;
-  return new ReflectEngineService(ctx);
+let current: ReflectEngineService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureReflectEngineService(): ReflectEngineService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new ReflectEngineService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentReflectEngineService(): ReflectEngineService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetReflectEngineServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

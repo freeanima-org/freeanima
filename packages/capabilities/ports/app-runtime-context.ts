@@ -1,6 +1,4 @@
 import type { ConversationService } from "@freeanima/engine/conversation";
-import { getRootContextOrNull } from "@freeanima/kernel";
-import { isRecord } from "@freeanima/shared/util";
 import type { AppRuntimePort } from "./app-runtime-port.ts";
 import type { McpManagerPort } from "./mcp-manager.ts";
 import type { RemoteToolsManagerPort } from "./remote-tools-manager.ts";
@@ -16,42 +14,39 @@ export type AppRuntimeContext = {
   port: number;
 } & AppRuntimePort;
 
+/** 组合根运行时句柄：由 `initRuntimeContext` 登记。 */
+export type AppRuntimePortHandle = {
+  app: AppRuntimeContext;
+  deps: FullRuntimeDeps;
+};
+
+let runtime: AppRuntimePortHandle | null = null;
+
 /**
- * The service-mounted runtime, or `null` before `initRuntimeContext`.
+ * 由组合根登记运行时（server `initRuntimeContext`）。
  *
- * Single source of truth is the Cordis `appRuntime` service (mounted by
- * `initRuntimeContext`). 这里按结构判定（不 import server 的 RuntimeService），
- * 使端口层不必反向依赖组合根包。
+ * 这里按结构持有（不 import server 的 RuntimeService），使端口层不必反向依赖
+ * 组合根包；也不再查进程根 context。
  */
-type RuntimeLike = { app: AppRuntimeContext; deps: FullRuntimeDeps };
-
-function isRuntimeLike(value: unknown): value is RuntimeLike {
-  if (!isRecord(value)) return false;
-  return isRecord(value.app) && isRecord(value.deps);
-}
-
-function runtimeService(): RuntimeLike | null {
-  const ctx = getRootContextOrNull();
-  if (!ctx) return null;
-  const service: unknown = ctx.reflect.get("appRuntime", false);
-  return isRuntimeLike(service) ? service : null;
+export function setAppRuntimePort(next: AppRuntimePortHandle | null): void {
+  runtime = next;
 }
 
 export function getAppRuntime(): AppRuntimeContext {
-  const service = runtimeService();
+  const service = runtime;
   if (!service) throw new Error("AppRuntime not initialized");
   return service.app;
 }
 
 /** 组合根注入的完整运行时依赖（特性/能力经端口取用，不 import server）。 */
 export function getRuntimeDeps(): FullRuntimeDeps {
-  const service = runtimeService();
+  const service = runtime;
   if (!service) throw new Error("RuntimeContext not initialized; call serve() first");
   return service.deps;
 }
 
 export function isAppRuntimeReady(): boolean {
-  return runtimeService() !== null;
+  return runtime !== null;
 }
 
 export function assertNotShuttingDown(): void {

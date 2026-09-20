@@ -1,10 +1,10 @@
 import { randomPublicId } from "@freeanima/shared/util";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 
 import { encodeFederationFrame, parseFederationFrame } from "./handshake.ts";
 import { getFederationManager } from "./runtime-context.ts";
 import {
-  mountSatelliteFederationTransportService,
+  currentSatelliteFederationTransportService,
+  ensureSatelliteFederationTransportService,
   type SatelliteTransport,
 } from "./satellite-transport-service.ts";
 
@@ -18,7 +18,7 @@ const pending = new Map<string, Pending>();
 const REQUEST_TIMEOUT_MS = 30_000;
 
 export function bindSatelliteFederationTransport(next: SatelliteTransport | null): void {
-  mountSatelliteFederationTransportService(ensureRootContext()).bind(next);
+  ensureSatelliteFederationTransportService().bind(next);
 }
 
 export function handleSatelliteRpcResult(method: string, payload: unknown): boolean {
@@ -46,7 +46,7 @@ export async function requestFederationRpc<T>(method: string, payload: unknown):
   if (!mgr?.satelliteClient?.isHubTrusted()) {
     throw new Error("HUB_UNAVAILABLE");
   }
-  const transport = getRootContextOrNull()?.satelliteFederationTransport?.get() ?? null;
+  const transport = currentSatelliteFederationTransportService()?.get() ?? null;
   if (!transport) throw new Error("HUB_UNAVAILABLE");
 
   const request_id = randomPublicId();

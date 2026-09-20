@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 
 export type ShellSendRequest = (method: string, payload: unknown) => Promise<unknown>;
 
@@ -33,9 +33,24 @@ export class VaultShellSendRequestService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountVaultShellSendRequestService(ctx: Context): VaultShellSendRequestService {
-  const existing = ctx.vaultShellSendRequest as VaultShellSendRequestService | undefined;
-  if (existing) return existing;
-  return new VaultShellSendRequestService(ctx);
+let current: VaultShellSendRequestService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureVaultShellSendRequestService(): VaultShellSendRequestService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new VaultShellSendRequestService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentVaultShellSendRequestService(): VaultShellSendRequestService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetVaultShellSendRequestServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

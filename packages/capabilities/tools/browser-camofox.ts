@@ -4,11 +4,13 @@ import type { Config } from "@freeanima/core/config";
 import { homePath } from "@freeanima/core/config/paths";
 import { omitUndefined } from "@freeanima/core/util";
 import { coerceString } from "@freeanima/shared/coerce-string";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 import { createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-import { mountBrowserToolsConfigService } from "./browser-config-service.ts";
+import {
+  currentBrowserToolsConfigService,
+  ensureBrowserToolsConfigService,
+} from "./browser-config-service.ts";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const NAVIGATE_TIMEOUT_MS = 60_000;
@@ -37,16 +39,16 @@ let vncUrl: string | null = null;
 let vncUrlChecked = false;
 
 export function bindBrowserToolsConfig(config: Config): void {
-  mountBrowserToolsConfigService(ensureRootContext()).set(config);
+  ensureBrowserToolsConfigService().set(config);
 }
 
 export function resetBrowserToolsConfigForTest(): void {
-  getRootContextOrNull()?.browserToolsConfig?.reset();
+  currentBrowserToolsConfigService()?.reset();
 }
 
 function getCamofoxConfigBlock(): Record<string, unknown> {
   try {
-    const browserConfig = getRootContextOrNull()?.browserToolsConfig?.get() ?? null;
+    const browserConfig = currentBrowserToolsConfigService()?.get() ?? null;
     if (!browserConfig) return {};
     const cfg = asRecord(browserConfig.data) ?? {};
     const browser = asRecord(cfg.browser);

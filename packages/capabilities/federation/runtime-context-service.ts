@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 
 import type { FederationManager } from "./runtime-context.ts";
 
@@ -28,9 +28,24 @@ export class FederationManagerService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountFederationManagerService(ctx: Context): FederationManagerService {
-  const existing = ctx.federationManager as FederationManagerService | undefined;
-  if (existing) return existing;
-  return new FederationManagerService(ctx);
+let current: FederationManagerService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureFederationManagerService(): FederationManagerService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new FederationManagerService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentFederationManagerService(): FederationManagerService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetFederationManagerServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

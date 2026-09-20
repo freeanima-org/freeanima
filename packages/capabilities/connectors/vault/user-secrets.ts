@@ -1,19 +1,19 @@
 import { getVaultItem } from "@freeanima/capabilities/connectors/vault/domain/item-store";
 import { resolveVaultWorldId } from "@freeanima/capabilities/connectors/vault/domain/vault-world";
 import { getResolvedWorldContext } from "@freeanima/core/config";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 import {
   vaultResolveSecretUserInputSchema,
   vaultResolveSecretUserOutputSchema,
 } from "@freeanima/shared/rpc-contract";
 
 import {
-  mountVaultShellSendRequestService,
+  currentVaultShellSendRequestService,
+  ensureVaultShellSendRequestService,
   type ShellSendRequest,
 } from "./shell-send-request-service.ts";
 
 export function bindVaultShellSendRequest(fn: ShellSendRequest | null): void {
-  mountVaultShellSendRequestService(ensureRootContext()).bind(fn);
+  ensureVaultShellSendRequestService().bind(fn);
 }
 
 export async function resolveUserVaultSecret(input: {
@@ -22,7 +22,7 @@ export async function resolveUserVaultSecret(input: {
   conversation_id?: string;
   world_id?: number;
 }): Promise<string> {
-  const shellSendRequest = getRootContextOrNull()?.vaultShellSendRequest?.get() ?? null;
+  const shellSendRequest = currentVaultShellSendRequestService()?.get() ?? null;
   if (!shellSendRequest) {
     throw new Error("VAULT_SHELL_OFFLINE");
   }

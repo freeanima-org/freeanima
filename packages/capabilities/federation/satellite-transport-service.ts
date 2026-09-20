@@ -1,4 +1,4 @@
-import { Service, type Context } from "cordis";
+import { Context, Service } from "cordis";
 
 export type SatelliteTransport = {
   sendRaw: (data: string) => void;
@@ -36,13 +36,24 @@ export class SatelliteFederationTransportService extends Service {
   }
 }
 
-/** Mount synchronously (idempotent: re-mounting reuses the existing instance). */
-export function mountSatelliteFederationTransportService(
-  ctx: Context,
-): SatelliteFederationTransportService {
-  const existing = ctx.satelliteFederationTransport as
-    | SatelliteFederationTransportService
-    | undefined;
-  if (existing) return existing;
-  return new SatelliteFederationTransportService(ctx);
+let current: SatelliteFederationTransportService | null = null;
+let ownedCtx: Context | null = null;
+
+/** 模块内单例（不再查进程根 context）。 */
+export function ensureSatelliteFederationTransportService(): SatelliteFederationTransportService {
+  if (!current) {
+    ownedCtx ??= new Context();
+    current = new SatelliteFederationTransportService(ownedCtx);
+  }
+  return current;
+}
+
+export function currentSatelliteFederationTransportService(): SatelliteFederationTransportService | null {
+  return current;
+}
+
+/** Test teardown。 */
+export function resetSatelliteFederationTransportServiceForTest(): void {
+  current = null;
+  ownedCtx = null;
 }

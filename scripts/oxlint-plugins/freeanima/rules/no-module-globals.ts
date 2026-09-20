@@ -1,4 +1,3 @@
-import { MODULE_GLOBALS_BASELINE } from "../lib/module-globals-baseline.ts";
 import { relToRepo } from "../lib/repo-path.ts";
 import type { RuleModule } from "../lib/types.ts";
 
@@ -13,7 +12,7 @@ const PATTERNS: [string, RegExp][] = [
     /Symbol\.for\("@freeanima\/(?:process-context|runtime-context)"\)/,
   ],
   ["Symbol.for-appRuntime", /Symbol\.for\("freeanima\.appRuntime"\)/],
-  // 进程根句柄（Cordis 迁移期的临时逃生口）：目标是把这些调用改为显式 ctx/依赖参数。
+  // 进程根句柄（Cordis 迁移期逃生口，已消除；禁止复活）。
   ["ensureRootContext", /\bensureRootContext\b/],
   ["getRootContextOrNull", /\bgetRootContextOrNull\b/],
   ["getRootContext", /\bgetRootContext\b(?!OrNull)/],
@@ -26,7 +25,7 @@ export const noModuleGlobals: RuleModule = {
     type: "problem",
     docs: {
       description:
-        "禁止模块级进程上下文/服务定位桥（ensureProcessContext、globalThis[Symbol.for(...)]）；请用 Cordis ctx 服务",
+        "禁止模块级进程上下文/服务定位桥与进程根句柄（ensureProcessContext、globalThis[Symbol.for(...)]、getRootContextOrNull 等）",
     },
   },
   create(context) {
@@ -38,10 +37,8 @@ export const noModuleGlobals: RuleModule = {
         const text = context.sourceCode.text;
         for (const [name, pattern] of PATTERNS) {
           if (!pattern.test(text)) continue;
-          const allowed = MODULE_GLOBALS_BASELINE[name] ?? [];
-          if (allowed.includes(rel)) continue;
           context.report({
-            message: `禁止模块级全局桥（${name}）；请改为 Cordis ctx 服务或显式依赖参数`,
+            message: `禁止模块级全局桥/进程根句柄（${name}）；请改为显式 ctx / 依赖参数，或由所属模块持有状态`,
             node,
           });
         }

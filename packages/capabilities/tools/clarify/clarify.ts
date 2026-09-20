@@ -13,10 +13,12 @@ import {
 import { safeParseOrNull } from "@freeanima/core/util";
 import { parseToolResult } from "@freeanima/core/tool";
 import type { ConversationPort } from "@freeanima/core/tool/conversation-port.ts";
-import { ensureRootContext, getRootContextOrNull } from "@freeanima/kernel";
 import { asRecord } from "@freeanima/shared/util";
 
-import { mountClarifyConfigService } from "./clarify-config-service.ts";
+import {
+  currentClarifyConfigService,
+  ensureClarifyConfigService,
+} from "./clarify-config-service.ts";
 
 export type { ClarifyItem, AwaitingClarify };
 export type ClarifyAwaitingResult = ClarifyToolAwaitingResult;
@@ -31,15 +33,15 @@ const DEFAULT_TIMEOUT_SEC = 1800;
 const DEFAULT_MAX_ITEMS = 5;
 
 export function bindClarifyConfig(config: Config): void {
-  mountClarifyConfigService(ensureRootContext()).set(config);
+  ensureClarifyConfigService().set(config);
 }
 
 export function resetClarifyConfigForTest(): void {
-  getRootContextOrNull()?.clarifyConfig?.reset();
+  currentClarifyConfigService()?.reset();
 }
 
 function requireClarifyConfig(): Config {
-  const service = getRootContextOrNull()?.clarifyConfig;
+  const service = currentClarifyConfigService();
   if (!service) {
     throw new Error("Clarify config not bound; call registerClarifyHooks first");
   }

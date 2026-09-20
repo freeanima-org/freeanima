@@ -138,7 +138,7 @@ date: 2026-09-18
 
 ### 5.3 硬约束（会决定成败）
 
-1. **Cordis 同源但不兼容。** 本仓 `cordis@4.0.0-rc.10`；DSH 把 Cordis 源码内置改名 `@deepseek-ai/cordis`（发布 `4.0.2`，上游 rc.7 + 本地补丁）。两边都假设"进程只有一个根 Context"（本仓见 `../packages/kernel/context.ts`）。
+1. **Cordis 同源但不兼容。** 本仓 `cordis@4.0.0-rc.10`；DSH 把 Cordis 源码内置改名 `@deepseek-ai/cordis`（发布 `4.0.2`，上游 rc.7 + 本地补丁）。两边都假设"进程只有一个组合根 Context"（本仓见 `../packages/server/bootstrap/kernel.ts` 的 `serviceRootContext()`）。
    → **可以把本仓领域模块改写成 DSH 插件；不能让两个内核同进程共存。**
 2. **DSH 是 pre-stable。** `AGENTS.md` 明写 "Public APIs are pre-stable; update every consumer"；版本 `0.1.6-alpha.2`。
 3. **宿主插件在进程内、沙箱之外运行。** DSH plugin-manager 文档明述 "installed Host code executes in-process outside the workspace sandbox"，且 `credentials-local` 文档自认 "agent tool processes run as that same user, so **this store cannot isolate secrets from the agent**"。
@@ -369,7 +369,7 @@ Portal 壳（Tauri/web/mobile/MV3）与全部数据模块保留——**该方向
 | provider usage 落库                                     | `../packages/engine/loop-mechanism/loop-engine.ts`（`:428`）、`../packages/shared/pg-shapes/jsonb/message-payload.ts`（`:78`） |
 | vault 契约与安全模型                                    | `../packages/shared/rpc-contract/frames/vault.ts`                                                                              |
 | vault RPC 方法面                                        | `../packages/features/vault/habitat/routes/index.ts`                                                                           |
-| 内核单根 Context 约束                                   | `../packages/kernel/context.ts`                                                                                                |
+| 组合根单 Context 约束                                   | `../packages/server/bootstrap/kernel.ts`                                                                                       |
 
 **外部资料**
 
