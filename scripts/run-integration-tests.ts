@@ -74,6 +74,12 @@ const testArgs = [
   ...testPaths,
   "--pass-with-no-tests",
   `--parallel=${workers}`,
+  // Bun 1.4.2：`--parallel` 隐含 `--isolate`，而 isolate worker 跑本仓这套集成
+  // 会在若干文件后整体卡死——worker 100% CPU 空转、无 I/O、PG 侧无任何连接，
+  // bun 只报 "Interrupted while still running"。显式 `--no-isolate` 后同进程复用
+  // module registry；每文件独立库仍由 `endIntegrationCase()` DROP+克隆保证
+  // （integration-case.ts），实测 8 worker × 48 文件 197 pass / ~17s。
+  "--no-isolate",
   "--timeout=30000",
 ];
 console.log(`[${label}] bun ${testArgs.join(" ")}`);
