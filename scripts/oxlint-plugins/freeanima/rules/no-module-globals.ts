@@ -13,6 +13,12 @@ const PATTERNS: [string, RegExp][] = [
     /Symbol\.for\("@freeanima\/(?:process-context|runtime-context)"\)/,
   ],
   ["Symbol.for-appRuntime", /Symbol\.for\("freeanima\.appRuntime"\)/],
+  // 进程根句柄（Cordis 迁移期的临时逃生口）：目标是把这些调用改为显式 ctx/依赖参数。
+  ["ensureRootContext", /\bensureRootContext\b/],
+  ["getRootContextOrNull", /\bgetRootContextOrNull\b/],
+  ["getRootContext", /\bgetRootContext\b(?!OrNull)/],
+  ["setRootContext", /\bsetRootContext\b/],
+  ["resetRootContextForTest", /\bresetRootContextForTest\b/],
 ];
 
 export const noModuleGlobals: RuleModule = {
