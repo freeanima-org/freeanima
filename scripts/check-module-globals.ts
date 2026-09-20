@@ -3,8 +3,9 @@
  * 模块级全局桥禁令（棘轮）。
  *
  * Cordis 迁移的收尾目标：不再有 `ensureProcessContext` / `globalThis[Symbol.for]`
- * 这类跨模块服务定位桥。存量按「pattern × 文件」基线放行，且只减不增；
- * `--update` 收紧基线。P3 完成后基线应为空，规则退化为纯禁令。
+ * 这类跨模块服务定位桥，也不再有 `getRootContextOrNull` / `ensureRootContext`
+ * 这类进程根句柄逃生口。存量按「pattern × 文件」基线放行，且只减不增；
+ * `--update` 收紧基线。收尾完成后基线应为空，规则退化为纯禁令。
  *
  * 生成的基线同时供 oxlint 规则 `freeanima/no-module-globals` 使用
  * （`scripts/oxlint-plugins/freeanima/lib/module-globals-baseline.ts`）。
@@ -49,6 +50,12 @@ export const MODULE_GLOBAL_PATTERNS: [string, RegExp][] = [
     /Symbol\.for\("@freeanima\/(?:process-context|runtime-context)"\)/,
   ],
   ["Symbol.for-appRuntime", /Symbol\.for\("freeanima\.appRuntime"\)/],
+  // 进程根句柄（Cordis 迁移期的临时逃生口）：目标是把这些调用改为显式 ctx/依赖参数。
+  ["ensureRootContext", /\bensureRootContext\b/],
+  ["getRootContextOrNull", /\bgetRootContextOrNull\b/],
+  ["getRootContext", /\bgetRootContext\b(?!OrNull)/],
+  ["setRootContext", /\bsetRootContext\b/],
+  ["resetRootContextForTest", /\bresetRootContextForTest\b/],
 ];
 
 type Baseline = Record<string, string[]>;
@@ -87,7 +94,9 @@ function renderBaseline(baseline: Baseline): string {
   for (const [name, entries] of Object.entries(baseline).toSorted(([a], [b]) =>
     a.localeCompare(b),
   )) {
-    lines.push(`  ${JSON.stringify(name)}: [`);
+    // oxfmt 去掉合法标识符键的引号：生成时直接对齐，避免 --update 后 fmt --check 失败。
+    const key = /^[A-Za-z_$][\w$]*$/.test(name) ? name : JSON.stringify(name);
+    lines.push(`  ${key}: [`);
     for (const entry of entries.toSorted()) lines.push(`    ${JSON.stringify(entry)},`);
     lines.push("  ],");
   }
