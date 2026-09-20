@@ -82,7 +82,7 @@ Use `tests/helpers/integration-case.ts` (`restoreIntegrationHome` + `flushCompre
 
 ### PG：必须用隔离库（硬禁止指日常库）
 
-`just qa test-integration` 起 Docker 临时 PG → 建迁移好的模板库 `anima_it_template` → 每个测试进程克隆 `anima_it_*` 独立库（**不再** `clearPgTables`）。`--parallel` 默认开启（`FREEANIMA_TEST_PARALLEL` 可覆盖）。子集：`just qa test-integration -- <paths>`；CORE：`just qa test-integration -- --core`。
+`just qa test-integration` 起 Docker 临时 PG → 建迁移好的模板库 `anima_it_template` → 每个测试进程克隆 `anima_it_*` 独立库（**不再** `clearPgTables`）。`--parallel` 默认开启（`FREEANIMA_TEST_PARALLEL` 可覆盖），并显式带 `--no-isolate`：Bun 1.4.2 的 `--parallel` 隐含 `--isolate`，而 isolate worker 跑本套集成会在若干文件后整进程 100% CPU 空转（无 I/O、PG 无连接，bun 只报 "Interrupted while still running"）。每文件独立库仍由 `endIntegrationCase()` DROP + 克隆保证。子集：`just qa test-integration -- <paths>`；CORE：`just qa test-integration -- --core`。
 
 | 允许                                                        | 禁止                                                                         |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
