@@ -2,12 +2,9 @@
  * 断言 workspace 包的依赖禁令与 13 包 DAG。
  *
  * 三层校验：
- *   1. `@freeanima/*` 内部依赖必须**恰好**等于 DAG 允许集合（多/少都失败）；
+ *   1. `@freeanima/*` 内部依赖必须是 DAG 允许集合的子集（多即失败）；
  *   2. 每个包的外部依赖禁令（shared 无 drizzle/React/LLM/mail 等）；
  *   3. 根编排包只允许引用 DAG 内的包名。
- *
- * 目标是 P4/P5 迁移后的 13 包；迁移进行中时，`packages` /
- * `packages` 作为聚合包按同一 DAG 的并集校验。
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -38,18 +35,11 @@ const ALLOWED_FREEANIMA_DEPS: Record<string, readonly string[]> = {
   "@freeanima/ui-features": ["portal-sdk", "ui-kit", "shared"],
   "@freeanima/app-frame": ["ui-features", "portal-sdk", "ui-kit", "shared"],
   "@freeanima/portal": ["app-frame", "ui-features", "portal-sdk", "ui-kit", "shared"],
-  // 迁移进行中的聚合包：允许其未来拆分包集合的并集
-  "@freeanima/frontend": ["app-frame", "portal-sdk", "shared", "ui-features", "ui-kit"],
   // 文档站：不参与运行时 DAG
   "@freeanima/site": [],
 };
 
-/**
- * 反向边债务（棘轮）：P4 拆包时尚未清完的反向依赖，必须显式登记。
- *
- * 目标是把本表清空；`just qa check` 会在新增未登记反向边时失败。
- * 文件级明细见 `scripts/oxlint-plugins/freeanima/lib/layer-deps-baseline.ts`。
- */
+/** 仅服务端可用的 LLM / 邮件依赖：前端链与 shared/kernel 禁止。 */
 const LLM_AND_MAIL = ["@anthropic-ai/sdk", "openai", "nodemailer", "mailparser", "imapflow"];
 
 /** 包名 → 禁止的外部依赖前缀。 */
@@ -67,7 +57,6 @@ const BANNED_EXTERNAL: Record<string, readonly string[]> = {
   "@freeanima/ui-features": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
   "@freeanima/app-frame": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
   "@freeanima/portal": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
-  "@freeanima/frontend": ["drizzle-orm", "drizzle-kit", ...LLM_AND_MAIL],
 };
 
 function stringMap(value: unknown): Record<string, string> | undefined {
@@ -119,18 +108,14 @@ function checkPackage(pkg: Pkg, where: string): void {
     .toSorted();
   const expected = [...allowed].toSorted();
   // 只校验「不得多」：包不必依赖其允许集合里的每一个（下层能力可不用）。
-  const missing: string[] = [];
   const extra = internal.filter((dep) => !expected.includes(dep));
-  if (missing.length > 0 || extra.length > 0) {
-    const parts: string[] = [];
-    if (extra.length > 0) parts.push(`多: ${extra.join(", ")}`);
-    if (missing.length > 0) parts.push(`少: ${missing.join(", ")}`);
-    failures.push(`${name} 的 @freeanima 依赖与 DAG 不符（${parts.join("；")}）`);
+  if (extra.length > 0) {
+    failures.push(`${name} 的 @freeanima 依赖与 DAG 不符（多: ${extra.join(", ")}）`);
   }
   assertNone(name, deps, BANNED_EXTERNAL[name] ?? []);
 }
 
-/** 迁移目标包的目录名 → package.json 路径（存在才校验）。 */
+/** 参与 DAG 校验的包目录名 → package.json 路径（存在才校验）。 */
 const TARGET_DIRS = [
   "shared",
   "kernel",
@@ -145,7 +130,6 @@ const TARGET_DIRS = [
   "ui-features",
   "app-frame",
   "portal",
-  "frontend",
 ];
 
 for (const dir of TARGET_DIRS) {

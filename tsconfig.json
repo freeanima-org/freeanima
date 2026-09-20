@@ -17,7 +17,7 @@
     "**/dist/**",
     "**/dist-types/**",
     "**/.turbo/**",
-    "scripts/codemod-freeanima-imports.ts",
+    "scripts/check-retired-imports.ts",
     "packages/portal/extension/**",
     "**/src-tauri/**"
   ]

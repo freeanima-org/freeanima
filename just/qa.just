@@ -18,7 +18,7 @@ check: _deps
   {{ bun }} scripts/check-layer-deps.ts
   {{ bun }} scripts/check-module-globals.ts
   {{ bun }} scripts/check-boot-plugin-parity.ts
-  {{ bun }} scripts/codemod-freeanima-imports.ts --check
+  {{ bun }} scripts/check-retired-imports.ts
 
 # 抽样：Vite 解析 task/vault/diary UI + portal-sdk，断言模块图无 drizzle-orm
 [no-cd]
@@ -58,10 +58,10 @@ check-module-globals: _deps
 check-boot-plugin-parity: _deps
   {{ bun }} scripts/check-boot-plugin-parity.ts
 
-# 迁移用 import 前缀表已全部执行（无残留旧前缀）
+# 退役 import 前缀禁令（无残留旧前缀）
 [no-cd]
-check-import-codemod: _deps
-  {{ bun }} scripts/codemod-freeanima-imports.ts --check
+check-retired-imports: _deps
+  {{ bun }} scripts/check-retired-imports.ts
 
 # husky pre-commit（与钩子同集合，避免漂移）
 [no-cd]

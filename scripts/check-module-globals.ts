@@ -87,7 +87,7 @@ function renderBaseline(baseline: Baseline): string {
   const lines = [
     "/**",
     " * 由 `bun scripts/check-module-globals.ts --update` 生成 —— 勿手改。",
-    " * 模块级全局桥存量文件清单；只减不增，P3 完成后为空。",
+    " * 模块级全局桥/进程根句柄存量文件清单；只减不增，收尾目标为空。",
     " */",
     "export const MODULE_GLOBALS_BASELINE: Readonly<Record<string, readonly string[]>> = {",
   ];
@@ -144,5 +144,5 @@ if (PRINT || UPDATE) {
     process.exit(1);
   }
   const total = Object.values(current).reduce((sum, list) => sum + list.length, 0);
-  console.log(`check-module-globals: ok（存量 ${total} pattern×file；P3 目标 0）`);
+  console.log(`check-module-globals: ok（存量 ${total} pattern×file；收尾目标 0）`);
 }

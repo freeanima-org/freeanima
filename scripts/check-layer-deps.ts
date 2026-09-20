@@ -99,7 +99,8 @@ const fileSet: ReadonlySet<string> = new Set(files);
 
 /**
  * 按文件存在性解算目标文件 —— `@freeanima/features/*` / `portal/*` 是双树别名，
- * 只有存在性解算才能把「UI→UI」与「UI→服务端特性」区分开。
+ * 只有存在性解算才能把「UI→UI」与「UI→服务端特性」区分开；候选顺序与
+ * `scripts/oxlint-plugins/freeanima/lib/layer-deps.ts` 的 `dualTreeLayer` 一致。
  */
 function tryResolve(base: string): string | null {
   for (const candidate of [
@@ -123,18 +124,13 @@ function resolveTargetFile(fromFile: string, spec: string): string | null {
   const push = (...segments: string[]): void => {
     candidates.push(join(REPO_ROOT, "packages", ...segments, ...tail));
   };
-  if (head === "habitat") push("server");
-  else if (head === "frontend") push("frontend");
-  else if (head === "client") push("frontend", "client");
-  else if (head === "platform") push("server");
-  else if (head === "features") {
-    push("frontend", "features");
+  if (head === "features") {
+    push("ui-features");
     push("features");
   } else if (head === "portal") {
-    push("frontend", "portal");
+    push("portal");
     push("cli");
-  } else if (head === "ui-kit") push("frontend", "ui-kit");
-  else push(head);
+  } else push(head);
   for (const candidate of candidates) {
     const resolved = tryResolve(candidate);
     if (resolved) return resolved;
