@@ -14,7 +14,7 @@ import {
 import { taskAttributionLabel } from "../lib/task-attribution.ts";
 import { TaskPomodoroFocusSection } from "./TaskPomodoroFocusSection.tsx";
 import { TaskSubtaskSection } from "./TaskSubtaskSection.tsx";
-import { EntityIdLabel } from "./EntityIdLabel.tsx";
+import { EntityIdLabel } from "@freeanima/ui-kit/composite";
 
 export type { DetailSaveStatus };
 export type TaskTagKnown = TagKnown;

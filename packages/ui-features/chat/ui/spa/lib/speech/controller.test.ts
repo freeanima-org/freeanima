@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { createSpeechPlaybackController } from "./controller.ts";
+import { createSpeechPlaybackController } from "@freeanima/portal-sdk/speech/controller";
 import type { SpeechPlaybackAdapter } from "./types.ts";
 
 function createMockAdapter(): SpeechPlaybackAdapter & {

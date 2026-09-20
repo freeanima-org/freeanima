@@ -11,7 +11,7 @@ import {
   type CapabilityPolicyFragment,
   type ResolvedCapabilityPolicy,
 } from "@freeanima/core/capability-policy";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export { filterToolNamesByPolicy, runtimeToolPolicyFromResolved, type ResolvedCapabilityPolicy };
 export { materializeFromFragments, materializeToolNames } from "@freeanima/core/capability-policy";

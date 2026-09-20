@@ -7,7 +7,7 @@ import {
   sanitizeConfigForApi,
 } from "@freeanima/server/config";
 import { formatCstIsoFromEpoch } from "@freeanima/core/util";
-import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps, RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { PROFILE_CHAT } from "@freeanima/core/provider";
 import {
   createJob,
@@ -38,7 +38,7 @@ import type {
   ProcessMemoryDetail,
   SafeConfigSnapshot,
   ServiceSnapshot,
-} from "@freeanima/server/schemas/snapshot";
+} from "@freeanima/capabilities/ports/schemas/snapshot";
 import { ANIMA_VERSION } from "./version.ts";
 import { SERVICE_BUILD_META } from "./service-build-meta.ts";
 

@@ -1,6 +1,6 @@
 import { generateConversationHandoffSummary } from "@freeanima/engine/conversation";
 import { logComponent } from "@freeanima/server/logging";
-import type { RuntimeDeps } from "../runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 /** Before closing old conversation via /new etc.: read-only handoff summary (does not write old conversation) */
 export async function onConversationCloseBeforeNew(

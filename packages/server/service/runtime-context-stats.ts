@@ -16,7 +16,7 @@ import {
   type ConversationContextUsage,
   type RuntimeContextBreakdown,
 } from "@freeanima/shared/llm-usage";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type { ConversationContextUsage, RuntimeContextBreakdown };
 export { formatTokenK } from "@freeanima/shared/llm-usage";

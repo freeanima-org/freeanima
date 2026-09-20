@@ -3,7 +3,7 @@ import {
   registerSoftFailureNotify,
   unregisterSoftFailureNotify,
 } from "@freeanima/core/soft-failure";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 const realPg = await import("@freeanima/core/db/pg");
 const pgOriginal = { ...realPg };

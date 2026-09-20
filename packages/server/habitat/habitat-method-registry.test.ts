@@ -7,7 +7,7 @@ import {
   resolveFallbackTransport,
   type HabitatMethodDef,
 } from "@freeanima/shared/habitat-contract";
-import { FEATURE_METHOD_DEFS } from "./feature-method-defs.ts";
+import { FEATURE_METHOD_DEFS } from "@freeanima/shared/rpc-contract/feature-rpc";
 import { STATIC_METHOD_REGISTRY } from "@freeanima/shared/habitat-contract/registry/index.ts";
 import { isNonJsonHabitatHttpMethod } from "@freeanima/shared/habitat-rpc";
 import { initHabitatRouter, resetHabitatRouterForTests } from "@freeanima/server/habitat/init.ts";

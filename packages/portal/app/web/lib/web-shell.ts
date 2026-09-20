@@ -1,7 +1,7 @@
 import { browserRemoteInstanceStore } from "@freeanima/shared/rpc-contract/instance-store-browser.ts";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { buildShellApiFields } from "@freeanima/portal-sdk/shell-api-fields";
-import { normalizeShellClientConfig } from "@freeanima/portal-sdk/shell-client-config";
+import { normalizeShellClientConfig } from "@freeanima/shared/shell-config/client-config.ts";
 import type { ShellApi } from "@freeanima/portal-sdk/shell-api";
 import { readStoredHabitatUrl, REMOTE_AUTH_TOKEN_KEY } from "@freeanima/portal-sdk/settings";
 

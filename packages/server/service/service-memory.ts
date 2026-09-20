@@ -38,7 +38,7 @@ import {
   type TemporalBatchJobStatus,
   type TemporalSystemRollBatchJobStatus,
 } from "@freeanima/capabilities/memory/temporal-summary";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type MemoryListResult<T> = {
   items: T[];

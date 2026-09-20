@@ -2,7 +2,7 @@ import type { Kernel } from "@freeanima/kernel";
 import { emitConversationUpdated } from "@freeanima/core/hooks/cordis";
 import { fallbackConversationTitle, generateConversationTitle } from "@freeanima/core/llm";
 import { isConversationMeta } from "@freeanima/core/db/domain";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type SessionTitleNotify = {
   kernel: Kernel;

@@ -1,7 +1,7 @@
 import { Service, type Context } from "cordis";
 import type { Kernel } from "@freeanima/kernel";
 import type { AppRuntime } from "./app-runtime.ts";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 declare module "cordis" {
   interface Context {

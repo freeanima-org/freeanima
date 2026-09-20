@@ -4,7 +4,7 @@ import type {
   SafeConfigSnapshot,
   ServiceSnapshot,
   ConversationSummary,
-} from "@freeanima/server/schemas/snapshot";
+} from "@freeanima/capabilities/ports/schemas/snapshot";
 import type { StreamEvent } from "@freeanima/engine/loop-mechanism";
 import type { StoredMessage as Message } from "@freeanima/core/db/domain";
 import type { ConversationService } from "@freeanima/engine/conversation";
@@ -22,7 +22,7 @@ import {
 import { createTurnMessageCallbacks, type StreamTurnHost } from "./turn-lifecycle.ts";
 import { EngineRunControl } from "./engine-run-control.ts";
 import { ConversationManager } from "./conversation-manager.ts";
-import type { FullRuntimeDeps, RuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps, RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import * as status from "./service-status.ts";
 import * as conversations from "./service-conversations.ts";
 import * as memory from "./service-memory.ts";

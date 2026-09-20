@@ -1,5 +1,5 @@
 import { isConversationMeta, resolveExecutableToolNames } from "@freeanima/engine/conversation";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import {
   triggerConversationTitleIfFirstTurn,
   type SessionTitleNotify,

@@ -5,7 +5,7 @@ import {
   isOfflineOutboxDevtoolsEnabled,
   normalizeShellDebugConfig,
   parseShellDebugConfig,
-} from "./shell-debug-config.ts";
+} from "@freeanima/shared/shell-config/debug-config.ts";
 
 describe("isOfflineOutboxDevtoolsEnabled", () => {
   it("DEV 下始终开启", () => {

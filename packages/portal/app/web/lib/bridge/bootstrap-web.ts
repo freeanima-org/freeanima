@@ -1,4 +1,4 @@
-import { parseShellClientConfig } from "@freeanima/portal-sdk/shell-client-config";
+import { parseShellClientConfig } from "@freeanima/shared/shell-config/client-config.ts";
 import type { SettingsStorageScope } from "@freeanima/portal-sdk/settings";
 import { HABITAT_SETTINGS_SCOPE } from "@freeanima/portal-sdk/settings";
 import { prefetchResolvedWorldContextIfAuthed } from "@freeanima/portal-sdk/world-context.ts";

@@ -13,7 +13,7 @@ import {
   listNotifications,
   markNotificationRead,
 } from "@freeanima/features/notification/habitat/service";
-import type { RuntimeDeps } from "@freeanima/server/service/runtime-deps";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 function testRuntimeDeps(): RuntimeDeps {
   return {

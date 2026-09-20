@@ -19,7 +19,7 @@ import {
   shouldGenerateConversationTitle,
   triggerConversationTitleIfFirstTurn,
 } from "./conversation-title.ts";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));

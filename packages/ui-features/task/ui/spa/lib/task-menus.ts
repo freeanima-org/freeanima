@@ -1,7 +1,7 @@
 import { taskDeleteDetachesCarrier } from "@freeanima/shared/pg-shapes/entity";
 
 import type { TaskListRow } from "./api.ts";
-import { copyText } from "./copy-text.ts";
+import { copyText } from "@freeanima/ui-kit/lib/copy-text.ts";
 
 function copyIdMenuItem(id: number): import("./menu-types.ts").TaskMenuItem {
   return {

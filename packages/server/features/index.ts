@@ -1,6 +1,6 @@
-export type { FeatureContribution, FeatureRpcHandler } from "./types.ts";
+export type { FeatureContribution, FeatureRpcHandler } from "@freeanima/core/features/types.ts";
 export { FeatureService, getFeatureService, mountFeatureService } from "./service.ts";
-export { createFeaturePlugin, type FeaturePluginModule } from "./plugin.ts";
+export { createFeaturePlugin, type FeaturePluginModule } from "@freeanima/core/features/plugin.ts";
 export {
   getFeatureRpcHandler,
   registerFeatures,

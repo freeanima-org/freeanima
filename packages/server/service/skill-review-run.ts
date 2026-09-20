@@ -23,7 +23,7 @@ import {
   runAutoLlm,
   type AutoLlmRunResult,
 } from "@freeanima/engine/auto-llm-run.ts";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type RunSkillReviewInput = {
   mode: SkillReviewMode;

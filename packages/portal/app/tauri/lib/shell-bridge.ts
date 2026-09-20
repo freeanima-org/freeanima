@@ -3,7 +3,7 @@ import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
 import { testHabitatHealthConnection } from "@freeanima/portal-sdk";
 import { buildShellApiFields } from "@freeanima/portal-sdk/shell-api-fields";
 import type { ShellApi } from "@freeanima/portal-sdk/shell-api";
-import { parseShellClientConfig } from "@freeanima/portal-sdk/shell-client-config";
+import { parseShellClientConfig } from "@freeanima/shared/shell-config/client-config.ts";
 import type { SettingsStorageScope } from "@freeanima/portal-sdk/settings";
 import type { ScopedSettingsBackend } from "@freeanima/portal-sdk/settings";
 import { HABITAT_SETTINGS_SCOPE } from "@freeanima/portal-sdk/settings";

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Context } from "cordis";
 
-import { createFeaturePlugin } from "./plugin.ts";
+import { createFeaturePlugin } from "@freeanima/core/features/plugin.ts";
 import { mountFeatureService } from "./service.ts";
 
 describe("createFeaturePlugin", () => {

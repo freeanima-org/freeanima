@@ -11,7 +11,7 @@ import {
   type CjkConfigSnapshot,
   type EmbeddingConfigSnapshot,
 } from "@freeanima/server/config";
-import type { RuntimeDeps } from "./runtime-deps.ts";
+import type { RuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 export type { CjkConfigSnapshot, EmbeddingConfigSnapshot, FtsCoverageStats, FtsRebuildJobStatus };
 

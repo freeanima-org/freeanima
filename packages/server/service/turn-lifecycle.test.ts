@@ -13,7 +13,7 @@ import { runtimeConfigSchema } from "@freeanima/core/config";
 import { MINIMAL_LLM_YAML } from "@freeanima/server/config/test-helpers/minimal-llm-config";
 import { createTurnMessageCallbacks, finalizeTurn, runSimpleTurn } from "./turn-lifecycle.ts";
 import * as conversationTitle from "./conversation-title.ts";
-import type { FullRuntimeDeps } from "./runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 
 const catalog = createEngineCatalog();
 const testConfig = Config.fromSnapshot(runtimeConfigSchema.parse(parseYaml(MINIMAL_LLM_YAML)));

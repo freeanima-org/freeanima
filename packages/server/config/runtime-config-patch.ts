@@ -14,7 +14,7 @@ import {
 } from "@freeanima/core/db/pg";
 import { asRecord } from "@freeanima/shared/util";
 
-import { loadBootstrapConfig } from "../boot/bootstrap.ts";
+import { loadBootstrapConfig } from "@freeanima/server/config/bootstrap.ts";
 
 /** CLI 冷路径：连 PG 并应用迁移后再读/写 habitat_runtime_config（模拟新用户空库） */
 async function ensureDbFromBootstrap(): Promise<void> {

@@ -6,7 +6,7 @@ import {
   resolveOutboxScope,
   type OfflineOutboxOp,
 } from "@freeanima/portal-sdk/offline-outbox";
-import { isOfflineOutboxDevtoolsEnabled } from "@freeanima/portal-sdk/shell-debug-config";
+import { isOfflineOutboxDevtoolsEnabled } from "@freeanima/shared/shell-config/debug-config.ts";
 import { useGlobalOutboxSummary } from "@freeanima/portal-sdk/use-outbox-summary";
 import { Button } from "@freeanima/ui-kit/components/ui/button.tsx";
 

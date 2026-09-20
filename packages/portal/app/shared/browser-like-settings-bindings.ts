@@ -9,8 +9,8 @@ import { habitatConfigSettingsBindings } from "@freeanima/app-frame/spa/settings
 import { companionHabitatSettingsSection } from "@freeanima/ui-features/companion/ui/spa/settings/companion-settings-section.ts";
 import { createCompanionSettingsApi } from "@freeanima/ui-features/companion/ui/spa/settings/companion-settings-api.ts";
 import type { SettingsStore } from "@freeanima/portal-sdk/settings";
-import type { ShellClientConfig } from "@freeanima/portal-sdk/shell-client-config";
-import type { ShellDebugConfig } from "@freeanima/portal-sdk/shell-debug-config";
+import type { ShellClientConfig } from "@freeanima/shared/shell-config/client-config.ts";
+import type { ShellDebugConfig } from "@freeanima/shared/shell-config/debug-config.ts";
 
 export type BrowserLikeSettingsStores = {
   habitat: SettingsStore<ShellClientConfig>;

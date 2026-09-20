@@ -3,7 +3,7 @@ import { readFileSync, statfsSync } from "node:fs";
 import { getHomeDir } from "@freeanima/core/config/paths";
 import { formatCstIsoFromEpoch } from "@freeanima/core/util";
 import type { DependencyStatus } from "@freeanima/capabilities/ports/schemas/snapshot";
-import type { FullRuntimeDeps } from "../runtime-deps.ts";
+import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import { ANIMA_VERSION } from "../version.ts";
 import { bandDiskFreeBytes, bandRssKb } from "./bands.ts";
 import type { DepMarker, EnvHealthMarkers } from "./types.ts";
