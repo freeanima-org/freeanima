@@ -154,7 +154,9 @@ async function syncMailboxMessages(
       const mime = await parseEmailMime(rawSource);
       const bodyText = mime.content;
       const preview = messagePreview(mime.text || bodyText);
-      const sentAt = envelope?.date?.toISOString() ?? formatCstIso();
+      // imapflow 2 的 `MessageEnvelopeObject.date` 为 `Date | string`。
+      const envelopeDate = envelope?.date;
+      const sentAt = envelopeDate ? new Date(envelopeDate).toISOString() : formatCstIso();
       const unread = !msg.flags?.has("\\Seen");
 
       const thread = await upsertEmailThread({

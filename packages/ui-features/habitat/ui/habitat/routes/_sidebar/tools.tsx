@@ -127,9 +127,9 @@ function readVisibilityMap(value: unknown): Record<string, ToolSetVisibility> {
 
 export const Route = createFileRoute("/_sidebar/tools")({
   loader: () =>
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     getToolsStatus().catch(
       catchWithFallback("tools/getToolsStatus", EMPTY_LOADER_DATA),
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
     ) as Promise<ToolsLoaderData>,
   staleTime: LONG_STALE_MS,
   component: ToolsPage,

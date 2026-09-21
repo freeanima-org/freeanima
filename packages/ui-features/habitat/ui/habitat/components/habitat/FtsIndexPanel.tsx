@@ -224,9 +224,9 @@ export function FtsIndexPanel({ active }: FtsIndexPanelProps) {
     setLoading(true);
     setError("");
     try {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       const started = (await startRebuildFtsIndex({
         only_missing: onlyMissing,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
       })) as FtsRebuildJobStatus;
       setJob(started);
     } catch (e) {

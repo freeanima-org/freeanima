@@ -258,7 +258,6 @@ export function TemporalSummaryPage() {
       }
       if (!silent) setError("");
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const data = (await listTemporalSummaries(
           omitUndefined({
             window,
@@ -268,6 +267,7 @@ export function TemporalSummaryPage() {
             limit: PAGE_SIZE,
             agent_subject_id: agentSubjectId,
           }),
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         )) as { items: TemporalRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);
@@ -300,9 +300,9 @@ export function TemporalSummaryPage() {
       }
       if (!silent) setError("");
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const data = (await listTemporalSystemRolls({
           agent_subject_id: agentSubjectId,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         })) as { items: SystemRollRow[] };
         setRolls(data.items ?? []);
       } catch (e) {

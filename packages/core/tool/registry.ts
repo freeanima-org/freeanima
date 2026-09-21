@@ -2,7 +2,8 @@ import type { z } from "zod";
 
 /** JSON Schema object subset (OpenAI function parameters) */
 export type JsonSchemaObject = {
-  type?: string;
+  /** zod 4.6 起 `toJSONSchema` 的 `type` 可为联合（如 `["string","null"]`） */
+  type?: string | string[];
   properties?: Record<string, unknown>;
   required?: string[];
   enum?: unknown[];

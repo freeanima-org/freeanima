@@ -73,5 +73,5 @@ portal → app-frame → ui-features → { portal-sdk, ui-kit } → shared
 
 ## CI
 
-`just qa check` → tsgo + oxlint（含 `layer-deps` / `no-module-globals`）+ stylelint +
-oxfmt + 变更测试 + `check-{frontend-no-drizzle,shared-shapes,package-deps,layer-deps,module-globals,boot-plugin-parity,retired-imports}`。
+`just qa check` → tsc（TS 7 native）+ oxlint（含 `layer-deps` / `no-module-globals`）+ stylelint +
+oxfmt + 变更测试 + `check-{frontend-no-drizzle,shared-shapes,package-deps,layer-deps,module-globals,boot-plugin-parity,retired-imports,retired-tooling}`。

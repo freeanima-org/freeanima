@@ -20,7 +20,7 @@ import { SettingsPage } from "./settings/SettingsPage.tsx";
 import { needsHabitatSetup } from "./setup/habitat-setup.ts";
 import { resolveShellRouterBasepath } from "./router-basepath.ts";
 
-/** TanStack Router 对 lazy ComponentType<object> 的 RouteComponent 约束过严（Windows tsgo + eOPT） */
+/** TanStack Router 对 lazy ComponentType<object> 的 RouteComponent 约束过严（Windows tsc + eOPT） */
 function asRouteComponent(component: ComponentType<object>): ComponentType<object> {
   return component;
 }
@@ -70,7 +70,7 @@ function createLazyShellRoute(path: string, component: ComponentType<object>) {
       getParentRoute: () => mainLayoutRoute,
       path,
       component: asRouteComponent(component),
-      // Windows tsgo + exactOptionalPropertyTypes 下 lazy RouteComponent 与 RouteOptions 不兼容
+      // Windows tsc + exactOptionalPropertyTypes 下 lazy RouteComponent 与 RouteOptions 不兼容
     }),
   );
 }

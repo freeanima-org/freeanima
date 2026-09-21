@@ -2,7 +2,8 @@ import * as ed from "@noble/ed25519";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256, sha512 } from "@noble/hashes/sha2.js";
 
-ed.etc.sha512Sync = (...msgs: Uint8Array[]) => sha512(ed.etc.concatBytes(...msgs));
+// @noble/ed25519 v3：同步 API 的 SHA-512 从 `etc.sha512Sync` 迁到 `hashes.sha512`。
+ed.hashes.sha512 = sha512;
 
 const textEncoder = new TextEncoder();
 

@@ -87,6 +87,7 @@ DDL 仅 `packages/core/db`；存储形状的纯 Zod 经 **codegen + package expo
 | `scripts/check-module-globals.ts`      | 模块级全局桥/进程根句柄纯禁令（0 命中）                             |
 | `scripts/check-boot-plugin-parity.ts`  | `cordis.yml` 与 TS 侧插件清单一致                                   |
 | `scripts/check-retired-imports.ts`     | 无残留退役前缀                                                      |
+| `scripts/check-retired-tooling.ts`     | 无 `tsgo` / `@typescript/native-preview`（TS 7 统一原生 `tsc`）     |
 | oxlint `freeanima/layer-deps`          | 单文件即时反馈（同一 DAG 实现）                                     |
 | oxlint `freeanima/no-module-globals`   | 禁止新增全局桥                                                      |
 | `scripts/check-frontend-no-drizzle.ts` | Vite 模块图无 drizzle-orm                                           |

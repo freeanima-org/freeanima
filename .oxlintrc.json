@@ -119,7 +119,14 @@
         "react/react-in-jsx-scope": "off",
         "react/no-unstable-nested-components": "off",
         "react/rules-of-hooks": "error",
-        "react/exhaustive-deps": "error"
+        "react/exhaustive-deps": "error",
+        // oxlint 1.83 起 react 插件默认带上 React Compiler 规则。本仓未启用 React Compiler
+        // （无 babel-plugin-react-compiler），这些规则会误报常规「按 key 重置 / effect 内取数」写法；
+        // 显式关闭以保持升级前的 lint 契约，待真正接入 Compiler 时再评估。
+        "react/set-state-in-effect": "off",
+        "react/exhaustive-effect-dependencies": "off",
+        "react/refs": "off",
+        "react/memo-dependencies": "off"
       }
     },
     {
@@ -132,7 +139,12 @@
         "react/react-in-jsx-scope": "off",
         "react/no-unstable-nested-components": "off",
         "react/rules-of-hooks": "error",
-        "react/exhaustive-deps": "error"
+        "react/exhaustive-deps": "error",
+        // 同上：React Compiler 专属规则，本仓未接入 Compiler，显式关闭。
+        "react/set-state-in-effect": "off",
+        "react/exhaustive-effect-dependencies": "off",
+        "react/refs": "off",
+        "react/memo-dependencies": "off"
       }
     },
     {

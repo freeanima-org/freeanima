@@ -152,11 +152,11 @@ export function SemanticMemoryPage() {
   const setPassiveSheetOpen = (open: boolean) => {
     setPassiveOpen(open);
     void navigate({
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- TanStack search reducer 本地类型过窄
       search: ((prev: Record<string, unknown>) =>
         omitUndefined({
           ...prev,
           passive: open ? ("1" as const) : undefined,
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- TanStack search reducer 本地类型过窄
         })) as never,
       replace: true,
     });
@@ -190,7 +190,6 @@ export function SemanticMemoryPage() {
       const effectiveSortBy = trimmedQuery ? "rank" : sortBy;
       const effectiveCluster = clusterOverride !== undefined ? clusterOverride : clusterFilter;
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const data = (await listSemanticMemories({
           offset: nextOffset,
           limit: PAGE_SIZE,
@@ -203,6 +202,7 @@ export function SemanticMemoryPage() {
             cluster_id: effectiveCluster,
             agent_subject_id: agentSubjectId ?? undefined,
           }),
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         })) as { items: SemanticRow[]; total: number };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);

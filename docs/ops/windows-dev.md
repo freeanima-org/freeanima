@@ -35,7 +35,7 @@ winget install Docker.DockerDesktop
 安装后 **新开终端**，确保 `bun`、`just`、`bash` 在 `PATH` 上。确认：
 
 ```powershell
-bun --version    # >= 1.4.0
+bun --version    # >= 1.4.2
 just --version
 bash --version   # 必须是 Git Bash（MINGW），不要是 WSL
 Get-Command bash | Select-Object -ExpandProperty Source
@@ -73,7 +73,7 @@ scoop install bun just git
 # Docker Desktop: install separately from docker.com if not using scoop
 ```
 
-确认 `bun --version` ≥ **1.4.0**（与根 `package.json` 的 `packageManager` 一致）。旧
+确认 `bun --version` ≥ **1.4.2**（与根 `package.json` 的 `packageManager` 一致）。旧
 scoop bun 会导致 `Bun.YAML` / `vi.useFakeTimers` 缺失、单测大面积失败；过旧时执行 `scoop update
 bun`。
 
@@ -114,7 +114,7 @@ just dev
 ```
 
 `just` 在 Windows 上通过 `_common.just` 的 `bun := bun.exe` 调用 Bun；本地
-CLI（`drizzle-kit` / `oxlint` / `oxfmt` / `tsgo` / `wxt`）统一为 `{{ bun }} x
+CLI（`drizzle-kit` / `oxlint` / `oxfmt` / `tsc` / `wxt`）统一为 `{{ bun }} x
 …`（即 `bun.exe x`），勿写裸 `bunx`（WSL bash 下常 127）。
 
 `just` 配方经 `_deps` 调用 `bun install --frozen-lockfile`（与 CI 相同）。首次克隆用上面的普通

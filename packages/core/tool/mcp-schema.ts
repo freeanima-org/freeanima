@@ -14,11 +14,11 @@ export function normalizeJsonSchema(
     schema.properties && typeof schema.properties === "object" && !Array.isArray(schema.properties)
       ? schema.properties
       : {};
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 归一后满足 JsonSchemaObject
   return {
     ...schema,
     type,
     properties,
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 归一后满足 JsonSchemaObject
   } as JsonSchemaObject;
 }
 

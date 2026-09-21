@@ -8,9 +8,9 @@ export async function getVaultCryptoConfig(
   const data = await client.request(
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
     "vault.crypto.get" as never,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
     {
       subject_id: subjectId,
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- as never 类型对齐边界
     } as never,
   );
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC 响应边界

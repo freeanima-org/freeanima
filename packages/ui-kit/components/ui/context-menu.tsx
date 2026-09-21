@@ -159,7 +159,7 @@ function ContextMenuGroup({
   return <MenuSectionPrimitive data-slot="context-menu-group" {...props} />;
 }
 
-/** RAC HeaderProps 在 tsgo 下会退化成仅 `render`（HTMLAttributes 未并入），故本地声明 */
+/** RAC HeaderProps 在 TS 7 native（tsc）下会退化成仅 `render`（HTMLAttributes 未并入），故本地声明 */
 type ContextMenuLabelProps = {
   className?: string | undefined;
   inset?: boolean | undefined;

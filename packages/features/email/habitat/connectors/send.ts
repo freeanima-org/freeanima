@@ -20,8 +20,8 @@ import {
 import { messagePreview, smtpSecure, withImapAccount } from "./imap-client.ts";
 import { resolveEmailAccountPassword } from "./password.ts";
 import { resolveSentCopyUid, searchMailboxUidByMessageId } from "./sent-copy.ts";
-import nodemailer from "nodemailer";
-import MailComposer from "nodemailer/lib/mail-composer/index.js";
+import { createTransport, type SendMailOptions } from "nodemailer";
+import MailComposer from "nodemailer/lib/mail-composer";
 
 export type SendEmailInput = {
   account_id?: number;
@@ -137,7 +137,7 @@ function nodemailerMailOptions(input: {
   bcc?: string;
   messageId?: string;
   attachments: LoadedOutboundAttachment[];
-}): nodemailer.SendMailOptions {
+}): SendMailOptions {
   return {
     from: input.account.display_name
       ? { name: input.account.display_name, address: input.account.address }
@@ -160,7 +160,7 @@ function nodemailerMailOptions(input: {
   };
 }
 
-async function buildRawMime(mail: nodemailer.SendMailOptions): Promise<string> {
+async function buildRawMime(mail: SendMailOptions): Promise<string> {
   const compiled = new MailComposer(mail).compile();
   const buf = await compiled.build();
   return Buffer.from(buf).toString("utf8");
@@ -235,7 +235,7 @@ export async function sendEmail(input: SendEmailInput): Promise<{
     objectFileIds: input.attachment_object_file_ids ?? [],
   });
 
-  const transport = nodemailer.createTransport({
+  const transport = createTransport({
     host: account.smtp_host,
     port: account.smtp_port,
     secure: smtpSecure(account.smtp_port),

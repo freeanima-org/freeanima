@@ -5,7 +5,7 @@ import '_common.just'
 # 注：≠ 全量 CI（CI 另跑 bun scripts/run-ci-tests.ts）
 [no-cd]
 check: _deps
-  {{ bun }} x tsgo -p tsconfig.json
+  {{ bun }} x tsc -p tsconfig.json
   {{ bun }} x oxlint .
   {{ bun }} scripts/stylelint.ts
   {{ bun }} x oxfmt --check .
@@ -19,6 +19,7 @@ check: _deps
   {{ bun }} scripts/check-module-globals.ts
   {{ bun }} scripts/check-boot-plugin-parity.ts
   {{ bun }} scripts/check-retired-imports.ts
+  {{ bun }} scripts/check-retired-tooling.ts
 
 # 抽样：Vite 解析 task/vault/diary UI + portal-sdk，断言模块图无 drizzle-orm
 [no-cd]
@@ -63,10 +64,15 @@ check-boot-plugin-parity: _deps
 check-retired-imports: _deps
   {{ bun }} scripts/check-retired-imports.ts
 
+# 退役工具链：类型检查统一 TS 7 原生 tsc（旧 native-preview 编译器不得复活）
+[no-cd]
+check-retired-tooling: _deps
+  {{ bun }} scripts/check-retired-tooling.ts
+
 # husky pre-commit（与钩子同集合，避免漂移）
 [no-cd]
 pre-commit: _deps
-  {{ bun }} x tsgo -p tsconfig.json
+  {{ bun }} x tsc -p tsconfig.json
   {{ bun }} x oxlint .
   {{ bun }} x oxfmt --check .
   {{ bun }} scripts/check-package-paths.ts
@@ -80,7 +86,7 @@ pre-push: _deps
 
 [no-cd]
 typecheck: _deps
-  {{ bun }} x tsgo -p tsconfig.json
+  {{ bun }} x tsc -p tsconfig.json
 
 [no-cd]
 lint: _deps

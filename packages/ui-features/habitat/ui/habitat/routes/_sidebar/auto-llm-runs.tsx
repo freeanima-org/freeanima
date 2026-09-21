@@ -418,7 +418,6 @@ function AutoLlmRunsPage() {
       if (!opts?.silent) setLoading(true);
       setError("");
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         const data = (await listAutoLlmRuns(
           omitUndefined({
             run_kind: runKind || undefined,
@@ -429,6 +428,7 @@ function AutoLlmRunsPage() {
             offset: nextOffset,
             limit: PAGE_SIZE,
           }),
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- RPC/加载器响应边界
         )) as { items: AutoLlmRunRow[]; total: number; usage_totals?: LlmUsageTotals };
         setItems(data.items ?? []);
         setTotal(data.total ?? 0);

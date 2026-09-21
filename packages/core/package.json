@@ -13,10 +13,10 @@
     "acme-client": "^5.4.0",
     "cordis": "4.0.0-rc.10",
     "drizzle-kit": "^1.0.0-rc.5-ab785fc",
-    "drizzle-orm": "^1.0.0-rc.5-169397b",
+    "drizzle-orm": "^1.0.0-rc.5-ab785fc",
     "edge-tts-universal": "^1.4.0",
     "tiktoken": "^1.0.22",
     "tokenx": "^2.1.0",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   }
 }
