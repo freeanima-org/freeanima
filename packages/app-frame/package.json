@@ -15,13 +15,13 @@
     "@freeanima/ui-features": "workspace:*",
     "@freeanima/ui-kit": "workspace:*",
     "@tailwindcss/vite": "*",
-    "@tanstack/react-router": "^1.170.27",
-    "@vitejs/plugin-react": "^6.0.5",
-    "lucide-react": "^1.31.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
+    "@tanstack/react-router": "^1.170.38",
+    "@vitejs/plugin-react": "^6.1.1",
+    "lucide-react": "^1.47.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "tailwindcss": "^4.3.3",
-    "vite": "^8.2.1",
-    "zod": "^4.4.3"
+    "vite": "^8.3.0",
+    "zod": "^4.6.5"
   }
 }
