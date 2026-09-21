@@ -2,9 +2,9 @@
 @import "@freeanima/ui-kit/styles/globals.css";
 @source "./**/*.{tsx,ts}";
 @source "../../../../ui-kit/**/*.{tsx,ts}";
-@source "../../../../features/chat/ui/spa/components/**/*.{tsx,ts}";
+@source "../../../../ui-features/chat/ui/spa/components/**/*.{tsx,ts}";
 
-@import "@freeanima/features/chat/ui/spa/styles/transcript-bubbles.css";
+@import "@freeanima/ui-features/chat/ui/spa/styles/transcript-bubbles.css";
 
 html,
 body,
