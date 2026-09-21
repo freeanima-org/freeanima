@@ -19,6 +19,6 @@
     "@freeanima/shared": "workspace:*",
     "acme-client": "^5.4.0",
     "cordis": "4.0.0-rc.10",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   }
 }
