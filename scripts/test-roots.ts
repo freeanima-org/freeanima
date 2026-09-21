@@ -26,11 +26,14 @@ function pushIfHasTests(roots: string[], absPath: string): void {
   }
 }
 
-/** Unit test roots: packages/* colocated `*.test.ts` */
+/** Unit test roots: 所有含 colocated `*.test.ts` 的 `packages/*` 包（分包后不写死包名） */
 export function discoverUnitTestRoots(): string[] {
   const roots: string[] = [];
-  for (const pkg of ["shared", "habitat", "frontend"] as const) {
-    pushIfHasTests(roots, join(repoRoot, "packages", pkg));
+  const packagesDir = join(repoRoot, "packages");
+  if (!existsSync(packagesDir)) return roots;
+  for (const entry of readdirSync(packagesDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    pushIfHasTests(roots, join(packagesDir, entry.name));
   }
   return roots.toSorted();
 }
