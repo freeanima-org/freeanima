@@ -3,6 +3,131 @@
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 新版本节由 [Release Please](https://github.com/googleapis/release-please) 在 Release PR 合并时写入顶部。
 
+## [0.13.0](https://github.com/freeanima-org/freeanima/compare/v0.12.0...v0.13.0) (2026-09-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cordis:** 消除进程根句柄，组合根 context 归 server 显式持有
+* **core:** core 层摆脱进程根句柄，状态归所属模块
+* **shims:** 删除只做导出/改名的转发文件
+* **deprecated:** 消除重构期兼容 API/类型/再导出垫片
+* **repo:** 清理迁移脚手架——死基线、退役树解算、codemod 工具
+* **dev:** 修复分包后遗留的硬编码路径与漏声明依赖
+
+### Features
+
+* **entity:** 将 client_op_id 升为顶层列并收敛离线 outbox ([9badcf8](https://github.com/freeanima-org/freeanima/commit/9badcf855edffb54f4521cf5e65bbd9187834c6e))
+* **habit:** 落地习惯打卡模块与戒除日上限语义 ([540b43e](https://github.com/freeanima-org/freeanima/commit/540b43e46d96810449d486c906c3f38cc890838e))
+* **kernel:** P6e 统一测试 harness（createTestContext） ([a33068b](https://github.com/freeanima-org/freeanima/commit/a33068be3058059e90a44b280ddfcaebd637ed43))
+* **offline:** 增加只读 Outbox Devtools 面板 ([4c05e61](https://github.com/freeanima-org/freeanima/commit/4c05e610c3ed72811df5aab377d6374556908270))
+* **pomodoro:** 重构迷你窗 UI 并加固跨端 active 同步 ([b60f3a4](https://github.com/freeanima-org/freeanima/commit/b60f3a4b7d76f9389d3ea1200e5fb3146e87bfe7))
+* **task:** 统一快速添加作曲器并支持前缀快捷设定 ([8afefbf](https://github.com/freeanima-org/freeanima/commit/8afefbf95a5f58e7c02bdab2077fcad96c4292eb))
+* **voice-assistant:** 实现 Android 唤醒与生活指令闭环 ([d77bea7](https://github.com/freeanima-org/freeanima/commit/d77bea7b8294b4359b640dd8af773733b41bd6f4))
+
+
+### Bug Fixes
+
+* **boot:** 抽取组合根端口绑定，修复集成测试 4 个失败 ([52cb05b](https://github.com/freeanima-org/freeanima/commit/52cb05b74192473a04600ab2fbead25d8fcbbaf3))
+* **boot:** 根包声明 cordis loader 依赖以修复 just dev ([584331b](https://github.com/freeanima-org/freeanima/commit/584331bf0ef3549b6a0eca8ac98c2fbea1834ad2))
+* **boot:** 用 inject 链保证启动阶段串行顺序 ([de4534e](https://github.com/freeanima-org/freeanima/commit/de4534ee29773e387c9a4ea3da7357e68b201d6f))
+* **chat:** 避免伪键盘 inset 触发沉浸更新环 ([8136ccb](https://github.com/freeanima-org/freeanima/commit/8136ccb562d83c2eb5f98b8b31573423196bea2b))
+* **coding:** 修复远端 probe 启动命令 ([3e07002](https://github.com/freeanima-org/freeanima/commit/3e0700216c99b554f6603a0eedeae1d6b989c407))
+* **coding:** 修正分包后 coding 样式引用的 chat 包路径 ([baf5287](https://github.com/freeanima-org/freeanima/commit/baf5287ab17b1ce887883517c4b81317a024bc0d))
+* **coding:** 补全 probe 终端执行时的用户 bin PATH ([3751510](https://github.com/freeanima-org/freeanima/commit/3751510c9ea7e35c3315307cd1e8cf94e25d135e))
+* **dev:** 修复分包后遗留的硬编码路径与漏声明依赖 ([f2b499c](https://github.com/freeanima-org/freeanima/commit/f2b499c0e3dfe9b444758e86b61180f128c716bb))
+* **extension:** 修复填充后 last_used_at 未落稳导致同分排序失效 ([53c72b2](https://github.com/freeanima-org/freeanima/commit/53c72b2a9263310333d1433999b49ad02e19fc45))
+* **llm:** 为 OpenCode Go 注入 x-opencode-session ([34453d2](https://github.com/freeanima-org/freeanima/commit/34453d2e23f6b1b3d333815f827bc7494430fdcc))
+* **offline:** 去掉 shell-debug normalize 多余布尔比较 ([8c78906](https://github.com/freeanima-org/freeanima/commit/8c78906fd5c1239eeb3988d7fc2f9b7982275476))
+* **pomodoro:** 修复迷你窗深色底前景对比度 ([06ee85b](https://github.com/freeanima-org/freeanima/commit/06ee85b721a93b4e3f7acd03775bda651838f6c0))
+* **pomodoro:** 迷你窗自行完成阶段切换避免卡在 00:00 ([e6d1420](https://github.com/freeanima-org/freeanima/commit/e6d14209bfbc17ca27df9ee457971604b85a891f))
+* **shell:** 修复实时通道条幅与快捷入口刷新 ([74959ff](https://github.com/freeanima-org/freeanima/commit/74959ff16bcb1c7d1533375dc9cc39c0ed58bced))
+* **task:** 非当年任务日期显示年份 ([73f410c](https://github.com/freeanima-org/freeanima/commit/73f410ca97506ba8b969fa7ee0cfbdb4e67e605f))
+* **test:** 复用 preset PG 时先解除模板库再重建 ([c5d881a](https://github.com/freeanima-org/freeanima/commit/c5d881a6e86c7ffc49a209f618c0198d3574692e))
+* **test:** 集成测修同进程遗留库，standalone 独立连接播种并补 goal teardown ([0cbf594](https://github.com/freeanima-org/freeanima/commit/0cbf594e9e2cfe8952b15a0e58d89fd6765d28ef))
+* **test:** 集成测试显式 --no-isolate，绕开 Bun isolate worker 空转 ([e3aac2d](https://github.com/freeanima-org/freeanima/commit/e3aac2dec10dced873c284df4fae5c0d9d2ecc23))
+* **vault:** 修正自定义字段宽度并支持密码显示切换 ([9a10620](https://github.com/freeanima-org/freeanima/commit/9a106205a6d7fae78168979c7e9f7e9df8db772c))
+* **voice-assistant:** 稳定快照引用避免移动壳 React [#185](https://github.com/freeanima-org/freeanima/issues/185) ([df03f9c](https://github.com/freeanima-org/freeanima/commit/df03f9c6e81f88649b143ccb3ff3f388dd1c793f))
+
+
+### Performance
+
+* **llm:** /models 目录失败冷却 + 预算收紧，集成测试 122s → 65s ([a29beb4](https://github.com/freeanima-org/freeanima/commit/a29beb4192876ca81b1bc8871e26835799ce9572))
+
+
+### Documentation
+
+* **layers:** 债务归零后的规格更新（护栏无登记通道 / 特性两态 / 壳桥分层） ([0247096](https://github.com/freeanima-org/freeanima/commit/02470968372d4fad142e6d33026dbd296b566c9d))
+* **layers:** 刷新反向边债务表（5 层对 / 12 文件）+ 逐项收尾方案 ([d787e12](https://github.com/freeanima-org/freeanima/commit/d787e124dab14007d4ad6ae4b58ed58309b2426a))
+* **layers:** 刷新反向边债务表（7 层对 / 16 文件） ([851bef3](https://github.com/freeanima-org/freeanima/commit/851bef32b995590248cc59a6e452fc33ab035c3d))
+* **layers:** 刷新反向边债务表（7 层对 / 34 文件） ([c138a24](https://github.com/freeanima-org/freeanima/commit/c138a2444cff160ef587abee5f2fb4d75c263e68))
+* **research:** 新增 harness 集成方向调研 ([b642045](https://github.com/freeanima-org/freeanima/commit/b64204581c2b0ecd9e66b3cf0131edb94fd9bf75))
+* **rules:** P7 分层文档与护栏说明对齐 13 包现实 ([b09147a](https://github.com/freeanima-org/freeanima/commit/b09147af96427c941e5250a213cdc68f207e549a))
+
+
+### Miscellaneous
+
+* **guards:** 根句柄纳入模块级全局桥棘轮基线 ([6587d37](https://github.com/freeanima-org/freeanima/commit/6587d3737612dc38f2ec20a0ef2567178d759a94))
+
+
+### Refactoring
+
+* **app-frame:** Vite 模块别名与 tsconfig 同源，删除退役路径 ([c50768b](https://github.com/freeanima-org/freeanima/commit/c50768b6dd270db7b23134fb2e077b56e8204d81))
+* **boot:** feature 插件进 cordis.yml，支持挂载/热更新 ([c0af2ce](https://github.com/freeanima-org/freeanima/commit/c0af2ce9040a0506d9a9ac7e8ef5a27944946854))
+* **boot:** HMR 挂载 timer，cordis.yml 配置热更新生效 ([043ef08](https://github.com/freeanima-org/freeanima/commit/043ef08047baf17159bfeea6fa38bd41dd368d93))
+* **clarify:** 工具配置迁入 ctx.clarifyConfig 服务 ([3365140](https://github.com/freeanima-org/freeanima/commit/336514086c5e2b899159b6666b7b48226bd81ae7))
+* **compress:** post-cut rebuild hook 迁入 ctx.compressionSummaryPostCut ([2b36c03](https://github.com/freeanima-org/freeanima/commit/2b36c03671b06371fc7b94a101dcad4b6c59310a))
+* **config:** capability injection 迁入 ctx.capabilityInjection ([5a5cba9](https://github.com/freeanima-org/freeanima/commit/5a5cba9740f0db02e5dee387e714bd1815d1a088))
+* **config:** runtime apply deps 迁入 ctx.runtimeConfigApplyDeps ([b36555b](https://github.com/freeanima-org/freeanima/commit/b36555b79ddbc759c1753b62450c6833cbf4feb4))
+* **config:** runtime logger 迁入 ctx.runtimeLogger 服务 ([2bc7fe7](https://github.com/freeanima-org/freeanima/commit/2bc7fe7d2aa9f1fd1c2e55e4c1971c11e7d85b97))
+* **cordis:** 消除进程根句柄，组合根 context 归 server 显式持有 ([c2edd17](https://github.com/freeanima-org/freeanima/commit/c2edd176cf8f3a0f8d5207cbe48573681bf81991))
+* **core:** core 层摆脱进程根句柄，状态归所属模块 ([252b9bc](https://github.com/freeanima-org/freeanima/commit/252b9bc22f108d7d1f6cbc5cfdeef50fa14d292c))
+* **cron:** handle manager 迁入 ctx.cronHandleManager ([9dc4a4a](https://github.com/freeanima-org/freeanima/commit/9dc4a4acb3ce90b39955deefc0b670d68a4a2391))
+* **db:** PG resolver/连接状态迁入 ctx.pgClient 服务 ([246234c](https://github.com/freeanima-org/freeanima/commit/246234ca014d58bab1e282e7757b4a64faffccbe))
+* **deprecated:** 消除重构期兼容 API/类型/再导出垫片 ([1edeadd](https://github.com/freeanima-org/freeanima/commit/1edeadde6a743ba2c510bd6c4a9649884e63c0cb))
+* **email:** sync port 迁入 ctx.emailSyncPort 服务 ([e019a0a](https://github.com/freeanima-org/freeanima/commit/e019a0afb2da88052335cbc29e820081e9a3d2c9))
+* **embedding:** 函数绑定迁入 ctx.embeddingRuntime 服务 ([892ea7e](https://github.com/freeanima-org/freeanima/commit/892ea7ed12d7e8656304fad4a2042163a8f4811a))
+* **env-health:** baseline store 迁入 ctx.envHealthBaselineStore ([23ed8a5](https://github.com/freeanima-org/freeanima/commit/23ed8a546ecf7c0573049880fceba3a280ada371))
+* **features:** feature 提供方改为 Cordis 服务与插件 ([c6b46ad](https://github.com/freeanima-org/freeanima/commit/c6b46adb6abe4c672676080694964d6e0ee07aee))
+* **federation:** manager/hub WS deps 迁入 Cordis 服务 ([e6f72aa](https://github.com/freeanima-org/freeanima/commit/e6f72aa4be4c9533c335eab622f6d3bb616b108f))
+* **federation:** satellite transport 迁入 ctx.satelliteFederationTransport ([2068c4b](https://github.com/freeanima-org/freeanima/commit/2068c4b5ce1145beb2fe8d0f9d4e08887532fa65))
+* **frontend:** shell 路由由共享 catalog 生成，去重前后端清单 ([ba08fec](https://github.com/freeanima-org/freeanima/commit/ba08fec15869a87c1ce79d6503a8a4cf3877d0ec))
+* **hooks:** 将 hook 机制迁移到 Cordis ([416dafe](https://github.com/freeanima-org/freeanima/commit/416dafe32664be350b80e7e339cbe81120a61419))
+* **llm:** LLM runtime 迁入 ctx.llmStack，删除模块级单例 ([e359c06](https://github.com/freeanima-org/freeanima/commit/e359c06a778bcb352a39bd1eefbaeadb5140206f))
+* **memory:** reflect/retain 引擎端口迁入 Cordis 服务 ([2b86279](https://github.com/freeanima-org/freeanima/commit/2b86279a2edf8548c1a831df347029d4bc956d06))
+* **notification:** NotificationPort 迁移为 Cordis 服务 ([7d7b63c](https://github.com/freeanima-org/freeanima/commit/7d7b63c787a5b2e3e19f9a8ea75109679a954bdc))
+* **notification:** 删除 NotificationPort 可变单例 ([c971ecb](https://github.com/freeanima-org/freeanima/commit/c971ecbe598799f8c32153559029505968eca606))
+* **object-storage:** object store 迁入 ctx.objectStore 服务 ([af8e24d](https://github.com/freeanima-org/freeanima/commit/af8e24d8c212e9a5c36659c28fd65e2e07a1432b))
+* **outpost:** Remote Tools deps 迁入 ctx.remoteToolsDeps 服务 ([4c11460](https://github.com/freeanima-org/freeanima/commit/4c11460880f85f6f7c23da8a24c9f80594dd2845))
+* **platform:** boot 阶段改为 Cordis 插件流水线 ([5f38984](https://github.com/freeanima-org/freeanima/commit/5f389848a32e79f3cf8604ac2a753879cc99f415))
+* **platform:** 启动插件树改用 Cordis loader + cordis.yml ([a51529e](https://github.com/freeanima-org/freeanima/commit/a51529ea643eed56700193052025133354fd2eef))
+* **platform:** 新增 ctx.appRuntime Cordis 服务 ([1e5be62](https://github.com/freeanima-org/freeanima/commit/1e5be62bd6c57b900d7030844bbbe99d5c8071c6))
+* **platform:** 进程级 Cordis 上下文 + 服务化 LlmStack/ToolPolicy ([9027f63](https://github.com/freeanima-org/freeanima/commit/9027f630ea358ae1cb2881484761c17e1429e37b))
+* **prompt:** SystemPromptHookRunner 迁移为 ctx.systemPrompt 服务 ([a69a6f3](https://github.com/freeanima-org/freeanima/commit/a69a6f3b34337d68379cfda5cd8bf178d97b5852))
+* **redis:** resolver/client 迁入 ctx.redis 服务 ([970dbab](https://github.com/freeanima-org/freeanima/commit/970dbab60bf61db6a01c6182aa32d9fe3d55ad34))
+* **repo:** 清理迁移脚手架——死基线、退役树解算、codemod 工具 ([c266e8d](https://github.com/freeanima-org/freeanima/commit/c266e8d89975ca794451f9d3c085dc43f2e485af))
+* **search:** SearchBackend 迁入 ctx.searchBackend 服务 ([63f60b7](https://github.com/freeanima-org/freeanima/commit/63f60b79a780850f2d8ebaa24c09c499f1ffe7cc))
+* **shims:** 删除只做导出/改名的转发文件 ([6ed642a](https://github.com/freeanima-org/freeanima/commit/6ed642a7568bd649e9e62703a194ef1fb5be8531))
+* **skill:** 项目叠加解析迁入 ctx.projectOverlay 服务 ([d080f8b](https://github.com/freeanima-org/freeanima/commit/d080f8bd5a9d8a72f20fa7c558031bfca7630ef4))
+* **soft-failure:** notify 实现迁入 ctx.softFailure 服务 ([22d1ca5](https://github.com/freeanima-org/freeanima/commit/22d1ca53219869e29d0a83a011d4c5e805d6c300))
+* **tokenizer:** resolve context 迁入 ctx.tokenizerResolveContext ([fa0db86](https://github.com/freeanima-org/freeanima/commit/fa0db86059f7b540750a4cf561f16468ce4affd6))
+* **tools:** docs corpus 迁入 ctx.docsCorpus 服务 ([b002c6f](https://github.com/freeanima-org/freeanima/commit/b002c6f75c1f3f1e1fae2473ca63ba65de5eba2e))
+* **tools:** web/browser 工具配置迁入 Cordis 服务 ([7742b6d](https://github.com/freeanima-org/freeanima/commit/7742b6d450d8e6cd41a6d355633a86347c7479b2))
+* **vault:** shell send request 迁入 ctx.vaultShellSendRequest ([ec4bfd4](https://github.com/freeanima-org/freeanima/commit/ec4bfd40b66c6dd712780d6163900f672c2eb187))
+
+
+### Tests
+
+* **coverage:** 单测分片 --isolate，修 message-store 不完整 entity mock ([51fa342](https://github.com/freeanima-org/freeanima/commit/51fa3420f9120e18c9e82d5fb6f68758b398ccb1))
+* **features:** 用 habitatRouter.defs 做双向漂移守卫 ([5dc0b5e](https://github.com/freeanima-org/freeanima/commit/5dc0b5e7da9cd7e4deecc77ced522fb2b04d9ff8))
+* **kernel:** 迁移 core/tool 两个用例到统一 harness ([8052514](https://github.com/freeanima-org/freeanima/commit/805251432e3bbd3d0becfd2dd96e4d8ec133e10e))
+* **objective:** 习惯落地后改测 metric_auto 进度 ([dd17337](https://github.com/freeanima-org/freeanima/commit/dd17337370587b286fde9550693224a281a75ad3))
+
+
+### CI
+
+* **coverage:** 单测根目录动态扫描 packages/*，baseline 对齐实测 ([5aaab34](https://github.com/freeanima-org/freeanima/commit/5aaab347504b8a1a96cf684ebc0a3cf5aebcd093))
+
 ## [0.12.0](https://github.com/freeanima-org/freeanima/compare/v0.11.0...v0.12.0) (2026-09-01)
 
 
