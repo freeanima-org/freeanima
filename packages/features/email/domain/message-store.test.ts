@@ -92,7 +92,12 @@ const updateEntity = mock(
 const getEntity = mock(async (id: number) => rows.get(id) ?? null);
 const deleteEntity = mock(async (id: number) => rows.delete(id));
 
+// 必须 spread 原模块：`message-store.ts` 还会 import listEntities 等命名导出，
+// 只列被 mock 的 5 个会在隔离运行（--isolate）下触发 "Export named ... not found"。
+const entityOriginal = await import("@freeanima/core/db/pg/entity");
+
 mock.module("@freeanima/core/db/pg/entity", () => ({
+  ...entityOriginal,
   searchEntities,
   createEntity,
   updateEntity,
@@ -132,6 +137,7 @@ mock.module("@freeanima/capabilities/object-storage/domain", () => ({
 }));
 
 afterAll(() => {
+  mock.module("@freeanima/core/db/pg/entity", () => entityOriginal);
   mock.module("./email-world.ts", () => emailWorldOriginal);
   mock.module("./thread-store.ts", () => threadStoreOriginal);
   // Bun mock.module 会写穿原模块；还原时必须用 mock 前捕获的函数引用

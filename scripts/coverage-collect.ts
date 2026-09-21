@@ -66,15 +66,17 @@ function listTestFiles(root: string): string[] {
 
 function runCoverageTarget(target: string, testFailures: string[]): boolean {
   rmSync(coverageDir, { recursive: true, force: true });
-  const extraTimeout =
-    target === "tests/integration" || target.startsWith("tests/integration/")
-      ? (["--timeout=30000"] as const)
-      : ([] as const);
+  const isIntegration = target === "tests/integration" || target.startsWith("tests/integration/");
+  const extraTimeout = isIntegration ? (["--timeout=30000"] as const) : ([] as const);
+  // 单元 shard 用 --isolate：`mock.module` 跨文件不自动清理，共享进程下会按文件发现
+  // 顺序泄漏 mock（如 packages/capabilities 误命中 client.ts / vault 桩），使结果不稳。
+  const isolateArgs = isIntegration ? ([] as const) : (["--isolate"] as const);
   const status = runBunTest([
     target,
     "--pass-with-no-tests",
     "--coverage",
     "--coverage-reporter=lcov",
+    ...isolateArgs,
     ...extraTimeout,
   ]);
   if (status !== 0) {
