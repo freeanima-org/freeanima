@@ -1,5 +1,6 @@
 import type { MotionSlotId } from "@freeanima/shared/companion-app/companion-schema.ts";
 import { MOTION_SLOT_IDS } from "@freeanima/shared/companion-app/companion-schema.ts";
+import { notificationLinkFromInput } from "@freeanima/shared/notification-link";
 import { enqueueBubble, enqueuePlaySlot } from "./runtime-local.ts";
 
 function isMotionSlotId(v: string): v is MotionSlotId {
@@ -24,8 +25,13 @@ export async function executeCompanionTool(
       if (!text.trim()) {
         return toolError("text 不能为空");
       }
-      const item = enqueueBubble(text);
-      return toolResult({ ok: true, id: item.id, pending: item.text });
+      const linkRaw = typeof args.link === "string" ? args.link.trim() : "";
+      const link = linkRaw ? notificationLinkFromInput(linkRaw) : null;
+      if (linkRaw && !link) {
+        return toolError(`link 无效：${linkRaw}（需 anima URI 或 / 开头的 Shell 路径）`);
+      }
+      const item = enqueueBubble(text, link);
+      return toolResult({ ok: true, id: item.id, pending: item.text, link: item.link ?? null });
     }
     case "play_slot": {
       const slot = typeof args.slot === "string" ? args.slot : "";

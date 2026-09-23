@@ -19,6 +19,7 @@ import { notifyBothRecipients } from "./service/notification-helpers.ts";
 import { deliverSoftFailureNotify } from "./service/soft-failure-notify.ts";
 import type { FullRuntimeDeps } from "@freeanima/capabilities/ports/runtime-deps.ts";
 import type { CronJob } from "@freeanima/capabilities/connectors/cron/models";
+import { shellPathNotificationLink } from "@freeanima/shared/notification-link";
 
 /** Register platform API ports after AppRuntime deps are available */
 export function bindServicePorts(deps: FullRuntimeDeps): void {
@@ -37,6 +38,7 @@ export function bindServicePorts(deps: FullRuntimeDeps): void {
       body,
       source_kind: "cron",
       source_ref: `${job.id}:${job.run_count}:${payload.success ? "ok" : "fail"}`,
+      payload: { kind: "cron", job_id: job.id, link: shellPathNotificationLink("/habitat/cron") },
     });
   });
   registerInprocessBuiltinFailureNotify(async (payload) => {
@@ -46,6 +48,7 @@ export function bindServicePorts(deps: FullRuntimeDeps): void {
       body,
       source_kind: "system",
       source_ref: `inprocess:${payload.id}:${payload.run_count}:fail`,
+      payload: { kind: "inprocess_failure", link: shellPathNotificationLink("/habitat/cron") },
     });
   });
   registerRunSimpleTurn((opts) => runSimpleTurn(deps, opts));

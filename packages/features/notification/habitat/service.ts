@@ -4,6 +4,7 @@ import type {
   NotificationReadFilter,
 } from "@freeanima/core/db/pg/notifications/types";
 import type { NotificationRow } from "@freeanima/core/db/schema/rows";
+import { parseNotificationLink } from "@freeanima/shared/notification-link";
 import {
   countNotifications,
   createNotification as createPgNotification,
@@ -85,6 +86,7 @@ export async function createNotification(
       title: row.title,
       body: row.body,
       created_at: row.created_at.toISOString(),
+      link: parseNotificationLink(row.payload?.link),
     });
   }
   return row;

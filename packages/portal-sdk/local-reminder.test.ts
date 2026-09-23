@@ -62,14 +62,14 @@ describe("deliverLocalReminder", () => {
 
   test("companion 可见时走气泡且不弹 OS", async () => {
     const { shown } = mockAlertBackend();
-    const bubbles: string[] = [];
+    const bubbles: { text: string; link: unknown }[] = [];
     (window as Window & { portalShell?: ShellApi }).portalShell = {
       habitatUrl: "",
       habitatWsUrl: "",
       createFileInstanceStore: () => ({ load: () => null, save: () => undefined }),
       getCompanionVisible: async () => true,
-      enqueueCompanionBubble: async (text) => {
-        bubbles.push(text);
+      enqueueCompanionBubble: async (text, link) => {
+        bubbles.push({ text, link });
       },
     };
     const channel = await deliverLocalReminder({
@@ -78,7 +78,35 @@ describe("deliverLocalReminder", () => {
       sourceRoute: "/pomodoro",
     });
     expect(channel).toBe("companion_bubble");
-    expect(bubbles).toEqual(["番茄结束\n休息一下"]);
+    expect(bubbles).toEqual([{ text: "番茄结束\n休息一下", link: { path: "/pomodoro" } }]);
+    expect(shown).toHaveLength(0);
+  });
+
+  test("显式 link 覆盖 sourceRoute 回退", async () => {
+    const { shown } = mockAlertBackend();
+    const bubbles: { text: string; link: unknown }[] = [];
+    (window as Window & { portalShell?: ShellApi }).portalShell = {
+      habitatUrl: "",
+      habitatWsUrl: "",
+      createFileInstanceStore: () => ({ load: () => null, save: () => undefined }),
+      getCompanionVisible: async () => true,
+      enqueueCompanionBubble: async (text, link) => {
+        bubbles.push({ text, link });
+      },
+    };
+    const link = {
+      path: "/tasks?list=3",
+      container: { module: "tasks" as const, list_id: 3 },
+      entity: { id: 7, component: "task_item", present: "overlay" as const },
+    };
+    const channel = await deliverLocalReminder({
+      title: "任务到期：写周报",
+      body: "今天 18:00",
+      sourceRoute: "/notifications",
+      link,
+    });
+    expect(channel).toBe("companion_bubble");
+    expect(bubbles).toEqual([{ text: "任务到期：写周报\n今天 18:00", link }]);
     expect(shown).toHaveLength(0);
   });
 

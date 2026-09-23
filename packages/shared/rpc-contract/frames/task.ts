@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { notificationLinkSchema } from "@freeanima/shared/notification-link";
 import {
   taskItemPrioritySchema,
   taskItemStatusSchema,
@@ -503,6 +504,8 @@ export const taskAdvanceReminderEventSchema = z.object({
   body: z.string(),
   at: z.string(),
   source_ref: z.string(),
+  /** 本机提醒（伴侣气泡）跳转目标 */
+  link: notificationLinkSchema.nullable().optional(),
 });
 export type TaskAdvanceReminderEvent = z.infer<typeof taskAdvanceReminderEventSchema>;
 

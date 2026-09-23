@@ -1,8 +1,12 @@
+import type { NotificationLink } from "@freeanima/shared/notification-link";
+
 export type UserNotificationCreatedPayload = {
   id: string;
   title: string;
   body: string;
   created_at: string;
+  /** 本机提醒（伴侣气泡）跳转目标；无目标 = null */
+  link?: NotificationLink | null;
 };
 
 const watchers = new Set<(payload: UserNotificationCreatedPayload) => void>();

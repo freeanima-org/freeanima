@@ -39,6 +39,7 @@ async function* bridgeTaskAdvanceReminder(
           body: payload.body,
           at: payload.at,
           source_ref: payload.source_ref,
+          link: payload.link ?? null,
         },
       };
     }

@@ -14,6 +14,11 @@ import { formatCstIso } from "@freeanima/core/util";
 import { getNotificationPort } from "@freeanima/capabilities/tools/notification";
 import type { NotificationRecipientRef } from "@freeanima/capabilities/tools/notification";
 import {
+  calendarEventNotificationLink,
+  habitNotificationLink,
+  taskItemNotificationLink,
+} from "@freeanima/shared/notification-link";
+import {
   formatOffsetIso,
   getConfiguredHostTimeZone,
   hostCalendarDay,
@@ -256,6 +261,12 @@ async function scanTaskReminders(port: ReminderPort, now: number): Promise<TaskR
     const item = asTaskItem(row);
     if (!item || item.status === "completed") continue;
     const schedulable = taskReminderFields(item);
+    // 模块 / 容器 / 实体：任务所在清单或项目 + task_item 浮层
+    const link = taskItemNotificationLink({
+      id: item.id,
+      listId: item.list_id,
+      projectId: item.project_id ?? null,
+    });
 
     const recipient = recipientForTaskWorld(row.world_id, port);
     if (!recipient) {
@@ -278,7 +289,7 @@ async function scanTaskReminders(port: ReminderPort, now: number): Promise<TaskR
           body: buildDueBody(schedulable),
           source_kind: "system",
           source_ref: taskReminderSourceRef(item.id, at),
-          payload: { task_item_id: item.id, kind: "due" },
+          payload: { task_item_id: item.id, kind: "due", link },
         });
         await updateEntity({
           id: item.id,
@@ -304,6 +315,7 @@ async function scanTaskReminders(port: ReminderPort, now: number): Promise<TaskR
           body: buildAdvanceBody(schedulable, entry.at),
           at: entry.at,
           source_ref: taskAdvanceReminderSourceRef(item.id, at),
+          link,
         });
       }
       advanceAlerts += 1;
@@ -384,7 +396,7 @@ async function scanCalendarEventReminders(
         body: buildCalendarReminderBody(schedulable, entry.at),
         source_kind: "system",
         source_ref: calendarEventReminderSourceRef(item.id, at),
-        payload: { calendar_event_id: item.id },
+        payload: { calendar_event_id: item.id, link: calendarEventNotificationLink(item.id) },
       });
       sent += 1;
     }
@@ -479,7 +491,13 @@ async function scanHabitReminders(
         body: `提醒时间：${today} ${entry.time}`,
         source_kind: "system",
         source_ref: habitReminderSourceRef(habit.id, entry.time, today),
-        payload: { habit_id: habit.id, kind: "habit_reminder", day: today, time: entry.time },
+        payload: {
+          habit_id: habit.id,
+          kind: "habit_reminder",
+          day: today,
+          time: entry.time,
+          link: habitNotificationLink(habit.id),
+        },
       });
       nextReminders[i] = { ...entry, last_notified_day: today };
       changed = true;

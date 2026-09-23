@@ -5,6 +5,7 @@ import { attachToolReturns, toolError, toolResult, type ToolArgs } from "@freean
 import { getNotificationPort } from "./port.ts";
 import { NOTIFICATION_TOOL_RETURNS } from "./return-schemas.ts";
 import { coerceString } from "@freeanima/shared/coerce-string";
+import { notificationLinkFromInput } from "@freeanima/shared/notification-link";
 import {
   resolveNotificationListSubject,
   resolveNotificationSendTargets,
@@ -45,6 +46,11 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
                 description:
                   "Recipient subject when subject_id omitted (required unless subject_id)",
               },
+              link: {
+                type: "string",
+                description:
+                  "Optional deep link so the user can click through: an Anima URI (anima:{id}?component=…) or a Shell path (/tasks?list=3&item=7, /calendar?event=9, /email?account=2).",
+              },
             },
             required: ["title", "body"],
           },
@@ -56,6 +62,12 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
             const body = coerceString(args.body ?? "").trim();
             if (!title) return toolError("title is required");
             if (!body) return toolError("body is required");
+
+            const linkRaw = coerceString(args.link ?? "").trim();
+            const link = linkRaw ? notificationLinkFromInput(linkRaw) : null;
+            if (linkRaw && !link) {
+              return toolError(`link 无效：${linkRaw}（需 anima URI 或 / 开头的 Shell 路径）`);
+            }
 
             const targets = await resolveNotificationSendTargets(args);
             if (typeof targets === "string") return targets;
@@ -74,6 +86,7 @@ export function registerNotificationTools(toolSets: ToolSetRegistry): void {
                 body,
                 source_kind: "tool",
                 source_ref: sourceRef,
+                ...(link ? { payload: { kind: "tool", link } } : {}),
               });
               created.push({
                 id: row.id,

@@ -88,6 +88,7 @@ mock.module("@freeanima/core/db/pg/notifications", () => ({
 }));
 
 import { createNotification, listNotifications, markNotificationRead } from "./service.ts";
+import { watchUserNotificationCreated } from "./user-inbox-events.ts";
 
 function testDeps(): RuntimeDeps {
   return {
@@ -211,5 +212,53 @@ describe("service-notifications", () => {
     expect(agentRows.items).toHaveLength(1);
     expect(userRows.items[0]?.title).toBe("Fanout");
     expect(agentRows.items[0]?.title).toBe("Fanout");
+  });
+
+  it("createNotification 事件携带 link（由 payload.link 派生，仅 user 行）", async () => {
+    const deps = testDeps();
+    const seen: Array<{ id: string; link: unknown }> = [];
+    const off = watchUserNotificationCreated((payload) => {
+      seen.push({ id: payload.id, link: payload.link ?? null });
+    });
+    try {
+      await createNotification(deps, {
+        recipient_kind: "user",
+        recipient_id: USER_ID,
+        title: "task due",
+        body: "b",
+        payload: { link: { path: "/tasks?list=3" } },
+      });
+      await createNotification(deps, {
+        recipient_kind: "agent",
+        recipient_id: AGENT_ID,
+        title: "agent only",
+        body: "b",
+        payload: { link: { path: "/tasks?list=3" } },
+      });
+    } finally {
+      off();
+    }
+    // 业务规则不变：仅 user 行推 WS 事件；link 从 payload 解析
+    expect(seen).toEqual([{ id: "n-1", link: { path: "/tasks?list=3" } }]);
+  });
+
+  it("非法 payload.link 不抛，事件 link 为 null", async () => {
+    const deps = testDeps();
+    const seen: unknown[] = [];
+    const off = watchUserNotificationCreated((payload) => {
+      seen.push(payload.link ?? null);
+    });
+    try {
+      await createNotification(deps, {
+        recipient_kind: "user",
+        recipient_id: USER_ID,
+        title: "bad link",
+        body: "b",
+        payload: { link: { entity: { id: 0 } } },
+      });
+    } finally {
+      off();
+    }
+    expect(seen).toEqual([null]);
   });
 });

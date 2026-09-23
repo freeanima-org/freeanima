@@ -1,7 +1,9 @@
 /** Tauri Portal：注入 window.portalShell（主窗 + companion overlay） */
 import { invoke } from "@tauri-apps/api/core";
 import { emit, listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { resolveHabitatRpcWsUrl } from "@freeanima/shared/habitat-rpc";
+import { parseNotificationLink } from "@freeanima/shared/notification-link";
 import type { RemoteInstanceStore } from "@freeanima/shared/rpc-contract";
 import {
   buildShellApiFields,
@@ -97,6 +99,17 @@ function createFileInstanceStore(appId: string): RemoteInstanceStore {
 
 function normalizeHabitatUrl(raw: string): string {
   return (raw ?? "").trim().replace(/\/$/, "");
+}
+
+/** 通知跳转：主窗被唤起（show + focus）；失败静默（导航仍继续）。 */
+async function focusCurrentWindow(): Promise<void> {
+  try {
+    const win = getCurrentWindow();
+    await win.show();
+    await win.setFocus();
+  } catch {
+    /* 权限或平台不支持时忽略 */
+  }
 }
 
 async function loadTauriNativeBuildMeta(): Promise<ComponentBuildMeta | undefined> {
@@ -209,14 +222,32 @@ export async function bootstrapTauriBridge(): Promise<void> {
       });
       return () => unlisten?.();
     },
-    enqueueCompanionBubble: async (text) => {
-      await emit("companion:enqueue-bubble", { text });
+    enqueueCompanionBubble: async (text, link) => {
+      await emit("companion:enqueue-bubble", link ? { text, link } : { text });
     },
     listenCompanionBubble: (handler) => {
       let unlisten: (() => void) | undefined;
-      void listen<{ text: string }>("companion:enqueue-bubble", (ev) => {
+      void listen<{ text?: unknown; link?: unknown }>("companion:enqueue-bubble", (ev) => {
         const text = typeof ev.payload?.text === "string" ? ev.payload.text : "";
-        if (text.trim()) handler(text);
+        if (!text.trim()) return;
+        const link = parseNotificationLink(ev.payload?.link);
+        handler(link ? { text, link } : { text });
+      }).then((u) => {
+        unlisten = u;
+      });
+      return () => unlisten?.();
+    },
+    // overlay → 主窗：广播事件；主窗监听后自行 show/focus（无需 get-all-windows 权限）
+    navigateMainRoute: async (link) => {
+      await emit("shell:navigate-main", { link });
+    },
+    listenMainRoute: (handler) => {
+      let unlisten: (() => void) | undefined;
+      void listen<{ link?: unknown }>("shell:navigate-main", (ev) => {
+        const link = parseNotificationLink(ev.payload?.link);
+        if (!link) return;
+        void focusCurrentWindow();
+        handler(link);
       }).then((u) => {
         unlisten = u;
       });

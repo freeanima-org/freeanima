@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
+  notificationCreatedEventSchema,
   notificationListInputSchema,
   notificationListOutputSchema,
   notificationMarkReadOutputSchema,
@@ -13,7 +14,7 @@ describe("notification SAP frames", () => {
       offset: 0,
       limit: 20,
     });
-    notificationListOutputSchema.parse({
+    const output = notificationListOutputSchema.parse({
       items: [
         {
           id: "n-1",
@@ -26,12 +27,74 @@ describe("notification SAP frames", () => {
           created_at: "2026-06-26T00:00:00.000Z",
           source_kind: "system",
           source_ref: null,
+          link: null,
+        },
+        {
+          id: "n-2",
+          recipient_kind: "user",
+          recipient_id: 1,
+          title: "task due",
+          body: "body",
+          payload: { task_item_id: 7, link: { path: "/tasks?list=3" } },
+          read_at: null,
+          created_at: "2026-06-26T00:00:00.000Z",
+          source_kind: "system",
+          source_ref: "task:7",
+          link: {
+            path: "/tasks?list=3",
+            container: { module: "tasks", list_id: 3 },
+            entity: { id: 7, component: "task_item", present: "overlay" },
+          },
         },
       ],
       total: 1,
       offset: 0,
       limit: 20,
     });
+    expect(output.items[1]?.link?.container?.module).toBe("tasks");
+  });
+
+  it("rejects malformed link", () => {
+    expect(() =>
+      notificationListOutputSchema.parse({
+        items: [
+          {
+            id: "n-1",
+            recipient_kind: "user",
+            recipient_id: 1,
+            title: "hello",
+            body: "world",
+            payload: null,
+            read_at: null,
+            created_at: "2026-06-26T00:00:00.000Z",
+            source_kind: "system",
+            source_ref: null,
+            link: { entity: { id: 0 } },
+          },
+        ],
+        total: 1,
+        offset: 0,
+        limit: 20,
+      }),
+    ).toThrow();
+  });
+
+  it("created event carries optional link", () => {
+    const withoutLink = notificationCreatedEventSchema.parse({
+      id: "n-1",
+      title: "t",
+      body: "b",
+      created_at: "2026-06-26T00:00:00.000Z",
+    });
+    expect(withoutLink.link).toBeUndefined();
+    const withLink = notificationCreatedEventSchema.parse({
+      id: "n-2",
+      title: "t",
+      body: "b",
+      created_at: "2026-06-26T00:00:00.000Z",
+      link: { path: "/calendar", entity: { id: 9, component: "calendar_event" } },
+    });
+    expect(withLink.link?.entity?.id).toBe(9);
   });
 
   it("validates mark-read output", () => {

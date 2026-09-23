@@ -1,5 +1,6 @@
 import { getResolvedWorldContext } from "@freeanima/core/config";
 import { getNotificationPort } from "@freeanima/capabilities/tools/notification";
+import { emailNotificationLink } from "@freeanima/shared/notification-link";
 import type { EmailSyncResult, NewMailNotifyItem } from "@freeanima/features/email/domain";
 
 const MAX_MAILS_IN_BODY = 15;
@@ -62,6 +63,8 @@ export function collectNewMails(results: EmailSyncResult[]): NewMailNotifyItem[]
 export type NewMailSubjectBucket = {
   kind: "user" | "agent";
   mails: NewMailNotifyItem[];
+  /** 桶内首封新邮件所属账户（用于通知跳转 /email?account=） */
+  account_id: number;
 };
 
 /** 按账户所属 world 将新信分到 user / agent 桶 */
@@ -69,17 +72,25 @@ export function bucketNewMailSubjectsByWorld(results: EmailSyncResult[]): NewMai
   const ctx = getResolvedWorldContext();
   const userMails: NewMailNotifyItem[] = [];
   const agentMails: NewMailNotifyItem[] = [];
+  let userAccountId: number | null = null;
+  let agentAccountId: number | null = null;
   for (const result of results) {
     if (result.new_mails.length === 0) continue;
     if (result.world_id === ctx.user_world_id) {
+      userAccountId ??= result.account_id;
       userMails.push(...result.new_mails);
     } else if (result.world_id === ctx.agent_world_id) {
+      agentAccountId ??= result.account_id;
       agentMails.push(...result.new_mails);
     }
   }
   const out: NewMailSubjectBucket[] = [];
-  if (userMails.length > 0) out.push({ kind: "user", mails: userMails });
-  if (agentMails.length > 0) out.push({ kind: "agent", mails: agentMails });
+  if (userMails.length > 0 && userAccountId != null) {
+    out.push({ kind: "user", mails: userMails, account_id: userAccountId });
+  }
+  if (agentMails.length > 0 && agentAccountId != null) {
+    out.push({ kind: "agent", mails: agentMails, account_id: agentAccountId });
+  }
   return out;
 }
 
@@ -106,6 +117,10 @@ export async function notifyNewMailFromSyncResults(results: EmailSyncResult[]): 
         kind: "email_new_mail",
         count: bucket.mails.length,
         messages: bucket.mails.map((m) => ({ message_id: m.message_id, from: m.from })),
+        link: emailNotificationLink({
+          accountId: bucket.account_id,
+          messageId: bucket.mails[0]?.message_id ?? null,
+        }),
       },
     });
     wrote = true;

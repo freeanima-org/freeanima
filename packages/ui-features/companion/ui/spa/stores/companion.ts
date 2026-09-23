@@ -18,6 +18,7 @@ import type {
 } from "@freeanima/shared/companion-app/companion-schema.ts";
 import type { MotionLibraryEntry } from "@freeanima/shared/companion-app/constants.ts";
 import { DEFAULT_BEHAVIOR } from "@freeanima/shared/companion-app/companion-schema.ts";
+import type { NotificationLink } from "@freeanima/shared/notification-link";
 import type { VrmBackend } from "../renderer/VrmBackend.ts";
 import { onCharacterModelSwitch } from "./character.ts";
 
@@ -43,14 +44,17 @@ type CompanionState = {
   hitTestFn: ((x: number, y: number) => boolean) | null;
   pointerActive: boolean;
   backendRef: { current: VrmBackend | null };
-  runtimeBubble: { id: string; text: string } | null;
+  runtimeBubble: { id: string; text: string; link?: NotificationLink | null } | null;
   runtimeBubblePending: number;
   setHitTestFn: (fn: ((x: number, y: number) => boolean) | null) => void;
   setPointerActive: (active: boolean) => void;
   setCharacterReady: (ready: boolean) => void;
   setModelLoading: (loading: boolean) => void;
   setBackend: (backend: VrmBackend | null) => void;
-  setRuntimeBubble: (current: { id: string; text: string } | null, pending: number) => void;
+  setRuntimeBubble: (
+    current: { id: string; text: string; link?: NotificationLink | null } | null,
+    pending: number,
+  ) => void;
   applyConfig: (cfg: CompanionConfig) => void;
   init: () => Promise<void>;
   initHabitatSettings: () => Promise<void>;

@@ -22,7 +22,8 @@ export function NotificationReminderShellWatcher() {
         title: event.title,
         body: event.body,
         tag: `notification:${event.id}`,
-        sourceRoute: "/notifications",
+        sourceRoute: event.link?.path ?? "/notifications",
+        link: event.link ?? null,
       });
       void refreshCount();
     });

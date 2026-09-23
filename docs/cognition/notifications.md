@@ -29,6 +29,9 @@ title: 通知
 多端策略为**宽松**：各入口独立提醒；伴侣打开 ≠ 人在旁，**不**因此压制手机/Web。同端在源路由 focused 时可用
 `suppressOsWhenFocused` 压制 OS。伴侣气泡**不**视为已读/ack。
 
+伴侣气泡可带**跳转目标**（`NotificationLink`，见下节；缺省用提醒的 `sourceRoute`）：点击气泡体唤起主窗并跳到对应模块 /
+容器 / 实体后前移；右上角 **×** 只关闭当前一条并显示下一条。OS 系统通知点击跳转暂不支持（非目标）。
+
 Alert 分两档（同一契约，成对）：
 
 | 档         | API                                              | 含义                             |
@@ -138,14 +141,34 @@ Subject 实体 id 在栖息地启动时绑定进内存 **`ResolvedWorldContext`*
 
 经 `toolset_load` 加载 `notification`。
 
-| 工具                     | 范围参数                                                                                                |
-| ------------------------ | ------------------------------------------------------------------------------------------------------- |
-| `notification_send`      | 可选 `subject_id`（覆盖 `target`）；省略 `subject_id` 时 **`target` 必填**（`user` / `agent` / `both`） |
-| `notification_list`      | 可选 `subject_id`（覆盖 `recipient`）；省略 `subject_id` 时 **`recipient` 必填**（`user` / `agent`）    |
-| `notification_mark_read` | 仅通知 id（全局）                                                                                       |
+| 工具                     | 范围参数                                                                                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `notification_send`      | 可选 `subject_id`（覆盖 `target`）；省略 `subject_id` 时 **`target` 必填**（`user` / `agent` / `both`）；可选 `link`（anima URI 或 shell path，点击跳转目标） |
+| `notification_list`      | 可选 `subject_id`（覆盖 `recipient`）；省略 `subject_id` 时 **`recipient` 必填**（`user` / `agent`）                                                          |
+| `notification_mark_read` | 仅通知 id（全局）                                                                                                                                             |
 
 `subject_id` 必须是系统提示 / `ResolvedWorldContext` 中配置的 `user_subject_id` 或
 `agent_subject_id`。
+
+## 跳转目标（模块 / 容器 / 实体）
+
+行上的 `link`（`NotificationLink`，契约 SSOT `packages/shared/notification-link`）由 `payload.link` 派生：
+
+| 字段        | 含义                                                                    |
+| ----------- | ----------------------------------------------------------------------- |
+| `path`      | 模块 shell 路径（含 query），如 `/tasks?list=3&item=7`、`/habitat/cron` |
+| `container` | 模块内容器选型：tasks 清单/智能清单、project 项目、email 账户 + 邮件    |
+| `entity`    | 实体锚点 `{ id, component?, present? }`                                 |
+
+三端（应用内通知列表 / 伴侣气泡 / 后续任意 UI）统一调用 `portal-sdk` 的
+`openNotificationLink`：先写 `writeModuleSelection`（容器），再
+`navigateAppModulePath`（模块），最后 `openEntityResource`（实体浮层或模块页）。点击**不**自动标已读。
+
+伴侣气泡的 link 经 `deliverLocalReminder` → `enqueueCompanionBubble(text, link)` → 壳事件
+`shell:navigate-main` → 主窗 `listenMainRoute` → `openNotificationLink`。
+
+写入侧带 link：任务 due / 提前提醒、日历提醒、习惯提醒、邮件自动同步新信、cron 与 inprocess 失败。
+env-health、soft-failure、temporal-summary 截断无 UI 落点，故无 link（列表不可点）。
 
 ## 任务 due / 提醒发现
 
@@ -166,11 +189,11 @@ ToolSet `notification`：
 
 ## SAP（读）
 
-- `notification.list` — 需要 `recipient_kind` + 可选 `recipient_id`
-- `notification.markRead`
+- `notification.list` — 需要 `recipient_kind` + 可选 `recipient_id`；行含 `link`（由 `payload.link` 派生）
+- `notification.markRead` — 返回行含 `link`
 - `notification.recipients` — UI 标签页用的已配置主体 id
 - `notification.subscribeInbox` — WS；用户 Inbox 新建推送
-  `notification.created`（本机提醒）
+  `notification.created`（本机提醒；载荷含可选 `link`）
 
 v1 无 SAP 创建 RPC；写入由栖息地内部 + 工具完成。
 

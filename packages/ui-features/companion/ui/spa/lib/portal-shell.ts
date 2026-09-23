@@ -1,6 +1,7 @@
 /** Portal（Tauri）壳层桥接；浏览器/dev 模式下多为 no-op */
 
 import type { CompanionWindowRole, PatrolScreenInfo, ShellApi } from "@freeanima/portal-sdk";
+import type { NotificationLink } from "@freeanima/shared/notification-link";
 import type { ScreenPoint } from "./window-metrics.ts";
 
 export type { PatrolScreenInfo, CompanionWindowRole };
@@ -107,14 +108,35 @@ export async function listenServerError(handler: (message: string) => void): Pro
   return api.listenServerError(handler);
 }
 
-export async function enqueueCompanionBubble(text: string): Promise<void> {
-  await shell()?.enqueueCompanionBubble?.(text);
+export async function enqueueCompanionBubble(
+  text: string,
+  link?: NotificationLink | null,
+): Promise<void> {
+  await shell()?.enqueueCompanionBubble?.(text, link ?? null);
 }
 
-export function listenCompanionBubble(handler: (text: string) => void): () => void {
+export function listenCompanionBubble(
+  handler: (payload: { text: string; link?: NotificationLink | null }) => void,
+): () => void {
   const api = shell();
   if (!api?.listenCompanionBubble) return () => {};
   return api.listenCompanionBubble(handler);
+}
+
+/**
+ * 主窗跳转（模块 / 容器 / 实体）：真实桌面壳经壳事件广播；浏览器 dev 伴侣宿主无主窗，
+ * 退化为新标签打开 path。
+ */
+export async function navigateMainRoute(link: NotificationLink): Promise<void> {
+  const api = shell();
+  if (api?.navigateMainRoute) {
+    await api.navigateMainRoute(link);
+    return;
+  }
+  const path = link.path?.trim();
+  if (path && typeof window !== "undefined") {
+    window.open(path, "_blank", "noopener");
+  }
 }
 
 export type CompanionModelStatusPayload = {

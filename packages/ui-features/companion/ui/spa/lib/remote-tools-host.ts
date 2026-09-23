@@ -19,7 +19,14 @@ const REGISTERED_TOOLS = [
     description: "向桌面伴侣发送单向文字气泡（入队展示，非聊天窗口）",
     parameters: {
       type: "object",
-      properties: { text: { type: "string", description: "要展示的文字" } },
+      properties: {
+        text: { type: "string", description: "要展示的文字" },
+        link: {
+          type: "string",
+          description:
+            "可选：点击气泡时主窗跳转目标（anima URI 或 Shell 路径，如 /tasks?list=3&item=7）",
+        },
+      },
       required: ["text"],
     },
     return_kind: "json" as const,

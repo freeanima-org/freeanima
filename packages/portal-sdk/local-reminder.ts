@@ -1,5 +1,6 @@
 import { deliverAlert } from "./alert/deliver.ts";
 import type { AlertPayload } from "./alert/types.ts";
+import type { NotificationLink } from "@freeanima/shared/notification-link";
 
 export type LocalReminderInput = {
   title: string;
@@ -9,6 +10,8 @@ export type LocalReminderInput = {
   /** 为 true 时不弹 OS（仍可播音）；伴侣气泡路径忽略此字段 */
   silent?: boolean;
   sourceRoute: string;
+  /** 伴侣气泡点击跳转目标（模块 / 容器 / 实体）；缺省回退到 `sourceRoute` */
+  link?: NotificationLink | null;
 };
 
 export type LocalReminderChannel = "companion_bubble" | "alert";
@@ -51,7 +54,9 @@ export async function deliverLocalReminder(
     const shell = runtimeWindow()?.portalShell;
     const text = formatBubbleText(input.title, input.body);
     if (text && shell?.enqueueCompanionBubble) {
-      await shell.enqueueCompanionBubble(text);
+      const link: NotificationLink | null =
+        input.link ?? (input.sourceRoute ? { path: input.sourceRoute } : null);
+      await shell.enqueueCompanionBubble(text, link);
       return "companion_bubble";
     }
   }

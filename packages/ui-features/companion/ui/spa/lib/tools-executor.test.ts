@@ -15,7 +15,28 @@ describe("executeCompanionTool → overlay runtime", () => {
     expect(parsed.id).toMatch(/^bub_/);
     const state = bubbleState();
     expect(state.current?.text).toBe("你好");
+    expect(state.current?.link ?? null).toBeNull();
     expect(state.pending).toBe(1);
+  });
+
+  test("bubble 带 link 入队并可前进关闭", async () => {
+    const raw = await executeCompanionTool("bubble", {
+      text: "任务到期",
+      link: "/tasks?list=3&item=7",
+    });
+    const parsed = JSON.parse(raw) as { ok: boolean; link: { path: string } };
+    expect(parsed.ok).toBe(true);
+    expect(parsed.link).toEqual({ path: "/tasks?list=3&item=7" });
+    expect(bubbleState().current?.link).toEqual({ path: "/tasks?list=3&item=7" });
+    advanceBubbleLocal();
+    expect(bubbleState().current).toBeNull();
+  });
+
+  test("bubble link 非法返回错误且不入队", async () => {
+    const raw = await executeCompanionTool("bubble", { text: "x", link: "https://example.com" });
+    const parsed = JSON.parse(raw) as { error?: string };
+    expect(parsed.error).toContain("link 无效");
+    expect(bubbleState().pending).toBe(0);
   });
 
   test("play_slot 返回 ok", async () => {

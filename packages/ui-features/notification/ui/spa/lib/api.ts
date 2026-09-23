@@ -1,5 +1,6 @@
 import { resolveHabitatCacheScope } from "@freeanima/portal-sdk/offline-cache";
 import { withOfflineCache } from "@freeanima/portal-sdk/offline-cache-first";
+import { parseNotificationLink } from "@freeanima/shared/notification-link";
 import type {
   NotificationCreatedEvent,
   NotificationListInput,
@@ -71,11 +72,13 @@ export function subscribeUserNotificationInbox(
           typeof record.title === "string" &&
           typeof record.body === "string"
         ) {
+          const link = parseNotificationLink(record.link);
           onCreated({
             id: record.id,
             title: record.title,
             body: record.body,
             created_at: typeof record.created_at === "string" ? record.created_at : "",
+            link,
           });
         }
       },

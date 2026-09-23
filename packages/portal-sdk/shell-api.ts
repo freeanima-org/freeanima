@@ -1,6 +1,7 @@
 import type { HabitatFetch, RemoteAuthCredentials } from "./remote-auth.ts";
 import type { ComponentBuildMeta } from "./build-meta.ts";
 import type { PrimaryInputKind } from "./shell-capability.ts";
+import type { NotificationLink } from "@freeanima/shared/notification-link";
 
 /** 与 @freeanima/shared/rpc-contract RemoteInstanceStore 对齐 */
 export type RemoteInstanceStore = {
@@ -207,9 +208,18 @@ export type ShellApi = {
     handler: (payload: PomodoroActiveShellSyncPayload) => void,
   ) => () => void;
   /** 设置页 → overlay：入队文字气泡（测试 / 调试） */
-  enqueueCompanionBubble?: (text: string) => Promise<void>;
+  enqueueCompanionBubble?: (text: string, link?: NotificationLink | null) => Promise<void>;
   /** overlay：监听入队气泡请求 */
-  listenCompanionBubble?: (handler: (text: string) => void) => () => void;
+  listenCompanionBubble?: (
+    handler: (payload: { text: string; link?: NotificationLink | null }) => void,
+  ) => () => void;
+  /**
+   * overlay → 主窗：聚焦并跳转主窗到通知目标（模块 / 容器 / 实体）。
+   * 经壳事件 `shell:navigate-main`；浏览器 dev 伴侣宿主无此 API。
+   */
+  navigateMainRoute?: (link: NotificationLink) => Promise<void>;
+  /** 主窗：监听 overlay 的跳转请求 */
+  listenMainRoute?: (handler: (link: NotificationLink) => void) => () => void;
   emitConfigChanged?: () => Promise<void>;
   listenConfigChanged?: (handler: () => void) => () => void;
   listenServerError?: (handler: (message: string) => void) => () => void;

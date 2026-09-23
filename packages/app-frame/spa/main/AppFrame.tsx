@@ -22,6 +22,7 @@ import { ChatUnreadShellWatcher } from "@freeanima/ui-features/chat/ui/spa/ChatU
 import { SpeechShellWatcher } from "@freeanima/ui-features/chat/ui/spa/SpeechShellWatcher.tsx";
 import { VoiceAssistantShellWatcher } from "@freeanima/ui-features/voice-assistant/ui/spa/VoiceAssistantShellWatcher.tsx";
 import { NotificationReminderShellWatcher } from "@freeanima/ui-features/notification/ui/spa/NotificationReminderShellWatcher.tsx";
+import { NotificationLinkShellWatcher } from "@freeanima/ui-features/notification/ui/spa/NotificationLinkShellWatcher.tsx";
 import { TaskAdvanceReminderShellWatcher } from "@freeanima/ui-features/task/ui/spa/TaskAdvanceReminderShellWatcher.tsx";
 import { AppAttentionShellWatcher } from "./AppAttentionShellWatcher.tsx";
 import { AppNavUnreadBadge } from "./AppNavUnreadBadge.tsx";
@@ -213,6 +214,7 @@ export function AppFrame() {
       <SpeechShellWatcher />
       <VoiceAssistantShellWatcher />
       <NotificationReminderShellWatcher />
+      <NotificationLinkShellWatcher />
       <TaskAdvanceReminderShellWatcher />
       <AppAttentionShellWatcher />
       {isCompactLayout(layoutMode) ? <CompactAppFrame /> : <ExpandedAppFrame />}

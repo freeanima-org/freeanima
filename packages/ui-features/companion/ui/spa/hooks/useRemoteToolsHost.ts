@@ -49,9 +49,9 @@ export function useRemoteToolsHost(enabled: boolean): void {
 
     start();
     const unsubConfig = window.portalShell?.listenConfigChanged?.(start);
-    const unsubBubble = listenCompanionBubble((text) => {
+    const unsubBubble = listenCompanionBubble((payload) => {
       try {
-        enqueueBubble(text);
+        enqueueBubble(payload.text, payload.link ?? null);
       } catch {
         /* 空文本等由 enqueueBubble 抛出，测试按钮已 trim */
       }

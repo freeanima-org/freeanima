@@ -35,14 +35,42 @@ html[data-companion-view="settings"] #root {
 }
 
 .companion-text-bubble {
-  @apply rounded-2xl px-3 py-2 text-sm shadow-lg;
+  @apply rounded-2xl py-2 pr-7 pl-3 text-sm shadow-lg;
+  position: relative;
   background: rgba(20, 20, 30, 0.85);
   color: #f0f0f5;
   border: 1px solid rgba(255, 255, 255, 0.12);
   max-width: 280px;
   word-break: break-word;
   pointer-events: auto;
+}
+
+/** 气泡体：点击打开目标 / 切下一条 */
+.companion-text-bubble-body {
+  @apply block w-full text-left;
   cursor: pointer;
+}
+
+/** 关闭当前通知（右上角） */
+.companion-text-bubble-close {
+  @apply absolute top-1 right-1 flex items-center justify-center rounded-full;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: rgba(240, 240, 245, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.companion-text-bubble-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.companion-text-bubble-close svg {
+  width: 0.75rem;
+  height: 0.75rem;
 }
 
 .startup-panel {

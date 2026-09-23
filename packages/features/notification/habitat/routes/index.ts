@@ -9,6 +9,7 @@ import {
 import type { NotificationRow } from "@freeanima/shared/rpc-contract/frames/notification";
 import type { RemoteToolsRequestContext } from "@freeanima/shared/rpc-contract";
 import { assertNarrow } from "@freeanima/shared/assert-narrow.ts";
+import { parseNotificationLink } from "@freeanima/shared/notification-link";
 
 import { notificationMethodDefs } from "@freeanima/shared/rpc-contract/feature-rpc/methods/notification.ts";
 import type { RuntimeDeps } from "../runtime-deps.ts";
@@ -40,6 +41,7 @@ function serializeNotificationRow(row: PgNotificationRow): NotificationRow {
     created_at: row.created_at.toISOString(),
     source_kind: assertNarrow<NotificationRow["source_kind"]>(row.source_kind),
     source_ref: row.source_ref,
+    link: parseNotificationLink(row.payload?.link),
   };
 }
 

@@ -56,7 +56,7 @@ Agent    ──Habitat RPC tool.call─► Overlay
 
 - VRM 形象渲染（Three.js + `@pixiv/three-vrm`）；VRM 1.0 与 0.x 自动朝向校正
 - **动作槽位**：五个槽位 — `idle`、`rest`、`walk`、`climb`、`in_place`；每槽绑定 0..n 个 VRMA 片段；按 id 或随机播放；空槽 = 无动画
-- **语音气泡**：单向文本队列；用户点击前进；不自动消失；由栖息地 Agent 经伴侣 `bubble` 工具推送
+- **语音气泡**：单向文本队列；不自动消失；由栖息地 Agent 经伴侣 `bubble` 工具推送，或由 Inbox / 任务提前提醒经 `deliverLocalReminder` 推送。点击气泡体：有跳转目标时唤起主窗并跳到对应**模块 / 容器 / 实体**，然后前移到下一条；右上角 **×** 只关闭当前一条（显示下一条，不跳转）。
 - 透明置顶**工作区全屏**浮层；**全屏 WebGL canvas**；角色按窗内屏幕坐标放置（站立比例 / 巡逻边距脚印 160×260）；头像/气泡可点，空白处点击穿透
 - **本机交互**：拖动移动角色屏幕位置（不是 OS 窗口）；点击身体从 `in_place` 槽随机播动作
 - **巡逻**（设置 → 行为标签页）：空闲巡逻、双击巡逻、角落暂停、巡逻速度、启动时回到起点等
@@ -65,12 +65,14 @@ Agent    ──Habitat RPC tool.call─► Overlay
 
 ## Agent 工具（宿主注册）
 
-| 工具        | 参数                                 | 说明                           |
-| ----------- | ------------------------------------ | ------------------------------ |
-| `bubble`    | `text: string`                       | 在语音气泡中排队文本           |
-| `play_slot` | `slot: string`；`motion_id?: string` | 播放动作槽位；`motion_id` 可选 |
+| 工具        | 参数                                 | 说明                                                                  |
+| ----------- | ------------------------------------ | --------------------------------------------------------------------- |
+| `bubble`    | `text: string`；`link?: string`      | 在语音气泡中排队文本；`link` 为 anima URI 或 Shell 路径时点击跳转主窗 |
+| `play_slot` | `slot: string`；`motion_id?: string` | 播放动作槽位；`motion_id` 可选                                        |
 
 周期性内容（如定时笑话）在 **anima service / 定时任务** 中配置；Agent 调用 `bubble`。伴侣无内置定时器。
+
+**跳转链路**：overlay 经 `ShellApi.navigateMainRoute(link)` → 壳事件 `shell:navigate-main`（Tauri 广播所有 WebView）→ 主窗 `ShellApi.listenMainRoute` → `openNotificationLink`（先模块选型、再模块路径、后实体浮层）。主窗接收后自行 `show()/setFocus()`；浏览器 dev 伴侣宿主无主窗，退化为 `window.open(path)`。
 
 设置 → 伴侣客户端区显示 **instance id** 与 **remote tools connected**（overlay 上报 / ShellApi；无 token 时跳过 attach）。
 

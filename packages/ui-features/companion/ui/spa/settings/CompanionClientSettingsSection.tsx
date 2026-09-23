@@ -7,7 +7,8 @@ import type { CompanionShellSettings } from "./companion-shell-settings.ts";
 
 export type { CompanionShellSettings };
 
-const TEST_BUBBLE_TEXT = "这是一条测试气泡。点击气泡可切换到下一条或关闭。";
+const TEST_BUBBLE_TEXT =
+  "这是一条测试气泡。有跳转目标时点击气泡打开对应内容；点右上角 × 关闭当前一条。";
 
 export default function CompanionClientSettingsSection({ store }: SettingsPanelProps) {
   const [visible, setVisible] = useState(true);

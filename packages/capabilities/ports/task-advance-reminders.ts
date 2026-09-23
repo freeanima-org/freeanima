@@ -1,9 +1,13 @@
+import type { NotificationLink } from "@freeanima/shared/notification-link";
+
 export type TaskAdvanceReminderPayload = {
   task_item_id: number;
   title: string;
   body: string;
   at: string;
   source_ref: string;
+  /** 本机提醒（伴侣气泡）跳转目标；无目标 = null */
+  link?: NotificationLink | null;
 };
 
 /**

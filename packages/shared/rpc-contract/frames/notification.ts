@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { notificationLinkSchema } from "@freeanima/shared/notification-link";
+
 export const notificationRecipientKindSchema = z.enum(["user", "agent"]);
 export type NotificationRecipientKind = z.infer<typeof notificationRecipientKindSchema>;
 
@@ -20,6 +22,8 @@ export const notificationRowSchema = z.object({
   created_at: z.string(),
   source_kind: notificationSourceKindSchema.nullable(),
   source_ref: z.string().nullable(),
+  /** 跳转目标（模块 / 容器 / 实体）；由 `payload.link` 派生。无目标 = 不可点。 */
+  link: notificationLinkSchema.nullable().optional(),
 });
 
 export type NotificationRow = z.infer<typeof notificationRowSchema>;
@@ -80,6 +84,8 @@ export const notificationCreatedEventSchema = z.object({
   title: z.string(),
   body: z.string(),
   created_at: z.string(),
+  /** 本机提醒（伴侣气泡）跳转目标 */
+  link: notificationLinkSchema.nullable().optional(),
 });
 
 export type NotificationCreatedEvent = z.infer<typeof notificationCreatedEventSchema>;

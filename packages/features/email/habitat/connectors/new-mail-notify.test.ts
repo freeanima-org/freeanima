@@ -89,8 +89,8 @@ describe("bucketNewMailSubjectsByWorld", () => {
       },
     ]);
     expect(buckets).toEqual([
-      { kind: "user", mails: [mail({ message_id: 10, subject: "User mail" })] },
-      { kind: "agent", mails: [mail({ message_id: 20, subject: "Agent mail" })] },
+      { kind: "user", mails: [mail({ message_id: 10, subject: "User mail" })], account_id: 1 },
+      { kind: "agent", mails: [mail({ message_id: 20, subject: "Agent mail" })], account_id: 2 },
     ]);
   });
 });

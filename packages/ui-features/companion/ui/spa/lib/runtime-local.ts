@@ -2,6 +2,7 @@
 
 import type { MotionSlotId } from "@freeanima/shared/companion-app/companion-schema.ts";
 import { MOTION_SLOT_IDS } from "@freeanima/shared/companion-app/companion-schema.ts";
+import type { NotificationLink } from "@freeanima/shared/notification-link";
 
 function isMotionSlotId(v: string): v is MotionSlotId {
   return (MOTION_SLOT_IDS as readonly string[]).includes(v);
@@ -11,6 +12,8 @@ export type BubbleItem = {
   id: string;
   text: string;
   createdAt: number;
+  /** 点击气泡的跳转目标（模块 / 容器 / 实体）；null = 仅前进 */
+  link?: NotificationLink | null;
 };
 
 export type PlaySlotCommand = {
@@ -19,7 +22,13 @@ export type PlaySlotCommand = {
   motionId?: string;
 };
 
-type BubbleListener = (current: { id: string; text: string } | null, pending: number) => void;
+type BubbleViewItem = {
+  id: string;
+  text: string;
+  link?: NotificationLink | null;
+};
+
+type BubbleListener = (current: BubbleViewItem | null, pending: number) => void;
 
 type PlayHandler = (slot: MotionSlotId, motionId?: string) => void;
 
@@ -46,14 +55,18 @@ function newPlayId(): string {
 
 function syncBubbleToUi(): void {
   const current = queue[0] ?? null;
-  bubbleListener?.(current ? { id: current.id, text: current.text } : null, queue.length);
+  bubbleListener?.(
+    current ? { id: current.id, text: current.text, link: current.link ?? null } : null,
+    queue.length,
+  );
 }
 
-export function enqueueBubble(text: string): BubbleItem {
+export function enqueueBubble(text: string, link?: NotificationLink | null): BubbleItem {
   const item: BubbleItem = {
     id: newBubbleId(),
     text: text.trim(),
     createdAt: Date.now(),
+    link: link ?? null,
   };
   if (!item.text) {
     throw new Error("气泡文字不能为空");

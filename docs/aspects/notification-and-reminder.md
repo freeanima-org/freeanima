@@ -32,6 +32,22 @@ title: 通知与提醒
 
 桌面伴侣可见时，伴侣语音气泡是首选的 **Alert** 通道。点击气泡**不等于**收件箱确认已读。
 
+### 跳转目标（模块 / 容器 / 实体）
+
+通知行可带**跳转目标** `NotificationLink`（`packages/shared/notification-link`，存 `notifications.payload.link`，RPC 面提升为行上的 `link`）：
+
+| 字段        | 含义                                                                 |
+| ----------- | -------------------------------------------------------------------- |
+| `path`      | 模块 shell 路径（含 query），如 `/tasks?list=3`、`/habitat/cron`     |
+| `container` | 模块内容器选型（tasks 清单/智能清单、project 项目、email 账户+邮件） |
+| `entity`    | 实体锚点（`id` + `component` + `present`）                           |
+
+客户端统一用 `openNotificationLink`（`portal-sdk`）：**先**写 `writeModuleSelection`（保证「已在模块内」也能切容器）→ **再** `navigateAppModulePath(path)` → **最后** `openEntityResource(entity)`（浮层或模块页）。跳转**不**改已读状态。无 `link` 的通知不可点，行为与旧版一致。
+
+写入侧已带 link：任务 due Inbox 与提前提醒（清单/项目 + `task_item`）、日历事件提醒、习惯提醒、邮件自动同步新信、cron / inprocess 失败（`/habitat/cron`）、`notification_send` 的可选 `link`。env-health / soft-failure / temporal-summary 截断暂无落点（无 link）。
+
+伴侣气泡：`deliverLocalReminder` 把 link（缺省回退 `sourceRoute`）随气泡入队；overlay 经 `ShellApi.navigateMainRoute` → 壳事件 `shell:navigate-main` → 主窗 `listenMainRoute` → `openNotificationLink`。气泡体点击做跳转并前移；右上角 **×** 只关闭当前一条。
+
 今日代码命名空间：收件箱 = `notification*`；打断 = `alert*` / `deliverLocalReminder`。产品侧 Reminder 是定时意图；勿与收件箱混为一谈。
 
 ### 设备 Alert（Android OS）

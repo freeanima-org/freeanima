@@ -39,6 +39,7 @@ async function* bridgeUserNotificationCreated(
           title: payload.title,
           body: payload.body,
           created_at: payload.created_at,
+          link: payload.link ?? null,
         },
       };
     }

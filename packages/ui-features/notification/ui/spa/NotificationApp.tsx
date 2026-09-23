@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
 import { usePortalRead } from "@freeanima/portal-sdk/portal-query";
 import { getCachedResolvedWorldContext, useUserSubjectId } from "@freeanima/portal-sdk/react.tsx";
+import { openNotificationLink } from "@freeanima/portal-sdk/notification-link.ts";
 import {
   Alert,
   AlertDescription,
@@ -11,6 +12,7 @@ import {
   Spinner,
 } from "@freeanima/ui-kit";
 import { formatDateTime } from "@freeanima/ui-kit/lib/datetime-local.ts";
+import { describeNotificationLink } from "@freeanima/shared/notification-link";
 
 import { listNotifications, markNotificationRead, type NotificationRow } from "./lib/api.ts";
 import { useNotificationUnreadStore } from "./stores/notification-unread.ts";
@@ -78,6 +80,7 @@ export function NotificationApp() {
   const [readFilter, setReadFilter] = useState<ReadFilter>("unread");
   const [offset, setOffset] = useState(0);
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
@@ -154,6 +157,22 @@ export function NotificationApp() {
     }
   };
 
+  /** 跳转（模块 / 容器 / 实体）；不自动标已读。 */
+  const handleOpen = async (row: NotificationRow) => {
+    const link = row.link;
+    if (!link) return;
+    setOpeningId(row.id);
+    setError("");
+    try {
+      const result = await openNotificationLink(link);
+      if (!result.ok) setError(result.error);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setOpeningId(null);
+    }
+  };
+
   return (
     <div className="h-full overflow-y-auto p-4 md:p-6">
       <h2 className="mb-1 text-lg font-bold">通知</h2>
@@ -216,12 +235,29 @@ export function NotificationApp() {
         <div className="space-y-2">
           {items.map((row) => {
             const unread = !row.read_at;
+            const link = row.link ?? null;
+            const openable = link != null;
+            const linkHint = link ? describeNotificationLink(link) : "";
+            const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              void handleOpen(row);
+            };
             return (
               <Card
                 key={row.id}
                 className={`bg-muted w-full gap-0 py-0 shadow-none ${
                   unread ? "ring-1 ring-primary/40" : "opacity-80"
-                }`}
+                } ${openable ? "hover:bg-muted/70 cursor-pointer transition-colors" : ""}`}
+                {...(openable
+                  ? {
+                      role: "button",
+                      tabIndex: 0,
+                      "aria-label": `打开通知：${row.title}（${linkHint}）`,
+                      onClick: () => void handleOpen(row),
+                      onKeyDown,
+                    }
+                  : {})}
               >
                 <CardContent className="flex flex-col gap-2 px-4 py-3">
                   <div className="flex flex-wrap items-center gap-2">
@@ -243,16 +279,33 @@ export function NotificationApp() {
                       <span>创建：{formatDateTime(row.created_at)}</span>
                       <span>已读：{formatDateTime(row.read_at)}</span>
                     </div>
-                    {unread ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        isDisabled={markingId === row.id}
-                        onClick={() => void handleMarkRead(row)}
-                      >
-                        {markingId === row.id ? <Spinner className="size-3.5" /> : "标记已读"}
-                      </Button>
-                    ) : null}
+                    {/* 卡片整体可点；动作按钮区阻止冒泡，避免误触发跳转 */}
+                    <div
+                      className="flex flex-wrap items-center gap-2"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      {openable ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          isDisabled={openingId === row.id}
+                          onClick={() => void handleOpen(row)}
+                        >
+                          {openingId === row.id ? <Spinner className="size-3.5" /> : "打开"}
+                        </Button>
+                      ) : null}
+                      {unread ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          isDisabled={markingId === row.id}
+                          onClick={() => void handleMarkRead(row)}
+                        >
+                          {markingId === row.id ? <Spinner className="size-3.5" /> : "标记已读"}
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
