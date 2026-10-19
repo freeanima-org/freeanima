@@ -11,7 +11,7 @@
     "@freeanima/core": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/shared": "workspace:*",
-    "cordis": "4.0.0-rc.10",
-    "zod": "^4.4.3"
+    "cordis": "4.0.0-rc.11",
+    "zod": "^4.6.7"
   }
 }
