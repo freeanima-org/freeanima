@@ -12,15 +12,15 @@
     "@freeanima/engine": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/shared": "workspace:*",
-    "cordis": "4.0.0-rc.10",
+    "cordis": "4.0.0-rc.12",
     "discord.js": "^14.27.0",
-    "drizzle-orm": "^1.0.0-rc.5-169397b",
-    "imapflow": "^1.7.0",
-    "mailparser": "^3.9.15",
-    "nodemailer": "^9.0.5",
+    "drizzle-orm": "^1.0.0-rc.5",
+    "imapflow": "^2.9.1",
+    "mailparser": "^3.12.4",
+    "nodemailer": "^10.2.1",
     "qrcode": "^1.5.4",
-    "vite": "^8.2.1",
-    "ws": "^8.21.1",
-    "zod": "^4.4.3"
+    "vite": "^8.3.5",
+    "ws": "^8.22.0",
+    "zod": "^4.6.7"
   }
 }
