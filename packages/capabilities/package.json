@@ -7,19 +7,19 @@
     "./*": "./*"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.117.1",
+    "@anthropic-ai/sdk": "^1.6.0",
     "@freeanima/core": "workspace:*",
     "@freeanima/engine": "workspace:*",
     "@freeanima/kernel": "workspace:*",
     "@freeanima/shared": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@noble/hashes": "^2.3.0",
-    "@opencode-ai/models": "^0.0.43",
-    "cordis": "4.0.0-rc.10",
-    "discord.js": "^14.27.0",
-    "drizzle-orm": "^1.0.0-rc.5-169397b",
-    "openai": "^7.4.0",
-    "ws": "^8.21.1",
-    "zod": "^4.4.3"
+    "@opencode-ai/models": "^0.0.127",
+    "cordis": "4.0.0-rc.12",
+    "discord.js": "^14.28.1",
+    "drizzle-orm": "^1.0.0-rc.5",
+    "openai": "^7.53.0",
+    "ws": "^8.22.1",
+    "zod": "^4.6.7"
   }
 }
