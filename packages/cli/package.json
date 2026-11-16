@@ -17,6 +17,6 @@
     "@freeanima/features": "workspace:*",
     "@freeanima/server": "workspace:*",
     "@freeanima/shared": "workspace:*",
-    "commander": "^15.0.0"
+    "commander": "^15.1.0"
   }
 }
