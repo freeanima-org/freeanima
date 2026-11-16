@@ -1,6 +1,6 @@
 # /freeanima-pr-and-deploy-canary
 
-FreeAnima：push → PR → CI 修到绿 → rebase 合并 → 盯 Canary → `feng.ecs` 升 canary。**Agent 细则见技能** [`freeanima-pr-and-deploy-canary`](../skill/freeanima-pr-and-deploy-canary/SKILL.md)。
+FreeAnima：push → PR → CI 修到绿 → rebase 合并 → 盯 Canary → `feng.ecs` 升 canary。**Agent 细则见技能** [`freeanima-pr-and-deploy-canary`](../skills/freeanima-pr-and-deploy-canary/SKILL.md)。
 
 ## 快速路径（Agent）
 
